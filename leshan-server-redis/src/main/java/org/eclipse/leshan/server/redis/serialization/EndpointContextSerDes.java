@@ -27,9 +27,11 @@ import java.util.Map;
 import javax.security.auth.x500.X500Principal;
 
 import org.eclipse.californium.elements.AddressEndpointContext;
+import org.eclipse.californium.elements.DtlsEndpointContext;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.MapBasedEndpointContext;
 import org.eclipse.californium.elements.MapBasedEndpointContext.Attributes;
+import org.eclipse.californium.elements.UdpEndpointContext;
 import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.auth.X509CertPath;
@@ -37,10 +39,13 @@ import org.eclipse.californium.elements.util.DatagramReader;
 import org.eclipse.californium.elements.util.DatagramWriter;
 import org.eclipse.californium.elements.util.SerializationUtil;
 import org.eclipse.californium.elements.util.StringUtil;
+import org.eclipse.californium.scandium.dtls.ConnectionId;
+import org.eclipse.californium.scandium.dtls.SessionId;
 import org.eclipse.leshan.core.util.Hex;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonObject.Member;
 import com.eclipsesource.json.JsonValue;
 
 /**
@@ -108,12 +113,35 @@ public class EndpointContextSerDes {
         value = peer.get(KEY_ATTRIBUTES);
         if (value == null) {
             endpointContext = new AddressEndpointContext(socketAddress, principal);
-        } else {
+        } else if (value.isString()) {
             String base64 = value.asString();
             byte[] data = StringUtil.base64ToByteArray(base64);
             DatagramReader reader = new DatagramReader(data, false);
             Attributes contexAttributes = SerializationUtil.readEndpointContexAttributes(reader);
             endpointContext = new MapBasedEndpointContext(socketAddress, principal, contexAttributes);
+        } else {
+            MapBasedEndpointContext.Attributes attributes = new MapBasedEndpointContext.Attributes();
+            for (Member member : value.asObject()) {
+                String name = member.getName();
+                String attributeValue = member.getValue().asString();
+                if (name.equals(UdpEndpointContext.KEY_PLAIN)) {
+                    attributes.add(name, attributeValue);
+                } else if (name.equals(DtlsEndpointContext.KEY_SESSION_ID)) {
+                    attributes.add(name, new SessionId(StringUtil.hex2ByteArray(attributeValue)));
+                } else if (name.equals(DtlsEndpointContext.KEY_EPOCH)) {
+                    attributes.add(name, Integer.parseInt(attributeValue));
+                } else if (name.equals(DtlsEndpointContext.KEY_CIPHER)) {
+                    attributes.add(name, attributeValue);
+                } else if (name.equals(DtlsEndpointContext.KEY_HANDSHAKE_TIMESTAMP)) {
+                    attributes.add(name, Long.parseLong(attributeValue));
+                } else if (name.equals(DtlsEndpointContext.KEY_READ_CONNECTION_ID)) {
+                    attributes.add(name, new ConnectionId(StringUtil.hex2ByteArray(attributeValue)));
+                } else if (name.equals(DtlsEndpointContext.KEY_WRITE_CONNECTION_ID)) {
+                    attributes.add(name, new ConnectionId(StringUtil.hex2ByteArray(attributeValue)));
+                }
+                attributes.add(name, attributeValue);
+            }
+            endpointContext = new MapBasedEndpointContext(socketAddress, principal, attributes);
         }
         return endpointContext;
     }
