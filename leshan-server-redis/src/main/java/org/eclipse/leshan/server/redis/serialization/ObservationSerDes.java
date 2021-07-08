@@ -28,7 +28,6 @@ import org.eclipse.californium.core.network.serialization.UdpDataParser;
 import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
 import org.eclipse.californium.core.observe.Observation;
 import org.eclipse.californium.elements.EndpointContext;
-import org.eclipse.californium.elements.RawData;
 import org.eclipse.leshan.core.util.Hex;
 
 import com.eclipsesource.json.Json;
@@ -71,8 +70,7 @@ public class ObservationSerDes {
         EndpointContext endpointContext = EndpointContextSerDes.deserialize(v.get("peer").asObject());
         byte[] req = Hex.decodeHex(v.getString("request", null).toCharArray());
 
-        RawData rawData = RawData.outbound(req, endpointContext, null, false);
-        Request request = (Request) parser.parseMessage(rawData);
+        Request request = (Request) parser.parseMessage(req);
         request.setDestinationContext(endpointContext);
 
         JsonValue ctxValue = v.get("context");
