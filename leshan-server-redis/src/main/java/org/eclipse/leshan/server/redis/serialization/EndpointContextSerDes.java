@@ -35,6 +35,7 @@ import org.eclipse.californium.elements.UdpEndpointContext;
 import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.auth.X509CertPath;
+import org.eclipse.californium.elements.util.Bytes;
 import org.eclipse.californium.elements.util.StringUtil;
 import org.eclipse.californium.scandium.dtls.ConnectionId;
 import org.eclipse.californium.scandium.dtls.SessionId;
@@ -78,7 +79,11 @@ public class EndpointContextSerDes {
             JsonObject attContext = Json.object();
             for (String key : attributes.keySet()) {
                 // write all values as string
-                attContext.set(key, attributes.get(key).toString());
+                Object value = attributes.get(key);
+                if (value instanceof Bytes) {
+                    value = ((Bytes) value).getAsString();
+                }
+                attContext.set(key, value.toString());
             }
             peer.set(KEY_ATTRIBUTES, attContext);
         }
