@@ -71,9 +71,6 @@ public class DomainIssuerCertificateVerifier extends BaseCertificateVerifier {
             throw new HandshakeException("Certificate chain could not be validated", alert);
         }
 
-        // - validate server name
-        validateSubject(peerSocket, receivedServerCertificate);
-
         return messageChain;
     }
 }
