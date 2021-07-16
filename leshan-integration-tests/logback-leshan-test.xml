@@ -28,7 +28,7 @@ Contributors:
 		</encoder>
 	</appender>
 
-	<root level="DEBUG">
+	<root level="ERROR">
 		<appender-ref ref="STDOUT" />
 	</root>
 </configuration>
