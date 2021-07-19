@@ -29,6 +29,7 @@ import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.californium.elements.DtlsEndpointContext;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.MapBasedEndpointContext;
+import org.eclipse.californium.elements.MapBasedEndpointContext.Attributes;
 import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.auth.X509CertPath;
@@ -91,8 +92,8 @@ public class EndpointContextUtil {
         }
 
         if (peerIdentity != null && allowConnectionInitiation) {
-            return new MapBasedEndpointContext(identity.getPeerAddress(), peerIdentity,
-                    DtlsEndpointContext.KEY_HANDSHAKE_MODE, DtlsEndpointContext.HANDSHAKE_MODE_AUTO);
+            return new MapBasedEndpointContext(identity.getPeerAddress(), peerIdentity, new Attributes()
+                    .add(DtlsEndpointContext.KEY_HANDSHAKE_MODE, DtlsEndpointContext.HANDSHAKE_MODE_AUTO));
         }
         return new AddressEndpointContext(identity.getPeerAddress(), peerIdentity);
     }
