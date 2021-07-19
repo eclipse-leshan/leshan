@@ -389,12 +389,19 @@ public class WriteRequest extends AbstractSimpleDownlinkRequest<WriteResponse> {
             throw new InvalidRequestException("new node value is mandatory for %s", target);
 
         // Validate Mode
-        if (getPath().isResource() && mode == Mode.UPDATE
-                && (node instanceof LwM2mSingleResource || node instanceof LwM2mResourceInstance))
-            throw new InvalidRequestException("Invalid mode for '%s': update is not allowed on resource", target);
+        if (mode == Mode.UPDATE) {
+            if (target.isResource() && node instanceof LwM2mSingleResource || target.isResourceInstance())
+                throw new InvalidRequestException("Invalid mode for '%s': update is not allowed on %s", target,
+                        target.isResource() ? "single resource" : "resource instance");
+        }
 
         // Validate node and path coherence
-        if (getPath().isResource()) {
+        if (getPath().isResourceInstance()) {
+            if (!(node instanceof LwM2mResourceInstance)) {
+                throw new InvalidRequestException("path '%s' and node type '%s' do not match", target,
+                        node.getClass().getSimpleName());
+            }
+        } else if (getPath().isResource()) {
             if (!(node instanceof LwM2mResource)) {
                 throw new InvalidRequestException("path '%s' and node type '%s' do not match", target,
                         node.getClass().getSimpleName());
