@@ -87,9 +87,9 @@ public class RandomTemperatureSensor extends BaseInstanceEnabler implements Dest
         currentTemp += delta;
         Integer changedResource = adjustMinMaxMeasuredValue(currentTemp);
         if (changedResource != null) {
-            fireResourcesChange(SENSOR_VALUE, changedResource);
+            fireResourcesChange(getResourcePath(SENSOR_VALUE), getResourcePath(changedResource));
         } else {
-            fireResourcesChange(SENSOR_VALUE);
+            fireResourceChange(SENSOR_VALUE);
         }
     }
 

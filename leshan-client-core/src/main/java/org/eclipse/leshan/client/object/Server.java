@@ -120,7 +120,7 @@ public class Server extends BaseInstanceEnabler {
             int previousShortServerId = shortServerId;
             shortServerId = ((Long) value.getValue()).intValue();
             if (previousShortServerId != shortServerId)
-                fireResourcesChange(resourceid);
+                fireResourceChange(resourceid);
             return WriteResponse.success();
 
         case 1:
@@ -130,7 +130,7 @@ public class Server extends BaseInstanceEnabler {
             long previousLifetime = lifetime;
             lifetime = (Long) value.getValue();
             if (previousLifetime != lifetime)
-                fireResourcesChange(resourceid);
+                fireResourceChange(resourceid);
             return WriteResponse.success();
 
         case 2:
@@ -140,7 +140,7 @@ public class Server extends BaseInstanceEnabler {
             Long previousDefaultMinPeriod = defaultMinPeriod;
             defaultMinPeriod = (Long) value.getValue();
             if (!Objects.equals(previousDefaultMinPeriod, defaultMinPeriod))
-                fireResourcesChange(resourceid);
+                fireResourceChange(resourceid);
             return WriteResponse.success();
 
         case 3:
@@ -150,7 +150,7 @@ public class Server extends BaseInstanceEnabler {
             Long previousDefaultMaxPeriod = defaultMaxPeriod;
             defaultMaxPeriod = (Long) value.getValue();
             if (!Objects.equals(previousDefaultMaxPeriod, defaultMaxPeriod))
-                fireResourcesChange(resourceid);
+                fireResourceChange(resourceid);
             return WriteResponse.success();
 
         case 6: // notification storing when disable or offline
@@ -160,7 +160,7 @@ public class Server extends BaseInstanceEnabler {
             boolean previousNotifyWhenDisable = notifyWhenDisable;
             notifyWhenDisable = (boolean) value.getValue();
             if (previousNotifyWhenDisable != notifyWhenDisable)
-                fireResourcesChange(resourceid);
+                fireResourceChange(resourceid);
             return WriteResponse.success();
 
         case 7: // binding
@@ -171,7 +171,7 @@ public class Server extends BaseInstanceEnabler {
                 EnumSet<BindingMode> previousBinding = binding;
                 binding = BindingMode.parse((String) value.getValue());
                 if (!Objects.equals(previousBinding, binding))
-                    fireResourcesChange(resourceid);
+                    fireResourceChange(resourceid);
                 return WriteResponse.success();
             } catch (IllegalArgumentException e) {
                 return WriteResponse.badRequest("invalid value");
@@ -184,7 +184,7 @@ public class Server extends BaseInstanceEnabler {
                 BindingMode previousPreferedTransport = preferredTransport;
                 preferredTransport = BindingMode.valueOf((String) value.getValue());
                 if (!Objects.equals(previousPreferedTransport, preferredTransport))
-                    fireResourcesChange(resourceid);
+                    fireResourceChange(resourceid);
                 return WriteResponse.success();
             } catch (IllegalArgumentException e) {
                 return WriteResponse.badRequest("invalid value");

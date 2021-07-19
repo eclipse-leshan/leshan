@@ -106,12 +106,12 @@ public class Device extends BaseInstanceEnabler {
 
         case 14: // utc offset
             utcOffset = (String) value.getValue();
-            fireResourcesChange(resourceid);
+            fireResourceChange(resourceid);
             return WriteResponse.success();
 
         case 15: // timezone
             timezone = (String) value.getValue();
-            fireResourcesChange(resourceid);
+            fireResourceChange(resourceid);
             return WriteResponse.success();
 
         default:

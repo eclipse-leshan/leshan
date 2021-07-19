@@ -18,30 +18,29 @@ package org.eclipse.leshan.client.californium.object;
 
 import org.eclipse.californium.core.observe.ObserveRelation;
 import org.eclipse.californium.core.observe.ObserveRelationFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.eclipse.leshan.core.node.LwM2mPath;
 
 /**
  * An {@link ObserveRelationFilter} which select {@link ObserveRelation} based on resource URI.
  */
 public class ResourceObserveFilter implements ObserveRelationFilter {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ResourceObserveFilter.class);
+    protected final LwM2mPath[] paths;
 
-    protected final String notifyURI;
-
-    public ResourceObserveFilter(String notifyURI) {
-        this.notifyURI = notifyURI;
+    public ResourceObserveFilter(LwM2mPath... paths) {
+        this.paths = paths;
     }
 
     @Override
     public boolean accept(ObserveRelation relation) {
-        String relationURI = relation.getExchange().getRequest().getOptions().getUriPathString();
-        boolean result = relationURI.equals(notifyURI);
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("observe " + relationURI + " / " + notifyURI + ": " + result);
+        String relationURI = "/" + relation.getExchange().getRequest().getOptions().getUriPathString();
+        LwM2mPath relationPath = new LwM2mPath(relationURI);
+        for (LwM2mPath path : paths) {
+            if (path.startWith(relationPath)) {
+                return true;
+            }
         }
-        return result;
+        return false;
     }
 
 }

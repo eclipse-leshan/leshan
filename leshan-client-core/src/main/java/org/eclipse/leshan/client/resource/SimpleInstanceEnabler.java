@@ -98,7 +98,7 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
         LwM2mResource previousValue = resources.put(resourceid, newValue);
 
         if (!newValue.equals(previousValue))
-            fireResourcesChange(resourceid);
+            fireResourceChange(resourceid);
         return WriteResponse.success();
     }
 

@@ -21,6 +21,7 @@ package org.eclipse.leshan.client.resource;
 import java.util.List;
 
 import org.eclipse.leshan.client.LwM2mClient;
+import org.eclipse.leshan.client.resource.listener.ResourceListener;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
@@ -90,14 +91,14 @@ public interface LwM2mInstanceEnabler {
      * 
      * @param listener the handler to add, a <code>null</code> value is silently ignored
      */
-    void addResourceChangedListener(ResourceChangedListener listener);
+    void addResourceListener(ResourceListener listener);
 
     /**
      * Stops a callback handler from getting notified about changes to any of this LWM2M object instance's resources.
      * 
      * @param listener the handler to remove, a <code>null</code> value is silently ignored
      */
-    void removeResourceChangedListener(ResourceChangedListener listener);
+    void removeResourceListener(ResourceListener listener);
 
     /**
      * Gets values of all readable resources of this instance.

@@ -16,11 +16,10 @@
 package org.eclipse.leshan.client.resource;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +36,7 @@ public class TransactionalObjectListener implements ObjectListener {
     protected int currentLevel = 0;
     protected List<Integer> instancesAdded = new ArrayList<>();
     protected List<Integer> instancesRemoved = new ArrayList<>();
-    protected Map<Integer, List<Integer>> resourcesChangedByInstance = new HashMap<>();
+    protected List<LwM2mPath> resourcesChanged = new ArrayList<>();
 
     protected LwM2mObjectEnabler objectEnabler;
     protected List<ObjectListener> innerListeners = new ArrayList<ObjectListener>();
@@ -87,7 +86,7 @@ public class TransactionalObjectListener implements ObjectListener {
             }
             instancesAdded.clear();
             instancesRemoved.clear();
-            resourcesChangedByInstance.clear();
+            resourcesChanged.clear();
             currentLevel = 0;
         }
     }
@@ -101,10 +100,8 @@ public class TransactionalObjectListener implements ObjectListener {
             fireObjectInstancesAdded(toIntArray(instancesAdded));
         if (!instancesRemoved.isEmpty())
             fireObjectInstancesRemoved(toIntArray(instancesRemoved));
-
-        for (Map.Entry<Integer, List<Integer>> entry : resourcesChangedByInstance.entrySet()) {
-            fireResourcesChanged(entry.getKey(), toIntArray(entry.getValue()));
-        }
+        if (!resourcesChanged.isEmpty())
+            fireResourcesChanged(resourcesChanged.toArray(new LwM2mPath[resourcesChanged.size()]));
     }
 
     @Override
@@ -140,17 +137,14 @@ public class TransactionalObjectListener implements ObjectListener {
     }
 
     @Override
-    public void resourceChanged(LwM2mObjectEnabler object, int instanceId, int... resourcesIds) {
+    public void resourceChanged(LwM2mPath... paths) {
         if (!inTransaction()) {
-            fireResourcesChanged(instanceId, resourcesIds);
+            fireResourcesChanged(paths);
         } else {
-            List<Integer> resourcesChanged = resourcesChangedByInstance.get(instanceId);
-            if (resourcesChanged == null) {
-                resourcesChanged = new ArrayList<Integer>();
-                resourcesChangedByInstance.put(instanceId, resourcesChanged);
-            }
-            for (int resourceId : resourcesIds) {
-                resourcesChanged.add(resourceId);
+            for (LwM2mPath path : paths) {
+                if (!resourcesChanged.contains(path)) {
+                    resourcesChanged.add(path);
+                }
             }
         }
     }
@@ -175,9 +169,9 @@ public class TransactionalObjectListener implements ObjectListener {
         }
     }
 
-    protected void fireResourcesChanged(int instanceid, int... resourceIds) {
+    protected void fireResourcesChanged(LwM2mPath... path) {
         for (ObjectListener listener : innerListeners) {
-            listener.resourceChanged(objectEnabler, instanceid, resourceIds);
+            listener.resourceChanged(path);
         }
     }
 }

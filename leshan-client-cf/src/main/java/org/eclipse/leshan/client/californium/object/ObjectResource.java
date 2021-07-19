@@ -426,14 +426,10 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
     }
 
     @Override
-    public void resourceChanged(LwM2mObjectEnabler object, int instanceId, int... resourceIds) {
+    public void resourceChanged(LwM2mPath... paths) {
         // notify CoAP layer than resources changes, this will send observe notification if an observe relationship
         // exits.
-        changed(new ResourceObserveFilter(object.getId() + ""));
-        changed(new ResourceObserveFilter(object.getId() + "/" + instanceId));
-        for (int resourceId : resourceIds) {
-            changed(new ResourceObserveFilter(object.getId() + "/" + instanceId + "/" + resourceId));
-        }
+        changed(new ResourceObserveFilter(paths));
     }
 
     @Override

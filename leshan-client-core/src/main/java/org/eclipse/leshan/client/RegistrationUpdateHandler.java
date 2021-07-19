@@ -26,6 +26,7 @@ import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.LwM2mId;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
 
 /**
@@ -73,37 +74,49 @@ public class RegistrationUpdateHandler {
             }
 
             @Override
-            public void resourceChanged(LwM2mObjectEnabler object, int instanceId, int... resourceIds) {
+            public void resourceChanged(LwM2mPath... paths) {
                 if (!bsHandler.isBootstrapping())
-                    if (object.getId() == LwM2mId.SERVER) {
-                        // handle lifetime changes
-                        for (int i = 0; i < resourceIds.length; i++) {
-                            if (resourceIds[i] == LwM2mId.SRV_LIFETIME) {
-                                Long lifetime = ServersInfoExtractor.getLifeTime(object, instanceId);
-                                Long serverId = ServersInfoExtractor.getServerId(object, instanceId);
-                                if (lifetime != null && serverId != null) {
-                                    ServerIdentity server = engine.getRegisteredServer(serverId);
-                                    if (server != null) {
-                                        engine.triggerRegistrationUpdate(server,
-                                                new RegistrationUpdate(lifetime, null, null, null, null));
-                                        return;
+                    // TODO we should be smarter here and manage the case where server lifetime and supportedBinding is
+                    // modified at same time.
+                    // /!\ lifetime trigger update to only 1 server and supportedBinding to all the registered ones.
+                    for (LwM2mPath path : paths) {
+                        if (path.isResource()) {
+                            if (path.getObjectId() == LwM2mId.SERVER) {
+                                // handle lifetime changes
+                                if (path.getResourceId() == LwM2mId.SRV_LIFETIME) {
+                                    LwM2mObjectEnabler enabler = objecTree.getObjectEnabler(LwM2mId.SERVER);
+                                    if (enabler != null) {
+                                        Long lifetime = ServersInfoExtractor.getLifeTime(enabler,
+                                                path.getObjectInstanceId());
+                                        Long serverId = ServersInfoExtractor.getServerId(enabler,
+                                                path.getObjectInstanceId());
+                                        if (lifetime != null && serverId != null) {
+                                            ServerIdentity server = engine.getRegisteredServer(serverId);
+                                            if (server != null) {
+                                                engine.triggerRegistrationUpdate(server,
+                                                        new RegistrationUpdate(lifetime, null, null, null, null));
+                                                return;
+                                            }
+                                        }
                                     }
                                 }
-                            }
-                        }
-                    } else if (object.getId() == LwM2mId.DEVICE) {
-                        // handle supported binding changes
-                        EnumSet<BindingMode> bindingMode = null;
-                        for (int i = 0; i < resourceIds.length; i++) {
-                            if (resourceIds[i] == LwM2mId.DVC_SUPPORTED_BINDING) {
-                                bindingMode = ServersInfoExtractor.getDeviceSupportedBindingMode(object, instanceId);
-                            }
-                        }
+                            } else if (path.getObjectId() == LwM2mId.DEVICE) {
+                                // handle supported binding changes
+                                EnumSet<BindingMode> bindingMode = null;
+                                if (path.getResourceId() == LwM2mId.DVC_SUPPORTED_BINDING) {
+                                    LwM2mObjectEnabler enabler = objecTree.getObjectEnabler(LwM2mId.SERVER);
+                                    if (enabler != null) {
+                                        bindingMode = ServersInfoExtractor.getDeviceSupportedBindingMode(enabler,
+                                                path.getObjectInstanceId());
+                                    }
+                                }
 
-                        if (bindingMode != null) {
-                            engine.triggerRegistrationUpdate(
-                                    new RegistrationUpdate(null, null, bindingMode, null, null));
-                            return;
+                                if (bindingMode != null) {
+                                    engine.triggerRegistrationUpdate(
+                                            new RegistrationUpdate(null, null, bindingMode, null, null));
+                                    return;
+                                }
+                            }
                         }
                     }
             }

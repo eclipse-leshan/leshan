@@ -24,11 +24,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.client.LwM2mClient;
+import org.eclipse.leshan.client.resource.listener.ResourceListener;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.response.ExecuteResponse;
@@ -42,7 +44,7 @@ import org.eclipse.leshan.core.response.WriteResponse;
  */
 public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
 
-    protected List<ResourceChangedListener> listeners = new ArrayList<>();
+    protected List<ResourceListener> listeners = new ArrayList<>();
     protected Integer id = null;
     protected ObjectModel model;
     protected LwM2mClient lwm2mClient;
@@ -83,12 +85,12 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
-    public void addResourceChangedListener(ResourceChangedListener listener) {
+    public void addResourceListener(ResourceListener listener) {
         listeners.add(listener);
     }
 
     @Override
-    public void removeResourceChangedListener(ResourceChangedListener listener) {
+    public void removeResourceListener(ResourceListener listener) {
         listeners.remove(listener);
     }
 
@@ -100,12 +102,37 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
      * <p>
      * Calling this method is needed to trigger NOTIFICATION when an observe relation is established.
      * 
-     * @param resourceIds the list of resources which change.
+     * @param resources the list of path of resource and resource instances which changes.
+     * 
+     * @see #getResourcePath(int)
+     * @see #getResourceInstancePath(int, int)
      */
-    public void fireResourcesChange(int... resourceIds) {
-        for (ResourceChangedListener listener : listeners) {
-            listener.resourcesChanged(resourceIds);
+    public void fireResourcesChange(LwM2mPath... resources) {
+        for (ResourceListener listener : listeners) {
+            listener.resourceChanged(resources);
         }
+    }
+
+    /**
+     * @see #fireResourcesChange(LwM2mPath...)
+     */
+    public void fireResourceChange(int resourceId) {
+        fireResourcesChange(getResourcePath(resourceId));
+    }
+
+    /**
+     * @see #fireResourcesChange(LwM2mPath...)
+     */
+    public void fireResourceInstanceChange(int resourceId, int resourceInstanceId) {
+        fireResourcesChange(getResourceInstancePath(resourceId, resourceInstanceId));
+    }
+
+    protected LwM2mPath getResourcePath(int resourceId) {
+        return new LwM2mPath(getModel().id, getId(), resourceId);
+    }
+
+    protected LwM2mPath getResourceInstancePath(int resourceId, int resourceInstanceId) {
+        return new LwM2mPath(getModel().id, getId(), resourceId, resourceInstanceId);
     }
 
     @Override

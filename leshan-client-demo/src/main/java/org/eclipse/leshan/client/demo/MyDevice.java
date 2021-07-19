@@ -40,7 +40,7 @@ public class MyDevice extends BaseInstanceEnabler implements Destroyable {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                fireResourcesChange(13);
+                fireResourceChange(13);
             }
         }, 5000, 5000);
     }
@@ -122,11 +122,11 @@ public class MyDevice extends BaseInstanceEnabler implements Destroyable {
             return WriteResponse.notFound();
         case 14:
             setUtcOffset((String) value.getValue());
-            fireResourcesChange(resourceid);
+            fireResourceChange(resourceid);
             return WriteResponse.success();
         case 15:
             setTimezone((String) value.getValue());
-            fireResourcesChange(resourceid);
+            fireResourceChange(resourceid);
             return WriteResponse.success();
         default:
             return super.write(identity, replace, resourceid, value);

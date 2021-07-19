@@ -15,8 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.resource.listener;
 
-import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.core.node.LwM2mPath;
 
 public interface ResourceListener {
-    void resourceChanged(LwM2mObjectEnabler object, int instanceId, int... resourcesIds);
+    void resourceChanged(LwM2mPath... paths);
 }

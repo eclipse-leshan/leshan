@@ -82,13 +82,13 @@ public class MyLocation extends BaseInstanceEnabler {
     private void moveLatitude(float delta) {
         latitude = latitude + delta * scaleFactor;
         timestamp = new Date();
-        fireResourcesChange(0, 5);
+        fireResourcesChange(getResourcePath(0), getResourcePath(5));
     }
 
     private void moveLongitude(float delta) {
         longitude = longitude + delta * scaleFactor;
         timestamp = new Date();
-        fireResourcesChange(1, 5);
+        fireResourcesChange(getResourcePath(1), getResourcePath(5));
     }
 
     public float getLatitude() {

@@ -176,9 +176,9 @@ public class LwM2mObjectTree implements Startable, Stoppable, Destroyable {
         }
 
         @Override
-        public void resourceChanged(LwM2mObjectEnabler object, int instanceId, int... resourcesIds) {
+        public void resourceChanged(LwM2mPath... paths) {
             for (ObjectsListener listener : listeners) {
-                listener.resourceChanged(object, instanceId, resourcesIds);
+                listener.resourceChanged(paths);
             }
         }
     }

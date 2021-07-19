@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.leshan.client.LwM2mClient;
+import org.eclipse.leshan.client.resource.listener.ResourceListener;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.core.Destroyable;
@@ -59,6 +60,8 @@ import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A specific implementation of {@link LwM2mObjectEnabler} which matchs each LWM2M instance concept to a
@@ -68,6 +71,8 @@ import org.eclipse.leshan.core.response.WriteResponse;
  * the easier way to implement LWM2M object in Leshan client.
  */
 public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Startable, Stoppable {
+
+    private static Logger LOG = LoggerFactory.getLogger(DummyInstanceEnabler.class);
 
     protected Map<Integer, LwM2mInstanceEnabler> instances;
     protected LwM2mInstanceEnablerFactory instanceFactory;
@@ -406,12 +411,33 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
     }
 
     protected void listenInstance(LwM2mInstanceEnabler instance, final int instanceId) {
-        instance.addResourceChangedListener(new ResourceChangedListener() {
+        instance.addResourceListener(new ResourceListener() {
             @Override
-            public void resourcesChanged(int... resourceIds) {
-                fireResourcesChanged(instanceId, resourceIds);
+            public void resourceChanged(LwM2mPath... paths) {
+                for (LwM2mPath path : paths) {
+                    if (!isValid(instanceId, path)) {
+                        LOG.warn("InstanceEnabler (%d) of object (%d) try to raise a change of %s which seems invalid.",
+                                instanceId, getId(), path);
+                    }
+                }
+                fireResourcesChanged(paths);
             }
         });
+    }
+
+    protected boolean isValid(int instanceId, LwM2mPath pathToValidate) {
+        if (!pathToValidate.isResource() || !pathToValidate.isResourceInstance())
+            return false;
+
+        if (pathToValidate.getObjectId() != getId()) {
+            return false;
+        }
+
+        if (pathToValidate.getObjectInstanceId() != id) {
+            return false;
+        }
+
+        return true;
     }
 
     @Override

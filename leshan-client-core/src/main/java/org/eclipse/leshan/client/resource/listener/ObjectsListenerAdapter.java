@@ -16,6 +16,7 @@
 package org.eclipse.leshan.client.resource.listener;
 
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.core.node.LwM2mPath;
 
 public class ObjectsListenerAdapter implements ObjectsListener {
 
@@ -36,6 +37,6 @@ public class ObjectsListenerAdapter implements ObjectsListener {
     }
 
     @Override
-    public void resourceChanged(LwM2mObjectEnabler object, int instanceId, int... resourcesIds) {
+    public void resourceChanged(LwM2mPath... paths) {
     }
 }

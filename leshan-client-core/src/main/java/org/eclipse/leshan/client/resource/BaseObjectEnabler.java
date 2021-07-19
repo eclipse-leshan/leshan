@@ -528,8 +528,8 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         transactionalListener.objectInstancesRemoved(this, instanceIds);
     }
 
-    protected void fireResourcesChanged(int instanceid, int... resourceIds) {
-        transactionalListener.resourceChanged(this, instanceid, resourceIds);
+    protected void fireResourcesChanged(LwM2mPath... paths) {
+        transactionalListener.resourceChanged(paths);
     }
 
     @Override
