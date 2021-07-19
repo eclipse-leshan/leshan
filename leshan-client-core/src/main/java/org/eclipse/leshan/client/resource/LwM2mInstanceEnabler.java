@@ -209,9 +209,19 @@ public interface LwM2mInstanceEnabler {
      * 
      * @param identity the identity of the requester. This could be an internal call in this case
      *        <code> identity == ServerIdentity.SYSTEM</code>.
-     * @param resourceid the ID of the resource to set the value for
+     * @param resourceid the ID of the resource to observe
      */
     ObserveResponse observe(ServerIdentity identity, int resourceid);
+
+    /**
+     * Performs an observe register on one of this LWM2M object instance's resource instance.
+     * 
+     * @param identity the identity of the requester. This could be an internal call in this case
+     *        <code> identity == ServerIdentity.SYSTEM</code>.
+     * @param resourceid the ID of the resource to observe
+     * @param resourceInstanceId the ID of the resource instance to observe
+     */
+    ObserveResponse observe(ServerIdentity identity, int resourceid, int resourceInstanceId);
 
     /**
      * A callback called when this instance is deleted

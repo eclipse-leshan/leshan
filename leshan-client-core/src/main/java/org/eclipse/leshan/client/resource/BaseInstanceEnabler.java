@@ -233,6 +233,14 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
+    public ObserveResponse observe(ServerIdentity identity, int resourceid, int resourceInstanceId) {
+        // Perform a read by default
+        ReadResponse readResponse = this.read(identity, resourceid, resourceInstanceId);
+        return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null,
+                readResponse.getErrorMessage());
+    }
+
+    @Override
     public void onDelete(ServerIdentity identity) {
         // No default behavior
     }

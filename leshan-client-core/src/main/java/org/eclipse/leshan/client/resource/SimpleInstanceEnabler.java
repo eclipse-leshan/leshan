@@ -18,15 +18,19 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
@@ -79,6 +83,7 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
     public WriteResponse write(ServerIdentity identity, boolean replace, int resourceid, LwM2mResource value) {
         // define new Value
         LwM2mResource newValue;
+        List<LwM2mPath> newInstances = new ArrayList<>();
         if (value instanceof LwM2mMultipleResource && !replace) {
             // This is the special case of multiple instance resource where we do not replace the resource instances but
             // we
@@ -86,7 +91,14 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
             LwM2mMultipleResource multipleResource = (LwM2mMultipleResource) resources.get(resourceid);
             if (multipleResource != null) {
                 Map<Integer, LwM2mResourceInstance> mergedInstances = new HashMap<>(multipleResource.getInstances());
-                mergedInstances.putAll(value.getInstances());
+                // try to detect resource instance changes
+                for (Entry<Integer, LwM2mResourceInstance> entry : ((LwM2mMultipleResource) value).getInstances()
+                        .entrySet()) {
+                    LwM2mResourceInstance previous = mergedInstances.put(entry.getKey(), entry.getValue());
+                    if (!entry.getValue().equals(previous)) {
+                        newInstances.add(getResourceInstancePath(resourceid, entry.getKey()));
+                    }
+                }
                 newValue = new LwM2mMultipleResource(resourceid, value.getType(), mergedInstances.values());
             } else {
                 newValue = value;
@@ -97,8 +109,12 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
 
         LwM2mResource previousValue = resources.put(resourceid, newValue);
 
-        if (!newValue.equals(previousValue))
+        // Either we raise resource instance changes or resource change.
+        if (!newInstances.isEmpty()) {
+            fireResourcesChange(newInstances.toArray(new LwM2mPath[newInstances.size()]));
+        } else if (!newValue.equals(previousValue)) {
             fireResourceChange(resourceid);
+        }
         return WriteResponse.success();
     }
 

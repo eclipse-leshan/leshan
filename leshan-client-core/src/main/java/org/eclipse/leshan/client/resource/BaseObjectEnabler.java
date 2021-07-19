@@ -458,12 +458,14 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                 return ObserveResponse.notFound();
 
             // check if the resource is readable.
-            if (path.isResource()) {
+            if (path.isResource() || path.isResourceInstance()) {
                 ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
                 if (resourceModel == null) {
                     return ObserveResponse.notFound();
                 } else if (!resourceModel.operations.isReadable()) {
                     return ObserveResponse.methodNotAllowed();
+                } else if (path.isResourceInstance() && !resourceModel.multiple) {
+                    return ObserveResponse.badRequest("invalid path : resource is not multiple");
                 }
             }
         }

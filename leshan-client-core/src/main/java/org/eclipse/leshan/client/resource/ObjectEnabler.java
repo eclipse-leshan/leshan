@@ -265,7 +265,12 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
         }
 
         // Manage Resource case
-        return instance.observe(identity, path.getResourceId());
+        if (path.getResourceInstanceId() == null) {
+            return instance.observe(identity, path.getResourceId());
+        }
+
+        // Manage Resource Instance case
+        return instance.observe(identity, path.getResourceId(), path.getResourceInstanceId());
     }
 
     @Override
