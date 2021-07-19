@@ -99,6 +99,30 @@ public class ObserveRequest extends AbstractSimpleDownlinkRequest<ObserveRespons
     }
 
     /**
+     * Creates a request for observing future changes of a specific resource instance of a client.
+     * 
+     * @param objectId the object ID of the resource
+     * @param objectInstanceId the object instance ID
+     * @param resourceId the (individual) resource's ID
+     */
+    public ObserveRequest(int objectId, int objectInstanceId, int resourceId, int resourceInstanceId) {
+        this(null, new LwM2mPath(objectId, objectInstanceId, resourceId, resourceInstanceId), null, null);
+    }
+
+    /**
+     * Creates a request for observing future changes of a specific resource instance of a client.
+     *
+     * @param format the desired format for the response (TLV, JSON, TEXT or OPAQUE)
+     * @param objectId the object ID of the resource
+     * @param objectInstanceId the object instance ID
+     * @param resourceId the (individual) resource's ID
+     */
+    public ObserveRequest(ContentFormat format, int objectId, int objectInstanceId, int resourceId,
+            int resourceInstanceId) {
+        this(format, new LwM2mPath(objectId, objectInstanceId, resourceId, resourceInstanceId), null, null);
+    }
+
+    /**
      * Creates a request for observing future changes of a particular LWM2M node (object, object instance or resource).
      * 
      * @param path the path to the LWM2M node to observe
@@ -150,9 +174,6 @@ public class ObserveRequest extends AbstractSimpleDownlinkRequest<ObserveRespons
         super(target, coapRequest);
         if (target.isRoot())
             throw new InvalidRequestException("Observe request cannot target root path");
-        if (target.isResourceInstance())
-            throw new InvalidRequestException(
-                    "Observe request cannot target resource instance path: %s (not yet implemented)", target);
 
         this.format = format;
         if (context == null || context.isEmpty())

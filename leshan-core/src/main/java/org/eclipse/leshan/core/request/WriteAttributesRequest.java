@@ -38,6 +38,11 @@ public class WriteAttributesRequest extends AbstractSimpleDownlinkRequest<WriteA
         this(new LwM2mPath(objectId, objectInstanceId, resourceId), attributes, null);
     }
 
+    public WriteAttributesRequest(int objectId, int objectInstanceId, int resourceId, int resourceInstanceId,
+            AttributeSet attributes) throws InvalidRequestException {
+        this(new LwM2mPath(objectId, objectInstanceId, resourceId, resourceInstanceId), attributes, null);
+    }
+
     public WriteAttributesRequest(String path, AttributeSet attributes) {
         this(newPath(path), attributes, null);
     }
@@ -51,9 +56,6 @@ public class WriteAttributesRequest extends AbstractSimpleDownlinkRequest<WriteA
         super(path, coapRequest);
         if (path.isRoot())
             throw new InvalidRequestException("WriteAttributes request cannot target root path");
-        if (path.isResourceInstance())
-            throw new InvalidRequestException(
-                    "WriteAttributes request cannot target resource instance path: %s (not yet implemented)", path);
 
         if (attributes == null)
             throw new InvalidRequestException("attributes are mandatory for %s", path);
