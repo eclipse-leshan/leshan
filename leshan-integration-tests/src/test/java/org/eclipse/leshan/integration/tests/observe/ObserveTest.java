@@ -19,6 +19,7 @@
 
 package org.eclipse.leshan.integration.tests.observe;
 
+import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -32,6 +33,7 @@ import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.codec.LwM2mValueChecker;
 import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonEncoder;
@@ -41,6 +43,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.core.response.CancelObservationResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
@@ -103,6 +106,146 @@ public class ObserveTest {
         assertEquals(LwM2mSingleResource.newStringResource(15, "Europe/Paris"), listener.getResponse().getContent());
         assertNotNull(listener.getResponse().getCoapResponse());
         assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
+    }
+
+    @Test
+    public void can_observe_resource_instance() throws InterruptedException {
+        TestObservationListener listener = new TestObservationListener();
+        helper.server.getObservationService().addListener(listener);
+
+        // multi instance string
+        String expectedPath = "/" + TEST_OBJECT_ID + "/0/" + STRING_RESOURCE_INSTANCE_ID + "/0";
+        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new ObserveRequest(expectedPath));
+        assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
+        assertNotNull(observeResponse.getCoapResponse());
+        assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
+
+        // an observation response should have been sent
+        Observation observation = observeResponse.getObservation();
+        assertEquals(expectedPath, observation.getPath().toString());
+        assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
+        Set<Observation> observations = helper.server.getObservationService()
+                .getObservations(helper.getCurrentRegistration());
+        assertTrue("We should have only on observation", observations.size() == 1);
+        assertTrue("New observation is not there", observations.contains(observation));
+
+        // write a new value
+        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(Mode.REPLACE,
+                ContentFormat.TLV, expectedPath, LwM2mResourceInstance.newStringInstance(0, "a new string")));
+
+        // verify result
+        listener.waitForNotification(2000);
+        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+        assertTrue(listener.receivedNotify().get());
+        assertEquals(LwM2mResourceInstance.newStringInstance(0, "a new string"), listener.getResponse().getContent());
+        assertNotNull(listener.getResponse().getCoapResponse());
+        assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
+    }
+
+    @Test
+    public void can_observe_resource_instance_then_passive_cancel() throws InterruptedException {
+        TestObservationListener listener = new TestObservationListener();
+        helper.server.getObservationService().addListener(listener);
+
+        // multi instance string
+        String expectedPath = "/" + TEST_OBJECT_ID + "/0/" + STRING_RESOURCE_INSTANCE_ID + "/0";
+        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new ObserveRequest(expectedPath));
+        assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
+        assertNotNull(observeResponse.getCoapResponse());
+        assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
+
+        // an observation response should have been sent
+        Observation observation = observeResponse.getObservation();
+        assertEquals(expectedPath, observation.getPath().toString());
+        assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
+        Set<Observation> observations = helper.server.getObservationService()
+                .getObservations(helper.getCurrentRegistration());
+        assertTrue("We should have only on observation", observations.size() == 1);
+        assertTrue("New observation is not there", observations.contains(observation));
+
+        // write a new value
+        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(Mode.REPLACE,
+                ContentFormat.TLV, expectedPath, LwM2mResourceInstance.newStringInstance(0, "a new string")));
+
+        // verify result
+        listener.waitForNotification(2000);
+        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+        assertTrue(listener.receivedNotify().get());
+        assertEquals(LwM2mResourceInstance.newStringInstance(0, "a new string"), listener.getResponse().getContent());
+        assertNotNull(listener.getResponse().getCoapResponse());
+
+        // cancel observation : passive way
+        helper.server.getObservationService().cancelObservation(observation);
+        observations = helper.server.getObservationService().getObservations(helper.getCurrentRegistration());
+        assertTrue("Observation should be removed", observations.isEmpty());
+
+        // write device timezone
+        listener.reset();
+        writeResponse = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(Mode.REPLACE,
+                ContentFormat.TLV, expectedPath, LwM2mResourceInstance.newStringInstance(0, "a another new string")));
+
+        // verify result
+        listener.waitForNotification(1000);
+        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+        assertFalse("Observation should be cancelled", listener.receivedNotify().get());
+    }
+
+    @Test
+    public void can_observe_resource_instance_then_active_cancel() throws InterruptedException {
+        TestObservationListener listener = new TestObservationListener();
+        helper.server.getObservationService().addListener(listener);
+
+        // multi instance string
+        String expectedPath = "/" + TEST_OBJECT_ID + "/0/" + STRING_RESOURCE_INSTANCE_ID + "/0";
+        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new ObserveRequest(expectedPath));
+        assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
+        assertNotNull(observeResponse.getCoapResponse());
+        assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
+
+        // an observation response should have been sent
+        Observation observation = observeResponse.getObservation();
+        assertEquals(expectedPath, observation.getPath().toString());
+        assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
+        Set<Observation> observations = helper.server.getObservationService()
+                .getObservations(helper.getCurrentRegistration());
+        assertTrue("We should have only on observation", observations.size() == 1);
+        assertTrue("New observation is not there", observations.contains(observation));
+
+        // write a new value
+        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(Mode.REPLACE,
+                ContentFormat.TLV, expectedPath, LwM2mResourceInstance.newStringInstance(0, "a new string")));
+
+        // verify result
+        listener.waitForNotification(2000);
+        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+        assertTrue(listener.receivedNotify().get());
+        assertEquals(LwM2mResourceInstance.newStringInstance(0, "a new string"), listener.getResponse().getContent());
+        assertNotNull(listener.getResponse().getCoapResponse());
+
+        // cancel observation : active way
+        CancelObservationResponse response = helper.server.send(helper.getCurrentRegistration(),
+                new CancelObservationRequest(observation));
+        assertTrue(response.isSuccess());
+        assertEquals(ResponseCode.CONTENT, response.getCode());
+        assertEquals("a new string", ((LwM2mResourceInstance) response.getContent()).getValue());
+        // active cancellation does not remove observation from store : it should be done manually using
+        // ObservationService().cancelObservation(observation)
+        observations = helper.server.getObservationService().getObservations(helper.getCurrentRegistration());
+        assertTrue("We should have only on observation", observations.size() == 1);
+        assertTrue("Observation should still be there", observations.contains(observation));
+
+        // write device timezone
+        listener.reset();
+        writeResponse = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(Mode.REPLACE,
+                ContentFormat.TLV, expectedPath, LwM2mResourceInstance.newStringInstance(0, "a another new string")));
+
+        // verify result
+        listener.waitForNotification(1000);
+        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+        assertFalse("Observation should be cancelled", listener.receivedNotify().get());
     }
 
     @Test
