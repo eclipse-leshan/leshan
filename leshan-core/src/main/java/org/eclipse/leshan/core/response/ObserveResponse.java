@@ -20,7 +20,7 @@ import java.util.List;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
-import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 
 /**
@@ -30,16 +30,16 @@ import org.eclipse.leshan.core.request.exception.InvalidResponseException;
  */
 public class ObserveResponse extends ReadResponse {
 
-    protected final Observation observation;
+    protected final SingleObservation observation;
     protected final List<TimestampedLwM2mNode> timestampedValues;
 
     public ObserveResponse(ResponseCode code, LwM2mNode content, List<TimestampedLwM2mNode> timestampedValues,
-            Observation observation, String errorMessage) {
+            SingleObservation observation, String errorMessage) {
         this(code, content, timestampedValues, observation, errorMessage, null);
     }
 
     public ObserveResponse(ResponseCode code, LwM2mNode content, List<TimestampedLwM2mNode> timestampedValues,
-            Observation observation, String errorMessage, Object coapResponse) {
+            SingleObservation observation, String errorMessage, Object coapResponse) {
         super(code, timestampedValues != null && !timestampedValues.isEmpty() ? timestampedValues.get(0).getNode()
                 : content, errorMessage, coapResponse);
 
@@ -53,7 +53,7 @@ public class ObserveResponse extends ReadResponse {
         this.timestampedValues = timestampedValues;
     }
 
-    public List<TimestampedLwM2mNode> getTimestampedLwM2mNode() {
+    public List<TimestampedLwM2mNode> getTimestampedValues() {
         return timestampedValues;
     }
 
@@ -74,7 +74,7 @@ public class ObserveResponse extends ReadResponse {
             return String.format("ObserveResponse [code=%s, content=%s, observation=%s]", code, content, observation);
     }
 
-    public Observation getObservation() {
+    public SingleObservation getObservation() {
         return observation;
     }
 

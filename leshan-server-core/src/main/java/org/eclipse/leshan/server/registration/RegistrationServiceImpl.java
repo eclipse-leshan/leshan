@@ -15,12 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
+import org.eclipse.leshan.core.observation.SingleObservation;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.eclipse.leshan.core.observation.Observation;
 
 /**
  * An implementation of {@link RegistrationService}
@@ -62,20 +62,21 @@ public class RegistrationServiceImpl implements RegistrationService, ExpirationL
     }
 
     @Override
-    public void registrationExpired(Registration registration, Collection<Observation> observations) {
+    public void registrationExpired(Registration registration, Collection<SingleObservation> observations) {
         for (RegistrationListener l : listeners) {
             l.unregistered(registration, observations, true, null);
         }
     }
 
     public void fireRegistered(Registration registration, Registration previousReg,
-            Collection<Observation> previousObsersations) {
+            Collection<SingleObservation> previousObsersations) {
         for (RegistrationListener l : listeners) {
             l.registered(registration, previousReg, previousObsersations);
         }
     }
 
-    public void fireUnregistered(Registration registration, Collection<Observation> observations, Registration newReg) {
+    public void fireUnregistered(Registration registration, Collection<SingleObservation> observations,
+            Registration newReg) {
         for (RegistrationListener l : listeners) {
             l.unregistered(registration, observations, false, newReg);
         }

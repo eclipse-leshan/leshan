@@ -24,24 +24,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.registration;
 
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.observe.ObservationStoreException;
 import org.eclipse.californium.core.observe.ObservationUtil;
@@ -49,17 +31,22 @@ import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
-import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.eclipse.leshan.server.californium.observation.ObserveUtil;
-import org.eclipse.leshan.server.registration.Deregistration;
-import org.eclipse.leshan.server.registration.ExpirationListener;
-import org.eclipse.leshan.server.registration.Registration;
-import org.eclipse.leshan.server.registration.RegistrationUpdate;
-import org.eclipse.leshan.server.registration.UpdatedRegistration;
+import org.eclipse.leshan.server.registration.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.InetSocketAddress;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * An in memory store for registration and observation.
@@ -114,7 +101,8 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
             // recent binding.
             regsByAddr.put(registration.getSocketAddress(), registration);
             if (registrationRemoved != null) {
-                Collection<Observation> observationsRemoved = unsafeRemoveAllObservations(registrationRemoved.getId());
+                Collection<SingleObservation> observationsRemoved = unsafeRemoveAllObservations(
+                        registrationRemoved.getId());
                 if (!registrationRemoved.getSocketAddress().equals(registration.getSocketAddress())) {
                     removeFromMap(regsByAddr, registrationRemoved.getSocketAddress(), registrationRemoved);
                 }
@@ -220,7 +208,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
 
             Registration registration = getRegistration(registrationId);
             if (registration != null) {
-                Collection<Observation> observationsRemoved = unsafeRemoveAllObservations(registration.getId());
+                Collection<SingleObservation> observationsRemoved = unsafeRemoveAllObservations(registration.getId());
                 regsByEp.remove(registration.getEndpoint());
                 removeFromMap(regsByAddr, registration.getSocketAddress(), registration);
                 removeFromMap(regsByRegId, registration.getId(), registration);
@@ -240,14 +228,14 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
      * org.eclipse.californium.core.observe.ObservationStore#add method)
      */
     @Override
-    public Collection<Observation> addObservation(String registrationId, Observation observation) {
+    public Collection<SingleObservation> addObservation(String registrationId, SingleObservation observation) {
 
-        List<Observation> removed = new ArrayList<>();
+        List<SingleObservation> removed = new ArrayList<>();
 
         try {
             lock.writeLock().lock();
             // cancel existing observations for the same path and registration id.
-            for (Observation obs : unsafeGetObservations(registrationId)) {
+            for (SingleObservation obs : unsafeGetObservations(registrationId)) {
                 if (observation.getPath().equals(obs.getPath()) && !Arrays.equals(observation.getId(), obs.getId())) {
                     unsafeRemoveObservation(new Token(obs.getId()));
                     removed.add(obs);
@@ -261,11 +249,11 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     }
 
     @Override
-    public Observation removeObservation(String registrationId, byte[] observationId) {
+    public SingleObservation removeObservation(String registrationId, byte[] observationId) {
         try {
             lock.writeLock().lock();
             Token token = new Token(observationId);
-            Observation observation = build(unsafeGetObservation(token));
+            SingleObservation observation = build(unsafeGetObservation(token));
             if (observation != null && registrationId.equals(observation.getRegistrationId())) {
                 unsafeRemoveObservation(token);
                 return observation;
@@ -277,10 +265,10 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     }
 
     @Override
-    public Observation getObservation(String registrationId, byte[] observationId) {
+    public SingleObservation getObservation(String registrationId, byte[] observationId) {
         try {
             lock.readLock().lock();
-            Observation observation = build(unsafeGetObservation(new Token(observationId)));
+            SingleObservation observation = build(unsafeGetObservation(new Token(observationId)));
             if (observation != null && registrationId.equals(observation.getRegistrationId())) {
                 return observation;
             }
@@ -291,7 +279,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     }
 
     @Override
-    public Collection<Observation> getObservations(String registrationId) {
+    public Collection<SingleObservation> getObservations(String registrationId) {
         try {
             lock.readLock().lock();
             return unsafeGetObservations(registrationId);
@@ -301,7 +289,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     }
 
     @Override
-    public Collection<Observation> removeObservations(String registrationId) {
+    public Collection<SingleObservation> removeObservations(String registrationId) {
         try {
             lock.writeLock().lock();
             return unsafeRemoveAllObservations(registrationId);
@@ -413,12 +401,12 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         }
     }
 
-    private Collection<Observation> unsafeRemoveAllObservations(String registrationId) {
-        Collection<Observation> removed = new ArrayList<>();
+    private Collection<SingleObservation> unsafeRemoveAllObservations(String registrationId) {
+        Collection<SingleObservation> removed = new ArrayList<>();
         Set<Token> tokens = tokensByRegId.get(registrationId);
         if (tokens != null) {
             for (Token token : tokens) {
-                Observation observationRemoved = build(obsByToken.remove(token));
+                SingleObservation observationRemoved = build(obsByToken.remove(token));
                 if (observationRemoved != null) {
                     removed.add(observationRemoved);
                 }
@@ -428,12 +416,12 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         return removed;
     }
 
-    private Collection<Observation> unsafeGetObservations(String registrationId) {
-        Collection<Observation> result = new ArrayList<>();
+    private Collection<SingleObservation> unsafeGetObservations(String registrationId) {
+        Collection<SingleObservation> result = new ArrayList<>();
         Set<Token> tokens = tokensByRegId.get(registrationId);
         if (tokens != null) {
             for (Token token : tokens) {
-                Observation obs = build(unsafeGetObservation(token));
+                SingleObservation obs = build(unsafeGetObservation(token));
                 if (obs != null) {
                     result.add(obs);
                 }
@@ -442,7 +430,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         return result;
     }
 
-    private Observation build(org.eclipse.californium.core.observe.Observation cfObs) {
+    private SingleObservation build(org.eclipse.californium.core.observe.Observation cfObs) {
         if (cfObs == null)
             return null;
 

@@ -15,9 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
-import java.util.Collection;
+import org.eclipse.leshan.core.observation.SingleObservation;
 
-import org.eclipse.leshan.core.observation.Observation;
+import java.util.Collection;
 
 /**
  * Listen for client registration events.
@@ -36,7 +36,8 @@ public interface RegistrationListener {
      * @param previousObsersations all the observations linked to the previous registration which have been passively
      *        cancelled. <code>null</code> for a brand-new registration.
      */
-    void registered(Registration registration, Registration previousReg, Collection<Observation> previousObsersations);
+    void registered(Registration registration, Registration previousReg,
+            Collection<SingleObservation> previousObsersations);
 
     /**
      * Invoked when a client updates its registration.
@@ -58,6 +59,6 @@ public interface RegistrationListener {
      *        (same endpoint). <code>null</code> if the registration is deleted because of a Deregister request or an
      *        expiration.
      */
-    void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
+    void unregistered(Registration registration, Collection<SingleObservation> observations, boolean expired,
             Registration newReg);
 }

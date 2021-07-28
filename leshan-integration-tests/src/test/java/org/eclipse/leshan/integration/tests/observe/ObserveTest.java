@@ -35,7 +35,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.codec.LwM2mValueChecker;
 import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonEncoder;
-import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.CancelObservationRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveRequest;
@@ -84,10 +84,10 @@ public class ObserveTest {
         assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
 
         // an observation response should have been sent
-        Observation observation = observeResponse.getObservation();
+        SingleObservation observation = observeResponse.getObservation();
         assertEquals("/3/0/15", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<Observation> observations = helper.server.getObservationService()
+        Set<SingleObservation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
         assertTrue("We should have only on observation", observations.size() == 1);
         assertTrue("New observation is not there", observations.contains(observation));
@@ -118,10 +118,10 @@ public class ObserveTest {
         assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
 
         // an observation response should have been sent
-        Observation observation = observeResponse.getObservation();
+        SingleObservation observation = observeResponse.getObservation();
         assertEquals("/3/0/15", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<Observation> observations = helper.server.getObservationService()
+        Set<SingleObservation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
         assertTrue("We should have only on observation", observations.size() == 1);
         assertTrue("New observation is not there", observations.contains(observation));
@@ -167,10 +167,10 @@ public class ObserveTest {
         assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
 
         // an observation response should have been sent
-        Observation observation = observeResponse.getObservation();
+        SingleObservation observation = observeResponse.getObservation();
         assertEquals("/3/0/15", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<Observation> observations = helper.server.getObservationService()
+        Set<SingleObservation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
         assertTrue("We should have only on observation", observations.size() == 1);
         assertTrue("New observation is not there", observations.contains(observation));
@@ -222,10 +222,10 @@ public class ObserveTest {
         assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
 
         // an observation response should have been sent
-        Observation observation = observeResponse.getObservation();
+        SingleObservation observation = observeResponse.getObservation();
         assertEquals("/3/0", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<Observation> observations = helper.server.getObservationService()
+        Set<SingleObservation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
         assertTrue("We should have only on observation", observations.size() == 1);
         assertTrue("New observation is not there", observations.contains(observation));
@@ -260,10 +260,10 @@ public class ObserveTest {
         assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
 
         // an observation response should have been sent
-        Observation observation = observeResponse.getObservation();
+        SingleObservation observation = observeResponse.getObservation();
         assertEquals("/3", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<Observation> observations = helper.server.getObservationService()
+        Set<SingleObservation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
         assertTrue("We should have only on observation", observations.size() == 1);
         assertTrue("New observation is not there", observations.contains(observation));
@@ -299,10 +299,10 @@ public class ObserveTest {
         assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
 
         // an observation response should have been sent
-        Observation observation = observeResponse.getObservation();
+        SingleObservation observation = observeResponse.getObservation();
         assertEquals("/3/0/15", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<Observation> observations = helper.server.getObservationService()
+        Set<SingleObservation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
         assertTrue("We should have only on observation", observations.size() == 1);
         assertTrue("New observation is not there", observations.contains(observation));

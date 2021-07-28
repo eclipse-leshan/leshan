@@ -146,6 +146,11 @@ public class ObserveRequest extends AbstractSimpleDownlinkRequest<ObserveRespons
         this(format, newPath(path), context, null);
     }
 
+    public ObserveRequest(ContentFormat format, LwM2mPath path, Object coapRequest)
+            throws InvalidRequestException {
+        this(format, path, null, coapRequest);
+    }
+
     private ObserveRequest(ContentFormat format, LwM2mPath target, Map<String, String> context, Object coapRequest) {
         super(target, coapRequest);
         if (target.isRoot())

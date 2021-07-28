@@ -16,6 +16,7 @@
 package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.CancelObservationResponse;
 import org.eclipse.leshan.core.util.Hex;
@@ -34,7 +35,7 @@ public class CancelObservationRequest extends AbstractSimpleDownlinkRequest<Canc
     /**
      * @param observation the observation to cancel actively
      */
-    public CancelObservationRequest(Observation observation) {
+    public CancelObservationRequest(SingleObservation observation) {
         super(observation.getPath(), null);
         if (getPath().isRoot())
             throw new InvalidRequestException("Observe request cannot target root path");

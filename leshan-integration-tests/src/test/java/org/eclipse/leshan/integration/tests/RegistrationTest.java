@@ -17,20 +17,6 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.LIFETIME;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
@@ -39,7 +25,7 @@ import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -53,6 +39,16 @@ import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.*;
+
+import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.LIFETIME;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.junit.Assert.*;
 
 public class RegistrationTest {
 
@@ -218,9 +214,10 @@ public class RegistrationTest {
 
         // check observation registry is not null
         Registration currentRegistration = helper.getCurrentRegistration();
-        Set<Observation> observations = helper.server.getObservationService().getObservations(currentRegistration);
+        Set<SingleObservation> observations = helper.server.getObservationService()
+                .getObservations(currentRegistration);
         assertEquals(1, observations.size());
-        Observation obs = observations.iterator().next();
+        SingleObservation obs = observations.iterator().next();
         assertEquals(currentRegistration.getId(), obs.getRegistrationId());
         assertEquals(new LwM2mPath(3, 0), obs.getPath());
 
