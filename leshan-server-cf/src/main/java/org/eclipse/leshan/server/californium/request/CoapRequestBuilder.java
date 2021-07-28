@@ -42,6 +42,7 @@ import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.DownlinkRequestVisitor;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -190,6 +191,11 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
             coapRequest.getOptions().setAccept(request.getResponseContentFormat().getCode());
         setTarget(coapRequest, LwM2mPath.ROOTPATH);
         applyLowerLayerConfig(coapRequest);
+    }
+
+    @Override
+    public void visit(ObserveCompositeRequest request) {
+        throw new UnsupportedOperationException("Not implemented yet.");
     }
 
     @Override

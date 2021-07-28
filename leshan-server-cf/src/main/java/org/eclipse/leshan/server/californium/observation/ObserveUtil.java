@@ -21,7 +21,7 @@ import java.util.Map.Entry;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.server.californium.registration.CaliforniumRegistrationStore;
@@ -40,7 +40,7 @@ public class ObserveUtil {
     /**
      * Create a LWM2M observation from a CoAP request.
      */
-    public static Observation createLwM2mObservation(Request request) {
+    public static SingleObservation createLwM2mObservation(Request request) {
         String regId = null;
         String lwm2mPath = null;
         Map<String, String> context = null;
@@ -67,7 +67,8 @@ public class ObserveUtil {
         if (request.getOptions().hasAccept()) {
             contentFormat = ContentFormat.fromCode(request.getOptions().getAccept());
         }
-        return new Observation(request.getToken().getBytes(), regId, new LwM2mPath(lwm2mPath), contentFormat, context);
+        return new SingleObservation(request.getToken().getBytes(), regId, new LwM2mPath(lwm2mPath), contentFormat,
+                context);
     }
 
     /**

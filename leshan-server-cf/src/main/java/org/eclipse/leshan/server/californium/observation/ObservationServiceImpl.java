@@ -37,7 +37,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
-import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
@@ -102,8 +102,8 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
         this.updateRegistrationOnNotification = updateRegistrationOnNotification;
     }
 
-    public void addObservation(Registration registration, Observation observation) {
-        for (Observation existing : registrationStore.addObservation(registration.getId(), observation)) {
+    public void addObservation(Registration registration, SingleObservation observation) {
+        for (SingleObservation existing : registrationStore.addObservation(registration.getId(), observation)) {
             cancel(existing);
         }
 
@@ -127,11 +127,11 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
         if (registrationId == null)
             return 0;
 
-        Collection<Observation> observations = registrationStore.removeObservations(registrationId);
+        Collection<SingleObservation> observations = registrationStore.removeObservations(registrationId);
         if (observations == null)
             return 0;
 
-        for (Observation observation : observations) {
+        for (SingleObservation observation : observations) {
             cancel(observation);
         }
 
@@ -143,15 +143,15 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
         if (registration == null || registration.getId() == null || resourcepath == null || resourcepath.isEmpty())
             return 0;
 
-        Set<Observation> observations = getObservations(registration.getId(), resourcepath);
-        for (Observation observation : observations) {
+        Set<SingleObservation> observations = getObservations(registration.getId(), resourcepath);
+        for (SingleObservation observation : observations) {
             cancelObservation(observation);
         }
         return observations.size();
     }
 
     @Override
-    public void cancelObservation(Observation observation) {
+    public void cancelObservation(SingleObservation observation) {
         if (observation == null)
             return;
 
@@ -159,7 +159,7 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
         cancel(observation);
     }
 
-    private void cancel(Observation observation) {
+    private void cancel(SingleObservation observation) {
         Token token = new Token(observation.getId());
         if (secureEndpoint != null)
             secureEndpoint.cancelObservation(token);
@@ -172,24 +172,24 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
     }
 
     @Override
-    public Set<Observation> getObservations(Registration registration) {
+    public Set<SingleObservation> getObservations(Registration registration) {
         return getObservations(registration.getId());
     }
 
-    private Set<Observation> getObservations(String registrationId) {
+    private Set<SingleObservation> getObservations(String registrationId) {
         if (registrationId == null)
             return Collections.emptySet();
 
         return new HashSet<>(registrationStore.getObservations(registrationId));
     }
 
-    private Set<Observation> getObservations(String registrationId, String resourcePath) {
+    private Set<SingleObservation> getObservations(String registrationId, String resourcePath) {
         if (registrationId == null || resourcePath == null)
             return Collections.emptySet();
 
-        Set<Observation> result = new HashSet<>();
+        Set<SingleObservation> result = new HashSet<>();
         LwM2mPath lwPath = new LwM2mPath(resourcePath);
-        for (Observation obs : getObservations(registrationId)) {
+        for (SingleObservation obs : getObservations(registrationId)) {
             if (lwPath.equals(obs.getPath())) {
                 result.add(obs);
             }
@@ -227,7 +227,7 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
         String regid = coapRequest.getUserContext().get(ObserveUtil.CTX_REGID);
 
         // get observation for this request
-        Observation observation = registrationStore.getObservation(regid, coapResponse.getToken().getBytes());
+        SingleObservation observation = registrationStore.getObservation(regid, coapResponse.getToken().getBytes());
         if (observation == null) {
             LOG.error("Unexpected error: Unable to find observation with token {} for registration {}",
                     coapResponse.getToken(), regid);
@@ -287,7 +287,8 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
 
     }
 
-    private ObserveResponse createObserveResponse(Observation observation, LwM2mModel model, Response coapResponse) {
+    private ObserveResponse createObserveResponse(SingleObservation observation, LwM2mModel model,
+            Response coapResponse) {
         // CHANGED response is supported for backward compatibility with old spec.
         if (coapResponse.getCode() != CoAP.ResponseCode.CHANGED
                 && coapResponse.getCode() != CoAP.ResponseCode.CONTENT) {

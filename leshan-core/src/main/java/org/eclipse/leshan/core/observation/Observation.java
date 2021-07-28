@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Michał Wadowski (Orange) - Add Observe-Composite feature.
  *******************************************************************************/
 package org.eclipse.leshan.core.observation;
 
@@ -19,35 +20,30 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
-import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.util.Hex;
 
 /**
- * An observation of a resource provided by a LWM2M Client.
+ * An abstract class for observation of a resource provided by a LWM2M Client.
  */
-public class Observation {
+public abstract class Observation {
 
-    private final byte[] id;
-    private final LwM2mPath path;
-    private final ContentFormat contentFormat;
-    private final String registrationId;
-    private final Map<String, String> context;
+    protected final byte[] id;
+    protected final ContentFormat contentFormat;
+    protected final String registrationId;
+    protected final Map<String, String> context;
 
     /**
-     * Instantiates an {@link Observation} for the given node path.
-     * 
+     * An abstract constructor for {@link Observation}.
+     *
      * @param id token identifier of the observation
      * @param registrationId client's unique registration identifier.
-     * @param path resource path for which the observation is set.
      * @param contentFormat contentFormat used to read the resource (could be null).
      * @param context additional information relative to this observation.
      */
-    public Observation(byte[] id, String registrationId, LwM2mPath path, ContentFormat contentFormat,
-            Map<String, String> context) {
+    public Observation(byte[] id, String registrationId, ContentFormat contentFormat, Map<String, String> context) {
         this.id = id;
-        this.path = path;
         this.contentFormat = contentFormat;
         this.registrationId = registrationId;
         if (context != null)
@@ -74,15 +70,6 @@ public class Observation {
     }
 
     /**
-     * Gets the observed resource path.
-     * 
-     * @return the resource path
-     */
-    public LwM2mPath getPath() {
-        return path;
-    }
-
-    /**
      * Gets the requested contentFormat (could be null).
      * 
      * @return the resource path
@@ -99,48 +86,20 @@ public class Observation {
     }
 
     @Override
-    public String toString() {
-        return String.format("Observation [id=%s, path=%s, registrationId=%s, contentFormat=%s context=%s]",
-                Hex.encodeHexString(id), path, registrationId, contentFormat, context);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Observation)) return false;
+        Observation that = (Observation) o;
+        return Arrays.equals(id, that.id) &&
+                Objects.equals(contentFormat, that.contentFormat) &&
+                Objects.equals(registrationId, that.registrationId) &&
+                Objects.equals(context, that.context);
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((context == null) ? 0 : context.hashCode());
-        result = prime * result + Arrays.hashCode(id);
-        result = prime * result + ((path == null) ? 0 : path.hashCode());
-        result = prime * result + ((registrationId == null) ? 0 : registrationId.hashCode());
+        int result = Objects.hash(contentFormat, registrationId, context);
+        result = 31 * result + Arrays.hashCode(id);
         return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Observation other = (Observation) obj;
-        if (context == null) {
-            if (other.context != null)
-                return false;
-        } else if (!context.equals(other.context))
-            return false;
-        if (!Arrays.equals(id, other.id))
-            return false;
-        if (path == null) {
-            if (other.path != null)
-                return false;
-        } else if (!path.equals(other.path))
-            return false;
-        if (registrationId == null) {
-            if (other.registrationId != null)
-                return false;
-        } else if (!registrationId.equals(other.registrationId))
-            return false;
-        return true;
     }
 }

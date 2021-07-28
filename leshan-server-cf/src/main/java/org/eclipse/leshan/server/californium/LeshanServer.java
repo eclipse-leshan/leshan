@@ -35,7 +35,7 @@ import org.eclipse.leshan.core.californium.CoapResponseCallback;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
-import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.request.exception.ClientSleepingException;
@@ -315,14 +315,14 @@ public class LeshanServer {
             }
 
             @Override
-            public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
-                    Registration newReg) {
+            public void unregistered(Registration registration, Collection<SingleObservation> observations,
+                    boolean expired, Registration newReg) {
                 requestSender.cancelOngoingRequests(registration);
             }
 
             @Override
             public void registered(Registration registration, Registration previousReg,
-                    Collection<Observation> previousObsersations) {
+                    Collection<SingleObservation> previousObsersations) {
             }
         });
 

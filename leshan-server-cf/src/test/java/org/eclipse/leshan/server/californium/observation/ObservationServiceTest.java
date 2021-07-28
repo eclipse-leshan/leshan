@@ -24,7 +24,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
-import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.server.californium.CaliforniumTestSupport;
@@ -59,7 +59,7 @@ public class ObservationServiceTest {
         givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
 
         // check the presence of only one observation.
-        Set<Observation> observations = observationService.getObservations(support.registration);
+        Set<SingleObservation> observations = observationService.getObservations(support.registration);
         Assert.assertEquals(1, observations.size());
     }
 
@@ -72,7 +72,7 @@ public class ObservationServiceTest {
         givenAnObservation("anotherClient", new LwM2mPath(3, 0, 12));
 
         // check its presence
-        Set<Observation> observations = observationService.getObservations(support.registration);
+        Set<SingleObservation> observations = observationService.getObservations(support.registration);
         Assert.assertEquals(2, observations.size());
 
         // cancel it
@@ -94,7 +94,7 @@ public class ObservationServiceTest {
         givenAnObservation("anotherClient", new LwM2mPath(3, 0, 12));
 
         // check its presence
-        Set<Observation> observations = observationService.getObservations(support.registration);
+        Set<SingleObservation> observations = observationService.getObservations(support.registration);
         Assert.assertEquals(2, observations.size());
 
         // cancel it
@@ -113,10 +113,10 @@ public class ObservationServiceTest {
         givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
         givenAnObservation("anotherClient", new LwM2mPath(3, 0, 12));
 
-        Observation observationToCancel = givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
+        SingleObservation observationToCancel = givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
 
         // check its presence
-        Set<Observation> observations = observationService.getObservations(support.registration);
+        Set<SingleObservation> observations = observationService.getObservations(support.registration);
         Assert.assertEquals(2, observations.size());
 
         // cancel it
@@ -127,7 +127,7 @@ public class ObservationServiceTest {
         Assert.assertEquals(1, observations.size());
     }
 
-    private Observation givenAnObservation(String registrationId, LwM2mPath target) {
+    private SingleObservation givenAnObservation(String registrationId, LwM2mPath target) {
         Registration registration = store.getRegistration(registrationId);
         if (registration == null) {
             registration = givenASimpleClient(registrationId);
@@ -148,7 +148,7 @@ public class ObservationServiceTest {
 
         store.put(coapRequest.getToken(), new org.eclipse.californium.core.observe.Observation(coapRequest, null));
 
-        Observation observation = ObserveUtil.createLwM2mObservation(coapRequest);
+        SingleObservation observation = ObserveUtil.createLwM2mObservation(coapRequest);
         observationService.addObservation(registration, observation);
 
         return observation;
