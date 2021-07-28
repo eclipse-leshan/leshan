@@ -65,6 +65,14 @@ import picocli.CommandLine;
 
 public class LeshanClientDemo {
 
+    static {
+        // Define a default logback.configurationFile
+        String property = System.getProperty("logback.configurationFile");
+        if (property == null) {
+            System.setProperty("logback.configurationFile", "logback-config.xml");
+        }
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(LeshanClientDemo.class);
     // /!\ This field is a COPY of org.eclipse.leshan.server.demo.LeshanServerDemo.modelPaths /!\
     // TODO create a leshan-demo project ?

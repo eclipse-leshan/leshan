@@ -38,8 +38,8 @@ Contributors:
 
         <!-- runtime dependencies -->
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
             <scope>runtime</scope>
         </dependency>
 
@@ -61,9 +61,9 @@ Contributors:
                             <mainClass>org.eclipse.leshan.client.demo.LeshanClientDemo</mainClass>
                         </manifest>
                     </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
+                    <descriptors>
+                        <descriptor>../jar-with-dependencies-with-logback.xml</descriptor>
+                    </descriptors>
                 </configuration>
                 <executions>
                     <execution>
