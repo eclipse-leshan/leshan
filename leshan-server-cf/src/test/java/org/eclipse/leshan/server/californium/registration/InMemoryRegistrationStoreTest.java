@@ -12,18 +12,30 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Michał Wadowski (Orange) - Add Observe-Composite feature.
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.registration;
 
+import static org.junit.Assert.*;
+
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
+import java.util.Map;
 
+import org.eclipse.californium.core.coap.CoAP;
+import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.Token;
 import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.ObserveRequest;
+import org.eclipse.leshan.server.californium.observation.ObserveUtil;
 import org.eclipse.leshan.server.registration.Registration;
-import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
 import org.eclipse.leshan.server.registration.UpdatedRegistration;
 import org.junit.Assert;
@@ -32,19 +44,22 @@ import org.junit.Test;
 
 public class InMemoryRegistrationStoreTest {
 
-    RegistrationStore store;
-    String ep = "urn:endpoint";
+    private final String ep = "urn:endpoint";
+    private final int port = 23452;
+    private final Long lifetime = 10000L;
+    private final String sms = "0171-32423545";
+    private final EnumSet<BindingMode> binding = EnumSet.of(BindingMode.U, BindingMode.Q, BindingMode.S);
+    private final Link[] objectLinks = Link.parse("</3>".getBytes(StandardCharsets.UTF_8));
+    private final String registrationId = "4711";
+    private final Token exampleToken = Token.EMPTY;
+    private final String examplePath = "/1/2/3";
+
+    CaliforniumRegistrationStore store;
     InetAddress address;
-    int port = 23452;
-    Long lifetime = 10000L;
-    String sms = "0171-32423545";
-    EnumSet<BindingMode> binding = EnumSet.of(BindingMode.U, BindingMode.Q, BindingMode.S);
-    Link[] objectLinks = Link.parse("</3>".getBytes(StandardCharsets.UTF_8));
-    String registrationId = "4711";
     Registration registration;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() throws UnknownHostException {
         address = InetAddress.getLocalHost();
         store = new InMemoryRegistrationStore();
     }
@@ -57,16 +72,16 @@ public class InMemoryRegistrationStoreTest {
         RegistrationUpdate update = new RegistrationUpdate(registrationId, Identity.unsecure(address, port), null, null,
                 null, null, null);
         UpdatedRegistration updatedRegistration = store.updateRegistration(update);
-        Assert.assertEquals(lifetime, updatedRegistration.getUpdatedRegistration().getLifeTimeInSec());
+        assertEquals(lifetime, updatedRegistration.getUpdatedRegistration().getLifeTimeInSec());
         Assert.assertSame(binding, updatedRegistration.getUpdatedRegistration().getBindingMode());
-        Assert.assertEquals(sms, updatedRegistration.getUpdatedRegistration().getSmsNumber());
+        assertEquals(sms, updatedRegistration.getUpdatedRegistration().getSmsNumber());
 
-        Assert.assertEquals(registration, updatedRegistration.getPreviousRegistration());
+        assertEquals(registration, updatedRegistration.getPreviousRegistration());
 
         Registration reg = store.getRegistrationByEndpoint(ep);
-        Assert.assertEquals(lifetime, reg.getLifeTimeInSec());
+        assertEquals(lifetime, reg.getLifeTimeInSec());
         Assert.assertSame(binding, reg.getBindingMode());
-        Assert.assertEquals(sms, reg.getSmsNumber());
+        assertEquals(sms, reg.getSmsNumber());
     }
 
     @Test
@@ -89,6 +104,58 @@ public class InMemoryRegistrationStoreTest {
 
         Registration reg = store.getRegistrationByEndpoint(ep);
         Assert.assertTrue(reg.isAlive());
+    }
+
+    @Test
+    public void put_coap_observation_with_valid_request() {
+        // given
+        givenASimpleRegistration(lifetime);
+        store.addRegistration(registration);
+
+        org.eclipse.californium.core.observe.Observation observationToStore = prepareCoapObservation();
+
+        // when
+        store.put(exampleToken, observationToStore);
+
+        // then
+        org.eclipse.californium.core.observe.Observation observationFetched = store.get(exampleToken);
+
+        assertNotNull(observationFetched);
+        assertEquals(observationToStore.toString(), observationFetched.toString());
+    }
+
+    @Test
+    public void get_observation_from_request() {
+        // given
+        givenASimpleRegistration(lifetime);
+        store.addRegistration(registration);
+
+        org.eclipse.californium.core.observe.Observation observationToStore = prepareCoapObservation();
+
+        // when
+        store.put(exampleToken, observationToStore);
+
+        // then
+        Observation leshanObservation = store.getObservation(registrationId, exampleToken.getBytes());
+        assertNotNull(leshanObservation);
+        assertTrue(leshanObservation instanceof SingleObservation);
+        SingleObservation observation = (SingleObservation) leshanObservation;
+        assertEquals(examplePath, observation.getPath().toString());
+    }
+
+    private org.eclipse.californium.core.observe.Observation prepareCoapObservation() {
+        ObserveRequest observeRequest = new ObserveRequest(null, examplePath);
+
+        Map<String, String> userContext = ObserveUtil.createCoapObserveRequestContext(ep, registrationId,
+                observeRequest);
+
+        Request coapRequest = new Request(CoAP.Code.GET);
+        coapRequest.setUserContext(userContext);
+        coapRequest.setToken(exampleToken);
+        coapRequest.setObserve();
+        coapRequest.getOptions().setAccept(ContentFormat.DEFAULT.getCode());
+
+        return new org.eclipse.californium.core.observe.Observation(coapRequest, null);
     }
 
     private void givenASimpleRegistration(Long lifetime) {

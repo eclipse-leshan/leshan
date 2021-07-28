@@ -30,7 +30,7 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
-import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
@@ -44,6 +44,7 @@ import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.request.DownlinkRequestVisitor;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.LwM2mRequest;
+import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -229,7 +230,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request, clientEndpoint);
             if (coapResponse.getOptions().hasObserve()) {
                 // observe request successful
-                Observation observation = ObserveUtil.createLwM2mObservation(coapRequest);
+                SingleObservation observation = ObserveUtil.createLwM2mObservation(coapRequest);
                 // add the observation to an ObserveResponse instance
                 lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null,
                         observation, null, coapResponse);
@@ -277,6 +278,11 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             // handle unexpected response:
             handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
         }
+    }
+
+    @Override
+    public void visit(ObserveCompositeRequest request) {
+        throw new UnsupportedOperationException("Not implemented yet.");
     }
 
     @Override

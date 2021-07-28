@@ -12,16 +12,19 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Michał Wadowski (Orange) - Add Observe-Composite feature.
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.observation;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.server.californium.registration.CaliforniumRegistrationStore;
@@ -40,34 +43,57 @@ public class ObserveUtil {
     /**
      * Create a LWM2M observation from a CoAP request.
      */
-    public static Observation createLwM2mObservation(Request request) {
-        String regId = null;
-        String lwm2mPath = null;
-        Map<String, String> context = null;
+    public static SingleObservation createLwM2mObservation(Request request) {
+        ObserveCommon observeCommon = new ObserveCommon(request);
 
-        for (Entry<String, String> ctx : request.getUserContext().entrySet()) {
-            switch (ctx.getKey()) {
-            case CTX_REGID:
-                regId = ctx.getValue();
-                break;
-            case CTX_LWM2M_PATH:
-                lwm2mPath = ctx.getValue();
-                break;
-            case CTX_ENDPOINT:
-                break;
-            default:
-                if (context == null) {
-                    context = new HashMap<>();
+        if (observeCommon.lwm2mPath.size() != 1) {
+            throw new IllegalStateException(
+                    "1 path is expected in observe request context but was " + observeCommon.lwm2mPath);
+        }
+
+        return new SingleObservation(request.getToken().getBytes(), observeCommon.regId, observeCommon.lwm2mPath.get(0),
+                observeCommon.contentFormat, observeCommon.context);
+    }
+
+    private static class ObserveCommon {
+        String regId;
+        Map<String, String> context;
+        List<LwM2mPath> lwm2mPath;
+        ContentFormat contentFormat;
+
+        public ObserveCommon(Request request) {
+            if (request.getUserContext() == null) {
+                throw new IllegalStateException("missing request context");
+            }
+
+            lwm2mPath = new ArrayList<>();
+            context = new HashMap<>();
+
+            for (Entry<String, String> ctx : request.getUserContext().entrySet()) {
+                switch (ctx.getKey()) {
+                case CTX_REGID:
+                    regId = ctx.getValue();
+                    break;
+                case CTX_LWM2M_PATH:
+                    for (String path : ctx.getValue().split("\n")) {
+                        lwm2mPath.add(new LwM2mPath(path));
+                    }
+                    break;
+                case CTX_ENDPOINT:
+                    break;
+                default:
+                    context.put(ctx.getKey(), ctx.getValue());
                 }
-                context.put(ctx.getKey(), ctx.getValue());
+            }
+
+            if (lwm2mPath.size() == 0) {
+                throw new IllegalStateException("missing path in request context");
+            }
+
+            if (request.getOptions().hasAccept()) {
+                contentFormat = ContentFormat.fromCode(request.getOptions().getAccept());
             }
         }
-
-        ContentFormat contentFormat = null;
-        if (request.getOptions().hasAccept()) {
-            contentFormat = ContentFormat.fromCode(request.getOptions().getAccept());
-        }
-        return new Observation(request.getToken().getBytes(), regId, new LwM2mPath(lwm2mPath), contentFormat, context);
     }
 
     /**

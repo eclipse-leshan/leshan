@@ -33,7 +33,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
-import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -178,7 +178,7 @@ public class WriteCompositeTest {
         assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
 
         // an observation response should have been sent
-        Observation observation = observeResponse.getObservation();
+        SingleObservation observation = observeResponse.getObservation();
         assertEquals("/3/0", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
 
@@ -194,11 +194,11 @@ public class WriteCompositeTest {
         listener.waitForNotification(1000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
         assertTrue(listener.receivedNotify().get());
-        assertTrue(listener.getResponse().getContent() instanceof LwM2mObjectInstance);
-        assertNotNull(listener.getResponse().getCoapResponse());
-        assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
+        assertTrue(listener.getObserveResponse().getContent() instanceof LwM2mObjectInstance);
+        assertNotNull(listener.getObserveResponse().getCoapResponse());
+        assertThat(listener.getObserveResponse().getCoapResponse(), is(instanceOf(Response.class)));
 
-        LwM2mObjectInstance instance = (LwM2mObjectInstance) listener.getResponse().getContent();
+        LwM2mObjectInstance instance = (LwM2mObjectInstance) listener.getObserveResponse().getContent();
         assertEquals("+11", instance.getResource(14).getValue());
         assertEquals("Moon", instance.getResource(15).getValue());
 

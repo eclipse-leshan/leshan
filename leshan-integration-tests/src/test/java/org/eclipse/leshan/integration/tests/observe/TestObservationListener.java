@@ -5,7 +5,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.SingleObservation;
+import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.observation.ObservationListener;
 import org.eclipse.leshan.server.registration.Registration;
@@ -15,13 +18,24 @@ public class TestObservationListener implements ObservationListener {
     private CountDownLatch latch = new CountDownLatch(1);
     private final AtomicBoolean receivedNotify = new AtomicBoolean();
     private AtomicInteger counter = new AtomicInteger(0);
-    private ObserveResponse response;
+    private ObserveResponse observeResponse;
+    private ObserveCompositeResponse observeCompositeResponse;
     private Exception error;
 
     @Override
-    public void onResponse(Observation observation, Registration registration, ObserveResponse response) {
+    public void onResponse(SingleObservation observation, Registration registration, ObserveResponse response) {
         receivedNotify.set(true);
-        this.response = response;
+        this.observeResponse = response;
+        this.error = null;
+        this.counter.incrementAndGet();
+        latch.countDown();
+    }
+
+    @Override
+    public void onResponse(CompositeObservation observation, Registration registration,
+            ObserveCompositeResponse response) {
+        receivedNotify.set(true);
+        this.observeCompositeResponse = response;
         this.error = null;
         this.counter.incrementAndGet();
         latch.countDown();
@@ -30,7 +44,8 @@ public class TestObservationListener implements ObservationListener {
     @Override
     public void onError(Observation observation, Registration registration, Exception error) {
         receivedNotify.set(true);
-        this.response = null;
+        this.observeResponse = null;
+        this.observeCompositeResponse = null;
         this.error = error;
         latch.countDown();
     }
@@ -48,8 +63,12 @@ public class TestObservationListener implements ObservationListener {
         return receivedNotify;
     }
 
-    public ObserveResponse getResponse() {
-        return response;
+    public ObserveResponse getObserveResponse() {
+        return observeResponse;
+    }
+
+    public ObserveCompositeResponse getObserveCompositeResponse() {
+        return observeCompositeResponse;
     }
 
     public Exception getError() {
@@ -67,7 +86,8 @@ public class TestObservationListener implements ObservationListener {
     public void reset() {
         latch = new CountDownLatch(1);
         receivedNotify.set(false);
-        response = null;
+        this.observeResponse = null;
+        this.observeCompositeResponse = null;
         error = null;
         this.counter = new AtomicInteger(0);
     }

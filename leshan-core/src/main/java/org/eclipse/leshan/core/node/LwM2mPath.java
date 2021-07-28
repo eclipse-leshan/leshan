@@ -15,6 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.leshan.core.util.Validate;
 
 /**
@@ -421,5 +424,22 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
         String path = fullpath.substring(lwm2mRootpath.length());
 
         return new LwM2mPath(path);
+    }
+
+    /**
+     * Create list of LwM2mPath from list of paths
+     *
+     * @param paths list of paths as {@link String}.
+     * @return list of paths as {@link LwM2mPath}.
+     *
+     * @exception LwM2mNodeException if path is invalid (e.g. too big number in path)
+     * @exception IllegalArgumentException if path length is invalid or if path contains not Numeric value
+     */
+    public static List<LwM2mPath> getLwM2mPathList(List<String> paths) {
+        List<LwM2mPath> res = new ArrayList<>(paths.size());
+        for (String path : paths) {
+            res.add(new LwM2mPath(path));
+        }
+        return res;
     }
 }

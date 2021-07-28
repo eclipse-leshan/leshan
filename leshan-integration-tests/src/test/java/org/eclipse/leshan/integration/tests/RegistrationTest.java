@@ -40,6 +40,7 @@ import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -220,7 +221,7 @@ public class RegistrationTest {
         Registration currentRegistration = helper.getCurrentRegistration();
         Set<Observation> observations = helper.server.getObservationService().getObservations(currentRegistration);
         assertEquals(1, observations.size());
-        Observation obs = observations.iterator().next();
+        SingleObservation obs = (SingleObservation) observations.iterator().next();
         assertEquals(currentRegistration.getId(), obs.getRegistrationId());
         assertEquals(new LwM2mPath(3, 0), obs.getPath());
 

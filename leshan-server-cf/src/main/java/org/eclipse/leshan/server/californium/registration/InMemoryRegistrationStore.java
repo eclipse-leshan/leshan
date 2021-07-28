@@ -21,6 +21,7 @@
  *                                                     EndpointContext
  *     Achim Kraus (Bosch Software Innovations GmbH) - update to modified 
  *                                                     ObservationStore API
+ *     Michał Wadowski (Orange)                      - Add Observe-Composite feature.
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.registration;
 
@@ -50,6 +51,7 @@ import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.eclipse.leshan.server.californium.observation.ObserveUtil;
@@ -248,7 +250,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
             lock.writeLock().lock();
             // cancel existing observations for the same path and registration id.
             for (Observation obs : unsafeGetObservations(registrationId)) {
-                if (observation.getPath().equals(obs.getPath()) && !Arrays.equals(observation.getId(), obs.getId())) {
+                if (areTheSamePaths(observation, obs) && !Arrays.equals(observation.getId(), obs.getId())) {
                     unsafeRemoveObservation(new Token(obs.getId()));
                     removed.add(obs);
                 }
@@ -258,6 +260,13 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         }
 
         return removed;
+    }
+
+    private boolean areTheSamePaths(Observation observation, Observation obs) {
+        if (observation instanceof SingleObservation && obs instanceof SingleObservation) {
+            return ((SingleObservation) observation).getPath().equals(((SingleObservation) obs).getPath());
+        }
+        return false;
     }
 
     @Override

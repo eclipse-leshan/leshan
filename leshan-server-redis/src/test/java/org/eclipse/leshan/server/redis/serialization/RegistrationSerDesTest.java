@@ -31,7 +31,7 @@ import org.junit.Test;
 public class RegistrationSerDesTest {
 
     @Test
-    public void ser_and_des_are_equals() throws Exception {
+    public void ser_and_des_are_equals() {
         Link[] objs = new Link[2];
         Map<String, Object> att = new HashMap<>();
         att.put("ts", 12);
@@ -55,7 +55,7 @@ public class RegistrationSerDesTest {
     }
 
     @Test
-    public void ser_and_des_are_equals_with_app_data() throws Exception {
+    public void ser_and_des_are_equals_with_app_data() {
         Link[] objs = new Link[2];
         Map<String, Object> att = new HashMap<>();
         att.put("ts", 12);
