@@ -15,6 +15,7 @@
  *     Achim Kraus (Bosch Software Innovations GmbH) - use Identity as destination
  *                                                     and transform them to 
  *                                                     EndpointContext for requests
+ *     Michał Wadowski (Orange)                      - Add Observe-Composite feature.
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.request;
 
@@ -195,7 +196,21 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
 
     @Override
     public void visit(ObserveCompositeRequest request) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        coapRequest = Request.newFetch();
+
+        coapRequest.getOptions().setContentFormat(request.getRequestContentFormat().getCode());
+
+        coapRequest.setPayload(encoder.encodePaths(request.getPaths(), request.getRequestContentFormat()));
+
+        if (request.getResponseContentFormat() != null) {
+            coapRequest.getOptions().setAccept(request.getResponseContentFormat().getCode());
+        }
+
+        coapRequest.setObserve();
+        setTarget(coapRequest, LwM2mPath.ROOTPATH);
+
+        coapRequest.setUserContext(ObserveUtil.createCoapObserveCompositeRequestContext(endpoint, registrationId, request));
+        applyLowerLayerConfig(coapRequest);
     }
 
     @Override

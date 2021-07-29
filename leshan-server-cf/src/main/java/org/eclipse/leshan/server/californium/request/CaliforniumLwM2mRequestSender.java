@@ -19,12 +19,14 @@ package org.eclipse.leshan.server.californium.request;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.californium.CoapResponseCallback;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
@@ -34,10 +36,10 @@ import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.request.exception.UnconnectedPeerException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.util.Validate;
-import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.server.californium.observation.ObservationServiceImpl;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.registration.Registration;
@@ -107,8 +109,16 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
                 destination.canInitiateConnection());
 
         // Handle special observe case
-        if (response != null && response.getClass() == ObserveResponse.class && response.isSuccess()) {
-            observationService.addObservation(destination, ((ObserveResponse) response).getObservation());
+        if (response != null && response.isSuccess()) {
+            Observation observation = null;
+            if (response instanceof ObserveResponse) {
+                observation = ((ObserveResponse) response).getObservation();
+            } else if (response instanceof ObserveCompositeResponse) {
+                observation = ((ObserveCompositeResponse) response).getObservation();
+            }
+            if (observation != null) {
+                observationService.addObservation(destination, observation);
+            }
         }
         return response;
     }

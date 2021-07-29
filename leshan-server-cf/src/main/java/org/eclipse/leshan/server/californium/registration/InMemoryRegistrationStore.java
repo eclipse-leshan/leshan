@@ -43,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.observe.ObservationStoreException;
 import org.eclipse.californium.core.observe.ObservationUtil;
@@ -50,6 +51,7 @@ import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
+import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.Identity;
@@ -266,6 +268,9 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         if (observation instanceof SingleObservation && obs instanceof SingleObservation) {
             return ((SingleObservation) observation).getPath().equals(((SingleObservation) obs).getPath());
         }
+        if (observation instanceof CompositeObservation && obs instanceof CompositeObservation) {
+            return ((CompositeObservation) observation).getPaths().equals(((CompositeObservation) obs).getPaths());
+        }
         return false;
     }
 
@@ -455,7 +460,13 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         if (cfObs == null)
             return null;
 
-        return ObserveUtil.createLwM2mObservation(cfObs.getRequest());
+        if (cfObs.getRequest().getCode() == CoAP.Code.GET) {
+            return ObserveUtil.createLwM2mObservation(cfObs.getRequest());
+        } else if (cfObs.getRequest().getCode() == CoAP.Code.FETCH) {
+            return ObserveUtil.createLwM2mCompositeObservation(cfObs.getRequest());
+        } else {
+            throw new IllegalStateException("Observation request can be GET or FETCH only");
+        }
     }
 
     private String validateObservation(org.eclipse.californium.core.observe.Observation observation)

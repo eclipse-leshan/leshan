@@ -21,18 +21,23 @@ import static org.junit.Assert.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Token;
 import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.server.californium.observation.ObserveUtil;
 import org.eclipse.leshan.server.registration.Registration;
@@ -53,6 +58,7 @@ public class InMemoryRegistrationStoreTest {
     private final String registrationId = "4711";
     private final Token exampleToken = Token.EMPTY;
     private final String examplePath = "/1/2/3";
+    private final List<LwM2mPath> examplePaths = Arrays.asList(new LwM2mPath("/1/2/3"), new LwM2mPath("/4/5/6"));
 
     CaliforniumRegistrationStore store;
     InetAddress address;
@@ -143,6 +149,25 @@ public class InMemoryRegistrationStoreTest {
         assertEquals(examplePath, observation.getPath().toString());
     }
 
+    @Test
+    public void get_composite_observation_from_request() {
+        // given
+        givenASimpleRegistration(lifetime);
+        store.addRegistration(registration);
+
+        org.eclipse.californium.core.observe.Observation observationToStore = prepareCoapCompositeObservation();
+
+        // when
+        store.put(exampleToken, observationToStore);
+
+        // then
+        Observation leshanObservation = store.getObservation(registrationId, exampleToken.getBytes());
+        assertNotNull(leshanObservation);
+        assertTrue(leshanObservation instanceof CompositeObservation);
+        CompositeObservation observation = (CompositeObservation) leshanObservation;
+        assertEquals(examplePaths, observation.getPaths());
+    }
+
     private org.eclipse.californium.core.observe.Observation prepareCoapObservation() {
         ObserveRequest observeRequest = new ObserveRequest(null, examplePath);
 
@@ -150,6 +175,21 @@ public class InMemoryRegistrationStoreTest {
                 observeRequest);
 
         Request coapRequest = new Request(CoAP.Code.GET);
+        coapRequest.setUserContext(userContext);
+        coapRequest.setToken(exampleToken);
+        coapRequest.setObserve();
+        coapRequest.getOptions().setAccept(ContentFormat.DEFAULT.getCode());
+
+        return new org.eclipse.californium.core.observe.Observation(coapRequest, null);
+    }
+
+    private org.eclipse.californium.core.observe.Observation prepareCoapCompositeObservation() {
+        ObserveCompositeRequest observeRequest = new ObserveCompositeRequest(null, null, examplePaths);
+
+        Map<String, String> userContext = ObserveUtil.createCoapObserveCompositeRequestContext(ep, registrationId,
+                observeRequest);
+
+        Request coapRequest = new Request(CoAP.Code.FETCH);
         coapRequest.setUserContext(userContext);
         coapRequest.setToken(exampleToken);
         coapRequest.setObserve();

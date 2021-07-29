@@ -16,7 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.observation;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -33,7 +33,9 @@ import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
+import org.eclipse.leshan.core.response.AbstractLwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.californium.CaliforniumTestSupport;
@@ -93,7 +95,7 @@ public class ObservationServiceTest {
 
         // check its absence
         observations = observationService.getObservations(support.registration);
-        Assert.assertTrue(observations.isEmpty());
+        assertTrue(observations.isEmpty());
     }
 
     @Test
@@ -163,6 +165,32 @@ public class ObservationServiceTest {
         // then
         assertNotNull(listener.observeResponse);
         assertNotNull(listener.observation);
+        assertTrue(listener.observeResponse instanceof ObserveResponse);
+        assertTrue(listener.observation instanceof SingleObservation);
+    }
+
+    @Test
+    public void on_notification_composite_observe_response() {
+        // given
+        createDummyDecoderObservationService();
+
+        givenAnCompositeObservation(support.registration.getId(), new LwM2mPath("/1/2/3"));
+
+        Response coapResponse = new Response(CoAP.ResponseCode.CONTENT);
+        coapResponse.setToken(coapRequest.getToken());
+
+        CatchResponseObservationListener listener = new CatchResponseObservationListener();
+
+        observationService.addListener(listener);
+
+        // when
+        observationService.onNotification(coapRequest, coapResponse);
+
+        // then
+        assertNotNull(listener.observeResponse);
+        assertNotNull(listener.observation);
+        assertTrue(listener.observeResponse instanceof ObserveCompositeResponse);
+        assertTrue(listener.observation instanceof CompositeObservation);
     }
 
     private void createDummyDecoderObservationService() {
@@ -200,6 +228,29 @@ public class ObservationServiceTest {
         return observation;
     }
 
+    private Observation givenAnCompositeObservation(String registrationId, LwM2mPath target) {
+        Registration registration = store.getRegistration(registrationId);
+        if (registration == null) {
+            registration = givenASimpleClient(registrationId);
+            store.addRegistration(registration);
+        }
+
+        coapRequest = Request.newFetch();
+        coapRequest.setToken(CaliforniumTestSupport.createToken());
+        coapRequest.setObserve();
+        coapRequest
+                .setDestinationContext(EndpointContextUtil.extractContext(support.registration.getIdentity(), false));
+        Map<String, String> context = ObserveUtil.createCoapObserveCompositeRequestContext(registration.getEndpoint(),
+                registrationId, new ObserveCompositeRequest(null, null, target.toString()));
+        coapRequest.setUserContext(context);
+
+        store.put(coapRequest.getToken(), new org.eclipse.californium.core.observe.Observation(coapRequest, null));
+
+        CompositeObservation observation = ObserveUtil.createLwM2mCompositeObservation(coapRequest);
+
+        return observation;
+    }
+
     private Registration givenASimpleClient(String registrationId) {
         Registration.Builder builder;
         try {
@@ -213,8 +264,8 @@ public class ObservationServiceTest {
 
     private static class CatchResponseObservationListener implements ObservationListener {
 
-        ObserveResponse observeResponse;
-        SingleObservation observation;
+        AbstractLwM2mResponse observeResponse;
+        Observation observation;
 
         @Override
         public void newObservation(Observation observation, Registration registration) {
@@ -235,6 +286,8 @@ public class ObservationServiceTest {
         @Override
         public void onResponse(CompositeObservation observation, Registration registration,
                 ObserveCompositeResponse response) {
+            this.observeResponse = response;
+            this.observation = observation;
         }
 
         @Override
