@@ -21,7 +21,9 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.californium.core.coap.CoAP;
@@ -29,11 +31,14 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.integration.tests.util.RedisIntegrationTestHelper;
 import org.eclipse.leshan.server.californium.observation.ObserveUtil;
@@ -95,6 +100,29 @@ public class RedisRegistrationStoreTest {
         assertEquals(examplePath, observation.getPath().toString());
     }
 
+    @Test
+    public void get_composite_observation_from_request() {
+        // given
+        List<LwM2mPath> examplePaths = Arrays.asList(new LwM2mPath("/1/2/3"), new LwM2mPath("/4/5/6"));
+        Token exampleToken = Token.EMPTY;
+
+        givenASimpleRegistration(lifetime);
+        store.addRegistration(registration);
+
+        org.eclipse.californium.core.observe.Observation observationToStore = prepareCoapObservationOnComposite(
+                examplePaths);
+
+        // when
+        store.put(exampleToken, observationToStore);
+
+        // then
+        Observation leshanObservation = store.getObservation(registrationId, exampleToken.getBytes());
+        assertNotNull(leshanObservation);
+        assertTrue(leshanObservation instanceof CompositeObservation);
+        CompositeObservation observation = (CompositeObservation) leshanObservation;
+        assertEquals(examplePaths, observation.getPaths());
+    }
+
     private void givenASimpleRegistration(Long lifetime) {
         Registration.Builder builder = new Registration.Builder(registrationId, ep, Identity.unsecure(address, port));
 
@@ -109,6 +137,15 @@ public class RedisRegistrationStoreTest {
                 observeRequest);
 
         return prepareCoapObservation(new Request(CoAP.Code.GET), userContext);
+    }
+
+    private org.eclipse.californium.core.observe.Observation prepareCoapObservationOnComposite(List<LwM2mPath> paths) {
+        ObserveCompositeRequest observeRequest = new ObserveCompositeRequest(null, null, paths);
+
+        Map<String, String> userContext = ObserveUtil.createCoapObserveCompositeRequestContext(ep, registrationId,
+                observeRequest);
+
+        return prepareCoapObservation(new Request(CoAP.Code.FETCH), userContext);
     }
 
     private org.eclipse.californium.core.observe.Observation prepareCoapObservation(Request coapRequest,
