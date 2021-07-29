@@ -19,6 +19,7 @@ package org.eclipse.leshan.server.demo.servlet;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -28,9 +29,12 @@ import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.jetty.servlets.EventSource;
 import org.eclipse.jetty.servlets.EventSourceServlet;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.response.AbstractLwM2mResponse;
+import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.californium.LeshanServer;
 import org.eclipse.leshan.server.demo.servlet.json.LwM2mNodeSerializer;
@@ -140,6 +144,10 @@ public class EventServlet extends EventSourceServlet {
                 LwM2mNode content = ((ObserveResponse) response).getContent();
                 stringContent = content.toString();
                 jsonContent = gson.toJson(content);
+            } else if (response instanceof ObserveCompositeResponse) {
+                Map<LwM2mPath, LwM2mNode> content = ((ObserveCompositeResponse) response).getContent();
+                stringContent = content.toString();
+                jsonContent = gson.toJson(content);
             }
 
             if (LOG.isDebugEnabled()) {
@@ -175,6 +183,8 @@ public class EventServlet extends EventSourceServlet {
         String path = null;
         if (observation instanceof SingleObservation) {
             path = ((SingleObservation) observation).getPath().toString();
+        } else if (observation instanceof CompositeObservation) {
+            path = ((CompositeObservation) observation).getPaths().toString();
         }
         return path;
     }

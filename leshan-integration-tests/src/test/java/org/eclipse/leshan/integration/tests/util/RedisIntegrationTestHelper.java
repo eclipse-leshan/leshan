@@ -41,15 +41,19 @@ public class RedisIntegrationTestHelper extends IntegrationTestHelper {
         builder.setSecurityStore(new InMemorySecurityStore());
 
         // Create redis store
-        String redisURI = System.getenv("REDIS_URI");
-        if (redisURI == null)
-            redisURI = "";
-        Pool<Jedis> jedis = new JedisPool(redisURI);
+        Pool<Jedis> jedis = createJedisPool();
         builder.setRegistrationStore(new RedisRegistrationStore(jedis));
 
         // Build server !
         server = builder.build();
         // monitor client registration
         setupServerMonitoring();
+    }
+
+    public Pool<Jedis> createJedisPool() {
+        String redisURI = System.getenv("REDIS_URI");
+        if (redisURI == null)
+            redisURI = "";
+        return new JedisPool(redisURI);
     }
 }
