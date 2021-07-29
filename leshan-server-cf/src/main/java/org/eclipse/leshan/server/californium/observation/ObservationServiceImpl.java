@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -35,6 +36,7 @@ import org.eclipse.californium.core.observe.ObservationStore;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
@@ -335,9 +337,20 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
                     return new ObserveResponse(responseCode, null, timestampedNodes, singleObservation, null,
                             coapResponse);
                 }
+            } else if (observation instanceof CompositeObservation) {
+
+                CompositeObservation compositeObservation = (CompositeObservation) observation;
+
+                Map<LwM2mPath, LwM2mNode> nodes = decoder.decodeNodes(coapResponse.getPayload(), contentFormat,
+                        compositeObservation.getPaths(), model);
+
+                return new ObserveCompositeResponse(responseCode, nodes, null, coapResponse, compositeObservation);
             }
 
-            return null;
+            throw new IllegalStateException(
+                    "observation must be a CompositeObservation or a SingleObservation but was " + observation == null
+                            ? null
+                            : observation.getClass().getSimpleName());
         } catch (CodecException e) {
             if (LOG.isDebugEnabled()) {
                 byte[] payload = coapResponse.getPayload() == null ? new byte[0] : coapResponse.getPayload();
