@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Michał Wadowski (Orange) - Add Observe-Composite feature.
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.leshan.client.resource.listener.ObjectsListener;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -31,11 +33,14 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.request.ObserveCompositeRequest;
+import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteCompositeRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
+import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ReadCompositeResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteCompositeResponse;
@@ -54,6 +59,16 @@ public class RootEnabler implements LwM2mRootEnabler {
 
     public RootEnabler(final LwM2mObjectTree tree) {
         this.tree = tree;
+    }
+
+    @Override
+    public void addListener(ObjectsListener listener) {
+        tree.addListener(listener);
+    }
+
+    @Override
+    public void removeListener(ObjectsListener listener) {
+        tree.removeListener(listener);
     }
 
     @Override
@@ -191,6 +206,46 @@ public class RootEnabler implements LwM2mRootEnabler {
         }
         return WriteCompositeResponse.success();
 
+    }
+
+    @Override
+    public synchronized ObserveCompositeResponse observe(ServerIdentity identity, ObserveCompositeRequest request) {
+        List<LwM2mPath> paths = request.getPaths();
+
+        // Read Nodes
+        Map<LwM2mPath, LwM2mNode> content = new HashMap<>();
+        boolean isEmpty = true; // true if don't succeed to read any of requested path
+        for (LwM2mPath path : paths) {
+            // Get corresponding object enabler
+            Integer objectId = path.getObjectId();
+            LwM2mObjectEnabler objectEnabler = tree.getObjectEnabler(objectId);
+
+            LwM2mNode node = null;
+            if (objectEnabler != null) {
+                ReadResponse response = objectEnabler.observe(identity,
+                        new ObserveRequest(request.getResponseContentFormat(), path, request.getCoapRequest())
+                );
+                if (response.isSuccess()) {
+                    node = response.getContent();
+                    isEmpty = false;
+                } else {
+                    LOG.debug("Server {} try to read node {} in a Observe-Composite Request {} but it failed for {} " +
+                            "{}", identity, path, paths, response.getCode(), response.getErrorMessage()
+                    );
+                }
+            } else {
+                LOG.debug("Server {} try to read node {} in a Observe-Composite Request {} but it failed because " +
+                        "Object {} is not supported", identity, path, paths, objectId
+                );
+            }
+
+            content.put(path, node);
+        }
+        if (isEmpty) {
+            return ObserveCompositeResponse.notFound();
+        } else {
+            return ObserveCompositeResponse.success(content);
+        }
     }
 
     @Override

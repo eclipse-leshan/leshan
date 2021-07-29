@@ -13,6 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity
+ *     Michał Wadowski (Orange) - Add Observe-Composite feature.
  *******************************************************************************/
 package org.eclipse.leshan.client.californium;
 
@@ -30,6 +31,7 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.resource.LwM2mRootEnabler;
+import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -39,10 +41,12 @@ import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
 import org.eclipse.leshan.core.request.WriteCompositeRequest;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
+import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ReadCompositeResponse;
 import org.eclipse.leshan.core.response.WriteCompositeResponse;
 import org.eclipse.leshan.core.util.StringUtils;
@@ -64,10 +68,13 @@ public class RootResource extends LwM2mClientCoapResource {
         super("", registrationEngine, endpointsManager);
         this.bootstrapHandler = bootstrapHandler;
         setVisible(false);
+        setObservable(true);
         this.coapServer = coapServer;
         this.rootEnabler = rootEnabler;
         this.encoder = encoder;
         this.decoder = decoder;
+
+        addListeners();
     }
 
     @Override
@@ -97,7 +104,6 @@ public class RootResource extends LwM2mClientCoapResource {
         if (identity == null)
             return;
 
-        // Manage Read Composite request
         Request coapRequest = exchange.advanced().getRequest();
 
         // Handle content format for the response
@@ -119,18 +125,36 @@ public class RootResource extends LwM2mClientCoapResource {
         ContentFormat requestContentFormat = ContentFormat.fromCode(exchange.getRequestOptions().getContentFormat());
         List<LwM2mPath> paths = decoder.decodePaths(coapRequest.getPayload(), requestContentFormat);
 
-        ReadCompositeResponse response = rootEnabler.read(identity,
-                new ReadCompositeRequest(paths, requestContentFormat, responseContentFormat, coapRequest));
-        if (response.getCode().isError()) {
-            exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+        if (exchange.getRequestOptions().hasObserve()) {
+            // Manage Observe Composite request
+            ObserveCompositeRequest observeRequest = new ObserveCompositeRequest(requestContentFormat,
+                    responseContentFormat, paths, coapRequest);
+            ObserveCompositeResponse response = rootEnabler.observe(identity, observeRequest);
+
+            if (response.getCode().isError()) {
+                exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+                return;
+            } else {
+                exchange.respond(toCoapResponseCode(response.getCode()),
+                        encoder.encodeNodes(response.getContent(), responseContentFormat, rootEnabler.getModel()),
+                        responseContentFormat.getCode());
+                return;
+            }
         } else {
-            // TODO we could maybe face some race condition if an objectEnabler is removed from LwM2mObjectTree between
-            // rootEnabler.read() and rootEnabler.getModel()
-            exchange.respond(toCoapResponseCode(response.getCode()),
-                    encoder.encodeNodes(response.getContent(), responseContentFormat, rootEnabler.getModel()),
-                    responseContentFormat.getCode());
+            // Manage Read Composite request
+            ReadCompositeResponse response = rootEnabler.read(identity,
+                    new ReadCompositeRequest(paths, requestContentFormat, responseContentFormat, coapRequest));
+            if (response.getCode().isError()) {
+                exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+            } else {
+                // TODO we could maybe face some race condition if an objectEnabler is removed from LwM2mObjectTree
+                // between rootEnabler.read() and rootEnabler.getModel()
+                exchange.respond(toCoapResponseCode(response.getCode()),
+                        encoder.encodeNodes(response.getContent(), responseContentFormat, rootEnabler.getModel()),
+                        responseContentFormat.getCode());
+            }
+            return;
         }
-        return;
     }
 
     @Override
@@ -180,4 +204,13 @@ public class RootResource extends LwM2mClientCoapResource {
         exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
     }
 
+    private void addListeners() {
+        rootEnabler.addListener(new ObjectsListenerAdapter() {
+
+            @Override
+            public void resourceChanged(LwM2mPath... paths) {
+                changed(new ObserveCompositeRelationFilter(decoder, paths));
+            }
+        });
+    }
 }

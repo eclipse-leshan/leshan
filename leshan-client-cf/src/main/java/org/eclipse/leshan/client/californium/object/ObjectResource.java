@@ -16,6 +16,7 @@
  *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity
  *     Achim Kraus (Bosch Software Innovations GmbH) - implement POST "/oid/iid" 
  *                                                     as UPDATE instance
+ *     Michał Wadowski (Orange)                      - Add Observe-Composite feature.
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.object;
 
@@ -153,9 +154,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                     exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                     return;
                 }
-            }
-
-            else {
+            } else {
                 if (identity.isLwm2mBootstrapServer()) {
                     // Manage Bootstrap Read Request
                     BootstrapReadRequest readRequest = new BootstrapReadRequest(requestedContentFormat, URI,
