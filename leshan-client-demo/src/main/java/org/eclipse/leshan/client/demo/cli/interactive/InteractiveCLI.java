@@ -16,53 +16,72 @@
 package org.eclipse.leshan.client.demo.cli.interactive;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.function.Supplier;
 
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.core.model.LwM2mModel;
+import org.jline.console.impl.SystemRegistryImpl;
+import org.jline.keymap.KeyMap;
+import org.jline.reader.Binding;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.MaskingCallback;
+import org.jline.reader.Parser;
+import org.jline.reader.Reference;
+import org.jline.reader.UserInterruptException;
+import org.jline.reader.impl.DefaultParser;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+import org.jline.widget.TailTipWidgets;
 import org.slf4j.LoggerFactory;
 
-import ch.qos.logback.classic.Logger;
 import ch.qos.logback.core.Appender;
-import jline.TerminalFactory;
-import jline.TerminalFactory.Type;
-import jline.console.ConsoleReader;
-import jline.console.completer.ArgumentCompleter.ArgumentList;
-import jline.console.completer.ArgumentCompleter.WhitespaceArgumentDelimiter;
-import jline.internal.Configuration;
 import picocli.CommandLine;
-import picocli.CommandLine.Help;
-import picocli.shell.jline2.PicocliJLineCompleter;
+import picocli.shell.jline3.PicocliCommands;
+import picocli.shell.jline3.PicocliCommands.PicocliCommandsFactory;
 
 public class InteractiveCLI {
 
-    private ConsoleReader console;
     private CommandLine commandLine;
+    private LineReader reader;
+    private SystemRegistryImpl systemRegistry;
+    private String prompt;
 
     public InteractiveCLI(LeshanClient client, LwM2mModel model) throws IOException {
+        Supplier<Path> workDir = () -> Paths.get(System.getProperty("user.dir"));
+        // set up picocli commands
+        InteractiveCommands commands = new InteractiveCommands(client, model);
+        PicocliCommandsFactory factory = new PicocliCommandsFactory();
+        commandLine = new CommandLine(commands, factory);
+        PicocliCommands picocliCommands = new PicocliCommands(commandLine);
 
-        // JLine 2 does not detect some terminal as not ANSI compatible, like Eclipse Console
-        // see : https://github.com/jline/jline2/issues/185
-        // So use picocli heuristic instead :
-        if (!Help.Ansi.AUTO.enabled() && //
-                Configuration.getString(TerminalFactory.JLINE_TERMINAL, TerminalFactory.AUTO).toLowerCase()
-                        .equals(TerminalFactory.AUTO)) {
-            TerminalFactory.configure(Type.NONE);
-        }
+        Parser parser = new DefaultParser();
+        try (Terminal terminal = TerminalBuilder.builder().dumb(true).build()) {
+            systemRegistry = new SystemRegistryImpl(parser, terminal, workDir, null);
+            systemRegistry.setCommandRegistries(picocliCommands);
+            systemRegistry.register("help", picocliCommands);
 
-        // Create Interactive Shell
-        console = new ConsoleReader();
-        console.setPrompt("");
+            reader = LineReaderBuilder.builder().terminal(terminal).completer(systemRegistry.completer()).parser(parser)
+                    .variable(LineReader.LIST_MAX, 50) // max tab completion candidates
+                    .build();
+            factory.setTerminal(terminal);
+            TailTipWidgets widgets = new TailTipWidgets(reader, systemRegistry::commandDescription, 5,
+                    TailTipWidgets.TipType.COMPLETER);
+            widgets.enable();
+            KeyMap<Binding> keyMap = reader.getKeyMaps().get("main");
+            keyMap.bind(new Reference("tailtip-toggle"), KeyMap.alt("s"));
 
-        // set up the completion
-        InteractiveCommands commands = new InteractiveCommands(console, client, model);
-        commandLine = new CommandLine(commands);
-        console.addCompleter(new PicocliJLineCompleter(commandLine.getCommandSpec()));
+            prompt = "prompt> ";
 
-        // Configure Terminal appender if it is present.
-        Appender<?> appender = ((Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME))
-                .getAppender("TERMINAL");
-        if (appender instanceof TerminalAppender<?>) {
-            ((TerminalAppender<?>) appender).setConsole(console);
+            // Configure Terminal appender if it is present.
+            Appender<?> appender = ((ch.qos.logback.classic.Logger) LoggerFactory
+                    .getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME)).getAppender("TERMINAL");
+            if (appender instanceof TerminalAppender<?>) {
+                ((TerminalAppender<?>) appender).setReader(reader);
+            }
         }
     }
 
@@ -71,13 +90,20 @@ public class InteractiveCLI {
     }
 
     public void start() throws IOException {
-
-        // start the shell and process input until the user quits with Ctl-D
+        // start the shell and process input until the user quits with Ctrl-D
         String line;
-        while ((line = console.readLine()) != null) {
-            ArgumentList list = new WhitespaceArgumentDelimiter().delimit(line, line.length());
-            commandLine.execute(list.getArguments());
-            console.killLine();
+        while (true) {
+            try {
+                systemRegistry.cleanUp();
+                line = reader.readLine(prompt, null, (MaskingCallback) null, null);
+                systemRegistry.execute(line);
+            } catch (UserInterruptException e) {
+                // Ignore
+            } catch (EndOfFileException e) {
+                return;
+            } catch (Exception e) {
+                systemRegistry.trace(e);
+            }
         }
     }
 }
