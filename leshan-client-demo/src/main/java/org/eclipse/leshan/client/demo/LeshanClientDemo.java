@@ -24,7 +24,6 @@ import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.elements.Connector;
@@ -45,6 +44,7 @@ import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.demo.cli.ExecutionExceptionHandler;
 import org.eclipse.leshan.client.demo.cli.LeshanClientDemoCLI;
 import org.eclipse.leshan.client.demo.cli.ShortErrorMessageHandler;
+import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCLI;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
@@ -125,18 +125,40 @@ public class LeshanClientDemo {
         LeshanClientDemoCLI cli = new LeshanClientDemoCLI();
         CommandLine command = new CommandLine(cli).setParameterExceptionHandler(new ShortErrorMessageHandler())
                 .setExecutionExceptionHandler(new ExecutionExceptionHandler());
-        // handle exit code error
+        // Handle exit code error
         int exitCode = command.execute(args);
         if (exitCode != 0)
             System.exit(exitCode);
-        // handle help or version command
+        // Handle help or version command
         if (command.isUsageHelpRequested() || command.isVersionHelpRequested())
             System.exit(0);
 
-        // create and start client
         try {
-            createAndStartClient(cli);
+            // Create Client
+            LwM2mModel model = createModel(cli);
+            final LeshanClient client = createClient(cli, model);
+
+            // Print commands help
+            InteractiveCLI console = new InteractiveCLI(client, model);
+            console.showHelp();
+
+            // Start the client
+            client.start();
+
+            // De-register on shutdown and stop client.
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                @Override
+                public void run() {
+                    client.destroy(true); // send de-registration request before destroy
+                }
+            });
+
+            // Start interactive console
+            console.start();
+
         } catch (Exception e) {
+
+            // Handler Execution Error
             PrintWriter printer = command.getErr();
             printer.print(command.getColorScheme().errorText("Unable to create and start client ..."));
             printer.printf("%n%n");
@@ -146,20 +168,23 @@ public class LeshanClientDemo {
         }
     }
 
-    public static void createAndStartClient(LeshanClientDemoCLI cli) throws Exception {
-        // create Leshan client from command line option
-        final MyLocation locationInstance = new MyLocation(cli.location.position.latitude,
-                cli.location.position.longitude, cli.location.scaleFactor);
+    private static LwM2mModel createModel(LeshanClientDemoCLI cli) throws Exception {
 
-        // Initialize model
         List<ObjectModel> models = ObjectLoader.loadDefault();
         models.addAll(ObjectLoader.loadDdfResources("/models", modelPaths));
         if (cli.main.modelsFolder != null) {
             models.addAll(ObjectLoader.loadObjectsFromDir(cli.main.modelsFolder, true));
         }
 
+        return new StaticModel(models);
+    }
+
+    public static LeshanClient createClient(LeshanClientDemoCLI cli, LwM2mModel model) throws Exception {
+        // create Leshan client from command line option
+        final MyLocation locationInstance = new MyLocation(cli.location.position.latitude,
+                cli.location.position.longitude, cli.location.scaleFactor);
+
         // Initialize object list
-        final LwM2mModel model = new StaticModel(models);
         final ObjectsInitializer initializer = new ObjectsInitializer(model);
         if (cli.main.bootstrap) {
             if (cli.identity.isPSK()) {
@@ -376,84 +401,6 @@ public class LeshanClientDemo {
                     Hex.encodeHexString(cli.identity.getX509().cprik.getEncoded()));
         }
 
-        // Print commands help
-        StringBuilder commandsHelp = new StringBuilder("Commands available :");
-        commandsHelp.append(System.lineSeparator());
-        commandsHelp.append(System.lineSeparator());
-        commandsHelp.append(" - create <objectId> : to enable a new object.");
-        commandsHelp.append(System.lineSeparator());
-        commandsHelp.append(" - delete <objectId> : to disable a new object.");
-        commandsHelp.append(System.lineSeparator());
-        commandsHelp.append(" - update : to trigger a registration update.");
-        commandsHelp.append(System.lineSeparator());
-        commandsHelp.append(" - w : to move to North.");
-        commandsHelp.append(System.lineSeparator());
-        commandsHelp.append(" - a : to move to East.");
-        commandsHelp.append(System.lineSeparator());
-        commandsHelp.append(" - s : to move to South.");
-        commandsHelp.append(System.lineSeparator());
-        commandsHelp.append(" - d : to move to West.");
-        commandsHelp.append(System.lineSeparator());
-        LOG.info(commandsHelp.toString());
-
-        // Start the client
-        client.start();
-
-        // De-register on shutdown and stop client.
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                client.destroy(true); // send de-registration request before destroy
-            }
-        });
-
-        // Change the location through the Console
-        try (Scanner scanner = new Scanner(System.in)) {
-            List<Character> wasdCommands = Arrays.asList('w', 'a', 's', 'd');
-            while (scanner.hasNext()) {
-                String command = scanner.next();
-                if (command.startsWith("create")) {
-                    try {
-                        int objectId = scanner.nextInt();
-                        if (client.getObjectTree().getObjectEnabler(objectId) != null) {
-                            LOG.info("Object {} already enabled.", objectId);
-                        }
-                        if (model.getObjectModel(objectId) == null) {
-                            LOG.info("Unable to enable Object {} : there no model for this.", objectId);
-                        } else {
-                            ObjectsInitializer objectsInitializer = new ObjectsInitializer(model);
-                            objectsInitializer.setDummyInstancesForObject(objectId);
-                            LwM2mObjectEnabler object = objectsInitializer.create(objectId);
-                            client.getObjectTree().addObjectEnabler(object);
-                        }
-                    } catch (Exception e) {
-                        // skip last token
-                        scanner.next();
-                        LOG.info("Invalid syntax, <objectid> must be an integer : create <objectId>");
-                    }
-                } else if (command.startsWith("delete")) {
-                    try {
-                        int objectId = scanner.nextInt();
-                        if (objectId == 0 || objectId == 0 || objectId == 3) {
-                            LOG.info("Object {} can not be disabled.", objectId);
-                        } else if (client.getObjectTree().getObjectEnabler(objectId) == null) {
-                            LOG.info("Object {} is not enabled.", objectId);
-                        } else {
-                            client.getObjectTree().removeObjectEnabler(objectId);
-                        }
-                    } catch (Exception e) {
-                        // skip last token
-                        scanner.next();
-                        LOG.info("\"Invalid syntax, <objectid> must be an integer : delete <objectId>");
-                    }
-                } else if (command.startsWith("update")) {
-                    client.triggerRegistrationUpdate();
-                } else if (command.length() == 1 && wasdCommands.contains(command.charAt(0))) {
-                    locationInstance.moveLocation(command);
-                } else {
-                    LOG.info("Unknown command '{}'", command);
-                }
-            }
-        }
+        return client;
     }
 }
