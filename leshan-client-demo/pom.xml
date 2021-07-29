@@ -35,12 +35,13 @@ Contributors:
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
         </dependency>
-
-        <!-- runtime dependencies -->
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli-shell-jline2</artifactId>
+        </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <scope>runtime</scope>
         </dependency>
 
         <!-- test dependencies -->

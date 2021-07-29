@@ -15,14 +15,14 @@ Contributors:
     Sierra Wireless - initial API and implementation
  -->
 <configuration>
-	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+	<appender name="TERMINAL" class="org.eclipse.leshan.client.demo.cli.interactive.TerminalAppender">
 		<encoder>
 			<pattern>%d %p %C{0} - %m%n</pattern>
 		</encoder>
 	</appender>
 
 	<root level="WARN">
-		<appender-ref ref="STDOUT" />
+		<appender-ref ref="TERMINAL" />
 	</root>
 
 	<logger name="org.eclipse.leshan" level="INFO" />
