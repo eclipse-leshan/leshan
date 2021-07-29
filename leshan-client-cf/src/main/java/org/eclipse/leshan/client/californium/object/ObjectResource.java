@@ -16,16 +16,20 @@
  *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity
  *     Achim Kraus (Bosch Software Innovations GmbH) - implement POST "/oid/iid" 
  *                                                     as UPDATE instance
+ *     Michał Wadowski (Orange)                      - Add Observe-Composite feature.
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.object;
 
 import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.observe.ObserveRelation;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.client.californium.CaliforniumEndpointsManager;
@@ -82,6 +86,8 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
     protected final LwM2mObjectEnabler nodeEnabler;
     protected final LwM2mEncoder encoder;
     protected final LwM2mDecoder decoder;
+
+    protected final Set<String> observeRelationKeys = new HashSet<>();
 
     public ObjectResource(LwM2mObjectEnabler nodeEnabler, RegistrationEngine registrationEngine,
             CaliforniumEndpointsManager endpointsManager, LwM2mEncoder encoder, LwM2mDecoder decoder) {
@@ -153,9 +159,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                     exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                     return;
                 }
-            }
-
-            else {
+            } else {
                 if (identity.isLwm2mBootstrapServer()) {
                     // Manage Bootstrap Read Request
                     BootstrapReadRequest readRequest = new BootstrapReadRequest(requestedContentFormat, URI,
@@ -438,5 +442,19 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
 
     @Override
     public void objectInstancesRemoved(LwM2mObjectEnabler object, int... instanceIds) {
+    }
+
+    @Override
+    public void addObserveRelation(ObserveRelation relation) {
+        if (!observeRelationKeys.contains(relation.getKey())) {
+            super.addObserveRelation(relation);
+            observeRelationKeys.add(relation.getKey());
+        }
+    }
+
+    @Override
+    public void removeObserveRelation(ObserveRelation relation) {
+        super.removeObserveRelation(relation);
+        observeRelationKeys.remove(relation.getKey());
     }
 }

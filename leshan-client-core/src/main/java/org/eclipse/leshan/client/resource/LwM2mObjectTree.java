@@ -93,7 +93,7 @@ public class LwM2mObjectTree implements Startable, Stoppable, Destroyable {
         listeners.add(listener);
     }
 
-    public void removedListener(ObjectsListener listener) {
+    public void removeListener(ObjectsListener listener) {
         listeners.remove(listener);
     }
 
