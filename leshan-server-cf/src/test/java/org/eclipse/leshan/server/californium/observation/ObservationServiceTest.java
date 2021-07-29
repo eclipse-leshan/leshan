@@ -24,6 +24,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.ObserveRequest;
@@ -59,7 +60,7 @@ public class ObservationServiceTest {
         givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
 
         // check the presence of only one observation.
-        Set<SingleObservation> observations = observationService.getObservations(support.registration);
+        Set<Observation> observations = observationService.getObservations(support.registration);
         Assert.assertEquals(1, observations.size());
     }
 
@@ -72,7 +73,7 @@ public class ObservationServiceTest {
         givenAnObservation("anotherClient", new LwM2mPath(3, 0, 12));
 
         // check its presence
-        Set<SingleObservation> observations = observationService.getObservations(support.registration);
+        Set<Observation> observations = observationService.getObservations(support.registration);
         Assert.assertEquals(2, observations.size());
 
         // cancel it
@@ -94,7 +95,7 @@ public class ObservationServiceTest {
         givenAnObservation("anotherClient", new LwM2mPath(3, 0, 12));
 
         // check its presence
-        Set<SingleObservation> observations = observationService.getObservations(support.registration);
+        Set<Observation> observations = observationService.getObservations(support.registration);
         Assert.assertEquals(2, observations.size());
 
         // cancel it
@@ -113,10 +114,10 @@ public class ObservationServiceTest {
         givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
         givenAnObservation("anotherClient", new LwM2mPath(3, 0, 12));
 
-        SingleObservation observationToCancel = givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
+        Observation observationToCancel = givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
 
         // check its presence
-        Set<SingleObservation> observations = observationService.getObservations(support.registration);
+        Set<Observation> observations = observationService.getObservations(support.registration);
         Assert.assertEquals(2, observations.size());
 
         // cancel it

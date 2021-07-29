@@ -21,6 +21,7 @@
  *                                                     EndpointContext
  *     Achim Kraus (Bosch Software Innovations GmbH) - update to modified 
  *                                                     ObservationStore API
+ *     Michał Wadowski (Orange)                      - Add Observe-Composite feature.
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.registration;
 
@@ -49,6 +50,7 @@ import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
@@ -114,8 +116,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
             // recent binding.
             regsByAddr.put(registration.getSocketAddress(), registration);
             if (registrationRemoved != null) {
-                Collection<SingleObservation> observationsRemoved = unsafeRemoveAllObservations(
-                        registrationRemoved.getId());
+                Collection<Observation> observationsRemoved = unsafeRemoveAllObservations(registrationRemoved.getId());
                 if (!registrationRemoved.getSocketAddress().equals(registration.getSocketAddress())) {
                     removeFromMap(regsByAddr, registrationRemoved.getSocketAddress(), registrationRemoved);
                 }
@@ -221,7 +222,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
 
             Registration registration = getRegistration(registrationId);
             if (registration != null) {
-                Collection<SingleObservation> observationsRemoved = unsafeRemoveAllObservations(registration.getId());
+                Collection<Observation> observationsRemoved = unsafeRemoveAllObservations(registration.getId());
                 regsByEp.remove(registration.getEndpoint());
                 removeFromMap(regsByAddr, registration.getSocketAddress(), registration);
                 removeFromMap(regsByRegId, registration.getId(), registration);
@@ -241,15 +242,15 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
      * org.eclipse.californium.core.observe.ObservationStore#add method)
      */
     @Override
-    public Collection<SingleObservation> addObservation(String registrationId, SingleObservation observation) {
+    public Collection<Observation> addObservation(String registrationId, Observation observation) {
 
-        List<SingleObservation> removed = new ArrayList<>();
+        List<Observation> removed = new ArrayList<>();
 
         try {
             lock.writeLock().lock();
             // cancel existing observations for the same path and registration id.
-            for (SingleObservation obs : unsafeGetObservations(registrationId)) {
-                if (observation.getPath().equals(obs.getPath()) && !Arrays.equals(observation.getId(), obs.getId())) {
+            for (Observation obs : unsafeGetObservations(registrationId)) {
+                if (areTheSamePaths(observation, obs) && !Arrays.equals(observation.getId(), obs.getId())) {
                     unsafeRemoveObservation(new Token(obs.getId()));
                     removed.add(obs);
                 }
@@ -261,12 +262,19 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         return removed;
     }
 
+    private boolean areTheSamePaths(Observation observation, Observation obs) {
+        if (observation instanceof SingleObservation && obs instanceof SingleObservation) {
+            return ((SingleObservation) observation).getPath().equals(((SingleObservation) obs).getPath());
+        }
+        return false;
+    }
+
     @Override
-    public SingleObservation removeObservation(String registrationId, byte[] observationId) {
+    public Observation removeObservation(String registrationId, byte[] observationId) {
         try {
             lock.writeLock().lock();
             Token token = new Token(observationId);
-            SingleObservation observation = build(unsafeGetObservation(token));
+            Observation observation = build(unsafeGetObservation(token));
             if (observation != null && registrationId.equals(observation.getRegistrationId())) {
                 unsafeRemoveObservation(token);
                 return observation;
@@ -278,10 +286,10 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     }
 
     @Override
-    public SingleObservation getObservation(String registrationId, byte[] observationId) {
+    public Observation getObservation(String registrationId, byte[] observationId) {
         try {
             lock.readLock().lock();
-            SingleObservation observation = build(unsafeGetObservation(new Token(observationId)));
+            Observation observation = build(unsafeGetObservation(new Token(observationId)));
             if (observation != null && registrationId.equals(observation.getRegistrationId())) {
                 return observation;
             }
@@ -292,7 +300,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     }
 
     @Override
-    public Collection<SingleObservation> getObservations(String registrationId) {
+    public Collection<Observation> getObservations(String registrationId) {
         try {
             lock.readLock().lock();
             return unsafeGetObservations(registrationId);
@@ -302,7 +310,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
     }
 
     @Override
-    public Collection<SingleObservation> removeObservations(String registrationId) {
+    public Collection<Observation> removeObservations(String registrationId) {
         try {
             lock.writeLock().lock();
             return unsafeRemoveAllObservations(registrationId);
@@ -414,12 +422,12 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         }
     }
 
-    private Collection<SingleObservation> unsafeRemoveAllObservations(String registrationId) {
-        Collection<SingleObservation> removed = new ArrayList<>();
+    private Collection<Observation> unsafeRemoveAllObservations(String registrationId) {
+        Collection<Observation> removed = new ArrayList<>();
         Set<Token> tokens = tokensByRegId.get(registrationId);
         if (tokens != null) {
             for (Token token : tokens) {
-                SingleObservation observationRemoved = build(obsByToken.remove(token));
+                Observation observationRemoved = build(obsByToken.remove(token));
                 if (observationRemoved != null) {
                     removed.add(observationRemoved);
                 }
@@ -429,12 +437,12 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         return removed;
     }
 
-    private Collection<SingleObservation> unsafeGetObservations(String registrationId) {
-        Collection<SingleObservation> result = new ArrayList<>();
+    private Collection<Observation> unsafeGetObservations(String registrationId) {
+        Collection<Observation> result = new ArrayList<>();
         Set<Token> tokens = tokensByRegId.get(registrationId);
         if (tokens != null) {
             for (Token token : tokens) {
-                SingleObservation obs = build(unsafeGetObservation(token));
+                Observation obs = build(unsafeGetObservation(token));
                 if (obs != null) {
                     result.add(obs);
                 }
@@ -443,7 +451,7 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         return result;
     }
 
-    private SingleObservation build(org.eclipse.californium.core.observe.Observation cfObs) {
+    private Observation build(org.eclipse.californium.core.observe.Observation cfObs) {
         if (cfObs == null)
             return null;
 

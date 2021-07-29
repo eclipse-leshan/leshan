@@ -39,8 +39,7 @@ public class PresenceStateListener implements RegistrationListener, ObservationL
     }
 
     @Override
-    public void registered(Registration reg, Registration previousReg,
-            Collection<SingleObservation> previousObsersations) {
+    public void registered(Registration reg, Registration previousReg, Collection<Observation> previousObsersations) {
         if (reg.usesQueueMode()) {
             presenceService.setAwake(reg);
         }
@@ -56,7 +55,7 @@ public class PresenceStateListener implements RegistrationListener, ObservationL
     }
 
     @Override
-    public void unregistered(Registration reg, Collection<SingleObservation> observations, boolean expired,
+    public void unregistered(Registration reg, Collection<Observation> observations, boolean expired,
             Registration newReg) {
         presenceService.stopPresenceTracking(reg);
     }
@@ -67,7 +66,7 @@ public class PresenceStateListener implements RegistrationListener, ObservationL
      * @since 1.1
      */
     @Override
-    public void onResponse(SingleObservation observation, Registration registration, ObserveResponse response) {
+    public void onResponse(Observation observation, Registration registration, AbstractLwM2mResponse response) {
         presenceService.setAwake(registration);
     }
 
@@ -77,7 +76,7 @@ public class PresenceStateListener implements RegistrationListener, ObservationL
      * @since 1.1
      */
     @Override
-    public void newObservation(SingleObservation observation, Registration registration) {
+    public void newObservation(Observation observation, Registration registration) {
     }
 
     /**
@@ -86,7 +85,7 @@ public class PresenceStateListener implements RegistrationListener, ObservationL
      * @since 1.1
      */
     @Override
-    public void cancelled(SingleObservation observation) {
+    public void cancelled(Observation observation) {
     }
 
     /**
@@ -95,6 +94,6 @@ public class PresenceStateListener implements RegistrationListener, ObservationL
      * @since 1.1
      */
     @Override
-    public void onError(SingleObservation observation, Registration registration, Exception error) {
+    public void onError(Observation observation, Registration registration, Exception error) {
     }
 }

@@ -17,7 +17,7 @@ package org.eclipse.leshan.server.registration;
 
 import java.util.Collection;
 
-import org.eclipse.leshan.core.observation.SingleObservation;
+import org.eclipse.leshan.core.observation.Observation;
 
 /**
  * A listener to be aware of registration expiration.
@@ -26,5 +26,5 @@ import org.eclipse.leshan.core.observation.SingleObservation;
  */
 public interface ExpirationListener {
 
-    void registrationExpired(Registration registration, Collection<SingleObservation> observations);
+    void registrationExpired(Registration registration, Collection<Observation> observations);
 }

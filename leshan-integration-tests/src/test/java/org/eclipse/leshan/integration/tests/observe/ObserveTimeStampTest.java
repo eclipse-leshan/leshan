@@ -37,6 +37,7 @@ import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveRequest;
@@ -102,9 +103,9 @@ public class ObserveTimeStampTest {
         SingleObservation observation = observeResponse.getObservation();
         assertEquals("/3/0/15", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<SingleObservation> observations = helper.server.getObservationService()
+        Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
-        assertTrue("We should have only on observation", observations.size() == 1);
+        assertTrue("We should have only one observation", observations.size() == 1);
         assertTrue("New observation is not there", observations.contains(observation));
 
         // *** HACK send time-stamped notification as Leshan client does not support it *** //
@@ -125,8 +126,8 @@ public class ObserveTimeStampTest {
         // verify result
         listener.waitForNotification(2000);
         assertTrue(listener.receivedNotify().get());
-        assertEquals(mostRecentNode.getNode(), listener.getResponse().getContent());
-        assertEquals(timestampedNodes, listener.getResponse().getTimestampedValues());
+        assertEquals(mostRecentNode.getNode(), ((ObserveResponse) listener.getResponse()).getContent());
+        assertEquals(timestampedNodes, ((ObserveResponse) listener.getResponse()).getTimestampedValues());
         assertContentFormat(contentFormat, listener.getResponse());
     }
 
@@ -145,9 +146,9 @@ public class ObserveTimeStampTest {
         SingleObservation observation = observeResponse.getObservation();
         assertEquals("/3/0", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<SingleObservation> observations = helper.server.getObservationService()
+        Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
-        assertTrue("We should have only on observation", observations.size() == 1);
+        assertTrue("We should have only one observation", observations.size() == 1);
         assertTrue("New observation is not there", observations.contains(observation));
 
         // *** HACK send time-stamped notification as Leshan client does not support it *** //
@@ -168,8 +169,8 @@ public class ObserveTimeStampTest {
         // verify result
         listener.waitForNotification(2000);
         assertTrue(listener.receivedNotify().get());
-        assertEquals(mostRecentNode.getNode(), listener.getResponse().getContent());
-        assertEquals(timestampedNodes, listener.getResponse().getTimestampedValues());
+        assertEquals(mostRecentNode.getNode(), ((ObserveResponse) listener.getResponse()).getContent());
+        assertEquals(timestampedNodes, ((ObserveResponse) listener.getResponse()).getTimestampedValues());
         assertContentFormat(contentFormat, listener.getResponse());
     }
 
@@ -188,9 +189,9 @@ public class ObserveTimeStampTest {
         SingleObservation observation = observeResponse.getObservation();
         assertEquals("/3", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<SingleObservation> observations = helper.server.getObservationService()
+        Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
-        assertTrue("We should have only on observation", observations.size() == 1);
+        assertTrue("We should have only one observation", observations.size() == 1);
         assertTrue("New observation is not there", observations.contains(observation));
 
         // *** HACK send time-stamped notification as Leshan client does not support it *** //
@@ -212,8 +213,8 @@ public class ObserveTimeStampTest {
         // verify result
         listener.waitForNotification(2000);
         assertTrue(listener.receivedNotify().get());
-        assertEquals(mostRecentNode.getNode(), listener.getResponse().getContent());
-        assertEquals(timestampedNodes, listener.getResponse().getTimestampedValues());
+        assertEquals(mostRecentNode.getNode(), ((ObserveResponse) listener.getResponse()).getContent());
+        assertEquals(timestampedNodes, ((ObserveResponse) listener.getResponse()).getTimestampedValues());
         assertContentFormat(contentFormat, listener.getResponse());
     }
 }

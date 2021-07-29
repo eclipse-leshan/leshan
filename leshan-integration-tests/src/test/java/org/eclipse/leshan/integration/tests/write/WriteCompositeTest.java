@@ -194,11 +194,11 @@ public class WriteCompositeTest {
         listener.waitForNotification(1000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
         assertTrue(listener.receivedNotify().get());
-        assertTrue(listener.getResponse().getContent() instanceof LwM2mObjectInstance);
+        assertTrue(((ObserveResponse) listener.getResponse()).getContent() instanceof LwM2mObjectInstance);
         assertNotNull(listener.getResponse().getCoapResponse());
         assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
 
-        LwM2mObjectInstance instance = (LwM2mObjectInstance) listener.getResponse().getContent();
+        LwM2mObjectInstance instance = (LwM2mObjectInstance) ((ObserveResponse) listener.getResponse()).getContent();
         assertEquals("+11", instance.getResource(14).getValue());
         assertEquals("Moon", instance.getResource(15).getValue());
 

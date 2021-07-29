@@ -20,7 +20,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.eclipse.leshan.core.observation.SingleObservation;
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationListener;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
@@ -34,7 +34,7 @@ public class SynchronousRegistrationListener implements RegistrationListener {
 
     @Override
     public void registered(Registration reg, Registration previousReg,
-            Collection<SingleObservation> previousObsersations) {
+            Collection<Observation> previousObsersations) {
         if (accept(reg)) {
             lastRegistration = reg;
             registerLatch.countDown();
@@ -48,7 +48,7 @@ public class SynchronousRegistrationListener implements RegistrationListener {
     }
 
     @Override
-    public void unregistered(Registration reg, Collection<SingleObservation> observations, boolean expired,
+    public void unregistered(Registration reg, Collection<Observation> observations, boolean expired,
             Registration newReg) {
         if (accept(reg))
             deregisterLatch.countDown();

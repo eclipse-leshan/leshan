@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Michał Wadowski (Orange) - Add Observe-Composite feature.
  *******************************************************************************/
 package org.eclipse.leshan.server.demo.servlet;
 
@@ -27,7 +28,9 @@ import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.jetty.servlets.EventSource;
 import org.eclipse.jetty.servlets.EventSourceServlet;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
+import org.eclipse.leshan.core.response.AbstractLwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.californium.LeshanServer;
 import org.eclipse.leshan.server.demo.servlet.json.LwM2mNodeSerializer;
@@ -80,7 +83,7 @@ public class EventServlet extends EventSourceServlet {
 
         @Override
         public void registered(Registration registration, Registration previousReg,
-                Collection<SingleObservation> previousObsersations) {
+                Collection<Observation> previousObsersations) {
             String jReg = EventServlet.this.gson.toJson(registration);
             sendEvent(EVENT_REGISTRATION, jReg, registration.getEndpoint());
         }
@@ -96,7 +99,7 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void unregistered(Registration registration, Collection<SingleObservation> observations, boolean expired,
+        public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
                 Registration newReg) {
             String jReg = EventServlet.this.gson.toJson(registration);
             sendEvent(EVENT_DEREGISTRATION, jReg, registration.getEndpoint());
@@ -123,37 +126,58 @@ public class EventServlet extends EventSourceServlet {
     private final ObservationListener observationListener = new ObservationListener() {
 
         @Override
-        public void cancelled(SingleObservation observation) {
+        public void cancelled(Observation observation) {
         }
 
         @Override
-        public void onResponse(SingleObservation observation, Registration registration, ObserveResponse response) {
+        public void onResponse(Observation observation, Registration registration, AbstractLwM2mResponse response) {
+            String path = getObservationPaths(observation);
+
+            String stringContent = null;
+            String jsonContent = null;
+
+            if (response instanceof ObserveResponse) {
+                LwM2mNode content = ((ObserveResponse) response).getContent();
+                stringContent = content.toString();
+                jsonContent = gson.toJson(content);
+            }
+
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Received notification from [{}] containing value [{}]", observation.getPath(),
-                        response.getContent().toString());
+                LOG.debug("Received notification from [{}] containing value [{}]", path, stringContent);
             }
 
             if (registration != null) {
-                String data = new StringBuilder("{\"ep\":\"").append(registration.getEndpoint()).append("\",\"res\":\"")
-                        .append(observation.getPath().toString()).append("\",\"val\":")
-                        .append(gson.toJson(response.getContent())).append("}").toString();
+                String data = new StringBuilder("{\"ep\":\"")
+                        .append(registration.getEndpoint())
+                        .append("\",\"res\":\"")
+                        .append(path).append("\",\"val\":")
+                        .append(jsonContent)
+                        .append("}").toString();
 
                 sendEvent(EVENT_NOTIFICATION, data, registration.getEndpoint());
             }
         }
 
         @Override
-        public void onError(SingleObservation observation, Registration registration, Exception error) {
+        public void onError(Observation observation, Registration registration, Exception error) {
             if (LOG.isWarnEnabled()) {
                 LOG.warn(String.format("Unable to handle notification of [%s:%s]", observation.getRegistrationId(),
-                        observation.getPath()), error);
+                        getObservationPaths(observation)), error);
             }
         }
 
         @Override
-        public void newObservation(SingleObservation observation, Registration registration) {
+        public void newObservation(Observation observation, Registration registration) {
         }
     };
+
+    private String getObservationPaths(final Observation observation) {
+        String path = null;
+        if (observation instanceof SingleObservation) {
+            path = ((SingleObservation) observation).getPath().toString();
+        }
+        return path;
+    }
 
     public EventServlet(LeshanServer server, int securePort) {
         server.getRegistrationService().addListener(this.registrationListener);
