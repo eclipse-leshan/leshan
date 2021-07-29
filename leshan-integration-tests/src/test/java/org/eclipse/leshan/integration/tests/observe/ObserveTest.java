@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2013-2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Zebra Technologies - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - replace close() with destroy()
@@ -37,6 +37,7 @@ import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.codec.LwM2mValueChecker;
 import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonEncoder;
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.CancelObservationRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -90,9 +91,9 @@ public class ObserveTest {
         SingleObservation observation = observeResponse.getObservation();
         assertEquals("/3/0/15", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<SingleObservation> observations = helper.server.getObservationService()
+        Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
-        assertTrue("We should have only on observation", observations.size() == 1);
+        assertTrue("We should have only one observation", observations.size() == 1);
         assertTrue("New observation is not there", observations.contains(observation));
 
         // write device timezone
@@ -103,9 +104,10 @@ public class ObserveTest {
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
         assertTrue(listener.receivedNotify().get());
-        assertEquals(LwM2mSingleResource.newStringResource(15, "Europe/Paris"), listener.getResponse().getContent());
-        assertNotNull(listener.getResponse().getCoapResponse());
-        assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
+        assertEquals(LwM2mSingleResource.newStringResource(15, "Europe/Paris"),
+                (listener.getObserveResponse()).getContent());
+        assertNotNull(listener.getObserveResponse().getCoapResponse());
+        assertThat(listener.getObserveResponse().getCoapResponse(), is(instanceOf(Response.class)));
     }
 
     @Test
@@ -125,7 +127,7 @@ public class ObserveTest {
         SingleObservation observation = observeResponse.getObservation();
         assertEquals(expectedPath, observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<SingleObservation> observations = helper.server.getObservationService()
+        Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
         assertTrue("We should have only on observation", observations.size() == 1);
         assertTrue("New observation is not there", observations.contains(observation));
@@ -138,9 +140,10 @@ public class ObserveTest {
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
         assertTrue(listener.receivedNotify().get());
-        assertEquals(LwM2mResourceInstance.newStringInstance(0, "a new string"), listener.getResponse().getContent());
-        assertNotNull(listener.getResponse().getCoapResponse());
-        assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
+        assertEquals(LwM2mResourceInstance.newStringInstance(0, "a new string"),
+                listener.getObserveResponse().getContent());
+        assertNotNull(listener.getObserveResponse().getCoapResponse());
+        assertThat(listener.getObserveResponse().getCoapResponse(), is(instanceOf(Response.class)));
     }
 
     @Test
@@ -160,7 +163,7 @@ public class ObserveTest {
         SingleObservation observation = observeResponse.getObservation();
         assertEquals(expectedPath, observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<SingleObservation> observations = helper.server.getObservationService()
+        Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
         assertTrue("We should have only on observation", observations.size() == 1);
         assertTrue("New observation is not there", observations.contains(observation));
@@ -173,8 +176,9 @@ public class ObserveTest {
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
         assertTrue(listener.receivedNotify().get());
-        assertEquals(LwM2mResourceInstance.newStringInstance(0, "a new string"), listener.getResponse().getContent());
-        assertNotNull(listener.getResponse().getCoapResponse());
+        assertEquals(LwM2mResourceInstance.newStringInstance(0, "a new string"),
+                listener.getObserveResponse().getContent());
+        assertNotNull(listener.getObserveResponse().getCoapResponse());
 
         // cancel observation : passive way
         helper.server.getObservationService().cancelObservation(observation);
@@ -209,7 +213,7 @@ public class ObserveTest {
         SingleObservation observation = observeResponse.getObservation();
         assertEquals(expectedPath, observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<SingleObservation> observations = helper.server.getObservationService()
+        Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
         assertTrue("We should have only on observation", observations.size() == 1);
         assertTrue("New observation is not there", observations.contains(observation));
@@ -222,8 +226,9 @@ public class ObserveTest {
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
         assertTrue(listener.receivedNotify().get());
-        assertEquals(LwM2mResourceInstance.newStringInstance(0, "a new string"), listener.getResponse().getContent());
-        assertNotNull(listener.getResponse().getCoapResponse());
+        assertEquals(LwM2mResourceInstance.newStringInstance(0, "a new string"),
+                listener.getObserveResponse().getContent());
+        assertNotNull(listener.getObserveResponse().getCoapResponse());
 
         // cancel observation : active way
         CancelObservationResponse response = helper.server.send(helper.getCurrentRegistration(),
@@ -264,9 +269,9 @@ public class ObserveTest {
         SingleObservation observation = observeResponse.getObservation();
         assertEquals("/3/0/15", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<SingleObservation> observations = helper.server.getObservationService()
+        Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
-        assertTrue("We should have only on observation", observations.size() == 1);
+        assertEquals("We should have only one observation", 1, observations.size());
         assertTrue("New observation is not there", observations.contains(observation));
 
         // write device timezone
@@ -277,9 +282,10 @@ public class ObserveTest {
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
         assertTrue(listener.receivedNotify().get());
-        assertEquals(LwM2mSingleResource.newStringResource(15, "Europe/Paris"), listener.getResponse().getContent());
-        assertNotNull(listener.getResponse().getCoapResponse());
-        assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
+        assertEquals(LwM2mSingleResource.newStringResource(15, "Europe/Paris"),
+                listener.getObserveResponse().getContent());
+        assertNotNull(listener.getObserveResponse().getCoapResponse());
+        assertThat(listener.getObserveResponse().getCoapResponse(), is(instanceOf(Response.class)));
 
         // cancel observation : passive way
         helper.server.getObservationService().cancelObservation(observation);
@@ -313,9 +319,9 @@ public class ObserveTest {
         SingleObservation observation = observeResponse.getObservation();
         assertEquals("/3/0/15", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<SingleObservation> observations = helper.server.getObservationService()
+        Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
-        assertTrue("We should have only on observation", observations.size() == 1);
+        assertEquals("We should have only one observation", 1, observations.size());
         assertTrue("New observation is not there", observations.contains(observation));
 
         // write device timezone
@@ -326,9 +332,10 @@ public class ObserveTest {
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
         assertTrue(listener.receivedNotify().get());
-        assertEquals(LwM2mSingleResource.newStringResource(15, "Europe/Paris"), listener.getResponse().getContent());
-        assertNotNull(listener.getResponse().getCoapResponse());
-        assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
+        assertEquals(LwM2mSingleResource.newStringResource(15, "Europe/Paris"),
+                listener.getObserveResponse().getContent());
+        assertNotNull(listener.getObserveResponse().getCoapResponse());
+        assertThat(listener.getObserveResponse().getCoapResponse(), is(instanceOf(Response.class)));
 
         // cancel observation : active way
         CancelObservationResponse response = helper.server.send(helper.getCurrentRegistration(),
@@ -339,7 +346,7 @@ public class ObserveTest {
         // active cancellation does not remove observation from store : it should be done manually using
         // ObservationService().cancelObservation(observation)
         observations = helper.server.getObservationService().getObservations(helper.getCurrentRegistration());
-        assertTrue("We should have only on observation", observations.size() == 1);
+        assertEquals("We should have only one observation", 1, observations.size());
         assertTrue("Observation should still be there", observations.contains(observation));
 
         // write device timezone
@@ -368,9 +375,9 @@ public class ObserveTest {
         SingleObservation observation = observeResponse.getObservation();
         assertEquals("/3/0", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<SingleObservation> observations = helper.server.getObservationService()
+        Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
-        assertTrue("We should have only on observation", observations.size() == 1);
+        assertEquals("We should have only one observation", 1, observations.size());
         assertTrue("New observation is not there", observations.contains(observation));
 
         // write device timezone
@@ -381,14 +388,14 @@ public class ObserveTest {
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
         assertTrue(listener.receivedNotify().get());
-        assertTrue(listener.getResponse().getContent() instanceof LwM2mObjectInstance);
-        assertNotNull(listener.getResponse().getCoapResponse());
-        assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
+        assertTrue(listener.getObserveResponse().getContent() instanceof LwM2mObjectInstance);
+        assertNotNull(listener.getObserveResponse().getCoapResponse());
+        assertThat(listener.getObserveResponse().getCoapResponse(), is(instanceOf(Response.class)));
 
         // try to read the object instance for comparing
         ReadResponse readResp = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0));
 
-        assertEquals(readResp.getContent(), listener.getResponse().getContent());
+        assertEquals(readResp.getContent(), listener.getObserveResponse().getContent());
     }
 
     @Test
@@ -406,9 +413,9 @@ public class ObserveTest {
         SingleObservation observation = observeResponse.getObservation();
         assertEquals("/3", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<SingleObservation> observations = helper.server.getObservationService()
+        Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
-        assertTrue("We should have only on observation", observations.size() == 1);
+        assertEquals("We should have only one observation", 1, observations.size());
         assertTrue("New observation is not there", observations.contains(observation));
 
         // write device timezone
@@ -419,14 +426,14 @@ public class ObserveTest {
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
         assertTrue(listener.receivedNotify().get());
-        assertTrue(listener.getResponse().getContent() instanceof LwM2mObject);
-        assertNotNull(listener.getResponse().getCoapResponse());
-        assertThat(listener.getResponse().getCoapResponse(), is(instanceOf(Response.class)));
+        assertTrue(listener.getObserveResponse().getContent() instanceof LwM2mObject);
+        assertNotNull(listener.getObserveResponse().getCoapResponse());
+        assertThat(listener.getObserveResponse().getCoapResponse(), is(instanceOf(Response.class)));
 
         // try to read the object for comparing
         ReadResponse readResp = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3));
 
-        assertEquals(readResp.getContent(), listener.getResponse().getContent());
+        assertEquals(readResp.getContent(), listener.getObserveResponse().getContent());
     }
 
     @Test
@@ -445,9 +452,9 @@ public class ObserveTest {
         SingleObservation observation = observeResponse.getObservation();
         assertEquals("/3/0/15", observation.getPath().toString());
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<SingleObservation> observations = helper.server.getObservationService()
+        Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
-        assertTrue("We should have only on observation", observations.size() == 1);
+        assertEquals("We should have only one observation", 1, observations.size());
         assertTrue("New observation is not there", observations.contains(observation));
 
         // *** HACK send a notification with unsupported content format *** //

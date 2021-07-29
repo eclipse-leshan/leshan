@@ -43,7 +43,7 @@ import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
-import org.eclipse.leshan.core.observation.SingleObservation;
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.exception.ClientSleepingException;
 import org.eclipse.leshan.server.californium.registration.CaliforniumRegistrationStore;
 import org.eclipse.leshan.server.californium.registration.InMemoryRegistrationStore;
@@ -167,8 +167,7 @@ public class LeshanServerBuilder {
 
     /**
      * <p>
-     * Set your {@link RegistrationStore} implementation which stores {@link Registration}
-     * and {@link SingleObservation}.
+     * Set your {@link RegistrationStore} implementation which stores {@link Registration} and {@link Observation}.
      * </p>
      * By default the {@link InMemoryRegistrationStore} implementation is used.
      * 

@@ -19,7 +19,7 @@ import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.eclipse.leshan.core.observation.SingleObservation;
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.Identity;
 
 /**
@@ -96,7 +96,7 @@ public interface RegistrationStore {
     Deregistration removeRegistration(String registrationId);
 
     /**
-     * Add a new {@link SingleObservation} for a given registration.
+     * Add a new {@link Observation} for a given registration.
      * 
      * The store is in charge of removing the observations already existing for the same path and registration id.
      * 
@@ -105,27 +105,27 @@ public interface RegistrationStore {
      * 
      * @return the list of removed observations or an empty list if none were removed.
      */
-    Collection<SingleObservation> addObservation(String registrationId, SingleObservation observation);
+    Collection<Observation> addObservation(String registrationId, Observation observation);
 
     /**
      * Get the observation for the given registration with the given observationId
      */
-    SingleObservation getObservation(String registrationId, byte[] observationId);
+    Observation getObservation(String registrationId, byte[] observationId);
 
     /**
      * Remove the observation for the given registration with the given observationId
      */
-    SingleObservation removeObservation(String registrationId, byte[] observationId);
+    Observation removeObservation(String registrationId, byte[] observationId);
 
     /**
      * Get all observations for the given registrationId
      */
-    Collection<SingleObservation> getObservations(String registrationId);
+    Collection<Observation> getObservations(String registrationId);
 
     /**
      * Remove all observations for the given registrationId
      */
-    Collection<SingleObservation> removeObservations(String registrationId);
+    Collection<Observation> removeObservations(String registrationId);
 
     /**
      * set a listener for registration expiration.

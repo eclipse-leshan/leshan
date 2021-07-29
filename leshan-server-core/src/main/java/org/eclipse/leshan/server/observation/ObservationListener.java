@@ -15,7 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.observation;
 
+import org.eclipse.leshan.core.observation.CompositeObservation;
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
+import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.registration.Registration;
 
@@ -33,14 +36,14 @@ public interface ObservationListener {
      * @param observation the new observation.
      * @param registration the related registration
      */
-    void newObservation(SingleObservation observation, Registration registration);
+    void newObservation(Observation observation, Registration registration);
 
     /**
      * Called when an observation is cancelled.
      * 
      * @param observation the cancelled observation.
      */
-    void cancelled(SingleObservation observation);
+    void cancelled(Observation observation);
 
     /**
      * Called on new notification.
@@ -53,6 +56,16 @@ public interface ObservationListener {
     void onResponse(SingleObservation observation, Registration registration, ObserveResponse response);
 
     /**
+     * Called on new notification.
+     *
+     * @param observation the composite-observation for which new data are received
+     * @param registration the registration concerned by this observation
+     * @param response the lwm2m observe-composite response received (successful or error response)
+     *
+     */
+    void onResponse(CompositeObservation observation, Registration registration, ObserveCompositeResponse response);
+
+    /**
      * Called when an error occurs on new notification.
      * 
      * @param observation the observation for which new data are received
@@ -63,5 +76,5 @@ public interface ObservationListener {
      *        <li>or any other RuntimeException for unexpected issue.
      *        </ul>
      */
-    void onError(SingleObservation observation, Registration registration, Exception error);
+    void onError(Observation observation, Registration registration, Exception error);
 }
