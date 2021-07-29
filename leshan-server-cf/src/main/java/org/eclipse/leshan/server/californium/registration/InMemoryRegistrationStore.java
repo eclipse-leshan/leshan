@@ -266,6 +266,9 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         if (observation instanceof SingleObservation && obs instanceof SingleObservation) {
             return ((SingleObservation) observation).getPath().equals(((SingleObservation) obs).getPath());
         }
+        if (observation instanceof CompositeObservation && obs instanceof CompositeObservation) {
+            return ((CompositeObservation) observation).getPaths().equals(((CompositeObservation) obs).getPaths());
+        }
         return false;
     }
 
@@ -455,7 +458,13 @@ public class InMemoryRegistrationStore implements CaliforniumRegistrationStore, 
         if (cfObs == null)
             return null;
 
-        return ObserveUtil.createLwM2mObservation(cfObs.getRequest());
+        if (cfObs.getRequest().getCode() == CoAP.Code.GET) {
+            return ObserveUtil.createLwM2mObservation(cfObs.getRequest());
+        } else if (cfObs.getRequest().getCode() == CoAP.Code.FETCH) {
+            return ObserveUtil.createLwM2mCompositeObservation(cfObs.getRequest());
+        } else {
+            throw new IllegalStateException("Observation request can be GET or FETCH only");
+        }
     }
 
     private String validateObservation(org.eclipse.californium.core.observe.Observation observation)

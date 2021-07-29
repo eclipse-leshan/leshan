@@ -35,6 +35,7 @@ import org.eclipse.californium.core.observe.ObservationStore;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
@@ -336,6 +337,14 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
                     return new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null, timestampedNodes,
                             singleObservation, null, coapResponse);
                 }
+            } else if (observation instanceof CompositeObservation) {
+
+                CompositeObservation compositeObservation = (CompositeObservation) observation;
+
+                Map<LwM2mPath, LwM2mNode> nodes = decoder
+                        .decodeNodes(coapResponse.getPayload(), contentFormat, compositeObservation.getPaths(), model);
+
+                return new ObserveCompositeResponse(responseCode, nodes, null, coapResponse, compositeObservation);
             }
 
             return null;

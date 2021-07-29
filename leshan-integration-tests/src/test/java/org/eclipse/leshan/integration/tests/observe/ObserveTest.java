@@ -86,7 +86,7 @@ public class ObserveTest {
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
         Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
-        assertTrue("We should have only one observation", observations.size() == 1);
+        assertEquals("We should have only one observation", 1, observations.size());
         assertTrue("New observation is not there", observations.contains(observation));
 
         // write device timezone

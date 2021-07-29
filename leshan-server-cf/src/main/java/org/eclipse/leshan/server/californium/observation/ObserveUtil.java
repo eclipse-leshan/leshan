@@ -24,8 +24,10 @@ import java.util.Map.Entry;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.server.californium.registration.CaliforniumRegistrationStore;
 
@@ -50,6 +52,18 @@ public class ObserveUtil {
                 request.getToken().getBytes(),
                 observeCommon.regId,
                 observeCommon.lwm2mPath.get(0),
+                observeCommon.contentFormat,
+                observeCommon.context
+        );
+    }
+
+    public static CompositeObservation createLwM2mCompositeObservation(Request request) {
+        ObserveCommon observeCommon = new ObserveCommon(request);
+
+        return new CompositeObservation(
+                request.getToken().getBytes(),
+                observeCommon.regId,
+                observeCommon.lwm2mPath,
                 observeCommon.contentFormat,
                 observeCommon.context
         );
@@ -105,6 +119,25 @@ public class ObserveUtil {
         context.put(CTX_ENDPOINT, endpoint);
         context.put(CTX_REGID, registrationId);
         context.put(CTX_LWM2M_PATH, request.getPath().toString());
+        for (Entry<String, String> ctx : request.getContext().entrySet()) {
+            context.put(ctx.getKey(), ctx.getValue());
+        }
+        return context;
+    }
+
+    public static Map<String, String> createCoapObserveCompositeRequestContext(String endpoint, String registrationId,
+            ObserveCompositeRequest request) {
+        Map<String, String> context = new HashMap<>();
+        context.put(CTX_ENDPOINT, endpoint);
+        context.put(CTX_REGID, registrationId);
+
+        StringBuilder sb = new StringBuilder();
+        for (LwM2mPath path : request.getPaths()) {
+            sb.append(path.toString());
+            sb.append("\n");
+        }
+
+        context.put(CTX_LWM2M_PATH, sb.toString());
         for (Entry<String, String> ctx : request.getContext().entrySet()) {
             context.put(ctx.getKey(), ctx.getValue());
         }
