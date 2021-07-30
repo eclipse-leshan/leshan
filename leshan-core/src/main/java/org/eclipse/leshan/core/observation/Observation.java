@@ -13,6 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
+ *     Michał Wadowski (Orange) - Add Cancel Composite-Observation feature.
  *******************************************************************************/
 package org.eclipse.leshan.core.observation;
 
@@ -21,15 +22,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.leshan.core.request.ContentFormat;
-
 /**
  * An abstract class for observation of a resource provided by a LWM2M Client.
  */
 public abstract class Observation {
 
     protected final byte[] id;
-    protected final ContentFormat contentFormat;
     protected final String registrationId;
     protected final Map<String, String> context;
 
@@ -38,12 +36,10 @@ public abstract class Observation {
      *
      * @param id token identifier of the observation
      * @param registrationId client's unique registration identifier.
-     * @param contentFormat contentFormat used to read the resource (could be null).
      * @param context additional information relative to this observation.
      */
-    public Observation(byte[] id, String registrationId, ContentFormat contentFormat, Map<String, String> context) {
+    public Observation(byte[] id, String registrationId, Map<String, String> context) {
         this.id = id;
-        this.contentFormat = contentFormat;
         this.registrationId = registrationId;
         if (context != null)
             this.context = Collections.unmodifiableMap(new HashMap<>(context));
@@ -69,15 +65,6 @@ public abstract class Observation {
     }
 
     /**
-     * Gets the requested contentFormat (could be null).
-     * 
-     * @return the resource path
-     */
-    public ContentFormat getContentFormat() {
-        return contentFormat;
-    }
-
-    /**
      * @return the contextual information relative to this observation.
      */
     public Map<String, String> getContext() {
@@ -88,7 +75,6 @@ public abstract class Observation {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((contentFormat == null) ? 0 : contentFormat.hashCode());
         result = prime * result + ((context == null) ? 0 : context.hashCode());
         result = prime * result + Arrays.hashCode(id);
         result = prime * result + ((registrationId == null) ? 0 : registrationId.hashCode());
@@ -104,11 +90,6 @@ public abstract class Observation {
         if (getClass() != obj.getClass())
             return false;
         Observation other = (Observation) obj;
-        if (contentFormat == null) {
-            if (other.contentFormat != null)
-                return false;
-        } else if (!contentFormat.equals(other.contentFormat))
-            return false;
         if (context == null) {
             if (other.context != null)
                 return false;
@@ -123,4 +104,5 @@ public abstract class Observation {
             return false;
         return true;
     }
+
 }

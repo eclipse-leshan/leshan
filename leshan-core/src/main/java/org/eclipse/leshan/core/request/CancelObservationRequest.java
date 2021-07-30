@@ -30,7 +30,7 @@ import org.eclipse.leshan.core.util.Hex;
  */
 public class CancelObservationRequest extends AbstractSimpleDownlinkRequest<CancelObservationResponse> {
 
-    private final Observation observation;
+    private final SingleObservation observation;
 
     /**
      * @param observation the observation to cancel actively
@@ -44,6 +44,10 @@ public class CancelObservationRequest extends AbstractSimpleDownlinkRequest<Canc
 
     public Observation getObservation() {
         return observation;
+    }
+
+    public ContentFormat getContentFormat() {
+        return observation.getContentFormat();
     }
 
     @Override
