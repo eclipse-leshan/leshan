@@ -13,6 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
+ *     Michał Wadowski (Orange) - Add Cancel Composite-Observation feature.
  *******************************************************************************/
 package org.eclipse.leshan.core.observation;
 
@@ -29,6 +30,8 @@ public class SingleObservation extends Observation {
 
     private final LwM2mPath path;
 
+    protected final ContentFormat contentFormat;
+
     /**
      * Instantiates an {@link SingleObservation} for the given node path.
      *
@@ -40,8 +43,9 @@ public class SingleObservation extends Observation {
      */
     public SingleObservation(byte[] id, String registrationId, LwM2mPath path, ContentFormat contentFormat,
             Map<String, String> context) {
-        super(id, registrationId, contentFormat, context);
+        super(id, registrationId, context);
         this.path = path;
+        this.contentFormat = contentFormat;
     }
 
     /**
@@ -51,6 +55,15 @@ public class SingleObservation extends Observation {
      */
     public LwM2mPath getPath() {
         return path;
+    }
+
+    /**
+     * Gets the requested contentFormat (could be null).
+     *
+     * @return the resource path
+     */
+    public ContentFormat getContentFormat() {
+        return contentFormat;
     }
 
     @Override
@@ -63,6 +76,7 @@ public class SingleObservation extends Observation {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
+        result = prime * result + ((contentFormat == null) ? 0 : contentFormat.hashCode());
         result = prime * result + ((path == null) ? 0 : path.hashCode());
         return result;
     }
@@ -76,6 +90,11 @@ public class SingleObservation extends Observation {
         if (getClass() != obj.getClass())
             return false;
         SingleObservation other = (SingleObservation) obj;
+        if (contentFormat == null) {
+            if (other.contentFormat != null)
+                return false;
+        } else if (!contentFormat.equals(other.contentFormat))
+            return false;
         if (path == null) {
             if (other.path != null)
                 return false;
