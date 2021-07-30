@@ -177,8 +177,8 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         coapRequest = Request.newGet();
         coapRequest.setObserveCancel();
         coapRequest.setToken(request.getObservation().getId());
-        if (request.getObservation().getContentFormat() != null)
-            coapRequest.getOptions().setAccept(request.getObservation().getContentFormat().getCode());
+        if (request.getContentFormat() != null)
+            coapRequest.getOptions().setAccept(request.getContentFormat().getCode());
         setTarget(coapRequest, request.getPath());
         applyLowerLayerConfig(coapRequest);
     }

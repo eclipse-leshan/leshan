@@ -13,6 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
+ *     Michał Wadowski (Orange) - Add Cancel Composite-Observation feature.
  *******************************************************************************/
 package org.eclipse.leshan.core.observation;
 
@@ -22,15 +23,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import org.eclipse.leshan.core.request.ContentFormat;
-
 /**
  * An abstract class for observation of a resource provided by a LWM2M Client.
  */
 public abstract class Observation {
 
     protected final byte[] id;
-    protected final ContentFormat contentFormat;
     protected final String registrationId;
     protected final Map<String, String> context;
 
@@ -39,12 +37,10 @@ public abstract class Observation {
      *
      * @param id token identifier of the observation
      * @param registrationId client's unique registration identifier.
-     * @param contentFormat contentFormat used to read the resource (could be null).
      * @param context additional information relative to this observation.
      */
-    public Observation(byte[] id, String registrationId, ContentFormat contentFormat, Map<String, String> context) {
+    public Observation(byte[] id, String registrationId, Map<String, String> context) {
         this.id = id;
-        this.contentFormat = contentFormat;
         this.registrationId = registrationId;
         if (context != null)
             this.context = Collections.unmodifiableMap(new HashMap<>(context));
@@ -70,15 +66,6 @@ public abstract class Observation {
     }
 
     /**
-     * Gets the requested contentFormat (could be null).
-     * 
-     * @return the resource path
-     */
-    public ContentFormat getContentFormat() {
-        return contentFormat;
-    }
-
-    /**
      * @return the contextual information relative to this observation.
      */
     public Map<String, String> getContext() {
@@ -91,14 +78,13 @@ public abstract class Observation {
         if (!(o instanceof Observation)) return false;
         Observation that = (Observation) o;
         return Arrays.equals(id, that.id) &&
-                Objects.equals(contentFormat, that.contentFormat) &&
                 Objects.equals(registrationId, that.registrationId) &&
                 Objects.equals(context, that.context);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(contentFormat, registrationId, context);
+        int result = Objects.hash(registrationId, context);
         result = 31 * result + Arrays.hashCode(id);
         return result;
     }

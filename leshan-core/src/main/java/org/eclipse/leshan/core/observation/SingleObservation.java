@@ -13,6 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
+ *     Michał Wadowski (Orange) - Add Cancel Composite-Observation feature.
  *******************************************************************************/
 package org.eclipse.leshan.core.observation;
 
@@ -30,6 +31,8 @@ public class SingleObservation extends Observation {
 
     private final LwM2mPath path;
 
+    protected final ContentFormat contentFormat;
+
     /**
      * Instantiates an {@link SingleObservation} for the given node path.
      *
@@ -41,8 +44,9 @@ public class SingleObservation extends Observation {
      */
     public SingleObservation(byte[] id, String registrationId, LwM2mPath path, ContentFormat contentFormat,
             Map<String, String> context) {
-        super(id, registrationId, contentFormat, context);
+        super(id, registrationId, context);
         this.path = path;
+        this.contentFormat = contentFormat;
     }
 
     /**
@@ -54,6 +58,15 @@ public class SingleObservation extends Observation {
         return path;
     }
 
+    /**
+     * Gets the requested contentFormat (could be null).
+     *
+     * @return the resource path
+     */
+    public ContentFormat getContentFormat() {
+        return contentFormat;
+    }
+
     @Override
     public String toString() {
         return "SingleObservation [" + "id=" + Hex.encodeHexString(id) + " contentFormat=" + contentFormat
@@ -62,15 +75,18 @@ public class SingleObservation extends Observation {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SingleObservation)) return false;
-        if (!super.equals(o)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof SingleObservation))
+            return false;
+        if (!super.equals(o))
+            return false;
         SingleObservation that = (SingleObservation) o;
-        return Objects.equals(path, that.path);
+        return Objects.equals(path, that.path) && Objects.equals(contentFormat, that.contentFormat);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), path);
+        return Objects.hash(super.hashCode(), path, contentFormat);
     }
 }
