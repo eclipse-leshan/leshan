@@ -13,6 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
+ *     Michał Wadowski (Orange) - Add Cancel Composite-Observation feature.
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
@@ -41,6 +42,8 @@ public interface DownlinkRequestVisitor {
     void visit(ReadCompositeRequest request);
 
     void visit(ObserveCompositeRequest request);
+
+    void visit(CancelCompositeObservationRequest request);
 
     void visit(WriteCompositeRequest writeCompositeRequest);
 

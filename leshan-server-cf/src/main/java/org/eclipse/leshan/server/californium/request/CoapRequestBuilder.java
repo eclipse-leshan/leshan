@@ -16,6 +16,7 @@
  *                                                     and transform them to 
  *                                                     EndpointContext for requests
  *     Michał Wadowski (Orange)                      - Add Observe-Composite feature.
+ *     Michał Wadowski (Orange)                      - Add Cancel Composite-Observation feature.
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.request;
 
@@ -210,6 +211,23 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         setTarget(coapRequest, LwM2mPath.ROOTPATH);
 
         coapRequest.setUserContext(ObserveUtil.createCoapObserveCompositeRequestContext(endpoint, registrationId, request));
+        applyLowerLayerConfig(coapRequest);
+    }
+
+    @Override
+    public void visit(CancelCompositeObservationRequest request) {
+        coapRequest = Request.newFetch();
+        coapRequest.setObserveCancel();
+        coapRequest.setToken(request.getObservation().getId());
+
+        coapRequest.getOptions().setContentFormat(request.getRequestContentFormat().getCode());
+        coapRequest.setPayload(encoder.encodePaths(request.getPaths(), request.getRequestContentFormat()));
+        if (request.getResponseContentFormat() != null) {
+            coapRequest.getOptions().setAccept(request.getResponseContentFormat().getCode());
+        }
+
+        setTarget(coapRequest, LwM2mPath.ROOTPATH);
+
         applyLowerLayerConfig(coapRequest);
     }
 
