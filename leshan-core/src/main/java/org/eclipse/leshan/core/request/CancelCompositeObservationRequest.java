@@ -15,13 +15,13 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import java.util.List;
+
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.response.CancelCompositeObservationResponse;
 import org.eclipse.leshan.core.util.Hex;
-
-import java.util.List;
 
 /**
  * A Lightweight M2M request for actively cancel an composite-observation.
