@@ -13,6 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
+ *     Michał Wadowski (Orange) - Add Cancel Composite-Observation feature.
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.request;
 
@@ -305,6 +306,28 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             // add the observation to an ObserveResponse instance
             lwM2mresponse = new ObserveCompositeResponse(toLwM2mResponseCode(coapResponse.getCode()),
                     content, null, coapResponse, observation
+            );
+        } else {
+            // handle unexpected response:
+            handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
+        }
+    }
+
+    @Override
+    public void visit(CancelCompositeObservationRequest request) {
+        if (coapResponse.isError()) {
+            // handle error response:
+            lwM2mresponse = new CancelCompositeObservationResponse(
+                    toLwM2mResponseCode(coapResponse.getCode()), null, null, coapResponse.getPayloadString(),
+                    coapResponse, null
+            );
+        } else if (isResponseCodeContent() || isResponseCodeChanged()) {
+            // handle success response:
+            Map<LwM2mPath, LwM2mNode> content = decodeCompositeCoapResponse(
+                    request.getPaths(), coapResponse, request, clientEndpoint
+            );
+            lwM2mresponse = new CancelCompositeObservationResponse(
+                    toLwM2mResponseCode(coapResponse.getCode()), content, null, null, coapResponse, null
             );
         } else {
             // handle unexpected response:
