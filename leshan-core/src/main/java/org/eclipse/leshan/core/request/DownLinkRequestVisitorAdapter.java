@@ -89,4 +89,9 @@ public class DownLinkRequestVisitorAdapter implements DownlinkRequestVisitor {
     @Override
     public void visit(ObserveCompositeRequest request) {
     }
+
+    @Override
+    public void visit(CancelCompositeObservationRequest request) {
+
+    }
 }

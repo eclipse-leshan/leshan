@@ -16,6 +16,7 @@
  *                                                     and transform them to 
  *                                                     EndpointContext for requests
  *     Michał Wadowski (Orange)                      - Add Observe-Composite feature.
+ *     Michał Wadowski (Orange)                      - Add Cancel Composite-Observation feature.
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.request;
 
@@ -34,6 +35,7 @@ import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.BootstrapReadRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
+import org.eclipse.leshan.core.request.CancelCompositeObservationRequest;
 import org.eclipse.leshan.core.request.CancelObservationRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
@@ -209,7 +211,25 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         coapRequest.setObserve();
         setTarget(coapRequest, LwM2mPath.ROOTPATH);
 
-        coapRequest.setUserContext(ObserveUtil.createCoapObserveCompositeRequestContext(endpoint, registrationId, request));
+        coapRequest.setUserContext(
+                ObserveUtil.createCoapObserveCompositeRequestContext(endpoint, registrationId, request));
+        applyLowerLayerConfig(coapRequest);
+    }
+
+    @Override
+    public void visit(CancelCompositeObservationRequest request) {
+        coapRequest = Request.newFetch();
+        coapRequest.setObserveCancel();
+        coapRequest.setToken(request.getObservation().getId());
+
+        coapRequest.getOptions().setContentFormat(request.getRequestContentFormat().getCode());
+        coapRequest.setPayload(encoder.encodePaths(request.getPaths(), request.getRequestContentFormat()));
+        if (request.getResponseContentFormat() != null) {
+            coapRequest.getOptions().setAccept(request.getResponseContentFormat().getCode());
+        }
+
+        setTarget(coapRequest, LwM2mPath.ROOTPATH);
+
         applyLowerLayerConfig(coapRequest);
     }
 
