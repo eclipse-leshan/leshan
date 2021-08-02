@@ -18,11 +18,8 @@ package org.eclipse.leshan.core.response;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,57 +31,39 @@ public class ObserveCompositeResponse extends ReadCompositeResponse {
 
     protected final CompositeObservation observation;
 
-    protected final Map<LwM2mPath, List<TimestampedLwM2mNode>> timestampedValues;
-
     public ObserveCompositeResponse(ResponseCode code, Map<LwM2mPath, LwM2mNode> content, String errorMessage,
             Object coapResponse, CompositeObservation observation) {
-        this(code, content, null, errorMessage, coapResponse, observation);
-    }
-
-    public ObserveCompositeResponse(ResponseCode code, Map<LwM2mPath, LwM2mNode> content,
-            Map<LwM2mPath, List<TimestampedLwM2mNode>> timestampedValues,
-            String errorMessage, Object coapResponse, CompositeObservation observation) {
-        super(code, getContent(content, timestampedValues), errorMessage, coapResponse);
-        this.timestampedValues = timestampedValues;
+        super(code, content, errorMessage, coapResponse);
         this.observation = observation;
-    }
-
-    private static Map<LwM2mPath, LwM2mNode> getContent(Map<LwM2mPath, LwM2mNode> content, Map<LwM2mPath,
-            List<TimestampedLwM2mNode>> timestampedValues) {
-        if (content != null || timestampedValues == null || timestampedValues.isEmpty()) {
-            return content;
-        }
-
-        Map<LwM2mPath, LwM2mNode> result = new HashMap<>();
-        for (Map.Entry<LwM2mPath, List<TimestampedLwM2mNode>> entry : timestampedValues.entrySet()) {
-            if (entry.getValue().size() > 0) {
-                LwM2mPath path = entry.getKey();
-                LwM2mNode node = entry.getValue().get(0).getNode();
-                result.put(path, node);
-            }
-        }
-        return result;
     }
 
     public CompositeObservation getObservation() {
         return observation;
     }
 
-    public Map<LwM2mPath, List<TimestampedLwM2mNode>> getTimestampedValues() {
-        return timestampedValues;
-    }
-
     @Override
     public String toString() {
         if (errorMessage != null) {
-            return String.format("ObserveCompositeResponse [code=%s, errormessage=%s]", code, errorMessage);
-        } else if (timestampedValues != null) {
-            return String.format("ObserveCompositeResponse [code=%s, content=%s, observation=%s, timestampedValues=" +
-                    "%d entries]", code, content, observation, timestampedValues.keySet().size());
+            return "ObserveCompositeResponse [" + "code=" + code + " errorMessage='" + errorMessage + '\'' + ']';
         } else {
-            return String.format("ObserveCompositeResponse [code=%s, content=%s, observation=%s]", code,
-                    content, observation
-            );
+            return "ObserveCompositeResponse [" + "code=" + code + " observation=" + observation + " content=" + content
+                    + ']';
+        }
+    }
+
+    @Override
+    public boolean isValid() {
+        switch (code.getCode()) {
+        case ResponseCode.CONTENT_CODE:
+        case ResponseCode.BAD_REQUEST_CODE:
+        case ResponseCode.NOT_FOUND_CODE:
+        case ResponseCode.UNAUTHORIZED_CODE:
+        case ResponseCode.METHOD_NOT_ALLOWED_CODE:
+        case ResponseCode.UNSUPPORTED_CONTENT_FORMAT_CODE:
+        case ResponseCode.INTERNAL_SERVER_ERROR_CODE:
+            return true;
+        default:
+            return false;
         }
     }
 
@@ -111,7 +90,7 @@ public class ObserveCompositeResponse extends ReadCompositeResponse {
     }
 
     public static ObserveCompositeResponse notAcceptable() {
-        return new ObserveCompositeResponse(ResponseCode.NOT_ACCEPTABLE, null, null, null, null);
+        return new ObserveCompositeResponse(ResponseCode.UNSUPPORTED_CONTENT_FORMAT, null, null, null, null);
     }
 
     public static ObserveCompositeResponse internalServerError(String errorMessage) {

@@ -56,13 +56,8 @@ public class SingleObservation extends Observation {
 
     @Override
     public String toString() {
-        return "SingleObservation{" +
-                "path=" + path +
-                ", id=" + Hex.encodeHexString(id) +
-                ", contentFormat=" + contentFormat +
-                ", registrationId='" + registrationId + '\'' +
-                ", context=" + context +
-                '}';
+        return "SingleObservation [" + "id=" + Hex.encodeHexString(id) + " contentFormat=" + contentFormat
+                + " registrationId='" + registrationId + '\'' + " context=" + context + " path=" + path + ']';
     }
 
     @Override

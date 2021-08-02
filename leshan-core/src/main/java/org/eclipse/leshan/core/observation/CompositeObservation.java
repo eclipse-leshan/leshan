@@ -56,13 +56,8 @@ public class CompositeObservation extends Observation {
 
     @Override
     public String toString() {
-        return "CompositeObservation{" +
-                "paths=" + paths +
-                ", id=" + Hex.encodeHexString(id) +
-                ", contentFormat=" + contentFormat +
-                ", registrationId='" + registrationId + '\'' +
-                ", context=" + context +
-                '}';
+        return "CompositeObservation [" + "paths=" + paths + " id=" + Hex.encodeHexString(id) + " contentFormat="
+                + contentFormat + " registrationId='" + registrationId + '\'' + " context=" + context + ']';
     }
 
     @Override

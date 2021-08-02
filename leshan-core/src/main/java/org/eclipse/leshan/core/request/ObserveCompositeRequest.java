@@ -16,11 +16,12 @@
 package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mNodeException;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -45,11 +46,20 @@ public class ObserveCompositeRequest extends AbstractLwM2mRequest<ObserveComposi
      * @param requestContentFormat The {@link ContentFormat} used to encode the list of {@link LwM2mPath}
      * @param responseContentFormat The {@link ContentFormat} requested to encode the {@link LwM2mNode} of the response.
      * @param paths List of {@link LwM2mPath} corresponding to {@link LwM2mNode} to read.
+     * @exception IllegalArgumentException if path has invalid format.
      *
      */
     public ObserveCompositeRequest(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
             String... paths) {
-        this(requestContentFormat, responseContentFormat, getLwM2mPathsFromStringList(paths));
+        this(requestContentFormat, responseContentFormat, getLwM2mPathList(Arrays.asList(paths)));
+    }
+
+    private static List<LwM2mPath> getLwM2mPathList(List<String> paths) {
+        try {
+            return LwM2mPath.getLwM2mPathList(paths);
+        } catch (LwM2mNodeException | IllegalArgumentException e) {
+            throw new InvalidRequestException("invalid path format");
+        }
     }
 
     /**
@@ -117,17 +127,5 @@ public class ObserveCompositeRequest extends AbstractLwM2mRequest<ObserveComposi
      */
     public Map<String, String> getContext() {
         return context;
-    }
-
-    protected static List<LwM2mPath> getLwM2mPathsFromStringList(String[] paths) {
-        try {
-            List<LwM2mPath> res = new ArrayList<>(paths.length);
-            for (String path : paths) {
-                res.add(new LwM2mPath(path));
-            }
-            return res;
-        } catch (IllegalArgumentException e) {
-            throw new InvalidRequestException();
-        }
     }
 }

@@ -17,6 +17,9 @@ package org.eclipse.leshan.core.node;
 
 import org.eclipse.leshan.core.util.Validate;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A path pointing to a LwM2M node (root, object, object instance, resource or resource instance).
  */
@@ -421,5 +424,23 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
         String path = fullpath.substring(lwm2mRootpath.length());
 
         return new LwM2mPath(path);
+    }
+
+    /**
+     * Create list of LwM2mPath from list of paths
+     *
+     * @param paths list of paths as List<String>.
+     * @return list of paths as List<LwM2mPath>.
+     *
+     * @exception NumberFormatException if path contains not Numeric value
+     * @exception LwM2mNodeException if path is invalid (e.g. too big number in path)
+     * @exception IllegalArgumentException if path length is invalid
+     */
+    public static List<LwM2mPath> getLwM2mPathList(List<String> paths) {
+        List<LwM2mPath> res = new ArrayList<>(paths.size());
+        for (String path : paths) {
+            res.add(new LwM2mPath(path));
+        }
+        return res;
     }
 }

@@ -20,7 +20,7 @@ package org.eclipse.leshan.core.request;
  * An abstract adapter class for visiting down link request. The methods in this class are empty. This class exists as
  * convenience for creating message observer objects.
  */
-abstract public class DownLinkRequestVisitorAdapter implements DownlinkRequestVisitor {
+public class DownLinkRequestVisitorAdapter implements DownlinkRequestVisitor {
 
     @Override
     public void visit(ReadRequest request) {

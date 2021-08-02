@@ -50,45 +50,5 @@ public class ObserveCompositeResponseTest {
 
         // then
         assertEquals(exampleContent, response.getContent());
-        assertNull(response.getTimestampedValues());
     }
-
-    @Test
-    public void should_create_response_with_timestamped_values() {
-        // given
-        Map<LwM2mPath, List<TimestampedLwM2mNode>> exampleTimestampedValues = new HashMap<>();
-
-        exampleTimestampedValues.put(
-                new LwM2mPath("/1/2/3"),
-                Arrays.asList(
-                        new TimestampedLwM2mNode(123L, newResource(15, "example 1a")),
-                        new TimestampedLwM2mNode(456L, newResource(15, "example 1b"))
-                )
-        );
-        exampleTimestampedValues.put(
-                new LwM2mPath("/2/3/4"),
-                Arrays.asList(
-                        new TimestampedLwM2mNode(123L, newResource(16, "example 2a")),
-                        new TimestampedLwM2mNode(456L, newResource(16, "example 2b"))
-                )
-        );
-
-        // when
-        ObserveCompositeResponse response = new ObserveCompositeResponse(
-                CONTENT, null, exampleTimestampedValues, null, null, null
-        );
-
-        // then
-        Map<LwM2mPath, LwM2mNode> expectedContent = new HashMap<>();
-        expectedContent.put(
-                new LwM2mPath("/1/2/3"), newResource(15, "example 1a")
-        );
-        expectedContent.put(
-                new LwM2mPath("/2/3/4"), newResource(16, "example 2a")
-        );
-
-        assertEquals(expectedContent, response.getContent());
-        assertEquals(exampleTimestampedValues, response.getTimestampedValues());
-    }
-
 }

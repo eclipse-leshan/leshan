@@ -15,10 +15,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mNodeException;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.ReadCompositeResponse;
@@ -40,11 +41,12 @@ public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResp
      * @param requestContentFormat The {@link ContentFormat} used to encode the list of {@link LwM2mPath}
      * @param responseContentFormat The {@link ContentFormat} requested to encode the {@link LwM2mNode} of the response.
      * @param paths List of {@link LwM2mPath} corresponding to {@link LwM2mNode} to read.
+     * @exception IllegalArgumentException if path has invalid format.
      * 
      */
     public ReadCompositeRequest(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
             String... paths) {
-        this(newPaths(paths), requestContentFormat, responseContentFormat, null);
+        this(getLwM2mPathList(Arrays.asList(paths)), requestContentFormat, responseContentFormat, null);
     }
 
     /**
@@ -53,11 +55,20 @@ public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResp
      * @param requestContentFormat The {@link ContentFormat} used to encode the list of {@link LwM2mPath}
      * @param responseContentFormat The {@link ContentFormat} requested to encode the {@link LwM2mNode} of the response.
      * @param paths List of {@link LwM2mPath} corresponding to {@link LwM2mNode} to read.
+     * @exception IllegalArgumentException if path has invalid format.
      * 
      */
     public ReadCompositeRequest(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
             List<String> paths) {
-        this(newPaths(paths), requestContentFormat, responseContentFormat, null);
+        this(getLwM2mPathList(paths), requestContentFormat, responseContentFormat, null);
+    }
+
+    private static List<LwM2mPath> getLwM2mPathList(List<String> paths) {
+        try {
+            return LwM2mPath.getLwM2mPathList(paths);
+        } catch (LwM2mNodeException | IllegalArgumentException e) {
+            throw new InvalidRequestException("invalid path format");
+        }
     }
 
     /**
@@ -69,7 +80,8 @@ public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResp
      * @param requestContentFormat The {@link ContentFormat} used to encode the list of {@link LwM2mPath}
      * @param responseContentFormat The {@link ContentFormat} requested to encode the {@link LwM2mNode} of the response.
      * @param coapRequest the underlying request.
-     * 
+     * @exception IllegalArgumentException if path has invalid format.
+     *
      */
     public ReadCompositeRequest(List<LwM2mPath> paths, ContentFormat requestContentFormat,
             ContentFormat responseContentFormat, Object coapRequest) {
@@ -154,27 +166,4 @@ public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResp
         return true;
     }
 
-    protected static List<LwM2mPath> newPaths(List<String> paths) {
-        try {
-            List<LwM2mPath> res = new ArrayList<>(paths.size());
-            for (String path : paths) {
-                res.add(new LwM2mPath(path));
-            }
-            return res;
-        } catch (IllegalArgumentException e) {
-            throw new InvalidRequestException();
-        }
-    }
-
-    protected static List<LwM2mPath> newPaths(String[] paths) {
-        try {
-            List<LwM2mPath> res = new ArrayList<>(paths.length);
-            for (String path : paths) {
-                res.add(new LwM2mPath(path));
-            }
-            return res;
-        } catch (IllegalArgumentException e) {
-            throw new InvalidRequestException();
-        }
-    }
 }
