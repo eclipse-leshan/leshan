@@ -31,7 +31,6 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -77,9 +76,6 @@ import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
-import org.eclipse.leshan.core.model.ResourceModel;
-import org.eclipse.leshan.core.model.ResourceModel.Operations;
-import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
@@ -648,12 +644,6 @@ public class LeshanClientDemo {
         if (modelsFolderPath != null) {
             models.addAll(ObjectLoader.loadObjectsFromDir(new File(modelsFolderPath), true));
         }
-
-        Collection<ResourceModel> resources = Arrays
-                .asList(new ResourceModel(1002, "string", Operations.RW, true, false, Type.STRING, null, null, null));
-        ObjectModel objectModel = new ObjectModel(666, "test", "description", "1.0", false, false, resources, null,
-                null, "description");
-        models.add(objectModel);
 
         // Initialize object list
         final LwM2mModel model = new StaticModel(models);
