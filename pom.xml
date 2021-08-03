@@ -345,8 +345,8 @@ Contributors:
                     <version>3.8.1</version>
                     <configuration>
                         <encoding>UTF-8</encoding>
-                        <source>1.7</source>
-                        <target>1.7</target>
+                        <source>1.8</source>
+                        <target>1.8</target>
                         <debug>true</debug>
                         <optimize>true</optimize>
                         <showDeprecations>true</showDeprecations>
@@ -751,8 +751,18 @@ Contributors:
             </dependency>
             <dependency>
                 <groupId>info.picocli</groupId>
-                <artifactId>picocli-shell-jline2</artifactId>
+                <artifactId>picocli-shell-jline3</artifactId>
                 <version>4.6.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jline</groupId>
+                <artifactId>jline</artifactId>
+                <version>3.20.0</version>
+            </dependency>
+             <dependency>
+                <groupId>org.jline</groupId>
+                <artifactId>jline-console</artifactId>
+                <version>3.20.0</version>
             </dependency>
             <dependency>
                 <groupId>commons-cli</groupId>

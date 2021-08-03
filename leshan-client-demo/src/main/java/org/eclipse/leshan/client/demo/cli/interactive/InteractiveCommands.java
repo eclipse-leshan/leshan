@@ -15,7 +15,6 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.model.LwM2mModel;
 
-import jline.console.ConsoleReader;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
@@ -36,20 +35,21 @@ import picocli.CommandLine.ParentCommand;
 public class InteractiveCommands implements Runnable {
 
     private PrintWriter out;
+    private CommandLine commandLine;
 
     private LeshanClient client;
     private LwM2mModel model;
 
-    public InteractiveCommands(ConsoleReader reader, LeshanClient client, LwM2mModel model) {
-        out = new PrintWriter(reader.getOutput());
-
+    public InteractiveCommands(LeshanClient client, LwM2mModel model) {
+        commandLine = new CommandLine(this);
+        out = commandLine.getOut();
         this.client = client;
         this.model = model;
     }
 
     @Override
     public void run() {
-        out.print(new CommandLine(this).getUsageMessage());
+        out.print(commandLine.getUsageMessage());
         out.flush();
     }
 

@@ -37,7 +37,7 @@ Contributors:
         </dependency>
         <dependency>
             <groupId>info.picocli</groupId>
-            <artifactId>picocli-shell-jline2</artifactId>
+            <artifactId>picocli-shell-jline3</artifactId>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
