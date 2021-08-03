@@ -15,6 +15,16 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.response;
 
+import static org.eclipse.leshan.core.ResponseCode.*;
+import static org.eclipse.leshan.core.node.LwM2mSingleResource.newResource;
+import static org.junit.Assert.*;
+import static org.junit.runners.Parameterized.Parameters;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
@@ -23,17 +33,6 @@ import org.junit.Test;
 import org.junit.function.ThrowingRunnable;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import static org.eclipse.leshan.core.ResponseCode.CHANGED;
-import static org.eclipse.leshan.core.ResponseCode.CONTENT;
-import static org.eclipse.leshan.core.node.LwM2mSingleResource.newResource;
-import static org.junit.Assert.*;
-import static org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 public class ObserveResponseTest {

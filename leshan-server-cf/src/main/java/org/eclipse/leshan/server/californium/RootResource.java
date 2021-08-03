@@ -12,7 +12,6 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
- *     Michał Wadowski (Orange) - Add Observe-Composite feature.
  *******************************************************************************/
 package org.eclipse.leshan.server.californium;
 
@@ -29,7 +28,6 @@ public class RootResource extends CoapResource {
     public RootResource() {
         super("");
         setVisible(false);
-        setObservable(true);
     }
 
     @Override

@@ -16,6 +16,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.request;
 
+import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toLwM2mResponseCode;
+
+import java.util.List;
+import java.util.Map;
+
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
@@ -49,16 +54,28 @@ import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteCompositeRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
-import org.eclipse.leshan.core.response.*;
+import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
+import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
+import org.eclipse.leshan.core.response.BootstrapFinishResponse;
+import org.eclipse.leshan.core.response.BootstrapReadResponse;
+import org.eclipse.leshan.core.response.BootstrapWriteResponse;
+import org.eclipse.leshan.core.response.CancelObservationResponse;
+import org.eclipse.leshan.core.response.CreateResponse;
+import org.eclipse.leshan.core.response.DeleteResponse;
+import org.eclipse.leshan.core.response.DiscoverResponse;
+import org.eclipse.leshan.core.response.ExecuteResponse;
+import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.ObserveCompositeResponse;
+import org.eclipse.leshan.core.response.ObserveResponse;
+import org.eclipse.leshan.core.response.ReadCompositeResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.response.WriteAttributesResponse;
+import org.eclipse.leshan.core.response.WriteCompositeResponse;
+import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.californium.observation.ObserveUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.Map;
-
-import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toLwM2mResponseCode;
 
 /**
  * This class is able to create a {@link LwM2mResponse} from a CoAP {@link Response}.
@@ -274,7 +291,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     coapResponse.getPayloadString(), coapResponse, null
             );
 
-        } else if (isResponseCodeContent() || isResponseCodeChanged()) {
+        } else if (isResponseCodeContent()) {
             // handle success response:
             Map<LwM2mPath, LwM2mNode> content = decodeCompositeCoapResponse(
                     request.getPaths(), coapResponse, request, clientEndpoint

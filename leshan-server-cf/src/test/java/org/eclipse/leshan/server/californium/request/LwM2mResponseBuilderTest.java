@@ -15,6 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.request;
 
+import static org.junit.Assert.*;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
@@ -29,13 +35,6 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.californium.DummyDecoder;
 import org.eclipse.leshan.server.californium.observation.ObserveUtil;
 import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class LwM2mResponseBuilderTest {
 

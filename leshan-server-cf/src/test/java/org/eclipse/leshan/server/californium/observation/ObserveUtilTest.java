@@ -15,6 +15,13 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.observation;
 
+import static org.junit.Assert.*;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Token;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -25,13 +32,6 @@ import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.junit.Test;
 import org.junit.function.ThrowingRunnable;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.*;
 
 public class ObserveUtilTest {
 
