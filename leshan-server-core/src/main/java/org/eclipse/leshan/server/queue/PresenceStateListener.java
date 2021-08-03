@@ -17,7 +17,10 @@ package org.eclipse.leshan.server.queue;
 
 import java.util.Collection;
 
+import org.eclipse.leshan.core.observation.CompositeObservation;
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
+import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.observation.ObservationListener;
 import org.eclipse.leshan.server.registration.Registration;
@@ -66,7 +69,18 @@ public class PresenceStateListener implements RegistrationListener, ObservationL
      * @since 1.1
      */
     @Override
-    public void onResponse(Observation observation, Registration registration, AbstractLwM2mResponse response) {
+    public void onResponse(SingleObservation observation, Registration registration, ObserveResponse response) {
+        presenceService.setAwake(registration);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 1.1
+     */
+    @Override
+    public void onResponse(CompositeObservation observation, Registration registration,
+            ObserveCompositeResponse response) {
         presenceService.setAwake(registration);
     }
 

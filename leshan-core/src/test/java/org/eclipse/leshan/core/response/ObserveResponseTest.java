@@ -92,30 +92,15 @@ public class ObserveResponseTest {
                 new TimestampedLwM2mNode(456L, newResource(15, "example 2"))
         );
 
+        LwM2mSingleResource content = responseCode == CHANGED ? newResource(15, "example 1") : null;
+
         // when
         ObserveResponse response = new ObserveResponse(
-                responseCode, null, timestampedValues, null, null
+                responseCode, content, timestampedValues, null, null
         );
 
         // then
         assertEquals(timestampedValues.get(0).getNode(), response.getContent());
         assertEquals(timestampedValues, response.getTimestampedValues());
-    }
-
-    @Test
-    public void should_pass_empty_timestamped_values_if_only_one_node_without_timestamp() {
-        // given
-        List<TimestampedLwM2mNode> timestampedValues = Collections.singletonList(
-                new TimestampedLwM2mNode(null, newResource(15, "example 1"))
-        );
-
-        // when
-        ObserveResponse response = new ObserveResponse(
-                responseCode, null, timestampedValues, null, null
-        );
-
-        // then
-        assertEquals(timestampedValues.get(0).getNode(), response.getContent());
-        assertNull(response.getTimestampedValues());
     }
 }

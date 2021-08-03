@@ -39,12 +39,14 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
+import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.response.AbstractLwM2mResponse;
+import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.californium.registration.CaliforniumRegistrationStore;
@@ -272,7 +274,13 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
             if (response != null) {
                 // notify all listeners
                 for (ObservationListener listener : listeners) {
-                    listener.onResponse(observation, registration, response);
+                    if (observation instanceof SingleObservation && response instanceof ObserveResponse) {
+                        listener.onResponse((SingleObservation)observation, registration, (ObserveResponse)response);
+                    }
+                    if (observation instanceof CompositeObservation && response instanceof ObserveCompositeResponse) {
+                        listener.onResponse((CompositeObservation) observation, registration,
+                                (ObserveCompositeResponse) response);
+                    }
                 }
             }
         } catch (InvalidResponseException e) {
@@ -320,7 +328,14 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
                         .decodeTimestampedData(coapResponse.getPayload(), contentFormat, singleObservation.getPath(),
                                 model);
 
-                return new ObserveResponse(responseCode, null, timestampedNodes, singleObservation, null, coapResponse);
+                // create lwm2m response
+                if (timestampedNodes.size() == 1 && !timestampedNodes.get(0).isTimestamped()) {
+                    return new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()),
+                            timestampedNodes.get(0).getNode(), null, singleObservation, null, coapResponse);
+                } else {
+                    return new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null, timestampedNodes,
+                            singleObservation, null, coapResponse);
+                }
             }
 
             return null;

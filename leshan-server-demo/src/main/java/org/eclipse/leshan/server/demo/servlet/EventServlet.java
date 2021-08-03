@@ -33,7 +33,6 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
-import org.eclipse.leshan.core.response.AbstractLwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.californium.LeshanServer;
@@ -134,21 +133,29 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void onResponse(Observation observation, Registration registration, AbstractLwM2mResponse response) {
+        public void onResponse(SingleObservation observation, Registration registration, ObserveResponse response) {
+            String path = getObservationPaths(observation);
+            LwM2mNode content = response.getContent();
+            String stringContent = content.toString();
+            String jsonContent = gson.toJson(content);
+
+            onResponseCommon(registration, path, stringContent, jsonContent);
+        }
+
+        @Override
+        public void onResponse(CompositeObservation observation, Registration registration,
+                ObserveCompositeResponse response) {
             String path = getObservationPaths(observation);
 
-            String stringContent = null;
-            String jsonContent = null;
+            Map<LwM2mPath, LwM2mNode> content = response.getContent();
+            String stringContent = content.toString();
+            String jsonContent = gson.toJson(content);
 
-            if (response instanceof ObserveResponse) {
-                LwM2mNode content = ((ObserveResponse) response).getContent();
-                stringContent = content.toString();
-                jsonContent = gson.toJson(content);
-            } else if (response instanceof ObserveCompositeResponse) {
-                Map<LwM2mPath, LwM2mNode> content = ((ObserveCompositeResponse) response).getContent();
-                stringContent = content.toString();
-                jsonContent = gson.toJson(content);
-            }
+            onResponseCommon(registration, path, stringContent, jsonContent);
+        }
+
+        private void onResponseCommon(Registration registration, String path, String stringContent,
+                String jsonContent) {
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Received notification from [{}] containing value [{}]", path, stringContent);
@@ -160,7 +167,8 @@ public class EventServlet extends EventSourceServlet {
                         .append("\",\"res\":\"")
                         .append(path).append("\",\"val\":")
                         .append(jsonContent)
-                        .append("}").toString();
+                        .append("}")
+                        .toString();
 
                 sendEvent(EVENT_NOTIFICATION, data, registration.getEndpoint());
             }

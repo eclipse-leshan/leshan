@@ -126,9 +126,9 @@ public class ObserveTimeStampTest {
         // verify result
         listener.waitForNotification(2000);
         assertTrue(listener.receivedNotify().get());
-        assertEquals(mostRecentNode.getNode(), ((ObserveResponse) listener.getResponse()).getContent());
-        assertEquals(timestampedNodes, ((ObserveResponse) listener.getResponse()).getTimestampedValues());
-        assertContentFormat(contentFormat, listener.getResponse());
+        assertEquals(mostRecentNode.getNode(), listener.getObserveResponse().getContent());
+        assertEquals(timestampedNodes, listener.getObserveResponse().getTimestampedValues());
+        assertContentFormat(contentFormat, listener.getObserveResponse());
     }
 
     @Test
@@ -169,9 +169,9 @@ public class ObserveTimeStampTest {
         // verify result
         listener.waitForNotification(2000);
         assertTrue(listener.receivedNotify().get());
-        assertEquals(mostRecentNode.getNode(), ((ObserveResponse) listener.getResponse()).getContent());
-        assertEquals(timestampedNodes, ((ObserveResponse) listener.getResponse()).getTimestampedValues());
-        assertContentFormat(contentFormat, listener.getResponse());
+        assertEquals(mostRecentNode.getNode(), listener.getObserveResponse().getContent());
+        assertEquals(timestampedNodes, listener.getObserveResponse().getTimestampedValues());
+        assertContentFormat(contentFormat, listener.getObserveResponse());
     }
 
     @Test
@@ -213,8 +213,8 @@ public class ObserveTimeStampTest {
         // verify result
         listener.waitForNotification(2000);
         assertTrue(listener.receivedNotify().get());
-        assertEquals(mostRecentNode.getNode(), ((ObserveResponse) listener.getResponse()).getContent());
-        assertEquals(timestampedNodes, ((ObserveResponse) listener.getResponse()).getTimestampedValues());
-        assertContentFormat(contentFormat, listener.getResponse());
+        assertEquals(mostRecentNode.getNode(), listener.getObserveResponse().getContent());
+        assertEquals(timestampedNodes, listener.getObserveResponse().getTimestampedValues());
+        assertContentFormat(contentFormat, listener.getObserveResponse());
     }
 }

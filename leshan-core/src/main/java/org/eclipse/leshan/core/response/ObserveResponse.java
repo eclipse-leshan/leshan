@@ -40,34 +40,17 @@ public class ObserveResponse extends ReadResponse {
 
     public ObserveResponse(ResponseCode code, LwM2mNode content, List<TimestampedLwM2mNode> timestampedValues,
             SingleObservation observation, String errorMessage, Object coapResponse) {
-        super(code, getContent(content, timestampedValues), errorMessage, coapResponse);
+        super(code, timestampedValues != null && !timestampedValues.isEmpty() ? timestampedValues.get(0).getNode()
+                : content, errorMessage, coapResponse);
 
         // CHANGED is out of spec but is supported for backward compatibility. (previous draft version)
         if (ResponseCode.CHANGED.equals(code)) {
-            if (this.content == null)
+            if (content == null)
                 throw new InvalidResponseException("Content is mandatory for successful response");
         }
 
         this.observation = observation;
-        this.timestampedValues = hasSingleItemWithoutTimestamp(timestampedValues) ? null : timestampedValues;
-    }
-
-    private static LwM2mNode getContent(LwM2mNode content, List<TimestampedLwM2mNode> timestampedValues) {
-        if (hasSingleItemWithoutTimestamp(timestampedValues)) {
-            content = timestampedValues.get(0).getNode();
-            timestampedValues = null;
-        }
-
-        return getFirstListItemOrContent(content, timestampedValues);
-    }
-
-    private static LwM2mNode getFirstListItemOrContent(LwM2mNode content,
-            List<TimestampedLwM2mNode> timestampedValues) {
-        return timestampedValues != null && timestampedValues.size() > 0 ? timestampedValues.get(0).getNode() : content;
-    }
-
-    private static boolean hasSingleItemWithoutTimestamp(List<TimestampedLwM2mNode> timestampedValues) {
-        return timestampedValues != null && timestampedValues.size() == 1 && !timestampedValues.get(0).isTimestamped();
+        this.timestampedValues = timestampedValues;
     }
 
     public List<TimestampedLwM2mNode> getTimestampedValues() {

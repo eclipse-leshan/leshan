@@ -15,8 +15,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.observation;
 
+import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.core.response.AbstractLwM2mResponse;
+import org.eclipse.leshan.core.observation.SingleObservation;
+import org.eclipse.leshan.core.response.ObserveCompositeResponse;
+import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.registration.Registration;
 
 /**
@@ -50,7 +53,17 @@ public interface ObservationListener {
      * @param response the lwm2m response received (successful or error response)
      * 
      */
-    void onResponse(Observation observation, Registration registration, AbstractLwM2mResponse response);
+    void onResponse(SingleObservation observation, Registration registration, ObserveResponse response);
+
+    /**
+     * Called on new notification.
+     *
+     * @param observation the composite-observation for which new data are received
+     * @param registration the registration concerned by this observation
+     * @param response the lwm2m observe-composite response received (successful or error response)
+     *
+     */
+    void onResponse(CompositeObservation observation, Registration registration, ObserveCompositeResponse response);
 
     /**
      * Called when an error occurs on new notification.

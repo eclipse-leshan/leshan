@@ -22,11 +22,12 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
+import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.ObserveRequest;
-import org.eclipse.leshan.core.response.AbstractLwM2mResponse;
+import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.californium.CaliforniumTestSupport;
 import org.eclipse.leshan.server.californium.DummyDecoder;
@@ -45,7 +46,6 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class ObservationServiceTest {
 
@@ -165,8 +165,6 @@ public class ObservationServiceTest {
         // then
         assertNotNull(listener.observeResponse);
         assertNotNull(listener.observation);
-        assertTrue(listener.observeResponse instanceof ObserveResponse);
-        assertTrue(listener.observation instanceof SingleObservation);
     }
 
     private void createDummyDecoderObservationService() {
@@ -218,8 +216,8 @@ public class ObservationServiceTest {
 
     private static class CatchResponseObservationListener implements ObservationListener {
 
-        AbstractLwM2mResponse observeResponse;
-        Observation observation;
+        ObserveResponse observeResponse;
+        SingleObservation observation;
 
         @Override
         public void newObservation(Observation observation, Registration registration) {
@@ -232,9 +230,14 @@ public class ObservationServiceTest {
         }
 
         @Override
-        public void onResponse(Observation observation, Registration registration, AbstractLwM2mResponse response) {
+        public void onResponse(SingleObservation observation, Registration registration, ObserveResponse response) {
             this.observeResponse = response;
             this.observation = observation;
+        }
+
+        @Override
+        public void onResponse(CompositeObservation observation, Registration registration,
+                ObserveCompositeResponse response) {
         }
 
         @Override

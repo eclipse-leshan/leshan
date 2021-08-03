@@ -20,8 +20,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.eclipse.leshan.core.observation.SingleObservation;
-
 import org.eclipse.leshan.core.observation.Observation;
 
 /**
