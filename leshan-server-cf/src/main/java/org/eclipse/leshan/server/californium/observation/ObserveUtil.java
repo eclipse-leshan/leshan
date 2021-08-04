@@ -15,16 +15,16 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.observation;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.server.californium.registration.CaliforniumRegistrationStore;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * Utility functions to help to handle observation in Leshan. Those helper functions are only needed if you're

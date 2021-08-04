@@ -16,12 +16,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.observation;
 
+import java.util.Map;
+import java.util.Objects;
+
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.util.Hex;
-
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * An observation of a resource provided by a LWM2M Client.

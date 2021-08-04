@@ -15,12 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.response;
 
+import java.util.Map;
+
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
-
-import java.util.Map;
 
 /**
  * Specialized ReadCompositeResponse to a Observe-Composite request, with the corresponding Observation.

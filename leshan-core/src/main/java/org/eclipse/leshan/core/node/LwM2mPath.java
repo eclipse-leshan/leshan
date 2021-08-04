@@ -15,10 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
-import org.eclipse.leshan.core.util.Validate;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.eclipse.leshan.core.util.Validate;
 
 /**
  * A path pointing to a LwM2M node (root, object, object instance, resource or resource instance).

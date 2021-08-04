@@ -24,6 +24,24 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.registration;
 
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.observe.ObservationStoreException;
 import org.eclipse.californium.core.observe.ObservationUtil;
@@ -35,18 +53,13 @@ import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.eclipse.leshan.server.californium.observation.ObserveUtil;
-import org.eclipse.leshan.server.registration.*;
+import org.eclipse.leshan.server.registration.Deregistration;
+import org.eclipse.leshan.server.registration.ExpirationListener;
+import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationUpdate;
+import org.eclipse.leshan.server.registration.UpdatedRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.InetSocketAddress;
-import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * An in memory store for registration and observation.

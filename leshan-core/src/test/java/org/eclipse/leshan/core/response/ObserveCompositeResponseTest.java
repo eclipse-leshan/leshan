@@ -15,20 +15,16 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.response;
 
-import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
-import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import static org.eclipse.leshan.core.ResponseCode.CONTENT;
 import static org.eclipse.leshan.core.node.LwM2mSingleResource.newResource;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mPath;
+import org.junit.Test;
 
 public class ObserveCompositeResponseTest {
 
