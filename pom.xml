@@ -50,6 +50,7 @@ Contributors:
 
         <module>leshan-integration-tests</module> 
 
+        <module>leshan-core-demo</module>
         <module>leshan-server-demo</module>
         <module>leshan-client-demo</module>
         <module>leshan-bsserver-demo</module>
@@ -667,6 +668,11 @@ Contributors:
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>leshan-server-redis</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>leshan-core-demo</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
