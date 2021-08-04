@@ -13,17 +13,18 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.demo.cli.converters;
+package org.eclipse.leshan.core.demo.cli.converters;
 
-import org.eclipse.californium.elements.util.Bytes;
-import org.eclipse.leshan.core.util.Hex;
+import java.security.PublicKey;
+
+import org.eclipse.leshan.core.util.SecurityUtil;
 
 import picocli.CommandLine.ITypeConverter;
 
-public class HexadecimalConverter implements ITypeConverter<Bytes> {
+public class PublicKeyConverter implements ITypeConverter<PublicKey> {
 
     @Override
-    public Bytes convert(String value) throws Exception {
-        return new Bytes(Hex.decodeHex(value.toCharArray()));
+    public PublicKey convert(String value) throws Exception {
+        return SecurityUtil.publicKey.readFromFile(value);
     }
 }

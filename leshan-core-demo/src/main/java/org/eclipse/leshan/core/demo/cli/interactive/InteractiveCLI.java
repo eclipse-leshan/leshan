@@ -13,12 +13,10 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.demo.cli.interactive;
+package org.eclipse.leshan.core.demo.cli.interactive;
 
 import java.io.IOException;
 
-import org.eclipse.leshan.client.californium.LeshanClient;
-import org.eclipse.leshan.core.model.LwM2mModel;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Logger;
@@ -38,7 +36,7 @@ public class InteractiveCLI {
     private ConsoleReader console;
     private CommandLine commandLine;
 
-    public InteractiveCLI(LeshanClient client, LwM2mModel model) throws IOException {
+    public InteractiveCLI(JLineInteractiveCommands interactivesCommands) throws IOException {
 
         // JLine 2 does not detect some terminal as not ANSI compatible, like Eclipse Console
         // see : https://github.com/jline/jline2/issues/185
@@ -54,8 +52,8 @@ public class InteractiveCLI {
         console.setPrompt("");
 
         // set up the completion
-        InteractiveCommands commands = new InteractiveCommands(console, client, model);
-        commandLine = new CommandLine(commands);
+        interactivesCommands.setConsole(console);
+        commandLine = new CommandLine(interactivesCommands);
         console.addCompleter(new PicocliJLineCompleter(commandLine.getCommandSpec()));
 
         // Configure Terminal appender if it is present.

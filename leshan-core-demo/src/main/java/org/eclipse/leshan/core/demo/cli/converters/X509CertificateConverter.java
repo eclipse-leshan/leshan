@@ -13,18 +13,18 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.demo.cli.converters;
+package org.eclipse.leshan.core.demo.cli.converters;
 
-import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 
 import org.eclipse.leshan.core.util.SecurityUtil;
 
 import picocli.CommandLine.ITypeConverter;
 
-public class PrivateKeyConverter implements ITypeConverter<PrivateKey> {
+public class X509CertificateConverter implements ITypeConverter<X509Certificate> {
 
     @Override
-    public PrivateKey convert(String value) throws Exception {
-        return SecurityUtil.privateKey.readFromFile(value);
+    public X509Certificate convert(String value) throws Exception {
+        return SecurityUtil.certificate.readFromFile(value);
     }
 }

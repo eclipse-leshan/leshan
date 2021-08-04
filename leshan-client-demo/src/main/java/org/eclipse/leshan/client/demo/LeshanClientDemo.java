@@ -41,10 +41,8 @@ import org.eclipse.californium.scandium.dtls.SessionId;
 import org.eclipse.californium.scandium.dtls.SingleNodeConnectionIdGenerator;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
-import org.eclipse.leshan.client.demo.cli.ExecutionExceptionHandler;
 import org.eclipse.leshan.client.demo.cli.LeshanClientDemoCLI;
-import org.eclipse.leshan.client.demo.cli.ShortErrorMessageHandler;
-import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCLI;
+import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
@@ -52,6 +50,9 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
+import org.eclipse.leshan.core.demo.cli.ExecutionExceptionHandler;
+import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
+import org.eclipse.leshan.core.demo.cli.interactive.InteractiveCLI;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -97,7 +98,7 @@ public class LeshanClientDemo {
             final LeshanClient client = createClient(cli, model);
 
             // Print commands help
-            InteractiveCLI console = new InteractiveCLI(client, model);
+            InteractiveCLI console = new InteractiveCLI(new InteractiveCommands(client, model));
             console.showHelp();
 
             // Start the client

@@ -13,18 +13,10 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.demo.cli.converters;
+package org.eclipse.leshan.core.demo.cli.interactive;
 
-import java.security.PublicKey;
+import jline.console.ConsoleReader;
 
-import org.eclipse.leshan.core.util.SecurityUtil;
-
-import picocli.CommandLine.ITypeConverter;
-
-public class PublicKeyConverter implements ITypeConverter<PublicKey> {
-
-    @Override
-    public PublicKey convert(String value) throws Exception {
-        return SecurityUtil.publicKey.readFromFile(value);
-    }
+public interface JLineInteractiveCommands {
+    void setConsole(ConsoleReader console);
 }

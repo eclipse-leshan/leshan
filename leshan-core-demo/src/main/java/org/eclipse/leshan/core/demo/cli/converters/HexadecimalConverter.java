@@ -13,18 +13,17 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.demo.cli.converters;
+package org.eclipse.leshan.core.demo.cli.converters;
 
-import java.security.cert.X509Certificate;
-
-import org.eclipse.leshan.core.util.SecurityUtil;
+import org.eclipse.californium.elements.util.Bytes;
+import org.eclipse.leshan.core.util.Hex;
 
 import picocli.CommandLine.ITypeConverter;
 
-public class X509CertificateConverter implements ITypeConverter<X509Certificate> {
+public class HexadecimalConverter implements ITypeConverter<Bytes> {
 
     @Override
-    public X509Certificate convert(String value) throws Exception {
-        return SecurityUtil.certificate.readFromFile(value);
+    public Bytes convert(String value) throws Exception {
+        return new Bytes(Hex.decodeHex(value.toCharArray()));
     }
 }

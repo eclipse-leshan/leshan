@@ -23,9 +23,10 @@ import java.util.Map;
 
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
-import org.eclipse.leshan.client.demo.cli.converters.PortConverter;
-import org.eclipse.leshan.client.demo.cli.converters.StrictlyPositiveIntegerConverter;
 import org.eclipse.leshan.core.CertificateUsage;
+import org.eclipse.leshan.core.demo.cli.InvalidOptionsException;
+import org.eclipse.leshan.core.demo.cli.converters.PortConverter;
+import org.eclipse.leshan.core.demo.cli.converters.StrictlyPositiveIntegerConverter;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;

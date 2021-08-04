@@ -13,19 +13,18 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.demo.cli.converters;
+package org.eclipse.leshan.core.demo.cli.converters;
+
+import java.security.PrivateKey;
+
+import org.eclipse.leshan.core.util.SecurityUtil;
 
 import picocli.CommandLine.ITypeConverter;
 
-public class StrictlyPositiveIntegerConverter implements ITypeConverter<Integer> {
+public class PrivateKeyConverter implements ITypeConverter<PrivateKey> {
 
     @Override
-    public Integer convert(String value) throws Exception {
-        Integer res = Integer.parseInt(value);
-
-        if (res <= 0)
-            throw new IllegalArgumentException(String.format("%s is not a strictly positive integer", value));
-
-        return res;
+    public PrivateKey convert(String value) throws Exception {
+        return SecurityUtil.privateKey.readFromFile(value);
     }
 }

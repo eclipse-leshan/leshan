@@ -13,6 +13,7 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.LwM2mId;
+import org.eclipse.leshan.core.demo.cli.interactive.JLineInteractiveCommands;
 import org.eclipse.leshan.core.model.LwM2mModel;
 
 import jline.console.ConsoleReader;
@@ -33,18 +34,21 @@ import picocli.CommandLine.ParentCommand;
                  MoveCommand.class },
          customSynopsis = { "" },
          synopsisHeading = "")
-public class InteractiveCommands implements Runnable {
+public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
 
     private PrintWriter out;
 
     private LeshanClient client;
     private LwM2mModel model;
 
-    public InteractiveCommands(ConsoleReader reader, LeshanClient client, LwM2mModel model) {
-        out = new PrintWriter(reader.getOutput());
-
+    public InteractiveCommands(LeshanClient client, LwM2mModel model) {
         this.client = client;
         this.model = model;
+    }
+
+    @Override
+    public void setConsole(ConsoleReader console) {
+        out = new PrintWriter(console.getOutput());
     }
 
     @Override

@@ -27,11 +27,11 @@ import java.util.List;
 
 import org.eclipse.californium.elements.util.Bytes;
 import org.eclipse.californium.elements.util.SslContextUtil;
-import org.eclipse.leshan.client.demo.cli.converters.HexadecimalConverter;
-import org.eclipse.leshan.client.demo.cli.converters.PrivateKeyConverter;
-import org.eclipse.leshan.client.demo.cli.converters.PublicKeyConverter;
-import org.eclipse.leshan.client.demo.cli.converters.X509CertificateConverter;
 import org.eclipse.leshan.core.CertificateUsage;
+import org.eclipse.leshan.core.demo.cli.converters.HexadecimalConverter;
+import org.eclipse.leshan.core.demo.cli.converters.PrivateKeyConverter;
+import org.eclipse.leshan.core.demo.cli.converters.PublicKeyConverter;
+import org.eclipse.leshan.core.demo.cli.converters.X509CertificateConverter;
 import org.eclipse.leshan.core.util.SecurityUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

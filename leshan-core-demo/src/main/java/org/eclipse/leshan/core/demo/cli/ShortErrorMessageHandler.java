@@ -1,4 +1,4 @@
-package org.eclipse.leshan.client.demo.cli;
+package org.eclipse.leshan.core.demo.cli;
 
 import java.io.PrintWriter;
 

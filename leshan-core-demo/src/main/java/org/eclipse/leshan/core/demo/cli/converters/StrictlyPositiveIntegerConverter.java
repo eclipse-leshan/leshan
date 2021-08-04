@@ -13,19 +13,18 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.demo.cli.converters;
+package org.eclipse.leshan.core.demo.cli.converters;
 
 import picocli.CommandLine.ITypeConverter;
 
-public class PortConverter implements ITypeConverter<Integer> {
+public class StrictlyPositiveIntegerConverter implements ITypeConverter<Integer> {
 
     @Override
     public Integer convert(String value) throws Exception {
         Integer res = Integer.parseInt(value);
 
-        if (res < 0 || 65535 < res)
-            throw new IllegalArgumentException(
-                    String.format("%s is not a valid port number. It should be between 0 and 65535", value));
+        if (res <= 0)
+            throw new IllegalArgumentException(String.format("%s is not a strictly positive integer", value));
 
         return res;
     }

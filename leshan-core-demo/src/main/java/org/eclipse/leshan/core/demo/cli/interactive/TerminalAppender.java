@@ -1,4 +1,4 @@
-package org.eclipse.leshan.client.demo.cli.interactive;
+package org.eclipse.leshan.core.demo.cli.interactive;
 
 import java.io.IOException;
 
