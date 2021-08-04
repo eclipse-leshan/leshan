@@ -93,7 +93,7 @@ public class LwM2mObjectTree implements Startable, Stoppable, Destroyable {
         listeners.add(listener);
     }
 
-    public void removedListener(ObjectsListener listener) {
+    public void removeListener(ObjectsListener listener) {
         listeners.remove(listener);
     }
 
@@ -176,9 +176,9 @@ public class LwM2mObjectTree implements Startable, Stoppable, Destroyable {
         }
 
         @Override
-        public void resourceChanged(LwM2mObjectEnabler object, int instanceId, int... resourcesIds) {
+        public void resourceChanged(LwM2mObjectEnabler object, int instanceId, int... resourceIds) {
             for (ObjectsListener listener : listeners) {
-                listener.resourceChanged(object, instanceId, resourcesIds);
+                listener.resourceChanged(object, instanceId, resourceIds);
             }
         }
     }

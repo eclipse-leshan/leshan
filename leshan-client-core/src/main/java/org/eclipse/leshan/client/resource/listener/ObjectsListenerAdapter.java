@@ -36,6 +36,6 @@ public class ObjectsListenerAdapter implements ObjectsListener {
     }
 
     @Override
-    public void resourceChanged(LwM2mObjectEnabler object, int instanceId, int... resourcesIds) {
+    public void resourceChanged(LwM2mObjectEnabler object, int instanceId, int... resourceIds) {
     }
 }

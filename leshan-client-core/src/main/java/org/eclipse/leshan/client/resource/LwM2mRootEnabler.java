@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
+import org.eclipse.leshan.client.resource.listener.ObjectsListener;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.request.ObserveCompositeRequest;
@@ -37,4 +38,8 @@ public interface LwM2mRootEnabler {
     LwM2mModel getModel();
 
     ObserveCompositeResponse observe(ServerIdentity identity, ObserveCompositeRequest request);
+
+    void addListener(ObjectsListener listener);
+
+    void removeListener(ObjectsListener listener);
 }

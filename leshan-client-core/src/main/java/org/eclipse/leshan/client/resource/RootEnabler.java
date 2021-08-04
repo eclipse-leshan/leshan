@@ -16,21 +16,37 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
-import org.eclipse.leshan.client.servers.ServerIdentity;
-import org.eclipse.leshan.core.model.LwM2mModel;
-import org.eclipse.leshan.core.model.ObjectModel;
-import org.eclipse.leshan.core.model.ResourceModel;
-import org.eclipse.leshan.core.node.*;
-import org.eclipse.leshan.core.request.*;
-import org.eclipse.leshan.core.request.WriteRequest.Mode;
-import org.eclipse.leshan.core.response.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.eclipse.leshan.client.resource.listener.ObjectsListener;
+import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.core.node.LwM2mMultipleResource;
+import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mObjectInstance;
+import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.request.ObserveCompositeRequest;
+import org.eclipse.leshan.core.request.ObserveRequest;
+import org.eclipse.leshan.core.request.ReadCompositeRequest;
+import org.eclipse.leshan.core.request.ReadRequest;
+import org.eclipse.leshan.core.request.WriteCompositeRequest;
+import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.request.WriteRequest.Mode;
+import org.eclipse.leshan.core.response.ObserveCompositeResponse;
+import org.eclipse.leshan.core.response.ReadCompositeResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.response.WriteCompositeResponse;
+import org.eclipse.leshan.core.response.WriteResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A default implementation of {@link LwM2mRootEnabler}.
@@ -43,6 +59,16 @@ public class RootEnabler implements LwM2mRootEnabler {
 
     public RootEnabler(final LwM2mObjectTree tree) {
         this.tree = tree;
+    }
+
+    @Override
+    public void addListener(ObjectsListener listener) {
+        tree.addListener(listener);
+    }
+
+    @Override
+    public void removeListener(ObjectsListener listener) {
+        tree.removeListener(listener);
     }
 
     @Override

@@ -17,6 +17,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.californium;
 
+import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
+
+import java.util.List;
+import java.util.Map;
+
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
@@ -24,30 +29,33 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
-import org.eclipse.leshan.client.californium.object.ResourceObserveFilter;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mRootEnabler;
-import org.eclipse.leshan.client.resource.listener.ObjectListener;
+import org.eclipse.leshan.client.resource.listener.ObjectsListener;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
-import org.eclipse.leshan.core.request.*;
-import org.eclipse.leshan.core.response.*;
+import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
+import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
+import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.request.ObserveCompositeRequest;
+import org.eclipse.leshan.core.request.ReadCompositeRequest;
+import org.eclipse.leshan.core.request.WriteCompositeRequest;
+import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
+import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
+import org.eclipse.leshan.core.response.ObserveCompositeResponse;
+import org.eclipse.leshan.core.response.ReadCompositeResponse;
+import org.eclipse.leshan.core.response.WriteCompositeResponse;
 import org.eclipse.leshan.core.util.StringUtils;
-
-import java.util.List;
-import java.util.Map;
-
-import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
 
 /**
  * A root {@link CoapResource} resource in charge of handling Bootstrap Delete requests targeting the "/" URI.
  */
-public class RootResource extends LwM2mClientCoapResource implements ObjectListener {
+public class RootResource extends LwM2mClientCoapResource {
 
     protected CoapServer coapServer;
     protected BootstrapHandler bootstrapHandler;
@@ -66,6 +74,8 @@ public class RootResource extends LwM2mClientCoapResource implements ObjectListe
         this.rootEnabler = rootEnabler;
         this.encoder = encoder;
         this.decoder = decoder;
+
+        addListeners();
     }
 
     @Override
@@ -194,22 +204,29 @@ public class RootResource extends LwM2mClientCoapResource implements ObjectListe
         exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
     }
 
-    @Override
-    public void resourceChanged(LwM2mObjectEnabler object, int instanceId, int... resourceIds) {
-        // notify CoAP layer than resources changes, this will send observe notification if an observe relationship
-        // exits.
-        changed(new ResourceObserveFilter(object.getId() + ""));
-        changed(new ResourceObserveFilter(object.getId() + "/" + instanceId));
-        for (int resourceId : resourceIds) {
-            changed(new ResourceObserveFilter(object.getId() + "/" + instanceId + "/" + resourceId));
-        }
-    }
+    private void addListeners() {
+        rootEnabler.addListener(new ObjectsListener() {
+            @Override
+            public void objectAdded(LwM2mObjectEnabler object) {
+            }
 
-    @Override
-    public void objectInstancesAdded(LwM2mObjectEnabler object, int... instanceIds) {
-    }
+            @Override
+            public void objectRemoved(LwM2mObjectEnabler object) {
+            }
 
-    @Override
-    public void objectInstancesRemoved(LwM2mObjectEnabler object, int... instanceIds) {
+            @Override
+            public void objectInstancesAdded(LwM2mObjectEnabler object, int... instanceIds) {
+            }
+
+            @Override
+            public void objectInstancesRemoved(LwM2mObjectEnabler object, int... instanceIds) {
+            }
+
+            @Override
+            public void resourceChanged(final LwM2mObjectEnabler object, final int instanceId,
+                    final int... resourceIds) {
+                changed(new ObserveCompositeRelationFilter(decoder, object.getId(), instanceId, resourceIds));
+            }
+        });
     }
 }

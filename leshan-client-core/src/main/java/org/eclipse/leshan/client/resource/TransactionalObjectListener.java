@@ -140,16 +140,16 @@ public class TransactionalObjectListener implements ObjectListener {
     }
 
     @Override
-    public void resourceChanged(LwM2mObjectEnabler object, int instanceId, int... resourcesIds) {
+    public void resourceChanged(LwM2mObjectEnabler object, int instanceId, int... resourceIds) {
         if (!inTransaction()) {
-            fireResourcesChanged(instanceId, resourcesIds);
+            fireResourcesChanged(instanceId, resourceIds);
         } else {
             List<Integer> resourcesChanged = resourcesChangedByInstance.get(instanceId);
             if (resourcesChanged == null) {
                 resourcesChanged = new ArrayList<Integer>();
                 resourcesChangedByInstance.put(instanceId, resourcesChanged);
             }
-            for (int resourceId : resourcesIds) {
+            for (int resourceId : resourceIds) {
                 resourcesChanged.add(resourceId);
             }
         }
