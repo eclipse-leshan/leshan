@@ -23,12 +23,16 @@ import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.californium.core.CoapServer;
+import org.eclipse.californium.core.config.CoapConfig;
+import org.eclipse.californium.core.config.CoapConfig.TrackerMode;
 import org.eclipse.californium.core.network.CoapEndpoint;
-import org.eclipse.californium.core.network.config.NetworkConfig;
-import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.UDPConnector;
+import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.californium.elements.config.SystemConfig;
+import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.californium.scandium.DTLSConnector;
+import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.client.bootstrap.BootstrapConsistencyChecker;
@@ -44,6 +48,7 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
+import org.eclipse.leshan.core.californium.config.Lwm2mConfig;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
@@ -63,7 +68,7 @@ public class LeshanClientBuilder {
     private InetSocketAddress localAddress;
     private List<? extends LwM2mObjectEnabler> objectEnablers;
 
-    private NetworkConfig coapConfig;
+    private Configuration coapConfig;
     private Builder dtlsConfigBuilder;
     private List<Certificate> trustStore;
 
@@ -146,9 +151,9 @@ public class LeshanClientBuilder {
     }
 
     /**
-     * Set the Californium/CoAP {@link NetworkConfig}.
+     * Set the Californium/CoAP {@link Configuration}.
      */
-    public LeshanClientBuilder setCoapConfig(NetworkConfig config) {
+    public LeshanClientBuilder setCoapConfig(Configuration config) {
         this.coapConfig = config;
         return this;
     }
@@ -250,11 +255,19 @@ public class LeshanClientBuilder {
         return this;
     }
 
-    public static NetworkConfig createDefaultNetworkConfig() {
-        NetworkConfig networkConfig = new NetworkConfig();
-        networkConfig.set(Keys.MID_TRACKER, "NULL");
-        networkConfig.set(Keys.MAX_ACTIVE_PEERS, 10);
-        networkConfig.set(Keys.PROTOCOL_STAGE_THREAD_COUNT, 1);
+    public static Configuration createDefaultNetworkConfig() {
+        Configuration networkConfig = new Configuration(CoapConfig.DEFINITIONS, DtlsConfig.DEFINITIONS, UdpConfig.DEFINITIONS, SystemConfig.DEFINITIONS);
+        networkConfig.set(CoapConfig.MID_TRACKER, TrackerMode.NULL);
+        networkConfig.set(CoapConfig.MAX_ACTIVE_PEERS, 10);
+        networkConfig.set(CoapConfig.PROTOCOL_STAGE_THREAD_COUNT, 1);
+        networkConfig.set(DtlsConfig.DTLS_MAX_CONNECTIONS, 10);
+        networkConfig.set(DtlsConfig.DTLS_RECEIVER_THREAD_COUNT, 1);
+        networkConfig.set(DtlsConfig.DTLS_CONNECTOR_THREAD_COUNT, 2);
+        // currently not supported by leshan's CertificateVerifier
+        networkConfig.setTransient(DtlsConfig.DTLS_VERIFY_SERVER_CERTIFICATES_SUBJECT);
+        // overwrite role by LwM2M specific client roles
+        networkConfig.setTransient(DtlsConfig.DTLS_ROLE);
+        networkConfig.set(Lwm2mConfig.LWM2M_DTLS_ROLE, null);
 
         return networkConfig;
     }
@@ -303,7 +316,7 @@ public class LeshanClientBuilder {
 
         // handle dtlsConfig
         if (dtlsConfigBuilder == null) {
-            dtlsConfigBuilder = new DtlsConnectorConfig.Builder();
+            dtlsConfigBuilder = DtlsConnectorConfig.builder(coapConfig);
         }
         DtlsConnectorConfig incompleteConfig = dtlsConfigBuilder.getIncompleteConfig();
 
@@ -317,27 +330,6 @@ public class LeshanClientBuilder {
             throw new IllegalStateException(String.format(
                     "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for address: %s != %s",
                     localAddress, incompleteConfig.getAddress()));
-        }
-
-        // Handle active peers
-        if (incompleteConfig.getMaxConnections() == null)
-            dtlsConfigBuilder.setMaxConnections(coapConfig.getInt(Keys.MAX_ACTIVE_PEERS));
-        if (incompleteConfig.getStaleConnectionThreshold() == null)
-            dtlsConfigBuilder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
-
-        // Use only 1 thread to handle DTLS connection by default
-        if (incompleteConfig.getConnectionThreadCount() == null) {
-            dtlsConfigBuilder.setConnectionThreadCount(1);
-        }
-        // Use only 1 thread to receive DTLS data by default
-        if (incompleteConfig.getReceiverThreadCount() == null) {
-            dtlsConfigBuilder.setReceiverThreadCount(1);
-        }
-
-        // Deactivate SNI by default
-        // TODO should we support SNI ?
-        if (incompleteConfig.isSniEnabled() == null) {
-            dtlsConfigBuilder.setSniEnabled(false);
         }
 
         return createLeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder,
@@ -372,7 +364,7 @@ public class LeshanClientBuilder {
      * @return the new {@link LeshanClient}
      */
     protected LeshanClient createLeshanClient(String endpoint, InetSocketAddress localAddress,
-            List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder,
+            List<? extends LwM2mObjectEnabler> objectEnablers, Configuration coapConfig, Builder dtlsConfigBuilder,
             List<Certificate> trustStore, EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
             BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,

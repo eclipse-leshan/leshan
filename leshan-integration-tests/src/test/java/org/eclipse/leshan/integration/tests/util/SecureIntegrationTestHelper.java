@@ -40,14 +40,17 @@ import java.security.spec.KeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.crypto.SecretKey;
 import javax.security.auth.x500.X500Principal;
 
 import org.eclipse.californium.core.network.CoapEndpoint;
-import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.observe.ObservationStore;
+import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.DTLSConnector;
+import org.eclipse.californium.scandium.config.DtlsConfig;
+import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.ConnectionId;
@@ -66,6 +69,7 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.californium.EndpointFactory;
+import org.eclipse.leshan.core.californium.config.Lwm2mConfig;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.X509CertUtil;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
@@ -237,30 +241,31 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         List<LwM2mObjectEnabler> objects = initializer.createAll();
 
         InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
+        Configuration configuration = LeshanClientBuilder.createDefaultNetworkConfig();
         LeshanClientBuilder builder = new LeshanClientBuilder(getCurrentEndpoint());
         builder.setRegistrationEngineFactory(new DefaultRegistrationEngineFactory().setQueueMode(queueMode));
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
         builder.setObjects(objects);
         builder.setDtlsConfig(
-                new DtlsConnectorConfig.Builder().setSupportedCipherSuites(CipherSuite.TLS_PSK_WITH_AES_128_CCM_8));
+                DtlsConnectorConfig.builder(configuration).setSupportedCipherSuites(CipherSuite.TLS_PSK_WITH_AES_128_CCM_8));
 
         // set an editable PSK store for tests
         builder.setEndpointFactory(new EndpointFactory() {
 
             @Override
-            public CoapEndpoint createUnsecuredEndpoint(InetSocketAddress address, NetworkConfig coapConfig,
+            public CoapEndpoint createUnsecuredEndpoint(InetSocketAddress address, Configuration coapConfig,
                     ObservationStore store) {
                 CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
                 builder.setInetSocketAddress(address);
-                builder.setNetworkConfig(coapConfig);
+                builder.setConfiguration(coapConfig);
                 return builder.build();
             }
 
             @Override
-            public CoapEndpoint createSecuredEndpoint(DtlsConnectorConfig dtlsConfig, NetworkConfig coapConfig,
+            public CoapEndpoint createSecuredEndpoint(DtlsConnectorConfig dtlsConfig, Configuration coapConfig,
                     ObservationStore store) {
                 CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
-                Builder dtlsConfigBuilder = new Builder(dtlsConfig);
+                Builder dtlsConfigBuilder = DtlsConnectorConfig.builder(dtlsConfig);
 
                 // tricks to be able to change psk information on the fly
                 AdvancedPskStore pskStore = dtlsConfig.getAdvancedPskStore();
@@ -272,7 +277,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
                     dtlsConfigBuilder.setAdvancedPskStore(singlePSKStore);
                 }
                 builder.setConnector(new DTLSConnector(dtlsConfigBuilder.build()));
-                builder.setNetworkConfig(coapConfig);
+                builder.setConfiguration(coapConfig);
                 return builder.build();
             }
         });
@@ -346,11 +351,12 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         List<LwM2mObjectEnabler> objects = initializer.createAll();
 
         InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
+        Configuration configuration = LeshanClientBuilder.createDefaultNetworkConfig();
         LeshanClientBuilder builder = new LeshanClientBuilder(getCurrentEndpoint());
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
 
-        Builder dtlsConfig = new DtlsConnectorConfig.Builder();
-        dtlsConfig.setClientOnly();
+        Builder dtlsConfig = DtlsConnectorConfig.builder(configuration);
+        dtlsConfig.set(Lwm2mConfig.LWM2M_DTLS_ROLE, DtlsRole.CLIENT_ONLY);
         builder.setDtlsConfig(dtlsConfig);
 
         builder.setObjects(objects);
@@ -377,12 +383,13 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         List<LwM2mObjectEnabler> objects = initializer.createAll();
 
         InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
+        Configuration configuration = LeshanClientBuilder.createDefaultNetworkConfig();
         LeshanClientBuilder builder = new LeshanClientBuilder(getCurrentEndpoint());
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
         builder.setTrustStore(clientTrustStore);
 
-        Builder dtlsConfig = new DtlsConnectorConfig.Builder();
-        dtlsConfig.setClientOnly();
+        Builder dtlsConfig = DtlsConnectorConfig.builder(configuration);
+        dtlsConfig.set(Lwm2mConfig.LWM2M_DTLS_ROLE, DtlsRole.CLIENT_ONLY);
         builder.setDtlsConfig(dtlsConfig);
 
         builder.setObjects(objects);
@@ -403,11 +410,12 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
     protected LeshanServerBuilder createServerBuilder(Boolean serverOnly) {
         LeshanServerBuilder builder = super.createServerBuilder();
-        Builder dtlsConfig = new DtlsConnectorConfig.Builder();
-        dtlsConfig.setMaxRetransmissions(1);
-        dtlsConfig.setRetransmissionTimeout(300);
-        if (serverOnly != null) {
-            dtlsConfig.setServerOnly(serverOnly);
+        Configuration configuration = LeshanServerBuilder.createDefaultNetworkConfig();
+        Builder dtlsConfig = DtlsConnectorConfig.builder(configuration);
+        dtlsConfig.set(DtlsConfig.DTLS_MAX_RETRANSMISSIONS, 1);
+        dtlsConfig.set(DtlsConfig.DTLS_RETRANSMISSION_TIMEOUT, 300, TimeUnit.MILLISECONDS);
+        if (serverOnly != null && serverOnly) {
+            dtlsConfig.set(DtlsConfig.DTLS_ROLE, DtlsRole.SERVER_ONLY);
         }
         builder.setDtlsConfig(dtlsConfig);
         return builder;

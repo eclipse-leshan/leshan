@@ -25,8 +25,8 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
-import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
@@ -135,7 +135,7 @@ public class LeshanServer {
      * @param modelProvider provides the objects description for each client.
      * @param decoder decoder used to decode response payload.
      * @param encoder encode used to encode request payload.
-     * @param coapConfig the CoAP {@link NetworkConfig}.
+     * @param coapConfig the CoAP {@link Configuration}.
      * @param noQueueMode true to disable presenceService.
      * @param awakeTimeProvider to set the client awake time if queue mode is used.
      * @param registrationIdProvider to provide registrationId using for location-path option values on response of
@@ -144,7 +144,7 @@ public class LeshanServer {
     public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            NetworkConfig coapConfig, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
+            Configuration coapConfig, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
             RegistrationIdProvider registrationIdProvider) {
         this(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer, modelProvider, encoder,
                 decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider, false);
@@ -163,7 +163,7 @@ public class LeshanServer {
      * @param modelProvider provides the objects description for each client.
      * @param decoder decoder used to decode response payload.
      * @param encoder encode used to encode request payload.
-     * @param coapConfig the CoAP {@link NetworkConfig}.
+     * @param coapConfig the CoAP {@link Configuration}.
      * @param noQueueMode true to disable presenceService.
      * @param awakeTimeProvider to set the client awake time if queue mode is used.
      * @param registrationIdProvider to provide registrationId using for location-path option values on response of
@@ -175,7 +175,7 @@ public class LeshanServer {
     public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            NetworkConfig coapConfig, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
+            Configuration coapConfig, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
             RegistrationIdProvider registrationIdProvider, boolean updateRegistrationOnNotification) {
 
         Validate.notNull(registrationStore, "registration store cannot be null");
@@ -232,7 +232,7 @@ public class LeshanServer {
         coapApi = new CoapAPI();
     }
 
-    protected CoapServer createCoapServer(NetworkConfig coapConfig) {
+    protected CoapServer createCoapServer(Configuration coapConfig) {
         return new CoapServer(coapConfig) {
             @Override
             protected Resource createRoot() {

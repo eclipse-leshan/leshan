@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.elements.Connector;
+import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Device;
@@ -92,6 +93,8 @@ public class IntegrationTestHelper {
     public LeshanServer server;
     public LeshanClient client;
     public AtomicReference<String> currentEndpointIdentifier = new AtomicReference<String>();
+
+    public Configuration coapConfig = new Configuration();
 
     private SynchronousClientObserver clientObserver = new SynchronousClientObserver();
     private SynchronousRegistrationListener registrationListener = new SynchronousRegistrationListener() {
