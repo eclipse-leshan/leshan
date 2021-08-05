@@ -27,7 +27,8 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Token;
-import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.core.config.CoapConfig;
+import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -48,11 +49,13 @@ public class LockStepTest {
     public IntegrationTestHelper helper = new IntegrationTestHelper() {
         @Override
         protected LeshanServerBuilder createServerBuilder() {
-            NetworkConfig coapConfig = LeshanServerBuilder.createDefaultNetworkConfig();
+            Configuration coapConfig = LeshanServerBuilder.createDefaultNetworkConfig();
 
             // configure retransmission, with this configuration a request without ACK should timeout in ~200*5ms
-            coapConfig.setInt(NetworkConfig.Keys.ACK_TIMEOUT, 200).setFloat(NetworkConfig.Keys.ACK_RANDOM_FACTOR, 1f)
-                    .setFloat(NetworkConfig.Keys.ACK_TIMEOUT_SCALE, 1f).setInt(NetworkConfig.Keys.MAX_RETRANSMIT, 4);
+            coapConfig.set(CoapConfig.ACK_TIMEOUT, 200, TimeUnit.MILLISECONDS)
+                    .set(CoapConfig.ACK_INIT_RANDOM, 1f)
+                    .set(CoapConfig.ACK_TIMEOUT_SCALE, 1f)
+                    .set(CoapConfig.MAX_RETRANSMIT, 4);
 
             LeshanServerBuilder builder = super.createServerBuilder();
             builder.setCoapConfig(coapConfig);
@@ -77,7 +80,7 @@ public class LockStepTest {
     @Test
     public void register_with_uq_binding_in_lw_1_0() throws Exception {
         // Register client
-        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
+        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress(), helper.coapConfig);
         Token token = client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.0",
                 EnumSet.of(BindingMode.U, BindingMode.Q), null, null, Link.parse("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().token(token).code(ResponseCode.CREATED).go();
@@ -87,7 +90,7 @@ public class LockStepTest {
     @Test
     public void register_with_ut_binding_in_lw_1_1() throws Exception {
         // Register client
-        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
+        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress(), helper.coapConfig);
         Token token = client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1",
                 EnumSet.of(BindingMode.U, BindingMode.T), null, null, Link.parse("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().token(token).code(ResponseCode.CREATED).go();
@@ -96,7 +99,7 @@ public class LockStepTest {
 
     @Test
     public void register_update_with_invalid_binding_for_lw_1_1() throws Exception {
-        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
+        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress(), helper.coapConfig);
 
         // register with valid binding for 1.1
         RegisterRequest validRegisterRequest = new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1",
@@ -128,7 +131,7 @@ public class LockStepTest {
 
     @Test
     public void register_update_with_invalid_binding_for_lw_1_0() throws Exception {
-        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
+        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress(), helper.coapConfig);
 
         // register with valid binding for 1.0
         RegisterRequest validRegisterRequest = new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.0",
@@ -161,7 +164,7 @@ public class LockStepTest {
     @Test
     public void sync_send_without_acknowleged() throws Exception {
         // Register client
-        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
+        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress(), helper.coapConfig);
         Token token = client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1",
                 EnumSet.of(BindingMode.U), null, null, Link.parse("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().token(token).go();
@@ -183,7 +186,7 @@ public class LockStepTest {
     @Test
     public void sync_send_with_acknowleged_request_without_response() throws Exception {
         // Register client
-        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
+        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress(), helper.coapConfig);
         Token token = client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1",
                 EnumSet.of(BindingMode.U), null, null, Link.parse("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().token(token).go();
@@ -212,7 +215,7 @@ public class LockStepTest {
     @Test
     public void async_send_without_acknowleged() throws Exception {
         // register client
-        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
+        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress(), helper.coapConfig);
         Token token = client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1",
                 EnumSet.of(BindingMode.U), null, null, Link.parse("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().token(token).go();
@@ -231,7 +234,7 @@ public class LockStepTest {
     @Test
     public void async_send_with_acknowleged_request_without_response() throws Exception {
         // register client
-        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
+        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress(), helper.coapConfig);
         Token token = client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1",
                 EnumSet.of(BindingMode.U), null, null, Link.parse("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().token(token).go();

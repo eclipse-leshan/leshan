@@ -23,16 +23,20 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.californium.core.CoapServer;
+import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
-import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
+import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.util.CertPathUtil;
 import org.eclipse.californium.scandium.DTLSConnector;
+import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
+import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.californium.scandium.dtls.pskstore.AdvancedSinglePskStore;
@@ -65,12 +69,12 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
 
     protected Builder dtlsConfigbuilder;
     protected List<Certificate> trustStore;
-    protected NetworkConfig coapConfig;
+    protected Configuration coapConfig;
     protected InetSocketAddress localAddress;
     protected CoapServer coapServer;
     protected EndpointFactory endpointFactory;
 
-    public CaliforniumEndpointsManager(InetSocketAddress localAddress, NetworkConfig coapConfig,
+    public CaliforniumEndpointsManager(InetSocketAddress localAddress, Configuration coapConfig,
             Builder dtlsConfigBuilder, EndpointFactory endpointFactory) {
         this(localAddress, coapConfig, dtlsConfigBuilder, null, endpointFactory);
     }
@@ -78,7 +82,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
     /**
      * @since 2.0
      */
-    public CaliforniumEndpointsManager(InetSocketAddress localAddress, NetworkConfig coapConfig,
+    public CaliforniumEndpointsManager(InetSocketAddress localAddress, Configuration coapConfig,
             Builder dtlsConfigBuilder, List<Certificate> trustStore, EndpointFactory endpointFactory) {
         this.localAddress = localAddress;
         this.coapConfig = coapConfig;
@@ -103,7 +107,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
         Identity serverIdentity;
         if (serverInfo.isSecure()) {
             DtlsConnectorConfig incompleteConfig = dtlsConfigbuilder.getIncompleteConfig();
-            Builder newBuilder = new Builder(incompleteConfig);
+            Builder newBuilder = DtlsConnectorConfig.builder(incompleteConfig);
 
             // Support PSK
             if (serverInfo.secureMode == SecurityMode.PSK) {
@@ -199,21 +203,21 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             }
 
             // Handle DTLS mode
-            if (incompleteConfig.isClientOnly() == null) {
+            if (incompleteConfig.getDtlsRole() == null) {
                 if (serverInfo.bootstrap) {
                     // For bootstrap no need to have DTLS role exchange
                     // and so we can set DTLS Connection as client only by default.
-                    newBuilder.setClientOnly();
+                    newBuilder.set(DtlsConfig.DTLS_ROLE, DtlsRole.CLIENT_ONLY);
                 } else if (clientInitiatedOnly) {
                     // if client initiated only we don't allow connector to work as server role.
-                    newBuilder.setClientOnly();
+                    newBuilder.set(DtlsConfig.DTLS_ROLE, DtlsRole.CLIENT_ONLY);
                 } else {
                     // for classic mode we check if certificate can be also used as server certificate
                     if (serverInfo.secureMode == SecurityMode.X509) {
                         X509Certificate certificate = (X509Certificate) serverInfo.clientCertificate;
                         if (CertPathUtil.canBeUsedForAuthentication(certificate, true)) {
                             if (!CertPathUtil.canBeUsedForAuthentication(certificate, false)) {
-                                newBuilder.setClientOnly();
+                                newBuilder.set(DtlsConfig.DTLS_ROLE, DtlsRole.CLIENT_ONLY);
                                 LOG.warn("Client certificate does not allow Server Authentication usage."
                                         + "\nThis will prevent a LWM2M server to initiate DTLS connection to this client."
                                         + "\nSee : https://github.com/eclipse/leshan/wiki/Server-Failover#about-connections");
@@ -281,7 +285,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
         // To be sure registration doesn't expired, update request should be send considering all CoAP retransmissions
         // and registration lifetime.
         // See https://tools.ietf.org/html/rfc7252#section-4.8.2
-        long exchange_lifetime = coapConfig.getLong(NetworkConfig.Keys.EXCHANGE_LIFETIME, 247);
+        long exchange_lifetime = coapConfig.get(CoapConfig.EXCHANGE_LIFETIME, TimeUnit.MILLISECONDS);
         if (lifetimeInMs - exchange_lifetime >= floor) {
             return lifetimeInMs - exchange_lifetime;
         } else {

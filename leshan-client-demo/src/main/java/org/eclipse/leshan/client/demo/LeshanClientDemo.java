@@ -22,9 +22,11 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.List;
 
-import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.elements.Connector;
+import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.DTLSConnector;
+import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.dtls.ClientHandshaker;
 import org.eclipse.californium.scandium.dtls.DTLSContext;
@@ -35,7 +37,6 @@ import org.eclipse.californium.scandium.dtls.ResumingServerHandshaker;
 import org.eclipse.californium.scandium.dtls.ServerHandshaker;
 import org.eclipse.californium.scandium.dtls.SessionAdapter;
 import org.eclipse.californium.scandium.dtls.SessionId;
-import org.eclipse.californium.scandium.dtls.SingleNodeConnectionIdGenerator;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.demo.cli.LeshanClientDemoCLI;
@@ -67,6 +68,8 @@ public class LeshanClientDemo {
         if (property == null) {
             System.setProperty("logback.configurationFile", "logback-config.xml");
         }
+        CoapConfig.register();
+        DtlsConfig.register();
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanClientDemo.class);
@@ -185,10 +188,10 @@ public class LeshanClientDemo {
         List<LwM2mObjectEnabler> enablers = initializer.createAll();
 
         // Create CoAP Config
-        NetworkConfig coapConfig;
-        File configFile = new File(NetworkConfig.DEFAULT_FILE_NAME);
+        Configuration coapConfig;
+        File configFile = new File(Configuration.DEFAULT_FILE_NAME);
         if (configFile.isFile()) {
-            coapConfig = new NetworkConfig();
+            coapConfig = new Configuration();
             coapConfig.load(configFile);
         } else {
             coapConfig = LeshanClientBuilder.createDefaultNetworkConfig();
@@ -196,13 +199,11 @@ public class LeshanClientDemo {
         }
 
         // Create DTLS Config
-        DtlsConnectorConfig.Builder dtlsConfig = new DtlsConnectorConfig.Builder();
-        dtlsConfig.setRecommendedCipherSuitesOnly(!cli.dtls.supportDeprecatedCiphers);
-        if (cli.dtls.ciphers != null) {
+        DtlsConnectorConfig.Builder dtlsConfig = DtlsConnectorConfig.builder(coapConfig);
+        dtlsConfig.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, !cli.dtls.supportDeprecatedCiphers);
+        dtlsConfig.set(DtlsConfig.DTLS_CONNECTION_ID_LENGTH, cli.dtls.cid);
+               if (cli.dtls.ciphers != null) {
             dtlsConfig.setSupportedCipherSuites(cli.dtls.ciphers);
-        }
-        if (cli.dtls.cid != null) {
-            dtlsConfig.setConnectionIdGenerator(new SingleNodeConnectionIdGenerator(cli.dtls.cid));
         }
 
         // Configure Registration Engine

@@ -18,16 +18,18 @@ package org.eclipse.leshan.core.californium;
 import java.net.InetSocketAddress;
 import java.security.Principal;
 
+import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.CoapEndpoint.Builder;
 import org.eclipse.californium.core.network.EndpointContextMatcherFactory;
-import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.observe.ObservationStore;
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.EndpointContextMatcher;
 import org.eclipse.californium.elements.PrincipalEndpointContextMatcher;
 import org.eclipse.californium.elements.UDPConnector;
+import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.DTLSConnector;
+import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 
 /**
@@ -38,6 +40,11 @@ import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
  * E.g. This could be useful if you need to use a custom {@link Connector}.
  */
 public class DefaultEndpointFactory implements EndpointFactory {
+
+    static {
+        CoapConfig.register();
+        DtlsConfig.register();
+    }
 
     protected EndpointContextMatcher securedContextMatcher;
     protected EndpointContextMatcher unsecuredContextMatcher;
@@ -100,7 +107,7 @@ public class DefaultEndpointFactory implements EndpointFactory {
     }
 
     @Override
-    public CoapEndpoint createUnsecuredEndpoint(InetSocketAddress address, NetworkConfig coapConfig,
+    public CoapEndpoint createUnsecuredEndpoint(InetSocketAddress address, Configuration coapConfig,
             ObservationStore store) {
         return createUnsecuredEndpointBuilder(address, coapConfig, store).build();
     }
@@ -114,11 +121,11 @@ public class DefaultEndpointFactory implements EndpointFactory {
      * @param store the CoAP observation store used to create this endpoint.
      * @return the {@link Builder} used for unsecured communication.
      */
-    protected CoapEndpoint.Builder createUnsecuredEndpointBuilder(InetSocketAddress address, NetworkConfig coapConfig,
+    protected CoapEndpoint.Builder createUnsecuredEndpointBuilder(InetSocketAddress address, Configuration coapConfig,
             ObservationStore store) {
         CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
-        builder.setConnector(createUnsecuredConnector(address));
-        builder.setNetworkConfig(coapConfig);
+        builder.setConnector(createUnsecuredConnector(address, coapConfig));
+        builder.setConfiguration(coapConfig);
         if (loggingTag != null) {
             builder.setLoggingTag("[" + loggingTag + "-coap://]");
         } else {
@@ -140,14 +147,15 @@ public class DefaultEndpointFactory implements EndpointFactory {
      * 
      * @param address the IP address and port, if null the connector is bound to an ephemeral port on the wildcard
      *        address
+     * @param coapConfig the Configuration
      * @return the {@link Connector} used for unsecured {@link CoapEndpoint}
      */
-    protected Connector createUnsecuredConnector(InetSocketAddress address) {
-        return new UDPConnector(address);
+    protected Connector createUnsecuredConnector(InetSocketAddress address, Configuration coapConfig) {
+        return new UDPConnector(address, coapConfig);
     }
 
     @Override
-    public CoapEndpoint createSecuredEndpoint(DtlsConnectorConfig dtlsConfig, NetworkConfig coapConfig,
+    public CoapEndpoint createSecuredEndpoint(DtlsConnectorConfig dtlsConfig, Configuration coapConfig,
             ObservationStore store) {
         return createSecuredEndpointBuilder(dtlsConfig, coapConfig, store).build();
     }
@@ -161,10 +169,10 @@ public class DefaultEndpointFactory implements EndpointFactory {
      * @return the {@link Builder} used for secured communication.
      */
     protected CoapEndpoint.Builder createSecuredEndpointBuilder(DtlsConnectorConfig dtlsConfig,
-            NetworkConfig coapConfig, ObservationStore store) {
+            Configuration coapConfig, ObservationStore store) {
         CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
         builder.setConnector(createSecuredConnector(dtlsConfig));
-        builder.setNetworkConfig(coapConfig);
+        builder.setConfiguration(coapConfig);
         if (loggingTag != null) {
             builder.setLoggingTag("[" + loggingTag + "-coaps://]");
         } else {

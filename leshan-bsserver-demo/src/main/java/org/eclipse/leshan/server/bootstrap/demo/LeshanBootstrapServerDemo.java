@@ -24,10 +24,10 @@ import java.net.InetSocketAddress;
 import java.security.cert.Certificate;
 import java.util.List;
 
-import org.eclipse.californium.core.network.config.NetworkConfig;
-import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
+import org.eclipse.californium.core.config.CoapConfig;
+import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
-import org.eclipse.californium.scandium.dtls.SingleNodeConnectionIdGenerator;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -108,10 +108,10 @@ public class LeshanBootstrapServerDemo {
         LeshanBootstrapServerBuilder builder = new LeshanBootstrapServerBuilder();
 
         // Create CoAP Config
-        NetworkConfig coapConfig;
-        File configFile = new File(NetworkConfig.DEFAULT_FILE_NAME);
+        Configuration coapConfig;
+        File configFile = new File(Configuration.DEFAULT_FILE_NAME);
         if (configFile.isFile()) {
-            coapConfig = new NetworkConfig();
+            coapConfig = new Configuration();
             coapConfig.load(configFile);
         } else {
             coapConfig = LeshanServerBuilder.createDefaultNetworkConfig();
@@ -121,18 +121,17 @@ public class LeshanBootstrapServerDemo {
 
         // ports from CoAP Config if needed
         builder.setLocalAddress(cli.main.localAddress,
-                cli.main.localPort == null ? coapConfig.getInt(Keys.COAP_PORT, LwM2m.DEFAULT_COAP_PORT)
+                cli.main.localPort == null ? coapConfig.get(CoapConfig.COAP_PORT)
                         : cli.main.localPort);
         builder.setLocalSecureAddress(cli.main.secureLocalAddress,
-                cli.main.secureLocalPort == null
-                        ? coapConfig.getInt(Keys.COAP_SECURE_PORT, LwM2m.DEFAULT_COAP_SECURE_PORT)
+                cli.main.secureLocalPort == null ? coapConfig.get(CoapConfig.COAP_SECURE_PORT)
                         : cli.main.secureLocalPort);
 
         // Create DTLS Config
-        DtlsConnectorConfig.Builder dtlsConfig = new DtlsConnectorConfig.Builder();
-        dtlsConfig.setRecommendedCipherSuitesOnly(!cli.dtls.supportDeprecatedCiphers);
+        DtlsConnectorConfig.Builder dtlsConfig = DtlsConnectorConfig.builder(coapConfig);
+        dtlsConfig.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, !cli.dtls.supportDeprecatedCiphers);
         if (cli.dtls.cid != null) {
-            dtlsConfig.setConnectionIdGenerator(new SingleNodeConnectionIdGenerator(cli.dtls.cid));
+            dtlsConfig.set(DtlsConfig.DTLS_CONNECTION_ID_LENGTH, cli.dtls.cid);
         }
 
         if (cli.identity.isx509()) {

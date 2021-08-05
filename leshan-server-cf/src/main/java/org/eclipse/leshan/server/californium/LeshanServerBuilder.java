@@ -23,13 +23,17 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.concurrent.TimeUnit;
 
+import org.eclipse.californium.core.config.CoapConfig;
+import org.eclipse.californium.core.config.CoapConfig.TrackerMode;
 import org.eclipse.californium.core.network.CoapEndpoint;
-import org.eclipse.californium.core.network.config.NetworkConfig;
-import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 import org.eclipse.californium.elements.DtlsEndpointContext;
 import org.eclipse.californium.elements.UDPConnector;
+import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.DTLSConnector;
+import org.eclipse.californium.scandium.config.DtlsConfig;
+import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.CertificateType;
@@ -70,6 +74,10 @@ import org.slf4j.LoggerFactory;
  */
 public class LeshanServerBuilder {
 
+    static {
+        CoapConfig.register();
+        DtlsConfig.register();
+    }
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServerBuilder.class);
 
     private CaliforniumRegistrationStore registrationStore;
@@ -90,7 +98,7 @@ public class LeshanServerBuilder {
     private X509Certificate[] certificateChain;
     private Certificate[] trustedCertificates;
 
-    private NetworkConfig coapConfig;
+    private Configuration coapConfig;
     private DtlsConnectorConfig.Builder dtlsConfigBuilder;
 
     private EndpointFactory endpointFactory;
@@ -277,9 +285,9 @@ public class LeshanServerBuilder {
     }
 
     /**
-     * Set the Californium/CoAP {@link NetworkConfig}.
+     * Set the Californium/CoAP {@link Configuration}.
      */
-    public LeshanServerBuilder setCoapConfig(NetworkConfig config) {
+    public LeshanServerBuilder setCoapConfig(Configuration config) {
         this.coapConfig = config;
         return this;
     }
@@ -384,11 +392,11 @@ public class LeshanServerBuilder {
     }
 
     /**
-     * The default Californium/CoAP {@link NetworkConfig} used by the builder.
+     * The default Californium/CoAP {@link Configuration} used by the builder.
      */
-    public static NetworkConfig createDefaultNetworkConfig() {
-        NetworkConfig networkConfig = new NetworkConfig();
-        networkConfig.set(Keys.MID_TRACKER, "NULL");
+    public static Configuration createDefaultNetworkConfig() {
+        Configuration networkConfig = new Configuration();
+        networkConfig.set(CoapConfig.MID_TRACKER, TrackerMode.NULL);
         return networkConfig;
     }
 
@@ -416,7 +424,7 @@ public class LeshanServerBuilder {
         if (coapConfig == null)
             coapConfig = createDefaultNetworkConfig();
         if (awakeTimeProvider == null) {
-            int maxTransmitWait = coapConfig.getInt(Keys.MAX_TRANSMIT_WAIT);
+            int maxTransmitWait = coapConfig.getTimeAsInt(CoapConfig.MAX_TRANSMIT_WAIT, TimeUnit.MILLISECONDS);
             if (maxTransmitWait == 0) {
                 LOG.warn(
                         "No value available for MAX_TRANSMIT_WAIT in CoAP NetworkConfig. Fallback with a default 93s value.");
@@ -435,7 +443,7 @@ public class LeshanServerBuilder {
         DtlsConnectorConfig dtlsConfig = null;
         if (!noSecuredEndpoint && shouldTryToCreateSecureEndpoint()) {
             if (dtlsConfigBuilder == null) {
-                dtlsConfigBuilder = new DtlsConnectorConfig.Builder();
+                dtlsConfigBuilder = DtlsConnectorConfig.builder(coapConfig);
             }
             // Set default DTLS setting for Leshan unless user change it.
             DtlsConnectorConfig incompleteConfig = dtlsConfigBuilder.getIncompleteConfig();
@@ -459,12 +467,6 @@ public class LeshanServerBuilder {
                         "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for secure address: %s != %s",
                         localSecureAddress, incompleteConfig.getAddress()));
             }
-
-            // Handle active peers
-            if (incompleteConfig.getMaxConnections() == null)
-                dtlsConfigBuilder.setMaxConnections(coapConfig.getInt(Keys.MAX_ACTIVE_PEERS));
-            if (incompleteConfig.getStaleConnectionThreshold() == null)
-                dtlsConfigBuilder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
 
             // check conflict in configuration
             if (incompleteConfig.getCertificateIdentityProvider() != null) {
@@ -510,19 +512,10 @@ public class LeshanServerBuilder {
                 dtlsConfigBuilder.setAdvancedCertificateVerifier(verifierBuilder.build());
             }
 
-            // Deactivate SNI by default
-            // TODO should we support SNI ?
-            if (incompleteConfig.isSniEnabled() == null) {
-                dtlsConfigBuilder.setSniEnabled(false);
-            }
-
             // Do no allow Server to initiated Handshake by default, for U device request will be allowed to initiate
             // handshake (see Registration.shouldInitiateConnection())
-            Boolean serverOnly = incompleteConfig.isServerOnly();
-            if (serverOnly == null || !serverOnly) {
-                if (incompleteConfig.getDefaultHandshakeMode() == null) {
-                    dtlsConfigBuilder.setDefaultHandshakeMode(DtlsEndpointContext.HANDSHAKE_MODE_NONE);
-                }
+            if (incompleteConfig.getDtlsRole() != DtlsRole.CLIENT_ONLY) {
+                dtlsConfigBuilder.set(DtlsConfig.DTLS_DEFAULT_HANDSHAKE_MODE, DtlsEndpointContext.HANDSHAKE_MODE_NONE);
             }
 
             // we try to build the dtlsConfig, if it fail we will just not create the secured endpoint
@@ -575,7 +568,7 @@ public class LeshanServerBuilder {
      * @param modelProvider provides the objects description for each client.
      * @param decoder decoder used to decode response payload.
      * @param encoder encode used to encode request payload.
-     * @param coapConfig the CoAP {@link NetworkConfig}.
+     * @param coapConfig the CoAP {@link Configuration}.
      * @param noQueueMode true to disable presenceService.
      * @param awakeTimeProvider to set the client awake time if queue mode is used.
      * @param registrationIdProvider to provide registrationId using for location-path option values on response of
@@ -586,7 +579,7 @@ public class LeshanServerBuilder {
     protected LeshanServer createServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            NetworkConfig coapConfig, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
+            Configuration coapConfig, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
             RegistrationIdProvider registrationIdProvider) {
         return new LeshanServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
                 modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider,
