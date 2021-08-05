@@ -59,8 +59,11 @@ public abstract class BaseCertificateVerifier implements NewAdvancedCertificateV
 
     @Override
     public CertificateVerificationResult verifyCertificate(ConnectionId cid, ServerNames serverName,
-            InetSocketAddress remotePeer, boolean clientUsage, boolean truncateCertificatePath, CertificateMessage message) {
+            InetSocketAddress remotePeer, boolean clientUsage, boolean verifyDestination,
+            boolean truncateCertificatePath, CertificateMessage message) {
         try {
+            // verifyDestination is currently not used.
+            // The DTLS_VERIFY_SERVER_CERTIFICATES_SUBJECT is therefore set to transient.
             CertPath validatedCertPath = verifyCertificate(clientUsage, message, remotePeer);
             return new CertificateVerificationResult(cid, validatedCertPath, null);
         } catch (HandshakeException exception) {
@@ -68,14 +71,13 @@ public abstract class BaseCertificateVerifier implements NewAdvancedCertificateV
         }
     }
 
-    protected abstract CertPath verifyCertificate(boolean clientUsage, CertificateMessage message, InetSocketAddress peerSocket)
-            throws HandshakeException;
+    protected abstract CertPath verifyCertificate(boolean clientUsage, CertificateMessage message,
+            InetSocketAddress peerSocket) throws HandshakeException;
 
     /**
      * Ensure that chain is not empty
      */
-    protected void validateCertificateChainNotEmpty(CertPath certChain)
-            throws HandshakeException {
+    protected void validateCertificateChainNotEmpty(CertPath certChain) throws HandshakeException {
         if (certChain.getCertificates().size() == 0) {
             AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE);
             throw new HandshakeException("Certificate chain could not be validated : server cert chain is empty",

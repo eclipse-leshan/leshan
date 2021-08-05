@@ -21,8 +21,8 @@ import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
-import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
@@ -64,13 +64,13 @@ public class LeshanBootstrapServer {
      * @param securedEndpoint CoAP endpoint used for <code>coaps://</code> communication.
      * @param bsSessionManager manages life cycle of a bootstrap process
      * @param bsHandlerFactory responsible to create the {@link BootstrapHandler}
-     * @param coapConfig the CoAP {@link NetworkConfig}.
+     * @param coapConfig the CoAP {@link Configuration}.
      * @param encoder encode used to encode request payload.
      * @param decoder decoder used to decode response payload.
      */
     public LeshanBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory,
-            NetworkConfig coapConfig, LwM2mEncoder encoder, LwM2mDecoder decoder) {
+            Configuration coapConfig, LwM2mEncoder encoder, LwM2mDecoder decoder) {
 
         Validate.notNull(bsSessionManager, "session manager must not be null");
         Validate.notNull(bsHandlerFactory, "BootstrapHandler factory must not be null");
@@ -98,7 +98,7 @@ public class LeshanBootstrapServer {
         coapServer.add(bsResource);
     }
 
-    protected CoapServer createCoapServer(NetworkConfig coapConfig) {
+    protected CoapServer createCoapServer(Configuration coapConfig) {
         return new CoapServer(coapConfig) {
             @Override
             protected Resource createRoot() {

@@ -34,8 +34,12 @@ import java.util.Set;
 import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.elements.AddressEndpointContext;
+import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.californium.elements.config.SystemConfig;
+import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -282,6 +286,8 @@ public class RegistrationTest {
 
         // send request
         CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
+        builder.setConfiguration(
+                new Configuration(CoapConfig.DEFINITIONS, UdpConfig.DEFINITIONS, SystemConfig.DEFINITIONS));
         builder.setInetSocketAddress(new InetSocketAddress(0));
         CoapEndpoint coapEndpoint = builder.build();
         coapEndpoint.start();

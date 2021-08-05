@@ -24,15 +24,14 @@ import java.net.InetSocketAddress;
 import java.security.cert.Certificate;
 import java.util.List;
 
-import org.eclipse.californium.core.network.config.NetworkConfig;
-import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
+import org.eclipse.californium.core.config.CoapConfig;
+import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
-import org.eclipse.californium.scandium.dtls.SingleNodeConnectionIdGenerator;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -41,7 +40,6 @@ import org.eclipse.leshan.server.bootstrap.demo.cli.LeshanBsServerDemoCLI;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.BootstrapServlet;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.EventServlet;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.ServerServlet;
-import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServer;
 import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServerBuilder;
 import org.eclipse.leshan.server.model.VersionedBootstrapModelProvider;
@@ -61,6 +59,9 @@ public class LeshanBootstrapServerDemo {
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanBootstrapServerDemo.class);
+    private static final String CF_CONFIGURATION_FILENAME = "Californium3.bsserver.properties";
+    private static final String CF_CONFIGURATION_HEADER = "Leshan Bootstrap Server Demo - "
+            + Configuration.DEFAULT_HEADER;
 
     public static void main(String[] args) {
 
@@ -108,31 +109,31 @@ public class LeshanBootstrapServerDemo {
         LeshanBootstrapServerBuilder builder = new LeshanBootstrapServerBuilder();
 
         // Create CoAP Config
-        NetworkConfig coapConfig;
-        File configFile = new File(NetworkConfig.DEFAULT_FILE_NAME);
+        File configFile = new File(CF_CONFIGURATION_FILENAME);
+        Configuration coapConfig = LeshanBootstrapServerBuilder.createDefaultCoapConfiguration();
+        // these configuration values are always overwritten by CLI
+        // therefore set them to transient.
+        coapConfig.setTransient(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY);
+        coapConfig.setTransient(DtlsConfig.DTLS_CONNECTION_ID_LENGTH);
         if (configFile.isFile()) {
-            coapConfig = new NetworkConfig();
             coapConfig.load(configFile);
         } else {
-            coapConfig = LeshanServerBuilder.createDefaultNetworkConfig();
-            coapConfig.store(configFile);
+            coapConfig.store(configFile, CF_CONFIGURATION_HEADER);
         }
         builder.setCoapConfig(coapConfig);
 
         // ports from CoAP Config if needed
         builder.setLocalAddress(cli.main.localAddress,
-                cli.main.localPort == null ? coapConfig.getInt(Keys.COAP_PORT, LwM2m.DEFAULT_COAP_PORT)
-                        : cli.main.localPort);
+                cli.main.localPort == null ? coapConfig.get(CoapConfig.COAP_PORT) : cli.main.localPort);
         builder.setLocalSecureAddress(cli.main.secureLocalAddress,
-                cli.main.secureLocalPort == null
-                        ? coapConfig.getInt(Keys.COAP_SECURE_PORT, LwM2m.DEFAULT_COAP_SECURE_PORT)
+                cli.main.secureLocalPort == null ? coapConfig.get(CoapConfig.COAP_SECURE_PORT)
                         : cli.main.secureLocalPort);
 
         // Create DTLS Config
-        DtlsConnectorConfig.Builder dtlsConfig = new DtlsConnectorConfig.Builder();
-        dtlsConfig.setRecommendedCipherSuitesOnly(!cli.dtls.supportDeprecatedCiphers);
+        DtlsConnectorConfig.Builder dtlsConfig = DtlsConnectorConfig.builder(coapConfig);
+        dtlsConfig.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, !cli.dtls.supportDeprecatedCiphers);
         if (cli.dtls.cid != null) {
-            dtlsConfig.setConnectionIdGenerator(new SingleNodeConnectionIdGenerator(cli.dtls.cid));
+            dtlsConfig.set(DtlsConfig.DTLS_CONNECTION_ID_LENGTH, cli.dtls.cid);
         }
 
         if (cli.identity.isx509()) {

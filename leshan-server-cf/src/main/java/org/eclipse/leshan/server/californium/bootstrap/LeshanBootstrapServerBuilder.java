@@ -22,11 +22,16 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
+import org.eclipse.californium.core.config.CoapConfig;
+import org.eclipse.californium.core.config.CoapConfig.TrackerMode;
 import org.eclipse.californium.core.network.CoapEndpoint;
-import org.eclipse.californium.core.network.config.NetworkConfig;
-import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 import org.eclipse.californium.elements.UDPConnector;
+import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.californium.elements.config.SystemConfig;
+import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.californium.scandium.DTLSConnector;
+import org.eclipse.californium.scandium.config.DtlsConfig;
+import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.CertificateType;
@@ -76,7 +81,7 @@ public class LeshanBootstrapServerBuilder {
     private BootstrapHandlerFactory bootstrapHandlerFactory;
 
     private LwM2mBootstrapModelProvider modelProvider;
-    private NetworkConfig coapConfig;
+    private Configuration coapConfig;
     private Builder dtlsConfigBuilder;
 
     private LwM2mEncoder encoder;
@@ -242,7 +247,7 @@ public class LeshanBootstrapServerBuilder {
      * Set the {@link BootstrapSecurityStore} which contains data needed to authenticate devices.
      * <p>
      * WARNING: without security store all devices will be accepted which is not really recommended in production
-     * environnement.
+     * environment.
      * <p>
      * There is not default implementation.
      * 
@@ -316,14 +321,15 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
-     * Set the CoAP/Californium {@link NetworkConfig}.
+     * Set the CoAP/Californium {@link Configuration}.
      * <p>
-     * For advanced CoAP setting, see {@link Keys} for more details.
+     * This is strongly recommended to create the {@link Configuration} with {@link #createDefaultCoapConfiguration()}
+     * before to modify it.
      * 
      * @param coapConfig the CoAP configuration.
      * @return the builder for fluent Bootstrap Server creation.
      */
-    public LeshanBootstrapServerBuilder setCoapConfig(NetworkConfig coapConfig) {
+    public LeshanBootstrapServerBuilder setCoapConfig(Configuration coapConfig) {
         this.coapConfig = coapConfig;
         return this;
     }
@@ -376,16 +382,18 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
-     * Create the default CoAP/Californium {@link NetworkConfig} used by the builder.
+     * Create the default CoAP/Californium {@link Configuration} used by the builder.
      * <p>
      * It could be used as a base to create a custom CoAP configuration, then use it with
-     * {@link #setCoapConfig(NetworkConfig)}
+     * {@link #setCoapConfig(Configuration)}
      * 
      * @return the default CoAP config.
      */
-    public NetworkConfig createDefaultNetworkConfig() {
-        NetworkConfig networkConfig = new NetworkConfig();
-        networkConfig.set(Keys.MID_TRACKER, "NULL");
+    public static Configuration createDefaultCoapConfiguration() {
+        Configuration networkConfig = new Configuration(CoapConfig.DEFINITIONS, DtlsConfig.DEFINITIONS,
+                UdpConfig.DEFINITIONS, SystemConfig.DEFINITIONS);
+        networkConfig.set(CoapConfig.MID_TRACKER, TrackerMode.NULL);
+        networkConfig.set(DtlsConfig.DTLS_ROLE, DtlsRole.SERVER_ONLY);
         return networkConfig;
     }
 
@@ -424,7 +432,7 @@ public class LeshanBootstrapServerBuilder {
                     new BootstrapConfigStoreTaskProvider(configStore), modelProvider);
         }
         if (coapConfig == null) {
-            coapConfig = createDefaultNetworkConfig();
+            coapConfig = createDefaultCoapConfiguration();
         }
         if (endpointFactory == null) {
             endpointFactory = new DefaultEndpointFactory("LWM2M BS Server", false);
@@ -438,7 +446,7 @@ public class LeshanBootstrapServerBuilder {
         DtlsConnectorConfig dtlsConfig = null;
         if (!noSecuredEndpoint && shouldTryToCreateSecureEndpoint()) {
             if (dtlsConfigBuilder == null) {
-                dtlsConfigBuilder = new DtlsConnectorConfig.Builder();
+                dtlsConfigBuilder = DtlsConnectorConfig.builder(coapConfig);
             }
             // Set default DTLS setting for Leshan unless user change it.
             DtlsConnectorConfig incompleteConfig = dtlsConfigBuilder.getIncompleteConfig();
@@ -462,12 +470,6 @@ public class LeshanBootstrapServerBuilder {
                         "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for secure address: %s != %s",
                         localAddressSecure, incompleteConfig.getAddress()));
             }
-
-            // Handle active peers
-            if (incompleteConfig.getMaxConnections() == null)
-                dtlsConfigBuilder.setMaxConnections(coapConfig.getInt(Keys.MAX_ACTIVE_PEERS));
-            if (incompleteConfig.getStaleConnectionThreshold() == null)
-                dtlsConfigBuilder.setStaleConnectionThreshold(coapConfig.getLong(Keys.MAX_PEER_INACTIVITY_PERIOD));
 
             // check conflict in configuration
             if (incompleteConfig.getCertificateIdentityProvider() != null) {
@@ -512,17 +514,6 @@ public class LeshanBootstrapServerBuilder {
                     verifierBuilder.setTrustedCertificates(trustedCertificates);
                 }
                 dtlsConfigBuilder.setAdvancedCertificateVerifier(verifierBuilder.build());
-            }
-
-            // Bootstrap Server acts as Server only : It does not need to initiate handshake
-            if (incompleteConfig.isServerOnly() == null) {
-                dtlsConfigBuilder.setServerOnly(true);
-            }
-
-            // Deactivate SNI by default
-            // TODO should we support SNI ?
-            if (incompleteConfig.isSniEnabled() == null) {
-                dtlsConfigBuilder.setSniEnabled(false);
             }
 
             // we try to build the dtlsConfig, if it fail we will just not create the secured endpoint
@@ -577,7 +568,7 @@ public class LeshanBootstrapServerBuilder {
      */
     protected LeshanBootstrapServer createBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory,
-            NetworkConfig coapConfig, LwM2mEncoder encoder, LwM2mDecoder decoder) {
+            Configuration coapConfig, LwM2mEncoder encoder, LwM2mDecoder decoder) {
         return new LeshanBootstrapServer(unsecuredEndpoint, securedEndpoint, bsSessionManager, bsHandlerFactory,
                 coapConfig, encoder, decoder);
     }

@@ -28,16 +28,16 @@ import java.util.List;
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
 
-import org.eclipse.californium.core.network.config.NetworkConfig;
-import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
+import org.eclipse.californium.core.config.CoapConfig;
+import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.util.CertPathUtil;
+import org.eclipse.californium.scandium.config.DtlsConfig;
+import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
-import org.eclipse.californium.scandium.dtls.SingleNodeConnectionIdGenerator;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.core.model.ObjectLoader;
@@ -74,6 +74,8 @@ public class LeshanServerDemo {
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServerDemo.class);
+    private static final String CF_CONFIGURATION_FILENAME = "Californium3.server.properties";
+    private static final String CF_CONFIGURATION_HEADER = "Leshan Server Demo - " + Configuration.DEFAULT_HEADER;
 
     public static void main(String[] args) {
 
@@ -140,31 +142,31 @@ public class LeshanServerDemo {
         builder.setEncoder(new DefaultLwM2mEncoder(new MagicLwM2mValueConverter()));
 
         // Create CoAP Config
-        NetworkConfig coapConfig;
-        File configFile = new File(NetworkConfig.DEFAULT_FILE_NAME);
+        File configFile = new File(CF_CONFIGURATION_FILENAME);
+        Configuration coapConfig = LeshanServerBuilder.createDefaultCoapConfiguration();
+        // these configuration values are always overwritten by CLI
+        // therefore set them to transient.
+        coapConfig.setTransient(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY);
+        coapConfig.setTransient(DtlsConfig.DTLS_CONNECTION_ID_LENGTH);
         if (configFile.isFile()) {
-            coapConfig = new NetworkConfig();
             coapConfig.load(configFile);
         } else {
-            coapConfig = LeshanServerBuilder.createDefaultNetworkConfig();
-            coapConfig.store(configFile);
+            coapConfig.store(configFile, CF_CONFIGURATION_HEADER);
         }
         builder.setCoapConfig(coapConfig);
 
         // ports from CoAP Config if needed
         builder.setLocalAddress(cli.main.localAddress,
-                cli.main.localPort == null ? coapConfig.getInt(Keys.COAP_PORT, LwM2m.DEFAULT_COAP_PORT)
-                        : cli.main.localPort);
+                cli.main.localPort == null ? coapConfig.get(CoapConfig.COAP_PORT) : cli.main.localPort);
         builder.setLocalSecureAddress(cli.main.secureLocalAddress,
-                cli.main.secureLocalPort == null
-                        ? coapConfig.getInt(Keys.COAP_SECURE_PORT, LwM2m.DEFAULT_COAP_SECURE_PORT)
+                cli.main.secureLocalPort == null ? coapConfig.get(CoapConfig.COAP_SECURE_PORT)
                         : cli.main.secureLocalPort);
 
         // Create DTLS Config
-        DtlsConnectorConfig.Builder dtlsConfig = new DtlsConnectorConfig.Builder();
-        dtlsConfig.setRecommendedCipherSuitesOnly(!cli.dtls.supportDeprecatedCiphers);
+        DtlsConnectorConfig.Builder dtlsConfig = DtlsConnectorConfig.builder(coapConfig);
+        dtlsConfig.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, !cli.dtls.supportDeprecatedCiphers);
         if (cli.dtls.cid != null) {
-            dtlsConfig.setConnectionIdGenerator(new SingleNodeConnectionIdGenerator(cli.dtls.cid));
+            dtlsConfig.set(DtlsConfig.DTLS_CONNECTION_ID_LENGTH, cli.dtls.cid);
         }
 
         if (cli.identity.isx509()) {
@@ -174,13 +176,15 @@ public class LeshanServerDemo {
 
             X509Certificate serverCertificate = cli.identity.getCertChain()[0];
             // autodetect serverOnly
-            if (serverCertificate != null) {
-                if (CertPathUtil.canBeUsedForAuthentication(serverCertificate, false)) {
-                    if (!CertPathUtil.canBeUsedForAuthentication(serverCertificate, true)) {
-                        dtlsConfig.setServerOnly(true);
-                        LOG.warn("Server certificate does not allow Client Authentication usage."
-                                + "\nThis will prevent this LWM2M server to initiate DTLS connection."
-                                + "\nSee : https://github.com/eclipse/leshan/wiki/Server-Failover#about-connections");
+            if (dtlsConfig.getIncompleteConfig().getDtlsRole() == DtlsRole.BOTH) {
+                if (serverCertificate != null) {
+                    if (CertPathUtil.canBeUsedForAuthentication(serverCertificate, false)) {
+                        if (!CertPathUtil.canBeUsedForAuthentication(serverCertificate, true)) {
+                            dtlsConfig.set(DtlsConfig.DTLS_ROLE, DtlsRole.SERVER_ONLY);
+                            LOG.warn("Server certificate does not allow Client Authentication usage."
+                                    + "\nThis will prevent this LWM2M server to initiate DTLS connection."
+                                    + "\nSee : https://github.com/eclipse/leshan/wiki/Server-Failover#about-connections");
+                        }
                     }
                 }
             }

@@ -22,9 +22,10 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.List;
 
-import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.elements.Connector;
+import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.DTLSConnector;
+import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.dtls.ClientHandshaker;
 import org.eclipse.californium.scandium.dtls.DTLSContext;
@@ -35,14 +36,13 @@ import org.eclipse.californium.scandium.dtls.ResumingServerHandshaker;
 import org.eclipse.californium.scandium.dtls.ServerHandshaker;
 import org.eclipse.californium.scandium.dtls.SessionAdapter;
 import org.eclipse.californium.scandium.dtls.SessionId;
-import org.eclipse.californium.scandium.dtls.SingleNodeConnectionIdGenerator;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.demo.cli.LeshanClientDemoCLI;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
-import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.object.LwM2mTestObject;
+import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
@@ -73,6 +73,8 @@ public class LeshanClientDemo {
     private static final Logger LOG = LoggerFactory.getLogger(LeshanClientDemo.class);
     private static final int OBJECT_ID_TEMPERATURE_SENSOR = 3303;
     private static final int OBJECT_ID_LWM2M_TEST_OBJECT = 3441;
+    private static final String CF_CONFIGURATION_FILENAME = "Californium3.client.properties";
+    private static final String CF_CONFIGURATION_HEADER = "Leshan Client Demo - " + Configuration.DEFAULT_HEADER;
 
     public static void main(String[] args) {
 
@@ -189,24 +191,24 @@ public class LeshanClientDemo {
         List<LwM2mObjectEnabler> enablers = initializer.createAll();
 
         // Create CoAP Config
-        NetworkConfig coapConfig;
-        File configFile = new File(NetworkConfig.DEFAULT_FILE_NAME);
+        File configFile = new File(CF_CONFIGURATION_FILENAME);
+        Configuration coapConfig = LeshanClientBuilder.createDefaultCoapConfiguration();
+        // these configuration values are always overwritten by CLI
+        // therefore set them to transient.
+        coapConfig.setTransient(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY);
+        coapConfig.setTransient(DtlsConfig.DTLS_CONNECTION_ID_LENGTH);
         if (configFile.isFile()) {
-            coapConfig = new NetworkConfig();
             coapConfig.load(configFile);
         } else {
-            coapConfig = LeshanClientBuilder.createDefaultNetworkConfig();
-            coapConfig.store(configFile);
+            coapConfig.store(configFile, CF_CONFIGURATION_HEADER);
         }
 
         // Create DTLS Config
-        DtlsConnectorConfig.Builder dtlsConfig = new DtlsConnectorConfig.Builder();
-        dtlsConfig.setRecommendedCipherSuitesOnly(!cli.dtls.supportDeprecatedCiphers);
+        DtlsConnectorConfig.Builder dtlsConfig = DtlsConnectorConfig.builder(coapConfig);
+        dtlsConfig.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, !cli.dtls.supportDeprecatedCiphers);
+        dtlsConfig.set(DtlsConfig.DTLS_CONNECTION_ID_LENGTH, cli.dtls.cid);
         if (cli.dtls.ciphers != null) {
             dtlsConfig.setSupportedCipherSuites(cli.dtls.ciphers);
-        }
-        if (cli.dtls.cid != null) {
-            dtlsConfig.setConnectionIdGenerator(new SingleNodeConnectionIdGenerator(cli.dtls.cid));
         }
 
         // Configure Registration Engine

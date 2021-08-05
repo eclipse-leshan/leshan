@@ -27,7 +27,8 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Token;
-import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.core.config.CoapConfig;
+import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -48,11 +49,13 @@ public class LockStepTest {
     public IntegrationTestHelper helper = new IntegrationTestHelper() {
         @Override
         protected LeshanServerBuilder createServerBuilder() {
-            NetworkConfig coapConfig = LeshanServerBuilder.createDefaultNetworkConfig();
+            Configuration coapConfig = LeshanServerBuilder.createDefaultCoapConfiguration();
 
             // configure retransmission, with this configuration a request without ACK should timeout in ~200*5ms
-            coapConfig.setInt(NetworkConfig.Keys.ACK_TIMEOUT, 200).setFloat(NetworkConfig.Keys.ACK_RANDOM_FACTOR, 1f)
-                    .setFloat(NetworkConfig.Keys.ACK_TIMEOUT_SCALE, 1f).setInt(NetworkConfig.Keys.MAX_RETRANSMIT, 4);
+            coapConfig.set(CoapConfig.ACK_TIMEOUT, 200, TimeUnit.MILLISECONDS) //
+                    .set(CoapConfig.ACK_INIT_RANDOM, 1f) //
+                    .set(CoapConfig.ACK_TIMEOUT_SCALE, 1f) //
+                    .set(CoapConfig.MAX_RETRANSMIT, 4);
 
             LeshanServerBuilder builder = super.createServerBuilder();
             builder.setCoapConfig(coapConfig);
