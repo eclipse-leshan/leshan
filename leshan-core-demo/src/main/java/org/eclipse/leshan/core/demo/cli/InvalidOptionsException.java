@@ -34,6 +34,15 @@ public class InvalidOptionsException extends RuntimeException {
         this.options = options;
     }
 
+    /**
+     * @param msg the error message
+     * @param options list of option concerned by the exception
+     */
+    public InvalidOptionsException(String msg, Exception cause, String... options) {
+        super(msg, cause);
+        this.options = options;
+    }
+
     public String[] getOptions() {
         return options;
     }

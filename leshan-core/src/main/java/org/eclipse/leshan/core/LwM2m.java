@@ -141,8 +141,8 @@ public interface LwM2m {
     }
 
     /** The default CoAP port for unsecured CoAP communication */
-    static final int DEFAULT_COAP_PORT = 5683;
+    public static final int DEFAULT_COAP_PORT = 5683;
 
     /** The default CoAP port for secure CoAP communication */
-    static final int DEFAULT_COAP_SECURE_PORT = 5684;
+    public static final int DEFAULT_COAP_SECURE_PORT = 5684;
 }
