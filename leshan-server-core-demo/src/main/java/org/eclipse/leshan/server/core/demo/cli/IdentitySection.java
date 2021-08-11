@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap.demo.cli;
+package org.eclipse.leshan.server.core.demo.cli;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,8 +32,6 @@ import org.eclipse.leshan.core.demo.cli.InvalidOptionsException;
 import org.eclipse.leshan.core.demo.cli.converters.PrivateKeyConverter;
 import org.eclipse.leshan.core.demo.cli.converters.PublicKeyConverter;
 import org.eclipse.leshan.core.util.SecurityUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Option;
@@ -41,10 +39,10 @@ import picocli.CommandLine.TypeConversionException;
 
 /**
  * Command line Section about DTLS Identity (RPK or X509).
+ * 
+ * This class is used by bsserver-demo and server-demo
  */
 public class IdentitySection {
-
-    private static final Logger LOG = LoggerFactory.getLogger(IdentitySection.class);
 
     @ArgGroup(exclusive = false,
               heading = "%n@|bold,underline X509 Options|@ %n%n"//

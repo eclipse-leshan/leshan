@@ -15,12 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap.demo.cli;
 
-import java.io.File;
-
-import org.eclipse.leshan.core.LwM2m;
-import org.eclipse.leshan.core.demo.cli.converters.PortConverter;
 import org.eclipse.leshan.server.bootstrap.demo.JSONFileBootstrapStore;
-import org.eclipse.leshan.server.core.demo.cli.converters.ServerCIDConverter;
+import org.eclipse.leshan.server.core.demo.cli.DtlsSection;
+import org.eclipse.leshan.server.core.demo.cli.GeneralSection;
+import org.eclipse.leshan.server.core.demo.cli.IdentitySection;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -41,56 +39,9 @@ public class LeshanBsServerDemoCLI implements Runnable {
                       + "%n" //
                       + "Californium is used as CoAP library and some CoAP parameters can be tweaked in 'Californium.properties' file." //
                       + "|@%n%n")
-    public GeneralSection main = new GeneralSection();
+    public BootstrapServerGeneralSection main = new BootstrapServerGeneralSection();
 
-    public static class GeneralSection {
-        @Option(names = { "-h", "--help" }, description = "Display help information.", usageHelp = true)
-        private boolean help;
-
-        @Option(names = { "-lh", "--coap-host" },
-                description = { //
-                        "Set the local CoAP address of the Server.", //
-                        "Default: any local address." })
-        public String localAddress;
-
-        @Option(names = { "-lp", "--coap-port" },
-                description = { //
-                        "Set the local CoAP port of the Server.", //
-                        "Default: COAP_PORT value from 'Californium.properties' file or ${DEFAULT-VALUE} if absent" },
-                converter = PortConverter.class)
-        public Integer localPort = LwM2m.DEFAULT_COAP_PORT;
-
-        @Option(names = { "-slh", "--coaps-host" },
-                description = { //
-                        "Set the secure local CoAP address of the Server.", //
-                        "Default: any local address." })
-        public String secureLocalAddress;
-
-        @Option(names = { "-slp", "--coaps-port" },
-                description = { //
-                        "Set the secure local CoAP port of the Server.", //
-                        "Default: COAP_SECURE_PORT value from 'Californium.properties' file or ${DEFAULT-VALUE} if absent" },
-                converter = PortConverter.class)
-        public Integer secureLocalPort = LwM2m.DEFAULT_COAP_SECURE_PORT;
-
-        @Option(names = { "-wh", "--web-host" },
-                description = { //
-                        "Set the HTTP address for web server.", //
-                        "Default: any local address." })
-        public String webhost;
-
-        @Option(names = { "-wp", "--web-port" },
-                defaultValue = "8080",
-                description = { //
-                        "Set the HTTP port for web server.", //
-                        "Default: ${DEFAULT-VALUE}" },
-                converter = PortConverter.class)
-        public Integer webPort;
-
-        @Option(names = { "-m", "--models-folder" },
-                description = { //
-                        "A folder which contains object models in OMA DDF(xml)format." })
-        public File modelsFolder;
+    public static class BootstrapServerGeneralSection extends GeneralSection {
 
         @Option(names = { "-cfg", "--config-file" },
                 defaultValue = JSONFileBootstrapStore.DEFAULT_FILE,
@@ -108,28 +59,7 @@ public class LeshanBsServerDemoCLI implements Runnable {
                       + "%n" //
                       + "Scandium is used as DTLS library and some DTLS parameters can be tweaked in 'Californium.properties' file." //
                       + "|@%n%n")
-    public DTLSSection dtls = new DTLSSection();
-
-    public static class DTLSSection {
-
-        @Option(names = { "-cid", "--connection-id" },
-                defaultValue = "on",
-                description = { //
-                        "Control usage of DTLS connection ID.", //
-                        "- 'on' to activate Connection ID support ", //
-                        "  (same as -cid 6)", //
-                        "- 'off' to deactivate it", //
-                        "- Positive value define the size in byte of CID generated.", //
-                        "- 0 value means we accept to use CID but will not generated one for foreign peer.", //
-                        "Default: on" },
-                converter = ServerCIDConverter.class)
-        public Integer cid;
-
-        @Option(names = { "-oc", "--support-deprecated-ciphers" },
-                description = { //
-                        "Activate support of old/deprecated cipher suites." })
-        public boolean supportDeprecatedCiphers;
-    }
+    public DtlsSection dtls = new DtlsSection();
 
     /* ********************************** Identity Section ******************************** */
     @ArgGroup(exclusive = true)
