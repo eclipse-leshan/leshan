@@ -20,6 +20,7 @@ import java.net.URI;
 
 import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.demo.cli.converters.PortConverter;
+import org.eclipse.leshan.server.core.demo.cli.converters.ServerCIDConverter;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -139,22 +140,8 @@ public class LeshanServerDemoCLI implements Runnable {
                         "- Positive value define the size in byte of CID generated.", //
                         "- 0 value means we accept to use CID but will not generated one for foreign peer.", //
                         "Default: on" },
-                converter = CIDConverter.class)
+                converter = ServerCIDConverter.class)
         public Integer cid;
-
-        private static class CIDConverter implements ITypeConverter<Integer> {
-            @Override
-            public Integer convert(String cid) {
-                if ("off".equals(cid)) {
-                    return null;
-                } else if ("on".equals(cid)) {
-                    return 6;
-                } else {
-                    Integer res = Integer.parseInt(cid);
-                    return res < 0 ? null : res;
-                }
-            }
-        };
 
         @Option(names = { "-oc", "--support-deprecated-ciphers" },
                 description = { //

@@ -25,6 +25,7 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.demo.cli.InvalidOptionsException;
+import org.eclipse.leshan.core.demo.cli.converters.CIDConverter;
 import org.eclipse.leshan.core.demo.cli.converters.PortConverter;
 import org.eclipse.leshan.core.demo.cli.converters.StrictlyPositiveIntegerConverter;
 
@@ -224,20 +225,12 @@ public class LeshanClientDemoCLI implements Runnable {
                         "- Positive value define the size in byte of CID generated.", //
                         "- 0 value means we accept to use CID but will not generated one for foreign peer.", //
                         "Default: off" },
-                converter = CIDConverter.class)
+                converter = ClientCIDConverter.class)
         public Integer cid;
 
-        private static class CIDConverter implements ITypeConverter<Integer> {
-            @Override
-            public Integer convert(String cid) {
-                if ("off".equals(cid)) {
-                    return null;
-                } else if ("on".equals(cid)) {
-                    return 0;
-                } else {
-                    Integer res = Integer.parseInt(cid);
-                    return res < 0 ? null : res;
-                }
+        private static class ClientCIDConverter extends CIDConverter {
+            public ClientCIDConverter() {
+                super(0);
             }
         };
 
