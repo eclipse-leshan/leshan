@@ -15,14 +15,16 @@ Contributors:
     Sierra Wireless - initial API and implementation
  -->
 <configuration>
-	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-		<encoder>
-			<pattern>%d %p %C{0} - %m%n</pattern>
+	<appender name="TERMINAL" class="org.eclipse.leshan.core.demo.cli.interactive.TerminalAppender">
+		<encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+			<layout class="org.eclipse.leshan.core.demo.logback.ColorAwarePatternLayout">
+				<pattern>%gray(%d) %gray(%-20logger{0}) [%highlight(%p)] %m%n</pattern>
+			</layout>
 		</encoder>
 	</appender>
 
 	<root level="WARN">
-		<appender-ref ref="STDOUT" />
+		<appender-ref ref="TERMINAL" />
 	</root>
 	
 	<logger name="org.eclipse.leshan" level="INFO"/>
