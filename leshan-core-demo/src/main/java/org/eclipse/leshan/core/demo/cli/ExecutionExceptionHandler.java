@@ -31,7 +31,10 @@ public class ExecutionExceptionHandler implements IExecutionExceptionHandler {
     @Override
     public int handleExecutionException(Exception ex, CommandLine cmd, ParseResult parseResult) throws Exception {
         PrintWriter writer = cmd.getErr();
-        writer.print(cmd.getColorScheme().errorText(ex.getMessage()));
+        if (ex.getMessage() != null)
+            writer.print(cmd.getColorScheme().errorText(ex.getMessage()));
+        else
+            writer.print(cmd.getColorScheme().errorText(ex.getClass().getSimpleName()));
         writer.printf("%n");
 
         if (ex instanceof InvalidOptionsException) {
