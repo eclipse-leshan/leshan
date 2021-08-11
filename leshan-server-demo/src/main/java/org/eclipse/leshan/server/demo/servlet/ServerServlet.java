@@ -27,9 +27,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.leshan.server.californium.LeshanServer;
-import org.eclipse.leshan.server.demo.servlet.json.PublicKeySerDes;
-import org.eclipse.leshan.server.demo.servlet.json.SecuritySerializer;
-import org.eclipse.leshan.server.demo.servlet.json.X509CertificateSerDes;
+import org.eclipse.leshan.server.core.demo.json.PublicKeySerDes;
+import org.eclipse.leshan.server.core.demo.json.SecuritySerializer;
+import org.eclipse.leshan.server.core.demo.json.X509CertificateSerDes;
 import org.eclipse.leshan.server.security.SecurityInfo;
 
 import com.eclipsesource.json.JsonObject;

@@ -28,10 +28,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.leshan.server.demo.servlet.json.PublicKeySerDes;
+import org.eclipse.leshan.server.core.demo.json.PublicKeySerDes;
+import org.eclipse.leshan.server.core.demo.json.SecuritySerializer;
+import org.eclipse.leshan.server.core.demo.json.X509CertificateSerDes;
 import org.eclipse.leshan.server.demo.servlet.json.SecurityDeserializer;
-import org.eclipse.leshan.server.demo.servlet.json.SecuritySerializer;
-import org.eclipse.leshan.server.demo.servlet.json.X509CertificateSerDes;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
