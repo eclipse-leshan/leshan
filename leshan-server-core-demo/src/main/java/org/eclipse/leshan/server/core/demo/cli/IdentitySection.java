@@ -15,27 +15,23 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.core.demo.cli;
 
-import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.californium.elements.util.SslContextUtil;
 import org.eclipse.leshan.core.demo.cli.InvalidOptionsException;
 import org.eclipse.leshan.core.demo.cli.converters.PrivateKeyConverter;
 import org.eclipse.leshan.core.demo.cli.converters.PublicKeyConverter;
+import org.eclipse.leshan.core.demo.cli.converters.TruststoreConverter;
 import org.eclipse.leshan.core.util.SecurityUtil;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Option;
-import picocli.CommandLine.TypeConversionException;
 
 /**
  * Command line Section about DTLS Identity (RPK or X509).
@@ -128,42 +124,8 @@ public class IdentitySection {
                         "- alias-pattern can be used to filter trusted certificates and can also be empty to get all", //
                         "", //
                         "Default: trust all certificates (only OK for demos)." })
-        private void setTruststore(String trustStoreName) {
-            trustStore = new ArrayList<>();
-
-            if (trustStoreName.startsWith("file://")) {
-                // Treat argument as Java trust store
-                try {
-                    Certificate[] trustedCertificates = SslContextUtil.loadTrustedCertificates(trustStoreName);
-                    trustStore.addAll(Arrays.asList(trustedCertificates));
-                } catch (Exception e) {
-                    throw new TypeConversionException("Failed to load trust store : " + e.getMessage());
-                }
-            } else {
-                // Treat argument as file or directory
-                File input = new File(trustStoreName);
-
-                // check input exists
-                if (!input.exists()) {
-                    throw new TypeConversionException(
-                            "Failed to load trust store - file or directory does not exist : " + input.toString());
-                }
-
-                // get input files.
-                File[] files;
-                if (input.isDirectory()) {
-                    files = input.listFiles();
-                } else {
-                    files = new File[] { input };
-                }
-                for (File file : files) {
-                    try {
-                        trustStore.add(SecurityUtil.certificate.readFromFile(file.getAbsolutePath()));
-                    } catch (Exception e) {
-                        LOG.warn("Unable to load X509 files {} : {} ", file.getAbsolutePath(), e.getMessage());
-                    }
-                }
-            }
+        private void setTruststore(String trustStoreName) throws Exception {
+            trustStore = TruststoreConverter.convertValue(trustStoreName);
         }
 
         private List<Certificate> trustStore = Collections.emptyList();
