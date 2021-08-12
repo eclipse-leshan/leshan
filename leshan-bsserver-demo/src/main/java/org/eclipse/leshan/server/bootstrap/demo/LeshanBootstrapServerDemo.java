@@ -157,7 +157,7 @@ public class LeshanBootstrapServerDemo {
         // Create Models
         List<ObjectModel> models = ObjectLoader.loadDefault();
         if (cli.main.modelsFolder != null) {
-            models.addAll(ObjectLoader.loadObjectsFromDir(cli.main.modelsFolder));
+            models.addAll(ObjectLoader.loadObjectsFromDir(cli.main.modelsFolder, true));
         }
         builder.setObjectModelProvider(new VersionedBootstrapModelProvider(models));
 
