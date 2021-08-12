@@ -290,7 +290,7 @@ public class LeshanBootstrapServerDemo {
         // Create Models
         List<ObjectModel> models = ObjectLoader.loadDefault();
         if (modelsFolderPath != null) {
-            models.addAll(ObjectLoader.loadObjectsFromDir(new File(modelsFolderPath)));
+            models.addAll(ObjectLoader.loadObjectsFromDir(new File(modelsFolderPath), true));
         }
 
         // Prepare and start bootstrap server
