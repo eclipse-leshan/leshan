@@ -19,7 +19,7 @@
       <br />
       Address : {{ registration.address }}
       <span
-        v-for="(key, val) in registration.additionalRegistrationAttributes"
+        v-for="(val, key) in registration.additionalRegistrationAttributes"
         :key="key"
       >
         <br />
