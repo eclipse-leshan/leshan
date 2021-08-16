@@ -36,8 +36,8 @@ public class ObjectLoader {
     private static final Logger LOG = LoggerFactory.getLogger(ObjectLoader.class);
 
     static final String[] ddfpaths = new String[] { "0-1_0.xml", "0-1_1.xml", "1-1_0.xml", "1-1_1.xml", "2-1_0.xml",
-                            "3-1_0.xml", "3-1_1.xml", "4-1_0.xml", "4-1_1.xml", "4-1_2.xml", "5-1_0.xml", "6.xml",
-                            "7.xml", "21-1_0.xml", };
+            "3-1_0.xml", "3-1_1.xml", "4-1_0.xml", "4-1_1.xml", "4-1_2.xml", "5-1_0.xml", "6.xml", "7.xml",
+            "21-1_0.xml", };
 
     /**
      * Load last embedded version of default LWM2M objects. So the list contain only one model by object.
@@ -296,7 +296,7 @@ public class ObjectLoader {
      * @param modelsDir the directory containing all the ddf file definition.
      */
     public static List<ObjectModel> loadObjectsFromDir(File modelsDir) {
-        return loadObjectsFromDir(modelsDir, null, null);
+        return loadObjectsFromDir(modelsDir, false);
     }
 
     /**
