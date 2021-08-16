@@ -681,12 +681,7 @@ Contributors:
                 <artifactId>leshan-server-core-demo</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>leshan-server-cluster</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            
+ 
              <!-- Leshan library dependencies -->
             <dependency>
                 <groupId>org.slf4j</groupId>
