@@ -16,6 +16,7 @@
 package org.eclipse.leshan.server.bootstrap.demo.cli;
 
 import org.eclipse.leshan.core.demo.cli.StandardHelpOptions;
+import org.eclipse.leshan.core.demo.cli.VersionProvider;
 import org.eclipse.leshan.server.bootstrap.demo.JSONFileBootstrapStore;
 import org.eclipse.leshan.server.core.demo.cli.DtlsSection;
 import org.eclipse.leshan.server.core.demo.cli.GeneralSection;
@@ -39,7 +40,8 @@ import picocli.CommandLine.Spec;
                  + "You can launch it without any option.%n" //
                  + "%n" //
                  + "Californium is used as CoAP library and some CoAP parameters can be tweaked in 'Californium.properties' file." //
-                 + "|@%n")
+                 + "|@%n",
+         versionProvider = VersionProvider.class)
 public class LeshanBsServerDemoCLI implements Runnable {
 
     @Mixin

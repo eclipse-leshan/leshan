@@ -18,6 +18,7 @@ package org.eclipse.leshan.server.demo.cli;
 import java.net.URI;
 
 import org.eclipse.leshan.core.demo.cli.StandardHelpOptions;
+import org.eclipse.leshan.core.demo.cli.VersionProvider;
 import org.eclipse.leshan.server.core.demo.cli.DtlsSection;
 import org.eclipse.leshan.server.core.demo.cli.GeneralSection;
 
@@ -41,7 +42,8 @@ import redis.clients.jedis.JedisPool;
                  + "You can launch it without any option.%n" //
                  + "%n" //
                  + "Californium is used as CoAP library and some CoAP parameters can be tweaked in 'Californium.properties' file." //
-                 + "|@%n%n")
+                 + "|@%n%n",
+         versionProvider = VersionProvider.class)
 public class LeshanServerDemoCLI implements Runnable {
 
     @Mixin

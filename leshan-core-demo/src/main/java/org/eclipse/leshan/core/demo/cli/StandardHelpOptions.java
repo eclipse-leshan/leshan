@@ -30,6 +30,9 @@ public class StandardHelpOptions {
     @Option(names = { "-h", "--help" }, description = "Display help information.", usageHelp = true)
     private boolean help;
 
+    @Option(names = { "-V", "--version" }, description = "Print version information and exit.", versionHelp = true)
+    private boolean versionRequested;
+
     @Option(names = { "-v", "--verbose" },
             description = { "Specify multiple -v options to increase verbosity.", //
                     "For example, `-v -v -v` or `-vvv`", //

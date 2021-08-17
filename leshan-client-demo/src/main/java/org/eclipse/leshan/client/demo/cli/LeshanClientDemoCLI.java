@@ -26,6 +26,7 @@ import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.demo.cli.MultiParameterException;
 import org.eclipse.leshan.core.demo.cli.StandardHelpOptions;
+import org.eclipse.leshan.core.demo.cli.VersionProvider;
 import org.eclipse.leshan.core.demo.cli.converters.CIDConverter;
 import org.eclipse.leshan.core.demo.cli.converters.PortConverter;
 import org.eclipse.leshan.core.demo.cli.converters.StrictlyPositiveIntegerConverter;
@@ -50,7 +51,8 @@ import picocli.CommandLine.Spec;
                  + LeshanClientDemoCLI.DEFAULT_URL + ".%n" //
                  + "%n" //
                  + "Californium is used as CoAP library and some CoAP parameters can be tweaked in 'Californium.properties' file." //
-                 + "|@%n%n")
+                 + "|@%n%n",
+         versionProvider = VersionProvider.class)
 public class LeshanClientDemoCLI implements Runnable {
 
     public static final String DEFAULT_URL = "localhost:" + CoAP.DEFAULT_COAP_PORT;
