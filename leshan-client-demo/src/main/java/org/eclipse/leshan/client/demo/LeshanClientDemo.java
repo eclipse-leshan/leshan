@@ -202,7 +202,7 @@ public class LeshanClientDemo {
         DtlsConnectorConfig.Builder dtlsConfig = DtlsConnectorConfig.builder(coapConfig);
         dtlsConfig.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, !cli.dtls.supportDeprecatedCiphers);
         dtlsConfig.set(DtlsConfig.DTLS_CONNECTION_ID_LENGTH, cli.dtls.cid);
-               if (cli.dtls.ciphers != null) {
+        if (cli.dtls.ciphers != null) {
             dtlsConfig.setSupportedCipherSuites(cli.dtls.ciphers);
         }
 
