@@ -11,8 +11,6 @@ import picocli.CommandLine.Option;
  * Main options shared by bsserver-demo and server-demo
  */
 public class GeneralSection {
-    @Option(names = { "-h", "--help" }, description = "Display help information.", usageHelp = true)
-    private boolean help;
 
     @Option(names = { "-lh", "--coap-host" },
             description = { //

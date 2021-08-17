@@ -25,6 +25,7 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.demo.cli.MultiParameterException;
+import org.eclipse.leshan.core.demo.cli.StandardHelpOptions;
 import org.eclipse.leshan.core.demo.cli.converters.CIDConverter;
 import org.eclipse.leshan.core.demo.cli.converters.PortConverter;
 import org.eclipse.leshan.core.demo.cli.converters.StrictlyPositiveIntegerConverter;
@@ -32,6 +33,7 @@ import org.eclipse.leshan.core.demo.cli.converters.StrictlyPositiveIntegerConver
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.ITypeConverter;
+import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Spec;
@@ -39,10 +41,19 @@ import picocli.CommandLine.Spec;
 /**
  * This is the class defining the Command Line Interface of Leshan Client Demo.
  */
-@Command(name = "leshan-client-demo", sortOptions = false)
+@Command(name = "leshan-client-demo",
+         sortOptions = false,
+         description = "%n"//
+                 + "@|italic " //
+                 + "This is a LWM2M client demo implemented with Leshan library.%n" //
+                 + "You can launch it without any option and it will try to register to a LWM2M server at " + "coap://"
+                 + LeshanClientDemoCLI.DEFAULT_URL + ".%n" //
+                 + "%n" //
+                 + "Californium is used as CoAP library and some CoAP parameters can be tweaked in 'Californium.properties' file." //
+                 + "|@%n%n")
 public class LeshanClientDemoCLI implements Runnable {
 
-    private static final String DEFAULT_URL = "localhost:" + CoAP.DEFAULT_COAP_PORT;
+    public static final String DEFAULT_URL = "localhost:" + CoAP.DEFAULT_COAP_PORT;
 
     private static String defaultEndpoint() {
         try {
@@ -52,21 +63,14 @@ public class LeshanClientDemoCLI implements Runnable {
         }
     }
 
+    @Mixin
+    private StandardHelpOptions helpsOptions;
+
     /* ********************************** General Section ******************************** */
-    @ArgGroup(validate = false,
-              heading = "%n"//
-                      + "@|italic " //
-                      + "This is a LWM2M client demo implemented with Leshan library.%n" //
-                      + "You can launch it without any option and it will try to register to a LWM2M server at "
-                      + "coap://" + DEFAULT_URL + ".%n" //
-                      + "%n" //
-                      + "Californium is used as CoAP library and some CoAP parameters can be tweaked in 'Californium.properties' file." //
-                      + "|@%n%n")
+    @ArgGroup(validate = false, heading = "%n")
     public GeneralSection main = new GeneralSection();
 
     public static class GeneralSection {
-        @Option(names = { "-h", "--help" }, description = "Display help information.", usageHelp = true)
-        private boolean help;
 
         @Option(names = { "-u", "--server-url" },
                 defaultValue = DEFAULT_URL,

@@ -17,12 +17,14 @@ package org.eclipse.leshan.server.demo.cli;
 
 import java.net.URI;
 
+import org.eclipse.leshan.core.demo.cli.StandardHelpOptions;
 import org.eclipse.leshan.server.core.demo.cli.DtlsSection;
 import org.eclipse.leshan.server.core.demo.cli.GeneralSection;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.ITypeConverter;
+import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Spec;
@@ -31,18 +33,22 @@ import redis.clients.jedis.JedisPool;
 /**
  * This is the class defining the Command Line Interface of Leshan Server Demo.
  */
-@Command(name = "leshan-server-demo", sortOptions = false)
+@Command(name = "leshan-server-demo",
+         sortOptions = false,
+         description = "%n"//
+                 + "@|italic " //
+                 + "This is a LWM2M Server demo implemented with Leshan library.%n" //
+                 + "You can launch it without any option.%n" //
+                 + "%n" //
+                 + "Californium is used as CoAP library and some CoAP parameters can be tweaked in 'Californium.properties' file." //
+                 + "|@%n%n")
 public class LeshanServerDemoCLI implements Runnable {
 
+    @Mixin
+    private StandardHelpOptions helpsOptions;
+
     /* ********************************** General Section ******************************** */
-    @ArgGroup(validate = false,
-              heading = "%n"//
-                      + "@|italic " //
-                      + "This is a LWM2M Server demo implemented with Leshan library.%n" //
-                      + "You can launch it without any option.%n" //
-                      + "%n" //
-                      + "Californium is used as CoAP library and some CoAP parameters can be tweaked in 'Californium.properties' file." //
-                      + "|@%n%n")
+    @ArgGroup(validate = false, heading = "%n")
     public ServerGeneralSection main = new ServerGeneralSection();
 
     public static class ServerGeneralSection extends GeneralSection {
