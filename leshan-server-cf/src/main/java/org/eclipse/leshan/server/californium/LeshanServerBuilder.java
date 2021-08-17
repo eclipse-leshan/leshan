@@ -33,7 +33,6 @@ import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConfig;
-import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.CertificateType;
@@ -397,6 +396,9 @@ public class LeshanServerBuilder {
     public static Configuration createDefaultNetworkConfig() {
         Configuration networkConfig = new Configuration();
         networkConfig.set(CoapConfig.MID_TRACKER, TrackerMode.NULL);
+        // Do no allow Server to initiated Handshake by default, for U device request will be allowed to initiate
+        // handshake (see Registration.shouldInitiateConnection())
+        networkConfig.set(DtlsConfig.DTLS_DEFAULT_HANDSHAKE_MODE, DtlsEndpointContext.HANDSHAKE_MODE_NONE);
         return networkConfig;
     }
 
@@ -510,12 +512,6 @@ public class LeshanServerBuilder {
                     verifierBuilder.setTrustedCertificates(trustedCertificates);
                 }
                 dtlsConfigBuilder.setAdvancedCertificateVerifier(verifierBuilder.build());
-            }
-
-            // Do no allow Server to initiated Handshake by default, for U device request will be allowed to initiate
-            // handshake (see Registration.shouldInitiateConnection())
-            if (incompleteConfig.getDtlsRole() != DtlsRole.CLIENT_ONLY) {
-                dtlsConfigBuilder.set(DtlsConfig.DTLS_DEFAULT_HANDSHAKE_MODE, DtlsEndpointContext.HANDSHAKE_MODE_NONE);
             }
 
             // we try to build the dtlsConfig, if it fail we will just not create the secured endpoint

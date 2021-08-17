@@ -240,12 +240,13 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         List<LwM2mObjectEnabler> objects = initializer.createAll();
 
         InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
+        Configuration configuration = LeshanClientBuilder.createDefaultNetworkConfig();
         LeshanClientBuilder builder = new LeshanClientBuilder(getCurrentEndpoint());
         builder.setRegistrationEngineFactory(new DefaultRegistrationEngineFactory().setQueueMode(queueMode));
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
         builder.setObjects(objects);
         builder.setDtlsConfig(
-                DtlsConnectorConfig.builder(coapConfig).setSupportedCipherSuites(CipherSuite.TLS_PSK_WITH_AES_128_CCM_8));
+                DtlsConnectorConfig.builder(configuration).setSupportedCipherSuites(CipherSuite.TLS_PSK_WITH_AES_128_CCM_8));
 
         // set an editable PSK store for tests
         builder.setEndpointFactory(new EndpointFactory() {
@@ -349,10 +350,11 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         List<LwM2mObjectEnabler> objects = initializer.createAll();
 
         InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
+        Configuration configuration = LeshanClientBuilder.createDefaultNetworkConfig();
         LeshanClientBuilder builder = new LeshanClientBuilder(getCurrentEndpoint());
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
 
-        Builder dtlsConfig = DtlsConnectorConfig.builder(coapConfig);
+        Builder dtlsConfig = DtlsConnectorConfig.builder(configuration);
         dtlsConfig.set(DtlsConfig.DTLS_ROLE, DtlsRole.CLIENT_ONLY);
         builder.setDtlsConfig(dtlsConfig);
 
@@ -380,11 +382,12 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         List<LwM2mObjectEnabler> objects = initializer.createAll();
 
         InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
+        Configuration configuration = LeshanClientBuilder.createDefaultNetworkConfig();
         LeshanClientBuilder builder = new LeshanClientBuilder(getCurrentEndpoint());
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
         builder.setTrustStore(clientTrustStore);
 
-        Builder dtlsConfig = DtlsConnectorConfig.builder(coapConfig);
+        Builder dtlsConfig = DtlsConnectorConfig.builder(configuration);
         dtlsConfig.set(DtlsConfig.DTLS_ROLE, DtlsRole.CLIENT_ONLY);
         builder.setDtlsConfig(dtlsConfig);
 
@@ -406,11 +409,12 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
     protected LeshanServerBuilder createServerBuilder(Boolean serverOnly) {
         LeshanServerBuilder builder = super.createServerBuilder();
-        Builder dtlsConfig = DtlsConnectorConfig.builder(coapConfig);
+        Configuration configuration = LeshanServerBuilder.createDefaultNetworkConfig();
+        Builder dtlsConfig = DtlsConnectorConfig.builder(configuration);
         dtlsConfig.set(DtlsConfig.DTLS_MAX_RETRANSMISSIONS, 1);
         dtlsConfig.set(DtlsConfig.DTLS_RETRANSMISSION_TIMEOUT, 300, TimeUnit.MILLISECONDS);
-        if (serverOnly != null) {
-            dtlsConfig.set(DtlsConfig.DTLS_ROLE, serverOnly ? DtlsRole.SERVER_ONLY : DtlsRole.BOTH);
+        if (serverOnly != null && serverOnly) {
+            dtlsConfig.set(DtlsConfig.DTLS_ROLE, DtlsRole.SERVER_ONLY);
         }
         builder.setDtlsConfig(dtlsConfig);
         return builder;
