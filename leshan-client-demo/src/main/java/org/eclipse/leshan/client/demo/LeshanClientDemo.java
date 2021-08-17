@@ -50,7 +50,6 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
-import org.eclipse.leshan.core.demo.cli.ExecutionExceptionHandler;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.core.demo.cli.interactive.InteractiveCLI;
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -82,8 +81,7 @@ public class LeshanClientDemo {
 
         // Parse command line
         LeshanClientDemoCLI cli = new LeshanClientDemoCLI();
-        CommandLine command = new CommandLine(cli).setParameterExceptionHandler(new ShortErrorMessageHandler())
-                .setExecutionExceptionHandler(new ExecutionExceptionHandler());
+        CommandLine command = new CommandLine(cli).setParameterExceptionHandler(new ShortErrorMessageHandler());
         // Handle exit code error
         int exitCode = command.execute(args);
         if (exitCode != 0)

@@ -24,12 +24,13 @@ import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.leshan.core.demo.cli.InvalidOptionsException;
+import org.eclipse.leshan.core.demo.cli.MultiParameterException;
 import org.eclipse.leshan.core.demo.cli.converters.PrivateKeyConverter;
 import org.eclipse.leshan.core.demo.cli.converters.PublicKeyConverter;
 import org.eclipse.leshan.core.demo.cli.converters.TruststoreConverter;
 import org.eclipse.leshan.core.util.SecurityUtil;
 
+import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Option;
 
@@ -137,7 +138,7 @@ public class IdentitySection {
     protected X509Certificate[] certChain;
     protected List<Certificate> trustStore;
 
-    public void build() {
+    public void build(CommandLine cmd) {
         if (isRPK()) {
             publicKey = rpk.pubk;
             privateKey = rpk.prik;
@@ -145,7 +146,7 @@ public class IdentitySection {
             try {
                 if (x509 != null) {
                     if (x509.certchain != null && x509.prik == null || x509.certchain == null && x509.prik != null) {
-                        throw new InvalidOptionsException("-xprik and -xcert MUST be used together", "-xprik",
+                        throw new MultiParameterException(cmd, "-xprik and -xcert MUST be used together", "-xprik",
                                 "-xcert");
                     }
                     certChain = x509.certchain;

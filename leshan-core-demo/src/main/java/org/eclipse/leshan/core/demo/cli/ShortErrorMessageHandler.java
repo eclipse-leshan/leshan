@@ -6,10 +6,11 @@ import picocli.CommandLine;
 import picocli.CommandLine.Help;
 import picocli.CommandLine.Help.Layout;
 import picocli.CommandLine.IParameterExceptionHandler;
+import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
+import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.ParameterException;
-import picocli.CommandLine.TypeConversionException;
 import picocli.CommandLine.UnmatchedArgumentException;
 
 /**
@@ -22,26 +23,46 @@ public class ShortErrorMessageHandler implements IParameterExceptionHandler {
     public int handleParseException(ParameterException ex, String[] args) {
         CommandLine cmd = ex.getCommandLine();
         PrintWriter writer = cmd.getErr();
-        if (ex.getCause() instanceof TypeConversionException || ex.getCause() instanceof IllegalArgumentException) {
-            writer.print(cmd.getColorScheme().errorText(ex.getCause().getMessage()));
-        } else {
-            writer.print(cmd.getColorScheme().errorText(ex.getMessage()));
-            writer.printf("%n%n");
-            writer.print(cmd.getColorScheme().stackTraceText(ex));
+
+        // print Error
+        writer.println(cmd.getColorScheme().errorText(ex.getMessage()));
+        writer.println();
+        if ("DEBUG".equalsIgnoreCase(System.getProperty("leshan.cli"))) {
+            writer.println(cmd.getColorScheme().stackTraceText(ex));
         }
 
-        writer.printf("%n");
-        UnmatchedArgumentException.printSuggestions(ex, writer);
+        // print suggestions
+        if (UnmatchedArgumentException.printSuggestions(ex, writer)) {
+            writer.println();
+        }
 
-        if (ex.getArgSpec() instanceof OptionSpec) {
-            writer.printf("%n");
+        // print help usage for args in error
+        if (ex instanceof MultiParameterException) {
+            Help help = cmd.getHelpFactory().create(cmd.getCommandSpec(), cmd.getColorScheme());
+            Layout layout = help.createDefaultLayout();
+            for (ArgSpec argSpec : ((MultiParameterException) ex).getArgSpecs()) {
+                if (argSpec instanceof OptionSpec) {
+                    layout.addOption((OptionSpec) argSpec, help.createDefaultParamLabelRenderer());
+                } else if (argSpec instanceof PositionalParamSpec) {
+                    layout.addPositionalParameter((PositionalParamSpec) argSpec,
+                            help.createDefaultParamLabelRenderer());
+                }
+            }
+            writer.println(layout.toString());
+        } else if (ex.getArgSpec() instanceof OptionSpec) {
             Help help = cmd.getHelpFactory().create(cmd.getCommandSpec(), cmd.getColorScheme());
             Layout layout = help.createDefaultLayout();
             layout.addOption((OptionSpec) ex.getArgSpec(), help.createDefaultParamLabelRenderer());
-            writer.print(layout.toString());
+            writer.println(layout.toString());
+        } else if (ex.getArgSpec() instanceof PositionalParamSpec) {
+            Help help = cmd.getHelpFactory().create(cmd.getCommandSpec(), cmd.getColorScheme());
+            Layout layout = help.createDefaultLayout();
+            layout.addPositionalParameter((PositionalParamSpec) ex.getArgSpec(),
+                    help.createDefaultParamLabelRenderer());
+            writer.println(layout.toString());
         }
 
-        writer.printf("%n");
+        // print footer
         CommandSpec spec = cmd.getCommandSpec();
         writer.printf("Try '%s --help' for more information.%n", spec.qualifiedName());
 

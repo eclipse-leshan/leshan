@@ -22,7 +22,9 @@ import org.eclipse.leshan.server.core.demo.cli.IdentitySection;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.Spec;
 
 /**
  * This is the class defining the Command Line Interface of Leshan Server Demo.
@@ -65,9 +67,12 @@ public class LeshanBsServerDemoCLI implements Runnable {
     @ArgGroup(exclusive = true)
     public IdentitySection identity = new IdentitySection();
 
+    @Spec
+    CommandSpec spec;
+
     @Override
     public void run() {
-        // Some post-validation which imply several options. or input consolidation
-        identity.build();
+        // Some post-validation which imply several options or input consolidation.
+        identity.build(spec.commandLine());
     }
 }

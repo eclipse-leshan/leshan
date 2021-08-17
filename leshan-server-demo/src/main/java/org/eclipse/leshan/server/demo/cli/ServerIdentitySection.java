@@ -30,11 +30,12 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import org.eclipse.leshan.core.demo.cli.InvalidOptionsException;
+import org.eclipse.leshan.core.demo.cli.MultiParameterException;
 import org.eclipse.leshan.server.core.demo.cli.IdentitySection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Option;
 
@@ -98,7 +99,7 @@ public class ServerIdentitySection extends IdentitySection {
 
     /* ***** Some convenient method to access to identity easily ****/
     @Override
-    public void build() {
+    public void build(CommandLine cmd) {
         if (x509KeyStore != null) {
             LOG.warn(
                     "Keystore way [-ks, -ksp, -kst, -ksa, -ksap] is DEPRECATED for leshan demo and will probably be removed soon, please use [-cert, -prik, -truststore] options");
@@ -117,14 +118,20 @@ public class ServerIdentitySection extends IdentitySection {
                             List<X509Certificate> x509CertificateChain = new ArrayList<>();
                             Certificate[] certificateChain = keyStore.getCertificateChain(alias);
                             if (certificateChain == null || certificateChain.length == 0) {
-                                throw new IllegalArgumentException(
-                                        "Keystore alias must have a non-empty chain of X509Certificates.");
+                                throw new MultiParameterException(cmd,
+                                        String.format(
+                                                "Keystore alias [%s] must have a non-empty chain of X509Certificates.",
+                                                x509KeyStore.alias),
+                                        "-ksa");
                             }
 
                             for (Certificate cert : certificateChain) {
                                 if (!(cert instanceof X509Certificate)) {
-                                    throw new IllegalArgumentException(String
-                                            .format("Non-X.509 certificate in alias chain is not supported: %s", cert));
+                                    throw new MultiParameterException(cmd,
+                                            String.format(
+                                                    "Non-X.509 certificate in alias [%s] chain is not supported: %s",
+                                                    x509KeyStore.alias, cert),
+                                            "-ksa");
                                 }
                                 x509CertificateChain.add((X509Certificate) cert);
                             }
@@ -132,9 +139,10 @@ public class ServerIdentitySection extends IdentitySection {
                             Key key = keyStore.getKey(alias,
                                     x509KeyStore.alias == null ? new char[0] : x509KeyStore.alias.toCharArray());
                             if (!(key instanceof PrivateKey)) {
-                                throw new IllegalArgumentException(
-                                        String.format("Keystore alias must have a PrivateKey entry, was %s",
-                                                key == null ? "null" : key.getClass().getName()));
+                                throw new MultiParameterException(cmd,
+                                        String.format("Keystore alias [%s] must have a PrivateKey entry, was %s",
+                                                x509KeyStore.alias, key == null ? "null" : key.getClass().getName()),
+                                        "-ksa");
                             }
                             this.privateKey = (PrivateKey) key;
                             this.certChain = x509CertificateChain
@@ -145,11 +153,11 @@ public class ServerIdentitySection extends IdentitySection {
                 }
             } catch (KeyStoreException | IOException | NoSuchAlgorithmException | UnrecoverableKeyException
                     | CertificateException | IllegalArgumentException e) {
-                throw new InvalidOptionsException("Unable to load data from keystore", e, "-ks", "-ksp", "-kst", "-ksa",
-                        "-ksap");
+                throw new MultiParameterException(cmd, "Unable to load data from keystore", e, "-ks", "-ksp", "-kst",
+                        "-ksa", "-ksap");
             }
         } else {
-            super.build();
+            super.build(cmd);
         }
     }
 }

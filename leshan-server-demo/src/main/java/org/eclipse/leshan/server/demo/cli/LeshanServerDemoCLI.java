@@ -23,7 +23,9 @@ import org.eclipse.leshan.server.core.demo.cli.GeneralSection;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.ITypeConverter;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.Spec;
 import redis.clients.jedis.JedisPool;
 
 /**
@@ -82,9 +84,12 @@ public class LeshanServerDemoCLI implements Runnable {
     @ArgGroup(exclusive = true)
     public ServerIdentitySection identity = new ServerIdentitySection();
 
+    @Spec
+    CommandSpec spec;
+
     @Override
     public void run() {
-        // Some post-validation which imply several options. or input consolidation
-        identity.build();
+        // Some post-validation which imply several options or input consolidation.
+        identity.build(spec.commandLine());
     }
 }

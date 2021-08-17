@@ -37,7 +37,6 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
-import org.eclipse.leshan.core.demo.cli.ExecutionExceptionHandler;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -78,8 +77,7 @@ public class LeshanServerDemo {
 
         // Parse command line
         LeshanServerDemoCLI cli = new LeshanServerDemoCLI();
-        CommandLine command = new CommandLine(cli).setParameterExceptionHandler(new ShortErrorMessageHandler())
-                .setExecutionExceptionHandler(new ExecutionExceptionHandler());
+        CommandLine command = new CommandLine(cli).setParameterExceptionHandler(new ShortErrorMessageHandler());
         // Handle exit code error
         int exitCode = command.execute(args);
         if (exitCode != 0)

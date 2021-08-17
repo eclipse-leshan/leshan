@@ -24,7 +24,7 @@ import java.util.Map;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.leshan.core.CertificateUsage;
-import org.eclipse.leshan.core.demo.cli.InvalidOptionsException;
+import org.eclipse.leshan.core.demo.cli.MultiParameterException;
 import org.eclipse.leshan.core.demo.cli.converters.CIDConverter;
 import org.eclipse.leshan.core.demo.cli.converters.PortConverter;
 import org.eclipse.leshan.core.demo.cli.converters.StrictlyPositiveIntegerConverter;
@@ -32,8 +32,9 @@ import org.eclipse.leshan.core.demo.cli.converters.StrictlyPositiveIntegerConver
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.ITypeConverter;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
-import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.Spec;
 
 /**
  * This is the class defining the Command Line Interface of Leshan Client Demo.
@@ -252,18 +253,17 @@ public class LeshanClientDemoCLI implements Runnable {
     @ArgGroup(exclusive = true)
     public IdentitySection identity = new IdentitySection();
 
-    public void validate() throws ParameterException {
-
-    }
+    @Spec
+    CommandSpec spec;
 
     @Override
     public void run() {
         // Some post-validation which imply several options.
-        // For validation about only one option just ITypeConverter instead
+        // For validation about only one option, just use ITypeConverter instead
         if (identity.isx509()) {
             if (identity.getX509().certUsage == CertificateUsage.SERVICE_CERTIFICATE_CONSTRAINT
                     && identity.getX509().trustStore.isEmpty()) {
-                throw new InvalidOptionsException(
+                throw new MultiParameterException(spec.commandLine(),
                         "You need to set a truststore when you are using \"service certificate constraint\" usage",
                         "-cu", "-ts");
             }
