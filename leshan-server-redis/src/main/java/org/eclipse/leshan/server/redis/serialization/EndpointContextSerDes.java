@@ -37,6 +37,8 @@ import org.eclipse.californium.elements.auth.X509CertPath;
 import org.eclipse.californium.elements.util.Bytes;
 import org.eclipse.californium.elements.util.StringUtil;
 import org.eclipse.leshan.core.util.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
@@ -47,6 +49,8 @@ import com.eclipsesource.json.JsonValue;
  * Functions for serializing and deserializing a Californium {@link EndpointContext} in JSON.
  */
 public class EndpointContextSerDes {
+
+    private static final Logger LOG = LoggerFactory.getLogger(EndpointContextSerDes.class);
 
     private static final String KEY_ADDRESS = "address";
     private static final String KEY_PORT = "port";
@@ -141,8 +145,12 @@ public class EndpointContextSerDes {
                             attributes.add((Definition<Long>) key, Long.parseLong(attributeValue));
                         } else if (key.getValueType().equals(Boolean.class)) {
                             attributes.add((Definition<Boolean>) key, Boolean.parseBoolean(attributeValue));
+                        } else {
+                            LOG.warn("Unsupported type" + key.getValueType() + " for endpoint-context-attribute '{}'.", name);
                         }
                     }
+                } else {
+                    LOG.warn("missing definition for endpoint-context-attribute '{}'.", name);
                 }
             }
             endpointContext = new MapBasedEndpointContext(socketAddress, principal, attributes);
