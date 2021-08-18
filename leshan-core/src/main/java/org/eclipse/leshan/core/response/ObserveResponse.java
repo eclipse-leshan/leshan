@@ -53,7 +53,7 @@ public class ObserveResponse extends ReadResponse {
         this.timestampedValues = timestampedValues;
     }
 
-    public List<TimestampedLwM2mNode> getTimestampedValues() {
+    public List<TimestampedLwM2mNode> getTimestampedLwM2mNode() {
         return timestampedValues;
     }
 

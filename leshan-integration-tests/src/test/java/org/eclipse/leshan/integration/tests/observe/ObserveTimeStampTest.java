@@ -55,9 +55,9 @@ public class ObserveTimeStampTest {
     @Parameters(name = "{0}")
     public static Collection<?> contentFormats() {
         return Arrays.asList(new Object[][] { //
-                                { ContentFormat.JSON }, //
-                                { ContentFormat.SENML_JSON }, //
-                                { ContentFormat.SENML_CBOR } });
+                { ContentFormat.JSON }, //
+                { ContentFormat.SENML_JSON }, //
+                { ContentFormat.SENML_CBOR } });
     }
 
     protected IntegrationTestHelper helper = new IntegrationTestHelper();
@@ -126,7 +126,7 @@ public class ObserveTimeStampTest {
         listener.waitForNotification(2000);
         assertTrue(listener.receivedNotify().get());
         assertEquals(mostRecentNode.getNode(), listener.getResponse().getContent());
-        assertEquals(timestampedNodes, listener.getResponse().getTimestampedValues());
+        assertEquals(timestampedNodes, listener.getResponse().getTimestampedLwM2mNode());
         assertContentFormat(contentFormat, listener.getResponse());
     }
 
@@ -169,7 +169,7 @@ public class ObserveTimeStampTest {
         listener.waitForNotification(2000);
         assertTrue(listener.receivedNotify().get());
         assertEquals(mostRecentNode.getNode(), listener.getResponse().getContent());
-        assertEquals(timestampedNodes, listener.getResponse().getTimestampedValues());
+        assertEquals(timestampedNodes, listener.getResponse().getTimestampedLwM2mNode());
         assertContentFormat(contentFormat, listener.getResponse());
     }
 
@@ -213,7 +213,7 @@ public class ObserveTimeStampTest {
         listener.waitForNotification(2000);
         assertTrue(listener.receivedNotify().get());
         assertEquals(mostRecentNode.getNode(), listener.getResponse().getContent());
-        assertEquals(timestampedNodes, listener.getResponse().getTimestampedValues());
+        assertEquals(timestampedNodes, listener.getResponse().getTimestampedLwM2mNode());
         assertContentFormat(contentFormat, listener.getResponse());
     }
 }

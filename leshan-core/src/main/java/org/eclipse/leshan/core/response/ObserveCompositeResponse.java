@@ -43,12 +43,11 @@ public class ObserveCompositeResponse extends ReadCompositeResponse {
 
     @Override
     public String toString() {
-        if (errorMessage != null) {
-            return "ObserveCompositeResponse [" + "code=" + code + " errorMessage='" + errorMessage + '\'' + ']';
-        } else {
-            return "ObserveCompositeResponse [" + "code=" + code + " observation=" + observation + " content=" + content
-                    + ']';
-        }
+        if (errorMessage != null)
+            return String.format("ObserveCompositeResponse [code=%s, errorMessage=%s]", code, errorMessage);
+        else
+            return String.format("ObserveCompositeResponse [code=%s, observation=%s, content=%s]", code, observation,
+                    content);
     }
 
     @Override

@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2021 Orange.
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- *
+ * 
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- *
+ * 
  * Contributors:
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
  *******************************************************************************/
@@ -27,8 +27,8 @@ import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 
 /**
- * A Lightweight M2M request for observing changes of multiple Resources, Resources within an Object Instance or for
- * all the Object Instances of an Object within the LWM2M Client.
+ * A Lightweight M2M request for observing changes of multiple Resources, Resources within an Object Instance or for all
+ * the Object Instances of an Object within the LWM2M Client.
  */
 public class ObserveCompositeRequest extends AbstractLwM2mRequest<ObserveCompositeResponse>
         implements CompositeDownlinkRequest<ObserveCompositeResponse> {
@@ -46,7 +46,7 @@ public class ObserveCompositeRequest extends AbstractLwM2mRequest<ObserveComposi
      * @param requestContentFormat The {@link ContentFormat} used to encode the list of {@link LwM2mPath}
      * @param responseContentFormat The {@link ContentFormat} requested to encode the {@link LwM2mNode} of the response.
      * @param paths List of {@link LwM2mPath} corresponding to {@link LwM2mNode} to read.
-     * @exception IllegalArgumentException if path has invalid format.
+     * @exception InvalidRequestException if path has invalid format.
      *
      */
     public ObserveCompositeRequest(ContentFormat requestContentFormat, ContentFormat responseContentFormat,

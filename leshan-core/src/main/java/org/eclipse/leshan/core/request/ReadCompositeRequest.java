@@ -41,7 +41,7 @@ public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResp
      * @param requestContentFormat The {@link ContentFormat} used to encode the list of {@link LwM2mPath}
      * @param responseContentFormat The {@link ContentFormat} requested to encode the {@link LwM2mNode} of the response.
      * @param paths List of {@link LwM2mPath} corresponding to {@link LwM2mNode} to read.
-     * @exception IllegalArgumentException if path has invalid format.
+     * @exception InvalidRequestException if path has invalid format.
      * 
      */
     public ReadCompositeRequest(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
@@ -55,7 +55,7 @@ public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResp
      * @param requestContentFormat The {@link ContentFormat} used to encode the list of {@link LwM2mPath}
      * @param responseContentFormat The {@link ContentFormat} requested to encode the {@link LwM2mNode} of the response.
      * @param paths List of {@link LwM2mPath} corresponding to {@link LwM2mNode} to read.
-     * @exception IllegalArgumentException if path has invalid format.
+     * @exception InvalidRequestException if path has invalid format.
      * 
      */
     public ReadCompositeRequest(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
@@ -80,7 +80,7 @@ public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResp
      * @param requestContentFormat The {@link ContentFormat} used to encode the list of {@link LwM2mPath}
      * @param responseContentFormat The {@link ContentFormat} requested to encode the {@link LwM2mNode} of the response.
      * @param coapRequest the underlying request.
-     * @exception IllegalArgumentException if path has invalid format.
+     * @exception InvalidRequestException if paths list is invalid.
      *
      */
     public ReadCompositeRequest(List<LwM2mPath> paths, ContentFormat requestContentFormat,

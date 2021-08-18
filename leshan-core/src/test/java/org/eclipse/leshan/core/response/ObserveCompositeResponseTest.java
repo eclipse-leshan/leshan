@@ -32,17 +32,11 @@ public class ObserveCompositeResponseTest {
     public void should_create_response_with_content() {
         // given
         Map<LwM2mPath, LwM2mNode> exampleContent = new HashMap<>();
-        exampleContent.put(
-                new LwM2mPath("/1/2/3"), newResource(15, "example 1")
-        );
-        exampleContent.put(
-                new LwM2mPath("/2/3/4"), newResource(16, "example 2")
-        );
+        exampleContent.put(new LwM2mPath("/1/2/3"), newResource(15, "example 1"));
+        exampleContent.put(new LwM2mPath("/2/3/4"), newResource(16, "example 2"));
 
         // when
-        ObserveCompositeResponse response = new ObserveCompositeResponse(
-                CONTENT, exampleContent, null, null, null
-        );
+        ObserveCompositeResponse response = new ObserveCompositeResponse(CONTENT, exampleContent, null, null, null);
 
         // then
         assertEquals(exampleContent, response.getContent());

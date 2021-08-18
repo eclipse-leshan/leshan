@@ -429,12 +429,11 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
     /**
      * Create list of LwM2mPath from list of paths
      *
-     * @param paths list of paths as List<String>.
-     * @return list of paths as List<LwM2mPath>.
+     * @param paths list of paths as {@link String}.
+     * @return list of paths as {@link LwM2mPath}.
      *
-     * @exception NumberFormatException if path contains not Numeric value
      * @exception LwM2mNodeException if path is invalid (e.g. too big number in path)
-     * @exception IllegalArgumentException if path length is invalid
+     * @exception IllegalArgumentException if path length is invalid or if path contains not Numeric value
      */
     public static List<LwM2mPath> getLwM2mPathList(List<String> paths) {
         List<LwM2mPath> res = new ArrayList<>(paths.size());

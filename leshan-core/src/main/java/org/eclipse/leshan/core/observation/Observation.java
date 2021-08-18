@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import org.eclipse.leshan.core.request.ContentFormat;
 
@@ -86,20 +85,42 @@ public abstract class Observation {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Observation)) return false;
-        Observation that = (Observation) o;
-        return Arrays.equals(id, that.id) &&
-                Objects.equals(contentFormat, that.contentFormat) &&
-                Objects.equals(registrationId, that.registrationId) &&
-                Objects.equals(context, that.context);
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((contentFormat == null) ? 0 : contentFormat.hashCode());
+        result = prime * result + ((context == null) ? 0 : context.hashCode());
+        result = prime * result + Arrays.hashCode(id);
+        result = prime * result + ((registrationId == null) ? 0 : registrationId.hashCode());
+        return result;
     }
 
     @Override
-    public int hashCode() {
-        int result = Objects.hash(contentFormat, registrationId, context);
-        result = 31 * result + Arrays.hashCode(id);
-        return result;
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Observation other = (Observation) obj;
+        if (contentFormat == null) {
+            if (other.contentFormat != null)
+                return false;
+        } else if (!contentFormat.equals(other.contentFormat))
+            return false;
+        if (context == null) {
+            if (other.context != null)
+                return false;
+        } else if (!context.equals(other.context))
+            return false;
+        if (!Arrays.equals(id, other.id))
+            return false;
+        if (registrationId == null) {
+            if (other.registrationId != null)
+                return false;
+        } else if (!registrationId.equals(other.registrationId))
+            return false;
+        return true;
     }
 }

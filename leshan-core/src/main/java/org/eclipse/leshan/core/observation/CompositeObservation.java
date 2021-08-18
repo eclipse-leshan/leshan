@@ -17,7 +17,6 @@ package org.eclipse.leshan.core.observation;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -56,21 +55,32 @@ public class CompositeObservation extends Observation {
 
     @Override
     public String toString() {
-        return "CompositeObservation [" + "paths=" + paths + " id=" + Hex.encodeHexString(id) + " contentFormat="
-                + contentFormat + " registrationId='" + registrationId + '\'' + " context=" + context + ']';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof CompositeObservation)) return false;
-        if (!super.equals(o)) return false;
-        CompositeObservation that = (CompositeObservation) o;
-        return Objects.equals(paths, that.paths);
+        return String.format("CompositeObservation [paths=%s, id=%s, contentFormat=%s, registrationId=%s, context=%s]",
+                paths, Hex.encodeHexString(id), contentFormat, registrationId, context);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), paths);
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((paths == null) ? 0 : paths.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        CompositeObservation other = (CompositeObservation) obj;
+        if (paths == null) {
+            if (other.paths != null)
+                return false;
+        } else if (!paths.equals(other.paths))
+            return false;
+        return true;
     }
 }
