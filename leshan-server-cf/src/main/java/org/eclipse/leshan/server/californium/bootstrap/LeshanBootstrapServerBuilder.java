@@ -30,6 +30,7 @@ import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
+import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.CertificateType;
 import org.eclipse.californium.scandium.dtls.x509.SingleCertificateProvider;
@@ -392,6 +393,7 @@ public class LeshanBootstrapServerBuilder {
     public Configuration createDefaultNetworkConfig() {
         Configuration networkConfig = new Configuration();
         networkConfig.set(CoapConfig.MID_TRACKER, TrackerMode.NULL);
+        networkConfig.set(DtlsConfig.DTLS_ROLE, DtlsRole.SERVER_ONLY);
         return networkConfig;
     }
 
