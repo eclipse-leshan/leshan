@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
@@ -60,13 +61,8 @@ public class ObserveUtil {
     public static CompositeObservation createLwM2mCompositeObservation(Request request) {
         ObserveCommon observeCommon = new ObserveCommon(request);
 
-        return new CompositeObservation(
-                request.getToken().getBytes(),
-                observeCommon.regId,
-                observeCommon.lwm2mPath,
-                observeCommon.contentFormat,
-                observeCommon.context
-        );
+        return new CompositeObservation(request.getToken().getBytes(), observeCommon.regId, observeCommon.lwm2mPath,
+                observeCommon.contentFormat, observeCommon.context);
     }
 
     private static class ObserveCommon {
@@ -148,8 +144,31 @@ public class ObserveUtil {
         return observation.getRequest().getUserContext().get(CTX_REGID);
     }
 
-    public static String extractLwm2mPath(org.eclipse.californium.core.observe.Observation observation) {
-        return observation.getRequest().getUserContext().get(CTX_LWM2M_PATH);
+    public static LwM2mPath extractLwm2mPath(org.eclipse.californium.core.observe.Observation observation) {
+        if (observation.getRequest().getCode() == CoAP.Code.GET) {
+            return new LwM2mPath(observation.getRequest().getUserContext().get(CTX_LWM2M_PATH));
+        } else {
+            throw new IllegalStateException(
+                    "Observation targeting only ont path must be a GET but was " + observation.getRequest().getCode());
+        }
+    }
+
+    public static List<LwM2mPath> extractLwm2mPaths(org.eclipse.californium.core.observe.Observation observation) {
+        if (observation.getRequest().getCode() == CoAP.Code.FETCH) {
+            List<LwM2mPath> lwm2mPath = new ArrayList<>();
+            String pathsAsString = observation.getRequest().getUserContext().get(CTX_LWM2M_PATH);
+            for (String path : pathsAsString.split("\n")) {
+                lwm2mPath.add(new LwM2mPath(path));
+            }
+
+            if (lwm2mPath.size() == 0) {
+                throw new IllegalStateException("missing paths in request context");
+            }
+            return lwm2mPath;
+        } else {
+            throw new IllegalStateException(
+                    "Observation targeting several path must be a FETCH but was " + observation.getRequest().getCode());
+        }
     }
 
     public static String extractEndpoint(org.eclipse.californium.core.observe.Observation observation) {

@@ -347,7 +347,10 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
                 return new ObserveCompositeResponse(responseCode, nodes, null, coapResponse, compositeObservation);
             }
 
-            return null;
+            throw new IllegalStateException(
+                    "observation must be a CompositeObservation or a SingleObservation but was " + observation == null
+                            ? null
+                            : observation.getClass().getSimpleName());
         } catch (CodecException e) {
             if (LOG.isDebugEnabled()) {
                 byte[] payload = coapResponse.getPayload() == null ? new byte[0] : coapResponse.getPayload();
