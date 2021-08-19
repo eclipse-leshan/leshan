@@ -31,11 +31,13 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.request.CancelCompositeObservationRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteCompositeRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.response.CancelCompositeObservationResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -340,6 +342,89 @@ public class ObserveCompositeTest {
         ReadResponse readResp = helper.server.send(helper.getCurrentRegistration(),
                 new ReadRequest(ContentFormat.SENML_JSON, "/3"));
         assertEquals(readResp.getContent(), content.get(new LwM2mPath("/3")));
+    }
+
+    @Test
+    public void can_passive_cancel_composite_observation() throws InterruptedException {
+        // Send ObserveCompositeRequest
+        ObserveCompositeResponse observeCompositeResponse = helper.server.send(currentRegistration,
+                new ObserveCompositeRequest(ContentFormat.SENML_JSON, ContentFormat.SENML_JSON, "/3/0/15"));
+
+        CompositeObservation observation = observeCompositeResponse.getObservation();
+
+        // Write single example value
+        LwM2mResponse writeResponse = helper.server
+                .send(helper.getCurrentRegistration(), new WriteRequest(3, 0, 15, "Europe/Paris"));
+        listener.waitForNotification(2000);
+        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+
+        // cancel observation : passive way
+        helper.server.getObservationService().cancelObservation(observation);
+        Set<Observation> observations =
+                helper.server.getObservationService().getObservations(helper.getCurrentRegistration());
+        assertTrue("Observation should be removed", observations.isEmpty());
+
+        // write device timezone
+        listener.reset();
+
+        // Write single value
+        writeResponse = helper.server
+                .send(helper.getCurrentRegistration(), new WriteRequest(3, 0, 15, "Europe/London"));
+        listener.waitForNotification(2000);
+        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+
+        assertFalse("Observation should be cancelled", listener.receivedNotify().get());
+    }
+
+    @Test
+    public void can_active_cancel_composite_observation() throws InterruptedException {
+        // Send ObserveCompositeRequest
+        ObserveCompositeResponse observeCompositeResponse = helper.server.send(currentRegistration,
+                new ObserveCompositeRequest(ContentFormat.SENML_JSON, ContentFormat.SENML_JSON, "/3/0/15"));
+
+        CompositeObservation observation = observeCompositeResponse.getObservation();
+
+        // Write single example value
+        LwM2mResponse writeResponse = helper.server
+                .send(helper.getCurrentRegistration(), new WriteRequest(3, 0, 15, "Europe/Paris"));
+        listener.waitForNotification(2000);
+        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+
+        // cancel observation : active way
+        CancelCompositeObservationResponse response = helper.server.send(helper.getCurrentRegistration(),
+                new CancelCompositeObservationRequest(observation));
+        assertTrue(response.isSuccess());
+        assertEquals(ResponseCode.CONTENT, response.getCode());
+
+        // Assert that response contains exactly the same paths
+        assertTrue(listener.receivedNotify().get());
+        Map<LwM2mPath, LwM2mNode> content = listener.getObserveCompositeResponse().getContent();
+        assertEquals(1, content.size());
+        assertTrue(content.containsKey(new LwM2mPath("/3/0/15")));
+
+        // Assert that listener response contains exact values
+        assertEquals(LwM2mSingleResource.newStringResource(new LwM2mPath("/3/0/15").getResourceId(), "Europe/Paris"),
+                content.get(new LwM2mPath("/3/0/15")));
+
+        // active cancellation does not remove observation from store : it should be done manually using
+        // ObservationService().cancelObservation(observation)
+
+        // Assert that there is one valid observation
+        assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
+        Set<Observation> observations = helper.server.getObservationService()
+                .getObservations(helper.getCurrentRegistration());
+        assertEquals("We should have only one observation", 1, observations.size());
+        assertTrue("New observation is not there", observations.contains(observation));
+
+        // Write device timezone
+        listener.reset();
+
+        writeResponse = helper.server
+                .send(helper.getCurrentRegistration(), new WriteRequest(3, 0, 15, "Europe/London"));
+        listener.waitForNotification(2000);
+        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+
+        assertFalse("Observation should be cancelled", listener.receivedNotify().get());
     }
 
 }
