@@ -30,9 +30,8 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
-import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mRootEnabler;
-import org.eclipse.leshan.client.resource.listener.ObjectsListener;
+import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -105,7 +104,6 @@ public class RootResource extends LwM2mClientCoapResource {
         if (identity == null)
             return;
 
-        // Manage Read Composite request
         Request coapRequest = exchange.advanced().getRequest();
 
         // Handle content format for the response
@@ -128,6 +126,7 @@ public class RootResource extends LwM2mClientCoapResource {
         List<LwM2mPath> paths = decoder.decodePaths(coapRequest.getPayload(), requestContentFormat);
 
         if (exchange.getRequestOptions().hasObserve()) {
+            // Manage Observe Composite request
             ObserveCompositeRequest observeRequest = new ObserveCompositeRequest(requestContentFormat,
                     responseContentFormat, paths, coapRequest);
             ObserveCompositeResponse response = rootEnabler.observe(identity, observeRequest);
@@ -142,15 +141,14 @@ public class RootResource extends LwM2mClientCoapResource {
                 return;
             }
         } else {
-
+            // Manage Read Composite request
             ReadCompositeResponse response = rootEnabler.read(identity,
                     new ReadCompositeRequest(paths, requestContentFormat, responseContentFormat, coapRequest));
             if (response.getCode().isError()) {
                 exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
             } else {
                 // TODO we could maybe face some race condition if an objectEnabler is removed from LwM2mObjectTree
-                // between
-                // rootEnabler.read() and rootEnabler.getModel()
+                // between rootEnabler.read() and rootEnabler.getModel()
                 exchange.respond(toCoapResponseCode(response.getCode()),
                         encoder.encodeNodes(response.getContent(), responseContentFormat, rootEnabler.getModel()),
                         responseContentFormat.getCode());
@@ -207,22 +205,7 @@ public class RootResource extends LwM2mClientCoapResource {
     }
 
     private void addListeners() {
-        rootEnabler.addListener(new ObjectsListener() {
-            @Override
-            public void objectAdded(LwM2mObjectEnabler object) {
-            }
-
-            @Override
-            public void objectRemoved(LwM2mObjectEnabler object) {
-            }
-
-            @Override
-            public void objectInstancesAdded(LwM2mObjectEnabler object, int... instanceIds) {
-            }
-
-            @Override
-            public void objectInstancesRemoved(LwM2mObjectEnabler object, int... instanceIds) {
-            }
+        rootEnabler.addListener(new ObjectsListenerAdapter() {
 
             @Override
             public void resourceChanged(LwM2mPath... paths) {
