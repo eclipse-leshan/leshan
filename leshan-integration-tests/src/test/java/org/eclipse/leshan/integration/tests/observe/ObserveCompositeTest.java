@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2021 Orange.
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- *
+ * 
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- *
+ * 
  * Contributors:
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
  *******************************************************************************/
@@ -99,8 +99,8 @@ public class ObserveCompositeTest {
         assertTrue("New observation is not there", observations.contains(observation));
 
         // Write single example value
-        LwM2mResponse writeResponse = helper.server
-                .send(helper.getCurrentRegistration(), new WriteRequest(3, 0, 15, "Europe/Paris"));
+        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(3, 0, 15, "Europe/Paris"));
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
 
@@ -144,8 +144,8 @@ public class ObserveCompositeTest {
         assertTrue("New observation is not there", observations.contains(observation));
 
         // Write single example value
-        LwM2mResponse writeResponse = helper.server
-                .send(helper.getCurrentRegistration(), new WriteRequest(3, 0, 15, "Europe/Paris"));
+        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(3, 0, 15, "Europe/Paris"));
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
 
@@ -180,8 +180,8 @@ public class ObserveCompositeTest {
         assertTrue("New observation is not there", observations.contains(observation));
 
         // Write single example value
-        LwM2mResponse writeResponse = helper.server
-                .send(helper.getCurrentRegistration(), new WriteRequest(3, 0, 15, "Europe/Paris"));
+        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(3, 0, 15, "Europe/Paris"));
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
 
@@ -233,8 +233,8 @@ public class ObserveCompositeTest {
         Map<String, Object> nodes = new HashMap<>();
         nodes.put("/3/0/15", "Europe/Paris");
         nodes.put("/3/0/14", "+11");
-        WriteCompositeResponse writeResponse = helper.server
-                .send(helper.getCurrentRegistration(), new WriteCompositeRequest(ContentFormat.SENML_JSON, nodes));
+        WriteCompositeResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new WriteCompositeRequest(ContentFormat.SENML_JSON, nodes));
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
 
@@ -282,8 +282,8 @@ public class ObserveCompositeTest {
         assertTrue("New observation is not there", observations.contains(observation));
 
         // Write single example value
-        LwM2mResponse writeResponse = helper.server
-                .send(helper.getCurrentRegistration(), new WriteRequest(3, 0, 15, "Europe/Paris"));
+        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(3, 0, 15, "Europe/Paris"));
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
 
@@ -294,8 +294,8 @@ public class ObserveCompositeTest {
         assertTrue(content.containsKey(new LwM2mPath("/3/0")));
 
         // Assert that listener response equals to ReadResponse
-        ReadResponse readResp = helper.server
-                .send(helper.getCurrentRegistration(), new ReadRequest(ContentFormat.SENML_JSON, "/3/0"));
+        ReadResponse readResp = helper.server.send(helper.getCurrentRegistration(),
+                new ReadRequest(ContentFormat.SENML_JSON, "/3/0"));
         assertEquals(readResp.getContent(), content.get(new LwM2mPath("/3/0")));
     }
 
@@ -325,8 +325,8 @@ public class ObserveCompositeTest {
         assertTrue("New observation is not there", observations.contains(observation));
 
         // Write single example value
-        LwM2mResponse writeResponse = helper.server
-                .send(helper.getCurrentRegistration(), new WriteRequest(3, 0, 15, "Europe/Paris"));
+        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(3, 0, 15, "Europe/Paris"));
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
 
@@ -337,8 +337,8 @@ public class ObserveCompositeTest {
         assertTrue(content.containsKey(new LwM2mPath("/3")));
 
         // Assert that listener response equals to ReadResponse
-        ReadResponse readResp = helper.server
-                .send(helper.getCurrentRegistration(), new ReadRequest(ContentFormat.SENML_JSON, "/3"));
+        ReadResponse readResp = helper.server.send(helper.getCurrentRegistration(),
+                new ReadRequest(ContentFormat.SENML_JSON, "/3"));
         assertEquals(readResp.getContent(), content.get(new LwM2mPath("/3")));
     }
 
