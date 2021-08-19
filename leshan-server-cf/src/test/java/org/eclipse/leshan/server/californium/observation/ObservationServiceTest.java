@@ -16,6 +16,13 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.observation;
 
+import static org.junit.Assert.assertNotNull;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Map;
+import java.util.Set;
+
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
@@ -39,13 +46,6 @@ import org.eclipse.leshan.server.registration.Registration;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Map;
-import java.util.Set;
-
-import static org.junit.Assert.assertNotNull;
 
 public class ObservationServiceTest {
 
@@ -129,9 +129,7 @@ public class ObservationServiceTest {
         givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
         givenAnObservation("anotherClient", new LwM2mPath(3, 0, 12));
 
-        Observation observationToCancel = givenAnObservation(
-                support.registration.getId(), new LwM2mPath(3, 0, 12)
-        );
+        Observation observationToCancel = givenAnObservation(support.registration.getId(), new LwM2mPath(3, 0, 12));
 
         // check its presence
         Set<Observation> observations = observationService.getObservations(support.registration);
@@ -172,8 +170,7 @@ public class ObservationServiceTest {
     }
 
     private void createDefaultObservationService() {
-        observationService = new ObservationServiceImpl(store, new StandardModelProvider(),
-                new DefaultLwM2mDecoder());
+        observationService = new ObservationServiceImpl(store, new StandardModelProvider(), new DefaultLwM2mDecoder());
     }
 
     private Observation givenAnObservation(String registrationId, LwM2mPath target) {

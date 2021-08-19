@@ -76,7 +76,7 @@ public class PresenceStateListener implements RegistrationListener, ObservationL
     /**
      * {@inheritDoc}
      *
-     * @since 1.1
+     * @since 2.0
      */
     @Override
     public void onResponse(CompositeObservation observation, Registration registration,

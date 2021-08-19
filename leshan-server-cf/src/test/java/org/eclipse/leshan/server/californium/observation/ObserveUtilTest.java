@@ -1,19 +1,24 @@
 /*******************************************************************************
  * Copyright (c) 2021 Orange.
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- *
+ * 
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- *
+ * 
  * Contributors:
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.observation;
+
+import static org.junit.Assert.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Token;
@@ -22,11 +27,6 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.junit.Test;
 import org.junit.function.ThrowingRunnable;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.Assert.*;
 
 public class ObserveUtilTest {
 
@@ -40,9 +40,8 @@ public class ObserveUtilTest {
         ObserveRequest observeRequest = new ObserveRequest(null, examplePath);
 
         // when
-        Map<String, String> userContext = ObserveUtil.createCoapObserveRequestContext(
-                null, exampleRegistrationId, observeRequest
-        );
+        Map<String, String> userContext = ObserveUtil.createCoapObserveRequestContext(null, exampleRegistrationId,
+                observeRequest);
         userContext.put("extraKey", "extraValue");
 
         Request coapRequest = new Request(null);

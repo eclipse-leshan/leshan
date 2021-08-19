@@ -46,13 +46,13 @@ public class ObserveUtil {
     public static SingleObservation createLwM2mObservation(Request request) {
         ObserveCommon observeCommon = new ObserveCommon(request);
 
-        return new SingleObservation(
-                request.getToken().getBytes(),
-                observeCommon.regId,
-                observeCommon.lwm2mPath.get(0),
-                observeCommon.contentFormat,
-                observeCommon.context
-        );
+        if (observeCommon.lwm2mPath.size() != 1) {
+            throw new IllegalStateException(
+                    "1 path is expected in observe request context but was " + observeCommon.lwm2mPath);
+        }
+
+        return new SingleObservation(request.getToken().getBytes(), observeCommon.regId, observeCommon.lwm2mPath.get(0),
+                observeCommon.contentFormat, observeCommon.context);
     }
 
     private static class ObserveCommon {
@@ -71,18 +71,18 @@ public class ObserveUtil {
 
             for (Entry<String, String> ctx : request.getUserContext().entrySet()) {
                 switch (ctx.getKey()) {
-                    case CTX_REGID:
-                        regId = ctx.getValue();
-                        break;
-                    case CTX_LWM2M_PATH:
-                        for (String path : ctx.getValue().split("\n")) {
-                            lwm2mPath.add(new LwM2mPath(path));
-                        }
-                        break;
-                    case CTX_ENDPOINT:
-                        break;
-                    default:
-                        context.put(ctx.getKey(), ctx.getValue());
+                case CTX_REGID:
+                    regId = ctx.getValue();
+                    break;
+                case CTX_LWM2M_PATH:
+                    for (String path : ctx.getValue().split("\n")) {
+                        lwm2mPath.add(new LwM2mPath(path));
+                    }
+                    break;
+                case CTX_ENDPOINT:
+                    break;
+                default:
+                    context.put(ctx.getKey(), ctx.getValue());
                 }
             }
 
@@ -113,6 +113,10 @@ public class ObserveUtil {
 
     public static String extractRegistrationId(org.eclipse.californium.core.observe.Observation observation) {
         return observation.getRequest().getUserContext().get(CTX_REGID);
+    }
+
+    public static String extractLwm2mPath(org.eclipse.californium.core.observe.Observation observation) {
+        return observation.getRequest().getUserContext().get(CTX_LWM2M_PATH);
     }
 
     public static String extractEndpoint(org.eclipse.californium.core.observe.Observation observation) {
