@@ -35,6 +35,7 @@ import org.eclipse.californium.core.observe.NotificationListener;
 import org.eclipse.californium.core.observe.ObservationStore;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
+import org.eclipse.leshan.core.californium.ObserveUtil;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;

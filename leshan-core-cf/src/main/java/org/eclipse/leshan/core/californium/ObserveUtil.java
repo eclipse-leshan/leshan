@@ -15,9 +15,10 @@
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
  *     Michał Wadowski (Orange) - Add Cancel Composite-Observation feature.
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.observation;
+package org.eclipse.leshan.core.californium;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,11 +32,9 @@ import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
-import org.eclipse.leshan.server.californium.registration.CaliforniumRegistrationStore;
 
 /**
- * Utility functions to help to handle observation in Leshan. Those helper functions are only needed if you're
- * implementing your own {@link CaliforniumRegistrationStore}.
+ * Utility functions to help to handle observation in Leshan.
  */
 public class ObserveUtil {
 
@@ -50,26 +49,26 @@ public class ObserveUtil {
     public static SingleObservation createLwM2mObservation(Request request) {
         ObserveCommon observeCommon = new ObserveCommon(request);
 
-        if (observeCommon.lwm2mPath.size() != 1) {
+        if (observeCommon.lwm2mPaths.size() != 1) {
             throw new IllegalStateException(
-                    "1 path is expected in observe request context but was " + observeCommon.lwm2mPath);
+                    "1 path is expected in observe request context but was " + observeCommon.lwm2mPaths);
         }
 
-        return new SingleObservation(request.getToken().getBytes(), observeCommon.regId, observeCommon.lwm2mPath.get(0),
-                observeCommon.responseContentFormat, observeCommon.context);
+        return new SingleObservation(request.getToken().getBytes(), observeCommon.regId,
+                observeCommon.lwm2mPaths.get(0), observeCommon.responseContentFormat, observeCommon.context);
     }
 
     public static CompositeObservation createLwM2mCompositeObservation(Request request) {
         ObserveCommon observeCommon = new ObserveCommon(request);
 
-        return new CompositeObservation(request.getToken().getBytes(), observeCommon.regId, observeCommon.lwm2mPath,
+        return new CompositeObservation(request.getToken().getBytes(), observeCommon.regId, observeCommon.lwm2mPaths,
                 observeCommon.requestContentFormat, observeCommon.responseContentFormat, observeCommon.context);
     }
 
     private static class ObserveCommon {
         String regId;
         Map<String, String> context;
-        List<LwM2mPath> lwm2mPath;
+        List<LwM2mPath> lwm2mPaths;
         ContentFormat requestContentFormat;
         ContentFormat responseContentFormat;
 
@@ -78,7 +77,6 @@ public class ObserveUtil {
                 throw new IllegalStateException("missing request context");
             }
 
-            lwm2mPath = new ArrayList<>();
             context = new HashMap<>();
 
             for (Entry<String, String> ctx : request.getUserContext().entrySet()) {
@@ -87,9 +85,7 @@ public class ObserveUtil {
                     regId = ctx.getValue();
                     break;
                 case CTX_LWM2M_PATH:
-                    for (String path : ctx.getValue().split("\n")) {
-                        lwm2mPath.add(new LwM2mPath(path));
-                    }
+                    lwm2mPaths = getPathsFromContext(request.getUserContext());
                     break;
                 case CTX_ENDPOINT:
                     break;
@@ -98,7 +94,7 @@ public class ObserveUtil {
                 }
             }
 
-            if (lwm2mPath.size() == 0) {
+            if (lwm2mPaths == null || lwm2mPaths.size() == 0) {
                 throw new IllegalStateException("missing path in request context");
             }
 
@@ -113,6 +109,25 @@ public class ObserveUtil {
     }
 
     /**
+     * Extract {@link LwM2mPath} list from encoded information in user context.
+     * 
+     * @param userContext user context
+     * @return the list of {@link LwM2mPath}
+     */
+    public static List<LwM2mPath> getPathsFromContext(Map<String, String> userContext) {
+        if (userContext.containsKey(CTX_LWM2M_PATH)) {
+            List<LwM2mPath> lwm2mPaths = new ArrayList<>();
+            String pathsEncoded = userContext.get(CTX_LWM2M_PATH);
+
+            for (String path : pathsEncoded.split("\n")) {
+                lwm2mPaths.add(new LwM2mPath(path));
+            }
+            return lwm2mPaths;
+        }
+        return null;
+    }
+
+    /**
      * Create a CoAP observe request context with specific keys needed for internal Leshan working.
      */
     public static Map<String, String> createCoapObserveRequestContext(String endpoint, String registrationId,
@@ -120,10 +135,10 @@ public class ObserveUtil {
         Map<String, String> context = new HashMap<>();
         context.put(CTX_ENDPOINT, endpoint);
         context.put(CTX_REGID, registrationId);
-        context.put(CTX_LWM2M_PATH, request.getPath().toString());
-        for (Entry<String, String> ctx : request.getContext().entrySet()) {
-            context.put(ctx.getKey(), ctx.getValue());
-        }
+
+        addPathsIntoContext(context, Collections.singletonList(request.getPath()));
+
+        context.putAll(request.getContext());
         return context;
     }
 
@@ -133,17 +148,25 @@ public class ObserveUtil {
         context.put(CTX_ENDPOINT, endpoint);
         context.put(CTX_REGID, registrationId);
 
+        addPathsIntoContext(context, request.getPaths());
+
+        context.putAll(request.getContext());
+        return context;
+    }
+
+    /**
+     * Update user context with encoded list of {@link LwM2mPath}.
+     * 
+     * @param context user context
+     * @param paths the list of {@link LwM2mPath}
+     */
+    public static void addPathsIntoContext(Map<String, String> context, List<LwM2mPath> paths) {
         StringBuilder sb = new StringBuilder();
-        for (LwM2mPath path : request.getPaths()) {
+        for (LwM2mPath path : paths) {
             sb.append(path.toString());
             sb.append("\n");
         }
-
         context.put(CTX_LWM2M_PATH, sb.toString());
-        for (Entry<String, String> ctx : request.getContext().entrySet()) {
-            context.put(ctx.getKey(), ctx.getValue());
-        }
-        return context;
     }
 
     public static String extractRegistrationId(org.eclipse.californium.core.observe.Observation observation) {
