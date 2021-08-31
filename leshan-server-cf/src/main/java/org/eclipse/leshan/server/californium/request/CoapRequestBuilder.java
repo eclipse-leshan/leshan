@@ -24,6 +24,7 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
+import org.eclipse.leshan.core.californium.ObserveUtil;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
@@ -53,7 +54,6 @@ import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteCompositeRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.util.StringUtils;
-import org.eclipse.leshan.server.californium.observation.ObserveUtil;
 import org.eclipse.leshan.server.request.LowerLayerConfig;
 
 /**

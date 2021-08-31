@@ -19,6 +19,7 @@ package org.eclipse.leshan.client.californium;
 
 import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +35,7 @@ import org.eclipse.leshan.client.resource.LwM2mRootEnabler;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.californium.ObserveUtil;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
@@ -131,6 +133,8 @@ public class RootResource extends LwM2mClientCoapResource {
                     responseContentFormat, paths, coapRequest);
             ObserveCompositeResponse response = rootEnabler.observe(identity, observeRequest);
 
+            updateUserContextWithPaths(coapRequest, paths);
+
             if (response.getCode().isError()) {
                 exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                 return;
@@ -155,6 +159,15 @@ public class RootResource extends LwM2mClientCoapResource {
             }
             return;
         }
+    }
+
+    private void updateUserContextWithPaths(Request coapRequest, List<LwM2mPath> paths) {
+        HashMap<String, String> userContext = new HashMap<>();
+        if (coapRequest.getUserContext() != null) {
+            userContext.putAll(coapRequest.getUserContext());
+        }
+        ObserveUtil.addPathsIntoContext(userContext, paths);
+        coapRequest.setUserContext(userContext);
     }
 
     @Override
@@ -209,7 +222,7 @@ public class RootResource extends LwM2mClientCoapResource {
 
             @Override
             public void resourceChanged(LwM2mPath... paths) {
-                changed(new ObserveCompositeRelationFilter(decoder, paths));
+                changed(new ObserveCompositeRelationFilter(paths));
             }
         });
     }

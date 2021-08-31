@@ -22,27 +22,22 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.observe.ObserveRelation;
 import org.eclipse.californium.core.observe.ObserveRelationFilter;
+import org.eclipse.leshan.core.californium.ObserveUtil;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.node.codec.CodecException;
-import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
-import org.eclipse.leshan.core.request.ContentFormat;
 
 /**
  * An {@link ObserveRelationFilter} which select {@link ObserveRelation} based on one of resource URIs.
  */
 class ObserveCompositeRelationFilter implements ObserveRelationFilter {
 
-    private final LwM2mDecoder decoder;
     private final List<LwM2mPath> paths;
 
     /**
      * Instantiates {@link ObserveCompositeRelationFilter} basing on resource URIs.
      *
-     * @param decoder {@link LwM2mDecoder} which will decode data in supported content format.
      * @param paths the list of {@link LwM2mPath}
      */
-    public ObserveCompositeRelationFilter(LwM2mDecoder decoder, LwM2mPath... paths) {
-        this.decoder = decoder;
+    public ObserveCompositeRelationFilter(LwM2mPath... paths) {
         this.paths = Arrays.asList(paths);
     }
 
@@ -84,12 +79,6 @@ class ObserveCompositeRelationFilter implements ObserveRelationFilter {
     }
 
     private List<LwM2mPath> getObserveRequestPaths(Request request) {
-        ContentFormat contentFormat = ContentFormat.fromCode(request.getOptions().getContentFormat());
-
-        try {
-            return decoder.decodePaths(request.getPayload(), contentFormat);
-        } catch (CodecException e) {
-            return null;
-        }
+        return ObserveUtil.getPathsFromContext(request.getUserContext());
     }
 }
