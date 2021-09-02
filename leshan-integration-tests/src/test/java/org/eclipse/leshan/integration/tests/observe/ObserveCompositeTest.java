@@ -166,6 +166,8 @@ public class ObserveCompositeTest {
         assertNotNull(observeResponse.getCoapResponse());
         assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
 
+        LwM2mNode previousOffset = observeResponse.getContent("/3/0/14");
+
         CompositeObservation observation = observeResponse.getObservation();
 
         // Assert that CompositeObservation contains expected paths
@@ -197,8 +199,7 @@ public class ObserveCompositeTest {
         // Assert that listener response contains expected values
         assertEquals(LwM2mSingleResource.newStringResource(new LwM2mPath("/3/0/15").getResourceId(), "Europe/Paris"),
                 content.get(new LwM2mPath("/3/0/15")));
-        assertEquals(LwM2mSingleResource.newStringResource(new LwM2mPath("/3/0/14").getResourceId(), "+02"),
-                content.get(new LwM2mPath("/3/0/14")));
+        assertEquals(previousOffset, content.get(new LwM2mPath("/3/0/14")));
 
         // Assert that listener has Response
         assertNotNull(listener.getObserveCompositeResponse().getCoapResponse());
@@ -353,23 +354,23 @@ public class ObserveCompositeTest {
         CompositeObservation observation = observeCompositeResponse.getObservation();
 
         // Write single example value
-        LwM2mResponse writeResponse = helper.server
-                .send(helper.getCurrentRegistration(), new WriteRequest(3, 0, 15, "Europe/Paris"));
+        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(3, 0, 15, "Europe/Paris"));
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
 
         // cancel observation : passive way
         helper.server.getObservationService().cancelObservation(observation);
-        Set<Observation> observations =
-                helper.server.getObservationService().getObservations(helper.getCurrentRegistration());
+        Set<Observation> observations = helper.server.getObservationService()
+                .getObservations(helper.getCurrentRegistration());
         assertTrue("Observation should be removed", observations.isEmpty());
 
         // write device timezone
         listener.reset();
 
         // Write single value
-        writeResponse = helper.server
-                .send(helper.getCurrentRegistration(), new WriteRequest(3, 0, 15, "Europe/London"));
+        writeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(3, 0, 15, "Europe/London"));
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
 
@@ -385,8 +386,8 @@ public class ObserveCompositeTest {
         CompositeObservation observation = observeCompositeResponse.getObservation();
 
         // Write single example value
-        LwM2mResponse writeResponse = helper.server
-                .send(helper.getCurrentRegistration(), new WriteRequest(3, 0, 15, "Europe/Paris"));
+        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(3, 0, 15, "Europe/Paris"));
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
 
@@ -419,8 +420,8 @@ public class ObserveCompositeTest {
         // Write device timezone
         listener.reset();
 
-        writeResponse = helper.server
-                .send(helper.getCurrentRegistration(), new WriteRequest(3, 0, 15, "Europe/London"));
+        writeResponse = helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(3, 0, 15, "Europe/London"));
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
 
