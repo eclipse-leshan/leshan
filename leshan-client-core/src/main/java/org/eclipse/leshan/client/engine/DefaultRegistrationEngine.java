@@ -44,7 +44,7 @@ import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.Link;
-import org.eclipse.leshan.core.LwM2m.Version;
+import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -309,7 +309,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         LOG.info("Trying to register to {} ...", server.getUri());
         RegisterRequest request = null;
         try {
-            Version lwM2mVersion = Version.lastSupported();
+            LwM2mVersion lwM2mVersion = LwM2mVersion.lastSupported();
             EnumSet<BindingMode> supportedBindingMode = ServersInfoExtractor
                     .getDeviceSupportedBindingMode(objectEnablers.get(LwM2mId.DEVICE), 0);
             Link[] links = LinkFormatHelper.getClientDescription(objectEnablers.values(), null,

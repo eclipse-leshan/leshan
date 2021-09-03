@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.util.StringUtils;
 import org.slf4j.Logger;
@@ -43,14 +44,14 @@ public class ObjectLoader {
      * Load last embedded version of default LWM2M objects. So the list contain only one model by object.
      */
     public static List<ObjectModel> loadDefault() {
-        return loadDefault(Version.V1_1);
+        return loadDefault(LwM2mVersion.V1_1);
     }
 
     /**
      * Load embedded version of default LWM2M objects for a given version of LWM2M. So the list contain only one model
      * by object.
      */
-    public static List<ObjectModel> loadDefault(Version requiredVersion) {
+    public static List<ObjectModel> loadDefault(LwM2mVersion requiredVersion) {
         String errorMsg = Version.validate(requiredVersion.toString());
         if (errorMsg != null)
             throw new IllegalStateException(String.format("Invalid version : %s", errorMsg));
@@ -61,11 +62,11 @@ public class ObjectLoader {
             Map<Integer, ObjectModel> models = new TreeMap<>();
             for (ObjectModel model : loadDdfResources("/models/", ddfpaths)) {
                 // skip model not compatible with the given version
-                if (Version.get(model.lwm2mVersion).newerThan(requiredVersion))
+                if (LwM2mVersion.get(model.lwm2mVersion).newerThan(requiredVersion))
                     continue;
 
                 ObjectModel previousModel = models.get(model.id);
-                if (previousModel == null || Version.get(model.version).newerThan(previousModel.version)) {
+                if (previousModel == null || new Version(model.version).newerThan(previousModel.version)) {
                     models.put(model.id, model);
                 }
             }

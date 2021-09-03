@@ -17,7 +17,7 @@ package org.eclipse.leshan.core.request;
 
 import java.util.EnumSet;
 
-import org.eclipse.leshan.core.LwM2m.Version;
+import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 
 /**
  * Transport binding and Queue Mode
@@ -43,16 +43,16 @@ public enum BindingMode {
      * @param targetVersion the target LWM2M version
      * @return null if the BindingMode value is compatible with the given LWM2M version, else return an error message.
      */
-    public String isValidFor(Version targetVersion) {
+    public String isValidFor(LwM2mVersion targetVersion) {
         switch (this) {
         case T:
         case N:
-            if (targetVersion.olderThan(Version.V1_1)) {
+            if (targetVersion.olderThan(LwM2mVersion.V1_1)) {
                 return String.format("%s is supported since LWM2M 1.1", this);
             }
             break;
         case Q:
-            if (targetVersion.newerThan(Version.V1_0)) {
+            if (targetVersion.newerThan(LwM2mVersion.V1_0)) {
                 return String.format("%s is not supported since LWM2M 1.1", this);
             }
             break;
@@ -84,7 +84,7 @@ public enum BindingMode {
      * @param targetVersion the target LWM2M version
      * @return null if the bindings are compatible with the given LWM2M version, else return an error message.
      */
-    public static String isValidFor(EnumSet<BindingMode> bindings, Version targetVersion) {
+    public static String isValidFor(EnumSet<BindingMode> bindings, LwM2mVersion targetVersion) {
         for (BindingMode binding : bindings) {
             String err = binding.isValidFor(targetVersion);
             if (err != null)

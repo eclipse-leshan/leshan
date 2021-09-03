@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.core.Link;
-import org.eclipse.leshan.core.LwM2m.Version;
+import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.UpdateResponse;
 
@@ -108,7 +108,7 @@ public class UpdateRequest extends AbstractLwM2mRequest<UpdateResponse> implemen
         return additionalAttributes;
     }
 
-    public void validate(Version targetedVersion) {
+    public void validate(LwM2mVersion targetedVersion) {
         if (bindingMode != null) {
             String err = BindingMode.isValidFor(bindingMode, targetedVersion);
             if (err != null) {

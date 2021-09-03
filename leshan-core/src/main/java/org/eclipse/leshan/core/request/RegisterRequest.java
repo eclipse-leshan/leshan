@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.RegisterResponse;
@@ -94,15 +95,15 @@ public class RegisterRequest extends AbstractLwM2mRequest<RegisterResponse> impl
         }
 
         if (bindingMode != null) {
-            err = BindingMode.isValidFor(bindingMode, Version.get(lwVersion));
+            err = BindingMode.isValidFor(bindingMode, LwM2mVersion.get(lwVersion));
             if (err != null) {
                 throw new InvalidRequestException("Invalid Binding mode: %s", err);
             }
         }
 
         // handle queue mode param
-        Version version = Version.get(lwVersion);
-        if (version.equals(Version.V1_0)) {
+        LwM2mVersion version = LwM2mVersion.get(lwVersion);
+        if (version.equals(LwM2mVersion.V1_0)) {
             if (queueMode != null)
                 throw new InvalidRequestException("QueueMode is not defined in LWM2M v1.0");
             else

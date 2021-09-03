@@ -19,7 +19,7 @@ package org.eclipse.leshan.server.registration;
 
 import java.util.Date;
 
-import org.eclipse.leshan.core.LwM2m.Version;
+import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.RegisterRequest;
@@ -57,10 +57,10 @@ public class RegistrationHandler {
                 registrationIdProvider.getRegistrationId(registerRequest), registerRequest.getEndpointName(), sender);
         builder.extractDataFromObjectLink(true);
 
-        builder.lwM2mVersion(Version.get(registerRequest.getLwVersion())).lifeTimeInSec(registerRequest.getLifetime())
-                .bindingMode(registerRequest.getBindingMode()).queueMode(registerRequest.getQueueMode())
-                .objectLinks(registerRequest.getObjectLinks()).smsNumber(registerRequest.getSmsNumber())
-                .registrationDate(new Date()).lastUpdate(new Date())
+        builder.lwM2mVersion(LwM2mVersion.get(registerRequest.getLwVersion()))
+                .lifeTimeInSec(registerRequest.getLifetime()).bindingMode(registerRequest.getBindingMode())
+                .queueMode(registerRequest.getQueueMode()).objectLinks(registerRequest.getObjectLinks())
+                .smsNumber(registerRequest.getSmsNumber()).registrationDate(new Date()).lastUpdate(new Date())
                 .additionalRegistrationAttributes(registerRequest.getAdditionalAttributes());
 
         // We must check if the client is using the right identity.

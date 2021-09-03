@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.model;
 
-import org.eclipse.leshan.core.LwM2m.Version;
+import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.w3c.dom.Document;
 
 /**
@@ -31,10 +31,10 @@ public interface DDFFileValidatorFactory {
      * 
      * @return the version of the minimal LWM2M version supported by this DDF file.
      */
-    Version extractLWM2MVersion(Document document, String documentName) throws InvalidDDFFileException;
+    LwM2mVersion extractLWM2MVersion(Document document, String documentName) throws InvalidDDFFileException;
 
     /**
-     * Create a {@link DDFFileValidator} for the given LWM2M {@link Version}
+     * Create a {@link DDFFileValidator} for the given LWM2M {@link LwM2mVersion}
      */
-    DDFFileValidator create(Version lwm2mVersion);
+    DDFFileValidator create(LwM2mVersion lwm2mVersion);
 }

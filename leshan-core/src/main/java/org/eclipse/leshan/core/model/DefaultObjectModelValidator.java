@@ -17,6 +17,7 @@ package org.eclipse.leshan.core.model;
 
 import java.util.List;
 
+import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 
@@ -116,7 +117,7 @@ public class DefaultObjectModelValidator implements ObjectModelValidator {
                     "Model for Resource %s(%d) in %s is invalid : a none executable resource MUST have a type.",
                     resource.name, resource.id, modelName, resource.type);
         }
-        if (lwm2mVersion.equals(Version.V1_0.toString()))
+        if (lwm2mVersion.equals(LwM2mVersion.V1_0.toString()))
             switch (resource.type) {
             case NONE:
             case STRING:

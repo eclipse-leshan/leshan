@@ -33,7 +33,7 @@ import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.core.Link;
-import org.eclipse.leshan.core.LwM2m.Version;
+import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -303,7 +303,7 @@ public class LinkFormatHelperTest {
     }
 
     private ObjectModel getObjectModel(int id) {
-        List<ObjectModel> objectModels = ObjectLoader.loadDefault(Version.V1_0);
+        List<ObjectModel> objectModels = ObjectLoader.loadDefault(LwM2mVersion.V1_0);
         for (ObjectModel objectModel : objectModels) {
             if (objectModel.id == id)
                 return objectModel;
@@ -315,7 +315,7 @@ public class LinkFormatHelperTest {
      * Gets a default object model by id and manipulates its version.
      */
     private ObjectModel getVersionedObjectModel(int id, String version) {
-        List<ObjectModel> objectModels = ObjectLoader.loadDefault(Version.V1_0);
+        List<ObjectModel> objectModels = ObjectLoader.loadDefault(LwM2mVersion.V1_0);
         for (ObjectModel om : objectModels) {
             if (om.id == id)
                 return new ObjectModel(om.id, om.name, om.description, version, om.multiple, om.mandatory,

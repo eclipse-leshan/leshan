@@ -20,40 +20,81 @@ public interface LwM2m {
     /**
      * Version of LWM2M specification.
      */
-    public class Version implements Comparable<Version> {
+    public class LwM2mVersion extends Version {
 
-        public static Version V1_0 = new Version("1.0", true);
-        public static Version V1_1 = new Version("1.1", true);
-        private static Version[] supportedVersions = new Version[] { V1_0, V1_1 };
+        public static LwM2mVersion V1_0 = new LwM2mVersion("1.0", true);
+        public static LwM2mVersion V1_1 = new LwM2mVersion("1.1", true);
+        private static LwM2mVersion[] supportedVersions = new LwM2mVersion[] { V1_0, V1_1 };
 
-        private String value;
         private boolean supported;
 
-        protected Version(String version, boolean supported) {
-            this.value = version;
+        protected LwM2mVersion(String version, boolean supported) {
+            super(version);
             this.supported = supported;
-        }
-
-        @Override
-        public String toString() {
-            return value;
         }
 
         public boolean isSupported() {
             return supported;
         }
 
-        public static Version get(String version) {
-            for (Version constantVersion : supportedVersions) {
+        public static LwM2mVersion get(String version) {
+            for (LwM2mVersion constantVersion : supportedVersions) {
                 if (constantVersion.value.equals(version)) {
                     return constantVersion;
                 }
             }
-            return new Version(version, false);
+            return new LwM2mVersion(version, false);
         }
 
         public static boolean isSupported(String version) {
             return get(version).isSupported();
+        }
+
+        public static LwM2mVersion getDefault() {
+            return V1_0;
+        }
+
+        public static LwM2mVersion lastSupported() {
+            return V1_1;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = super.hashCode();
+            result = prime * result + (supported ? 1231 : 1237);
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (!super.equals(obj))
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            LwM2mVersion other = (LwM2mVersion) obj;
+            if (supported != other.supported)
+                return false;
+            return true;
+        }
+    }
+
+    /**
+     * Generic class to handle Version (e.g. Object versioning)
+     */
+    public class Version implements Comparable<Version> {
+
+        protected String value;
+
+        public Version(String version) {
+            this.value = version;
+        }
+
+        @Override
+        public String toString() {
+            return value;
         }
 
         public static String validate(String version) {
@@ -76,14 +117,6 @@ public interface LwM2m {
                 }
             }
             return null;
-        }
-
-        public static Version getDefault() {
-            return V1_0;
-        }
-
-        public static Version lastSupported() {
-            return V1_1;
         }
 
         @Override
@@ -136,7 +169,7 @@ public interface LwM2m {
         }
 
         public boolean newerThan(String version) {
-            return newerThan(Version.get(version));
+            return newerThan(new Version(version));
         }
     }
 

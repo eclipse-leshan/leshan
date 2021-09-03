@@ -23,7 +23,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.leshan.core.Link;
-import org.eclipse.leshan.core.LwM2m.Version;
+import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.server.registration.Registration;
@@ -120,9 +120,9 @@ public class RegistrationSerDes {
         b.lifeTimeInSec(jObj.getLong("lt", 0));
         String versionAsString = jObj.getString("ver", null);
         if (versionAsString == null) {
-            b.lwM2mVersion(Version.getDefault());
+            b.lwM2mVersion(LwM2mVersion.getDefault());
         } else {
-            b.lwM2mVersion(Version.get(versionAsString));
+            b.lwM2mVersion(LwM2mVersion.get(versionAsString));
         }
         b.registrationDate(new Date(jObj.getLong("regDate", 0)));
         if (jObj.get("sms") != null) {

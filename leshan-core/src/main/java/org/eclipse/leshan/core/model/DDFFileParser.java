@@ -28,7 +28,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.eclipse.leshan.core.LwM2m.Version;
+import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.model.ResourceModel.Operations;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.util.StringUtils;
@@ -113,7 +113,7 @@ public class DDFFileParser {
             Document document = builder.parse(inputStream);
 
             // Get DDF file validator
-            Version lwm2mVersion;
+            LwM2mVersion lwm2mVersion;
             DDFFileValidator ddfFileValidator;
             if (ddfValidatorFactory != null) {
                 lwm2mVersion = ddfValidatorFactory.extractLWM2MVersion(document, streamName);
@@ -143,7 +143,7 @@ public class DDFFileParser {
         }
     }
 
-    private ObjectModel parseObject(Node object, String streamName, Version schemaVersion, boolean validate)
+    private ObjectModel parseObject(Node object, String streamName, LwM2mVersion schemaVersion, boolean validate)
             throws InvalidDDFFileException {
 
         Node objectType = object.getAttributes().getNamedItem("ObjectType");

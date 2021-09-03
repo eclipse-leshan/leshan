@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.leshan.core.LwM2m.Version;
+import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.junit.Test;
 
@@ -31,7 +31,7 @@ public class ContentFormatTest {
     public void get_optional_content_format_for_v1_0() throws CodecException {
 
         List<ContentFormat> optionalContentFormat = ContentFormat
-                .getOptionalContentFormatForClient(Arrays.asList(TLV, JSON, TEXT, OPAQUE), Version.V1_0);
+                .getOptionalContentFormatForClient(Arrays.asList(TLV, JSON, TEXT, OPAQUE), LwM2mVersion.V1_0);
 
         assertEquals(Arrays.asList(JSON, TEXT, OPAQUE), optionalContentFormat);
     }
@@ -39,7 +39,7 @@ public class ContentFormatTest {
     @Test
     public void get_optional_content_format_for_v1_1() throws CodecException {
         List<ContentFormat> optionalContentFormat = ContentFormat.getOptionalContentFormatForClient(
-                Arrays.asList(TLV, JSON, SENML_JSON, SENML_CBOR, TEXT, OPAQUE, CBOR, LINK), Version.V1_1);
+                Arrays.asList(TLV, JSON, SENML_JSON, SENML_CBOR, TEXT, OPAQUE, CBOR, LINK), LwM2mVersion.V1_1);
 
         assertEquals(Arrays.asList(TLV, JSON, SENML_JSON, SENML_CBOR, CBOR), optionalContentFormat);
 

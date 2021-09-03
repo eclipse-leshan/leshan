@@ -30,7 +30,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.eclipse.leshan.core.Link;
-import org.eclipse.leshan.core.LwM2m.Version;
+import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.attributes.Attribute;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -60,7 +60,7 @@ public class Registration {
 
     private final String smsNumber;
 
-    private final Version lwM2mVersion;
+    private final LwM2mVersion lwM2mVersion;
 
     private final EnumSet<BindingMode> bindingMode;
 
@@ -229,7 +229,7 @@ public class Registration {
         return smsNumber;
     }
 
-    public Version getLwM2mVersion() {
+    public LwM2mVersion getLwM2mVersion() {
         return lwM2mVersion;
     }
 
@@ -314,7 +314,7 @@ public class Registration {
     }
 
     public boolean usesQueueMode() {
-        if (lwM2mVersion.olderThan(Version.V1_1))
+        if (lwM2mVersion.olderThan(LwM2mVersion.V1_1))
             return bindingMode.contains(BindingMode.Q);
         else
             return queueMode;
@@ -479,7 +479,7 @@ public class Registration {
         private String smsNumber;
         private EnumSet<BindingMode> bindingMode;
         private Boolean queueMode;
-        private Version lwM2mVersion = Version.getDefault();
+        private LwM2mVersion lwM2mVersion = LwM2mVersion.getDefault();
         private Link[] objectLinks;
         private String rootPath;
         private Set<ContentFormat> supportedContentFormats;
@@ -563,7 +563,7 @@ public class Registration {
             return this;
         }
 
-        public Builder lwM2mVersion(Version lwM2mVersion) {
+        public Builder lwM2mVersion(LwM2mVersion lwM2mVersion) {
             this.lwM2mVersion = lwM2mVersion;
             return this;
         }
@@ -728,9 +728,9 @@ public class Registration {
             // Define Default value
             rootPath = rootPath == null ? "/" : rootPath;
             lifeTimeInSec = lifeTimeInSec == null ? DEFAULT_LIFETIME_IN_SEC : lifeTimeInSec;
-            lwM2mVersion = lwM2mVersion == null ? Version.getDefault() : lwM2mVersion;
+            lwM2mVersion = lwM2mVersion == null ? LwM2mVersion.getDefault() : lwM2mVersion;
             bindingMode = bindingMode == null ? EnumSet.of(BindingMode.U) : bindingMode;
-            queueMode = queueMode == null && lwM2mVersion.newerThan(Version.V1_0) ? Boolean.FALSE : queueMode;
+            queueMode = queueMode == null && lwM2mVersion.newerThan(LwM2mVersion.V1_0) ? Boolean.FALSE : queueMode;
             registrationDate = registrationDate == null ? new Date() : registrationDate;
             lastUpdate = lastUpdate == null ? new Date() : lastUpdate;
 

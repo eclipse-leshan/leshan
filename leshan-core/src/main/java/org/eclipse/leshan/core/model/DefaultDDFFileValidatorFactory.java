@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.model;
 
-import org.eclipse.leshan.core.LwM2m.Version;
+import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -29,7 +29,7 @@ import org.w3c.dom.NodeList;
 public class DefaultDDFFileValidatorFactory implements DDFFileValidatorFactory {
 
     @Override
-    public Version extractLWM2MVersion(Document document, String DocumentName) throws InvalidDDFFileException {
+    public LwM2mVersion extractLWM2MVersion(Document document, String DocumentName) throws InvalidDDFFileException {
         NodeList nodes = document.getElementsByTagName("LWM2M");
         if (nodes.getLength() != 1) {
             throw new InvalidDDFFileException("DDF file %s should have 1 <LWM2M> element.", DocumentName);
@@ -43,9 +43,9 @@ public class DefaultDDFFileValidatorFactory implements DDFFileValidatorFactory {
         String schemaLocation = schemaLocationAttr.getTextContent();
         if (schemaLocation != null) {
             if (schemaLocation.endsWith("LWM2M.xsd")) {
-                return Version.V1_0;
+                return LwM2mVersion.V1_0;
             } else if (schemaLocation.endsWith("LWM2M-v1_1.xsd")) {
-                return Version.V1_1;
+                return LwM2mVersion.V1_1;
             }
         }
         throw new InvalidDDFFileException("unsupported value [%s] for attribute 'xsi:noNamespaceSchemaLocation' in %s",
@@ -53,7 +53,7 @@ public class DefaultDDFFileValidatorFactory implements DDFFileValidatorFactory {
     }
 
     @Override
-    public DDFFileValidator create(Version lwm2mVersion) {
+    public DDFFileValidator create(LwM2mVersion lwm2mVersion) {
         return new DefaultDDFFileValidator(lwm2mVersion);
     }
 }

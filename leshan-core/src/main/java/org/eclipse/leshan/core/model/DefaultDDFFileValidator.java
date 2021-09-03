@@ -26,7 +26,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import org.eclipse.leshan.core.LwM2m.Version;
+import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.util.Validate;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -49,17 +49,17 @@ public class DefaultDDFFileValidator implements DDFFileValidator {
      * Create a {@link DDFFileValidator} using the LWM2M v1.1 schema.
      */
     public DefaultDDFFileValidator() {
-        this(Version.V1_1);
+        this(LwM2mVersion.V1_1);
     }
 
     /**
-     * Create a {@link DDFFileValidator} using schema corresponding to LWM2M {@link Version}.
+     * Create a {@link DDFFileValidator} using schema corresponding to LWM2M {@link LwM2mVersion}.
      */
-    public DefaultDDFFileValidator(Version version) {
+    public DefaultDDFFileValidator(LwM2mVersion version) {
         Validate.notNull(version, "version must not be null");
-        if (Version.V1_0.equals(version)) {
+        if (LwM2mVersion.V1_0.equals(version)) {
             schema = LWM2M_V1_0_SCHEMA_PATH;
-        } else if (Version.V1_1.equals(version)) {
+        } else if (LwM2mVersion.V1_1.equals(version)) {
             schema = LWM2M_V1_1_SCHEMA_PATH;
         } else {
             throw new IllegalStateException(String.format("Unsupported version %s", version));
