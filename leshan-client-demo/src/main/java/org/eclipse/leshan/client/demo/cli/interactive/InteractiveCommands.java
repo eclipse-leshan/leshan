@@ -1,24 +1,36 @@
 package org.eclipse.leshan.client.demo.cli.interactive;
 
 import java.io.PrintWriter;
+import java.util.List;
+import java.util.Map;
 
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.demo.MyLocation;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.CreateCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.DeleteCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.MoveCommand;
+import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.SendCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.UpdateCommand;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.LwM2mId;
+import org.eclipse.leshan.core.demo.cli.converters.ContentFormatConverter;
+import org.eclipse.leshan.core.demo.cli.converters.StringLwM2mPathConverter;
 import org.eclipse.leshan.core.demo.cli.converters.VersionConverter;
 import org.eclipse.leshan.core.demo.cli.interactive.JLineInteractiveCommands;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.StaticModel;
+import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.response.ErrorCallback;
+import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.core.response.SendResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import jline.console.ConsoleReader;
 import picocli.CommandLine;
@@ -35,10 +47,12 @@ import picocli.CommandLine.ParentCommand;
          description = "@|bold,underline Leshan Client Demo Interactive Console :|@%n",
          footer = { "%n@|italic Press Ctl-C to exit.|@%n" },
          subcommands = { HelpCommand.class, CreateCommand.class, DeleteCommand.class, UpdateCommand.class,
-                 MoveCommand.class },
+                 SendCommand.class, MoveCommand.class },
          customSynopsis = { "" },
          synopsisHeading = "")
 public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
+
+    private static final Logger LOG = LoggerFactory.getLogger(InteractiveCommands.class);
 
     private PrintWriter out;
 
@@ -147,6 +161,60 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
         @Override
         public void run() {
             parent.client.triggerRegistrationUpdate();
+        }
+    }
+
+    /**
+     * A command to sebd data.
+     */
+    @Command(name = "send", description = "Send data to server", headerHeading = "%n", footer = "")
+    static class SendCommand implements Runnable {
+
+        @Parameters(description = "paths of data to send.", converter = StringLwM2mPathConverter.class)
+        private List<String> paths;
+
+        @Option(names = { "-c", "--content-format" },
+                defaultValue = "SENML_CBOR",
+                description = { //
+                        "Name (e.g. SENML_JSON) or code (e.g. 110) of Content Format used to send data.", //
+                        "Default : ${DEFAULT-VALUE}" },
+                converter = SendContentFormatConverver.class)
+        ContentFormat contentFormat;
+
+        public static class SendContentFormatConverver extends ContentFormatConverter {
+            public SendContentFormatConverver() {
+                super(ContentFormat.SENML_CBOR, ContentFormat.SENML_JSON);
+            }
+        }
+
+        @ParentCommand
+        InteractiveCommands parent;
+
+        @Override
+        public void run() {
+            Map<String, ServerIdentity> registeredServers = parent.client.getRegisteredServers();
+            if (registeredServers.isEmpty()) {
+                parent.out.printf("There is no registered server to send to.");
+                parent.out.flush();
+            }
+            for (final ServerIdentity server : registeredServers.values()) {
+                LOG.info("Sending Data to {} using {}.", server, contentFormat);
+                parent.client.sendData(server, contentFormat, paths, 2000, new ResponseCallback<SendResponse>() {
+                    @Override
+                    public void onResponse(SendResponse response) {
+                        if (response.isSuccess())
+                            LOG.info("Data sent successfully to {} [{}].", server, response.getCode());
+                        else
+                            LOG.info("Send data to {} failed [{}] : {}.", server, response.getCode(),
+                                    response.getErrorMessage() == null ? "" : response.getErrorMessage());
+                    }
+                }, new ErrorCallback() {
+                    @Override
+                    public void onError(Exception e) {
+                        LOG.warn("Unable to send data to {}.", server, e);
+                    }
+                });
+            }
         }
     }
 
