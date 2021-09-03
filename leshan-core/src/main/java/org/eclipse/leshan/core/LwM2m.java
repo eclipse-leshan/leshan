@@ -86,7 +86,13 @@ public interface LwM2m {
      */
     public class Version implements Comparable<Version> {
 
+        public static final Version MAX = new Version(Short.MAX_VALUE, Short.MIN_VALUE);
+
         protected String value;
+
+        public Version(Short major, Short minor) {
+            this.value = major + "." + minor;
+        }
 
         public Version(String version) {
             this.value = version;
@@ -95,6 +101,10 @@ public interface LwM2m {
         @Override
         public String toString() {
             return value;
+        }
+
+        public String validate() {
+            return Version.validate(value);
         }
 
         public static String validate(String version) {

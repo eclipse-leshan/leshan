@@ -17,11 +17,11 @@ package org.eclipse.leshan.core.model;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.NavigableMap;
 import java.util.TreeMap;
 
+import org.eclipse.leshan.core.LwM2m.Version;
+import org.eclipse.leshan.core.node.LwM2mNodeUtil;
 import org.eclipse.leshan.core.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,9 +33,81 @@ import org.slf4j.LoggerFactory;
 public class LwM2mModelRepository {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mModelRepository.class);
 
+    private static class Key implements Comparable<Key> {
+        Integer id;
+        Version version;
+
+        public Key(Integer id, Version version) {
+            this.id = id;
+            this.version = version;
+        }
+
+        public void validate() {
+            LwM2mNodeUtil.validateObjectId(id);
+            String err = version.validate();
+            if (err != null) {
+                throw new IllegalStateException(
+                        String.format("Invalid version %s for object %d : %s", version, id, err));
+            }
+        }
+
+        @Override
+        public int compareTo(Key o) {
+            // handle null
+            if (o == null) {
+                return 1;
+            }
+            // compare id
+            int res = Integer.compare(this.id, o.id);
+            if (res != 0) {
+                return res;
+            }
+            // compare version
+            else {
+                return this.version.compareTo(o.version);
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((id == null) ? 0 : id.hashCode());
+            result = prime * result + ((version == null) ? 0 : version.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            Key other = (Key) obj;
+            if (id == null) {
+                if (other.id != null)
+                    return false;
+            } else if (!id.equals(other.id))
+                return false;
+            if (version == null) {
+                if (other.version != null)
+                    return false;
+            } else if (!version.equals(other.version))
+                return false;
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("key[%s/%s]", id, version);
+        }
+
+    }
+
     // This map contains all the object models available. Different version could be used.
-    // This map is indexed by a string composed of objectid and version (objectid##version)
-    private final Map<String, ObjectModel> objects;
+    private final NavigableMap<Key, ObjectModel> objects;
 
     public LwM2mModelRepository(ObjectModel... objectModels) {
         this(Arrays.asList(objectModels));
@@ -45,20 +117,23 @@ public class LwM2mModelRepository {
         if (objectModels == null) {
             objects = new TreeMap<>();
         } else {
-            Map<String, ObjectModel> map = new HashMap<>();
+            NavigableMap<Key, ObjectModel> map = new TreeMap<>();
             for (ObjectModel model : objectModels) {
-                String key = getKey(model);
+                Key key = getKey(model);
                 if (key == null) {
                     throw new IllegalArgumentException(
                             String.format("Model %s is invalid : object id is missing.", model));
                 }
+                key.validate();
+
                 ObjectModel old = map.put(key, model);
                 if (old != null) {
                     LOG.debug("Model already exists for object {} in version {}. Overriding it.", model.id,
                             model.version);
                 }
             }
-            objects = Collections.unmodifiableMap(map);
+            // TODO use unmodifiableNavigableMap when we pass to java8.
+            objects = map;
         }
     }
 
@@ -69,14 +144,32 @@ public class LwM2mModelRepository {
         return objects.get(getKey(objectId, version));
     }
 
-    private String getKey(ObjectModel objectModel) {
+    /**
+     * @param objectId
+     * @return most recent version of the model.
+     */
+    public ObjectModel getObjectModel(Integer objectId) {
+        Validate.notNull(objectId, "objectid must not be null");
+
+        Key floorKey = objects.floorKey(getKey(objectId, Version.MAX));
+        if (floorKey == null || floorKey.id != objectId) {
+            return null;
+        }
+        return objects.get(floorKey);
+    }
+
+    private Key getKey(ObjectModel objectModel) {
         return getKey(objectModel.id, objectModel.version);
     }
 
-    private String getKey(Integer objectId, String version) {
+    private Key getKey(Integer objectId, String version) {
+        return getKey(objectId, new Version(version));
+    }
+
+    private Key getKey(Integer objectId, Version version) {
         if (objectId == null) {
             return null;
         }
-        return objectId + "##" + version;
+        return new Key(objectId, version);
     }
 }
