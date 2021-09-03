@@ -65,13 +65,13 @@ public interface LwM2m {
             }
             for (int i = 0; i < 2; i++) {
                 try {
-                    int parsedInt = Integer.parseInt(versionPart[i]);
-                    if (parsedInt < 0) {
-                        return String.format("version (%s) part %d (%s) is not a valid integer", version, i + 1,
+                    Short parsedShort = Short.parseShort(versionPart[i]);
+                    if (parsedShort < 0) {
+                        return String.format("version (%s) part %d (%s) is not a valid short", version, i + 1,
                                 versionPart[i]);
                     }
                 } catch (Exception e) {
-                    return String.format("version (%s) part %d (%s) is not a valid integer", version, i + 1,
+                    return String.format("version (%s) part %d (%s) is not a valid short", version, i + 1,
                             versionPart[i]);
                 }
             }
