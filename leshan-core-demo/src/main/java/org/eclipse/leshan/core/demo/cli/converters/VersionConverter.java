@@ -24,12 +24,10 @@ public class VersionConverter implements ITypeConverter<Version> {
 
     @Override
     public Version convert(String input) {
-        Version version = new Version(input);
-
-        String err = version.validate();
+        String err = Version.validate(input);
         if (err != null)
             throw new TypeConversionException(err);
 
-        return version;
+        return new Version(input);
     }
 };

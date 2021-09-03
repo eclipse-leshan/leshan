@@ -42,15 +42,6 @@ public class LwM2mModelRepository {
             this.version = version;
         }
 
-        public void validate() {
-            LwM2mNodeUtil.validateObjectId(id);
-            String err = version.validate();
-            if (err != null) {
-                throw new IllegalStateException(
-                        String.format("Invalid version %s for object %d : %s", version, id, err));
-            }
-        }
-
         @Override
         public int compareTo(Key o) {
             // handle null
@@ -119,13 +110,17 @@ public class LwM2mModelRepository {
         } else {
             NavigableMap<Key, ObjectModel> map = new TreeMap<>();
             for (ObjectModel model : objectModels) {
-                Key key = getKey(model);
+                // validate Key
+                validateKey(model.id, model.version);
+
+                // create Key
+                Key key = getKey(model.id, model.version);
                 if (key == null) {
                     throw new IllegalArgumentException(
                             String.format("Model %s is invalid : object id is missing.", model));
                 }
-                key.validate();
 
+                // add to the map
                 ObjectModel old = map.put(key, model);
                 if (old != null) {
                     LOG.debug("Model already exists for object {} in version {}. Overriding it.", model.id,
@@ -137,15 +132,22 @@ public class LwM2mModelRepository {
         }
     }
 
-    public ObjectModel getObjectModel(Integer objectId, String version) {
-        Validate.notNull(objectId, "objectid must not be null");
-        Validate.notNull(version, "version must not be null");
+    private void validateKey(Integer id, String version) {
+        LwM2mNodeUtil.validateObjectId(id);
+        String err = Version.validate(version);
+        if (err != null) {
+            throw new IllegalArgumentException(
+                    String.format("Invalid version %s for object %d : %s", version, id, err));
+        }
+    }
 
+    public ObjectModel getObjectModel(Integer objectId, String version) {
+        validateKey(objectId, version);
         return objects.get(getKey(objectId, version));
     }
 
     public ObjectModel getObjectModel(Integer objectId, Version version) {
-        Validate.notNull(objectId, "objectid must not be null");
+        LwM2mNodeUtil.validateObjectId(objectId);
         Validate.notNull(version, "version must not be null");
 
         return objects.get(getKey(objectId, version));
@@ -155,8 +157,8 @@ public class LwM2mModelRepository {
      * @return most recent version of the model.
      */
     public ObjectModel getObjectModel(Integer objectId) {
-        Validate.notNull(objectId, "objectid must not be null");
-
+        LwM2mNodeUtil.validateObjectId(objectId);
+        
         Key floorKey = objects.floorKey(getKey(objectId, Version.MAX));
         if (floorKey == null || !floorKey.id.equals(objectId)) {
             return null;
@@ -164,18 +166,11 @@ public class LwM2mModelRepository {
         return objects.get(floorKey);
     }
 
-    private Key getKey(ObjectModel objectModel) {
-        return getKey(objectModel.id, objectModel.version);
-    }
-
     private Key getKey(Integer objectId, String version) {
         return getKey(objectId, new Version(version));
     }
 
     private Key getKey(Integer objectId, Version version) {
-        if (objectId == null) {
-            return null;
-        }
         return new Key(objectId, version);
     }
 
