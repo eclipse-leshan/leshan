@@ -421,7 +421,7 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
             public void resourceChanged(LwM2mPath... paths) {
                 for (LwM2mPath path : paths) {
                     if (!isValid(instanceId, path)) {
-                        LOG.warn("InstanceEnabler (%d) of object (%d) try to raise a change of %s which seems invalid.",
+                        LOG.warn("InstanceEnabler ({}) of object ({}) try to raise a change of {} which seems invalid.",
                                 instanceId, getId(), path);
                     }
                 }
@@ -431,14 +431,14 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
     }
 
     protected boolean isValid(int instanceId, LwM2mPath pathToValidate) {
-        if (!pathToValidate.isResource() || !pathToValidate.isResourceInstance())
+        if (!(pathToValidate.isResource() || pathToValidate.isResourceInstance()))
             return false;
 
         if (pathToValidate.getObjectId() != getId()) {
             return false;
         }
 
-        if (pathToValidate.getObjectInstanceId() != id) {
+        if (pathToValidate.getObjectInstanceId() != instanceId) {
             return false;
         }
 
