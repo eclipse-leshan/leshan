@@ -100,7 +100,7 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
 
         @Override
         public void run() {
-            if (objectId == 0 || objectId == 0 || objectId == 3) {
+            if (objectId == 0 || objectId == 1 || objectId == 3) {
                 parent.out.printf("Object %d can not be disabled.", objectId);
                 parent.out.flush();
             } else if (parent.client.getObjectTree().getObjectEnabler(objectId) == null) {
