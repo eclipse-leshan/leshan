@@ -144,8 +144,14 @@ public class LwM2mModelRepository {
         return objects.get(getKey(objectId, version));
     }
 
+    public ObjectModel getObjectModel(Integer objectId, Version version) {
+        Validate.notNull(objectId, "objectid must not be null");
+        Validate.notNull(version, "version must not be null");
+
+        return objects.get(getKey(objectId, version));
+    }
+
     /**
-     * @param objectId
      * @return most recent version of the model.
      */
     public ObjectModel getObjectModel(Integer objectId) {
@@ -171,5 +177,31 @@ public class LwM2mModelRepository {
             return null;
         }
         return new Key(objectId, version);
+    }
+
+    /**
+     * Create a {@link LwM2mModel} with the last version of each Objects.
+     */
+    public LwM2mModel getLwM2mModel() {
+        return new LwM2mModel() {
+            @Override
+            public ResourceModel getResourceModel(int objectId, int resourceId) {
+                ObjectModel objectModel = getObjectModel(objectId);
+                if (objectModel == null)
+                    return null;
+
+                return objectModel.resources.get(resourceId);
+            }
+
+            @Override
+            public Collection<ObjectModel> getObjectModels() {
+                throw new UnsupportedOperationException("not implemented");
+            }
+
+            @Override
+            public ObjectModel getObjectModel(int objectId) {
+                return LwM2mModelRepository.this.getObjectModel(objectId);
+            }
+        };
     }
 }
