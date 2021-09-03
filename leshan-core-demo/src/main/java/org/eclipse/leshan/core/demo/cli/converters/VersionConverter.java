@@ -1,0 +1,35 @@
+/*******************************************************************************
+ * Copyright (c) 2021 Sierra Wireless and others.
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v2.0
+ * and Eclipse Distribution License v1.0 which accompany this distribution.
+ * 
+ * The Eclipse Public License is available at
+ *    http://www.eclipse.org/legal/epl-v20.html
+ * and the Eclipse Distribution License is available at
+ *    http://www.eclipse.org/org/documents/edl-v10.html.
+ * 
+ * Contributors:
+ *     Sierra Wireless - initial API and implementation
+ *******************************************************************************/
+package org.eclipse.leshan.core.demo.cli.converters;
+
+import org.eclipse.leshan.core.LwM2m.Version;
+
+import picocli.CommandLine.ITypeConverter;
+import picocli.CommandLine.TypeConversionException;
+
+public class VersionConverter implements ITypeConverter<Version> {
+
+    @Override
+    public Version convert(String input) {
+        Version version = new Version(input);
+
+        String err = version.validate();
+        if (err != null)
+            throw new TypeConversionException(err);
+
+        return version;
+    }
+};

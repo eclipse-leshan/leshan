@@ -12,9 +12,13 @@ import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.LwM2mId;
+import org.eclipse.leshan.core.demo.cli.converters.VersionConverter;
 import org.eclipse.leshan.core.demo.cli.interactive.JLineInteractiveCommands;
-import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.LwM2mModelRepository;
+import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.StaticModel;
 
 import jline.console.ConsoleReader;
 import picocli.CommandLine;
@@ -39,11 +43,11 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
     private PrintWriter out;
 
     private LeshanClient client;
-    private LwM2mModel model;
+    private LwM2mModelRepository repository;
 
-    public InteractiveCommands(LeshanClient client, LwM2mModel model) {
+    public InteractiveCommands(LeshanClient client, LwM2mModelRepository repository) {
         this.client = client;
-        this.model = model;
+        this.repository = repository;
     }
 
     @Override
@@ -63,8 +67,14 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
     @Command(name = "create", description = "Enable a new Object", headerHeading = "%n", footer = "")
     static class CreateCommand implements Runnable {
 
-        @Parameters(description = "Id of the LWM2M object to enable")
+        @Parameters(description = "Id of the LWM2M object to enable", index = "0")
         private Integer objectId;
+
+        @Parameters(description = "Version of the LwM2M object to enable, if not precised the most recent one is picked",
+                    index = "1",
+                    arity = "0..1",
+                    converter = VersionConverter.class)
+        private Version version;
 
         @ParentCommand
         InteractiveCommands parent;
@@ -74,14 +84,28 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
             if (parent.client.getObjectTree().getObjectEnabler(objectId) != null) {
                 parent.out.printf("Object %d already enabled.%n", objectId);
                 parent.out.flush();
-            } else if (parent.model.getObjectModel(objectId) == null) {
-                parent.out.printf("Unable to enable Object %d : there no model for this.%n", objectId);
-                parent.out.flush();
             } else {
-                ObjectsInitializer objectsInitializer = new ObjectsInitializer(parent.model);
-                objectsInitializer.setDummyInstancesForObject(objectId);
-                LwM2mObjectEnabler object = objectsInitializer.create(objectId);
-                parent.client.getObjectTree().addObjectEnabler(object);
+                ObjectModel objectModel;
+                if (version != null)
+                    objectModel = parent.repository.getObjectModel(objectId, version);
+                else {
+                    objectModel = parent.repository.getObjectModel(objectId);
+                }
+                if (objectModel == null) {
+                    if (version == null) {
+                        parent.out.printf("Unable to enable Object %d : there no model for this object.%n", objectId);
+                    } else {
+                        parent.out.printf(
+                                "Unable to enable Object %d : there no model for this object in version %s.%n",
+                                objectId, version);
+                    }
+                    parent.out.flush();
+                } else {
+                    ObjectsInitializer objectsInitializer = new ObjectsInitializer(new StaticModel(objectModel));
+                    objectsInitializer.setDummyInstancesForObject(objectId);
+                    LwM2mObjectEnabler object = objectsInitializer.create(objectId);
+                    parent.client.getObjectTree().addObjectEnabler(object);
+                }
             }
         }
     }

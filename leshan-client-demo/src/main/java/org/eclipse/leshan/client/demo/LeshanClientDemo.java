@@ -49,10 +49,9 @@ import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.core.demo.cli.interactive.InteractiveCLI;
-import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.LwM2mModelRepository;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
-import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.slf4j.Logger;
@@ -88,11 +87,11 @@ public class LeshanClientDemo {
 
         try {
             // Create Client
-            LwM2mModel model = createModel(cli);
-            final LeshanClient client = createClient(cli, model);
+            LwM2mModelRepository repository = createModel(cli);
+            final LeshanClient client = createClient(cli, repository);
 
             // Print commands help
-            InteractiveCLI console = new InteractiveCLI(new InteractiveCommands(client, model));
+            InteractiveCLI console = new InteractiveCLI(new InteractiveCommands(client, repository));
             console.showHelp();
 
             // Start the client
@@ -121,24 +120,24 @@ public class LeshanClientDemo {
         }
     }
 
-    private static LwM2mModel createModel(LeshanClientDemoCLI cli) throws Exception {
+    private static LwM2mModelRepository createModel(LeshanClientDemoCLI cli) throws Exception {
 
-        List<ObjectModel> models = ObjectLoader.loadDefault();
+        List<ObjectModel> models = ObjectLoader.loadAllDefault();
         models.addAll(ObjectLoader.loadDdfResources("/models", LwM2mDemoConstant.modelPaths));
         if (cli.main.modelsFolder != null) {
             models.addAll(ObjectLoader.loadObjectsFromDir(cli.main.modelsFolder, true));
         }
 
-        return new StaticModel(models);
+        return new LwM2mModelRepository(models);
     }
 
-    public static LeshanClient createClient(LeshanClientDemoCLI cli, LwM2mModel model) throws Exception {
+    public static LeshanClient createClient(LeshanClientDemoCLI cli, LwM2mModelRepository repository) throws Exception {
         // create Leshan client from command line option
         final MyLocation locationInstance = new MyLocation(cli.location.position.latitude,
                 cli.location.position.longitude, cli.location.scaleFactor);
 
         // Initialize object list
-        final ObjectsInitializer initializer = new ObjectsInitializer(model);
+        final ObjectsInitializer initializer = new ObjectsInitializer(repository.getLwM2mModel());
         if (cli.main.bootstrap) {
             if (cli.identity.isPSK()) {
                 initializer.setInstancesForObject(SECURITY, pskBootstrap(cli.main.url,
@@ -310,12 +309,12 @@ public class LeshanClientDemo {
         client.getObjectTree().addListener(new ObjectsListenerAdapter() {
             @Override
             public void objectRemoved(LwM2mObjectEnabler object) {
-                LOG.info("Object {} disabled.", object.getId());
+                LOG.info("Object {} v{} disabled.", object.getId(), object.getObjectModel().version);
             }
 
             @Override
             public void objectAdded(LwM2mObjectEnabler object) {
-                LOG.info("Object {} enabled.", object.getId());
+                LOG.info("Object {} v{} enabled.", object.getId(), object.getObjectModel().version);
             }
         });
 

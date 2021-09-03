@@ -158,7 +158,7 @@ public class LwM2mModelRepository {
         Validate.notNull(objectId, "objectid must not be null");
 
         Key floorKey = objects.floorKey(getKey(objectId, Version.MAX));
-        if (floorKey == null || floorKey.id != objectId) {
+        if (floorKey == null || !floorKey.id.equals(objectId)) {
             return null;
         }
         return objects.get(floorKey);
