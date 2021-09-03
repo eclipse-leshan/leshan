@@ -72,7 +72,7 @@ public interface LwM2m {
                     }
                 } catch (Exception e) {
                     return String.format("version (%s) part %d (%s) is not a valid integer", version, i + 1,
-                            versionPart);
+                            versionPart[i]);
                 }
             }
             return null;
