@@ -320,7 +320,7 @@ public class LeshanClient implements LwM2mClient {
         Validate.notEmpty(paths);
 
         Map<LwM2mPath, LwM2mNode> collectedData = collectData(server, paths);
-        return requestSender.send(server, new SendRequest(format, collectedData, null), 2000);
+        return requestSender.send(server, new SendRequest(format, collectedData, null), timeoutInMs);
     }
 
     @Override
@@ -332,7 +332,7 @@ public class LeshanClient implements LwM2mClient {
         Validate.notNull(onError);
 
         Map<LwM2mPath, LwM2mNode> collectedData = collectData(server, paths);
-        requestSender.send(server, new SendRequest(format, collectedData, null), 2000, onResponse, onError);
+        requestSender.send(server, new SendRequest(format, collectedData, null), timeoutInMs, onResponse, onError);
     }
 
     private Map<LwM2mPath, LwM2mNode> collectData(ServerIdentity server, List<String> paths) {
