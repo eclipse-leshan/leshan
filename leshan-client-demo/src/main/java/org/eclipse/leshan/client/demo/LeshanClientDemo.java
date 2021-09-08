@@ -20,9 +20,6 @@ import static org.eclipse.leshan.core.LwM2mId.*;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.security.PublicKey;
-import java.security.interfaces.ECPublicKey;
-import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.californium.core.network.config.NetworkConfig;
@@ -58,7 +55,6 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
-import org.eclipse.leshan.core.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -145,42 +141,42 @@ public class LeshanClientDemo {
         final ObjectsInitializer initializer = new ObjectsInitializer(model);
         if (cli.main.bootstrap) {
             if (cli.identity.isPSK()) {
-                initializer.setInstancesForObject(SECURITY, pskBootstrap("coaps://" + cli.main.url,
+                initializer.setInstancesForObject(SECURITY, pskBootstrap(cli.main.url,
                         cli.identity.getPsk().identity.getBytes(), cli.identity.getPsk().sharekey.getBytes()));
                 initializer.setClassForObject(SERVER, Server.class);
             } else if (cli.identity.isRPK()) {
                 initializer.setInstancesForObject(SECURITY,
-                        rpkBootstrap("coaps://" + cli.main.url, cli.identity.getRPK().cpubk.getEncoded(),
+                        rpkBootstrap(cli.main.url, cli.identity.getRPK().cpubk.getEncoded(),
                                 cli.identity.getRPK().cprik.getEncoded(), cli.identity.getRPK().spubk.getEncoded()));
                 initializer.setClassForObject(SERVER, Server.class);
             } else if (cli.identity.isx509()) {
                 initializer.setInstancesForObject(SECURITY,
-                        x509Bootstrap("coaps://" + cli.main.url, cli.identity.getX509().ccert.getEncoded(),
+                        x509Bootstrap(cli.main.url, cli.identity.getX509().ccert.getEncoded(),
                                 cli.identity.getX509().cprik.getEncoded(), cli.identity.getX509().scert.getEncoded(),
                                 cli.identity.getX509().certUsage.code));
                 initializer.setClassForObject(SERVER, Server.class);
             } else {
-                initializer.setInstancesForObject(SECURITY, noSecBootstap("coap://" + cli.main.url));
+                initializer.setInstancesForObject(SECURITY, noSecBootstap(cli.main.url));
                 initializer.setClassForObject(SERVER, Server.class);
             }
         } else {
             if (cli.identity.isPSK()) {
-                initializer.setInstancesForObject(SECURITY, psk("coaps://" + cli.main.url, 123,
+                initializer.setInstancesForObject(SECURITY, psk(cli.main.url, 123,
                         cli.identity.getPsk().identity.getBytes(), cli.identity.getPsk().sharekey.getBytes()));
                 initializer.setInstancesForObject(SERVER, new Server(123, cli.main.lifetimeInSec));
             } else if (cli.identity.isRPK()) {
                 initializer.setInstancesForObject(SECURITY,
-                        rpk("coaps://" + cli.main.url, 123, cli.identity.getRPK().cpubk.getEncoded(),
+                        rpk(cli.main.url, 123, cli.identity.getRPK().cpubk.getEncoded(),
                                 cli.identity.getRPK().cprik.getEncoded(), cli.identity.getRPK().spubk.getEncoded()));
                 initializer.setInstancesForObject(SERVER, new Server(123, cli.main.lifetimeInSec));
             } else if (cli.identity.isx509()) {
                 initializer.setInstancesForObject(SECURITY,
-                        x509("coaps://" + cli.main.url, 123, cli.identity.getX509().ccert.getEncoded(),
+                        x509(cli.main.url, 123, cli.identity.getX509().ccert.getEncoded(),
                                 cli.identity.getX509().cprik.getEncoded(), cli.identity.getX509().scert.getEncoded(),
                                 cli.identity.getX509().certUsage.code));
                 initializer.setInstancesForObject(SERVER, new Server(123, cli.main.lifetimeInSec));
             } else {
-                initializer.setInstancesForObject(SECURITY, noSec("coap://" + cli.main.url, 123));
+                initializer.setInstancesForObject(SECURITY, noSec(cli.main.url, 123));
                 initializer.setInstancesForObject(SERVER, new Server(123, cli.main.lifetimeInSec));
             }
         }
@@ -322,41 +318,6 @@ public class LeshanClientDemo {
                 LOG.info("Object {} enabled.", object.getId());
             }
         });
-
-        // Display client public key to easily add it in demo servers.
-        if (cli.identity.isRPK()) {
-            PublicKey rawPublicKey = cli.identity.getRPK().cpubk;
-            if (rawPublicKey instanceof ECPublicKey) {
-                ECPublicKey ecPublicKey = (ECPublicKey) rawPublicKey;
-                // Get x coordinate
-                byte[] x = ecPublicKey.getW().getAffineX().toByteArray();
-                if (x[0] == 0)
-                    x = Arrays.copyOfRange(x, 1, x.length);
-
-                // Get Y coordinate
-                byte[] y = ecPublicKey.getW().getAffineY().toByteArray();
-                if (y[0] == 0)
-                    y = Arrays.copyOfRange(y, 1, y.length);
-
-                // Get Curves params
-                String params = ecPublicKey.getParams().toString();
-
-                LOG.info(
-                        "Client uses RPK : \n Elliptic Curve parameters  : {} \n Public x coord : {} \n Public y coord : {} \n Public Key (Hex): {} \n Private Key (Hex): {}",
-                        params, Hex.encodeHexString(x), Hex.encodeHexString(y),
-                        Hex.encodeHexString(rawPublicKey.getEncoded()),
-                        Hex.encodeHexString(cli.identity.getRPK().cprik.getEncoded()));
-
-            } else {
-                throw new IllegalStateException("Unsupported Public Key Format (only ECPublicKey supported).");
-            }
-        }
-        // Display X509 credentials to easily at it in demo servers.
-        if (cli.identity.isx509()) {
-            LOG.info("Client uses X509 : \n X509 Certificate (Hex): {} \n Private Key (Hex): {}",
-                    Hex.encodeHexString(cli.identity.getX509().ccert.getEncoded()),
-                    Hex.encodeHexString(cli.identity.getX509().cprik.getEncoded()));
-        }
 
         return client;
     }
