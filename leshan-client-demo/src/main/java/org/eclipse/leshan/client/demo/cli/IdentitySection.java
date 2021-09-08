@@ -215,4 +215,7 @@ public class IdentitySection {
         return prikAnd.rpkOrX509.x509;
     }
 
+    public boolean hasIdentity() {
+        return isPSK() || isRPK() || isx509();
+    }
 }

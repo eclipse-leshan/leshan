@@ -30,6 +30,7 @@ import org.eclipse.leshan.core.demo.cli.VersionProvider;
 import org.eclipse.leshan.core.demo.cli.converters.CIDConverter;
 import org.eclipse.leshan.core.demo.cli.converters.PortConverter;
 import org.eclipse.leshan.core.demo.cli.converters.StrictlyPositiveIntegerConverter;
+import org.eclipse.leshan.core.util.StringUtils;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -77,7 +78,7 @@ public class LeshanClientDemoCLI implements Runnable {
         @Option(names = { "-u", "--server-url" },
                 defaultValue = DEFAULT_URL,
                 description = { //
-                        "Set the server URL.", //
+                        "Set the server URL. If port is missing it will be added automatically with default value.", //
                         "Default: ${DEFAULT-VALUE}" })
         public String url;
 
@@ -266,12 +267,42 @@ public class LeshanClientDemoCLI implements Runnable {
     public void run() {
         // Some post-validation which imply several options.
         // For validation about only one option, just use ITypeConverter instead
+
+        // check certificate usage
         if (identity.isx509()) {
             if (identity.getX509().certUsage == CertificateUsage.SERVICE_CERTIFICATE_CONSTRAINT
                     && identity.getX509().trustStore.isEmpty()) {
                 throw new MultiParameterException(spec.commandLine(),
                         "You need to set a truststore when you are using \"service certificate constraint\" usage",
                         "-cu", "-ts");
+            }
+        }
+
+        normalizedServerUrl();
+    }
+
+    protected void normalizedServerUrl() {
+        String url = main.url;
+
+        // try to guess if port is present.
+        String[] splittedUrl = url.split(":");
+        String port = splittedUrl[splittedUrl.length - 1];
+        if (!StringUtils.isNumeric(port)) {
+            // it seems port is not present, so we try to add it
+            if (identity.hasIdentity()) {
+                main.url += ":" + CoAP.DEFAULT_COAP_SECURE_PORT;
+            } else {
+                main.url += ":" + CoAP.DEFAULT_COAP_PORT;
+            }
+        }
+
+        // try to guess if scheme is present :
+        if (!main.url.contains("://")) {
+            // it seems scheme is not present try to add it
+            if (identity.hasIdentity()) {
+                main.url = "coaps://" + main.url;
+            } else {
+                main.url = "coap://" + main.url;
             }
         }
     }
