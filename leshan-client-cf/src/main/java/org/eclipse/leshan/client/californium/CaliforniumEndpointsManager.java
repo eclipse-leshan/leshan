@@ -114,7 +114,8 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                         false);
             } else if (serverInfo.secureMode == SecurityMode.RPK) {
                 // set identity
-                newBuilder.setCertificateIdentityProvider(new SingleCertificateProvider(serverInfo.privateKey, serverInfo.publicKey));
+                newBuilder.setCertificateIdentityProvider(
+                        new SingleCertificateProvider(serverInfo.privateKey, serverInfo.publicKey));
                 // set RPK truststore
                 final PublicKey expectedKey = serverInfo.serverPublicKey;
                 NewAdvancedCertificateVerifier rpkVerifier = new StaticNewAdvancedCertificateVerifier.Builder()
@@ -125,7 +126,8 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                         false, true);
             } else if (serverInfo.secureMode == SecurityMode.X509) {
                 // set identity
-                newBuilder.setCertificateIdentityProvider(new SingleCertificateProvider(serverInfo.privateKey, new Certificate[] { serverInfo.clientCertificate }));
+                newBuilder.setCertificateIdentityProvider(new SingleCertificateProvider(serverInfo.privateKey,
+                        new Certificate[] { serverInfo.clientCertificate }));
 
                 // LWM2M v1.1.1 - 5.2.8.7. Certificate Usage Field
                 //
@@ -196,10 +198,26 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                 throw new RuntimeException("Unable to create connector : unsupported security mode");
             }
 
-            // For bootstrap no need to have DTLS role exchange
-            // and so we can set DTLS Connection as client only by default.
-            if (serverInfo.bootstrap && incompleteConfig.isClientOnly() == null) {
-                newBuilder.setClientOnly();
+            // Handle DTLS mode
+            if (incompleteConfig.isClientOnly() == null) {
+                if (serverInfo.bootstrap) {
+                    // For bootstrap no need to have DTLS role exchange
+                    // and so we can set DTLS Connection as client only by default.
+                    newBuilder.setClientOnly();
+                } else {
+                    // for classic mode we check if certificate can be also used as server certificate
+                    if (serverInfo.secureMode == SecurityMode.X509) {
+                        X509Certificate certificate = (X509Certificate) serverInfo.clientCertificate;
+                        if (CertPathUtil.canBeUsedForAuthentication(certificate, true)) {
+                            if (!CertPathUtil.canBeUsedForAuthentication(certificate, false)) {
+                                newBuilder.setClientOnly();
+                                LOG.warn("Client certificate does not allow Server Authentication usage."
+                                        + "\nThis will prevent a LWM2M server to initiate DTLS connection to this client."
+                                        + "\nSee : https://github.com/eclipse/leshan/wiki/Server-Failover#about-connections");
+                            }
+                        }
+                    }
+                }
             }
 
             currentEndpoint = endpointFactory.createSecuredEndpoint(newBuilder.build(), coapConfig, null);
