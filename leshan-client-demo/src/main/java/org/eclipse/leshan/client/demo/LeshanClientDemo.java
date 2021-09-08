@@ -211,6 +211,7 @@ public class LeshanClientDemo {
             engineFactory.setCommunicationPeriod(cli.main.comPeriodInSec * 1000);
         engineFactory.setReconnectOnUpdate(cli.dtls.reconnectOnUpdate);
         engineFactory.setResumeOnConnect(!cli.dtls.forceFullhandshake);
+        engineFactory.setQueueMode(cli.main.queueMode);
 
         // configure EndpointFactory
         DefaultEndpointFactory endpointFactory = new DefaultEndpointFactory("LWM2M CLIENT", true) {

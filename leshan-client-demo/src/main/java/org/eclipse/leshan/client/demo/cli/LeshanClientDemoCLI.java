@@ -110,6 +110,9 @@ public class LeshanClientDemoCLI implements Runnable {
                 converter = StrictlyPositiveIntegerConverter.class)
         public Integer comPeriodInSec;
 
+        @Option(names = { "-q", "--queue-mode" }, description = { "Client use queue mode (not fully implemented)." })
+        public boolean queueMode;
+
         @Option(names = { "-lh", "--local-address" },
                 description = { //
                         "Set the local CoAP address of the Client.", //
