@@ -22,6 +22,7 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.List;
 
 import javax.jmdns.JmDNS;
@@ -29,6 +30,7 @@ import javax.jmdns.ServiceInfo;
 
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
+import org.eclipse.californium.elements.util.CertPathUtil;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.dtls.SingleNodeConnectionIdGenerator;
 import org.eclipse.jetty.server.Server;
@@ -169,6 +171,19 @@ public class LeshanServerDemo {
             // use X.509 mode (+ RPK)
             builder.setPrivateKey(cli.identity.getPrivateKey());
             builder.setCertificateChain(cli.identity.getCertChain());
+
+            X509Certificate serverCertificate = cli.identity.getCertChain()[0];
+            // autodetect serverOnly
+            if (serverCertificate != null) {
+                if (CertPathUtil.canBeUsedForAuthentication(serverCertificate, false)) {
+                    if (!CertPathUtil.canBeUsedForAuthentication(serverCertificate, true)) {
+                        dtlsConfig.setServerOnly(true);
+                        LOG.warn("Server certificate does not allow Client Authentication usage."
+                                + "\nThis will prevent this LWM2M server to initiate DTLS connection."
+                                + "\nSee : https://github.com/eclipse/leshan/wiki/Server-Failover#about-connections");
+                    }
+                }
+            }
 
             // Define trust store
             List<Certificate> trustStore = cli.identity.getTrustStore();
