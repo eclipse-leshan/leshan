@@ -92,7 +92,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
     }
 
     @Override
-    public synchronized ServerIdentity createEndpoint(ServerInfo serverInfo) {
+    public synchronized ServerIdentity createEndpoint(ServerInfo serverInfo, boolean clientInitiatedOnly) {
         // Clear previous endpoint
         if (currentEndpoint != null) {
             coapServer.getEndpoints().remove(currentEndpoint);
@@ -204,6 +204,9 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                     // For bootstrap no need to have DTLS role exchange
                     // and so we can set DTLS Connection as client only by default.
                     newBuilder.setClientOnly();
+                } else if (clientInitiatedOnly) {
+                    // if client initiated only we don't allow connector to work as server role.
+                    newBuilder.setClientOnly();
                 } else {
                     // for classic mode we check if certificate can be also used as server certificate
                     if (serverInfo.secureMode == SecurityMode.X509) {
@@ -250,7 +253,8 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
     }
 
     @Override
-    public synchronized Collection<ServerIdentity> createEndpoints(Collection<? extends ServerInfo> serverInfo) {
+    public synchronized Collection<ServerIdentity> createEndpoints(Collection<? extends ServerInfo> serverInfo,
+            boolean clientInitiatedOnly) {
         if (serverInfo == null || serverInfo.isEmpty())
             return null;
         else {
@@ -262,7 +266,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             }
             ServerInfo firstServer = serverInfo.iterator().next();
             Collection<ServerIdentity> servers = new ArrayList<>(1);
-            servers.add(createEndpoint(firstServer));
+            servers.add(createEndpoint(firstServer, clientInitiatedOnly));
             return servers;
         }
     }

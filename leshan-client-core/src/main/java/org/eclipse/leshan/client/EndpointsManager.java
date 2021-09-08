@@ -29,18 +29,21 @@ public interface EndpointsManager {
     /**
      * Create the endpoint/connector/socket based on given {@link ServerInfo}.
      * 
-     * @return a {@link ServerIdentity} object which could be used to {@link #forceReconnection(ServerIdentity, boolean)} or
+     * @return a {@link ServerIdentity} object which could be used to
+     *         {@link #forceReconnection(ServerIdentity, boolean)} or
      *         {@link #getMaxCommunicationPeriodFor(ServerIdentity, long)}
      */
-    ServerIdentity createEndpoint(ServerInfo serverInfo);
+    ServerIdentity createEndpoint(ServerInfo serverInfo, boolean clientInitiatedOnly);
 
     /**
      * Create an endpoint/connector/socket for each given {@link ServerInfo}.
      * 
-     * @return a collection of {@link ServerIdentity} object which could be used to {@link #forceReconnection(ServerIdentity, boolean)}
-     *         or {@link #getMaxCommunicationPeriodFor(ServerIdentity, long)}
+     * @return a collection of {@link ServerIdentity} object which could be used to
+     *         {@link #forceReconnection(ServerIdentity, boolean)} or
+     *         {@link #getMaxCommunicationPeriodFor(ServerIdentity, long)}
      */
-    Collection<ServerIdentity> createEndpoints(Collection<? extends ServerInfo> serverInfo);
+    Collection<ServerIdentity> createEndpoints(Collection<? extends ServerInfo> serverInfo,
+            boolean clientInitiatedOnly);
 
     /**
      * Return the longest possible communication period based on given lifetime for the given server.

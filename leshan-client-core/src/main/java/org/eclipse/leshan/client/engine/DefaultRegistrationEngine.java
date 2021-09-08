@@ -192,9 +192,13 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private ServerIdentity factoryBootstrap() {
         ServerInfo serverInfo = selectServer(ServersInfoExtractor.getInfo(objectEnablers).deviceManagements);
         if (serverInfo != null) {
-            return endpointsManager.createEndpoint(serverInfo);
+            return endpointsManager.createEndpoint(serverInfo, isClientInitiatedOnly());
         }
         return null;
+    }
+
+    private boolean isClientInitiatedOnly() {
+        return queueMode;
     }
 
     private ServerIdentity clientInitiatedBootstrap() throws InterruptedException {
@@ -212,7 +216,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             registeredServers.clear();
             cancelRegistrationTask();
             cancelUpdateTask(true);
-            ServerIdentity bootstrapServer = endpointsManager.createEndpoint(bootstrapServerInfo);
+            ServerIdentity bootstrapServer = endpointsManager.createEndpoint(bootstrapServerInfo, true);
             if (bootstrapServer != null) {
                 currentBoostrapServer.set(bootstrapServer);
             }
@@ -248,7 +252,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                                     ServersInfoExtractor.getInfo(objectEnablers).deviceManagements);
                             ServerIdentity dmServer = null;
                             if (serverInfo != null) {
-                                dmServer = endpointsManager.createEndpoint(serverInfo);
+                                dmServer = endpointsManager.createEndpoint(serverInfo, isClientInitiatedOnly());
                             }
                             if (observer != null) {
                                 observer.onBootstrapSuccess(bootstrapServer, request);
