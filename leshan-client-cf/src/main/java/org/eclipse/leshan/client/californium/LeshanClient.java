@@ -35,8 +35,8 @@ import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.RegistrationUpdateHandler;
 import org.eclipse.leshan.client.bootstrap.BootstrapConsistencyChecker;
 import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
-import org.eclipse.leshan.client.bootstrap.DefaultBootstrapConsistencyChecker;
 import org.eclipse.leshan.client.californium.bootstrap.BootstrapResource;
+import org.eclipse.leshan.client.californium.bootstrap.DefaultBootstrapConsistencyChecker;
 import org.eclipse.leshan.client.californium.object.ObjectResource;
 import org.eclipse.leshan.client.californium.request.CaliforniumLwM2mRequestSender;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
@@ -103,8 +103,8 @@ public class LeshanClient implements LwM2mClient {
     public LeshanClient(String endpoint, InetSocketAddress localAddress,
             List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder,
             EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
-            Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes,
-            LwM2mEncoder encoder, LwM2mDecoder decoder, ScheduledExecutorService sharedExecutor) {
+            Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder,
+            LwM2mDecoder decoder, ScheduledExecutorService sharedExecutor) {
         this(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, null, endpointFactory,
                 engineFactory, new DefaultBootstrapConsistencyChecker(), additionalAttributes, bsAdditionalAttributes,
                 encoder, decoder, sharedExecutor);
@@ -193,8 +193,8 @@ public class LeshanClient implements LwM2mClient {
     }
 
     protected void linkObjectTreeToCoapServer(final CoapServer coapServer, final RegistrationEngine registrationEngine,
-            final CaliforniumEndpointsManager endpointsManager, LwM2mObjectTree objectTree,
-            final LwM2mEncoder encoder, final LwM2mDecoder decoder) {
+            final CaliforniumEndpointsManager endpointsManager, LwM2mObjectTree objectTree, final LwM2mEncoder encoder,
+            final LwM2mDecoder decoder) {
 
         // Create CoAP resources for each lwm2m Objects.
         for (LwM2mObjectEnabler enabler : objectTree.getObjectEnablers().values()) {

@@ -32,7 +32,7 @@ import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.client.bootstrap.BootstrapConsistencyChecker;
-import org.eclipse.leshan.client.bootstrap.DefaultBootstrapConsistencyChecker;
+import org.eclipse.leshan.client.californium.bootstrap.DefaultBootstrapConsistencyChecker;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
