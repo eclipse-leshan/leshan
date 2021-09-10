@@ -75,39 +75,51 @@ public class LwM2mSingleResource implements LwM2mResource {
     }
 
     public static LwM2mSingleResource newResource(int id, Object value, Type type) {
-        String doesNotMatchMessage = "Value does not match the given datatype";
+        if (value == null)
+            throw new LwM2mNodeException(
+                    String.format("Invalid value for resource %s(%s) : null is not allowed", id, type));
+
+        String doesNotMatchMessage = "Value of type %s does not match the given datatype %s ";
         switch (type) {
         case INTEGER:
             if (!(value instanceof Long))
-                throw new LwM2mNodeException(doesNotMatchMessage);
+                throw new LwM2mNodeException(
+                        String.format(doesNotMatchMessage, value.getClass().getSimpleName(), type));
             break;
         case FLOAT:
             if (!(value instanceof Double))
-                throw new LwM2mNodeException(doesNotMatchMessage);
+                throw new LwM2mNodeException(
+                        String.format(doesNotMatchMessage, value.getClass().getSimpleName(), type));
             break;
         case BOOLEAN:
             if (!(value instanceof Boolean))
-                throw new LwM2mNodeException(doesNotMatchMessage);
+                throw new LwM2mNodeException(
+                        String.format(doesNotMatchMessage, value.getClass().getSimpleName(), type));
             break;
         case OPAQUE:
             if (!(value instanceof byte[]))
-                throw new LwM2mNodeException(doesNotMatchMessage);
+                throw new LwM2mNodeException(
+                        String.format(doesNotMatchMessage, value.getClass().getSimpleName(), type));
             break;
         case STRING:
             if (!(value instanceof String))
-                throw new LwM2mNodeException(doesNotMatchMessage);
+                throw new LwM2mNodeException(
+                        String.format(doesNotMatchMessage, value.getClass().getSimpleName(), type));
             break;
         case TIME:
             if (!(value instanceof Date))
-                throw new LwM2mNodeException(doesNotMatchMessage);
+                throw new LwM2mNodeException(
+                        String.format(doesNotMatchMessage, value.getClass().getSimpleName(), type));
             break;
         case OBJLNK:
             if (!(value instanceof ObjectLink))
-                throw new LwM2mNodeException(doesNotMatchMessage);
+                throw new LwM2mNodeException(
+                        String.format(doesNotMatchMessage, value.getClass().getSimpleName(), type));
             break;
         case UNSIGNED_INTEGER:
             if (!(value instanceof ULong)) {
-                throw new LwM2mNodeException(doesNotMatchMessage);
+                throw new LwM2mNodeException(
+                        String.format(doesNotMatchMessage, value.getClass().getSimpleName(), type));
             }
             break;
         default:
