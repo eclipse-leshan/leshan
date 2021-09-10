@@ -28,7 +28,7 @@ import org.eclipse.leshan.core.util.Validate;
  * MAX-ID = 65535.
  */
 public class ObjectLink {
-    private final static int MAXID = 65535;
+    public final static int MAXID = 65535;
 
     private final int objectId;
     private final int objectInstanceId;

@@ -131,6 +131,14 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
         return new LwM2mPath(getModel().id, getId(), resourceId);
     }
 
+    protected LwM2mPath[] getResourcePaths(int... resourceIds) {
+        LwM2mPath[] paths = new LwM2mPath[resourceIds.length];
+        for (int i = 0; i < paths.length; i++) {
+            paths[i] = getResourcePath(resourceIds[i]);
+        }
+        return paths;
+    }
+
     protected LwM2mPath getResourceInstancePath(int resourceId, int resourceInstanceId) {
         return new LwM2mPath(getModel().id, getId(), resourceId, resourceInstanceId);
     }
