@@ -266,6 +266,8 @@ public class LeshanClientBuilder {
         networkConfig.set(DtlsConfig.DTLS_MAX_CONNECTIONS, 10);
         networkConfig.set(DtlsConfig.DTLS_RECEIVER_THREAD_COUNT, 1);
         networkConfig.set(DtlsConfig.DTLS_CONNECTOR_THREAD_COUNT, 2);
+        // currently not supported by leshan's CertificateVerifier
+        networkConfig.setTransient(DtlsConfig.DTLS_VERIFY_SERVER_CERTIFICATES_SUBJECT);
 
         return networkConfig;
     }

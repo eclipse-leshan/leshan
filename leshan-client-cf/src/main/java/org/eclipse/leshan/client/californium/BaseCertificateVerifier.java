@@ -59,8 +59,11 @@ public abstract class BaseCertificateVerifier implements NewAdvancedCertificateV
 
     @Override
     public CertificateVerificationResult verifyCertificate(ConnectionId cid, ServerNames serverName,
-            InetSocketAddress remotePeer, boolean clientUsage, boolean truncateCertificatePath, CertificateMessage message) {
+            InetSocketAddress remotePeer, boolean clientUsage, boolean verifyDestination,
+            boolean truncateCertificatePath, CertificateMessage message) {
         try {
+            // verifyDestination is currently not used.
+            // The DTLS_VERIFY_SERVER_CERTIFICATES_SUBJECT is therefore set to transient.
             CertPath validatedCertPath = verifyCertificate(clientUsage, message, remotePeer);
             return new CertificateVerificationResult(cid, validatedCertPath, null);
         } catch (HandshakeException exception) {
