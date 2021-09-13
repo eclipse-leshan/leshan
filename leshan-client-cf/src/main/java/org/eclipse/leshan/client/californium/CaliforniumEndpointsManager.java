@@ -50,6 +50,7 @@ import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.californium.EndpointFactory;
+import org.eclipse.leshan.core.californium.config.Lwm2mConfig;
 import org.eclipse.leshan.core.request.Identity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -203,7 +204,11 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             }
 
             // Handle DTLS mode
-            if (incompleteConfig.getDtlsRole() == null) {
+            DtlsRole dtlsRole = incompleteConfig.getConfiguration().get(Lwm2mConfig.LWM2M_DTLS_ROLE);
+            if (dtlsRole != null) {
+                // transfer lwm2m role to californium's configuration.
+                newBuilder.set(DtlsConfig.DTLS_ROLE, DtlsRole.CLIENT_ONLY);
+            } else {
                 if (serverInfo.bootstrap) {
                     // For bootstrap no need to have DTLS role exchange
                     // and so we can set DTLS Connection as client only by default.

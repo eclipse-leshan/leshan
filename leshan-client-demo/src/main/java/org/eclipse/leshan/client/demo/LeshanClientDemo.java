@@ -25,6 +25,7 @@ import java.util.List;
 import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
@@ -69,11 +70,13 @@ public class LeshanClientDemo {
             System.setProperty("logback.configurationFile", "logback-config.xml");
         }
         CoapConfig.register();
+        UdpConfig.register();
         DtlsConfig.register();
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanClientDemo.class);
     private static final int OBJECT_ID_TEMPERATURE_SENSOR = 3303;
+    private static final String CONFIGURATION_HEADER = "Leshan's Client " + Configuration.DEFAULT_HEADER;
 
     public static void main(String[] args) {
 
@@ -188,14 +191,18 @@ public class LeshanClientDemo {
         List<LwM2mObjectEnabler> enablers = initializer.createAll();
 
         // Create CoAP Config
-        Configuration coapConfig;
         File configFile = new File(Configuration.DEFAULT_FILE_NAME);
+        Configuration coapConfig = LeshanClientBuilder.createDefaultNetworkConfig();
+        // these configuration values are always overwritten by CLI
+        // therefore set them to transient. 
+        // Otherwise, just document that in the CLI documentation and
+        // remove the transient mark here
+        coapConfig.setTransient(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY);
+        coapConfig.setTransient(DtlsConfig.DTLS_CONNECTION_ID_LENGTH);
         if (configFile.isFile()) {
-            coapConfig = new Configuration();
             coapConfig.load(configFile);
         } else {
-            coapConfig = LeshanClientBuilder.createDefaultNetworkConfig();
-            coapConfig.store(configFile);
+            coapConfig.store(configFile, CONFIGURATION_HEADER);
         }
 
         // Create DTLS Config

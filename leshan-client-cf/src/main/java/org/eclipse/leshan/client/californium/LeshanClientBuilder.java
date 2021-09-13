@@ -47,6 +47,7 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
+import org.eclipse.leshan.core.californium.config.Lwm2mConfig;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
@@ -60,12 +61,13 @@ import org.eclipse.leshan.core.util.Validate;
  * Helper class to build and configure a Californium based Leshan Lightweight M2M client.
  */
 public class LeshanClientBuilder {
+
     static {
         CoapConfig.register();
         UdpConfig.register();
         DtlsConfig.register();
     }
-
+ 
     private final String endpoint;
 
     private InetSocketAddress localAddress;
@@ -268,6 +270,9 @@ public class LeshanClientBuilder {
         networkConfig.set(DtlsConfig.DTLS_CONNECTOR_THREAD_COUNT, 2);
         // currently not supported by leshan's CertificateVerifier
         networkConfig.setTransient(DtlsConfig.DTLS_VERIFY_SERVER_CERTIFICATES_SUBJECT);
+        // overwrite role by LwM2M specific client roles
+        networkConfig.setTransient(DtlsConfig.DTLS_ROLE);
+        networkConfig.set(Lwm2mConfig.LWM2M_DTLS_ROLE, null);
 
         return networkConfig;
     }

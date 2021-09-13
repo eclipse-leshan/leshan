@@ -69,6 +69,7 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.californium.EndpointFactory;
+import org.eclipse.leshan.core.californium.config.Lwm2mConfig;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.X509CertUtil;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
@@ -355,7 +356,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
 
         Builder dtlsConfig = DtlsConnectorConfig.builder(configuration);
-        dtlsConfig.set(DtlsConfig.DTLS_ROLE, DtlsRole.CLIENT_ONLY);
+        dtlsConfig.set(Lwm2mConfig.LWM2M_DTLS_ROLE, DtlsRole.CLIENT_ONLY);
         builder.setDtlsConfig(dtlsConfig);
 
         builder.setObjects(objects);
@@ -388,7 +389,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         builder.setTrustStore(clientTrustStore);
 
         Builder dtlsConfig = DtlsConnectorConfig.builder(configuration);
-        dtlsConfig.set(DtlsConfig.DTLS_ROLE, DtlsRole.CLIENT_ONLY);
+        dtlsConfig.set(Lwm2mConfig.LWM2M_DTLS_ROLE, DtlsRole.CLIENT_ONLY);
         builder.setDtlsConfig(dtlsConfig);
 
         builder.setObjects(objects);

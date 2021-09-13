@@ -26,13 +26,16 @@ import java.util.List;
 
 import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
+import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.leshan.core.LwM2m;
+import org.eclipse.leshan.core.californium.config.Lwm2mConfig;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -58,9 +61,13 @@ public class LeshanBootstrapServerDemo {
         if (property == null) {
             System.setProperty("logback.configurationFile", "logback-config.xml");
         }
+        CoapConfig.register();
+        UdpConfig.register();
+        DtlsConfig.register();
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanBootstrapServerDemo.class);
+    private static final String CONFIGURATION_HEADER = "Leshan's Bootstrap Server " + Configuration.DEFAULT_HEADER;
 
     public static void main(String[] args) {
 
@@ -108,14 +115,12 @@ public class LeshanBootstrapServerDemo {
         LeshanBootstrapServerBuilder builder = new LeshanBootstrapServerBuilder();
 
         // Create CoAP Config
-        Configuration coapConfig;
         File configFile = new File(Configuration.DEFAULT_FILE_NAME);
+        Configuration coapConfig = LeshanServerBuilder.createDefaultNetworkConfig();
         if (configFile.isFile()) {
-            coapConfig = new Configuration();
             coapConfig.load(configFile);
         } else {
-            coapConfig = LeshanServerBuilder.createDefaultNetworkConfig();
-            coapConfig.store(configFile);
+            coapConfig.store(configFile, CONFIGURATION_HEADER);
         }
         builder.setCoapConfig(coapConfig);
 
@@ -132,6 +137,10 @@ public class LeshanBootstrapServerDemo {
         dtlsConfig.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, !cli.dtls.supportDeprecatedCiphers);
         if (cli.dtls.cid != null) {
             dtlsConfig.set(DtlsConfig.DTLS_CONNECTION_ID_LENGTH, cli.dtls.cid);
+        }
+        DtlsRole dtlsRole = dtlsConfig.getIncompleteConfig().getConfiguration().get(Lwm2mConfig.LWM2M_DTLS_ROLE);
+        if (dtlsRole != null) {
+            dtlsConfig.set(DtlsConfig.DTLS_ROLE, dtlsRole);
         }
 
         if (cli.identity.isx509()) {

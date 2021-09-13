@@ -30,6 +30,7 @@ import javax.jmdns.ServiceInfo;
 
 import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.californium.elements.util.CertPathUtil;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
@@ -38,6 +39,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.leshan.core.californium.config.Lwm2mConfig;
 import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.core.model.ObjectLoader;
@@ -71,9 +73,13 @@ public class LeshanServerDemo {
         if (property == null) {
             System.setProperty("logback.configurationFile", "logback-config.xml");
         }
+        CoapConfig.register();
+        UdpConfig.register();
+        DtlsConfig.register();
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServerDemo.class);
+    private static final String CONFIGURATION_HEADER = "Leshan's Server " + Configuration.DEFAULT_HEADER;
 
     public static void main(String[] args) {
 
@@ -140,14 +146,12 @@ public class LeshanServerDemo {
         builder.setEncoder(new DefaultLwM2mEncoder(new MagicLwM2mValueConverter()));
 
         // Create CoAP Config
-        Configuration coapConfig;
         File configFile = new File(Configuration.DEFAULT_FILE_NAME);
+        Configuration coapConfig = LeshanServerBuilder.createDefaultNetworkConfig();
         if (configFile.isFile()) {
-            coapConfig = new Configuration();
             coapConfig.load(configFile);
         } else {
-            coapConfig = LeshanServerBuilder.createDefaultNetworkConfig();
-            coapConfig.store(configFile);
+            coapConfig.store(configFile, CONFIGURATION_HEADER);
         }
         builder.setCoapConfig(coapConfig);
 
@@ -170,6 +174,11 @@ public class LeshanServerDemo {
             // use X.509 mode (+ RPK)
             builder.setPrivateKey(cli.identity.getPrivateKey());
             builder.setCertificateChain(cli.identity.getCertChain());
+
+            DtlsRole dtlsRole = dtlsConfig.getIncompleteConfig().getConfiguration().get(Lwm2mConfig.LWM2M_DTLS_ROLE);
+            if (dtlsRole != null) {
+                dtlsConfig.set(DtlsConfig.DTLS_ROLE, dtlsRole);
+            }
 
             X509Certificate serverCertificate = cli.identity.getCertChain()[0];
             // autodetect serverOnly
