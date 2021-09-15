@@ -49,14 +49,15 @@ import picocli.CommandLine.Spec;
                  + "@|italic " //
                  + "This is a LWM2M client demo implemented with Leshan library.%n" //
                  + "You can launch it without any option and it will try to register to a LWM2M server at " + "coap://"
-                 + LeshanClientDemoCLI.DEFAULT_URL + ".%n" //
+                 + LeshanClientDemoCLI.DEFAULT_COAP_URL + ".%n" //
                  + "%n" //
                  + "Californium is used as CoAP library and some CoAP parameters can be tweaked in 'Californium.properties' file." //
                  + "|@%n%n",
          versionProvider = VersionProvider.class)
 public class LeshanClientDemoCLI implements Runnable {
 
-    public static final String DEFAULT_URL = "localhost:" + CoAP.DEFAULT_COAP_PORT;
+    public static final String DEFAULT_COAP_URL = "localhost:" + CoAP.DEFAULT_COAP_PORT;
+    public static final String DEFAULT_COAPS_URL = "localhost:" + CoAP.DEFAULT_COAP_SECURE_PORT;
 
     private static String defaultEndpoint() {
         try {
@@ -76,10 +77,11 @@ public class LeshanClientDemoCLI implements Runnable {
     public static class GeneralSection {
 
         @Option(names = { "-u", "--server-url" },
-                defaultValue = DEFAULT_URL,
                 description = { //
                         "Set the server URL. If port is missing it will be added automatically with default value.", //
-                        "Default: ${DEFAULT-VALUE}" })
+                        "Default: ", //
+                        "  - " + DEFAULT_COAP_URL + " for coap", //
+                        "  - " + DEFAULT_COAPS_URL + " for coaps" })
         public String url;
 
         @Option(names = { "-b", "--bootstrap" },
@@ -286,6 +288,8 @@ public class LeshanClientDemoCLI implements Runnable {
 
     protected void normalizedServerUrl() {
         String url = main.url;
+        if (url == null)
+            url = "localhost";
 
         // try to guess if port is present.
         String[] splittedUrl = url.split(":");
@@ -293,9 +297,9 @@ public class LeshanClientDemoCLI implements Runnable {
         if (!StringUtils.isNumeric(port)) {
             // it seems port is not present, so we try to add it
             if (identity.hasIdentity()) {
-                main.url += ":" + CoAP.DEFAULT_COAP_SECURE_PORT;
+                main.url = url + ":" + CoAP.DEFAULT_COAP_SECURE_PORT;
             } else {
-                main.url += ":" + CoAP.DEFAULT_COAP_PORT;
+                main.url = url + ":" + CoAP.DEFAULT_COAP_PORT;
             }
         }
 
