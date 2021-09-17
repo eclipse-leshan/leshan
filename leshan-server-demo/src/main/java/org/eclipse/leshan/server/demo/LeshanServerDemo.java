@@ -73,9 +73,6 @@ public class LeshanServerDemo {
         if (property == null) {
             System.setProperty("logback.configurationFile", "logback-config.xml");
         }
-        CoapConfig.register();
-        UdpConfig.register();
-        DtlsConfig.register();
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServerDemo.class);

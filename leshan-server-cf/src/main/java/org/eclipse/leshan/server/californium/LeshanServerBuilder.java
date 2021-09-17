@@ -31,6 +31,8 @@ import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.elements.DtlsEndpointContext;
 import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.californium.elements.config.SystemConfig;
+import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
@@ -74,10 +76,6 @@ import org.slf4j.LoggerFactory;
  */
 public class LeshanServerBuilder {
 
-    static {
-        CoapConfig.register();
-        DtlsConfig.register();
-    }
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServerBuilder.class);
 
     private CaliforniumRegistrationStore registrationStore;
@@ -395,7 +393,7 @@ public class LeshanServerBuilder {
      * The default Californium/CoAP {@link Configuration} used by the builder.
      */
     public static Configuration createDefaultNetworkConfig() {
-        Configuration networkConfig = new Configuration();
+        Configuration networkConfig = new Configuration(CoapConfig.DEFINITIONS, DtlsConfig.DEFINITIONS, UdpConfig.DEFINITIONS, SystemConfig.DEFINITIONS);
         networkConfig.set(CoapConfig.MID_TRACKER, TrackerMode.NULL);
         // Do no allow Server to initiated Handshake by default, for U device request will be allowed to initiate
         // handshake (see Registration.shouldInitiateConnection())

@@ -18,7 +18,6 @@ package org.eclipse.leshan.core.californium;
 import java.net.InetSocketAddress;
 import java.security.Principal;
 
-import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.CoapEndpoint.Builder;
 import org.eclipse.californium.core.network.EndpointContextMatcherFactory;
@@ -29,7 +28,6 @@ import org.eclipse.californium.elements.PrincipalEndpointContextMatcher;
 import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.DTLSConnector;
-import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 
 /**
@@ -40,11 +38,6 @@ import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
  * E.g. This could be useful if you need to use a custom {@link Connector}.
  */
 public class DefaultEndpointFactory implements EndpointFactory {
-
-    static {
-        CoapConfig.register();
-        DtlsConfig.register();
-    }
 
     protected EndpointContextMatcher securedContextMatcher;
     protected EndpointContextMatcher unsecuredContextMatcher;

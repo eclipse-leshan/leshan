@@ -29,6 +29,7 @@ import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConfig;
@@ -62,12 +63,6 @@ import org.eclipse.leshan.core.util.Validate;
  */
 public class LeshanClientBuilder {
 
-    static {
-        CoapConfig.register();
-        UdpConfig.register();
-        DtlsConfig.register();
-    }
- 
     private final String endpoint;
 
     private InetSocketAddress localAddress;
@@ -261,7 +256,7 @@ public class LeshanClientBuilder {
     }
 
     public static Configuration createDefaultNetworkConfig() {
-        Configuration networkConfig = new Configuration();
+        Configuration networkConfig = new Configuration(CoapConfig.DEFINITIONS, DtlsConfig.DEFINITIONS, UdpConfig.DEFINITIONS, SystemConfig.DEFINITIONS);
         networkConfig.set(CoapConfig.MID_TRACKER, TrackerMode.NULL);
         networkConfig.set(CoapConfig.MAX_ACTIVE_PEERS, 10);
         networkConfig.set(CoapConfig.PROTOCOL_STAGE_THREAD_COUNT, 1);

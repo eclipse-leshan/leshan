@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.List;
 
-import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.UdpConfig;
@@ -69,9 +68,6 @@ public class LeshanClientDemo {
         if (property == null) {
             System.setProperty("logback.configurationFile", "logback-config.xml");
         }
-        CoapConfig.register();
-        UdpConfig.register();
-        DtlsConfig.register();
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanClientDemo.class);
