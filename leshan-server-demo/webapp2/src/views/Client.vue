@@ -142,18 +142,25 @@ export default {
         this.registration.sleeping = true;
       })
       .on("NOTIFICATION", (msg) => {
-        if (msg.val.resources) {
+        if (msg.val.resources !== undefined) {
           this.$store.newInstanceValue(
             this.$route.params.endpoint,
             msg.res,
             msg.val.resources,
             false
           );
-        } else if (msg.val.value) {
-          this.$store.newResourceValue(
+        } else if (msg.val.value !== undefined) {
+          this.$store.newSingleResourceValue(
             this.$route.params.endpoint,
             msg.res,
             msg.val.value,
+            false
+          );
+        } else if (msg.val.values !== undefined) {
+          this.$store.newMultiResourceValue(
+            this.$route.params.endpoint,
+            msg.res,
+            msg.val.values,
             false
           );
         }

@@ -1,15 +1,38 @@
 <template>
   <div>
-    <request-button @on-click="observe" v-if="readable" :title="'Observe ' + path">Obs</request-button>
-    <request-button @on-click="stopObserve" v-if="readable" :title="'Passive Cancel Obverse ' + path">
+    <request-button
+      @on-click="observe"
+      v-if="readable"
+      :title="'Observe ' + path"
+      >Obs</request-button
+    >
+    <request-button
+      @on-click="stopObserve"
+      v-if="readable"
+      :title="'Passive Cancel Obverse ' + path"
+    >
       <v-icon dense small>mdi-eye-remove-outline</v-icon></request-button
     >
-    <request-button @on-click="read" v-if="readable" :title="'Read ' + path">R</request-button>
-    <request-button @on-click="openWriteDialog" v-if="writable" ref="W" :title="'Write ' + path"
+    <request-button @on-click="read" v-if="readable" :title="'Read ' + path"
+      >R</request-button
+    >
+    <request-button
+      @on-click="openWriteDialog"
+      v-if="writable"
+      ref="W"
+      :title="'Write ' + path"
       >W</request-button
     >
-    <request-button @on-click="exec" v-if="executable" :title="'Execute ' + path">Exe</request-button>
-    <request-button @on-click="execWithParams" v-if="executable" :title="'Execute with params ' + path"
+    <request-button
+      @on-click="exec"
+      v-if="executable"
+      :title="'Execute ' + path"
+      >Exe</request-button
+    >
+    <request-button
+      @on-click="execWithParams"
+      v-if="executable"
+      :title="'Execute with params ' + path"
       ><v-icon dense small>mdi-cog-outline</v-icon></request-button
     >
     <resource-write-dialog
@@ -27,8 +50,8 @@ import ResourceWriteDialog from "./ResourceWriteDialog.vue";
 import { preference } from "vue-preferences";
 
 const timeout = preference("timeout", { defaultValue: 5 });
-const format = preference("singleformat", { defaultValue: "TLV" });
-
+const singleFormat = preference("singleformat", { defaultValue: "TLV" });
+const multiFormat = preference("multiformat", { defaultValue: "TLV" });
 
 export default {
   components: { RequestButton, ResourceWriteDialog },
@@ -59,11 +82,18 @@ export default {
     },
   },
   methods: {
+    getFormat() {
+      if (this.resourcedef.instancetype === "single"){
+        return singleFormat.get();
+      }else {
+        return multiFormat.get();
+      }
+    },
     requestPath() {
       return `api/clients/${encodeURIComponent(this.endpoint)}${this.path}`;
     },
     requestOption() {
-      return `?timeout=${timeout.get()}&format=${format.get()}`;
+      return `?timeout=${timeout.get()}&format=${this.getFormat()}`;
     },
 
     updateState(content, requestButton) {
@@ -80,11 +110,11 @@ export default {
         .then((response) => {
           this.updateState(response.data, requestButton);
           if (response.data.success)
-            this.$store.newResourceValue(
-              this.endpoint,
-              this.path,
-              response.data.content.value
-            );
+             this.$store.newResourceValue(
+                this.endpoint,
+                this.path,
+                response.data.content
+              );
         })
         .catch(() => {
           requestButton.resetState();
@@ -99,7 +129,7 @@ export default {
             this.$store.newResourceValue(
               this.endpoint,
               this.path,
-              response.data.content.value
+              response.data.content
             );
             this.$store.setObserved(this.endpoint, this.path, true);
           }
@@ -132,7 +162,12 @@ export default {
         .then((response) => {
           this.updateState(response.data, requestButton);
           if (response.data.success)
-            this.$store.newResourceValue(this.endpoint, this.path, value, true);
+            this.$store.newSingleResourceValue(
+              this.endpoint,
+              this.path,
+              value,
+              true
+            );
         })
         .catch(() => {
           requestButton.resetState();

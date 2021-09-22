@@ -6,9 +6,13 @@ class Store {
     ================
     
     state { endpoint : { 
-      data : { "singleInstanceResourcepath":   { val: "a resource value", supposed: true },
-               "multipleInstanceResourcepath": { id1: { val: "a resource value", supposed: true }
-                                                 id1: { val: "a resource value", supposed: true }},    
+      data : { "singleInstanceResourcepath":   {  isSingle:true, val: "a resource value", supposed: true },
+               "multipleInstanceResourcepath": {  isSingle:false, vals: {
+                                                    id1: { val: "a resource value", supposed: true },
+                                                    id1: { val: "a resource value", supposed: true }
+                                                  },
+                                                  supposed: true
+                                                },    
              },
       observed : { path(object/instance/resource/resourceinstance) : boolean }
       }
@@ -32,12 +36,25 @@ class Store {
   }
 
   data(endpoint, path) {
-    let d = this.state[endpoint].data[path];
-    if (!d) {
-      d = { val: null, supposed: false };
-      Vue.set(this.state[endpoint].data, path, d);
+    return this.state[endpoint].data[path];
+  }
+
+  /**
+   * @param {String} endpoint endpoint of the client
+   * @param {String} path path to a resource e.g. /3/0/1
+   * @param {*} resource the resource
+   *                    (format for single : {id:3, value:"value"}  )
+   *                    (format for multi : {id:4, values: {3:"value",4:"anothervalue"}}  )
+   * @param {Boolean} supposed true means the value is supposed (not really send by the client)
+   */
+  newResourceValue(endpoint, path, resource, supposed = false) {
+    if (resource.value !== undefined) {
+      this.newSingleResourceValue(endpoint, path, resource.value, supposed);
+    } else if (resource.values != undefined) {
+      this.newMultiResourceValue(endpoint, path, resource.values, supposed);
+    } else {
+      console.log("unsupported resource : ", resource);
     }
-    return d;
   }
 
   /**
@@ -46,10 +63,36 @@ class Store {
    * @param {*} val value of the resource
    * @param {Boolean} supposed true means the value is supposed (not really send by the client)
    */
-  newResourceValue(endpoint, path, val, supposed = false) {
+  newSingleResourceValue(endpoint, path, val, supposed = false) {
     let d = this.data(endpoint, path);
-    d.val = val;
+    // create & add data if not exist OR is not single resource.
+    if (!d || !d.single) {
+      d = { val: val, supposed: supposed, isSingle: true };
+      Vue.set(this.state[endpoint].data, path, d);
+    } else {
+      // else just modify it
+      d.val = val;
+      d.supposed = supposed;
+    }
+  }
+
+  /**
+   * @param {String} endpoint endpoint of the client
+   * @param {String} path path to a resource e.g. /3/0/1
+   * @param {Object} values values of the resource as a map from id to resource instance value
+   * @param {Boolean} supposed true means the value is supposed (not really send by the client)
+   */
+  newMultiResourceValue(endpoint, path, values, supposed = false) {
+    let d = {};
+    d.vals = {};
+    for (const id in values) {
+      d.vals[id] = {};
+      d.vals[id].val = values[id];
+      d.vals[id].supposed = supposed;
+    }
     d.supposed = supposed;
+    d.isSingle = false;
+    Vue.set(this.state[endpoint].data, path, d);
   }
 
   /**
@@ -59,9 +102,9 @@ class Store {
    * @param {Boolean} supposed true means the value is supposed (not really send by the client)
    */
   newInstanceValue(endpoint, path, resources, supposed = false) {
-    resources.forEach((res) =>
-      this.newResourceValue(endpoint, path + "/" + res.id, res.value, supposed)
-    );
+    resources.forEach((res) => {
+      this.newResourceValue(endpoint, path + "/" + res.id, res, supposed);
+    });
   }
 
   /**
@@ -82,7 +125,7 @@ class Store {
     let o = this.state[endpoint].observed[path];
     if (!o) {
       Vue.set(this.state[endpoint].observed, path, observed);
-    } else{
+    } else {
       this.state[endpoint].observed[path] = observed;
     }
   }

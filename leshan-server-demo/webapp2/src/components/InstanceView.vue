@@ -12,7 +12,11 @@
           class="mr-auto"
         />
 
-        <v-icon class="pr-3" small v-show="state.observed[instancePath]" :title="'Instance ' + instancePath + ' observed'"
+        <v-icon
+          class="pr-3"
+          small
+          v-show="state.observed[instancePath]"
+          :title="'Instance ' + instancePath + ' observed'"
           >mdi-eye-outline</v-icon
         >
       </span>
@@ -74,13 +78,11 @@
                     : false,
                 }"
               >
-                <div class="pr-3 text-truncate">
-                  {{
-                    state.data[resource.path]
-                      ? state.data[resource.path].val
-                      : null
-                  }}
-                </div>
+                <simple-resource-view
+                  class="pr-3 text-truncate"
+                  :resource="state.data[resource.path]"
+                  :resourcedef="resource.def"
+                />
               </v-col>
             </v-row>
           </v-container>
@@ -98,8 +100,10 @@
 <script>
 import InstanceControl from "./InstanceControl.vue";
 import ResourceControl from "./ResourceControl.vue";
+import SimpleResourceView from "./resources/view/SimpleResourceView.vue";
+
 export default {
-  components: { ResourceControl, InstanceControl },
+  components: { ResourceControl, InstanceControl, SimpleResourceView },
   props: {
     objectdef: Object,
     instanceId: String,
