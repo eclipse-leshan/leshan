@@ -15,21 +15,156 @@
  *******************************************************************************/
 package org.eclipse.leshan.core;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.leshan.core.Link;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class LinkObjectTest {
 
+
+    @Test
+    public void parse_examples() {
+        Link[] parsed;
+
+        parsed = Link.parse("<file:///etc/hosts>".getBytes());
+        Assert.assertEquals("file:///etc/hosts", parsed[0].getUrl());
+
+        parsed = Link.parse("</uri/>".getBytes());
+        Assert.assertEquals("/uri/", parsed[0].getUrl());
+
+        parsed = Link.parse("</%20/>".getBytes());
+        Assert.assertEquals("/%20/", parsed[0].getUrl());
+
+        parsed = Link.parse("</parnoval>;param".getBytes());
+        Assert.assertEquals("/parnoval", parsed[0].getUrl());
+    }
+
+    @Test
+    public void allow_escaped_charractes() {
+        Link[] parsed = Link.parse("</foo>;param=\",\",</bar>".getBytes());
+        Assert.assertEquals("/foo", parsed[0].getUrl());
+
+        Map<Object, Object> attResult = new HashMap<>();
+        attResult.put("param", "\",\"");
+        Assert.assertEquals(attResult, parsed[0].getAttributes());
+
+        Assert.assertEquals("/bar", parsed[1].getUrl());
+    }
+
+    @Test
+    public void allow_escaped_charractes2() {
+        Link[] parsed = Link.parse("</foo>;param=\" \\\\ \",</bar>".getBytes());
+        Assert.assertEquals("/foo", parsed[0].getUrl());
+
+        Map<Object, Object> attResult = new HashMap<>();
+        attResult.put("param", "\" \\ \"");
+        Assert.assertEquals(attResult, parsed[0].getAttributes());
+
+        Assert.assertEquals("/bar", parsed[1].getUrl());
+    }
+
+    @Test
+    public void allow_escaped_charractes2a() {
+        Link[] parsed = Link.parse("</foo>;param=\" \\\" \",</bar>".getBytes());
+        Assert.assertEquals("/foo", parsed[0].getUrl());
+
+        Map<Object, Object> attResult = new HashMap<>();
+        attResult.put("param", "\" \" \"");
+        Assert.assertEquals(attResult, parsed[0].getAttributes());
+
+        Assert.assertEquals("/bar", parsed[1].getUrl());
+    }
+
+    @Test
+    public void allow_escaped_charractes2b() {
+        Link[] parsed = Link.parse("</foo>;param=\" \\x \",</bar>".getBytes());
+        Assert.assertEquals("/foo", parsed[0].getUrl());
+
+        Map<Object, Object> attResult = new HashMap<>();
+        attResult.put("param", "\" x \"");
+        Assert.assertEquals(attResult, parsed[0].getAttributes());
+
+        Assert.assertEquals("/bar", parsed[1].getUrl());
+    }
+
+    @Test
+    public void dont_escape_non_ascii_chars() {
+        Link[] parsed = Link.parse("</foo>;param=\" \\ą \",</bar>".getBytes());
+        Assert.assertEquals("/foo", parsed[0].getUrl());
+
+        Map<Object, Object> attResult = new HashMap<>();
+        attResult.put("param", "\" \\ą \"");
+        Assert.assertEquals(attResult, parsed[0].getAttributes());
+
+        Assert.assertEquals("/bar", parsed[1].getUrl());
+    }
+
+    @Test
+    public void allow_escaped_charractes3() {
+        Link[] parsed = Link.parse("</foo>;param=\";\",</bar>".getBytes());
+        Assert.assertEquals("/foo", parsed[0].getUrl());
+
+        Map<Object, Object> attResult = new HashMap<>();
+        attResult.put("param", "\";\"");
+        Assert.assertEquals(attResult, parsed[0].getAttributes());
+
+        Assert.assertEquals("/bar", parsed[1].getUrl());
+    }
+
+    @Test
+    public void allow_escaped_charractes4() {
+        Link[] parsed = Link.parse("</foo>;param=\"<\",</bar>".getBytes());
+        Assert.assertEquals("/foo", parsed[0].getUrl());
+
+        Map<Object, Object> attResult = new HashMap<>();
+        attResult.put("param", "\"<\"");
+        Assert.assertEquals(attResult, parsed[0].getAttributes());
+
+        Assert.assertEquals("/bar", parsed[1].getUrl());
+    }
+
+    @Test
+    public void allow_escaped_charractes5() {
+        Link[] parsed = Link.parse("</foo>;param=\"=\"".getBytes());
+        Assert.assertEquals("/foo", parsed[0].getUrl());
+
+        Map<Object, Object> attResult = new HashMap<>();
+        attResult.put("param", "\"=\"");
+        Assert.assertEquals(attResult, parsed[0].getAttributes());
+    }
+
+    @Test
+    public void allow_ptoken() {
+        Link[] parsed = Link.parse("</foo>;param=!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9".getBytes());
+        Assert.assertEquals("/foo", parsed[0].getUrl());
+
+        Map<Object, Object> attResult = new HashMap<>();
+        attResult.put("param", "!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9");
+        Assert.assertEquals(attResult, parsed[0].getAttributes());
+    }
+
+    @Test
+    public void allow_mixed_attributes() {
+        Link[] parsed = Link.parse("</foo>;param=!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9;param2=\"foo\";param3,</bar>".getBytes());
+        Assert.assertEquals("/foo", parsed[0].getUrl());
+
+        Map<Object, Object> attResult = new HashMap<>();
+        attResult.put("param", "!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9");
+        attResult.put("param2", "\"foo\"");
+        attResult.put("param3", null);
+        Assert.assertEquals(attResult, parsed[0].getAttributes());
+
+        Assert.assertEquals("/bar", parsed[1].getUrl());
+    }
+
     @Test
     public void parse_with_some_attributes() {
-        Link[] parse = Link.parse("</>;rt=\"oma.lwm2m\";ct=100, </1/101>,</1/102>, </2/0>, </2/1> ;empty".getBytes());
+        Link[] parse = Link.parse("</>;rt=\"oma.lwm2m\";ct=100,</1/101>,</1/102>,</2/0>,</2/1>;empty".getBytes());
         Assert.assertEquals(5, parse.length);
         Assert.assertEquals("/", parse[0].getUrl());
 
@@ -51,21 +186,6 @@ public class LinkObjectTest {
         attResult = new HashMap<>();
         attResult.put("empty", null);
         Assert.assertEquals(attResult, parse[4].getAttributes());
-    }
-
-    @Test
-    public void parse_with_quoted_attributes() {
-        Link[] parse = Link
-                .parse("</>;k1=\"quotes\"inside\";k2=endwithquotes\";k3=noquotes;k4=\"startwithquotes".getBytes());
-        Assert.assertEquals(1, parse.length);
-        Assert.assertEquals("/", parse[0].getUrl());
-
-        Map<String, String> attResult = new HashMap<>();
-        attResult.put("k1", "\"quotes\"inside\"");
-        attResult.put("k2", "endwithquotes\"");
-        attResult.put("k3", "noquotes");
-        attResult.put("k4", "\"startwithquotes");
-        Assert.assertEquals(attResult, parse[0].getAttributes());
     }
 
     @Test

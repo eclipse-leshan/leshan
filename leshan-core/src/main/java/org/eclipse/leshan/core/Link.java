@@ -15,12 +15,16 @@
  *******************************************************************************/
 package org.eclipse.leshan.core;
 
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 import org.eclipse.leshan.core.util.StringUtils;
 import org.eclipse.leshan.core.util.Validate;
@@ -126,6 +130,59 @@ public class Link {
         }
     }
 
+    /**
+     * Parse a byte arrays representation of a {@code String} encoding with UTF_8 {@link Charset}.
+     *
+     * @param bytes a byte arrays representing {@code String} encoding with UTF_8 {@link Charset}.
+     * @return an array of {@code Link}
+     */
+    public static Link[] parse(byte[] bytes) {
+        if (bytes == null || bytes.length == 0) {
+            return new Link[] {};
+        }
+
+        List<String> linkValueList = splitIgnoringEscaped(new String(bytes, StandardCharsets.UTF_8), ',');
+
+        Link[] result = new Link[linkValueList.size()];
+        for (int i = 0; i < linkValueList.size(); i++) {
+            String linkValue = linkValueList.get(i);
+            result[i] = Link.parsePart(linkValue);
+        }
+
+        return result;
+    }
+
+    private static List<String> splitIgnoringEscaped(String content, char delimiter) {
+        List<String> linkValueList = new ArrayList<>();
+        StringBuffer sb = new StringBuffer();
+        boolean quote = false;
+        boolean escape = false;
+        for (int i = 0; i < content.length(); i++) {
+            char ch = content.charAt(i);
+            if (ch == '\\') {
+                escape = !escape;
+                sb.append(ch);
+                continue;
+            }
+
+            if (ch == delimiter && !quote) {
+                linkValueList.add(sb.toString());
+                sb = new StringBuffer();
+                escape = false;
+                continue;
+            }
+            if (ch == '"' && !escape) {
+                quote = !quote;
+            }
+            sb.append(ch);
+            escape = false;
+        }
+
+        linkValueList.add(sb.toString());
+
+        return linkValueList;
+    }
+
     public String getUrl() {
         return url;
     }
@@ -160,47 +217,130 @@ public class Link {
         return builder.toString();
     }
 
-    /**
-     * Parse a byte arrays representation of a {@code String} encoding with UTF_8 {@link Charset}.
-     * 
-     * @param content a byte arrays representing {@code String} encoding with UTF_8 {@link Charset}.
-     * @return an array of {@code Link}
-     */
-    public static Link[] parse(byte[] content) {
-        if (content == null) {
-            return new Link[] {};
-        }
-        String s = new String(content, StandardCharsets.UTF_8);
-        String[] links = s.split(",");
-        Link[] linksResult = new Link[links.length];
-        int index = 0;
-        for (String link : links) {
-            String[] linkParts = link.split(";");
+    public static Link parsePart(String linkValue) {
 
-            // clean URL
-            String url = StringUtils.trim(linkParts[0]);
-            url = StringUtils.removeStart(StringUtils.removeEnd(url, ">"), "<");
+        List<String> parts = splitIgnoringEscaped(linkValue, ';');
 
-            // parse attributes
-            Map<String, String> attributes = new HashMap<>();
+        String uriReferenceDecorated = parts.get(0);
 
-            if (linkParts.length > 1) {
-                for (int i = 1; i < linkParts.length; i++) {
-                    String[] attParts = linkParts[i].split("=");
-                    if (attParts.length > 0) {
-                        String key = attParts[0];
-                        String value = null;
-                        if (attParts.length > 1) {
-                            value = attParts[1];
-                        }
-                        attributes.put(key, value);
+        validateUriReferenceDecorated(uriReferenceDecorated);
+
+        Map<String, String> attributes = new HashMap<>();
+
+        if (parts.size() > 1) {
+            for (int i = 1; i < parts.size(); i++) {
+                String[] attParts = parts.get(i).split("=", 2);
+
+                if (attParts.length > 0) {
+                    String key = attParts[0];
+
+                    validateParmname(key);
+
+                    String value = null;
+                    if (attParts.length > 1) {
+                        value = attParts[1];
+                        validateValue(value);
                     }
+                    attributes.put(key, applyCharEscaping(value));
                 }
             }
-            linksResult[index] = new Link(url, attributes);
-            index++;
         }
-        return linksResult;
+
+        return new Link(trimUriReference(uriReferenceDecorated), attributes);
+    }
+
+    private static String trimUriReference(String uriReferenceDecorated) {
+        return StringUtils.removeStart(StringUtils.removeEnd(uriReferenceDecorated, ">"), "<");
+    }
+
+    private static void validateUriReferenceDecorated(String uriReferenceDecorated) {
+        if (uriReferenceDecorated.length() <= 2) {
+            throw new IllegalArgumentException("Invalid link-value");
+        }
+        if (uriReferenceDecorated.charAt(0) != '<' || uriReferenceDecorated.charAt(uriReferenceDecorated.length()-1) != '>') {
+            throw new IllegalArgumentException("Invalid link-value");
+        }
+        String UriReference = trimUriReference(uriReferenceDecorated);
+        URI.create(UriReference);
+    }
+
+    private static String applyCharEscaping(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        StringBuffer sb = new StringBuffer();
+        boolean escape = false;
+        for( int i = 0; i < value.length(); i++ ) {
+            char ch = value.charAt(i);
+            if (ch == '\\') {
+                escape = !escape;
+                if (escape) {
+                    continue;
+                }
+            }
+
+            if (escape && ch > 127) {
+                sb.append("\\");
+            }
+
+            sb.append(ch);
+        }
+        return sb.toString();
+    }
+
+    // ( ptoken / quoted-string )
+    private static void validateValue(String value) {
+        if (value.length() == 0) {
+            throw new IllegalArgumentException("Invalid link-extension value");
+        }
+
+        if (value.charAt(0) == '\"') {
+            validateQuotedValue(value);
+        } else {
+            validatePtoken(value);
+        }
+    }
+
+    private static void validatePtoken(String value) {
+        Pattern pattern = Pattern.compile("[!#$%&'()*+\\-.:<=>?@\\[\\]^_`{|}~a-zA-Z0-9]+");
+        if (!pattern.matcher(value).matches()) {
+            throw new IllegalArgumentException("Invalid link-extension value");
+        }
+    }
+
+    private static String removeEscapedChars(String value) {
+        StringBuffer sb = new StringBuffer();
+        boolean escape = false;
+        for( int i = 0; i < value.length(); i++ ) {
+            char ch = value.charAt(i);
+            if (ch == '\\') {
+                escape = !escape;
+                continue;
+            }
+
+            if (!escape) {
+                sb.append(ch);
+            } else {
+                escape = false;
+            }
+        }
+        return sb.toString();
+    }
+
+    private static void validateQuotedValue(String value) {
+        value = removeEscapedChars(value);
+        if (value.charAt(value.length()-1) != '\"') {
+            throw new IllegalArgumentException("Invalid link-extension value");
+        }
+    }
+
+    // https://datatracker.ietf.org/doc/html/rfc5987
+    private static void validateParmname(String parmname) {
+        Pattern pattern = Pattern.compile("[!#$&+\\-.^_`|~a-zA-Z0-9]+");
+        if (!pattern.matcher(parmname).matches()) {
+            throw new IllegalArgumentException("Invalid link-extension parmname");
+        }
     }
 
     private static final String TRAILER = ",";
