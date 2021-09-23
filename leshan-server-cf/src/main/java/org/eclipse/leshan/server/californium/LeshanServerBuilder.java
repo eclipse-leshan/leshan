@@ -15,6 +15,7 @@
  *     Achim Kraus (Bosch Software Innovations GmbH) - use Lwm2mEndpointContextMatcher
  *                                                     for secure endpoint.
  *     Achim Kraus (Bosch Software Innovations GmbH) - use CoapEndpointBuilder
+ *     Michał Wadowski (Orange)                      - Improved compliance with rfc6690.
  *******************************************************************************/
 package org.eclipse.leshan.server.californium;
 
@@ -44,6 +45,8 @@ import org.eclipse.californium.scandium.dtls.x509.StaticNewAdvancedCertificateVe
 import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
+import org.eclipse.leshan.core.link.DefaultLinkParser;
+import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
@@ -106,6 +109,7 @@ public class LeshanServerBuilder {
     private boolean noQueueMode = false;
     /** @since 1.1 */
     protected boolean updateRegistrationOnNotification;
+    private LinkParser linkParser;
 
     /**
      * <p>
@@ -283,10 +287,18 @@ public class LeshanServerBuilder {
     }
 
     /**
-     * Set the Californium/CoAP {@link Configuration}.
+     * <<<<<<< Upstream, based on origin/master Set the Californium/CoAP {@link Configuration}.
      * <p>
      * This is strongly recommended to create the {@link Configuration} with {@link #createDefaultCoapConfiguration()}
-     * before to modify it.
+     * before to modify it. ======= Set tje CoRE Link parser {@link LinkParser}
+     */
+    public void setLinkParser(LinkParser linkParser) {
+        this.linkParser = linkParser;
+    }
+
+    /**
+     * Set the Californium/CoAP {@link NetworkConfig}. >>>>>>> d9e951a Improved Link API to make it more compliance with
+     * rfc6690.
      */
     public LeshanServerBuilder setCoapConfig(Configuration config) {
         this.coapConfig = config;
@@ -428,6 +440,8 @@ public class LeshanServerBuilder {
             encoder = new DefaultLwM2mEncoder();
         if (decoder == null)
             decoder = new DefaultLwM2mDecoder();
+        if (linkParser == null)
+            linkParser = new DefaultLinkParser();
         if (coapConfig == null)
             coapConfig = createDefaultCoapConfiguration();
         if (awakeTimeProvider == null) {
@@ -546,7 +560,8 @@ public class LeshanServerBuilder {
         }
 
         return createServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
-                modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider);
+                modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider,
+                linkParser);
     }
 
     /**
@@ -576,6 +591,7 @@ public class LeshanServerBuilder {
      * @param awakeTimeProvider to set the client awake time if queue mode is used.
      * @param registrationIdProvider to provide registrationId using for location-path option values on response of
      *        Register operation.
+     * @param linkParser a parser {@link LinkParser} used to parse a CoRE Link.
      * 
      * @return the LWM2M server
      */
@@ -583,9 +599,9 @@ public class LeshanServerBuilder {
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder, Configuration coapConfig,
             boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
-            RegistrationIdProvider registrationIdProvider) {
+            RegistrationIdProvider registrationIdProvider, LinkParser linkParser) {
         return new LeshanServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
                 modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider,
-                updateRegistrationOnNotification);
+                updateRegistrationOnNotification, linkParser);
     }
 }

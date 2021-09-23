@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Zebra Technologies - initial API and implementation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.request;
 
@@ -27,6 +28,7 @@ import org.eclipse.leshan.client.request.LwM2mRequestSender;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.californium.AsyncRequestObserver;
 import org.eclipse.leshan.core.californium.SyncRequestObserver;
+import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.request.UplinkRequest;
@@ -49,10 +51,13 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     private final CaliforniumEndpointsManager endpointsManager;
     private final LwM2mEncoder encoder;
     private final LwM2mModel model;
+    private final LinkSerializer linkSerializer;
 
     public CaliforniumLwM2mRequestSender(CaliforniumEndpointsManager endpointsManager,
-            ScheduledExecutorService sharedExecutor, LwM2mEncoder encoder, LwM2mModel model) {
+            ScheduledExecutorService sharedExecutor, LwM2mEncoder encoder, LwM2mModel model,
+            LinkSerializer linkSerializer) {
         this.endpointsManager = endpointsManager;
+        this.linkSerializer = linkSerializer;
         if (sharedExecutor == null) {
             this.executor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Leshan Async Request timeout"));
             this.attached = false;
@@ -68,7 +73,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     public <T extends LwM2mResponse> T send(ServerIdentity server, final UplinkRequest<T> request, long timeout)
             throws InterruptedException {
         // Create the CoAP request from LwM2m request
-        CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(server.getIdentity(), encoder, model);
+        CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(server.getIdentity(), encoder, model,
+                linkSerializer);
         request.accept(coapClientRequestBuilder);
         Request coapRequest = coapClientRequestBuilder.getRequest();
 
@@ -95,7 +101,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     public <T extends LwM2mResponse> void send(ServerIdentity server, final UplinkRequest<T> request, long timeout,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         // Create the CoAP request from LwM2m request
-        CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(server.getIdentity(), encoder, model);
+        CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(server.getIdentity(), encoder, model,
+                linkSerializer);
         request.accept(coapClientRequestBuilder);
         Request coapRequest = coapClientRequestBuilder.getRequest();
 

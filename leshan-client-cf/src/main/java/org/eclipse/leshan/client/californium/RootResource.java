@@ -14,6 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690.
  *******************************************************************************/
 package org.eclipse.leshan.client.californium;
 
@@ -34,8 +35,8 @@ import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.resource.LwM2mRootEnabler;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.servers.ServerIdentity;
-import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.californium.ObserveUtil;
+import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
@@ -63,10 +64,11 @@ public class RootResource extends LwM2mClientCoapResource {
     protected LwM2mRootEnabler rootEnabler;
     protected LwM2mEncoder encoder;
     protected LwM2mDecoder decoder;
+    protected LinkSerializer linkSerializer;
 
     public RootResource(RegistrationEngine registrationEngine, CaliforniumEndpointsManager endpointsManager,
             BootstrapHandler bootstrapHandler, CoapServer coapServer, LwM2mRootEnabler rootEnabler,
-            LwM2mEncoder encoder, LwM2mDecoder decoder) {
+            LwM2mEncoder encoder, LwM2mDecoder decoder, LinkSerializer linkSerializer) {
         super("", registrationEngine, endpointsManager);
         this.bootstrapHandler = bootstrapHandler;
         setVisible(false);
@@ -75,6 +77,7 @@ public class RootResource extends LwM2mClientCoapResource {
         this.rootEnabler = rootEnabler;
         this.encoder = encoder;
         this.decoder = decoder;
+        this.linkSerializer = linkSerializer;
 
         addListeners();
     }
@@ -94,8 +97,8 @@ public class RootResource extends LwM2mClientCoapResource {
         if (response.getCode().isError()) {
             exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
         } else {
-            exchange.respond(toCoapResponseCode(response.getCode()), Link.serialize(response.getObjectLinks()),
-                    MediaTypeRegistry.APPLICATION_LINK_FORMAT);
+            exchange.respond(toCoapResponseCode(response.getCode()),
+                    linkSerializer.serialize(response.getObjectLinks()), MediaTypeRegistry.APPLICATION_LINK_FORMAT);
         }
         return;
     }

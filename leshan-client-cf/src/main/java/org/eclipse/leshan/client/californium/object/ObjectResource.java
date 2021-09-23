@@ -17,6 +17,7 @@
  *     Achim Kraus (Bosch Software Innovations GmbH) - implement POST "/oid/iid" 
  *                                                     as UPDATE instance
  *     Michał Wadowski (Orange)                      - Add Observe-Composite feature.
+ *     Michał Wadowski (Orange)                      - Improved compliance with rfc6690.
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.object;
 
@@ -35,8 +36,8 @@ import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.servers.ServerIdentity;
-import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.attributes.AttributeSet;
+import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -83,11 +84,14 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
     protected final LwM2mObjectEnabler nodeEnabler;
     protected final LwM2mEncoder encoder;
     protected final LwM2mDecoder decoder;
+    protected final LinkSerializer linkSerializer;
 
     public ObjectResource(LwM2mObjectEnabler nodeEnabler, RegistrationEngine registrationEngine,
-            CaliforniumEndpointsManager endpointsManager, LwM2mEncoder encoder, LwM2mDecoder decoder) {
+            CaliforniumEndpointsManager endpointsManager, LwM2mEncoder encoder, LwM2mDecoder decoder,
+            LinkSerializer linkSerializer) {
         super(Integer.toString(nodeEnabler.getId()), registrationEngine, endpointsManager);
         this.nodeEnabler = nodeEnabler;
+        this.linkSerializer = linkSerializer;
         this.nodeEnabler.addListener(this);
         this.encoder = encoder;
         this.decoder = decoder;
@@ -111,7 +115,8 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                 if (response.getCode().isError()) {
                     exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                 } else {
-                    exchange.respond(toCoapResponseCode(response.getCode()), Link.serialize(response.getObjectLinks()),
+                    exchange.respond(toCoapResponseCode(response.getCode()),
+                            linkSerializer.serialize(response.getObjectLinks()),
                             MediaTypeRegistry.APPLICATION_LINK_FORMAT);
                 }
                 return;
@@ -121,7 +126,8 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                 if (response.getCode().isError()) {
                     exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                 } else {
-                    exchange.respond(toCoapResponseCode(response.getCode()), Link.serialize(response.getObjectLinks()),
+                    exchange.respond(toCoapResponseCode(response.getCode()),
+                            linkSerializer.serialize(response.getObjectLinks()),
                             MediaTypeRegistry.APPLICATION_LINK_FORMAT);
                 }
                 return;
