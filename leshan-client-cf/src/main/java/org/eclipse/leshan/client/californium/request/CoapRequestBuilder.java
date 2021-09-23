@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Zebra Technologies - initial API and implementation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.request;
 
@@ -21,8 +22,9 @@ import java.util.Map.Entry;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.elements.EndpointContext;
-import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
+import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -47,11 +49,13 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
     protected final Identity server;
     protected final LwM2mEncoder encoder;
     protected final LwM2mModel model;
+    protected final LinkSerializer linkSerializer;
 
-    public CoapRequestBuilder(Identity server, LwM2mEncoder encoder, LwM2mModel model) {
+    public CoapRequestBuilder(Identity server, LwM2mEncoder encoder, LwM2mModel model, LinkSerializer linkSerializer) {
         this.server = server;
         this.encoder = encoder;
         this.model = model;
+        this.linkSerializer = linkSerializer;
     }
 
     @Override
@@ -114,7 +118,7 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
 
         Link[] objectLinks = request.getObjectLinks();
         if (objectLinks != null)
-            coapRequest.setPayload(Link.serialize(objectLinks));
+            coapRequest.setPayload(linkSerializer.serialize(objectLinks));
 
     }
 
@@ -139,7 +143,7 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
         Link[] linkObjects = request.getObjectLinks();
         if (linkObjects != null) {
             coapRequest.getOptions().setContentFormat(ContentFormat.LINK.getCode());
-            coapRequest.setPayload(Link.serialize(linkObjects));
+            coapRequest.setPayload(linkSerializer.serialize(linkObjects));
         }
     }
 

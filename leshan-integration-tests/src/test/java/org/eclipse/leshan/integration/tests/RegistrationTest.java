@@ -13,11 +13,12 @@
  * Contributors:
  *     Zebra Technologies - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - replace close() with destroy()
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.LIFETIME;
+import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -40,7 +41,6 @@ import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
-import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.Observation;
@@ -89,7 +89,7 @@ public class RegistrationTest {
 
         // Check client is well registered
         helper.assertClientRegisterered();
-        assertArrayEquals(Link.parse(
+        assertArrayEquals(linkParser.parse(
                 "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1>;ver=1.1,</1/0>,</2>,</3>;ver=1.1,</3/0>,</2000/0>,</2000/1>"
                         .getBytes()),
                 helper.getCurrentRegistration().getObjectLinks());
@@ -115,7 +115,7 @@ public class RegistrationTest {
 
         // Check client is well registered
         helper.assertClientRegisterered();
-        assertArrayEquals(Link.parse(
+        assertArrayEquals(linkParser.parse(
                 "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1>;ver=1.1,</1/0>,</2>,</3>;ver=1.1,</3/0>,</2000/0>,</2000/1>"
                         .getBytes()),
                 helper.getCurrentRegistration().getObjectLinks());
@@ -266,7 +266,7 @@ public class RegistrationTest {
         helper.assertClientRegisterered();
         assertNotNull(helper.getLastRegistration());
         assertEquals(additionalAttributes, helper.getLastRegistration().getAdditionalRegistrationAttributes());
-        assertArrayEquals(Link.parse(
+        assertArrayEquals(linkParser.parse(
                 "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1>;ver=1.1,</1/0>,</2>,</3>;ver=1.1,</3/0>,</2000/0>,</2000/1>"
                         .getBytes()),
                 helper.getCurrentRegistration().getObjectLinks());

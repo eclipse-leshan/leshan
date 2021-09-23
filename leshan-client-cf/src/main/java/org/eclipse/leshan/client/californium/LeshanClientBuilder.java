@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 package org.eclipse.leshan.client.californium;
 
@@ -48,6 +49,8 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
+import org.eclipse.leshan.core.link.DefaultLinkSerializer;
+import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
@@ -82,6 +85,8 @@ public class LeshanClientBuilder {
     private BootstrapConsistencyChecker bootstrapConsistencyChecker;
 
     private ScheduledExecutorService executor;
+
+    private LinkSerializer linkSerializer;
 
     /**
      * Creates a new instance for setting the configuration options for a {@link LeshanClient} instance.
@@ -147,6 +152,15 @@ public class LeshanClientBuilder {
     public LeshanClientBuilder setDecoder(LwM2mDecoder decoder) {
         this.decoder = decoder;
         return this;
+    }
+
+    /**
+     * Set the CoRE Link serializer {@link LinkSerializer}.
+     * <p>
+     * By default the {@link DefaultLinkSerializer} is used.
+     */
+    public void setLinkSerializer(LinkSerializer linkSerializer) {
+        this.linkSerializer = linkSerializer;
     }
 
     /**
@@ -295,6 +309,8 @@ public class LeshanClientBuilder {
             encoder = new DefaultLwM2mEncoder();
         if (decoder == null)
             decoder = new DefaultLwM2mDecoder();
+        if (linkSerializer == null)
+            linkSerializer = new DefaultLinkSerializer();
         if (coapConfig == null) {
             coapConfig = createDefaultCoapConfiguration();
         }
@@ -337,7 +353,7 @@ public class LeshanClientBuilder {
 
         return createLeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder,
                 this.trustStore, endpointFactory, engineFactory, bootstrapConsistencyChecker, additionalAttributes,
-                bsAdditionalAttributes, encoder, decoder, executor);
+                bsAdditionalAttributes, encoder, decoder, executor, linkSerializer);
     }
 
     /**
@@ -363,6 +379,7 @@ public class LeshanClientBuilder {
      * @param encoder used to encode request payload.
      * @param decoder used to decode response payload.
      * @param sharedExecutor an optional shared executor.
+     * @param linkSerializer a serializer {@link LinkSerializer} used to serialize a CoRE Link.
      * 
      * @return the new {@link LeshanClient}
      */
@@ -371,9 +388,9 @@ public class LeshanClientBuilder {
             List<Certificate> trustStore, EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
             BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            ScheduledExecutorService sharedExecutor) {
+            ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer) {
         return new LeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, trustStore,
                 endpointFactory, engineFactory, checker, additionalAttributes, bsAdditionalAttributes, encoder, decoder,
-                sharedExecutor);
+                sharedExecutor, linkSerializer);
     }
 }

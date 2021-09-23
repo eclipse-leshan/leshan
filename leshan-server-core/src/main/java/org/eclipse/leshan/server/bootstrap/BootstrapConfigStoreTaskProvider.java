@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
@@ -19,7 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
@@ -102,11 +103,11 @@ public class BootstrapConfigStoreTaskProvider implements BootstrapTaskProvider {
 
     protected Integer findBootstrapServerInstanceId(Link[] objectLinks) {
         for (Link link : objectLinks) {
-            if (link.getUrl().startsWith("/0/")) {
+            if (link.getUriReference().startsWith("/0/")) {
                 try {
-                    LwM2mPath path = new LwM2mPath(link.getUrl());
+                    LwM2mPath path = new LwM2mPath(link.getUriReference());
                     if (path.isObjectInstance()) {
-                        if (!link.getAttributes().containsKey("ssid"))
+                        if (!link.getLinkParams().containsKey("ssid"))
                             return path.getObjectInstanceId();
                     }
                 } catch (Exception e) {

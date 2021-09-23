@@ -14,6 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
  *     Michał Wadowski (Orange) - Add Cancel Composite-Observation feature.
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690.
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.request;
 
@@ -25,9 +26,10 @@ import java.util.Map;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
-import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.californium.ObserveUtil;
+import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -97,14 +99,16 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     private final String clientEndpoint;
     private final LwM2mModel model;
     private final LwM2mDecoder decoder;
+    private final LinkParser linkParser;
 
     public LwM2mResponseBuilder(Request coapRequest, Response coapResponse, String clientEndpoint, LwM2mModel model,
-            LwM2mDecoder decoder) {
+            LwM2mDecoder decoder, LinkParser linkParser) {
         this.coapRequest = coapRequest;
         this.coapResponse = coapResponse;
         this.clientEndpoint = clientEndpoint;
         this.model = model;
         this.decoder = decoder;
+        this.linkParser = linkParser;
     }
 
     @Override
@@ -136,7 +140,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 throw new InvalidResponseException("Client [%s] returned unexpected content format [%s] for [%s]",
                         clientEndpoint, coapResponse.getOptions().getContentFormat(), request);
             } else {
-                links = Link.parse(coapResponse.getPayload());
+                links = linkParser.parse(coapResponse.getPayload());
             }
             lwM2mresponse = new DiscoverResponse(ResponseCode.CONTENT, links, null, coapResponse);
         } else {
@@ -354,7 +358,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 throw new InvalidResponseException("Client [%s] returned unexpected content format [%s] for [%s]",
                         clientEndpoint, coapResponse.getOptions().getContentFormat(), request);
             } else {
-                links = Link.parse(coapResponse.getPayload());
+                links = linkParser.parse(coapResponse.getPayload());
             }
             lwM2mresponse = new BootstrapDiscoverResponse(ResponseCode.CONTENT, links, null, coapResponse);
         } else {

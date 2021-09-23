@@ -12,18 +12,20 @@
  * 
  * Contributors:
  *     Zebra Technologies - initial API and implementation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 
 package org.eclipse.leshan.integration.tests;
 
 import static org.eclipse.leshan.core.ResponseCode.*;
+import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.linkSerializer;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.*;
 
 import org.eclipse.californium.core.coap.Response;
-import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.response.DiscoverResponse;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
@@ -33,7 +35,7 @@ import org.junit.Test;
 
 public class DiscoverTest {
 
-    private IntegrationTestHelper helper = new IntegrationTestHelper();
+    private final IntegrationTestHelper helper = new IntegrationTestHelper();
 
     @Before
     public void start() {
@@ -64,7 +66,7 @@ public class DiscoverTest {
 
         Link[] payload = response.getObjectLinks();
         assertEquals("</3>;ver=1.1,</3/0>,</3/0/0>,</3/0/1>,</3/0/2>,</3/0/11>,</3/0/14>,</3/0/15>,</3/0/16>",
-                Link.serialize(payload));
+                linkSerializer.serialize(payload));
     }
 
     @Test
@@ -90,7 +92,7 @@ public class DiscoverTest {
 
         Link[] payload = response.getObjectLinks();
         assertEquals("</3/0>,</3/0/0>,</3/0/1>,</3/0/2>,</3/0/11>,</3/0/14>,</3/0/15>,</3/0/16>",
-                Link.serialize(payload));
+                linkSerializer.serialize(payload));
     }
 
     @Test
@@ -115,7 +117,7 @@ public class DiscoverTest {
         assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         Link[] payload = response.getObjectLinks();
-        assertEquals("</3/0/0>", Link.serialize(payload));
+        assertEquals("</3/0/0>", linkSerializer.serialize(payload));
     }
 
     @Test

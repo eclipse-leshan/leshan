@@ -13,6 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - use Identity as destination
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
@@ -29,9 +30,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.attributes.Attribute;
+import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.LinkParamValue;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -190,8 +192,8 @@ public class Registration {
                 if (o2 == null)
                     return 1;
                 // by URL
-                String[] url1 = o1.getUrl().split("/");
-                String[] url2 = o2.getUrl().split("/");
+                String[] url1 = o1.getUriReference().split("/");
+                String[] url2 = o2.getUriReference().split("/");
 
                 for (int i = 0; i < url1.length && i < url2.length; i++) {
                     // is it two numbers?
@@ -618,8 +620,12 @@ public class Registration {
 
                 // Parse object link to extract root path
                 for (Link link : objectLinks) {
-                    if (link != null && "oma.lwm2m".equals(Link.unquote(link.getAttributes().get("rt")))) {
-                        rootPath = link.getUrl();
+                    LinkParamValue rt = null;
+                    if (link != null) {
+                        rt = link.getLinkParams().get("rt");
+                    }
+                    if (rt != null && "oma.lwm2m".equals(rt.getUnquoted())) {
+                        rootPath = link.getUriReference();
                         if (!rootPath.endsWith("/")) {
                             rootPath = rootPath + "/";
                         }
@@ -633,13 +639,13 @@ public class Registration {
                 for (Link link : objectLinks) {
                     if (link != null) {
                         // search supported Content format in root link
-                        if (rootPath.equals(link.getUrl())) {
-                            String ctValue = link.getAttributes().get("ct");
+                        if (rootPath.equals(link.getUriReference())) {
+                            LinkParamValue ctValue = link.getLinkParams().get("ct");
                             if (ctValue != null) {
                                 supportedContentFormats = extractContentFormat(ctValue);
                             }
                         } else {
-                            LwM2mPath path = LwM2mPath.parse(link.getUrl(), rootPath);
+                            LwM2mPath path = LwM2mPath.parse(link.getUriReference(), rootPath);
                             if (path != null) {
                                 // add supported objects
                                 if (path.isObject()) {
@@ -655,24 +661,24 @@ public class Registration {
             }
         }
 
-        private Set<ContentFormat> extractContentFormat(String ctValue) {
+        private Set<ContentFormat> extractContentFormat(LinkParamValue ctValue) {
             Set<ContentFormat> supportedContentFormats = new HashSet<>();
 
             // add content format from ct attributes
-            if (!ctValue.startsWith("\"")) {
+            if (!ctValue.toString().startsWith("\"")) {
                 try {
-                    supportedContentFormats.add(ContentFormat.fromCode(ctValue));
+                    supportedContentFormats.add(ContentFormat.fromCode(ctValue.toString()));
                 } catch (NumberFormatException e) {
                     LOG.warn(
                             "Invalid supported Content format for ct attributes for registration {} of client {} :  [{}] is not an Integer",
                             registrationId, endpoint, ctValue);
                 }
             } else {
-                if (!ctValue.endsWith("\"")) {
+                if (!ctValue.toString().endsWith("\"")) {
                     LOG.warn("Invalid ct value [{}] attributes for registration {} of client {} : end quote is missing",
                             ctValue, registrationId, endpoint);
                 } else {
-                    String[] formats = Link.unquote(ctValue).split(" ");
+                    String[] formats = ctValue.getUnquoted().split(" ");
                     for (String codeAsString : formats) {
                         try {
                             ContentFormat contentformat = ContentFormat.fromCode(codeAsString);
@@ -703,23 +709,24 @@ public class Registration {
         private void addSupportedObject(Link link, LwM2mPath path) {
             // extract object id and version
             int objectId = path.getObjectId();
-            String version = link.getAttributes().get(Attribute.OBJECT_VERSION);
-            // un-quote version (see https://github.com/eclipse/leshan/issues/732)
-            version = Link.unquote(version);
+            LinkParamValue version = link.getLinkParams().get(Attribute.OBJECT_VERSION);
+
             String currentVersion = supportedObjects.get(objectId);
 
             // store it in map
             if (currentVersion == null) {
                 // we never find version for this object add it
                 if (version != null) {
-                    supportedObjects.put(objectId, version);
+                    // un-quote version (see https://github.com/eclipse/leshan/issues/732)
+                    supportedObjects.put(objectId, version.getUnquoted());
                 } else {
                     supportedObjects.put(objectId, ObjectModel.DEFAULT_VERSION);
                 }
             } else {
                 // if version is already set, we override it only if new version is not DEFAULT_VERSION
                 if (version != null && !version.equals(ObjectModel.DEFAULT_VERSION)) {
-                    supportedObjects.put(objectId, version);
+                    // un-quote version (see https://github.com/eclipse/leshan/issues/732)
+                    supportedObjects.put(objectId, version.getUnquoted());
                 }
             }
         }

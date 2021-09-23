@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 package org.eclipse.leshan.server.redis.serialization;
 
@@ -22,8 +23,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
+import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.LinkParamValue;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.server.registration.Registration;
@@ -57,9 +59,9 @@ public class RegistrationSerDes {
         JsonArray links = new JsonArray();
         for (Link l : r.getObjectLinks()) {
             JsonObject ol = Json.object();
-            ol.add("url", l.getUrl());
+            ol.add("url", l.getUriReference());
             JsonObject at = Json.object();
-            for (Map.Entry<String, String> e : l.getAttributes().entrySet()) {
+            for (Map.Entry<String, LinkParamValue> e : l.getLinkParams().entrySet()) {
                 if (e.getValue() == null) {
                     at.add(e.getKey(), Json.NULL);
                 } else {
@@ -136,7 +138,7 @@ public class RegistrationSerDes {
         for (int i = 0; i < links.size(); i++) {
             JsonObject ol = (JsonObject) links.get(i);
 
-            Map<String, String> attMap = new HashMap<>();
+            Map<String, LinkParamValue> attMap = new HashMap<>();
             JsonObject att = (JsonObject) ol.get("at");
             for (String k : att.names()) {
                 JsonValue jsonValue = att.get(k);
@@ -144,9 +146,9 @@ public class RegistrationSerDes {
                     attMap.put(k, null);
                 } else if (jsonValue.isNumber()) {
                     // This else block is just needed for retro-compatibility
-                    attMap.put(k, Integer.toString(jsonValue.asInt()));
+                    attMap.put(k, new LinkParamValue(Integer.toString(jsonValue.asInt())));
                 } else {
-                    attMap.put(k, jsonValue.asString());
+                    attMap.put(k, new LinkParamValue(jsonValue.asString()));
                 }
             }
             Link o = new Link(ol.getString("url", null), attMap);

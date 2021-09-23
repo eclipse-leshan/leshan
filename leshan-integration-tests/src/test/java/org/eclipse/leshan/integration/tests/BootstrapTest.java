@@ -12,9 +12,11 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
+import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.linkSerializer;
 import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.*;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -27,7 +29,6 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
-import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.SecurityMode;
@@ -233,7 +234,7 @@ public class BootstrapTest {
                 String.format("</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</3>;ver=1.1,</3/0>",
                         helper.bootstrapServer.getUnsecuredAddress().getHostString(),
                         helper.bootstrapServer.getUnsecuredAddress().getPort()),
-                Link.serialize(lastDiscoverAnswer.getObjectLinks()));
+                linkSerializer.serialize(lastDiscoverAnswer.getObjectLinks()));
     }
 
     @Test
@@ -264,7 +265,7 @@ public class BootstrapTest {
                 String.format("</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</3>;ver=1.1,</3/0>",
                         helper.bootstrapServer.getUnsecuredAddress().getHostString(),
                         helper.bootstrapServer.getUnsecuredAddress().getPort()),
-                Link.serialize(lastDiscoverAnswer.getObjectLinks()));
+                linkSerializer.serialize(lastDiscoverAnswer.getObjectLinks()));
 
         // re-bootstrap
         try {
@@ -288,7 +289,7 @@ public class BootstrapTest {
                 helper.bootstrapServer.getUnsecuredAddress().getHostString(),
                 helper.bootstrapServer.getUnsecuredAddress().getPort(),
                 helper.server.getUnsecuredAddress().getHostString(), helper.server.getUnsecuredAddress().getPort()),
-                Link.serialize(lastDiscoverAnswer.getObjectLinks()));
+                linkSerializer.serialize(lastDiscoverAnswer.getObjectLinks()));
 
     }
 
@@ -315,7 +316,8 @@ public class BootstrapTest {
         assertTrue(helper.lastCustomResponse instanceof BootstrapDiscoverResponse);
         BootstrapDiscoverResponse lastDiscoverAnswer = (BootstrapDiscoverResponse) helper.lastCustomResponse;
         assertEquals(ResponseCode.CONTENT, lastDiscoverAnswer.getCode());
-        assertEquals("</>;lwm2m=1.0,</3>;ver=1.1,</3/0>", Link.serialize(lastDiscoverAnswer.getObjectLinks()));
+        assertEquals("</>;lwm2m=1.0,</3>;ver=1.1,</3/0>",
+                linkSerializer.serialize(lastDiscoverAnswer.getObjectLinks()));
     }
 
     @Test

@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 package org.eclipse.leshan.client.util;
 
@@ -32,8 +33,12 @@ import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
-import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
+import org.eclipse.leshan.core.link.DefaultLinkParser;
+import org.eclipse.leshan.core.link.DefaultLinkSerializer;
+import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.LinkParser;
+import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -41,12 +46,15 @@ import org.junit.Test;
 
 public class LinkFormatHelperTest {
 
+    private final LinkParser parser = new DefaultLinkParser();
+    private final LinkSerializer serializer = new DefaultLinkSerializer();
+
     @Test
     public void encode_objectModel_to_linkObject_without_root_path() {
         ObjectModel locationModel = getObjectModel(6);
 
         Link[] links = LinkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), null);
-        String strLinks = Link.serialize(links);
+        String strLinks = serializer.serialize(links);
 
         assertEquals("</6>,</6/0>,</6/0/0>,</6/0/1>,</6/0/2>,</6/0/3>,</6/0/4>,</6/0/5>,</6/0/6>", strLinks);
     }
@@ -56,7 +64,7 @@ public class LinkFormatHelperTest {
         ObjectModel locationModel = getObjectModel(6);
 
         Link[] links = LinkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "rp");
-        String strLinks = Link.serialize(links);
+        String strLinks = serializer.serialize(links);
 
         assertEquals(
                 "</rp/6>,</rp/6/0>,</rp/6/0/0>,</rp/6/0/1>,</rp/6/0/2>,</rp/6/0/3>,</rp/6/0/4>,</rp/6/0/5>,</rp/6/0/6>",
@@ -68,7 +76,7 @@ public class LinkFormatHelperTest {
         ObjectModel locationModel = getObjectModel(6);
 
         Link[] links = LinkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "");
-        String strLinks = Link.serialize(links);
+        String strLinks = serializer.serialize(links);
 
         assertEquals("</6>,</6/0>,</6/0/0>,</6/0/1>,</6/0/2>,</6/0/3>,</6/0/4>,</6/0/5>,</6/0/6>", strLinks);
     }
@@ -78,7 +86,7 @@ public class LinkFormatHelperTest {
         ObjectModel locationModel = getObjectModel(6);
 
         Link[] links = LinkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "/");
-        String strLinks = Link.serialize(links);
+        String strLinks = serializer.serialize(links);
 
         assertEquals("</6>,</6/0>,</6/0/0>,</6/0/1>,</6/0/2>,</6/0/3>,</6/0/4>,</6/0/5>,</6/0/6>", strLinks);
     }
@@ -88,7 +96,7 @@ public class LinkFormatHelperTest {
         ObjectModel locationModel = getVersionedObjectModel(6, "2.0");
 
         Link[] links = LinkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "/");
-        String strLinks = Link.serialize(links);
+        String strLinks = serializer.serialize(links);
 
         assertEquals("</6>;ver=2.0,</6/0>,</6/0/0>,</6/0/1>,</6/0/2>,</6/0/3>,</6/0/4>,</6/0/5>,</6/0/6>", strLinks);
     }
@@ -98,7 +106,7 @@ public class LinkFormatHelperTest {
         ObjectModel locationModel = getObjectModel(6);
 
         Link[] links = LinkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "/r/t/");
-        String strLinks = Link.serialize(links);
+        String strLinks = serializer.serialize(links);
 
         assertEquals(
                 "</r/t/6>,</r/t/6/0>,</r/t/6/0/0>,</r/t/6/0/1>,</r/t/6/0/2>,</r/t/6/0/3>,</r/t/6/0/4>,</r/t/6/0/5>,</r/t/6/0/6>",
@@ -114,7 +122,7 @@ public class LinkFormatHelperTest {
         objectEnablers.add(new ObjectEnabler(6, getObjectModel(6), instancesMap, null, ContentFormat.DEFAULT));
 
         Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null, null);
-        String strLinks = Link.serialize(links);
+        String strLinks = serializer.serialize(links);
 
         assertEquals("</>;rt=\"oma.lwm2m\",</6/0>", strLinks);
     }
@@ -130,7 +138,7 @@ public class LinkFormatHelperTest {
                 new ObjectEnabler(6, getVersionedObjectModel(6, "2.0"), instancesMap, null, ContentFormat.DEFAULT));
 
         Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null, null);
-        String strLinks = Link.serialize(links);
+        String strLinks = serializer.serialize(links);
 
         assertEquals("</>;rt=\"oma.lwm2m\",</6>;ver=2.0,</6/0>,</6/1>", strLinks);
     }
@@ -144,7 +152,7 @@ public class LinkFormatHelperTest {
                 new ObjectEnabler(6, getVersionedObjectModel(6, "2.0"), instancesMap, null, ContentFormat.DEFAULT));
 
         Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null, null);
-        String strLinks = Link.serialize(links);
+        String strLinks = serializer.serialize(links);
 
         assertEquals("</>;rt=\"oma.lwm2m\",</6>;ver=2.0", strLinks);
     }
@@ -158,7 +166,7 @@ public class LinkFormatHelperTest {
 
         Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null, Arrays.asList(ContentFormat.TLV));
 
-        assertArrayEquals(Link.parse("</>;rt=\"oma.lwm2m\";ct=11542,</6>".getBytes()), links);
+        assertArrayEquals(parser.parse("</>;rt=\"oma.lwm2m\";ct=11542,</6>".getBytes()), links);
     }
 
     @Test
@@ -171,7 +179,7 @@ public class LinkFormatHelperTest {
         Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null,
                 Arrays.asList(ContentFormat.TLV, ContentFormat.JSON, ContentFormat.OPAQUE));
 
-        assertArrayEquals(Link.parse("</>;rt=\"oma.lwm2m\";ct=\"11542 11543 42\",</6>".getBytes()), links);
+        assertArrayEquals(parser.parse("</>;rt=\"oma.lwm2m\";ct=\"11542 11543 42\",</6>".getBytes()), links);
     }
 
     @Test
@@ -182,7 +190,7 @@ public class LinkFormatHelperTest {
                 ContentFormat.DEFAULT);
 
         Link[] links = LinkFormatHelper.getBootstrapObjectDescription(objectEnabler);
-        String strLinks = Link.serialize(links);
+        String strLinks = serializer.serialize(links);
 
         assertEquals("</>;lwm2m=1.0,</3/0>", strLinks);
     }
@@ -194,7 +202,7 @@ public class LinkFormatHelperTest {
                 ContentFormat.DEFAULT);
 
         Link[] links = LinkFormatHelper.getBootstrapObjectDescription(objectEnabler);
-        String strLinks = Link.serialize(links);
+        String strLinks = serializer.serialize(links);
 
         assertEquals("</>;lwm2m=1.0,</3>;ver=2.0", strLinks);
     }
@@ -207,7 +215,7 @@ public class LinkFormatHelperTest {
                 ContentFormat.DEFAULT);
 
         Link[] links = LinkFormatHelper.getBootstrapObjectDescription(objectEnabler);
-        String strLinks = Link.serialize(links);
+        String strLinks = serializer.serialize(links);
 
         assertEquals("</>;lwm2m=1.0,</3>;ver=2.0,</3/0>", strLinks);
     }
@@ -220,7 +228,7 @@ public class LinkFormatHelperTest {
                 ContentFormat.DEFAULT);
 
         Link[] links = LinkFormatHelper.getBootstrapObjectDescription(objectEnabler);
-        String strLinks = Link.serialize(links);
+        String strLinks = serializer.serialize(links);
 
         assertEquals("</>;lwm2m=1.0,</1/0>;ssid=333", strLinks);
     }
@@ -233,7 +241,7 @@ public class LinkFormatHelperTest {
                 ContentFormat.DEFAULT);
 
         Link[] links = LinkFormatHelper.getBootstrapObjectDescription(objectEnabler);
-        String strLinks = Link.serialize(links);
+        String strLinks = serializer.serialize(links);
 
         assertEquals("</>;lwm2m=1.0,</1>;ver=2.0,</1/0>;ssid=333", strLinks);
     }
@@ -249,7 +257,7 @@ public class LinkFormatHelperTest {
                 ContentFormat.DEFAULT);
 
         Link[] links = LinkFormatHelper.getBootstrapObjectDescription(objectEnabler);
-        String strLinks = Link.serialize(links);
+        String strLinks = serializer.serialize(links);
 
         assertEquals("</>;lwm2m=1.0,</0/0>;ssid=111;uri=\"coap://localhost:11\"," //
                 + "</0/1>;uri=\"coap://localhost:1\"," //
@@ -293,7 +301,7 @@ public class LinkFormatHelperTest {
         objectEnablers.add(deviceObjectEnabler);
 
         Link[] links = LinkFormatHelper.getBootstrapClientDescription(objectEnablers);
-        String strLinks = Link.serialize(links);
+        String strLinks = serializer.serialize(links);
 
         assertEquals("</>;lwm2m=1.0,</0/0>;ssid=111;uri=\"coap://localhost:11\"," //
                 + "</0/1>;uri=\"coap://localhost:1\"," //

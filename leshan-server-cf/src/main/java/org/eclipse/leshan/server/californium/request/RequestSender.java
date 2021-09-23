@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.request;
 
@@ -29,12 +30,14 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.elements.EndpointContext;
+import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.californium.AsyncRequestObserver;
 import org.eclipse.leshan.core.californium.CoapAsyncRequestObserver;
 import org.eclipse.leshan.core.californium.CoapResponseCallback;
 import org.eclipse.leshan.core.californium.CoapSyncRequestObserver;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.californium.SyncRequestObserver;
+import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
@@ -53,7 +56,6 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.eclipse.leshan.core.util.Validate;
-import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.server.request.LowerLayerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +76,7 @@ public class RequestSender implements Destroyable {
     private final Endpoint secureEndpoint;
     private final LwM2mDecoder decoder;
     private final LwM2mEncoder encoder;
+    private final LinkParser linkParser;
 
     // A map which contains all ongoing CoAP requests
     // This is used to be able to cancel request
@@ -84,13 +87,15 @@ public class RequestSender implements Destroyable {
      * @param nonSecureEndpoint The endpoint used to send coap request.
      * @param encoder The {@link LwM2mEncoder} used to encode {@link LwM2mNode}.
      * @param decoder The {@link LwM2mDecoder} used to encode {@link LwM2mNode}.
+     * @param linkParser a parser {@link LinkParser} used to parse a CoRE Link.
      */
     public RequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint, LwM2mEncoder encoder,
-            LwM2mDecoder decoder) {
+            LwM2mDecoder decoder, LinkParser linkParser) {
         this.secureEndpoint = secureEndpoint;
         this.nonSecureEndpoint = nonSecureEndpoint;
         this.encoder = encoder;
         this.decoder = decoder;
+        this.linkParser = linkParser;
     }
 
     /**
@@ -140,7 +145,7 @@ public class RequestSender implements Destroyable {
             public T buildResponse(Response coapResponse) {
                 // Build LwM2m response
                 LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<>(coapRequest, coapResponse,
-                        endpointName, model, decoder);
+                        endpointName, model, decoder, linkParser);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
@@ -217,7 +222,7 @@ public class RequestSender implements Destroyable {
             public T buildResponse(Response coapResponse) {
                 // Build LwM2m response
                 LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<>(coapRequest, coapResponse,
-                        endpointName, model, decoder);
+                        endpointName, model, decoder, linkParser);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }

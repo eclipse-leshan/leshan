@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Zebra Technologies - initial API and implementation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.util;
 
@@ -42,6 +43,10 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.LwM2mId;
+import org.eclipse.leshan.core.link.DefaultLinkParser;
+import org.eclipse.leshan.core.link.DefaultLinkSerializer;
+import org.eclipse.leshan.core.link.LinkParser;
+import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
@@ -86,6 +91,9 @@ public class IntegrationTestHelper {
     public static final int STRING_RESOURCE_INSTANCE_ID = 65010;
     public static final int UNSIGNED_INTEGER_RESOURCE_ID = 11;
     public static final int OPAQUE_MULTI_INSTANCE_RESOURCE_ID = 12;
+
+    public static final LinkParser linkParser = new DefaultLinkParser();
+    public static final LinkSerializer linkSerializer = new DefaultLinkSerializer();
 
     public static final String MULTI_INSTANCE = "multiinstance";
 
