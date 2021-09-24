@@ -93,7 +93,7 @@ public class DefaultLinkParser implements LinkParser {
 
         validateUriReferenceDecorated(uriReferenceDecorated);
 
-        Map<String, String> linkParams = new HashMap<>();
+        Map<String, LinkParamValue> linkParams = new HashMap<>();
 
         if (parts.size() > 1) {
             for (int i = 1; i < parts.size(); i++) {
@@ -132,7 +132,7 @@ public class DefaultLinkParser implements LinkParser {
         URI.create(UriReference);
     }
 
-    protected String applyCharEscaping(String value) {
+    protected LinkParamValue applyCharEscaping(String value) {
         if (value == null) {
             return null;
         }
@@ -154,7 +154,7 @@ public class DefaultLinkParser implements LinkParser {
 
             sb.append(ch);
         }
-        return sb.toString();
+        return new LinkParamValue(sb.toString());
     }
 
     // ( ptoken / quoted-string )

@@ -95,7 +95,7 @@ public class DefaultLinkSerializerTest {
     public void serialise_ver_attributes_without_quote() {
         Map<String, String> att = new HashMap<>();
         att.put("ver", "2.2");
-        Link link = new Link("/1", att);
+        Link link = new Link("/1", att, String.class);
         assertEquals("</1>;ver=2.2", serializer.serialize(link));
     }
 }

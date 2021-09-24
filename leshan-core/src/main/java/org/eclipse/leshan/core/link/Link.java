@@ -30,7 +30,7 @@ public class Link {
 
     private final String uriReference;
 
-    private final Map<String, String> linkParams;
+    private final Map<String, LinkParamValue> linkParams;
 
     /**
      * Creates a new Link without attributes.
@@ -38,7 +38,7 @@ public class Link {
      * @param uriReference the object link URL
      */
     public Link(String uriReference) {
-        this(uriReference, (Map<String, String>) null);
+        this(uriReference, (Map<String, LinkParamValue>) null);
     }
 
     /**
@@ -47,7 +47,7 @@ public class Link {
      * @param uriReference the link URL
      * @param linkParams the object link attributes or <code>null</code> if the link has no attributes
      */
-    public Link(String uriReference, Map<String, String> linkParams) {
+    public Link(String uriReference, Map<String, LinkParamValue> linkParams) {
         Validate.notNull(uriReference);
         this.uriReference = uriReference;
         if (linkParams != null) {
@@ -71,14 +71,14 @@ public class Link {
             this.linkParams = Collections.emptyMap();
         } else {
             if (String.class.equals(clazz)) {
-                this.linkParams = Collections.unmodifiableMap((Map<String, String>) new HashMap<>(linkParams));
+                this.linkParams = Collections.unmodifiableMap((Map<String, LinkParamValue>) new HashMap<>(linkParams));
             } else {
-                HashMap<String, String> attributesMap = new HashMap<>();
+                HashMap<String, LinkParamValue> attributesMap = new HashMap<>();
                 for (Entry<String, T> attr : linkParams.entrySet()) {
                     if (attr.getValue() == null) {
                         attributesMap.put(attr.getKey(), null);
                     } else {
-                        attributesMap.put(attr.getKey(), attr.getValue().toString());
+                        attributesMap.put(attr.getKey(), new LinkParamValue(attr.getValue().toString()));
                     }
 
                 }
@@ -104,9 +104,9 @@ public class Link {
                 throw new IllegalArgumentException("Each attributes key must have a value");
             }
 
-            HashMap<String, String> attributesMap = new HashMap<>();
+            HashMap<String, LinkParamValue> attributesMap = new HashMap<>();
             for (int i = 0; i < linkParams.length; i = i + 2) {
-                attributesMap.put(linkParams[i], linkParams[i + 1]);
+                attributesMap.put(linkParams[i], new LinkParamValue(linkParams[i + 1]));
             }
             this.linkParams = Collections.unmodifiableMap(attributesMap);
         }
@@ -121,7 +121,7 @@ public class Link {
      * 
      * @return an unmodifiable map containing the link attributes
      */
-    public Map<String, String> getLinkParams() {
+    public Map<String, LinkParamValue> getLinkParams() {
         return linkParams;
     }
 
@@ -132,9 +132,9 @@ public class Link {
         builder.append(getUriReference());
         builder.append('>');
 
-        Map<String, String> attributes = getLinkParams();
+        Map<String, LinkParamValue> attributes = getLinkParams();
         if (attributes != null && !attributes.isEmpty()) {
-            for (Entry<String, String> entry : attributes.entrySet()) {
+            for (Entry<String, LinkParamValue> entry : attributes.entrySet()) {
                 builder.append(";");
                 builder.append(entry.getKey());
                 if (entry.getValue() != null) {
@@ -177,18 +177,4 @@ public class Link {
         return true;
     }
 
-    /**
-     * remove quote from string, only if it begins and ends by a quote.
-     * 
-     * @param string to unquote
-     * @return unquoted string or the original string if there no quote to remove.
-     */
-    // TODO: Move this method to LinkParam class
-    public static String unquote(String string) {
-        if (string != null && string.length() >= 2 && string.charAt(0) == '"'
-                && string.charAt(string.length() - 1) == '"') {
-            string = string.substring(1, string.length() - 1);
-        }
-        return string;
-    }
 }
