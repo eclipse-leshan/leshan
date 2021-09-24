@@ -22,7 +22,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.link.DefaultLinkParser;
+import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -31,6 +32,8 @@ import org.eclipse.leshan.server.registration.Registration.Builder;
 import org.junit.Test;
 
 public class RegistrationTest {
+
+    private final LinkParser parser = new DefaultLinkParser();
 
     @Test
     public void test_object_links_without_version_nor_rootpath() {
@@ -217,7 +220,7 @@ public class RegistrationTest {
         Builder builder = new Registration.Builder("id", "endpoint",
                 Identity.unsecure(InetSocketAddress.createUnresolved("localhost", 0)));
         builder.extractDataFromObjectLink(true);
-        builder.objectLinks(Link.parse(objectLinks.getBytes()));
+        builder.objectLinks(parser.parse(objectLinks.getBytes()));
         return builder.build();
     }
 }

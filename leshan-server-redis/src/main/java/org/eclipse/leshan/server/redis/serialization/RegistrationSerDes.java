@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -57,9 +57,9 @@ public class RegistrationSerDes {
         JsonArray links = new JsonArray();
         for (Link l : r.getObjectLinks()) {
             JsonObject ol = Json.object();
-            ol.add("url", l.getUrl());
+            ol.add("url", l.getUriReference());
             JsonObject at = Json.object();
-            for (Map.Entry<String, String> e : l.getAttributes().entrySet()) {
+            for (Map.Entry<String, String> e : l.getLinkParams().entrySet()) {
                 if (e.getValue() == null) {
                     at.add(e.getKey(), Json.NULL);
                 } else {

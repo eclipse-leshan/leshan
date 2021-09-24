@@ -19,7 +19,7 @@ package org.eclipse.leshan.server.registration;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 
-import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.request.Identity;
 import org.junit.Assert;
 import org.junit.Test;
@@ -41,7 +41,7 @@ public class RegistrationSortObjectLinksTest {
         Link[] res = r.getSortedObjectLinks();
         Assert.assertEquals(3, res.length);
         Assert.assertNull(res[0]);
-        Assert.assertEquals("/0/2", res[1].getUrl());
-        Assert.assertEquals("/0/1024/2", res[2].getUrl());
+        Assert.assertEquals("/0/2", res[1].getUriReference());
+        Assert.assertEquals("/0/1024/2", res[2].getUriReference());
     }
 }

@@ -27,7 +27,7 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
-import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.SecurityMode;
@@ -233,7 +233,7 @@ public class BootstrapTest {
                 String.format("</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</3>;ver=1.1,</3/0>",
                         helper.bootstrapServer.getUnsecuredAddress().getHostString(),
                         helper.bootstrapServer.getUnsecuredAddress().getPort()),
-                Link.serialize(lastDiscoverAnswer.getObjectLinks()));
+                helper.serializer.serialize(lastDiscoverAnswer.getObjectLinks()));
     }
 
     @Test
@@ -264,7 +264,7 @@ public class BootstrapTest {
                 String.format("</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</3>;ver=1.1,</3/0>",
                         helper.bootstrapServer.getUnsecuredAddress().getHostString(),
                         helper.bootstrapServer.getUnsecuredAddress().getPort()),
-                Link.serialize(lastDiscoverAnswer.getObjectLinks()));
+                helper.serializer.serialize(lastDiscoverAnswer.getObjectLinks()));
 
         // re-bootstrap
         try {
@@ -288,7 +288,7 @@ public class BootstrapTest {
                 helper.bootstrapServer.getUnsecuredAddress().getHostString(),
                 helper.bootstrapServer.getUnsecuredAddress().getPort(),
                 helper.server.getUnsecuredAddress().getHostString(), helper.server.getUnsecuredAddress().getPort()),
-                Link.serialize(lastDiscoverAnswer.getObjectLinks()));
+                helper.serializer.serialize(lastDiscoverAnswer.getObjectLinks()));
 
     }
 
@@ -315,7 +315,7 @@ public class BootstrapTest {
         assertTrue(helper.lastCustomResponse instanceof BootstrapDiscoverResponse);
         BootstrapDiscoverResponse lastDiscoverAnswer = (BootstrapDiscoverResponse) helper.lastCustomResponse;
         assertEquals(ResponseCode.CONTENT, lastDiscoverAnswer.getCode());
-        assertEquals("</>;lwm2m=1.0,</3>;ver=1.1,</3/0>", Link.serialize(lastDiscoverAnswer.getObjectLinks()));
+        assertEquals("</>;lwm2m=1.0,</3>;ver=1.1,</3/0>", helper.serializer.serialize(lastDiscoverAnswer.getObjectLinks()));
     }
 
     @Test

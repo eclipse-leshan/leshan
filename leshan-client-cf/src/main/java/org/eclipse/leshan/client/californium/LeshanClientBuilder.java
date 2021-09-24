@@ -44,6 +44,8 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
+import org.eclipse.leshan.core.link.DefaultLinkSerializer;
+import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
@@ -78,6 +80,8 @@ public class LeshanClientBuilder {
     private BootstrapConsistencyChecker bootstrapConsistencyChecker;
 
     private ScheduledExecutorService executor;
+
+    private LinkSerializer serializer;
 
     /**
      * Creates a new instance for setting the configuration options for a {@link LeshanClient} instance.
@@ -143,6 +147,10 @@ public class LeshanClientBuilder {
     public LeshanClientBuilder setDecoder(LwM2mDecoder decoder) {
         this.decoder = decoder;
         return this;
+    }
+
+    public void setSerializer(LinkSerializer serializer) {
+        this.serializer = serializer;
     }
 
     /**
@@ -279,6 +287,8 @@ public class LeshanClientBuilder {
             encoder = new DefaultLwM2mEncoder();
         if (decoder == null)
             decoder = new DefaultLwM2mDecoder();
+        if (serializer == null)
+            serializer = new DefaultLinkSerializer();
         if (coapConfig == null) {
             coapConfig = createDefaultNetworkConfig();
         }
@@ -342,7 +352,7 @@ public class LeshanClientBuilder {
 
         return createLeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder,
                 this.trustStore, endpointFactory, engineFactory, bootstrapConsistencyChecker, additionalAttributes,
-                bsAdditionalAttributes, encoder, decoder, executor);
+                bsAdditionalAttributes, encoder, decoder, executor, serializer);
     }
 
     /**
@@ -376,9 +386,9 @@ public class LeshanClientBuilder {
             List<Certificate> trustStore, EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
             BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            ScheduledExecutorService sharedExecutor) {
+            ScheduledExecutorService sharedExecutor, LinkSerializer serializer) {
         return new LeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, trustStore,
                 endpointFactory, engineFactory, checker, additionalAttributes, bsAdditionalAttributes, encoder, decoder,
-                sharedExecutor);
+                sharedExecutor, serializer);
     }
 }

@@ -29,7 +29,8 @@ import java.util.Map;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Token;
-import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.link.DefaultLinkParser;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.californium.ObserveUtil;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
@@ -54,7 +55,7 @@ public class InMemoryRegistrationStoreTest {
     private final Long lifetime = 10000L;
     private final String sms = "0171-32423545";
     private final EnumSet<BindingMode> binding = EnumSet.of(BindingMode.U, BindingMode.Q, BindingMode.S);
-    private final Link[] objectLinks = Link.parse("</3>".getBytes(StandardCharsets.UTF_8));
+    private final Link[] objectLinks = new Link[]{new Link("/3")};
     private final String registrationId = "4711";
     private final Token exampleToken = Token.EMPTY;
     private final String examplePath = "/1/2/3";

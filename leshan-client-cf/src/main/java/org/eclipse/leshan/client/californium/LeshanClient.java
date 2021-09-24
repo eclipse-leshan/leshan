@@ -53,6 +53,7 @@ import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.send.NoDataException;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.californium.EndpointFactory;
+import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -89,14 +90,15 @@ public class LeshanClient implements LwM2mClient {
     private final LwM2mDecoder decoder;
     private final RegistrationEngine engine;
     private final LwM2mClientObserverDispatcher observers;
+    private final LinkSerializer serializer;
 
     public LeshanClient(String endpoint, InetSocketAddress localAddress,
             List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder,
             EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
             Map<String, String> additionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            ScheduledExecutorService sharedExecutor) {
+            ScheduledExecutorService sharedExecutor, LinkSerializer serializer) {
         this(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, endpointFactory, engineFactory,
-                additionalAttributes, null, encoder, decoder, sharedExecutor);
+                additionalAttributes, null, encoder, decoder, sharedExecutor, serializer);
     }
 
     /** @since 1.1 */
@@ -104,10 +106,10 @@ public class LeshanClient implements LwM2mClient {
             List<? extends LwM2mObjectEnabler> objectEnablers, NetworkConfig coapConfig, Builder dtlsConfigBuilder,
             EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
             Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder,
-            LwM2mDecoder decoder, ScheduledExecutorService sharedExecutor) {
+            LwM2mDecoder decoder, ScheduledExecutorService sharedExecutor, LinkSerializer serializer) {
         this(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, null, endpointFactory,
                 engineFactory, new DefaultBootstrapConsistencyChecker(), additionalAttributes, bsAdditionalAttributes,
-                encoder, decoder, sharedExecutor);
+                encoder, decoder, sharedExecutor, serializer);
     }
 
     /** @since 2.0 */
@@ -116,7 +118,7 @@ public class LeshanClient implements LwM2mClient {
             List<Certificate> trustStore, EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
             BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            ScheduledExecutorService sharedExecutor) {
+            ScheduledExecutorService sharedExecutor, LinkSerializer serializer) {
 
         Validate.notNull(endpoint);
         Validate.notEmpty(objectEnablers);
@@ -126,6 +128,7 @@ public class LeshanClient implements LwM2mClient {
         rootEnabler = createRootEnabler(objectTree);
         this.decoder = decoder;
         this.encoder = encoder;
+        this.serializer = serializer;
         observers = createClientObserverDispatcher();
         bootstrapHandler = createBoostrapHandler(objectTree, checker);
         endpointsManager = createEndpointsManager(localAddress, coapConfig, dtlsConfigBuilder, trustStore,
@@ -175,7 +178,7 @@ public class LeshanClient implements LwM2mClient {
             protected Resource createRoot() {
                 // Use to handle Delete on "/"
                 return new org.eclipse.leshan.client.californium.RootResource(engine, endpointsManager,
-                        bootstrapHandler, this, rootEnabler, encoder, decoder);
+                        bootstrapHandler, this, rootEnabler, encoder, decoder, serializer);
             }
         };
 
@@ -225,7 +228,7 @@ public class LeshanClient implements LwM2mClient {
 
     protected CoapResource createObjectResource(LwM2mObjectEnabler enabler, RegistrationEngine registrationEngine,
             CaliforniumEndpointsManager endpointsManager, LwM2mEncoder encoder, LwM2mDecoder decoder) {
-        return new ObjectResource(enabler, registrationEngine, endpointsManager, encoder, decoder);
+        return new ObjectResource(enabler, registrationEngine, endpointsManager, encoder, decoder, serializer);
     }
 
     protected CoapResource createBootstrapResource(RegistrationEngine registrationEngine,
@@ -242,7 +245,7 @@ public class LeshanClient implements LwM2mClient {
 
     protected CaliforniumLwM2mRequestSender createRequestSender(CaliforniumEndpointsManager endpointsManager,
             ScheduledExecutorService executor, LwM2mEncoder encoder, LwM2mModel model) {
-        return new CaliforniumLwM2mRequestSender(endpointsManager, executor, encoder, model);
+        return new CaliforniumLwM2mRequestSender(endpointsManager, executor, encoder, model, serializer);
     }
 
     protected RegistrationUpdateHandler createRegistrationUpdateHandler(RegistrationEngine engine,

@@ -38,6 +38,8 @@ import org.eclipse.californium.scandium.dtls.x509.StaticNewAdvancedCertificateVe
 import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
+import org.eclipse.leshan.core.link.DefaultLinkParser;
+import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
@@ -100,6 +102,7 @@ public class LeshanServerBuilder {
     private boolean noQueueMode = false;
     /** @since 1.1 */
     protected boolean updateRegistrationOnNotification;
+    private LinkParser parser;
 
     /**
      * <p>
@@ -276,6 +279,10 @@ public class LeshanServerBuilder {
         return this;
     }
 
+    public void setParser(LinkParser parser) {
+        this.parser = parser;
+    }
+
     /**
      * Set the Californium/CoAP {@link NetworkConfig}.
      */
@@ -413,6 +420,8 @@ public class LeshanServerBuilder {
             encoder = new DefaultLwM2mEncoder();
         if (decoder == null)
             decoder = new DefaultLwM2mDecoder();
+        if (parser == null)
+            parser = new DefaultLinkParser();
         if (coapConfig == null)
             coapConfig = createDefaultNetworkConfig();
         if (awakeTimeProvider == null) {
@@ -550,7 +559,8 @@ public class LeshanServerBuilder {
         }
 
         return createServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
-                modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider);
+                modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider,
+                parser);
     }
 
     /**
@@ -587,9 +597,9 @@ public class LeshanServerBuilder {
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder,
             NetworkConfig coapConfig, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
-            RegistrationIdProvider registrationIdProvider) {
+            RegistrationIdProvider registrationIdProvider, LinkParser parser) {
         return new LeshanServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
                 modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider,
-                updateRegistrationOnNotification);
+                updateRegistrationOnNotification, parser);
     }
 }

@@ -17,7 +17,7 @@ package org.eclipse.leshan.core.response;
 
 import java.util.Arrays;
 
-import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 

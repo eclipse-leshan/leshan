@@ -36,7 +36,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.elements.AddressEndpointContext;
-import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.Observation;
@@ -85,7 +85,7 @@ public class RegistrationTest {
 
         // Check client is well registered
         helper.assertClientRegisterered();
-        assertArrayEquals(Link.parse(
+        assertArrayEquals(helper.parser.parse(
                 "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1>;ver=1.1,</1/0>,</2>,</3>;ver=1.1,</3/0>,</2000/0>,</2000/1>"
                         .getBytes()),
                 helper.getCurrentRegistration().getObjectLinks());
@@ -111,7 +111,7 @@ public class RegistrationTest {
 
         // Check client is well registered
         helper.assertClientRegisterered();
-        assertArrayEquals(Link.parse(
+        assertArrayEquals(helper.parser.parse(
                 "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1>;ver=1.1,</1/0>,</2>,</3>;ver=1.1,</3/0>,</2000/0>,</2000/1>"
                         .getBytes()),
                 helper.getCurrentRegistration().getObjectLinks());
@@ -262,7 +262,7 @@ public class RegistrationTest {
         helper.assertClientRegisterered();
         assertNotNull(helper.getLastRegistration());
         assertEquals(additionalAttributes, helper.getLastRegistration().getAdditionalRegistrationAttributes());
-        assertArrayEquals(Link.parse(
+        assertArrayEquals(helper.parser.parse(
                 "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1>;ver=1.1,</1/0>,</2>,</3>;ver=1.1,</3/0>,</2000/0>,</2000/1>"
                         .getBytes()),
                 helper.getCurrentRegistration().getObjectLinks());

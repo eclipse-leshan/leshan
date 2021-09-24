@@ -26,7 +26,7 @@ import java.util.Map;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.attributes.Attribute;
 import org.eclipse.leshan.core.attributes.AttributeSet;
 import org.eclipse.leshan.core.model.LwM2mModel;

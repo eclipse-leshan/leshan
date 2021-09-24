@@ -21,7 +21,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.UpdateResponse;

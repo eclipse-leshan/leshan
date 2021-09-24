@@ -35,6 +35,8 @@ import org.eclipse.californium.scandium.dtls.x509.StaticNewAdvancedCertificateVe
 import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
+import org.eclipse.leshan.core.link.DefaultLinkParser;
+import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
@@ -90,6 +92,8 @@ public class LeshanBootstrapServerBuilder {
     private EndpointFactory endpointFactory;
     private boolean noSecuredEndpoint;
     private boolean noUnsecuredEndpoint;
+
+    private LinkParser parser;
 
     /**
      * Set the address/port for unsecured CoAP communication (<code>coap://</code>).
@@ -355,6 +359,10 @@ public class LeshanBootstrapServerBuilder {
         return this;
     }
 
+    public void setParser(LinkParser parser) {
+        this.parser = parser;
+    }
+
     /**
      * Deactivate unsecured CoAP endpoint, meaning that <code>coap://</code> communication will be impossible.
      * 
@@ -433,6 +441,8 @@ public class LeshanBootstrapServerBuilder {
             encoder = new DefaultLwM2mEncoder();
         if (decoder == null)
             decoder = new DefaultLwM2mDecoder();
+        if (parser == null)
+            parser = new DefaultLinkParser();
 
         // handle dtlsConfig
         DtlsConnectorConfig dtlsConfig = null;
@@ -579,6 +589,6 @@ public class LeshanBootstrapServerBuilder {
             BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory,
             NetworkConfig coapConfig, LwM2mEncoder encoder, LwM2mDecoder decoder) {
         return new LeshanBootstrapServer(unsecuredEndpoint, securedEndpoint, bsSessionManager, bsHandlerFactory,
-                coapConfig, encoder, decoder);
+                coapConfig, encoder, decoder, parser);
     }
 }

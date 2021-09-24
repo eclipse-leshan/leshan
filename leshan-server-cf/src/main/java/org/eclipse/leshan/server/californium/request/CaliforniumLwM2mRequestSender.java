@@ -21,6 +21,7 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.californium.CoapResponseCallback;
+import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
@@ -66,12 +67,12 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
      */
     public CaliforniumLwM2mRequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint,
             ObservationServiceImpl observationService, LwM2mModelProvider modelProvider, LwM2mEncoder encoder,
-            LwM2mDecoder decoder) {
+            LwM2mDecoder decoder, LinkParser parser) {
         Validate.notNull(observationService);
         Validate.notNull(modelProvider);
         this.observationService = observationService;
         this.modelProvider = modelProvider;
-        this.sender = new RequestSender(secureEndpoint, nonSecureEndpoint, encoder, decoder);
+        this.sender = new RequestSender(secureEndpoint, nonSecureEndpoint, encoder, decoder, parser);
     }
 
     /**

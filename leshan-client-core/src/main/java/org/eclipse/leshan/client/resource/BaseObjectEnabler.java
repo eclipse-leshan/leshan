@@ -31,7 +31,7 @@ import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
-import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;

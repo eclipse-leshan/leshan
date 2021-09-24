@@ -35,6 +35,7 @@ import org.eclipse.leshan.core.californium.CoapResponseCallback;
 import org.eclipse.leshan.core.californium.CoapSyncRequestObserver;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.californium.SyncRequestObserver;
+import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
@@ -74,6 +75,7 @@ public class RequestSender implements Destroyable {
     private final Endpoint secureEndpoint;
     private final LwM2mDecoder decoder;
     private final LwM2mEncoder encoder;
+    private final LinkParser parser;
 
     // A map which contains all ongoing CoAP requests
     // This is used to be able to cancel request
@@ -84,13 +86,15 @@ public class RequestSender implements Destroyable {
      * @param nonSecureEndpoint The endpoint used to send coap request.
      * @param encoder The {@link LwM2mEncoder} used to encode {@link LwM2mNode}.
      * @param decoder The {@link LwM2mDecoder} used to encode {@link LwM2mNode}.
+     * @param parser
      */
     public RequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint, LwM2mEncoder encoder,
-            LwM2mDecoder decoder) {
+            LwM2mDecoder decoder, LinkParser parser) {
         this.secureEndpoint = secureEndpoint;
         this.nonSecureEndpoint = nonSecureEndpoint;
         this.encoder = encoder;
         this.decoder = decoder;
+        this.parser = parser;
     }
 
     /**
@@ -140,7 +144,7 @@ public class RequestSender implements Destroyable {
             public T buildResponse(Response coapResponse) {
                 // Build LwM2m response
                 LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<>(coapRequest, coapResponse,
-                        endpointName, model, decoder);
+                        endpointName, model, decoder, parser);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
@@ -217,7 +221,7 @@ public class RequestSender implements Destroyable {
             public T buildResponse(Response coapResponse) {
                 // Build LwM2m response
                 LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<>(coapRequest, coapResponse,
-                        endpointName, model, decoder);
+                        endpointName, model, decoder, parser);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }

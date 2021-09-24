@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core;
+package org.eclipse.leshan.core.link;
 
 import static org.junit.Assert.assertThrows;
 
@@ -26,10 +26,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 @RunWith(Parameterized.class)
-public class LinkObjectValidationTest {
+public class LinkParserValidationTest {
+
+    private final LinkParser parser = new DefaultLinkParser();
 
     @Parameterized.Parameters()
-    public static Collection<?> senMLJsonencoderDecoder() {
+    public static Collection<?> linkValueListProvider() {
         return Arrays.asList(new Object[][] {
                 { "</" },
                 { "<//>" },
@@ -54,10 +56,10 @@ public class LinkObjectValidationTest {
         });
     }
 
-    private String uri;
+    private String linkValueList;
 
-    public LinkObjectValidationTest(String uri) {
-        this.uri = uri;
+    public LinkParserValidationTest(String linkValueList) {
+        this.linkValueList = linkValueList;
     }
 
     @Test
@@ -65,7 +67,7 @@ public class LinkObjectValidationTest {
         assertThrows(IllegalArgumentException.class, new ThrowingRunnable() {
             @Override
             public void run() {
-                Link.parse(uri.getBytes());
+                parser.parse(linkValueList.getBytes());
             }
         });
     }

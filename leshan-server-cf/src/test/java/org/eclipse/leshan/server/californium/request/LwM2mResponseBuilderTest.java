@@ -26,6 +26,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.coap.Token;
 import org.eclipse.leshan.core.californium.ObserveUtil;
+import org.eclipse.leshan.core.link.DefaultLinkParser;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.SingleObservation;
@@ -37,6 +38,9 @@ import org.eclipse.leshan.server.californium.DummyDecoder;
 import org.junit.Test;
 
 public class LwM2mResponseBuilderTest {
+
+    private final DummyDecoder decoder = new DummyDecoder();
+    private final DefaultLinkParser parser = new DefaultLinkParser();
 
     @Test
     public void visit_observe_request() {
@@ -55,7 +59,7 @@ public class LwM2mResponseBuilderTest {
         coapResponse.getOptions().setObserve(1);
 
         LwM2mResponseBuilder<ObserveResponse> responseBuilder = new LwM2mResponseBuilder<>(coapRequest, coapResponse,
-                null, null, new DummyDecoder());
+                null, null, decoder, parser);
         // when
         responseBuilder.visit(observeRequest);
 
@@ -86,7 +90,7 @@ public class LwM2mResponseBuilderTest {
         coapResponse.getOptions().setObserve(1);
 
         LwM2mResponseBuilder<ObserveCompositeResponse> responseBuilder = new LwM2mResponseBuilder<>(coapRequest,
-                coapResponse, null, null, new DummyDecoder());
+                coapResponse, null, null, decoder, parser);
         // when
         responseBuilder.visit(observeRequest);
 

@@ -27,8 +27,9 @@ import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
-import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.californium.LwM2mCoapResource;
+import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.Identity;
@@ -70,10 +71,13 @@ public class RegisterResource extends LwM2mCoapResource {
 
     private final RegistrationHandler registrationHandler;
 
-    public RegisterResource(RegistrationHandler registrationHandler) {
+    private final LinkParser parser;
+
+    public RegisterResource(RegistrationHandler registrationHandler, LinkParser parser) {
         super(RESOURCE_NAME);
 
         this.registrationHandler = registrationHandler;
+        this.parser = parser;
         getAttributes().addResourceType("core.rd");
     }
 
@@ -135,7 +139,7 @@ public class RegisterResource extends LwM2mCoapResource {
         Boolean queueMode = null;
 
         // Get object Links
-        Link[] objectLinks = Link.parse(request.getPayload());
+        Link[] objectLinks = parser.parse(request.getPayload());
 
         Map<String, String> additionalParams = new HashMap<>();
 
@@ -209,7 +213,7 @@ public class RegisterResource extends LwM2mCoapResource {
             }
         }
         if (request.getPayload() != null && request.getPayload().length > 0) {
-            objectLinks = Link.parse(request.getPayload());
+            objectLinks = parser.parse(request.getPayload());
         }
         Request coapRequest = exchange.advanced().getRequest();
         UpdateRequest updateRequest = new UpdateRequest(registrationId, lifetime, smsNumber, binding, objectLinks,

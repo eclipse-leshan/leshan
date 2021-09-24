@@ -27,7 +27,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
-import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -163,7 +163,7 @@ public final class LinkFormatHelper {
 
         // add object link if needed
         List<Integer> availableInstanceIds = objectEnabler.getAvailableInstanceIds();
-        if (availableInstanceIds.isEmpty() || !objectLink.getAttributes().isEmpty()) {
+        if (availableInstanceIds.isEmpty() || !objectLink.getLinkParams().isEmpty()) {
             links.add(objectLink);
         }
 

@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.eclipse.leshan.core.Link;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.attributes.Attribute;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -190,8 +190,8 @@ public class Registration {
                 if (o2 == null)
                     return 1;
                 // by URL
-                String[] url1 = o1.getUrl().split("/");
-                String[] url2 = o2.getUrl().split("/");
+                String[] url1 = o1.getUriReference().split("/");
+                String[] url2 = o2.getUriReference().split("/");
 
                 for (int i = 0; i < url1.length && i < url2.length; i++) {
                     // is it two numbers?
@@ -618,8 +618,8 @@ public class Registration {
 
                 // Parse object link to extract root path
                 for (Link link : objectLinks) {
-                    if (link != null && "oma.lwm2m".equals(Link.unquote(link.getAttributes().get("rt")))) {
-                        rootPath = link.getUrl();
+                    if (link != null && "oma.lwm2m".equals(Link.unquote(link.getLinkParams().get("rt")))) {
+                        rootPath = link.getUriReference();
                         if (!rootPath.endsWith("/")) {
                             rootPath = rootPath + "/";
                         }
@@ -633,13 +633,13 @@ public class Registration {
                 for (Link link : objectLinks) {
                     if (link != null) {
                         // search supported Content format in root link
-                        if (rootPath.equals(link.getUrl())) {
-                            String ctValue = link.getAttributes().get("ct");
+                        if (rootPath.equals(link.getUriReference())) {
+                            String ctValue = link.getLinkParams().get("ct");
                             if (ctValue != null) {
                                 supportedContentFormats = extractContentFormat(ctValue);
                             }
                         } else {
-                            LwM2mPath path = LwM2mPath.parse(link.getUrl(), rootPath);
+                            LwM2mPath path = LwM2mPath.parse(link.getUriReference(), rootPath);
                             if (path != null) {
                                 // add supported objects
                                 if (path.isObject()) {
@@ -703,7 +703,7 @@ public class Registration {
         private void addSupportedObject(Link link, LwM2mPath path) {
             // extract object id and version
             int objectId = path.getObjectId();
-            String version = link.getAttributes().get(Attribute.OBJECT_VERSION);
+            String version = link.getLinkParams().get(Attribute.OBJECT_VERSION);
             // un-quote version (see https://github.com/eclipse/leshan/issues/732)
             version = Link.unquote(version);
             String currentVersion = supportedObjects.get(objectId);
