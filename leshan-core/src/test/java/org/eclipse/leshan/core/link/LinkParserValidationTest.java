@@ -33,11 +33,24 @@ public class LinkParserValidationTest {
     @Parameterized.Parameters()
     public static Collection<?> linkValueListProvider() {
         return Arrays.asList(new Object[][] {
+                { "<file:///etc/hosts>" },
+                { "<>" },
+
+                { "</hosts?query>" },
+                { "</hosts#hash>" },
+
+                { "/%"},
+                { "/%a"},
+                { "/%1g"},
+
                 { "</" },
                 { "<//>" },
                 { "//>" },
                 { "</>," },
                 { "</>;" },
+
+                { "</fóó>" },
+
                 { "</foo>;pąrąm" },
                 { "</foo>;param=ą" },
                 { "</foo>;param=\"bar" },

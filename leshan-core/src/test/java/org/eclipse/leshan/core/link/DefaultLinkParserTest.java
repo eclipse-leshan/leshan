@@ -29,20 +29,23 @@ public class DefaultLinkParserTest {
     private final LinkParser parser = new DefaultLinkParser();
 
     @Test
-    public void parse_examples() {
+    public void parse_example_uri_references() {
         Link[] parsed;
 
-        parsed = parser.parse("<file:///etc/hosts>".getBytes());
-        Assert.assertEquals("file:///etc/hosts", parsed[0].getUriReference());
+        parsed = parser.parse("</uri>".getBytes());
+        Assert.assertEquals("/uri", parsed[0].getUriReference());
 
         parsed = parser.parse("</uri/>".getBytes());
         Assert.assertEquals("/uri/", parsed[0].getUriReference());
 
-        parsed = parser.parse("</%20/>".getBytes());
-        Assert.assertEquals("/%20/", parsed[0].getUriReference());
+        parsed = parser.parse("</uri//>".getBytes());
+        Assert.assertEquals("/uri//", parsed[0].getUriReference());
 
-        parsed = parser.parse("</parnoval>;param".getBytes());
-        Assert.assertEquals("/parnoval", parsed[0].getUriReference());
+        parsed = parser.parse("</%20>".getBytes());
+        Assert.assertEquals("/%20", parsed[0].getUriReference());
+
+        parsed = parser.parse("</-._~a-zA-Z0-9:@!$&'()*+,;=>".getBytes());
+        Assert.assertEquals("/-._~a-zA-Z0-9:@!$&'()*+,;=", parsed[0].getUriReference());
     }
 
     @Test
@@ -50,8 +53,8 @@ public class DefaultLinkParserTest {
         Link[] parsed = parser.parse("</foo>;param=\",\",</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
-        Map<Object, Object> attResult = new HashMap<>();
-        attResult.put("param", "\",\"");
+        Map<String, LinkParamValue> attResult = new HashMap<>();
+        attResult.put("param", new LinkParamValue("\",\""));
         Assert.assertEquals(attResult, parsed[0].getLinkParams());
 
         Assert.assertEquals("/bar", parsed[1].getUriReference());
@@ -62,8 +65,8 @@ public class DefaultLinkParserTest {
         Link[] parsed = parser.parse("</foo>;param=\" \\\\ \",</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
-        Map<Object, Object> attResult = new HashMap<>();
-        attResult.put("param", "\" \\ \"");
+        Map<String, LinkParamValue> attResult = new HashMap<>();
+        attResult.put("param", new LinkParamValue("\" \\ \""));
         Assert.assertEquals(attResult, parsed[0].getLinkParams());
 
         Assert.assertEquals("/bar", parsed[1].getUriReference());
@@ -74,8 +77,8 @@ public class DefaultLinkParserTest {
         Link[] parsed = parser.parse("</foo>;param=\" \\\" \",</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
-        Map<Object, Object> attResult = new HashMap<>();
-        attResult.put("param", "\" \" \"");
+        Map<String, LinkParamValue> attResult = new HashMap<>();
+        attResult.put("param", new LinkParamValue("\" \" \""));
         Assert.assertEquals(attResult, parsed[0].getLinkParams());
 
         Assert.assertEquals("/bar", parsed[1].getUriReference());
@@ -86,8 +89,8 @@ public class DefaultLinkParserTest {
         Link[] parsed = parser.parse("</foo>;param=\" \\x \",</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
-        Map<Object, Object> attResult = new HashMap<>();
-        attResult.put("param", "\" x \"");
+        Map<String, LinkParamValue> attResult = new HashMap<>();
+        attResult.put("param", new LinkParamValue("\" x \""));
         Assert.assertEquals(attResult, parsed[0].getLinkParams());
 
         Assert.assertEquals("/bar", parsed[1].getUriReference());
@@ -98,8 +101,8 @@ public class DefaultLinkParserTest {
         Link[] parsed = parser.parse("</foo>;param=\" \\ą \",</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
-        Map<Object, Object> attResult = new HashMap<>();
-        attResult.put("param", "\" \\ą \"");
+        Map<String, LinkParamValue> attResult = new HashMap<>();
+        attResult.put("param", new LinkParamValue("\" \\ą \""));
         Assert.assertEquals(attResult, parsed[0].getLinkParams());
 
         Assert.assertEquals("/bar", parsed[1].getUriReference());
@@ -110,8 +113,8 @@ public class DefaultLinkParserTest {
         Link[] parsed = parser.parse("</foo>;param=\";\",</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
-        Map<Object, Object> attResult = new HashMap<>();
-        attResult.put("param", "\";\"");
+        Map<String, LinkParamValue> attResult = new HashMap<>();
+        attResult.put("param", new LinkParamValue("\";\""));
         Assert.assertEquals(attResult, parsed[0].getLinkParams());
 
         Assert.assertEquals("/bar", parsed[1].getUriReference());
@@ -122,8 +125,8 @@ public class DefaultLinkParserTest {
         Link[] parsed = parser.parse("</foo>;param=\"<\",</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
-        Map<Object, Object> attResult = new HashMap<>();
-        attResult.put("param", "\"<\"");
+        Map<String, LinkParamValue> attResult = new HashMap<>();
+        attResult.put("param", new LinkParamValue("\"<\""));
         Assert.assertEquals(attResult, parsed[0].getLinkParams());
 
         Assert.assertEquals("/bar", parsed[1].getUriReference());
@@ -134,8 +137,8 @@ public class DefaultLinkParserTest {
         Link[] parsed = parser.parse("</foo>;param=\"=\"".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
-        Map<Object, Object> attResult = new HashMap<>();
-        attResult.put("param", "\"=\"");
+        Map<String, LinkParamValue> attResult = new HashMap<>();
+        attResult.put("param", new LinkParamValue("\"=\""));
         Assert.assertEquals(attResult, parsed[0].getLinkParams());
     }
 
@@ -144,8 +147,8 @@ public class DefaultLinkParserTest {
         Link[] parsed = parser.parse("</foo>;param=!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
-        Map<Object, Object> attResult = new HashMap<>();
-        attResult.put("param", "!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9");
+        Map<String, LinkParamValue> attResult = new HashMap<>();
+        attResult.put("param", new LinkParamValue("!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9"));
         Assert.assertEquals(attResult, parsed[0].getLinkParams());
     }
 
@@ -154,9 +157,9 @@ public class DefaultLinkParserTest {
         Link[] parsed = parser.parse("</foo>;param=!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9;param2=\"foo\";param3,</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
-        Map<Object, Object> attResult = new HashMap<>();
-        attResult.put("param", "!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9");
-        attResult.put("param2", "\"foo\"");
+        Map<String, LinkParamValue> attResult = new HashMap<>();
+        attResult.put("param", new LinkParamValue("!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9"));
+        attResult.put("param2", new LinkParamValue("\"foo\""));
         attResult.put("param3", null);
         Assert.assertEquals(attResult, parsed[0].getLinkParams());
 
@@ -169,9 +172,9 @@ public class DefaultLinkParserTest {
         Assert.assertEquals(5, parse.length);
         Assert.assertEquals("/", parse[0].getUriReference());
 
-        Map<String, String> attResult = new HashMap<>();
-        attResult.put("rt", "\"oma.lwm2m\"");
-        attResult.put("ct", "100");
+        Map<String, LinkParamValue> attResult = new HashMap<>();
+        attResult.put("rt", new LinkParamValue("\"oma.lwm2m\""));
+        attResult.put("ct", new LinkParamValue("100"));
         Assert.assertEquals(attResult, parse[0].getLinkParams());
 
         Assert.assertEquals("/1/101", parse[1].getUriReference());
@@ -193,13 +196,13 @@ public class DefaultLinkParserTest {
     public void parse_quoted_ver_attributes() {
         String input = "</1>;ver=\"2.2\"";
         Link[] objs = parser.parse(input.getBytes());
-        assertEquals(objs[0].getLinkParams().get("ver"), "\"2.2\"");
+        assertEquals(objs[0].getLinkParams().get("ver"), new LinkParamValue("\"2.2\""));
     }
 
     @Test
     public void parse_unquoted_ver_attributes() {
         String input = "</1>;ver=2.2";
         Link[] objs = parser.parse(input.getBytes());
-        assertEquals(objs[0].getLinkParams().get("ver"), "2.2");
+        assertEquals(objs[0].getLinkParams().get("ver"), new LinkParamValue("2.2"));
     }
 }

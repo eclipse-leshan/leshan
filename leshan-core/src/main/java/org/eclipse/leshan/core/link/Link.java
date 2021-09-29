@@ -106,7 +106,8 @@ public class Link {
 
             HashMap<String, LinkParamValue> attributesMap = new HashMap<>();
             for (int i = 0; i < linkParams.length; i = i + 2) {
-                attributesMap.put(linkParams[i], new LinkParamValue(linkParams[i + 1]));
+                String value = linkParams[i + 1];
+                attributesMap.put(linkParams[i], value != null ? new LinkParamValue(value) : null);
             }
             this.linkParams = Collections.unmodifiableMap(attributesMap);
         }

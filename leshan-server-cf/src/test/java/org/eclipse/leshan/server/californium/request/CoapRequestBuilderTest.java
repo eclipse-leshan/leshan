@@ -29,6 +29,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.attributes.Attribute;
 import org.eclipse.leshan.core.attributes.AttributeSet;
+import org.eclipse.leshan.core.link.LinkParamValue;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.StaticModel;
@@ -78,9 +79,10 @@ public class CoapRequestBuilderTest {
                 Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354));
         b.extractDataFromObjectLink(true);
         if (rootpath != null) {
-            Map<String, String> attr = new HashMap<>();
-            attr.put("rt", "\"oma.lwm2m\"");
-            b.objectLinks(new Link[] { new Link(rootpath, attr) });
+            Map<String, LinkParamValue> attr = new HashMap<>();
+            attr.put("rt", new LinkParamValue("\"oma.lwm2m\""));
+            b.objectLinks(new Link[] {
+                    new Link(rootpath, attr) });
         }
         return b.build();
     }

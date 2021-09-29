@@ -619,7 +619,11 @@ public class Registration {
 
                 // Parse object link to extract root path
                 for (Link link : objectLinks) {
-                    if (link != null && "oma.lwm2m".equals(link.getLinkParams().get("rt").getUnquoted())) {
+                    LinkParamValue rt = null;
+                    if (link != null) {
+                        rt = link.getLinkParams().get("rt");
+                    }
+                    if (rt != null && "oma.lwm2m".equals(rt.getUnquoted())) {
                         rootPath = link.getUriReference();
                         if (!rootPath.endsWith("/")) {
                             rootPath = rootPath + "/";

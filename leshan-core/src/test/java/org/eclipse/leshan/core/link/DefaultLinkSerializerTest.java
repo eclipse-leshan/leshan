@@ -49,7 +49,6 @@ public class DefaultLinkSerializerTest {
         String res = serializer.serialize(obj1, obj2, obj3);
 
         Assert.assertEquals("</1/0/1>;number=12,</2/1>;string=\"stringval\",</3>;empty", res);
-
     }
 
     @Test

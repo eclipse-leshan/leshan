@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
+import org.eclipse.leshan.core.link.LinkParamValue;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.server.registration.Registration;
@@ -42,7 +43,8 @@ public class RegistrationSerDes {
     public static JsonObject jSerialize(Registration r) {
         JsonObject o = Json.object();
         o.add("regDate", r.getRegistrationDate().getTime());
-        o.add("identity", IdentitySerDes.serialize(r.getIdentity()));
+        o.add("identity",
+                IdentitySerDes.serialize(r.getIdentity()));
         o.add("lt", r.getLifeTimeInSec());
         if (r.getSmsNumber() != null) {
             o.add("sms", r.getSmsNumber());
@@ -59,7 +61,7 @@ public class RegistrationSerDes {
             JsonObject ol = Json.object();
             ol.add("url", l.getUriReference());
             JsonObject at = Json.object();
-            for (Map.Entry<String, String> e : l.getLinkParams().entrySet()) {
+            for (Map.Entry<String, LinkParamValue> e : l.getLinkParams().entrySet()) {
                 if (e.getValue() == null) {
                     at.add(e.getKey(), Json.NULL);
                 } else {
@@ -136,7 +138,7 @@ public class RegistrationSerDes {
         for (int i = 0; i < links.size(); i++) {
             JsonObject ol = (JsonObject) links.get(i);
 
-            Map<String, String> attMap = new HashMap<>();
+            Map<String, LinkParamValue> attMap = new HashMap<>();
             JsonObject att = (JsonObject) ol.get("at");
             for (String k : att.names()) {
                 JsonValue jsonValue = att.get(k);
@@ -144,9 +146,9 @@ public class RegistrationSerDes {
                     attMap.put(k, null);
                 } else if (jsonValue.isNumber()) {
                     // This else block is just needed for retro-compatibility
-                    attMap.put(k, Integer.toString(jsonValue.asInt()));
+                    attMap.put(k, new LinkParamValue(Integer.toString(jsonValue.asInt())));
                 } else {
-                    attMap.put(k, jsonValue.asString());
+                    attMap.put(k, new LinkParamValue(jsonValue.asString()));
                 }
             }
             Link o = new Link(ol.getString("url", null), attMap);

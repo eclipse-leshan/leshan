@@ -57,8 +57,9 @@ public class DefaultLinkParser implements LinkParser {
 
     protected List<String> splitIgnoringEscaped(String content, char delimiter) {
         List<String> linkValueList = new ArrayList<>();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         boolean quote = false;
+        boolean parname = false;
         boolean escape = false;
         for (int i = 0; i < content.length(); i++) {
             char ch = content.charAt(i);
@@ -68,14 +69,25 @@ public class DefaultLinkParser implements LinkParser {
                 continue;
             }
 
-            if (ch == delimiter && !quote) {
+            if (ch == delimiter && !quote && !parname) {
                 linkValueList.add(sb.toString());
-                sb = new StringBuffer();
+                sb = new StringBuilder();
                 escape = false;
                 continue;
             }
-            if (ch == '"' && !escape) {
-                quote = !quote;
+            if (!escape) {
+                if (!quote) {
+                    if (ch == '<') {
+                        parname = true;
+                    }
+                    if (ch == '>') {
+                        parname = false;
+                    }
+                }
+                if (ch == '"') {
+                    quote = !quote;
+                }
+
             }
             sb.append(ch);
             escape = false;
@@ -129,7 +141,31 @@ public class DefaultLinkParser implements LinkParser {
             throw new IllegalArgumentException("Invalid link-value");
         }
         String UriReference = trimUriReference(uriReferenceDecorated);
-        URI.create(UriReference);
+
+        validateUriReference(UriReference);
+    }
+
+    private void validateUriReference(String uriReference) {
+        if (uriReference.length() > 0) {
+            if (uriReference.charAt(0) != '/' || (uriReference.length() > 1 && uriReference.charAt(1) == '/')) {
+                throw new IllegalArgumentException("Invalid URI-reference");
+            }
+
+            String[] segments = uriReference.substring(1).split("/");
+
+            for (String segment: segments) {
+                if (segment.length() > 0) {
+                    validateUriSegment(segment);
+                }
+            }
+        }
+    }
+
+    private void validateUriSegment(String segment) {
+        Pattern pattern = Pattern.compile("([\\-._~a-zA-Z0-9:@!$&'()*+,;=]|%[a-fA-F0-9][a-fA-F0-9])+");
+        if (!pattern.matcher(segment).matches()) {
+            throw new IllegalArgumentException("Invalid link-extension value");
+        }
     }
 
     protected LinkParamValue applyCharEscaping(String value) {
