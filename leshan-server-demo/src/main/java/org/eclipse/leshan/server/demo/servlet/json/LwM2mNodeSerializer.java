@@ -39,8 +39,10 @@ public class LwM2mNodeSerializer implements JsonSerializer<LwM2mNode> {
         element.addProperty("id", src.getId());
 
         if (typeOfSrc == LwM2mObject.class) {
+            element.addProperty("type", "obj");
             element.add("instances", context.serialize(((LwM2mObject) src).getInstances().values()));
         } else if (typeOfSrc == LwM2mObjectInstance.class) {
+            element.addProperty("type", "instance");
             element.add("resources", context.serialize(((LwM2mObjectInstance) src).getResources().values()));
         } else if (LwM2mResource.class.isAssignableFrom((Class<?>) typeOfSrc)) {
             LwM2mResource rsc = (LwM2mResource) src;
@@ -54,13 +56,23 @@ public class LwM2mNodeSerializer implements JsonSerializer<LwM2mNode> {
                         values.add(entry.getKey().toString(), context.serialize(entry.getValue().getValue()));
                     }
                 }
+                element.addProperty("type", "multiResource");
                 element.add("values", values);
             } else {
+                element.addProperty("type", "singleResource");
                 if (rsc.getType() == org.eclipse.leshan.core.model.ResourceModel.Type.OPAQUE) {
                     element.addProperty("value", new String(Hex.encodeHex((byte[]) rsc.getValue())));
                 } else {
                     element.add("value", context.serialize(rsc.getValue()));
                 }
+            }
+        } else if (typeOfSrc == LwM2mResourceInstance.class) {
+            element.addProperty("type", "resourceInstance");
+            LwM2mResourceInstance rsc = (LwM2mResourceInstance) src;
+            if (rsc.getType() == org.eclipse.leshan.core.model.ResourceModel.Type.OPAQUE) {
+                element.addProperty("value", new String(Hex.encodeHex((byte[]) rsc.getValue())));
+            } else {
+                element.add("value", context.serialize(rsc.getValue()));
             }
         }
 

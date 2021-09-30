@@ -26,6 +26,7 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 
 import com.google.gson.JsonArray;
@@ -56,7 +57,12 @@ public class LwM2mNodeDeserializer implements JsonDeserializer<LwM2mNode> {
                 id = object.get("id").getAsInt();
             }
 
-            if (object.has("instances")) {
+            String type = null;
+            if (object.has("type")) {
+                type = object.get("type").getAsString();
+            }
+
+            if ("obj".equals(type) || object.has("instances")) {
                 if (id == null) {
                     throw new JsonParseException("Missing id");
                 }
@@ -69,7 +75,7 @@ public class LwM2mNodeDeserializer implements JsonDeserializer<LwM2mNode> {
                 }
                 node = new LwM2mObject(id, instances);
 
-            } else if (object.has("resources")) {
+            } else if ("instance".equals(type) || object.has("resources")) {
                 JsonArray array = object.get("resources").getAsJsonArray();
                 LwM2mResource[] resources = new LwM2mResource[array.size()];
 
@@ -81,15 +87,7 @@ public class LwM2mNodeDeserializer implements JsonDeserializer<LwM2mNode> {
                 } else {
                     node = new LwM2mObjectInstance(id, resources);
                 }
-            } else if (object.has("value")) {
-                if (id == null) {
-                    throw new JsonParseException("Missing id");
-                }
-                // single value resource
-                JsonPrimitive val = object.get("value").getAsJsonPrimitive();
-                org.eclipse.leshan.core.model.ResourceModel.Type expectedType = getTypeFor(val);
-                node = LwM2mSingleResource.newResource(id, deserializeValue(val, expectedType), expectedType);
-            } else if (object.has("values")) {
+            } else if ("multiResource".equals(type) || object.has("values")) {
                 if (id == null) {
                     throw new JsonParseException("Missing id");
                 }
@@ -105,6 +103,22 @@ public class LwM2mNodeDeserializer implements JsonDeserializer<LwM2mNode> {
                 if (expectedType == null)
                     expectedType = org.eclipse.leshan.core.model.ResourceModel.Type.STRING;
                 node = LwM2mMultipleResource.newResource(id, values, expectedType);
+            } else if (object.has("value")) {
+                if (id == null) {
+                    throw new JsonParseException("Missing id");
+                }
+
+                if ("resourceInstance".equals(type)) {
+                    // resource instance
+                    JsonPrimitive val = object.get("value").getAsJsonPrimitive();
+                    org.eclipse.leshan.core.model.ResourceModel.Type expectedType = getTypeFor(val);
+                    node = LwM2mResourceInstance.newInstance(id, deserializeValue(val, expectedType), expectedType);
+                } else {
+                    // single value resource
+                    JsonPrimitive val = object.get("value").getAsJsonPrimitive();
+                    org.eclipse.leshan.core.model.ResourceModel.Type expectedType = getTypeFor(val);
+                    node = LwM2mSingleResource.newResource(id, deserializeValue(val, expectedType), expectedType);
+                }
             } else {
                 throw new JsonParseException("Invalid node element");
             }
