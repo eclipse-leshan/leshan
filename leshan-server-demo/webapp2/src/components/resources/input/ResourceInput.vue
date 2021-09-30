@@ -1,43 +1,29 @@
 <template>
-  <v-row dense>
-    <v-col cols="12" md="2">
-      <v-subheader v-if="resourcedef.mandatory"
-        ><strong>{{ resourcedef.name }} *</strong></v-subheader
-      >
-      <v-subheader v-else>{{ resourcedef.name }} </v-subheader>
-    </v-col>
-    <v-col cols="11" md="9">
-      <v-text-field
-        v-if="resourcedef.instancetype != 'single'"
-        label="multi instance resource not yet supported in UI demo"
-        disabled
-      />
-      <single-resource-input v-else :resourcedef="resourcedef" :hint="hint(resourcedef)" :value="value" @input="$emit('input',$event)"/>
-    </v-col>
-    <v-col cols="1" md="1">
-      <v-tooltip left>
-        <template v-slot:activator="{ on }">
-          <v-icon v-on="on">
-            mdi-help-circle-outline
-          </v-icon>
-        </template>
-        <p style="white-space: pre-wrap">{{ resourcedef.description }}</p>
-      </v-tooltip>
-    </v-col>
-  </v-row>
+  <v-text-field
+    v-if="resourcedef.instancetype != 'single'"
+    label="multi instance resource not yet supported in UI demo"
+    disabled
+  />
+  <single-value-input
+    v-else
+    :resourcedef="resourcedef"
+    :hint="hint"
+    :value="value"
+    @input="$emit('input', $event)"
+  />
 </template>
 <script>
-import SingleResourceInput from './SingleResourceInput.vue';
+import SingleValueInput from "../../values/input/SingleValueInput.vue";
+
+/**
+ * An input for "Single Instance" and "Mult Instance" resource.
+ */
 export default {
-  components: { SingleResourceInput },
-  props: { value: null /*resource value */, resourcedef: Object },
-  methods: {
-    hint(resourcedef) {
-      let hint = "";
-      if (resourcedef.mandatory) hint += " mandatory";
-      if (resourcedef.range) hint += " (Range: " + resourcedef.range + ")";
-      return hint;
-    },
+  components: { SingleValueInput },
+  props: {
+    value: null, // the input value for this resource (v-model) 
+    resourcedef: Object, // the model of the resource
+    hint: { type: String, default: null }, // hint displayed on `?` tooltip. If `null`, the "?" icon is not displayed"
   },
 };
 </script>

@@ -19,7 +19,7 @@
         <v-divider class="pa-2"/>
         <p style="white-space: pre-wrap">{{ resourcedef.description }}</p>
         <v-form ref="form" @submit.prevent="write">
-          <single-resource-input
+          <resource-input
             v-model="resourceValue"
             :resourcedef="resourcedef"
           />
@@ -39,13 +39,17 @@
 </template>
 
 <script>
-import SingleResourceInput from "./input/SingleResourceInput.vue";
+import ResourceInput from "./input/ResourceInput.vue";
+
+/**
+ * A Dialog to Write a Single or Multi instance Resource.
+ */
 export default {
-  components: { SingleResourceInput },
+  components: { ResourceInput },
   props: {
-    value: Boolean,
-    resourcedef: Object,
-    path: String,
+    value: Boolean, // control if the dialog is displayed (v-model)
+    resourcedef: Object, // the model of the resource
+    path: String, // the path of the resource
   },
   data() {
     return {

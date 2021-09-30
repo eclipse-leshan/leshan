@@ -50,12 +50,15 @@
 </template>
 
 <script>
-import ResourceInput from "../resources/input/ResourceInput.vue";
+import ResourceInput from "../resources/input/LabelledResourceInput.vue";
+/**
+ * A Dialog to Create a Object Instance.
+ */
 export default {
   components: { ResourceInput },
   props: {
-    value: Boolean,
-    objectdef: Object,
+    value: Boolean, // control if the dialog is displayed (v-model)
+    objectdef: Object, // the model of the object
   },
   data() {
     return {

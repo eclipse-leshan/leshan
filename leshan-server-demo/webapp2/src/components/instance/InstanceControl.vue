@@ -1,16 +1,24 @@
 <template>
   <span>
-    <request-button @on-click="observe" :title="'Observe ' + path">Obs</request-button>
-    <request-button @on-click="stopObserve" :title="'Passive Cancel Obverse ' + path">
+    <request-button @on-click="observe" :title="'Observe ' + path"
+      >Obs</request-button
+    >
+    <request-button
+      @on-click="stopObserve"
+      :title="'Passive Cancel Obverse ' + path"
+    >
       <v-icon dense small>mdi-eye-remove-outline</v-icon></request-button
     >
     <request-button @on-click="read" :title="'Read ' + path">R</request-button>
-    <request-button @on-click="openWriteDialog" ref="W" :title="'Write ' + path">W</request-button>
-    <request-button @on-click="del" :title="'Delete ' + path">Delete</request-button>
+    <request-button @on-click="openWriteDialog" ref="W" :title="'Write ' + path"
+      >W</request-button
+    >
+    <request-button @on-click="del" :title="'Delete ' + path"
+      >Delete</request-button
+    >
     <instance-write-dialog
       v-model="showDialog"
       :objectdef="objectdef"
-      :path="path"
       :id="id"
       @update="write($event, false)"
       @replace="write($event, true)"
@@ -25,9 +33,17 @@ import { preference } from "vue-preferences";
 const timeout = preference("timeout", { defaultValue: 5 });
 const format = preference("multiformat", { defaultValue: "TLV" });
 
+/**
+ * List of Action button to execute operation (Read/Write/Observe ...) on a LWM2M Object Instance.
+ */
 export default {
   components: { RequestButton, InstanceWriteDialog },
-  props: { objectdef: Object, path: String, endpoint: String, id: String },
+  props: {
+    endpoint: String, // endpoint name of the LWM2M client
+    path: String, // path of the LWM2M object
+    objectdef: Object, // model of the LWM2M object
+    id: String, // ID of the LWM2M Object Instance
+  }, 
   data() {
     return {
       dialog: false,

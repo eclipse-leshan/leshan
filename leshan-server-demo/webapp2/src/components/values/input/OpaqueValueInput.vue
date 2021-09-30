@@ -27,8 +27,14 @@
   </v-row>
 </template>
 <script>
+/**
+ * An input for OPAQUE single value LWM2M node ("Single Instance Resource" or "Resource Instance")
+ */
 export default {
-  props: { value: null, resourcedef: Object },
+  props: {
+    value: null, // the input value for this LWM2M Node (v-model)
+    resourcedef: Object, // the model of the resource
+  },
   data() {
     return {
       localOpaqueValue: null,

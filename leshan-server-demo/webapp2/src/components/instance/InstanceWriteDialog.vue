@@ -44,14 +44,16 @@
 </template>
 
 <script>
-import ResourceInput from "../resources/input/ResourceInput.vue";
+import ResourceInput from "../resources/input/LabelledResourceInput.vue";
+/**
+ * A Dialog to Write a Object Instance.
+ */
 export default {
   components: { ResourceInput },
   props: {
-    value: Boolean,
-    objectdef: Object,
-    path: String,
-    id: String,
+    value: Boolean, // control if the dialog is displayed (v-model)
+    objectdef: Object, // the model of the object
+    id: String, // ID of the Object Instance
   },
   data() {
     return {

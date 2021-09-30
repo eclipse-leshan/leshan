@@ -1,11 +1,11 @@
 <template>
-  <boolean-resource-input
+  <boolean-value-input
     v-if="resourcedef.type == 'boolean'"
     :resourcedef="resourcedef"
     :value="value"
     @input="$emit('input', convertValue($event))"
   />
-  <opaque-resource-input
+  <opaque-value-input
     v-else-if="resourcedef.type == 'opaque'"
     :resourcedef="resourcedef"
     :value="value"
@@ -21,19 +21,21 @@
   />
 </template>
 <script>
-import BooleanResourceInput from "./BooleanResourceInput.vue";
-import OpaqueResourceInput from "./OpaqueResourceInput.vue";
+import BooleanValueInput from "./BooleanValueInput.vue";
+import OpaqueValueInput from "./OpaqueValueInput.vue";
 
+/**
+ * An input for single value LWM2M node ("Single Instance Resource" or "Resource Instance")
+ */
 export default {
-  components: { BooleanResourceInput, OpaqueResourceInput },
+  components: { BooleanValueInput, OpaqueValueInput },
   props: {
-    value: null,
-    resourcedef: Object,
-    hint: { type: String, default: null },
+    value: null, // the input value for this LWM2M Node (v-model) 
+    resourcedef: Object, // the model of the resource 
+    hint: { type: String, default: null }, // hint displayed on `?` tooltip. If `null`, the "?" icon is not displayed"
   },
   methods: {
     convertValue(strValue) {
-      // TODO this should probably done in dedicated ResourceInputComponent
       var val = strValue;
       if (this.resourcedef.type != undefined) {
         switch (this.resourcedef.type) {
