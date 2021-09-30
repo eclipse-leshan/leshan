@@ -6,10 +6,13 @@
 <script>
 import { resourceToString } from "../../../js/valueutils.js";
 
+/**
+ *  Display "Single Instance" or "Multi Instance" resource as a single line.
+ */
 export default {
   props: {
-    resourcedef: Object,
-    resource: Object,
+    resourcedef: Object, // model of the resource
+    resource: Object, // the resource data as defined in store.js
   },
 
   computed: {

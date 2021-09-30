@@ -14,8 +14,8 @@
   </span>
 </template>
 <script>
-import RequestButton from "./RequestButton.vue";
-import InstanceCreateDialog from "./InstanceCreateDialog.vue";
+import RequestButton from "../RequestButton.vue";
+import InstanceCreateDialog from "../instance/InstanceCreateDialog.vue";
 import { preference } from "vue-preferences";
 
 const timeout = preference("timeout", { defaultValue: 5 });

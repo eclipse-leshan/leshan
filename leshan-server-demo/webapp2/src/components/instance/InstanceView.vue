@@ -109,9 +109,9 @@
 </template>
 <script>
 import InstanceControl from "./InstanceControl.vue";
-import ResourceControl from "./ResourceControl.vue";
-import SimpleResourceView from "./resources/view/SimpleResourceView.vue";
-import ResourceView from "./resources/view/ResourceView.vue";
+import ResourceControl from "../resources/ResourceControl.vue";
+import SimpleResourceView from "../resources/view/SimpleResourceView.vue";
+import ResourceView from "../resources/view/ResourceView.vue";
 
 export default {
   components: {

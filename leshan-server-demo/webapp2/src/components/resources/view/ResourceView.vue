@@ -87,19 +87,24 @@
 </template>
 <script>
 import { resourceToString } from "../../../js/valueutils.js";
-import ResourceControl from "../../ResourceControl.vue";
+import ResourceControl from "../ResourceControl.vue";
 import MultiInstancesResourceView from "./MultiInstancesResourceView.vue";
 
+/**
+ * Complete view of a "Single Instance" or "Multi Instance" Resource.
+ *
+ * Show description, model, current value and control to execute operation on it.
+ */
 export default {
   components: {
     ResourceControl,
     MultiInstancesResourceView,
   },
   props: {
-    endpoint: String,
-    resourcedef: Object,
-    resource: Object,
-    path: String,
+    endpoint: String, // the endpoint of the client 
+    resourcedef: Object, // the model of the resource
+    resource: Object, // the resource data as defined in store.js
+    path: String, // the path of the resource (e.g. /3/0/1)
   },
 
   computed: {

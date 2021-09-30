@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import SingleResourceInput from "./resources/SingleResourceInput.vue";
+import SingleResourceInput from "./input/SingleResourceInput.vue";
 export default {
   components: { SingleResourceInput },
   props: {

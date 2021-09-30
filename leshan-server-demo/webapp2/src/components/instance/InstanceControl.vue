@@ -18,8 +18,8 @@
   </span>
 </template>
 <script>
-import RequestButton from "./RequestButton.vue";
-import InstanceWriteDialog from "./InstanceWriteDialog.vue";
+import RequestButton from "../RequestButton.vue";
+import InstanceWriteDialog from "../instance/InstanceWriteDialog.vue";
 import { preference } from "vue-preferences";
 
 const timeout = preference("timeout", { defaultValue: 5 });

@@ -27,9 +27,9 @@
   </v-sheet>
 </template>
 <script>
-import InstanceView from "../components/InstanceView.vue";
-import ObjectControl from "../components/ObjectControl.vue";
-import ObjectIcon from "../components/ObjectIcon.vue";
+import InstanceView from "../components/instance/InstanceView.vue";
+import ObjectControl from "../components/object/ObjectControl.vue";
+import ObjectIcon from "../components/object/ObjectIcon.vue";
 
 export default {
   components: { InstanceView, ObjectIcon, ObjectControl },

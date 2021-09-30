@@ -45,7 +45,7 @@
   </div>
 </template>
 <script>
-import RequestButton from "./RequestButton.vue";
+import RequestButton from "../RequestButton.vue";
 import ResourceWriteDialog from "./ResourceWriteDialog.vue";
 import { preference } from "vue-preferences";
 

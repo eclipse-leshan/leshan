@@ -28,12 +28,17 @@
 <script>
 import { valueToString } from "../../../js/valueutils.js";
 
+/**
+ * Display the state of a "Multi Instance" Resource. 
+ * 
+ * List all instances with its value and controls to execute operations on it. 
+ */
 export default {
   props: {
-    endpoint: String,
-    resourcedef: Object,
-    resource: Object,
-    path: String,
+    endpoint: String, // the endpoint of the client 
+    resourcedef: Object, // the model of the resource
+    resource: Object, // the resource data as defined in store.js
+    path: String, // the path of the resource (e.g. /3/0/1)
   },
   methods: {
     valueAsString(value) {

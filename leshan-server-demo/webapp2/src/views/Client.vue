@@ -61,7 +61,7 @@
 <script>
 import ClientInfo from "../components/ClientInfo.vue";
 import ClientSetting from "../components/ClientSetting.vue";
-import ObjectSelector from "../components/ObjectSelector.vue";
+import ObjectSelector from "../components/object/ObjectSelector.vue";
 
 // get models for this endpoint
 export default {
