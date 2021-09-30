@@ -3,23 +3,42 @@
     <template v-slot:default>
       <thead>
         <tr>
-          <th class="text-left " style="width:1%">
+          <th class="px-2 text-left ">
             Id
           </th>
-          <th class="text-left">
+          <th></th>
+          <th></th>
+          <th class="text-left" style="width:100%">
             Value
           </th>
-          <th></th>
         </tr>
       </thead>
       <tbody>
         <tr
-          v-for="(value, name) in resource.vals"
-          :key="name"
-          style="pointer-events: none"
+          v-for="(value, id) in resource.vals"
+          :key="id"
+          style="background-color: transparent !important"
         >
-          <td class="text--disabled">{{ name }}</td>
-          <td>{{ valueAsString(value.val) }}</td>
+          <td class="px-2 text--disabled">{{ id }}</td>
+          <td class="px-2"> 
+            <v-icon class="pa-0"
+              x-small
+              v-show="state.observed[instancePath(id)]"
+              :title="'Instance ' + instancePath(id) + ' observed'"
+              >mdi-eye-outline</v-icon
+            >
+          </td>
+          <td class="px-2" style="white-space:nowrap">
+            <resource-instance-control
+              :endpoint="endpoint"
+              :resourcedef="resourcedef"
+              :resourcePath="path"
+              :instanceId="Number(id)"
+            />
+          </td>
+          <td :class="{ 'text--disabled': value.supposed }">
+            {{ valueAsString(value.val) }}
+          </td>
         </tr>
       </tbody>
     </template>
@@ -27,6 +46,7 @@
 </template>
 <script>
 import { valueToString } from "../../../js/valueutils.js";
+import ResourceInstanceControl from "../ResourceInstanceControl.vue";
 
 /**
  * Display the state of a "Multi Instance" Resource. 
@@ -34,15 +54,25 @@ import { valueToString } from "../../../js/valueutils.js";
  * List all instances with its value and controls to execute operations on it. 
  */
 export default {
+  components: { ResourceInstanceControl },
   props: {
     endpoint: String, // the endpoint of the client 
     resourcedef: Object, // the model of the resource
     resource: Object, // the resource data as defined in store.js
     path: String, // the path of the resource (e.g. /3/0/1)
   },
+  computed: {
+    state() {
+      return this.$store.state[this.endpoint];
+    },
+  },
   methods: {
     valueAsString(value) {
       return valueToString(value, this.resourcedef.type);
+    },
+
+    instancePath(id) {
+      return this.path + "/" + id;
     },
   },
 };

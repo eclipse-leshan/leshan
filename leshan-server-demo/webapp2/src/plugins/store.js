@@ -95,6 +95,51 @@ class Store {
     Vue.set(this.state[endpoint].data, path, d);
   }
 
+/**
+   * @param {String} endpoint endpoint of the client
+   * @param {String} path path to a resource instance path e.g. /3/0/11/1
+   * @param {*} val value of the resource
+   * @param {Boolean} supposed true means the value is supposed (not really send by the client)
+   */
+ newResourceInstanceValueFromPath(endpoint, path, val, supposed = false) {
+   // split resource instance path in 'resource path' and 'instance id'
+   let splitIndex = path.lastIndexOf('/')
+   let resourcepath = path.substring(0,splitIndex);
+   let instanceID = path.substring(splitIndex+1);
+   this.newResourceInstanceValue(endpoint, resourcepath, Number(instanceID), val, supposed);
+ }
+
+  /**
+   * @param {String} endpoint endpoint of the client
+   * @param {String} path path to a resource e.g. /3/0/11
+   * @param {Number} instanceID the ID of the instance
+   * @param {*} val value of the resource
+   * @param {Boolean} supposed true means the value is supposed (not really send by the client)
+   */
+  newResourceInstanceValue(endpoint, path, instanceID, val, supposed = false) {
+    let d = this.data(endpoint, path);
+    // create & add data if not exist OR is not single resource.
+    if (!d || d.single) {
+      d = { };
+      d.vals = {};
+      d.vals[instanceID] = {};
+      d.vals[instanceID].val = val;
+      d.vals[instanceID].supposed = supposed;
+      d.supposed = supposed;
+      d.isSingle = false;
+      Vue.set(this.state[endpoint].data, path, d);
+    } else {
+      // else just modify it
+      if (!d.vals[instanceID]) {
+         let i = {val:val, supposed:supposed}   
+         Vue.set(d.vals, instanceID, i);
+      } else {
+        d.vals[instanceID].val = val;
+        d.vals[instanceID].supposed = supposed;
+      }
+    }
+  }
+
   /**
    * @param {String} endpoint endpoint of the client
    * @param {String} path path to the instance e.g. /3/0
