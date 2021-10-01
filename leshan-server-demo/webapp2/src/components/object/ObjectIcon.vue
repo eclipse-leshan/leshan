@@ -31,8 +31,24 @@ export default {
           return "mdi-folder-multiple-outline";
         case 19: // BinaryAppDataContainer
           return "mdi-database-sync-outline";
-        case 3303:
+        case 3303: // Temperature
           return "mdi-thermometer";
+        case 3311: // Light Control
+          return "mdi-lightbulb-on-outline";
+        case 3313: // Accelerometer
+          return "mdi-axis-arrow";
+        case 3338: // Buzzer
+          return "mdi-bell-ring";
+        case 3342: // On/Off Switch
+          return "mdi-toggle-switch";
+        case 3347: // Push Button
+          return "mdi-gesture-tap-button";
+        case 3441: // Test Object
+          return "mdi-list-status";
+        case 10259: // System Log
+          return "mdi-text-box-outline";
+        case 10260: // RDB (Runtime Database)
+          return "mdi-database";
         default:
           return "mdi-alpha-o-circle-outline";
       }
