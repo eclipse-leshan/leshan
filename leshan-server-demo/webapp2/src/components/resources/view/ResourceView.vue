@@ -58,7 +58,7 @@
     </v-col>
 
     <v-col>
-      <v-card elevation="0" v-if="resourcedef.operations.includes('R')">
+      <v-card elevation="0">
         <!-- Resource Controls -->
         <resource-control
           :resourcedef="resourcedef"
