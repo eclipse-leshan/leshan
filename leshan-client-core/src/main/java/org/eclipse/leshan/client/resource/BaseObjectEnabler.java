@@ -17,6 +17,7 @@
  *                                                     protect the security object
  *     Achim Kraus (Bosch Software Innovations GmbH) - add resource checks for 
  *                                                     REPLACE/UPDAT implementation
+ *     Michał Wadowski (Orange)                      - Improved compliance with rfc6690.
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
@@ -31,8 +32,8 @@ import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
-import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.LwM2mId;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;

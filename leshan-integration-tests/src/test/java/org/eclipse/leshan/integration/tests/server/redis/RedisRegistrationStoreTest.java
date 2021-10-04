@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690.
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.server.redis;
 
@@ -20,7 +21,6 @@ import static org.junit.Assert.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -30,8 +30,8 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.elements.AddressEndpointContext;
-import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.californium.ObserveUtil;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
@@ -56,7 +56,7 @@ public class RedisRegistrationStoreTest {
     private final Long lifetime = 10000L;
     private final String sms = "0171-32423545";
     private final EnumSet<BindingMode> binding = EnumSet.of(BindingMode.U, BindingMode.Q, BindingMode.S);
-    private final Link[] objectLinks = new Link[]{new Link("/3")};
+    private final Link[] objectLinks = new Link[] { new Link("/3") };
     private final String registrationId = "4711";
     private final Token exampleToken = Token.EMPTY;
 

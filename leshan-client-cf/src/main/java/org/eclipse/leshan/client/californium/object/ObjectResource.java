@@ -17,6 +17,7 @@
  *     Achim Kraus (Bosch Software Innovations GmbH) - implement POST "/oid/iid" 
  *                                                     as UPDATE instance
  *     Michał Wadowski (Orange)                      - Add Observe-Composite feature.
+ *     Michał Wadowski (Orange)                      - Improved compliance with rfc6690.
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.object;
 
@@ -114,8 +115,8 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                 if (response.getCode().isError()) {
                     exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                 } else {
-                    exchange.respond(toCoapResponseCode(response.getCode()), serializer.serialize(response.getObjectLinks()),
-                            MediaTypeRegistry.APPLICATION_LINK_FORMAT);
+                    exchange.respond(toCoapResponseCode(response.getCode()),
+                            serializer.serialize(response.getObjectLinks()), MediaTypeRegistry.APPLICATION_LINK_FORMAT);
                 }
                 return;
             } else {
@@ -124,8 +125,8 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                 if (response.getCode().isError()) {
                     exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                 } else {
-                    exchange.respond(toCoapResponseCode(response.getCode()), serializer.serialize(response.getObjectLinks()),
-                            MediaTypeRegistry.APPLICATION_LINK_FORMAT);
+                    exchange.respond(toCoapResponseCode(response.getCode()),
+                            serializer.serialize(response.getObjectLinks()), MediaTypeRegistry.APPLICATION_LINK_FORMAT);
                 }
                 return;
             }

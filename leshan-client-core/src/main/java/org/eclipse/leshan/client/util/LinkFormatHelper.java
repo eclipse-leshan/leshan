@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690.
  *******************************************************************************/
 package org.eclipse.leshan.client.util;
 
@@ -27,8 +28,8 @@ import java.util.Map;
 
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
-import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.LwM2mId;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkParamValue;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;

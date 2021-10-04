@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
@@ -27,7 +28,6 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
-import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.SecurityMode;
@@ -315,7 +315,8 @@ public class BootstrapTest {
         assertTrue(helper.lastCustomResponse instanceof BootstrapDiscoverResponse);
         BootstrapDiscoverResponse lastDiscoverAnswer = (BootstrapDiscoverResponse) helper.lastCustomResponse;
         assertEquals(ResponseCode.CONTENT, lastDiscoverAnswer.getCode());
-        assertEquals("</>;lwm2m=1.0,</3>;ver=1.1,</3/0>", helper.serializer.serialize(lastDiscoverAnswer.getObjectLinks()));
+        assertEquals("</>;lwm2m=1.0,</3>;ver=1.1,</3/0>",
+                helper.serializer.serialize(lastDiscoverAnswer.getObjectLinks()));
     }
 
     @Test

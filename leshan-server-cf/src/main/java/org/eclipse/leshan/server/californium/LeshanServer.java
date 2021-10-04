@@ -13,6 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     RISE SICS AB - added Queue Mode operation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 package org.eclipse.leshan.server.californium;
 
@@ -129,7 +130,8 @@ public class LeshanServer {
      * Initialize a server which will bind to the specified address and port.
      * <p>
      * {@link LeshanServerBuilder} is the priviledged way to create a {@link LeshanServer}.
-     *  @param unsecuredEndpoint CoAP endpoint used for <code>coap://</code> communication.
+     * 
+     * @param unsecuredEndpoint CoAP endpoint used for <code>coap://</code> communication.
      * @param securedEndpoint CoAP endpoint used for <code>coaps://</code> communication.
      * @param registrationStore the {@link Registration} store.
      * @param securityStore the {@link SecurityInfo} store.
@@ -141,7 +143,7 @@ public class LeshanServer {
      * @param noQueueMode true to disable presenceService.
      * @param awakeTimeProvider to set the client awake time if queue mode is used.
      * @param registrationIdProvider to provide registrationId using for location-path option values on response of
-     * @param parser
+     * @param parser parser {@link LinkParser} used to parse a CoRE Link.
      */
     public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
@@ -172,14 +174,15 @@ public class LeshanServer {
      *        Register operation.
      * @param updateRegistrationOnNotification will activate registration update on observe notification.
      *
-     * @param parser
+     * @param parser parser {@link LinkParser} used to parse a CoRE Link.
      * @since 1.1
      */
     public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder, NetworkConfig coapConfig,
             boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
-            RegistrationIdProvider registrationIdProvider, boolean updateRegistrationOnNotification, LinkParser parser) {
+            RegistrationIdProvider registrationIdProvider, boolean updateRegistrationOnNotification,
+            LinkParser parser) {
         this.parser = parser;
 
         Validate.notNull(registrationStore, "registration store cannot be null");

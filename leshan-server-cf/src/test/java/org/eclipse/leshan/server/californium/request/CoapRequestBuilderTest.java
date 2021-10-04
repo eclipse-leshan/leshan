@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690.
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.request;
 
@@ -26,9 +27,9 @@ import java.util.Map;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.attributes.Attribute;
 import org.eclipse.leshan.core.attributes.AttributeSet;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkParamValue;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
@@ -81,8 +82,7 @@ public class CoapRequestBuilderTest {
         if (rootpath != null) {
             Map<String, LinkParamValue> attr = new HashMap<>();
             attr.put("rt", new LinkParamValue("\"oma.lwm2m\""));
-            b.objectLinks(new Link[] {
-                    new Link(rootpath, attr) });
+            b.objectLinks(new Link[] { new Link(rootpath, attr) });
         }
         return b.build();
     }

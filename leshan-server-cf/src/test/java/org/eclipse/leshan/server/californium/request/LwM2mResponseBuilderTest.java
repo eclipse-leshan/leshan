@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690.
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.request;
 

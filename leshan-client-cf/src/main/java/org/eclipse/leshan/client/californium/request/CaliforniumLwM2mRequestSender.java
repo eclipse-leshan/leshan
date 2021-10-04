@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Zebra Technologies - initial API and implementation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.request;
 
@@ -53,7 +54,8 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     private final LinkSerializer serializer;
 
     public CaliforniumLwM2mRequestSender(CaliforniumEndpointsManager endpointsManager,
-            ScheduledExecutorService sharedExecutor, LwM2mEncoder encoder, LwM2mModel model, LinkSerializer serializer) {
+            ScheduledExecutorService sharedExecutor, LwM2mEncoder encoder, LwM2mModel model,
+            LinkSerializer serializer) {
         this.endpointsManager = endpointsManager;
         this.serializer = serializer;
         if (sharedExecutor == null) {

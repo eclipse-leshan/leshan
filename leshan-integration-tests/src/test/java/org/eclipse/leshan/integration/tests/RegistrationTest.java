@@ -13,6 +13,7 @@
  * Contributors:
  *     Zebra Technologies - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - replace close() with destroy()
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 
 package org.eclipse.leshan.integration.tests;
@@ -36,7 +37,6 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.elements.AddressEndpointContext;
-import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.Observation;

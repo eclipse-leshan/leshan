@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Zebra Technologies - initial API and implementation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.bootstrap;
 
@@ -51,7 +52,7 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
      * @param nonSecureEndpoint The endpoint used to send coap request.
      * @param encoder The {@link LwM2mEncoder} used to encode {@link LwM2mNode}.
      * @param decoder The {@link LwM2mDecoder} used to encode {@link LwM2mNode}.
-     * @param parser
+     * @param parser The {@link LinkParser} used to parse a CoRE Link.
      */
     public CaliforniumLwM2mBootstrapRequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint,
             LwM2mEncoder encoder, LwM2mDecoder decoder, LinkParser parser) {

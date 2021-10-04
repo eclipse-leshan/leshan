@@ -12,13 +12,13 @@
  * 
  * Contributors:
  *     RISE SICS AB - initial API and implementation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 
 package org.eclipse.leshan.integration.tests;
 
 import static org.junit.Assert.*;
 
-import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.integration.tests.util.QueueModeIntegrationTestHelper;

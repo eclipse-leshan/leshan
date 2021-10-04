@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 package org.eclipse.leshan.server.redis.serialization;
 
@@ -22,8 +23,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkParamValue;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -43,8 +44,7 @@ public class RegistrationSerDes {
     public static JsonObject jSerialize(Registration r) {
         JsonObject o = Json.object();
         o.add("regDate", r.getRegistrationDate().getTime());
-        o.add("identity",
-                IdentitySerDes.serialize(r.getIdentity()));
+        o.add("identity", IdentitySerDes.serialize(r.getIdentity()));
         o.add("lt", r.getLifeTimeInSec());
         if (r.getSmsNumber() != null) {
             o.add("sms", r.getSmsNumber());

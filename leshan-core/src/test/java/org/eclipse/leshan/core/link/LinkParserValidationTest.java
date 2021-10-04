@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2015 Sierra Wireless and others.
+ * Copyright (c) 2021 Orange.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -11,7 +11,7 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  *
  * Contributors:
- *     Sierra Wireless - initial API and implementation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690.
  *******************************************************************************/
 package org.eclipse.leshan.core.link;
 
@@ -32,41 +32,17 @@ public class LinkParserValidationTest {
 
     @Parameterized.Parameters()
     public static Collection<?> linkValueListProvider() {
-        return Arrays.asList(new Object[][] {
-                { "<file:///etc/hosts>" },
-                { "<>" },
+        return Arrays.asList(new Object[][] { { "<file:///etc/hosts>" }, { "</hosts?query>" }, { "</hosts#hash>" },
+                { "/%" }, { "/%a" }, { "/%1g" },
 
-                { "</hosts?query>" },
-                { "</hosts#hash>" },
-
-                { "/%"},
-                { "/%a"},
-                { "/%1g"},
-
-                { "</" },
-                { "<//>" },
-                { "//>" },
-                { "</>," },
-                { "</>;" },
-
-                { "</fóó>" },
-
-                { "</foo>;pąrąm" },
-                { "</foo>;param=ą" },
-                { "</foo>;param=\"bar" },
+                { "</fóó>" }, { "</foo>;pąrąm" }, { "</foo>;param=ą" }, { "</foo>;param=\"bar" },
                 { "</foo>;param=\"bar\\\"" },
-                { "</>;=" },
-                { "</>;param=" },
-                { "</>; param=123" },
-                { "</> ;param=123" },
-                { "</>;param =123" },
-                { "</>;param= 123" },
-                { "</>;param=123 " },
-                { "</>, </>" },
-                { "</> ,</>" },
-                { " </>,</>" },
-                { "</>,</> " }
-        });
+
+                { "</>;=" }, { "</>;param=" }, { "</>; param=123" }, { "</> ;param=123" }, { "</>;param =123" },
+                { "</>;param= 123" }, { "</>;param=123 " },
+
+                { "<>" }, { "</" }, { "<//>" }, { "//>" }, { "</>," }, { "</>;" }, { "</>, </>" }, { "</> ,</>" },
+                { " </>,</>" }, { "</>,</> " } });
     }
 
     private String linkValueList;

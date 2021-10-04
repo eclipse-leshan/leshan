@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.bootstrap;
 
@@ -61,14 +62,15 @@ public class LeshanBootstrapServer {
      * /** Initialize a server which will bind to the specified address and port.
      * <p>
      * {@link LeshanBootstrapServerBuilder} is the priviledged way to create a {@link LeshanBootstrapServer}.
-     *  @param unsecuredEndpoint CoAP endpoint used for <code>coap://</code> communication.
+     * 
+     * @param unsecuredEndpoint CoAP endpoint used for <code>coap://</code> communication.
      * @param securedEndpoint CoAP endpoint used for <code>coaps://</code> communication.
      * @param bsSessionManager manages life cycle of a bootstrap process
      * @param bsHandlerFactory responsible to create the {@link BootstrapHandler}
      * @param coapConfig the CoAP {@link NetworkConfig}.
      * @param encoder encode used to encode request payload.
      * @param decoder decoder used to decode response payload.
-     * @param parser
+     * @param parser parser used to parse a CoRE Link.
      */
     public LeshanBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory,

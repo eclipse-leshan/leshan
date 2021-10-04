@@ -15,6 +15,7 @@
  *     Achim Kraus (Bosch Software Innovations GmbH) - use Lwm2mEndpointContextMatcher
  *                                                     for secure endpoint.
  *     Achim Kraus (Bosch Software Innovations GmbH) - use CoapEndpointBuilder
+ *     Michał Wadowski (Orange)                      - Improved compliance with rfc6690.
  *******************************************************************************/
 package org.eclipse.leshan.server.californium;
 
@@ -279,6 +280,9 @@ public class LeshanServerBuilder {
         return this;
     }
 
+    /**
+     * Set tje CoRE Link parser {@link LinkParser}
+     */
     public void setParser(LinkParser parser) {
         this.parser = parser;
     }
@@ -493,13 +497,14 @@ public class LeshanServerBuilder {
                 // if in raw key mode and not in X.509 set the raw keys
                 if (certificateChain == null && publicKey != null) {
 
-                    dtlsConfigBuilder.setCertificateIdentityProvider(new SingleCertificateProvider(privateKey, publicKey));
+                    dtlsConfigBuilder
+                            .setCertificateIdentityProvider(new SingleCertificateProvider(privateKey, publicKey));
                 }
                 // if in X.509 mode set the private key, certificate chain, public key is extracted from the certificate
                 if (certificateChain != null && certificateChain.length > 0) {
 
-                    dtlsConfigBuilder.setCertificateIdentityProvider(new SingleCertificateProvider(privateKey, certificateChain, CertificateType.X_509,
-                            CertificateType.RAW_PUBLIC_KEY));
+                    dtlsConfigBuilder.setCertificateIdentityProvider(new SingleCertificateProvider(privateKey,
+                            certificateChain, CertificateType.X_509, CertificateType.RAW_PUBLIC_KEY));
                 }
             }
 
@@ -509,8 +514,9 @@ public class LeshanServerBuilder {
                     throw new IllegalStateException(
                             "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder: if a AdvancedCertificateVerifier is set, trustedCertificates must not be set.");
                 }
-            } else if (incompleteConfig.getCertificateIdentityProvider() != null){
-                StaticNewAdvancedCertificateVerifier.Builder verifierBuilder = StaticNewAdvancedCertificateVerifier.builder();
+            } else if (incompleteConfig.getCertificateIdentityProvider() != null) {
+                StaticNewAdvancedCertificateVerifier.Builder verifierBuilder = StaticNewAdvancedCertificateVerifier
+                        .builder();
                 // by default trust all RPK
                 verifierBuilder.setTrustAllRPKs();
                 if (trustedCertificates != null) {
@@ -590,13 +596,14 @@ public class LeshanServerBuilder {
      * @param awakeTimeProvider to set the client awake time if queue mode is used.
      * @param registrationIdProvider to provide registrationId using for location-path option values on response of
      *        Register operation.
+     * @param parser parser {@link LinkParser} used to parse a CoRE Link.
      * 
      * @return the LWM2M server
      */
     protected LeshanServer createServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
-            LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            NetworkConfig coapConfig, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
+            LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder, NetworkConfig coapConfig,
+            boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
             RegistrationIdProvider registrationIdProvider, LinkParser parser) {
         return new LeshanServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
                 modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider,

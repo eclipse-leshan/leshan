@@ -13,6 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - use CoapEndpointBuilder
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.bootstrap;
 
@@ -359,6 +360,11 @@ public class LeshanBootstrapServerBuilder {
         return this;
     }
 
+    /**
+     * Set CoRE Link parser.
+     *
+     * @param parser {@link LinkParser}
+     */
     public void setParser(LinkParser parser) {
         this.parser = parser;
     }

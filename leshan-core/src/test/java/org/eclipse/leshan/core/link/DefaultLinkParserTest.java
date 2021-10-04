@@ -1,17 +1,17 @@
 /*******************************************************************************
- * Copyright (c) 2013-2015 Sierra Wireless and others.
- * 
+ * Copyright (c) 2021 Orange.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
- *     Sierra Wireless - initial API and implementation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690.
  *******************************************************************************/
 package org.eclipse.leshan.core.link;
 
@@ -61,7 +61,7 @@ public class DefaultLinkParserTest {
     }
 
     @Test
-    public void allow_escaped_charractes2() {
+    public void allow_escaped_charractes2a() {
         Link[] parsed = parser.parse("</foo>;param=\" \\\\ \",</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
@@ -73,7 +73,7 @@ public class DefaultLinkParserTest {
     }
 
     @Test
-    public void allow_escaped_charractes2a() {
+    public void allow_escaped_charractes2b() {
         Link[] parsed = parser.parse("</foo>;param=\" \\\" \",</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
@@ -85,7 +85,7 @@ public class DefaultLinkParserTest {
     }
 
     @Test
-    public void allow_escaped_charractes2b() {
+    public void allow_escaped_charractes2c() {
         Link[] parsed = parser.parse("</foo>;param=\" \\x \",</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
@@ -121,12 +121,24 @@ public class DefaultLinkParserTest {
     }
 
     @Test
-    public void allow_escaped_charractes4() {
+    public void allow_escaped_charractes4a() {
         Link[] parsed = parser.parse("</foo>;param=\"<\",</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
         Map<String, LinkParamValue> attResult = new HashMap<>();
         attResult.put("param", new LinkParamValue("\"<\""));
+        Assert.assertEquals(attResult, parsed[0].getLinkParams());
+
+        Assert.assertEquals("/bar", parsed[1].getUriReference());
+    }
+
+    @Test
+    public void allow_escaped_charractes4b() {
+        Link[] parsed = parser.parse("</foo>;param=\">\",</bar>".getBytes());
+        Assert.assertEquals("/foo", parsed[0].getUriReference());
+
+        Map<String, LinkParamValue> attResult = new HashMap<>();
+        attResult.put("param", new LinkParamValue("\">\""));
         Assert.assertEquals(attResult, parsed[0].getLinkParams());
 
         Assert.assertEquals("/bar", parsed[1].getUriReference());
@@ -154,7 +166,8 @@ public class DefaultLinkParserTest {
 
     @Test
     public void allow_mixed_attributes() {
-        Link[] parsed = parser.parse("</foo>;param=!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9;param2=\"foo\";param3,</bar>".getBytes());
+        Link[] parsed = parser
+                .parse("</foo>;param=!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9;param2=\"foo\";param3,</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
         Map<String, LinkParamValue> attResult = new HashMap<>();

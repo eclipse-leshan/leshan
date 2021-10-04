@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 package org.eclipse.leshan.client.californium;
 
@@ -149,6 +150,9 @@ public class LeshanClientBuilder {
         return this;
     }
 
+    /**
+     * Set the CoRE link serializer {@link LinkSerializer}.
+     */
     public void setSerializer(LinkSerializer serializer) {
         this.serializer = serializer;
     }
@@ -378,6 +382,7 @@ public class LeshanClientBuilder {
      * @param encoder used to encode request payload.
      * @param decoder used to decode response payload.
      * @param sharedExecutor an optional shared executor.
+     * @param serializer CoRE link serializer.
      * 
      * @return the new {@link LeshanClient}
      */
