@@ -19,18 +19,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.eclipsesource.json.JsonArray;
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.JsonValue;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
 /**
- * An abstract class to easily create serializer/deserializer class based on "minimal-json".
+ * An abstract class to easily create serializer/deserializer class based on "jackson".
  * 
  * @param <T> the type of the objects to serialize or deserialize.
  */
 public abstract class JsonSerDes<T> {
 
-    public abstract JsonObject jSerialize(T t) throws JsonException;
+    public abstract JsonNode jSerialize(T t) throws JsonException;
 
     public String sSerialize(T t) throws JsonException {
         return jSerialize(t).toString();
@@ -40,13 +40,13 @@ public abstract class JsonSerDes<T> {
         return jSerialize(t).toString().getBytes();
     }
 
-    public JsonArray jSerialize(Collection<T> ts) throws JsonException {
-        JsonArray o = new JsonArray();
+    public ArrayNode jSerialize(Collection<T> ts) throws JsonException {
+        ArrayNode o = JsonNodeFactory.instance.arrayNode();
         if (ts != null) {
             for (T t : ts) {
-                JsonObject jo = jSerialize(t);
-                if (jo != null)
-                    o.add(jo);
+                JsonNode jn = jSerialize(t);
+                if (jn != null)
+                    o.add(jn);
             }
         }
         return o;
@@ -60,12 +60,12 @@ public abstract class JsonSerDes<T> {
         return jSerialize(ts).toString().getBytes();
     }
 
-    public abstract T deserialize(JsonObject o) throws JsonException;
+    public abstract T deserialize(JsonNode o) throws JsonException;
 
-    public List<T> deserialize(JsonArray a) throws JsonException {
+    public List<T> deserialize(ArrayNode a) throws JsonException {
         ArrayList<T> res = new ArrayList<>(a.size());
-        for (JsonValue v : a) {
-            res.add(deserialize(v.asObject()));
+        for (JsonNode v : a) {
+            res.add(deserialize(v));
         }
         return res;
     }
