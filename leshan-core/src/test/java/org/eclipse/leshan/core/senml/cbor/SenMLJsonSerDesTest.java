@@ -25,7 +25,6 @@ import org.eclipse.leshan.senml.SenMLEncoder;
 import org.eclipse.leshan.senml.SenMLException;
 import org.eclipse.leshan.senml.SenMLPack;
 import org.eclipse.leshan.senml.json.jackson.SenMLJsonJacksonEncoderDecoder;
-import org.eclipse.leshan.senml.json.minimaljson.SenMLJsonMinimalEncoderDecoder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -35,11 +34,9 @@ public class SenMLJsonSerDesTest extends AbstractSenMLTest {
 
     @Parameterized.Parameters(name = "{2}")
     public static Collection<?> senMLJsonencoderDecoder() {
-        SenMLJsonMinimalEncoderDecoder minimal = new SenMLJsonMinimalEncoderDecoder();
         SenMLJsonJacksonEncoderDecoder jackson = new SenMLJsonJacksonEncoderDecoder();
         return Arrays.asList(new Object[][] { //
-                                { minimal, minimal, "minimal-json" }, //
-                                { jackson, jackson, "jackson" } });
+                { jackson, jackson, "jackson" } });
     }
 
     private SenMLEncoder encoder;
@@ -67,10 +64,6 @@ public class SenMLJsonSerDesTest extends AbstractSenMLTest {
 
     @Test
     public void serialize_device_object() throws SenMLException {
-        // we skip this test with minimal-json because it encode number using E notation.
-        if (encoder instanceof SenMLJsonMinimalEncoderDecoder)
-            return;
-
         SenMLPack pack = givenDeviceObjectInstance();
         byte[] json = encoder.toSenML(pack);
         assertEquals(givenSenMLJsonExample(), new String(json));

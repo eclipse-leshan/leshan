@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *    Achim Kraus (Bosch Software Innovations GmbH) - initial implementation.
+ *    Orange - keep one JSON dependency
  ******************************************************************************/
 package org.eclipse.leshan.server.redis.serialization;
 
@@ -22,6 +23,7 @@ import java.security.Principal;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.security.auth.x500.X500Principal;
@@ -40,10 +42,9 @@ import org.eclipse.leshan.core.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.JsonObject.Member;
-import com.eclipsesource.json.JsonValue;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Functions for serializing and deserializing a Californium {@link EndpointContext} in JSON.
@@ -59,36 +60,36 @@ public class EndpointContextSerDes {
     private static final String KEY_RPK = "rpk";
     private static final String KEY_ATTRIBUTES = "attributes";
 
-    public static JsonObject serialize(EndpointContext context) {
-        JsonObject peer = Json.object();
+    public static ObjectNode serialize(EndpointContext context) {
+        ObjectNode peer = JsonNodeFactory.instance.objectNode();
         addAddress(peer, context.getPeerAddress());
         Principal principal = context.getPeerIdentity();
         if (principal != null) {
             if (principal instanceof PreSharedKeyIdentity) {
-                peer.set(KEY_ID, ((PreSharedKeyIdentity) principal).getIdentity());
+                peer.put(KEY_ID, ((PreSharedKeyIdentity) principal).getIdentity());
             } else if (principal instanceof RawPublicKeyIdentity) {
                 PublicKey publicKey = ((RawPublicKeyIdentity) principal).getKey();
-                peer.set(KEY_RPK, Hex.encodeHexString(publicKey.getEncoded()));
+                peer.put(KEY_RPK, Hex.encodeHexString(publicKey.getEncoded()));
             } else if (principal instanceof X500Principal || principal instanceof X509CertPath) {
-                peer.set(KEY_DN, principal.getName());
+                peer.put(KEY_DN, principal.getName());
             }
         }
         /** copy the attributes **/
         Map<Definition<?>, Object> attributes = context.entries();
         if (!attributes.isEmpty()) {
-            JsonObject attContext = Json.object();
+            ObjectNode attContext = JsonNodeFactory.instance.objectNode();
             for (Definition<?> key : attributes.keySet()) {
                 // write all values as string
                 Object value = attributes.get(key);
                 if (value instanceof InetSocketAddress) {
-                    JsonObject address = Json.object();
+                    ObjectNode address = JsonNodeFactory.instance.objectNode();
                     addAddress(address, (InetSocketAddress) value);
                     attContext.set(key.getKey(), address);
                 } else {
                     if (value instanceof Bytes) {
                         value = ((Bytes) value).getAsString();
                     }
-                    attContext.set(key.getKey(), value.toString());
+                    attContext.put(key.getKey(), value.toString());
                 }
             }
             peer.set(KEY_ATTRIBUTES, attContext);
@@ -97,17 +98,17 @@ public class EndpointContextSerDes {
     }
 
     @SuppressWarnings("unchecked")
-    public static EndpointContext deserialize(JsonObject peer) {
+    public static EndpointContext deserialize(JsonNode peer) {
 
         final InetSocketAddress socketAddress = getAddress(peer);
 
         Principal principal = null;
-        JsonValue value = peer.get(KEY_ID);
+        JsonNode value = peer.get(KEY_ID);
         if (value != null) {
-            principal = new PreSharedKeyIdentity(value.asString());
+            principal = new PreSharedKeyIdentity(value.asText());
         } else if ((value = peer.get(KEY_RPK)) != null) {
             try {
-                byte[] rpk = Hex.decodeHex(value.asString().toCharArray());
+                byte[] rpk = Hex.decodeHex(value.asText().toCharArray());
                 X509EncodedKeySpec spec = new X509EncodedKeySpec(rpk);
                 PublicKey publicKey = KeyFactory.getInstance("EC").generatePublic(spec);
                 principal = new RawPublicKeyIdentity(publicKey);
@@ -115,7 +116,7 @@ public class EndpointContextSerDes {
                 throw new IllegalStateException("Invalid security info content", e);
             }
         } else if ((value = peer.get(KEY_DN)) != null) {
-            principal = new X500Principal(value.asString());
+            principal = new X500Principal(value.asText());
         }
 
         EndpointContext endpointContext;
@@ -124,16 +125,16 @@ public class EndpointContextSerDes {
             endpointContext = new AddressEndpointContext(socketAddress, principal);
         } else {
             Attributes attributes = new Attributes();
-            for (Member member : value.asObject()) {
-                String name = member.getName();
+            for (Iterator<String> it = value.fieldNames(); it.hasNext();) {
+                String name = it.next();
                 Definition<?> key = MapBasedEndpointContext.ATTRIBUTE_DEFINITIONS.get(name);
                 if (key != null) {
                     if (key.getValueType().equals(InetSocketAddress.class)) {
-                        InetSocketAddress address = getAddress(member.getValue().asObject());
+                        InetSocketAddress address = getAddress(value.get(name));
                         attributes.add((Definition<InetSocketAddress>) key, address);
                     } else {
-                        String attributeValue = member.getValue().asString();
-                        // convert the text values into typed values according their name
+                        String attributeValue = value.get(name).asText();
+                        // convert the text values into typed values according their type
                         if (key.getValueType().equals(String.class)) {
                             attributes.add((Definition<String>) key, attributeValue);
                         } else if (key.getValueType().equals(Bytes.class)) {
@@ -159,13 +160,13 @@ public class EndpointContextSerDes {
         return endpointContext;
     }
 
-    private static void addAddress(JsonObject object, InetSocketAddress address) {
-        object.set(KEY_ADDRESS, address.getHostString());
-        object.set(KEY_PORT, address.getPort());
+    private static void addAddress(ObjectNode object, InetSocketAddress address) {
+        object.put(KEY_ADDRESS, address.getHostString());
+        object.put(KEY_PORT, address.getPort());
     }
 
-    private static InetSocketAddress getAddress(JsonObject object) {
-        String address = object.get(KEY_ADDRESS).asString();
+    private static InetSocketAddress getAddress(JsonNode object) {
+        String address = object.get(KEY_ADDRESS).asText();
         int port = object.get(KEY_PORT).asInt();
         return new InetSocketAddress(address, port);
     }

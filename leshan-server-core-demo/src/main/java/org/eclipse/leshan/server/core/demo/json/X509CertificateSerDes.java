@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Orange - keep one JSON dependency
  *******************************************************************************/
 package org.eclipse.leshan.server.core.demo.json;
 
@@ -19,26 +20,27 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
 import org.eclipse.leshan.core.util.Base64;
-import org.eclipse.leshan.core.util.json.JsonSerDes;
+import org.eclipse.leshan.core.util.json.JacksonJsonSerDes;
 
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 ///!\ This class is a COPY of org.eclipse.leshan.server.bootstrap.demo.json.X509CertificateSerDes /!\
 // TODO create a leshan-demo project ?
-public class X509CertificateSerDes extends JsonSerDes<X509Certificate> {
+public class X509CertificateSerDes extends JacksonJsonSerDes<X509Certificate> {
 
     private PublicKeySerDes publicKeySerDes = new PublicKeySerDes();
 
     @Override
-    public JsonObject jSerialize(X509Certificate certificate) {
-        final JsonObject o = Json.object();
+    public JsonNode jSerialize(X509Certificate certificate) {
+        final ObjectNode o = JsonNodeFactory.instance.objectNode();
         // add pubkey info
-        o.add("pubkey", publicKeySerDes.jSerialize(certificate.getPublicKey()));
+        o.set("pubkey", publicKeySerDes.jSerialize(certificate.getPublicKey()));
 
         // Get certificate (DER encoding)
         try {
-            o.add("b64Der", Base64.encodeBase64String(certificate.getEncoded()));
+            o.put("b64Der", Base64.encodeBase64String(certificate.getEncoded()));
         } catch (CertificateEncodingException e) {
             throw new RuntimeException(e);
         }
@@ -47,7 +49,7 @@ public class X509CertificateSerDes extends JsonSerDes<X509Certificate> {
     }
 
     @Override
-    public X509Certificate deserialize(JsonObject o) {
+    public X509Certificate deserialize(JsonNode o) {
         throw new UnsupportedOperationException("Not implemented yet.");
     }
 }

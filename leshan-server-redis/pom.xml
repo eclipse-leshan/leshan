@@ -39,10 +39,6 @@ Contributors:
             <!-- stuck to 3.5.x for java7 compliance -->
             <version>3.5.2</version>
         </dependency>
-        <dependency>
-            <groupId>com.eclipsesource.minimal-json</groupId>
-            <artifactId>minimal-json</artifactId>
-        </dependency>
 
         <!-- test dependencies -->
         <dependency>

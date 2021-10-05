@@ -22,7 +22,6 @@ import org.eclipse.leshan.senml.SenMLEncoder;
 import org.eclipse.leshan.senml.SenMLException;
 import org.eclipse.leshan.senml.SenMLPack;
 
-import com.eclipsesource.json.ParseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -76,7 +75,7 @@ public class SenMLJsonJacksonEncoderDecoder implements SenMLDecoder, SenMLEncode
             }
             return new SenMLPack(serDes.deserialize(node.iterator()));
 
-        } catch (JsonException | ParseException | IOException e) {
+        } catch (JsonException | IOException e) {
             throw new SenMLException("Unable to parse SenML JSON.", e);
         }
     }

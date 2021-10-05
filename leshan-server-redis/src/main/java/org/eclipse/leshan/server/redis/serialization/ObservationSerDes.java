@@ -14,10 +14,12 @@
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - add support for californium
  *                                                     endpoint context
+ *     Orange - keep one JSON dependency
  *******************************************************************************/
 package org.eclipse.leshan.server.redis.serialization;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -30,9 +32,11 @@ import org.eclipse.californium.core.observe.Observation;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.core.util.Hex;
 
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.JsonValue;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Functions for serializing and deserializing a Californium {@link Observation} in JSON.
@@ -46,18 +50,18 @@ public class ObservationSerDes {
     private static final DataParser parser = new UdpDataParser();
 
     public static byte[] serialize(Observation obs) {
-        JsonObject o = Json.object();
+        ObjectNode o = JsonNodeFactory.instance.objectNode();
 
-        o.set("request", Hex.encodeHexString(serializer.serializeRequest(obs.getRequest()).bytes));
+        o.put("request", Hex.encodeHexString(serializer.serializeRequest(obs.getRequest()).bytes));
         if (obs.getContext() != null)
             o.set("peer", EndpointContextSerDes.serialize(obs.getContext()));
         else
             o.set("peer", EndpointContextSerDes.serialize(obs.getRequest().getDestinationContext()));
 
         if (obs.getRequest().getUserContext() != null) {
-            JsonObject ctxObject = Json.object();
+            ObjectNode ctxObject = JsonNodeFactory.instance.objectNode();
             for (Entry<String, String> e : obs.getRequest().getUserContext().entrySet()) {
-                ctxObject.set(e.getKey(), e.getValue());
+                ctxObject.put(e.getKey(), e.getValue());
             }
             o.set("context", ctxObject);
         }
@@ -65,25 +69,30 @@ public class ObservationSerDes {
     }
 
     public static Observation deserialize(byte[] data) {
-        JsonObject v = (JsonObject) Json.parse(new String(data));
+        String json = new String(data);
+        try {
+            JsonNode v = new ObjectMapper().readTree(json);
 
-        EndpointContext endpointContext = EndpointContextSerDes.deserialize(v.get("peer").asObject());
-        byte[] req = Hex.decodeHex(v.getString("request", null).toCharArray());
+            EndpointContext endpointContext = EndpointContextSerDes.deserialize(v.get("peer"));
+            byte[] req = Hex.decodeHex(v.get("request").asText().toCharArray());
 
-        Request request = (Request) parser.parseMessage(req);
-        request.setDestinationContext(endpointContext);
+            Request request = (Request) parser.parseMessage(req);
+            request.setDestinationContext(endpointContext);
 
-        JsonValue ctxValue = v.get("context");
-        if (ctxValue != null) {
-            Map<String, String> context = new HashMap<>();
-            JsonObject ctxObject = (JsonObject) ctxValue;
-            for (String name : ctxObject.names()) {
-                context.put(name, ctxObject.getString(name, null));
+            JsonNode ctxValue = v.get("context");
+            if (ctxValue != null) {
+                Map<String, String> context = new HashMap<>();
+                for (Iterator<String> it = ctxValue.fieldNames(); it.hasNext();) {
+                    String name = it.next();
+                    context.put(name, ctxValue.get(name).asText());
+                }
+                request.setUserContext(context);
             }
-            request.setUserContext(context);
-        }
 
-        return new Observation(request, endpointContext);
+            return new Observation(request, endpointContext);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException(String.format("Unable to deserialize Observation %s", json), e);
+        }
     }
 
 }

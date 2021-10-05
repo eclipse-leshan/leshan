@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Orange - keep one JSON dependency
  *******************************************************************************/
 package org.eclipse.leshan.server.redis.serialization;
 
@@ -33,8 +34,11 @@ import java.util.Arrays;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.security.SecurityInfo;
 
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Functions for serialize and deserialize security information in JSON for storage.
@@ -42,61 +46,62 @@ import com.eclipsesource.json.JsonObject;
 public class SecurityInfoSerDes {
 
     public static byte[] serialize(SecurityInfo s) {
-        JsonObject o = Json.object();
-        o.set("ep", s.getEndpoint());
+        ObjectNode o = JsonNodeFactory.instance.objectNode();
+        o.put("ep", s.getEndpoint());
         if (s.getIdentity() != null) {
-            o.set("id", s.getIdentity());
+            o.put("id", s.getIdentity());
         }
         if (s.getPreSharedKey() != null) {
-            o.set("psk", Hex.encodeHexString(s.getPreSharedKey()));
+            o.put("psk", Hex.encodeHexString(s.getPreSharedKey()));
         }
         if (s.getRawPublicKey() != null) {
-            JsonObject rpk = new JsonObject();
+            ObjectNode rpk = JsonNodeFactory.instance.objectNode();
             ECPublicKey ecPublicKey = (ECPublicKey) s.getRawPublicKey();
             // Get x coordinate
             byte[] x = ecPublicKey.getW().getAffineX().toByteArray();
             if (x[0] == 0)
                 x = Arrays.copyOfRange(x, 1, x.length);
-            rpk.add("x", Hex.encodeHexString(x));
+            rpk.put("x", Hex.encodeHexString(x));
 
             // Get Y coordinate
             byte[] y = ecPublicKey.getW().getAffineY().toByteArray();
             if (y[0] == 0)
                 y = Arrays.copyOfRange(y, 1, y.length);
-            rpk.add("y", Hex.encodeHexString(y));
+            rpk.put("y", Hex.encodeHexString(y));
 
             // Get Curves params
             ecPublicKey.getParams();
 
             // use only the first part as the curve name
-            rpk.add("params", ecPublicKey.getParams().toString().split(" ")[0]);
+            rpk.put("params", ecPublicKey.getParams().toString().split(" ")[0]);
             o.set("rpk", rpk);
         }
 
         if (s.useX509Cert()) {
-            o.set("x509", true);
+            o.put("x509", true);
         }
 
         return o.toString().getBytes();
     }
 
     public static SecurityInfo deserialize(byte[] data) {
-        JsonObject o = (JsonObject) Json.parse(new String(data));
-
         SecurityInfo i;
-        String ep = o.getString("ep", null);
-        if (o.get("psk") != null) {
-            i = SecurityInfo.newPreSharedKeyInfo(ep, o.getString("id", null),
-                    Hex.decodeHex(o.getString("psk", null).toCharArray()));
-        } else if (o.get("x509") != null) {
-            i = SecurityInfo.newX509CertInfo(ep);
-        } else {
-            JsonObject rpk = (JsonObject) o.get("rpk");
-            PublicKey key;
-            try {
-                byte[] x = Hex.decodeHex(rpk.getString("x", null).toCharArray());
-                byte[] y = Hex.decodeHex(rpk.getString("y", null).toCharArray());
-                String params = rpk.getString("params", null);
+        try {
+            JsonNode o = new ObjectMapper().readTree(new String(data));
+
+            String ep = o.get("ep").asText();
+            if (o.get("psk") != null) {
+                i = SecurityInfo.newPreSharedKeyInfo(ep, o.get("id").asText(),
+                        Hex.decodeHex(o.get("psk").asText().toCharArray()));
+            } else if (o.get("x509") != null) {
+                i = SecurityInfo.newX509CertInfo(ep);
+            } else {
+                JsonNode rpk = o.get("rpk");
+                PublicKey key;
+
+                byte[] x = Hex.decodeHex(rpk.get("x").asText().toCharArray());
+                byte[] y = Hex.decodeHex(rpk.get("y").asText().toCharArray());
+                String params = rpk.get("params").asText();
                 AlgorithmParameters algoParameters = AlgorithmParameters.getInstance("EC");
                 algoParameters.init(new ECGenParameterSpec(params));
                 ECParameterSpec parameterSpec = algoParameters.getParameterSpec(ECParameterSpec.class);
@@ -104,11 +109,13 @@ public class SecurityInfoSerDes {
                 KeySpec keySpec = new ECPublicKeySpec(new ECPoint(new BigInteger(x), new BigInteger(y)), parameterSpec);
 
                 key = KeyFactory.getInstance("EC").generatePublic(keySpec);
-            } catch (IllegalArgumentException | InvalidKeySpecException | NoSuchAlgorithmException
-                    | InvalidParameterSpecException e) {
-                throw new IllegalStateException("Invalid security info content", e);
+
+                i = SecurityInfo.newRawPublicKeyInfo(ep, key);
             }
-            i = SecurityInfo.newRawPublicKeyInfo(ep, key);
+
+        } catch (IllegalArgumentException | InvalidKeySpecException | NoSuchAlgorithmException
+                | InvalidParameterSpecException | JsonProcessingException e) {
+            throw new IllegalStateException("Invalid security info content", e);
         }
         return i;
     }

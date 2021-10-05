@@ -16,7 +16,7 @@
 package org.eclipse.leshan.core.util.json;
 
 /**
- * Exception raised by concrete implementation of {@link JsonSerDes} during serialization and deserialization.
+ * Exception raised by concrete implementation of {@link JacksonJsonSerDes} during serialization and deserialization.
  */
 public class JsonException extends RuntimeException {
 

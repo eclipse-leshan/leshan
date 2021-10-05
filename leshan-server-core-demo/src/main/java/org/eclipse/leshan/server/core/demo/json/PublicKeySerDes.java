@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Orange - keep one JSON dependency
  *******************************************************************************/
 package org.eclipse.leshan.server.core.demo.json;
 
@@ -21,43 +22,45 @@ import java.util.Arrays;
 
 import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.Hex;
-import org.eclipse.leshan.core.util.json.JsonSerDes;
+import org.eclipse.leshan.core.util.json.JacksonJsonSerDes;
 
-import com.eclipsesource.json.JsonObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public class PublicKeySerDes extends JsonSerDes<PublicKey> {
+public class PublicKeySerDes extends JacksonJsonSerDes<PublicKey> {
 
     @Override
-    public JsonObject jSerialize(PublicKey publicKey) {
+    public JsonNode jSerialize(PublicKey publicKey) {
         if (!(publicKey instanceof ECPublicKey))
             throw new IllegalStateException("Unsupported Public Key Format (only ECPublicKey supported).");
 
         ECPublicKey ecPublicKey = (ECPublicKey) publicKey;
-        JsonObject o = new JsonObject();
+        ObjectNode o = JsonNodeFactory.instance.objectNode();
 
         // Get x coordinate
         byte[] x = ecPublicKey.getW().getAffineX().toByteArray();
         if (x[0] == 0)
             x = Arrays.copyOfRange(x, 1, x.length);
-        o.add("x", Hex.encodeHexString(x));
+        o.put("x", Hex.encodeHexString(x));
 
         // Get Y coordinate
         byte[] y = ecPublicKey.getW().getAffineY().toByteArray();
         if (y[0] == 0)
             y = Arrays.copyOfRange(y, 1, y.length);
-        o.add("y", Hex.encodeHexString(y));
+        o.put("y", Hex.encodeHexString(y));
 
         // Get Curves params
-        o.add("params", ecPublicKey.getParams().toString());
+        o.put("params", ecPublicKey.getParams().toString());
 
         // Get raw public key in format SubjectPublicKeyInfo (DER encoding)
-        o.add("b64Der", Base64.encodeBase64String(ecPublicKey.getEncoded()));
+        o.put("b64Der", Base64.encodeBase64String(ecPublicKey.getEncoded()));
 
         return o;
     }
 
     @Override
-    public PublicKey deserialize(JsonObject o) {
+    public PublicKey deserialize(JsonNode o) {
         throw new UnsupportedOperationException("not implemented yet.");
     }
 }

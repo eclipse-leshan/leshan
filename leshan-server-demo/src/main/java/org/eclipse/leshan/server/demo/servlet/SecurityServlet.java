@@ -38,7 +38,8 @@ import org.eclipse.leshan.server.security.SecurityInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.eclipsesource.json.JsonObject;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
@@ -144,11 +145,11 @@ public class SecurityServlet extends HttpServlet {
         }
 
         if ("server".equals(path[0])) {
-            JsonObject security = new JsonObject();
+            ObjectNode security = JsonNodeFactory.instance.objectNode();
             if (serverPublicKey != null) {
-                security.add("pubkey", publicKeySerDes.jSerialize(serverPublicKey));
+                security.set("pubkey", publicKeySerDes.jSerialize(serverPublicKey));
             } else if (serverCertificate != null) {
-                security.add("certificate", certificateSerDes.jSerialize(serverCertificate));
+                security.set("certificate", certificateSerDes.jSerialize(serverCertificate));
             }
             resp.setContentType("application/json");
             resp.getOutputStream().write(security.toString().getBytes(StandardCharsets.UTF_8));

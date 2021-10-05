@@ -51,8 +51,8 @@ public class EventServlet extends EventSourceServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(EventServlet.class);
 
-    private ObjectMapper objectMapper;
-    private Set<LeshanEventSource> eventSources = Collections
+    private final ObjectMapper objectMapper;
+    private final Set<LeshanEventSource> eventSources = Collections
             .newSetFromMap(new ConcurrentHashMap<LeshanEventSource, Boolean>());
 
     @SuppressWarnings("unused")
