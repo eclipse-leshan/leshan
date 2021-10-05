@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
 /**
- * An abstract class to easily create serializer/deserializer class based on "minimal-json".
+ * An abstract class to easily create serializer/deserializer class based on "jackson".
  * 
  * @param <T> the type of the objects to serialize or deserialize.
  */

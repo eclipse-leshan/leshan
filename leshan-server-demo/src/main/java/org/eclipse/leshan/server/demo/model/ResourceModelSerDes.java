@@ -18,48 +18,49 @@ package org.eclipse.leshan.server.demo.model;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Operations;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
-import org.eclipse.leshan.core.util.json.JsonSerDes;
+import org.eclipse.leshan.core.util.json.JacksonJsonSerDes;
 
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public class ResourceModelSerDes extends JsonSerDes<ResourceModel> {
+public class ResourceModelSerDes extends JacksonJsonSerDes<ResourceModel> {
 
     @Override
-    public JsonObject jSerialize(ResourceModel m) {
-        final JsonObject o = Json.object();
-        o.add("id", m.id);
-        o.add("name", m.name);
-        o.add("operations", m.operations.toString());
-        o.add("instancetype", m.multiple ? "multiple" : "single");
-        o.add("mandatory", m.mandatory);
-        o.add("type", m.type == null ? "none" : m.type.toString().toLowerCase());
-        o.add("range", m.rangeEnumeration);
-        o.add("units", m.units);
-        o.add("description", m.description);
+    public JsonNode jSerialize(ResourceModel m) {
+        final ObjectNode o = JsonNodeFactory.instance.objectNode();
+        o.put("id", m.id);
+        o.put("name", m.name);
+        o.put("operations", m.operations.toString());
+        o.put("instancetype", m.multiple ? "multiple" : "single");
+        o.put("mandatory", m.mandatory);
+        o.put("type", m.type == null ? "none" : m.type.toString().toLowerCase());
+        o.put("range", m.rangeEnumeration);
+        o.put("units", m.units);
+        o.put("description", m.description);
         return o;
     }
 
     @Override
-    public ResourceModel deserialize(JsonObject o) {
+    public ResourceModel deserialize(JsonNode o) {
         if (o == null)
             return null;
 
         if (!o.isObject())
             return null;
 
-        int id = o.getInt("id", -1);
+        int id = o.get("id").asInt(-1);
         if (id < 0)
             return null;
 
-        String name = o.getString("name", null);
-        Operations operations = Operations.valueOf(o.getString("operations", null));
-        String instancetype = o.getString("instancetype", null);
-        boolean mandatory = o.getBoolean("mandatory", false);
-        Type type = Type.valueOf(o.getString("type", "").toUpperCase());
-        String range = o.getString("range", null);
-        String units = o.getString("units", null);
-        String description = o.getString("description", null);
+        String name = o.get("name").asText();
+        Operations operations = Operations.valueOf(o.get("operations").asText());
+        String instancetype = o.get("instancetype").asText();
+        boolean mandatory = o.get("mandatory").asBoolean(false);
+        Type type = Type.valueOf(o.get("type").asText().toUpperCase());
+        String range = o.get("range").asText();
+        String units = o.get("units").asText();
+        String description = o.get("description").asText();
 
         return new ResourceModel(id, name, operations, "multiple".equals(instancetype), mandatory, type, range, units,
                 description);

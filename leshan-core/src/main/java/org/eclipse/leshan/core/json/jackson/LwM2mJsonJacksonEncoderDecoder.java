@@ -25,11 +25,10 @@ import org.eclipse.leshan.core.json.LwM2mJsonEncoder;
 import org.eclipse.leshan.core.json.LwM2mJsonException;
 import org.eclipse.leshan.core.util.json.JsonException;
 
-import com.eclipsesource.json.ParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Helper for encoding/decoding LWM2M JSON format using minimal-json
+ * Helper for encoding/decoding LWM2M JSON format using jackson
  */
 public class LwM2mJsonJacksonEncoderDecoder implements LwM2mJsonDecoder, LwM2mJsonEncoder {
 
@@ -49,7 +48,7 @@ public class LwM2mJsonJacksonEncoderDecoder implements LwM2mJsonDecoder, LwM2mJs
     public JsonRootObject fromJsonLwM2m(String jsonString) throws LwM2mJsonException {
         try {
             return serDes.deserialize(mapper.readTree(jsonString));
-        } catch (JsonException | ParseException | IOException e) {
+        } catch (JsonException | IOException e) {
             throw new LwM2mJsonException("Unable to parse LWM2M JSON.", e);
         }
     }

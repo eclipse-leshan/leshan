@@ -32,7 +32,8 @@ import org.eclipse.leshan.server.core.demo.json.SecuritySerializer;
 import org.eclipse.leshan.server.core.demo.json.X509CertificateSerDes;
 import org.eclipse.leshan.server.security.SecurityInfo;
 
-import com.eclipsesource.json.JsonObject;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.GsonBuilder;
 
 public class ServerServlet extends HttpServlet {
@@ -77,11 +78,11 @@ public class ServerServlet extends HttpServlet {
         }
 
         if ("security".equals(path[0])) {
-            JsonObject security = new JsonObject();
+            ObjectNode security = JsonNodeFactory.instance.objectNode();
             if (publicKey != null) {
-                security.add("pubkey", publicKeySerDes.jSerialize(publicKey));
+                security.set("pubkey", publicKeySerDes.jSerialize(publicKey));
             } else if (serverCertificate != null) {
-                security.add("certificate", certificateSerDes.jSerialize(serverCertificate));
+                security.set("certificate", certificateSerDes.jSerialize(serverCertificate));
             }
             resp.setContentType("application/json");
             resp.getOutputStream().write(security.toString().getBytes(StandardCharsets.UTF_8));
