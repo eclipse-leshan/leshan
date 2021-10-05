@@ -29,6 +29,7 @@
 import RequestButton from "../RequestButton.vue";
 import InstanceWriteDialog from "../instance/InstanceWriteDialog.vue";
 import { preference } from "vue-preferences";
+import { instanceToREST } from "../../js/restutils";
 
 const timeout = preference("timeout", { defaultValue: 5 });
 const format = preference("multiformat", { defaultValue: "TLV" });
@@ -43,7 +44,7 @@ export default {
     path: String, // path of the LWM2M object
     objectdef: Object, // model of the LWM2M object
     id: String, // ID of the LWM2M Object Instance
-  }, 
+  },
   data() {
     return {
       dialog: false,
@@ -126,11 +127,7 @@ export default {
     },
     write(value, replace) {
       let requestButton = this.$refs.W;
-      let data = { id: this.id, resources: [] };
-      for (let id in value) {
-        data.resources.push({ id: id, value: value[id] });
-      }
-
+      let data = instanceToREST(this.objectdef, this.id, value);
       this.axios
         .put(
           `${this.requestPath()}${this.requestOption()}&replace=${replace}`,

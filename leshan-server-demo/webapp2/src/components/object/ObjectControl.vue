@@ -17,13 +17,14 @@
 import RequestButton from "../RequestButton.vue";
 import InstanceCreateDialog from "../instance/InstanceCreateDialog.vue";
 import { preference } from "vue-preferences";
+import { instanceToREST } from "../../js/restutils";
 
 const timeout = preference("timeout", { defaultValue: 5 });
 const format = preference("multiformat", { defaultValue: "TLV" });
 
 export default {
-  components: { RequestButton ,InstanceCreateDialog },
-  props: { objectdef: Object, endpoint: String},
+  components: { RequestButton, InstanceCreateDialog },
+  props: { objectdef: Object, endpoint: String },
   data() {
     return {
       dialog: false,
@@ -42,7 +43,9 @@ export default {
   },
   methods: {
     requestPath() {
-      return `api/clients/${encodeURIComponent(this.endpoint)}/${this.objectdef.id}?timeout=${timeout.get()}&format=${format.get()}`;
+      return `api/clients/${encodeURIComponent(this.endpoint)}/${
+        this.objectdef.id
+      }?timeout=${timeout.get()}&format=${format.get()}`;
     },
     updateState(content, requestButton) {
       let state = !content.valid
@@ -57,14 +60,9 @@ export default {
     },
     create(value) {
       let requestButton = this.$refs.C;
-      let data = {resources:[]};
-      for (let id in value.resources){
-          data.resources.push({id:id,value:value.resources[id]})
-      }
-      if (value.id) data.id = value.id;
-
+      let data = instanceToREST(this.objectdef, value.id, value.resources);
       this.axios
-        .post(this.requestPath(),data)
+        .post(this.requestPath(), data)
         .then((response) => {
           this.updateState(response.data, requestButton);
         })

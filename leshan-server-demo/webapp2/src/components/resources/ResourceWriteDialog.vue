@@ -16,13 +16,10 @@
         </div>
         <div v-if="resourcedef.range">Range : {{ resourcedef.range }}</div>
         <div v-if="resourcedef.units">Units : {{ resourcedef.units }}</div>
-        <v-divider class="pa-2"/>
+        <v-divider class="pa-2" />
         <p style="white-space: pre-wrap">{{ resourcedef.description }}</p>
         <v-form ref="form" @submit.prevent="write">
-          <resource-input
-            v-model="resourceValue"
-            :resourcedef="resourcedef"
-          />
+          <resource-input v-model="resourceValue" :resourcedef="resourcedef" />
         </v-form>
       </v-card-text>
       <v-card-actions>

@@ -48,6 +48,7 @@
 import RequestButton from "../RequestButton.vue";
 import ResourceWriteDialog from "./ResourceWriteDialog.vue";
 import { preference } from "vue-preferences";
+import { resourceToREST } from "../../js/restutils";
 
 const timeout = preference("timeout", { defaultValue: 5 });
 const singleFormat = preference("singleformat", { defaultValue: "TLV" });
@@ -83,9 +84,9 @@ export default {
   },
   methods: {
     getFormat() {
-      if (this.resourcedef.instancetype === "single"){
+      if (this.resourcedef.instancetype === "single") {
         return singleFormat.get();
-      }else {
+      } else {
         return multiFormat.get();
       }
     },
@@ -95,7 +96,6 @@ export default {
     requestOption() {
       return `?timeout=${timeout.get()}&format=${this.getFormat()}`;
     },
-
     updateState(content, requestButton) {
       let state = !content.valid
         ? "warning"
@@ -110,11 +110,11 @@ export default {
         .then((response) => {
           this.updateState(response.data, requestButton);
           if (response.data.success)
-             this.$store.newResourceValue(
-                this.endpoint,
-                this.path,
-                response.data.content
-              );
+            this.$store.newResourceValue(
+              this.endpoint,
+              this.path,
+              response.data.content
+            );
         })
         .catch(() => {
           requestButton.resetState();
@@ -154,18 +154,16 @@ export default {
     },
     write(value) {
       let requestButton = this.$refs.W;
+      let payload = resourceToREST(this.resourcedef, value);
       this.axios
-        .put(this.requestPath() + this.requestOption(), {
-          id: this.resourcedef.id,
-          value: value,
-        })
+        .put(this.requestPath() + this.requestOption(), payload)
         .then((response) => {
           this.updateState(response.data, requestButton);
           if (response.data.success)
-            this.$store.newSingleResourceValue(
+            this.$store.newResourceValue(
               this.endpoint,
               this.path,
-              value,
+              payload,
               true
             );
         })
