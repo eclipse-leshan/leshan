@@ -49,7 +49,7 @@ public class DefaultLinkParserTest {
     }
 
     @Test
-    public void allow_escaped_charractes() {
+    public void allow_escaped_characters() {
         Link[] parsed = parser.parse("</foo>;param=\",\",</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
@@ -61,7 +61,7 @@ public class DefaultLinkParserTest {
     }
 
     @Test
-    public void allow_escaped_charractes2a() {
+    public void allow_escaped_characters2a() {
         Link[] parsed = parser.parse("</foo>;param=\" \\\\ \",</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
@@ -73,7 +73,7 @@ public class DefaultLinkParserTest {
     }
 
     @Test
-    public void allow_escaped_charractes2b() {
+    public void allow_escaped_characters2b() {
         Link[] parsed = parser.parse("</foo>;param=\" \\\" \",</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
@@ -85,7 +85,7 @@ public class DefaultLinkParserTest {
     }
 
     @Test
-    public void allow_escaped_charractes2c() {
+    public void allow_escaped_characters2c() {
         Link[] parsed = parser.parse("</foo>;param=\" \\x \",</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
@@ -109,7 +109,7 @@ public class DefaultLinkParserTest {
     }
 
     @Test
-    public void allow_escaped_charractes3() {
+    public void allow_escaped_characters3() {
         Link[] parsed = parser.parse("</foo>;param=\";\",</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
@@ -121,7 +121,7 @@ public class DefaultLinkParserTest {
     }
 
     @Test
-    public void allow_escaped_charractes4a() {
+    public void allow_escaped_characters4a() {
         Link[] parsed = parser.parse("</foo>;param=\"<\",</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
@@ -133,7 +133,7 @@ public class DefaultLinkParserTest {
     }
 
     @Test
-    public void allow_escaped_charractes4b() {
+    public void allow_escaped_characters4b() {
         Link[] parsed = parser.parse("</foo>;param=\">\",</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
@@ -145,7 +145,7 @@ public class DefaultLinkParserTest {
     }
 
     @Test
-    public void allow_escaped_charractes5() {
+    public void allow_escaped_characters5() {
         Link[] parsed = parser.parse("</foo>;param=\"=\"".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 

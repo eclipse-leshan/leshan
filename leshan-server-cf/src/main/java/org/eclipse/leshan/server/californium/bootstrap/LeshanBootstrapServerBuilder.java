@@ -94,7 +94,7 @@ public class LeshanBootstrapServerBuilder {
     private boolean noSecuredEndpoint;
     private boolean noUnsecuredEndpoint;
 
-    private LinkParser parser;
+    private LinkParser linkParser;
 
     /**
      * Set the address/port for unsecured CoAP communication (<code>coap://</code>).
@@ -363,10 +363,10 @@ public class LeshanBootstrapServerBuilder {
     /**
      * Set CoRE Link parser.
      *
-     * @param parser {@link LinkParser}
+     * @param linkParser a parser {@link LinkParser} used to parse a CoRE Link.
      */
-    public void setParser(LinkParser parser) {
-        this.parser = parser;
+    public void setLinkParser(LinkParser linkParser) {
+        this.linkParser = linkParser;
     }
 
     /**
@@ -447,8 +447,8 @@ public class LeshanBootstrapServerBuilder {
             encoder = new DefaultLwM2mEncoder();
         if (decoder == null)
             decoder = new DefaultLwM2mDecoder();
-        if (parser == null)
-            parser = new DefaultLinkParser();
+        if (linkParser == null)
+            linkParser = new DefaultLinkParser();
 
         // handle dtlsConfig
         DtlsConnectorConfig dtlsConfig = null;
@@ -595,6 +595,6 @@ public class LeshanBootstrapServerBuilder {
             BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory,
             NetworkConfig coapConfig, LwM2mEncoder encoder, LwM2mDecoder decoder) {
         return new LeshanBootstrapServer(unsecuredEndpoint, securedEndpoint, bsSessionManager, bsHandlerFactory,
-                coapConfig, encoder, decoder, parser);
+                coapConfig, encoder, decoder, linkParser);
     }
 }

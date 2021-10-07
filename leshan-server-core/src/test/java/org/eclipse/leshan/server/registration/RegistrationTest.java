@@ -34,7 +34,7 @@ import org.junit.Test;
 
 public class RegistrationTest {
 
-    private final LinkParser parser = new DefaultLinkParser();
+    private final LinkParser linkParser = new DefaultLinkParser();
 
     @Test
     public void test_object_links_without_version_nor_rootpath() {
@@ -221,7 +221,7 @@ public class RegistrationTest {
         Builder builder = new Registration.Builder("id", "endpoint",
                 Identity.unsecure(InetSocketAddress.createUnresolved("localhost", 0)));
         builder.extractDataFromObjectLink(true);
-        builder.objectLinks(parser.parse(objectLinks.getBytes()));
+        builder.objectLinks(linkParser.parse(objectLinks.getBytes()));
         return builder.build();
     }
 }

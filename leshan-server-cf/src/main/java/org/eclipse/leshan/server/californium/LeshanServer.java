@@ -124,7 +124,7 @@ public class LeshanServer {
     /** since 1.1 */
     protected final boolean updateRegistrationOnNotification;
 
-    protected final LinkParser parser;
+    protected final LinkParser linkParser;
 
     /**
      * Initialize a server which will bind to the specified address and port.
@@ -143,15 +143,15 @@ public class LeshanServer {
      * @param noQueueMode true to disable presenceService.
      * @param awakeTimeProvider to set the client awake time if queue mode is used.
      * @param registrationIdProvider to provide registrationId using for location-path option values on response of
-     * @param parser parser {@link LinkParser} used to parse a CoRE Link.
+     * @param linkParser a parser {@link LinkParser} used to parse a CoRE Link.
      */
     public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder, NetworkConfig coapConfig,
             boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
-            RegistrationIdProvider registrationIdProvider, LinkParser parser) {
+            RegistrationIdProvider registrationIdProvider, LinkParser linkParser) {
         this(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer, modelProvider, encoder,
-                decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider, false, parser);
+                decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider, false, linkParser);
     }
 
     /**
@@ -173,8 +173,7 @@ public class LeshanServer {
      * @param registrationIdProvider to provide registrationId using for location-path option values on response of
      *        Register operation.
      * @param updateRegistrationOnNotification will activate registration update on observe notification.
-     *
-     * @param parser parser {@link LinkParser} used to parse a CoRE Link.
+     * @param linkParser a parser {@link LinkParser} used to parse a CoRE Link.
      * @since 1.1
      */
     public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
@@ -182,8 +181,8 @@ public class LeshanServer {
             LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder, NetworkConfig coapConfig,
             boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
             RegistrationIdProvider registrationIdProvider, boolean updateRegistrationOnNotification,
-            LinkParser parser) {
-        this.parser = parser;
+            LinkParser linkParser) {
+        this.linkParser = linkParser;
 
         Validate.notNull(registrationStore, "registration store cannot be null");
         Validate.notNull(authorizer, "authorizer cannot be null");
@@ -285,7 +284,7 @@ public class LeshanServer {
     protected CoapResource createRegisterResource(RegistrationServiceImpl registrationService, Authorizer authorizer,
             RegistrationIdProvider registrationIdProvider) {
         return new RegisterResource(new RegistrationHandler(registrationService, authorizer, registrationIdProvider),
-                parser);
+                linkParser);
     }
 
     protected SendHandler createSendHandler() {
@@ -306,10 +305,11 @@ public class LeshanServer {
         final LwM2mRequestSender requestSender;
         if (presenceService == null)
             requestSender = new CaliforniumLwM2mRequestSender(securedEndpoint, unsecuredEndpoint, observationService,
-                    modelProvider, encoder, decoder, parser);
+                    modelProvider, encoder, decoder, linkParser);
         else
-            requestSender = new CaliforniumQueueModeRequestSender(presenceService, new CaliforniumLwM2mRequestSender(
-                    securedEndpoint, unsecuredEndpoint, observationService, modelProvider, encoder, decoder, parser));
+            requestSender = new CaliforniumQueueModeRequestSender(presenceService,
+                    new CaliforniumLwM2mRequestSender(securedEndpoint, unsecuredEndpoint, observationService,
+                            modelProvider, encoder, decoder, linkParser));
 
         // Cancel observations on client unregistering
         registrationService.addListener(new RegistrationListener() {

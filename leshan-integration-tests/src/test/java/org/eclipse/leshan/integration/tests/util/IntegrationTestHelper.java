@@ -92,8 +92,8 @@ public class IntegrationTestHelper {
     public static final int UNSIGNED_INTEGER_RESOURCE_ID = 11;
     public static final int OPAQUE_MULTI_INSTANCE_RESOURCE_ID = 12;
 
-    public static final LinkParser parser = new DefaultLinkParser();
-    public static final LinkSerializer serializer = new DefaultLinkSerializer();
+    public static final LinkParser linkParser = new DefaultLinkParser();
+    public static final LinkSerializer linkSerializer = new DefaultLinkSerializer();
 
     public static final String MULTI_INSTANCE = "multiinstance";
 

@@ -51,13 +51,13 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
     private final CaliforniumEndpointsManager endpointsManager;
     private final LwM2mEncoder encoder;
     private final LwM2mModel model;
-    private final LinkSerializer serializer;
+    private final LinkSerializer linkSerializer;
 
     public CaliforniumLwM2mRequestSender(CaliforniumEndpointsManager endpointsManager,
             ScheduledExecutorService sharedExecutor, LwM2mEncoder encoder, LwM2mModel model,
-            LinkSerializer serializer) {
+            LinkSerializer linkSerializer) {
         this.endpointsManager = endpointsManager;
-        this.serializer = serializer;
+        this.linkSerializer = linkSerializer;
         if (sharedExecutor == null) {
             this.executor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Leshan Async Request timeout"));
             this.attached = false;
@@ -74,7 +74,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
             throws InterruptedException {
         // Create the CoAP request from LwM2m request
         CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(server.getIdentity(), encoder, model,
-                serializer);
+                linkSerializer);
         request.accept(coapClientRequestBuilder);
         Request coapRequest = coapClientRequestBuilder.getRequest();
 
@@ -102,7 +102,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         // Create the CoAP request from LwM2m request
         CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(server.getIdentity(), encoder, model,
-                serializer);
+                linkSerializer);
         request.accept(coapClientRequestBuilder);
         Request coapRequest = coapClientRequestBuilder.getRequest();
 

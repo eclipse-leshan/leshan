@@ -103,7 +103,7 @@ public class LeshanServerBuilder {
     private boolean noQueueMode = false;
     /** @since 1.1 */
     protected boolean updateRegistrationOnNotification;
-    private LinkParser parser;
+    private LinkParser linkParser;
 
     /**
      * <p>
@@ -283,8 +283,8 @@ public class LeshanServerBuilder {
     /**
      * Set tje CoRE Link parser {@link LinkParser}
      */
-    public void setParser(LinkParser parser) {
-        this.parser = parser;
+    public void setLinkParser(LinkParser linkParser) {
+        this.linkParser = linkParser;
     }
 
     /**
@@ -424,8 +424,8 @@ public class LeshanServerBuilder {
             encoder = new DefaultLwM2mEncoder();
         if (decoder == null)
             decoder = new DefaultLwM2mDecoder();
-        if (parser == null)
-            parser = new DefaultLinkParser();
+        if (linkParser == null)
+            linkParser = new DefaultLinkParser();
         if (coapConfig == null)
             coapConfig = createDefaultNetworkConfig();
         if (awakeTimeProvider == null) {
@@ -566,7 +566,7 @@ public class LeshanServerBuilder {
 
         return createServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
                 modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider,
-                parser);
+                linkParser);
     }
 
     /**
@@ -596,7 +596,7 @@ public class LeshanServerBuilder {
      * @param awakeTimeProvider to set the client awake time if queue mode is used.
      * @param registrationIdProvider to provide registrationId using for location-path option values on response of
      *        Register operation.
-     * @param parser parser {@link LinkParser} used to parse a CoRE Link.
+     * @param linkParser a parser {@link LinkParser} used to parse a CoRE Link.
      * 
      * @return the LWM2M server
      */
@@ -604,9 +604,9 @@ public class LeshanServerBuilder {
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder, NetworkConfig coapConfig,
             boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
-            RegistrationIdProvider registrationIdProvider, LinkParser parser) {
+            RegistrationIdProvider registrationIdProvider, LinkParser linkParser) {
         return new LeshanServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
                 modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider,
-                updateRegistrationOnNotification, parser);
+                updateRegistrationOnNotification, linkParser);
     }
 }

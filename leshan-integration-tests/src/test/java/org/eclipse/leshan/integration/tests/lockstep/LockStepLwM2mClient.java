@@ -45,7 +45,7 @@ public class LockStepLwM2mClient extends LockstepEndpoint {
     private InetSocketAddress destination;
     private final LwM2mEncoder encoder;
     private final LwM2mModel model;
-    private final LinkSerializer serializer;
+    private final LinkSerializer linkSerializer;
 
     public LockStepLwM2mClient(final InetSocketAddress destination) {
         super(destination);
@@ -53,13 +53,13 @@ public class LockStepLwM2mClient extends LockstepEndpoint {
         this.encoder = new DefaultLwM2mEncoder();
         List<ObjectModel> models = ObjectLoader.loadDefault();
         this.model = new StaticModel(models);
-        this.serializer = new DefaultLinkSerializer();
+        this.linkSerializer = new DefaultLinkSerializer();
     }
 
     public Request createCoapRequest(UplinkRequest<? extends LwM2mResponse> lwm2mReq) {
         // create CoAP request
         CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(Identity.unsecure(destination), encoder, model,
-                serializer);
+                linkSerializer);
         lwm2mReq.accept(coapRequestBuilder);
         Request coapReq = coapRequestBuilder.getRequest();
         byte[] token = new byte[8];

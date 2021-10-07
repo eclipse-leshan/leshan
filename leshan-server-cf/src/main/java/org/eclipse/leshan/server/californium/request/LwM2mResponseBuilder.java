@@ -99,16 +99,16 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     private final String clientEndpoint;
     private final LwM2mModel model;
     private final LwM2mDecoder decoder;
-    private final LinkParser parser;
+    private final LinkParser linkParser;
 
     public LwM2mResponseBuilder(Request coapRequest, Response coapResponse, String clientEndpoint, LwM2mModel model,
-            LwM2mDecoder decoder, LinkParser parser) {
+            LwM2mDecoder decoder, LinkParser linkParser) {
         this.coapRequest = coapRequest;
         this.coapResponse = coapResponse;
         this.clientEndpoint = clientEndpoint;
         this.model = model;
         this.decoder = decoder;
-        this.parser = parser;
+        this.linkParser = linkParser;
     }
 
     @Override
@@ -140,7 +140,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 throw new InvalidResponseException("Client [%s] returned unexpected content format [%s] for [%s]",
                         clientEndpoint, coapResponse.getOptions().getContentFormat(), request);
             } else {
-                links = parser.parse(coapResponse.getPayload());
+                links = linkParser.parse(coapResponse.getPayload());
             }
             lwM2mresponse = new DiscoverResponse(ResponseCode.CONTENT, links, null, coapResponse);
         } else {
@@ -358,7 +358,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 throw new InvalidResponseException("Client [%s] returned unexpected content format [%s] for [%s]",
                         clientEndpoint, coapResponse.getOptions().getContentFormat(), request);
             } else {
-                links = parser.parse(coapResponse.getPayload());
+                links = linkParser.parse(coapResponse.getPayload());
             }
             lwM2mresponse = new BootstrapDiscoverResponse(ResponseCode.CONTENT, links, null, coapResponse);
         } else {

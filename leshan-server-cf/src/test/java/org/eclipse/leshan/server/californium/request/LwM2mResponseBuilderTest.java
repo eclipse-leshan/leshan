@@ -41,7 +41,7 @@ import org.junit.Test;
 public class LwM2mResponseBuilderTest {
 
     private final DummyDecoder decoder = new DummyDecoder();
-    private final DefaultLinkParser parser = new DefaultLinkParser();
+    private final DefaultLinkParser linkParser = new DefaultLinkParser();
 
     @Test
     public void visit_observe_request() {
@@ -60,7 +60,7 @@ public class LwM2mResponseBuilderTest {
         coapResponse.getOptions().setObserve(1);
 
         LwM2mResponseBuilder<ObserveResponse> responseBuilder = new LwM2mResponseBuilder<>(coapRequest, coapResponse,
-                null, null, decoder, parser);
+                null, null, decoder, linkParser);
         // when
         responseBuilder.visit(observeRequest);
 
@@ -91,7 +91,7 @@ public class LwM2mResponseBuilderTest {
         coapResponse.getOptions().setObserve(1);
 
         LwM2mResponseBuilder<ObserveCompositeResponse> responseBuilder = new LwM2mResponseBuilder<>(coapRequest,
-                coapResponse, null, null, decoder, parser);
+                coapResponse, null, null, decoder, linkParser);
         // when
         responseBuilder.visit(observeRequest);
 

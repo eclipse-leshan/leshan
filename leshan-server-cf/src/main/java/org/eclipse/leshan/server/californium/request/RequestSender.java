@@ -76,7 +76,7 @@ public class RequestSender implements Destroyable {
     private final Endpoint secureEndpoint;
     private final LwM2mDecoder decoder;
     private final LwM2mEncoder encoder;
-    private final LinkParser parser;
+    private final LinkParser linkParser;
 
     // A map which contains all ongoing CoAP requests
     // This is used to be able to cancel request
@@ -87,15 +87,15 @@ public class RequestSender implements Destroyable {
      * @param nonSecureEndpoint The endpoint used to send coap request.
      * @param encoder The {@link LwM2mEncoder} used to encode {@link LwM2mNode}.
      * @param decoder The {@link LwM2mDecoder} used to encode {@link LwM2mNode}.
-     * @param parser The {@link LinkParser} used to parse a CoRE Link.
+     * @param linkParser a parser {@link LinkParser} used to parse a CoRE Link.
      */
     public RequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint, LwM2mEncoder encoder,
-            LwM2mDecoder decoder, LinkParser parser) {
+            LwM2mDecoder decoder, LinkParser linkParser) {
         this.secureEndpoint = secureEndpoint;
         this.nonSecureEndpoint = nonSecureEndpoint;
         this.encoder = encoder;
         this.decoder = decoder;
-        this.parser = parser;
+        this.linkParser = linkParser;
     }
 
     /**
@@ -145,7 +145,7 @@ public class RequestSender implements Destroyable {
             public T buildResponse(Response coapResponse) {
                 // Build LwM2m response
                 LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<>(coapRequest, coapResponse,
-                        endpointName, model, decoder, parser);
+                        endpointName, model, decoder, linkParser);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }
@@ -222,7 +222,7 @@ public class RequestSender implements Destroyable {
             public T buildResponse(Response coapResponse) {
                 // Build LwM2m response
                 LwM2mResponseBuilder<T> lwm2mResponseBuilder = new LwM2mResponseBuilder<>(coapRequest, coapResponse,
-                        endpointName, model, decoder, parser);
+                        endpointName, model, decoder, linkParser);
                 request.accept(lwm2mResponseBuilder);
                 return lwm2mResponseBuilder.getResponse();
             }

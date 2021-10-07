@@ -15,6 +15,18 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link;
 
+/**
+ * A CoRE Link serializer interface.
+ * <p>
+ * Serializer will serialize links {@link Link} in format defined in
+ * https://datatracker.ietf.org/doc/html/RFC6690#section-2
+ */
 public interface LinkSerializer {
+
+    /**
+     * Serialize links {@link Link} into String in format defined in RFC RFC6690.
+     * 
+     * @param linkObjects array of {@link Link}
+     */
     String serialize(Link... linkObjects);
 }

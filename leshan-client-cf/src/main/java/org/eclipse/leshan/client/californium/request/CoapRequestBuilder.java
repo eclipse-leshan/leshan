@@ -49,13 +49,13 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
     protected final Identity server;
     protected final LwM2mEncoder encoder;
     protected final LwM2mModel model;
-    protected final LinkSerializer serializer;
+    protected final LinkSerializer linkSerializer;
 
-    public CoapRequestBuilder(Identity server, LwM2mEncoder encoder, LwM2mModel model, LinkSerializer serializer) {
+    public CoapRequestBuilder(Identity server, LwM2mEncoder encoder, LwM2mModel model, LinkSerializer linkSerializer) {
         this.server = server;
         this.encoder = encoder;
         this.model = model;
-        this.serializer = serializer;
+        this.linkSerializer = linkSerializer;
     }
 
     @Override
@@ -118,7 +118,7 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
 
         Link[] objectLinks = request.getObjectLinks();
         if (objectLinks != null)
-            coapRequest.setPayload(serializer.serialize(objectLinks));
+            coapRequest.setPayload(linkSerializer.serialize(objectLinks));
 
     }
 
@@ -143,7 +143,7 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
         Link[] linkObjects = request.getObjectLinks();
         if (linkObjects != null) {
             coapRequest.getOptions().setContentFormat(ContentFormat.LINK.getCode());
-            coapRequest.setPayload(serializer.serialize(linkObjects));
+            coapRequest.setPayload(linkSerializer.serialize(linkObjects));
         }
     }
 

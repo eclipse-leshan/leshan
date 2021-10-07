@@ -15,6 +15,17 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link;
 
+/**
+ * A CoRE Link parser interface.
+ * <p>
+ * Parser should implement rules defined in https://datatracker.ietf.org/doc/html/RFC6690#section-2
+ */
 public interface LinkParser {
+
+    /**
+     * Parse text content in format defined in RFC RFC6690 into array of links {@link Link}.
+     *
+     * @param bytes content to parse as array of bytes.
+     */
     Link[] parse(byte[] bytes);
 }

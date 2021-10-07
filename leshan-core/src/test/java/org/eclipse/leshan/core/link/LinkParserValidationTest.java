@@ -32,17 +32,36 @@ public class LinkParserValidationTest {
 
     @Parameterized.Parameters()
     public static Collection<?> linkValueListProvider() {
-        return Arrays.asList(new Object[][] { { "<file:///etc/hosts>" }, { "</hosts?query>" }, { "</hosts#hash>" },
-                { "/%" }, { "/%a" }, { "/%1g" },
-
-                { "</fóó>" }, { "</foo>;pąrąm" }, { "</foo>;param=ą" }, { "</foo>;param=\"bar" },
-                { "</foo>;param=\"bar\\\"" },
-
-                { "</>;=" }, { "</>;param=" }, { "</>; param=123" }, { "</> ;param=123" }, { "</>;param =123" },
-                { "</>;param= 123" }, { "</>;param=123 " },
-
-                { "<>" }, { "</" }, { "<//>" }, { "//>" }, { "</>," }, { "</>;" }, { "</>, </>" }, { "</> ,</>" },
-                { " </>,</>" }, { "</>,</> " } });
+        return Arrays.asList( //
+                "<file:///etc/hosts>", //
+                "</hosts?query>", //
+                "</hosts#hash>", //
+                "</%>", //
+                "</%a>", //
+                "</%1g>", //
+                "</fóó>", //
+                "</foo>;pąrąm", //
+                "</foo>;param=ą", //
+                "</foo>;param=\"bar", //
+                "</foo>;param=\"bar\\\"", //
+                "</>;=", //
+                "</>;param=", //
+                "</>; param=123", //
+                "</> ;param=123", //
+                "</>;param =123", //
+                "</>;param= 123", //
+                "</>;param=123 ", //
+                "<>", //
+                "</", //
+                "<//>", //
+                "//>", //
+                "</>,", //
+                "</>;", //
+                "</>, </>", //
+                "</> ,</>", //
+                " </>,</>", //
+                "</>,</> " //
+        );
     }
 
     private String linkValueList;
@@ -53,7 +72,7 @@ public class LinkParserValidationTest {
 
     @Test
     public void parse_invalid_formats() {
-        assertThrows(IllegalArgumentException.class, new ThrowingRunnable() {
+        assertThrows(LinkParseException.class, new ThrowingRunnable() {
             @Override
             public void run() {
                 parser.parse(linkValueList.getBytes());

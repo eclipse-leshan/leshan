@@ -30,9 +30,14 @@ import org.eclipse.leshan.core.util.StringUtils;
  */
 public class DefaultLinkParser implements LinkParser {
 
+    private static final Pattern parnamePattern = Pattern.compile("[!#$&+\\-.^_`|~a-zA-Z0-9]+");
+    private final Pattern ptokenPattern = Pattern.compile("[!#$%&'()*+\\-.:<=>?@\\[\\]^_`{|}~a-zA-Z0-9]+");
+    private final Pattern uriSegmentPattern = Pattern
+            .compile("([\\-._~a-zA-Z0-9:@!$&'()*+,;=]|%[a-fA-F0-9][a-fA-F0-9])+");
+
     /**
      * Parse a byte arrays representation of a {@code String} encoding with UTF_8 {@link Charset} with rules (subset of
-     * RFC6690 (https://datatracker.ietf.org/doc/html/RFC6690#section-2):
+     * RFC6690 (https://datatracker.ietf.org/doc/html/RFC6690#section-2)):
      *
      * Link            = link-value-list
      * link-value-list = [ link-value *[ "," link-value ]]
@@ -46,19 +51,25 @@ public class DefaultLinkParser implements LinkParser {
             return new Link[] {};
         }
 
-        List<String> linkValueList = splitIgnoringEscaped(new String(bytes, StandardCharsets.UTF_8), ',');
+        String content = new String(bytes, StandardCharsets.UTF_8);
+        List<String> linkValueList = splitIgnoringEscaped(content, ',');
 
-        Link[] result = new Link[linkValueList.size()];
-        for (int i = 0; i < linkValueList.size(); i++) {
-            String linkValue = linkValueList.get(i);
-            result[i] = parseLinkValue(linkValue);
+        try {
+            Link[] result = new Link[linkValueList.size()];
+            for (int i = 0; i < linkValueList.size(); i++) {
+                String linkValue = linkValueList.get(i);
+                result[i] = parseLinkValue(linkValue);
+            }
+            return result;
+
+        } catch (IllegalArgumentException e) {
+            throw new LinkParseException(String.format("Invalid Links [%s] : %s", content, e.getMessage()));
         }
-
-        return result;
     }
 
     /**
-     * Creates a (@link Link} from a link-value with rules:
+     * Creates a {@link Link} from a link-value with rules (subset of RFC6690
+     * (https://datatracker.ietf.org/doc/html/RFC6690#section-2)):
      *
      * link-value     = "<" URI-Reference ">" *( ";" link-param )
      * link-param = link-extension
@@ -73,10 +84,8 @@ public class DefaultLinkParser implements LinkParser {
 
         Map<String, LinkParamValue> linkParams = new HashMap<>();
 
-        if (parts.size() > 1) {
-            for (int i = 1; i < parts.size(); i++) {
-                parseLinkExtension(parts, linkParams, i);
-            }
+        for (int i = 1; i < parts.size(); i++) {
+            parseLinkExtension(parts, linkParams, i);
         }
 
         return new Link(removeUriReferenceDecoration(uriReferenceDecorated), linkParams);
@@ -85,15 +94,16 @@ public class DefaultLinkParser implements LinkParser {
     /**
      * Validate with rule: "<" URI-Reference ">"
      *
-     * @param uriReferenceDecorated
+     * @param uriReferenceDecorated URI-Reference with extra "<" and ">" tags.
      */
     protected void validateUriReferenceDecorated(String uriReferenceDecorated) {
         if (uriReferenceDecorated.length() <= 2) {
-            throw new IllegalArgumentException("Invalid URI-Reference");
+            throw new IllegalArgumentException(String.format("URI-Reference [%s] is too short", uriReferenceDecorated));
         }
         if (uriReferenceDecorated.charAt(0) != '<'
                 || uriReferenceDecorated.charAt(uriReferenceDecorated.length() - 1) != '>') {
-            throw new IllegalArgumentException("Invalid URI-Reference");
+            throw new IllegalArgumentException(String
+                    .format("URI-Reference [%s] should begin with \"<\" and ends with \">\"", uriReferenceDecorated));
         }
         String UriReference = removeUriReferenceDecoration(uriReferenceDecorated);
 
@@ -104,19 +114,14 @@ public class DefaultLinkParser implements LinkParser {
      * Parse a link-extension with rules:
      *
      * link-extension = ( parmname [ "=" ( ptoken / quoted-string ) ] )
-     * ptoken         = 1*ptokenchar
-     * ptokenchar     = "!" / "#" / "$" / "%" / "&" / "'" / "("
-     *                    / ")" / "*" / "+" / "-" / "." / "/" / DIGIT
-     *                    / ":" / "<" / "=" / ">" / "?" / "@" / ALPHA
-     *                    / "[" / "]" / "^" / "_" / "`" / "{" / "|"
-     *                    / "}" / "~"
      */
     private void parseLinkExtension(List<String> parts, Map<String, LinkParamValue> linkParams, int i) {
-        String[] attParts = parts.get(i).split("=", 2);
+        String linkExtension = parts.get(i);
+        String[] attParts = linkExtension.split("=", 2);
 
-        if (attParts.length > 0) {
-            String key = attParts[0];
+        String key = attParts[0];
 
+        try {
             validateParmname(key);
 
             String value = null;
@@ -125,6 +130,10 @@ public class DefaultLinkParser implements LinkParser {
                 validateLinkExtensionValue(value);
             }
             linkParams.put(key, applyCharEscaping(value));
+
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(
+                    String.format("invalid link-extension [%s] : %s", linkExtension, e.getMessage()));
         }
     }
 
@@ -136,13 +145,10 @@ public class DefaultLinkParser implements LinkParser {
      *                    / "!" / "#" / "$" / "&" / "+" / "-" / "."
      *                    / "^" / "_" / "`" / "|" / "~"
      *                    ; token except ( "*" / "'" / "%" )
-     *
-     * @param parmname
      */
     protected static void validateParmname(String parmname) {
-        Pattern pattern = Pattern.compile("[!#$&+\\-.^_`|~a-zA-Z0-9]+");
-        if (!pattern.matcher(parmname).matches()) {
-            throw new IllegalArgumentException("Invalid link-extension");
+        if (!parnamePattern.matcher(parmname).matches()) {
+            throw new IllegalArgumentException(String.format("invalid parmname [%s]", parmname));
         }
     }
 
@@ -153,7 +159,7 @@ public class DefaultLinkParser implements LinkParser {
      */
     protected void validateLinkExtensionValue(String value) {
         if (value.length() == 0) {
-            throw new IllegalArgumentException("Invalid link-extension");
+            throw new IllegalArgumentException(String.format("invalid parmname value [%s] : no value passed", value));
         }
 
         if (value.charAt(0) == '\"') {
@@ -165,23 +171,21 @@ public class DefaultLinkParser implements LinkParser {
 
     /**
      * Validate a quoted-string with rules (subset of RFC2616
-     * (https://datatracker.ietf.org/doc/html/rfc2616#section-2.2):
+     * (https://datatracker.ietf.org/doc/html/rfc2616#section-2.2)):
      *
      * quoted-string  = ( <"> *(qdtext | quoted-pair ) <"> )
      * qdtext         = <any TEXT except <">>
      * quoted-pair    = "\" CHAR
-     *
-     * @param value
      */
     protected void validateQuotedString(String value) {
         value = removeEscapedChars(value);
         if (value.charAt(value.length() - 1) != '\"') {
-            throw new IllegalArgumentException("Invalid link-extension");
+            throw new IllegalArgumentException(String.format("invalid quoted-string [%s]", value));
         }
     }
 
     /**
-     * Validate ptoken with rules:
+     * Validate ptoken with rules (subset of RFC6690 (https://datatracker.ietf.org/doc/html/RFC6690#section-2)):
      *
      * ptoken         = 1*ptokenchar
      * ptokenchar     = "!" / "#" / "$" / "%" / "&" / "'" / "("
@@ -189,18 +193,15 @@ public class DefaultLinkParser implements LinkParser {
      *                    / ":" / "<" / "=" / ">" / "?" / "@" / ALPHA
      *                    / "[" / "]" / "^" / "_" / "`" / "{" / "|"
      *                    / "}" / "~"
-     *
-     * @param value
      */
     protected void validatePtoken(String value) {
-        Pattern pattern = Pattern.compile("[!#$%&'()*+\\-.:<=>?@\\[\\]^_`{|}~a-zA-Z0-9]+");
-        if (!pattern.matcher(value).matches()) {
-            throw new IllegalArgumentException("Invalid link-extension");
+        if (!ptokenPattern.matcher(value).matches()) {
+            throw new IllegalArgumentException(String.format("invalid ptoken [%s]", value));
         }
     }
 
     /**
-     * Validate URI-Reference with rules (subset of RFC3986 https://datatracker.ietf.org/doc/html/rfc3986#appendix-A):
+     * Validate URI-Reference with rules (subset of RFC3986 (https://datatracker.ietf.org/doc/html/rfc3986#appendix-A)):
      *
      * URI-reference = relative-ref
      *
@@ -208,27 +209,35 @@ public class DefaultLinkParser implements LinkParser {
      * relative-part =  path-absolute
      *
      * path-absolute = "/" [ segment-nz *( "/" segment ) ]   ; begins with "/" but not "//"
-     *
-     * @param uriReference
      */
     private void validateUriReference(String uriReference) {
         if (uriReference.length() > 0) {
-            if (uriReference.charAt(0) != '/' || (uriReference.length() > 1 && uriReference.charAt(1) == '/')) {
-                throw new IllegalArgumentException("Invalid URI-reference");
+            if (uriReference.charAt(0) != '/') {
+                throw new IllegalArgumentException(
+                        String.format("URI-Reference [%s] should begins with \"/\"", uriReference));
+            } else if (uriReference.length() > 1 && uriReference.charAt(1) == '/') {
+                throw new IllegalArgumentException(
+                        String.format("URI-Reference [%s] should not begins with \"//\"", uriReference));
             }
 
             String[] segments = uriReference.substring(1).split("/");
 
-            for (String segment : segments) {
-                if (segment.length() > 0) {
-                    validateUriSegment(segment);
+            try {
+                for (String segment : segments) {
+                    if (segment.length() > 0) {
+                        validateUriSegment(segment);
+                    }
                 }
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(
+                        String.format("invalid URI-Reference [%s] : %s", uriReference, e.getMessage()));
             }
         }
     }
 
     /**
-     * Validate a segment/segment-nz with rules:
+     * Validate a segment/segment-nz with rules (subset of RFC3986
+     * (https://datatracker.ietf.org/doc/html/rfc3986#appendix-A)):
      *
      * segment       = *pchar
      * segment-nz    = 1*pchar
@@ -238,13 +247,10 @@ public class DefaultLinkParser implements LinkParser {
      * unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
      * sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
      *              / "*" / "+" / "," / ";" / "="
-     *
-     * @param segment
      */
     private void validateUriSegment(String segment) {
-        Pattern pattern = Pattern.compile("([\\-._~a-zA-Z0-9:@!$&'()*+,;=]|%[a-fA-F0-9][a-fA-F0-9])+");
-        if (!pattern.matcher(segment).matches()) {
-            throw new IllegalArgumentException("Invalid URI-reference");
+        if (!uriSegmentPattern.matcher(segment).matches()) {
+            throw new IllegalArgumentException(String.format("invalid segment: [%s]", segment));
         }
     }
 

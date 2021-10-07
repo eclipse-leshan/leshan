@@ -84,14 +84,14 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
     protected final LwM2mObjectEnabler nodeEnabler;
     protected final LwM2mEncoder encoder;
     protected final LwM2mDecoder decoder;
-    protected final LinkSerializer serializer;
+    protected final LinkSerializer linkSerializer;
 
     public ObjectResource(LwM2mObjectEnabler nodeEnabler, RegistrationEngine registrationEngine,
             CaliforniumEndpointsManager endpointsManager, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            LinkSerializer serializer) {
+            LinkSerializer linkSerializer) {
         super(Integer.toString(nodeEnabler.getId()), registrationEngine, endpointsManager);
         this.nodeEnabler = nodeEnabler;
-        this.serializer = serializer;
+        this.linkSerializer = linkSerializer;
         this.nodeEnabler.addListener(this);
         this.encoder = encoder;
         this.decoder = decoder;
@@ -116,7 +116,8 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                     exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                 } else {
                     exchange.respond(toCoapResponseCode(response.getCode()),
-                            serializer.serialize(response.getObjectLinks()), MediaTypeRegistry.APPLICATION_LINK_FORMAT);
+                            linkSerializer.serialize(response.getObjectLinks()),
+                            MediaTypeRegistry.APPLICATION_LINK_FORMAT);
                 }
                 return;
             } else {
@@ -126,7 +127,8 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                     exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                 } else {
                     exchange.respond(toCoapResponseCode(response.getCode()),
-                            serializer.serialize(response.getObjectLinks()), MediaTypeRegistry.APPLICATION_LINK_FORMAT);
+                            linkSerializer.serialize(response.getObjectLinks()),
+                            MediaTypeRegistry.APPLICATION_LINK_FORMAT);
                 }
                 return;
             }

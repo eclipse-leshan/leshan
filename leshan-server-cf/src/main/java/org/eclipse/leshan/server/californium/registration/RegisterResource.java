@@ -72,13 +72,13 @@ public class RegisterResource extends LwM2mCoapResource {
 
     private final RegistrationHandler registrationHandler;
 
-    private final LinkParser parser;
+    private final LinkParser linkParser;
 
-    public RegisterResource(RegistrationHandler registrationHandler, LinkParser parser) {
+    public RegisterResource(RegistrationHandler registrationHandler, LinkParser linkParser) {
         super(RESOURCE_NAME);
 
         this.registrationHandler = registrationHandler;
-        this.parser = parser;
+        this.linkParser = linkParser;
         getAttributes().addResourceType("core.rd");
     }
 
@@ -140,7 +140,7 @@ public class RegisterResource extends LwM2mCoapResource {
         Boolean queueMode = null;
 
         // Get object Links
-        Link[] objectLinks = parser.parse(request.getPayload());
+        Link[] objectLinks = linkParser.parse(request.getPayload());
 
         Map<String, String> additionalParams = new HashMap<>();
 
@@ -214,7 +214,7 @@ public class RegisterResource extends LwM2mCoapResource {
             }
         }
         if (request.getPayload() != null && request.getPayload().length > 0) {
-            objectLinks = parser.parse(request.getPayload());
+            objectLinks = linkParser.parse(request.getPayload());
         }
         Request coapRequest = exchange.advanced().getRequest();
         UpdateRequest updateRequest = new UpdateRequest(registrationId, lifetime, smsNumber, binding, objectLinks,

@@ -82,7 +82,7 @@ public class LeshanClientBuilder {
 
     private ScheduledExecutorService executor;
 
-    private LinkSerializer serializer;
+    private LinkSerializer linkSerializer;
 
     /**
      * Creates a new instance for setting the configuration options for a {@link LeshanClient} instance.
@@ -151,10 +151,10 @@ public class LeshanClientBuilder {
     }
 
     /**
-     * Set the CoRE link serializer {@link LinkSerializer}.
+     * Set the CoRE Link serializer {@link LinkSerializer}.
      */
-    public void setSerializer(LinkSerializer serializer) {
-        this.serializer = serializer;
+    public void setLinkSerializer(LinkSerializer linkSerializer) {
+        this.linkSerializer = linkSerializer;
     }
 
     /**
@@ -291,8 +291,8 @@ public class LeshanClientBuilder {
             encoder = new DefaultLwM2mEncoder();
         if (decoder == null)
             decoder = new DefaultLwM2mDecoder();
-        if (serializer == null)
-            serializer = new DefaultLinkSerializer();
+        if (linkSerializer == null)
+            linkSerializer = new DefaultLinkSerializer();
         if (coapConfig == null) {
             coapConfig = createDefaultNetworkConfig();
         }
@@ -356,7 +356,7 @@ public class LeshanClientBuilder {
 
         return createLeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder,
                 this.trustStore, endpointFactory, engineFactory, bootstrapConsistencyChecker, additionalAttributes,
-                bsAdditionalAttributes, encoder, decoder, executor, serializer);
+                bsAdditionalAttributes, encoder, decoder, executor, linkSerializer);
     }
 
     /**
@@ -382,7 +382,7 @@ public class LeshanClientBuilder {
      * @param encoder used to encode request payload.
      * @param decoder used to decode response payload.
      * @param sharedExecutor an optional shared executor.
-     * @param serializer CoRE link serializer.
+     * @param linkSerializer a serializer {@link LinkSerializer} used to serialize a CoRE Link.
      * 
      * @return the new {@link LeshanClient}
      */
@@ -391,9 +391,9 @@ public class LeshanClientBuilder {
             List<Certificate> trustStore, EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
             BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            ScheduledExecutorService sharedExecutor, LinkSerializer serializer) {
+            ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer) {
         return new LeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, trustStore,
                 endpointFactory, engineFactory, checker, additionalAttributes, bsAdditionalAttributes, encoder, decoder,
-                sharedExecutor, serializer);
+                sharedExecutor, linkSerializer);
     }
 }

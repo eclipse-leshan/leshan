@@ -56,7 +56,7 @@ public class LeshanBootstrapServer {
     private final BootstrapSessionDispatcher dispatcher = new BootstrapSessionDispatcher();
 
     private final LwM2mBootstrapRequestSender requestSender;
-    private final LinkParser parser;
+    private final LinkParser linkParser;
 
     /**
      * /** Initialize a server which will bind to the specified address and port.
@@ -70,12 +70,12 @@ public class LeshanBootstrapServer {
      * @param coapConfig the CoAP {@link NetworkConfig}.
      * @param encoder encode used to encode request payload.
      * @param decoder decoder used to decode response payload.
-     * @param parser parser used to parse a CoRE Link.
+     * @param linkParser a parser {@link LinkParser} used to parse a CoRE Link.
      */
     public LeshanBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory,
-            NetworkConfig coapConfig, LwM2mEncoder encoder, LwM2mDecoder decoder, LinkParser parser) {
-        this.parser = parser;
+            NetworkConfig coapConfig, LwM2mEncoder encoder, LwM2mDecoder decoder, LinkParser linkParser) {
+        this.linkParser = linkParser;
 
         Validate.notNull(bsSessionManager, "session manager must not be null");
         Validate.notNull(bsHandlerFactory, "BootstrapHandler factory must not be null");
@@ -114,7 +114,8 @@ public class LeshanBootstrapServer {
 
     protected LwM2mBootstrapRequestSender createRequestSender(Endpoint securedEndpoint, Endpoint unsecuredEndpoint,
             LwM2mEncoder encoder, LwM2mDecoder decoder) {
-        return new CaliforniumLwM2mBootstrapRequestSender(securedEndpoint, unsecuredEndpoint, encoder, decoder, parser);
+        return new CaliforniumLwM2mBootstrapRequestSender(securedEndpoint, unsecuredEndpoint, encoder, decoder,
+                linkParser);
     }
 
     protected CoapResource createBootstrapResource(BootstrapHandler handler) {

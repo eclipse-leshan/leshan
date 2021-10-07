@@ -64,11 +64,11 @@ public class RootResource extends LwM2mClientCoapResource {
     protected LwM2mRootEnabler rootEnabler;
     protected LwM2mEncoder encoder;
     protected LwM2mDecoder decoder;
-    protected LinkSerializer serializer;
+    protected LinkSerializer linkSerializer;
 
     public RootResource(RegistrationEngine registrationEngine, CaliforniumEndpointsManager endpointsManager,
             BootstrapHandler bootstrapHandler, CoapServer coapServer, LwM2mRootEnabler rootEnabler,
-            LwM2mEncoder encoder, LwM2mDecoder decoder, LinkSerializer serializer) {
+            LwM2mEncoder encoder, LwM2mDecoder decoder, LinkSerializer linkSerializer) {
         super("", registrationEngine, endpointsManager);
         this.bootstrapHandler = bootstrapHandler;
         setVisible(false);
@@ -77,7 +77,7 @@ public class RootResource extends LwM2mClientCoapResource {
         this.rootEnabler = rootEnabler;
         this.encoder = encoder;
         this.decoder = decoder;
-        this.serializer = serializer;
+        this.linkSerializer = linkSerializer;
 
         addListeners();
     }
@@ -97,8 +97,8 @@ public class RootResource extends LwM2mClientCoapResource {
         if (response.getCode().isError()) {
             exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
         } else {
-            exchange.respond(toCoapResponseCode(response.getCode()), serializer.serialize(response.getObjectLinks()),
-                    MediaTypeRegistry.APPLICATION_LINK_FORMAT);
+            exchange.respond(toCoapResponseCode(response.getCode()),
+                    linkSerializer.serialize(response.getObjectLinks()), MediaTypeRegistry.APPLICATION_LINK_FORMAT);
         }
         return;
     }

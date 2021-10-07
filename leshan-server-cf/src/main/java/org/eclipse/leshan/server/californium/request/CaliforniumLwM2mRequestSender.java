@@ -65,16 +65,16 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
      *        {@link LwM2mNode}.
      * @param encoder The {@link LwM2mEncoder} used to encode {@link LwM2mNode}.
      * @param decoder The {@link LwM2mDecoder} used to encode {@link LwM2mNode}.
-     * @param parser The {@link LinkParser} used to parse a CoRE Link.
+     * @param linkParser a parser {@link LinkParser} used to parse a CoRE Link.
      */
     public CaliforniumLwM2mRequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint,
             ObservationServiceImpl observationService, LwM2mModelProvider modelProvider, LwM2mEncoder encoder,
-            LwM2mDecoder decoder, LinkParser parser) {
+            LwM2mDecoder decoder, LinkParser linkParser) {
         Validate.notNull(observationService);
         Validate.notNull(modelProvider);
         this.observationService = observationService;
         this.modelProvider = modelProvider;
-        this.sender = new RequestSender(secureEndpoint, nonSecureEndpoint, encoder, decoder, parser);
+        this.sender = new RequestSender(secureEndpoint, nonSecureEndpoint, encoder, decoder, linkParser);
     }
 
     /**

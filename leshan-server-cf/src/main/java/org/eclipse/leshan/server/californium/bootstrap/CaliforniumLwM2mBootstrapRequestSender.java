@@ -52,11 +52,11 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
      * @param nonSecureEndpoint The endpoint used to send coap request.
      * @param encoder The {@link LwM2mEncoder} used to encode {@link LwM2mNode}.
      * @param decoder The {@link LwM2mDecoder} used to encode {@link LwM2mNode}.
-     * @param parser The {@link LinkParser} used to parse a CoRE Link.
+     * @param linkParser a parser {@link LinkParser} used to parse a CoRE Link.
      */
     public CaliforniumLwM2mBootstrapRequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint,
-            LwM2mEncoder encoder, LwM2mDecoder decoder, LinkParser parser) {
-        this.sender = new RequestSender(secureEndpoint, nonSecureEndpoint, encoder, decoder, parser);
+            LwM2mEncoder encoder, LwM2mDecoder decoder, LinkParser linkParser) {
+        this.sender = new RequestSender(secureEndpoint, nonSecureEndpoint, encoder, decoder, linkParser);
     }
 
     /**
