@@ -17,6 +17,7 @@
 
 package org.eclipse.leshan.integration.tests;
 
+import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.*;
 import static org.junit.Assert.*;
 
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -60,7 +61,7 @@ public class QueueModeTest {
 
         // Check client is well registered
         queueModeHelper.assertClientRegisterered();
-        assertArrayEquals(queueModeHelper.linkParser.parse(
+        assertArrayEquals(linkParser.parse(
                 "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 11542 11543\",</1>;ver=1.1,</1/0>,</2>,</3>;ver=1.1,</3/0>,</2000/0>"
                         .getBytes()),
                 queueModeHelper.getCurrentRegistration().getObjectLinks());
