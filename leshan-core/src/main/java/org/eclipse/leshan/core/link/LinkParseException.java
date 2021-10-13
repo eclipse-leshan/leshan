@@ -5,6 +5,8 @@ package org.eclipse.leshan.core.link;
  */
 public class LinkParseException extends IllegalArgumentException {
 
+    private static final long serialVersionUID = 1L;
+
     public LinkParseException(String message) {
         super(message);
     }
