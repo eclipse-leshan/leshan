@@ -118,8 +118,8 @@ Contributors:
                 </executions>
                 <configuration>
                     <workingDirectory>webapp2</workingDirectory>
-                    <nodeVersion>v10.23.1</nodeVersion>
-                    <yarnVersion>v1.13.0</yarnVersion>
+                    <nodeVersion>v12.22.5</nodeVersion>
+                    <yarnVersion>v1.22.10</yarnVersion>
                 </configuration>
             </plugin>
             <plugin>
