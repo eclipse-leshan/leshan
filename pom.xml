@@ -533,13 +533,12 @@ Contributors:
                 <plugin>
                     <groupId>org.revapi</groupId>
                     <artifactId>revapi-maven-plugin</artifactId>
-                    <!-- can not upgrade to 0.14.5 because of : https://github.com/revapi/revapi/issues/252 --> 
-                    <version>0.12.2</version>
+                    <version>0.14.5</version>
                     <dependencies>
                         <dependency>
                             <groupId>org.revapi</groupId>
                             <artifactId>revapi-java</artifactId>
-                            <version>0.22.1</version>
+                            <version>0.26.0</version>
                         </dependency>
                     </dependencies>
                 </plugin>
@@ -583,14 +582,12 @@ Contributors:
                 <configuration>
                     <oldVersion>1.0.0</oldVersion>
                     <analysisConfiguration>
-                        <revapi.semver.ignore>
+                        <revapi.versions>
                             <enabled>true</enabled>
-                            <versionIncreaseAllows>
-                                <major>breaking</major>
-                                <minor>nonBreaking</minor>
-                                <patch>equivalent</patch>
-                            </versionIncreaseAllows>
-                        </revapi.semver.ignore>
+                            <onAllowed>
+                                <criticality>documented</criticality>
+                            </onAllowed>
+                        </revapi.versions>
                         <revapi.differences>
                             <ignore>true</ignore>
                             <differences>
@@ -605,27 +602,20 @@ Contributors:
                                 </item>
                             </differences>
                         </revapi.differences>
-                        <revapi.java>
-                            <checks>
-                                <nonPublicPartOfAPI>
-                                    <reportUnchanged>false</reportUnchanged>
-                                </nonPublicPartOfAPI>
-                            </checks>
-                            <filter>
-                                <!--
-                                     Californium is exclude from API check as it does not have clear definition of its API 
-                                     and do not really respect Semantic versioning : 
-                                     https://github.com/eclipse/californium/issues/1159
-                                     https://github.com/eclipse/californium/issues/1166
-                                -->
-                                <packages>
-                                    <regex>true</regex>
-                                    <exclude>
-                                        <item>org\.eclipse\.californium\..*</item>
-                                    </exclude>
-                                </packages>
-                            </filter>
-                        </revapi.java>
+                        <revapi.filter>
+                            <elements>
+                                <exclude>
+                                    <item>
+                                        <!-- Californium is exclude from API check as it does not 
+                                             have clear definition of its API and do not really respect Semantic versioning:
+                                             https://github.com/eclipse/californium/issues/1159 
+                                             https://github.com/eclipse/californium/issues/1166 -->
+                                        <matcher>java-package</matcher>
+                                        <match>org\.eclipse\.californium\..*</match>
+                                    </item>
+                                </exclude>
+                            </elements>
+                        </revapi.filter>
                     </analysisConfiguration>
                 </configuration>
                 <executions>
