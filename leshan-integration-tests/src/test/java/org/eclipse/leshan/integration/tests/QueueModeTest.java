@@ -17,7 +17,7 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.*;
+import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.linkParser;
 import static org.junit.Assert.*;
 
 import org.eclipse.leshan.core.request.ReadRequest;

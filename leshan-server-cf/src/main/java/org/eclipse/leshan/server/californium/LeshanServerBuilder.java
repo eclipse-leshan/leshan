@@ -287,18 +287,20 @@ public class LeshanServerBuilder {
     }
 
     /**
-     * <<<<<<< Upstream, based on origin/master Set the Californium/CoAP {@link Configuration}.
+     * Set the CoRE Link parser {@link LinkParser}
      * <p>
-     * This is strongly recommended to create the {@link Configuration} with {@link #createDefaultCoapConfiguration()}
-     * before to modify it. ======= Set tje CoRE Link parser {@link LinkParser}
+     * By default the {@link DefaultLinkParser} is used.
      */
     public void setLinkParser(LinkParser linkParser) {
         this.linkParser = linkParser;
     }
 
     /**
-     * Set the Californium/CoAP {@link NetworkConfig}. >>>>>>> d9e951a Improved Link API to make it more compliance with
-     * rfc6690.
+     * Set the Californium/CoAP {@link Configuration}.
+     * <p>
+     * This is strongly recommended to create the {@link Configuration} with {@link #createDefaultCoapConfiguration()}
+     * before to modify it.
+     * 
      */
     public LeshanServerBuilder setCoapConfig(Configuration config) {
         this.coapConfig = config;

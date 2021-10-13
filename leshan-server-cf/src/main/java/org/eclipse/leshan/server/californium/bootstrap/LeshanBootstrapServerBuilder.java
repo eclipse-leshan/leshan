@@ -367,9 +367,9 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
-     * Set CoRE Link parser.
-     *
-     * @param linkParser a parser {@link LinkParser} used to parse a CoRE Link.
+     * Set the CoRE Link parser {@link LinkParser}
+     * <p>
+     * By default the {@link DefaultLinkParser} is used.
      */
     public void setLinkParser(LinkParser linkParser) {
         this.linkParser = linkParser;
@@ -556,7 +556,7 @@ public class LeshanBootstrapServerBuilder {
         }
 
         return createBootstrapServer(unsecuredEndpoint, securedEndpoint, sessionManager, bootstrapHandlerFactory,
-                coapConfig, encoder, decoder);
+                coapConfig, encoder, decoder, linkParser);
     }
 
     /**
@@ -580,11 +580,12 @@ public class LeshanBootstrapServerBuilder {
      * @param coapConfig the CoAP configuration.
      * @param decoder decoder used to decode response payload.
      * @param encoder encode used to encode request payload.
+     * @param linkParser a parser {@link LinkParser} used to parse a CoRE Link.
      * @return the LWM2M Bootstrap server.
      */
     protected LeshanBootstrapServer createBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory,
-            Configuration coapConfig, LwM2mEncoder encoder, LwM2mDecoder decoder) {
+            Configuration coapConfig, LwM2mEncoder encoder, LwM2mDecoder decoder, LinkParser linkParser) {
         return new LeshanBootstrapServer(unsecuredEndpoint, securedEndpoint, bsSessionManager, bsHandlerFactory,
                 coapConfig, encoder, decoder, linkParser);
     }

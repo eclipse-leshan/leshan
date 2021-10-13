@@ -38,10 +38,12 @@ public class DefaultLinkParser implements LinkParser {
     /**
      * Parse a byte arrays representation of a {@code String} encoding with UTF_8 {@link Charset} with rules (subset of
      * RFC6690 (https://datatracker.ietf.org/doc/html/RFC6690#section-2)):
-     *
+     * 
+     * <pre>
      * Link            = link-value-list
      * link-value-list = [ link-value *[ "," link-value ]]
-     *
+     * </pre>
+     * 
      * @param bytes a byte arrays representing {@code String} encoding with UTF_8 {@link Charset}.
      * @return an array of {@code Link}
      */
@@ -70,10 +72,12 @@ public class DefaultLinkParser implements LinkParser {
     /**
      * Creates a {@link Link} from a link-value with rules (subset of RFC6690
      * (https://datatracker.ietf.org/doc/html/RFC6690#section-2)):
-     *
+     * 
+     * <pre>
      * link-value     = "<" URI-Reference ">" *( ";" link-param )
      * link-param = link-extension
      * link-extension = ( parmname [ "=" ( ptoken / quoted-string ) ] )
+     * </pre>
      */
     protected Link parseLinkValue(String linkValue) {
         List<String> parts = splitIgnoringEscaped(linkValue, ';');
@@ -112,8 +116,10 @@ public class DefaultLinkParser implements LinkParser {
 
     /**
      * Parse a link-extension with rules:
-     *
+     * 
+     * <pre>
      * link-extension = ( parmname [ "=" ( ptoken / quoted-string ) ] )
+     * </pre>
      */
     private void parseLinkExtension(List<String> parts, Map<String, LinkParamValue> linkParams, int i) {
         String linkExtension = parts.get(i);
@@ -139,12 +145,14 @@ public class DefaultLinkParser implements LinkParser {
 
     /**
      * From RFC5987 (https://datatracker.ietf.org/doc/html/rfc5987#section-3.2.1):
-     *
+     * 
+     * <pre>
      * parmname      = 1*attr-char
      * attr-char     = ALPHA / DIGIT
      *                    / "!" / "#" / "$" / "&" / "+" / "-" / "."
      *                    / "^" / "_" / "`" / "|" / "~"
      *                    ; token except ( "*" / "'" / "%" )
+     * </pre>
      */
     protected static void validateParmname(String parmname) {
         if (!parnamePattern.matcher(parmname).matches()) {
@@ -154,8 +162,10 @@ public class DefaultLinkParser implements LinkParser {
 
     /**
      * Validate value of link-extension
-     *
+     * 
+     * <pre>
      * link-extension = ( parmname [ "=" ( ptoken / quoted-string ) ] )
+     * </pre>
      */
     protected void validateLinkExtensionValue(String value) {
         if (value.length() == 0) {
@@ -172,10 +182,12 @@ public class DefaultLinkParser implements LinkParser {
     /**
      * Validate a quoted-string with rules (subset of RFC2616
      * (https://datatracker.ietf.org/doc/html/rfc2616#section-2.2)):
-     *
+     * 
+     * <pre>
      * quoted-string  = ( <"> *(qdtext | quoted-pair ) <"> )
      * qdtext         = <any TEXT except <">>
      * quoted-pair    = "\" CHAR
+     * </pre>
      */
     protected void validateQuotedString(String value) {
         value = removeEscapedChars(value);
@@ -186,13 +198,15 @@ public class DefaultLinkParser implements LinkParser {
 
     /**
      * Validate ptoken with rules (subset of RFC6690 (https://datatracker.ietf.org/doc/html/RFC6690#section-2)):
-     *
+     * 
+     * <pre>
      * ptoken         = 1*ptokenchar
      * ptokenchar     = "!" / "#" / "$" / "%" / "&" / "'" / "("
      *                    / ")" / "*" / "+" / "-" / "." / "/" / DIGIT
      *                    / ":" / "<" / "=" / ">" / "?" / "@" / ALPHA
      *                    / "[" / "]" / "^" / "_" / "`" / "{" / "|"
      *                    / "}" / "~"
+     * </pre>
      */
     protected void validatePtoken(String value) {
         if (!ptokenPattern.matcher(value).matches()) {
@@ -202,13 +216,15 @@ public class DefaultLinkParser implements LinkParser {
 
     /**
      * Validate URI-Reference with rules (subset of RFC3986 (https://datatracker.ietf.org/doc/html/rfc3986#appendix-A)):
-     *
+     * 
+     * <pre>
      * URI-reference = relative-ref
      *
      * relative-ref  = relative-part
      * relative-part =  path-absolute
      *
      * path-absolute = "/" [ segment-nz *( "/" segment ) ]   ; begins with "/" but not "//"
+     * </pre>
      */
     private void validateUriReference(String uriReference) {
         if (uriReference.length() > 0) {
@@ -238,7 +254,8 @@ public class DefaultLinkParser implements LinkParser {
     /**
      * Validate a segment/segment-nz with rules (subset of RFC3986
      * (https://datatracker.ietf.org/doc/html/rfc3986#appendix-A)):
-     *
+     * 
+     * <pre>
      * segment       = *pchar
      * segment-nz    = 1*pchar
      *
@@ -247,6 +264,7 @@ public class DefaultLinkParser implements LinkParser {
      * unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
      * sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
      *              / "*" / "+" / "," / ";" / "="
+     * </pre>
      */
     private void validateUriSegment(String segment) {
         if (!uriSegmentPattern.matcher(segment).matches()) {
