@@ -10,4 +10,16 @@ public class LinkParseException extends IllegalArgumentException {
     public LinkParseException(String message) {
         super(message);
     }
+
+    public LinkParseException(String message, Object... args) {
+        super(String.format(message, args));
+    }
+
+    public LinkParseException(Exception e, String message, Object... args) {
+        super(String.format(message, args), e);
+    }
+
+    public LinkParseException(String message, Exception e) {
+        super(message, e);
+    }
 }

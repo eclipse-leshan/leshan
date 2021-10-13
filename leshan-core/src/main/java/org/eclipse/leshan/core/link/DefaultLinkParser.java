@@ -64,8 +64,8 @@ public class DefaultLinkParser implements LinkParser {
             }
             return result;
 
-        } catch (IllegalArgumentException e) {
-            throw new LinkParseException(String.format("Invalid Links [%s] : %s", content, e.getMessage()));
+        } catch (LinkParseException e) {
+            throw new LinkParseException(e, "Invalid Links [%s] : %s", content, e.getMessage());
         }
     }
 
@@ -102,12 +102,12 @@ public class DefaultLinkParser implements LinkParser {
      */
     protected void validateUriReferenceDecorated(String uriReferenceDecorated) {
         if (uriReferenceDecorated.length() <= 2) {
-            throw new IllegalArgumentException(String.format("URI-Reference [%s] is too short", uriReferenceDecorated));
+            throw new LinkParseException("URI-Reference [%s] is too short", uriReferenceDecorated);
         }
         if (uriReferenceDecorated.charAt(0) != '<'
                 || uriReferenceDecorated.charAt(uriReferenceDecorated.length() - 1) != '>') {
-            throw new IllegalArgumentException(String
-                    .format("URI-Reference [%s] should begin with \"<\" and ends with \">\"", uriReferenceDecorated));
+            throw new LinkParseException("URI-Reference [%s] should begin with \"<\" and ends with \">\"",
+                    uriReferenceDecorated);
         }
         String UriReference = removeUriReferenceDecoration(uriReferenceDecorated);
 
@@ -137,9 +137,8 @@ public class DefaultLinkParser implements LinkParser {
             }
             linkParams.put(key, applyCharEscaping(value));
 
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(
-                    String.format("invalid link-extension [%s] : %s", linkExtension, e.getMessage()));
+        } catch (LinkParseException e) {
+            throw new LinkParseException(e, "invalid link-extension [%s] : %s", linkExtension, e.getMessage());
         }
     }
 
@@ -156,7 +155,7 @@ public class DefaultLinkParser implements LinkParser {
      */
     protected static void validateParmname(String parmname) {
         if (!parnamePattern.matcher(parmname).matches()) {
-            throw new IllegalArgumentException(String.format("invalid parmname [%s]", parmname));
+            throw new LinkParseException("invalid parmname [%s]", parmname);
         }
     }
 
@@ -169,7 +168,7 @@ public class DefaultLinkParser implements LinkParser {
      */
     protected void validateLinkExtensionValue(String value) {
         if (value.length() == 0) {
-            throw new IllegalArgumentException(String.format("invalid parmname value [%s] : no value passed", value));
+            throw new LinkParseException("invalid parmname value [%s] : no value passed", value);
         }
 
         if (value.charAt(0) == '\"') {
@@ -192,7 +191,7 @@ public class DefaultLinkParser implements LinkParser {
     protected void validateQuotedString(String value) {
         value = removeEscapedChars(value);
         if (value.charAt(value.length() - 1) != '\"') {
-            throw new IllegalArgumentException(String.format("invalid quoted-string [%s]", value));
+            throw new LinkParseException("invalid quoted-string [%s]", value);
         }
     }
 
@@ -210,7 +209,7 @@ public class DefaultLinkParser implements LinkParser {
      */
     protected void validatePtoken(String value) {
         if (!ptokenPattern.matcher(value).matches()) {
-            throw new IllegalArgumentException(String.format("invalid ptoken [%s]", value));
+            throw new LinkParseException("invalid ptoken [%s]", value);
         }
     }
 
@@ -229,11 +228,9 @@ public class DefaultLinkParser implements LinkParser {
     private void validateUriReference(String uriReference) {
         if (uriReference.length() > 0) {
             if (uriReference.charAt(0) != '/') {
-                throw new IllegalArgumentException(
-                        String.format("URI-Reference [%s] should begins with \"/\"", uriReference));
+                throw new LinkParseException("URI-Reference [%s] should begins with \"/\"", uriReference);
             } else if (uriReference.length() > 1 && uriReference.charAt(1) == '/') {
-                throw new IllegalArgumentException(
-                        String.format("URI-Reference [%s] should not begins with \"//\"", uriReference));
+                throw new LinkParseException("URI-Reference [%s] should not begins with \"//\"", uriReference);
             }
 
             String[] segments = uriReference.substring(1).split("/");
@@ -244,9 +241,8 @@ public class DefaultLinkParser implements LinkParser {
                         validateUriSegment(segment);
                     }
                 }
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException(
-                        String.format("invalid URI-Reference [%s] : %s", uriReference, e.getMessage()));
+            } catch (LinkParseException e) {
+                throw new LinkParseException(e, "invalid URI-Reference [%s] : %s", uriReference, e.getMessage());
             }
         }
     }
@@ -268,7 +264,7 @@ public class DefaultLinkParser implements LinkParser {
      */
     private void validateUriSegment(String segment) {
         if (!uriSegmentPattern.matcher(segment).matches()) {
-            throw new IllegalArgumentException(String.format("invalid segment: [%s]", segment));
+            throw new LinkParseException("invalid segment: [%s]", segment);
         }
     }
 
