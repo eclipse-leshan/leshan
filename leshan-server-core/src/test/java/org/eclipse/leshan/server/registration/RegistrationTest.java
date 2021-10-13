@@ -81,25 +81,6 @@ public class RegistrationTest {
     }
 
     @Test
-    public void test_object_links_with_text_in_not_lwm2m_path() {
-        Registration reg = given_a_registration_with_object_link_like(
-                "</root>;rt=\"oma.lwm2m\",</1/text/0/in/path>,</2/O/test/in/path>,</root/3/0>;ver=\"1.1\",</root/4/0/0/>");
-
-        // check root path
-        assertEquals("/root/", reg.getRootPath());
-
-        // Ensure supported objects are correct
-        Map<Integer, String> supportedObject = reg.getSupportedObject();
-        assertEquals(1, supportedObject.size());
-        assertEquals("1.1", supportedObject.get(3));
-
-        // ensure available instances are correct
-        Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
-        assertEquals(1, availableInstances.size());
-        assertTrue(availableInstances.containsAll(Arrays.asList(new LwM2mPath(3, 0))));
-    }
-
-    @Test
     public void test_object_links_with_ct_with_1_content_format_with_quote() {
         Registration reg = given_a_registration_with_object_link_like("</>;ct=\"42\",</1/0>,</3/0>");
 
@@ -228,6 +209,25 @@ public class RegistrationTest {
         Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
         assertEquals(2, availableInstances.size());
         assertTrue(availableInstances.containsAll(Arrays.asList(new LwM2mPath(1, 0), new LwM2mPath(3, 0))));
+    }
+
+    @Test
+    public void test_object_links_with_text_in_not_lwm2m_path() {
+        Registration reg = given_a_registration_with_object_link_like(
+                "</root>;rt=\"oma.lwm2m\",</text>,</1/text/0/in/path>,</2/O/test/in/path>,</root/3/0>;ver=\"1.1\",</root/4/0/0/>");
+
+        // check root path
+        assertEquals("/root/", reg.getRootPath());
+
+        // Ensure supported objects are correct
+        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        assertEquals(1, supportedObject.size());
+        assertEquals("1.1", supportedObject.get(3));
+
+        // ensure available instances are correct
+        Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
+        assertEquals(1, availableInstances.size());
+        assertTrue(availableInstances.containsAll(Arrays.asList(new LwM2mPath(3, 0))));
     }
 
     @Test(expected = IllegalArgumentException.class)
