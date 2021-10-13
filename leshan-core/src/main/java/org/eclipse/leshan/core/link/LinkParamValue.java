@@ -15,8 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link;
 
-import java.util.Objects;
-
 public class LinkParamValue {
 
     private final String linkParamValue;
@@ -47,17 +45,27 @@ public class LinkParamValue {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof LinkParamValue))
-            return false;
-        LinkParamValue linkParamValue1 = (LinkParamValue) o;
-        return Objects.equals(linkParamValue, linkParamValue1.linkParamValue);
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((linkParamValue == null) ? 0 : linkParamValue.hashCode());
+        return result;
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(linkParamValue);
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        LinkParamValue other = (LinkParamValue) obj;
+        if (linkParamValue == null) {
+            if (other.linkParamValue != null)
+                return false;
+        } else if (!linkParamValue.equals(other.linkParamValue))
+            return false;
+        return true;
     }
 }
