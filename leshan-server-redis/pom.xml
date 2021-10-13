@@ -36,7 +36,8 @@ Contributors:
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
-            <version>3.3.0</version>
+            <!-- stuck to 3.5.x for java7 compliance -->
+            <version>3.5.2</version>
         </dependency>
         <dependency>
             <groupId>com.eclipsesource.minimal-json</groupId>

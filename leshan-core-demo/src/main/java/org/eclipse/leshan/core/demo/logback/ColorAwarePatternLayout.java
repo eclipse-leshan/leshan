@@ -26,23 +26,23 @@ public class ColorAwarePatternLayout extends PatternLayout {
 
     static {
         if (!Ansi.AUTO.enabled()) {
-            defaultConverterMap.put("black", NoColorConverter.class.getName());
-            defaultConverterMap.put("red", NoColorConverter.class.getName());
-            defaultConverterMap.put("green", NoColorConverter.class.getName());
-            defaultConverterMap.put("yellow", NoColorConverter.class.getName());
-            defaultConverterMap.put("blue", NoColorConverter.class.getName());
-            defaultConverterMap.put("magenta", NoColorConverter.class.getName());
-            defaultConverterMap.put("cyan", NoColorConverter.class.getName());
-            defaultConverterMap.put("white", NoColorConverter.class.getName());
-            defaultConverterMap.put("gray", NoColorConverter.class.getName());
-            defaultConverterMap.put("boldRed", NoColorConverter.class.getName());
-            defaultConverterMap.put("boldGreen", NoColorConverter.class.getName());
-            defaultConverterMap.put("boldYellow", NoColorConverter.class.getName());
-            defaultConverterMap.put("boldBlue", NoColorConverter.class.getName());
-            defaultConverterMap.put("boldMagenta", NoColorConverter.class.getName());
-            defaultConverterMap.put("boldCyan", NoColorConverter.class.getName());
-            defaultConverterMap.put("boldWhite", NoColorConverter.class.getName());
-            defaultConverterMap.put("highlight", NoColorConverter.class.getName());
+            DEFAULT_CONVERTER_MAP.put("black", NoColorConverter.class.getName());
+            DEFAULT_CONVERTER_MAP.put("red", NoColorConverter.class.getName());
+            DEFAULT_CONVERTER_MAP.put("green", NoColorConverter.class.getName());
+            DEFAULT_CONVERTER_MAP.put("yellow", NoColorConverter.class.getName());
+            DEFAULT_CONVERTER_MAP.put("blue", NoColorConverter.class.getName());
+            DEFAULT_CONVERTER_MAP.put("magenta", NoColorConverter.class.getName());
+            DEFAULT_CONVERTER_MAP.put("cyan", NoColorConverter.class.getName());
+            DEFAULT_CONVERTER_MAP.put("white", NoColorConverter.class.getName());
+            DEFAULT_CONVERTER_MAP.put("gray", NoColorConverter.class.getName());
+            DEFAULT_CONVERTER_MAP.put("boldRed", NoColorConverter.class.getName());
+            DEFAULT_CONVERTER_MAP.put("boldGreen", NoColorConverter.class.getName());
+            DEFAULT_CONVERTER_MAP.put("boldYellow", NoColorConverter.class.getName());
+            DEFAULT_CONVERTER_MAP.put("boldBlue", NoColorConverter.class.getName());
+            DEFAULT_CONVERTER_MAP.put("boldMagenta", NoColorConverter.class.getName());
+            DEFAULT_CONVERTER_MAP.put("boldCyan", NoColorConverter.class.getName());
+            DEFAULT_CONVERTER_MAP.put("boldWhite", NoColorConverter.class.getName());
+            DEFAULT_CONVERTER_MAP.put("highlight", NoColorConverter.class.getName());
         }
     }
 }

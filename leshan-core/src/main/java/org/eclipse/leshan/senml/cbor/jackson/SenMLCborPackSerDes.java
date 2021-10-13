@@ -105,7 +105,7 @@ public class SenMLCborPackSerDes {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         try (CBORGenerator generator = factory.createGenerator(out)) {
-            generator.writeStartArray(pack.getRecords().size());
+            generator.writeStartArray(null, pack.getRecords().size());
 
             for (SenMLRecord record : pack.getRecords()) {
                 boolean hasBaseName = false;

@@ -111,9 +111,12 @@ Contributors:
 
         <!-- dependencies version -->
         <californium.version>3.0.0-M4</californium.version>
-        <logback.version>1.2.3</logback.version>
-        <slf4j.api.version>1.7.30</slf4j.api.version>
-        <jetty.version>9.4.34.v20201102</jetty.version>
+        <logback.version>1.2.6</logback.version>
+        <slf4j.api.version>1.7.32</slf4j.api.version>
+        <!-- stuck to 9.4.x for java8 compliance -->
+        <jetty.version>9.4.44.v20210927 </jetty.version>
+        <!-- stuck to 2.12.x for java7 compliance -->
+        <jackson.version>2.12.5</jackson.version>
     </properties>
 
     <profiles>
@@ -530,7 +533,7 @@ Contributors:
                 <plugin>
                     <groupId>org.revapi</groupId>
                     <artifactId>revapi-maven-plugin</artifactId>
-                    <!-- can not upgrade to 1.4.5 because of : https://github.com/revapi/revapi/issues/252 --> 
+                    <!-- can not upgrade to 0.14.5 because of : https://github.com/revapi/revapi/issues/252 --> 
                     <version>0.12.2</version>
                     <dependencies>
                         <dependency>
@@ -714,17 +717,17 @@ Contributors:
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>2.11.2</version>
+                <version>${jackson.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-cbor</artifactId>
-                <version>2.11.2</version>
+                <version>${jackson.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.upokecenter</groupId>
                 <artifactId>cbor</artifactId>
-                <version>4.3.0</version>
+                <version>4.4.4</version>
             </dependency>
             
 
@@ -742,7 +745,7 @@ Contributors:
             <dependency>
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
-                <version>2.8.6</version>
+                <version>2.8.8</version>
             </dependency>
             <dependency>
                 <groupId>commons-lang</groupId>
@@ -752,7 +755,7 @@ Contributors:
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>2.8.0</version>
+                <version>2.11.0</version>
             </dependency>
             <dependency>
                 <groupId>info.picocli</groupId>
@@ -784,7 +787,7 @@ Contributors:
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.13.1</version>
+                <version>4.13.2</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
