@@ -30,11 +30,10 @@ import javax.jmdns.ServiceInfo;
 
 import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.elements.config.Configuration;
-import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.californium.elements.util.CertPathUtil;
 import org.eclipse.californium.scandium.config.DtlsConfig;
-import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -154,8 +153,7 @@ public class LeshanServerDemo {
 
         // ports from CoAP Config if needed
         builder.setLocalAddress(cli.main.localAddress,
-                cli.main.localPort == null ? coapConfig.get(CoapConfig.COAP_PORT)
-                        : cli.main.localPort);
+                cli.main.localPort == null ? coapConfig.get(CoapConfig.COAP_PORT) : cli.main.localPort);
         builder.setLocalSecureAddress(cli.main.secureLocalAddress,
                 cli.main.secureLocalPort == null ? coapConfig.get(CoapConfig.COAP_SECURE_PORT)
                         : cli.main.secureLocalPort);

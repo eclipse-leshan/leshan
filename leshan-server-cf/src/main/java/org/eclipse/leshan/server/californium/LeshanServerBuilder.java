@@ -393,7 +393,8 @@ public class LeshanServerBuilder {
      * The default Californium/CoAP {@link Configuration} used by the builder.
      */
     public static Configuration createDefaultNetworkConfig() {
-        Configuration networkConfig = new Configuration(CoapConfig.DEFINITIONS, DtlsConfig.DEFINITIONS, UdpConfig.DEFINITIONS, SystemConfig.DEFINITIONS);
+        Configuration networkConfig = new Configuration(CoapConfig.DEFINITIONS, DtlsConfig.DEFINITIONS,
+                UdpConfig.DEFINITIONS, SystemConfig.DEFINITIONS);
         networkConfig.set(CoapConfig.MID_TRACKER, TrackerMode.NULL);
         // Do no allow Server to initiated Handshake by default, for U device request will be allowed to initiate
         // handshake (see Registration.shouldInitiateConnection())
@@ -491,13 +492,14 @@ public class LeshanServerBuilder {
                 // if in raw key mode and not in X.509 set the raw keys
                 if (certificateChain == null && publicKey != null) {
 
-                    dtlsConfigBuilder.setCertificateIdentityProvider(new SingleCertificateProvider(privateKey, publicKey));
+                    dtlsConfigBuilder
+                            .setCertificateIdentityProvider(new SingleCertificateProvider(privateKey, publicKey));
                 }
                 // if in X.509 mode set the private key, certificate chain, public key is extracted from the certificate
                 if (certificateChain != null && certificateChain.length > 0) {
 
-                    dtlsConfigBuilder.setCertificateIdentityProvider(new SingleCertificateProvider(privateKey, certificateChain, CertificateType.X_509,
-                            CertificateType.RAW_PUBLIC_KEY));
+                    dtlsConfigBuilder.setCertificateIdentityProvider(new SingleCertificateProvider(privateKey,
+                            certificateChain, CertificateType.X_509, CertificateType.RAW_PUBLIC_KEY));
                 }
             }
 
@@ -507,8 +509,9 @@ public class LeshanServerBuilder {
                     throw new IllegalStateException(
                             "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder: if a AdvancedCertificateVerifier is set, trustedCertificates must not be set.");
                 }
-            } else if (incompleteConfig.getCertificateIdentityProvider() != null){
-                StaticNewAdvancedCertificateVerifier.Builder verifierBuilder = StaticNewAdvancedCertificateVerifier.builder();
+            } else if (incompleteConfig.getCertificateIdentityProvider() != null) {
+                StaticNewAdvancedCertificateVerifier.Builder verifierBuilder = StaticNewAdvancedCertificateVerifier
+                        .builder();
                 // by default trust all RPK
                 verifierBuilder.setTrustAllRPKs();
                 if (trustedCertificates != null) {
@@ -577,8 +580,8 @@ public class LeshanServerBuilder {
      */
     protected LeshanServer createServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
-            LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            Configuration coapConfig, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
+            LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder, Configuration coapConfig,
+            boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
             RegistrationIdProvider registrationIdProvider) {
         return new LeshanServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
                 modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider,

@@ -71,14 +71,13 @@ public abstract class BaseCertificateVerifier implements NewAdvancedCertificateV
         }
     }
 
-    protected abstract CertPath verifyCertificate(boolean clientUsage, CertificateMessage message, InetSocketAddress peerSocket)
-            throws HandshakeException;
+    protected abstract CertPath verifyCertificate(boolean clientUsage, CertificateMessage message,
+            InetSocketAddress peerSocket) throws HandshakeException;
 
     /**
      * Ensure that chain is not empty
      */
-    protected void validateCertificateChainNotEmpty(CertPath certChain)
-            throws HandshakeException {
+    protected void validateCertificateChainNotEmpty(CertPath certChain) throws HandshakeException {
         if (certChain.getCertificates().size() == 0) {
             AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE);
             throw new HandshakeException("Certificate chain could not be validated : server cert chain is empty",

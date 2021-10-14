@@ -143,8 +143,8 @@ public class LeshanServer {
      */
     public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
-            LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            Configuration coapConfig, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
+            LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder, Configuration coapConfig,
+            boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
             RegistrationIdProvider registrationIdProvider) {
         this(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer, modelProvider, encoder,
                 decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider, false);
@@ -174,8 +174,8 @@ public class LeshanServer {
      */
     public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
-            LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            Configuration coapConfig, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
+            LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder, Configuration coapConfig,
+            boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
             RegistrationIdProvider registrationIdProvider, boolean updateRegistrationOnNotification) {
 
         Validate.notNull(registrationStore, "registration store cannot be null");

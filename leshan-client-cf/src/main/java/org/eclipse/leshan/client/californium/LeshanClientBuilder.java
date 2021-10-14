@@ -256,7 +256,8 @@ public class LeshanClientBuilder {
     }
 
     public static Configuration createDefaultNetworkConfig() {
-        Configuration networkConfig = new Configuration(CoapConfig.DEFINITIONS, DtlsConfig.DEFINITIONS, UdpConfig.DEFINITIONS, SystemConfig.DEFINITIONS);
+        Configuration networkConfig = new Configuration(CoapConfig.DEFINITIONS, DtlsConfig.DEFINITIONS,
+                UdpConfig.DEFINITIONS, SystemConfig.DEFINITIONS);
         networkConfig.set(CoapConfig.MID_TRACKER, TrackerMode.NULL);
         networkConfig.set(CoapConfig.MAX_ACTIVE_PEERS, 10);
         networkConfig.set(CoapConfig.PROTOCOL_STAGE_THREAD_COUNT, 1);

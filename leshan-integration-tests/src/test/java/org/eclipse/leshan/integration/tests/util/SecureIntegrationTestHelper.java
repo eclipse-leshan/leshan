@@ -246,8 +246,8 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         builder.setRegistrationEngineFactory(new DefaultRegistrationEngineFactory().setQueueMode(queueMode));
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
         builder.setObjects(objects);
-        builder.setDtlsConfig(
-                DtlsConnectorConfig.builder(configuration).setSupportedCipherSuites(CipherSuite.TLS_PSK_WITH_AES_128_CCM_8));
+        builder.setDtlsConfig(DtlsConnectorConfig.builder(configuration)
+                .setSupportedCipherSuites(CipherSuite.TLS_PSK_WITH_AES_128_CCM_8));
 
         // set an editable PSK store for tests
         builder.setEndpointFactory(new EndpointFactory() {
@@ -272,7 +272,8 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
                 if (pskStore != null) {
                     PskPublicInformation identity = pskStore.getIdentity(null, null);
                     SecretKey key = pskStore
-                            .requestPskSecretResult(ConnectionId.EMPTY, null, identity, null, null, null, false).getSecret();
+                            .requestPskSecretResult(ConnectionId.EMPTY, null, identity, null, null, null, false)
+                            .getSecret();
                     singlePSKStore = new SinglePSKStore(identity, key);
                     dtlsConfigBuilder.setAdvancedPskStore(singlePSKStore);
                 }

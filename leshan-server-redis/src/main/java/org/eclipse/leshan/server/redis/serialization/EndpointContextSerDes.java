@@ -146,7 +146,8 @@ public class EndpointContextSerDes {
                         } else if (key.getValueType().equals(Boolean.class)) {
                             attributes.add((Definition<Boolean>) key, Boolean.parseBoolean(attributeValue));
                         } else {
-                            LOG.warn("Unsupported type" + key.getValueType() + " for endpoint-context-attribute '{}'.", name);
+                            LOG.warn("Unsupported type" + key.getValueType() + " for endpoint-context-attribute '{}'.",
+                                    name);
                         }
                     }
                 } else {

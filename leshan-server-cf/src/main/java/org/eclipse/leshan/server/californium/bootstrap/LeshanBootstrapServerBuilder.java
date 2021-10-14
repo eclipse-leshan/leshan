@@ -31,8 +31,8 @@ import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConfig;
-import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.CertificateType;
 import org.eclipse.californium.scandium.dtls.x509.SingleCertificateProvider;
@@ -390,7 +390,8 @@ public class LeshanBootstrapServerBuilder {
      * @return the default CoAP config.
      */
     public Configuration createDefaultNetworkConfig() {
-        Configuration networkConfig = new Configuration(CoapConfig.DEFINITIONS, DtlsConfig.DEFINITIONS, UdpConfig.DEFINITIONS, SystemConfig.DEFINITIONS);
+        Configuration networkConfig = new Configuration(CoapConfig.DEFINITIONS, DtlsConfig.DEFINITIONS,
+                UdpConfig.DEFINITIONS, SystemConfig.DEFINITIONS);
         networkConfig.set(CoapConfig.MID_TRACKER, TrackerMode.NULL);
         // overwrite role by LwM2M specific client roles
         networkConfig.setTransient(DtlsConfig.DTLS_ROLE);

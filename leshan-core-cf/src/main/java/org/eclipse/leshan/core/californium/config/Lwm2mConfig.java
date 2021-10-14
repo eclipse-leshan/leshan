@@ -23,8 +23,8 @@ import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
  */
 public final class Lwm2mConfig {
 
-	public static final EnumDefinition<DtlsRole> LWM2M_DTLS_ROLE = new EnumDefinition<>("LWM2M_DTLS_ROLE",
-			"DTLS role for LwM2M. For details, especially about the smart default, please refer to Leshan documentation.",
-			null, DtlsRole.values());
+    public static final EnumDefinition<DtlsRole> LWM2M_DTLS_ROLE = new EnumDefinition<>("LWM2M_DTLS_ROLE",
+            "DTLS role for LwM2M. For details, especially about the smart default, please refer to Leshan documentation.",
+            null, DtlsRole.values());
 
 }
