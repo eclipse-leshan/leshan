@@ -341,6 +341,16 @@ Contributors:
                     <version>1.6.8</version>
                 </plugin>
                 <plugin>
+                    <groupId>net.revelc.code.formatter</groupId>
+                    <artifactId>formatter-maven-plugin</artifactId>
+                    <version>2.16.0</version>
+                    <configuration>
+                        <configFile>${project.basedir}/../eclipse/eclipse-code-style.xml</configFile>
+                        <lineEnding>LF</lineEnding>
+                        <encoding>UTF-8</encoding>
+                    </configuration>
+                </plugin>
+                <plugin>
                     <groupId>com.google.code.maven-replacer-plugin</groupId>
                     <artifactId>replacer</artifactId>
                     <version>1.5.3</version>
