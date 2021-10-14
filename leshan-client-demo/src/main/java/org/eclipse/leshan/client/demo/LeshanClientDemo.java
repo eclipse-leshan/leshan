@@ -195,8 +195,6 @@ public class LeshanClientDemo {
         Configuration coapConfig = LeshanClientBuilder.createDefaultNetworkConfig();
         // these configuration values are always overwritten by CLI
         // therefore set them to transient.
-        // Otherwise, just document that in the CLI documentation and
-        // remove the transient mark here
         coapConfig.setTransient(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY);
         coapConfig.setTransient(DtlsConfig.DTLS_CONNECTION_ID_LENGTH);
         if (configFile.isFile()) {

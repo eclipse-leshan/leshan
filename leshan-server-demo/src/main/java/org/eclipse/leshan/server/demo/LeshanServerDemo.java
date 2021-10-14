@@ -145,6 +145,10 @@ public class LeshanServerDemo {
         // Create CoAP Config
         File configFile = new File(CF_CONFIGURATION_FILENAME);
         Configuration coapConfig = LeshanServerBuilder.createDefaultNetworkConfig();
+        // these configuration values are always overwritten by CLI
+        // therefore set them to transient.
+        coapConfig.setTransient(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY);
+        coapConfig.setTransient(DtlsConfig.DTLS_CONNECTION_ID_LENGTH);
         if (configFile.isFile()) {
             coapConfig.load(configFile);
         } else {
