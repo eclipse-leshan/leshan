@@ -27,13 +27,11 @@ import java.util.List;
 import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.config.DtlsConfig;
-import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.leshan.core.californium.config.Lwm2mConfig;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -136,10 +134,6 @@ public class LeshanBootstrapServerDemo {
         dtlsConfig.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, !cli.dtls.supportDeprecatedCiphers);
         if (cli.dtls.cid != null) {
             dtlsConfig.set(DtlsConfig.DTLS_CONNECTION_ID_LENGTH, cli.dtls.cid);
-        }
-        DtlsRole dtlsRole = dtlsConfig.getIncompleteConfig().getConfiguration().get(Lwm2mConfig.LWM2M_DTLS_ROLE);
-        if (dtlsRole != null) {
-            dtlsConfig.set(DtlsConfig.DTLS_ROLE, dtlsRole);
         }
 
         if (cli.identity.isx509()) {

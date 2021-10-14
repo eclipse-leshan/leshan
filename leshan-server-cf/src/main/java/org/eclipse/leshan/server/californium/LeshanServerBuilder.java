@@ -35,6 +35,7 @@ import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConfig;
+import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.CertificateType;
@@ -43,7 +44,6 @@ import org.eclipse.californium.scandium.dtls.x509.StaticNewAdvancedCertificateVe
 import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
-import org.eclipse.leshan.core.californium.config.Lwm2mConfig;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
@@ -399,9 +399,7 @@ public class LeshanServerBuilder {
         // Do no allow Server to initiated Handshake by default, for U device request will be allowed to initiate
         // handshake (see Registration.shouldInitiateConnection())
         networkConfig.set(DtlsConfig.DTLS_DEFAULT_HANDSHAKE_MODE, DtlsEndpointContext.HANDSHAKE_MODE_NONE);
-        // overwrite role by LwM2M specific client roles
-        networkConfig.setTransient(DtlsConfig.DTLS_ROLE);
-        networkConfig.set(Lwm2mConfig.LWM2M_DTLS_ROLE, null);
+        networkConfig.set(DtlsConfig.DTLS_ROLE, DtlsRole.BOTH);
 
         return networkConfig;
     }

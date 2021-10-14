@@ -38,7 +38,6 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.leshan.core.californium.config.Lwm2mConfig;
 import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.core.model.ObjectLoader;
@@ -175,20 +174,17 @@ public class LeshanServerDemo {
             builder.setPrivateKey(cli.identity.getPrivateKey());
             builder.setCertificateChain(cli.identity.getCertChain());
 
-            DtlsRole dtlsRole = dtlsConfig.getIncompleteConfig().getConfiguration().get(Lwm2mConfig.LWM2M_DTLS_ROLE);
-            if (dtlsRole != null) {
-                dtlsConfig.set(DtlsConfig.DTLS_ROLE, dtlsRole);
-            }
-
             X509Certificate serverCertificate = cli.identity.getCertChain()[0];
             // autodetect serverOnly
-            if (serverCertificate != null) {
-                if (CertPathUtil.canBeUsedForAuthentication(serverCertificate, false)) {
-                    if (!CertPathUtil.canBeUsedForAuthentication(serverCertificate, true)) {
-                        dtlsConfig.set(DtlsConfig.DTLS_ROLE, DtlsRole.SERVER_ONLY);
-                        LOG.warn("Server certificate does not allow Client Authentication usage."
-                                + "\nThis will prevent this LWM2M server to initiate DTLS connection."
-                                + "\nSee : https://github.com/eclipse/leshan/wiki/Server-Failover#about-connections");
+            if (dtlsConfig.getIncompleteConfig().getDtlsRole() == DtlsRole.BOTH) {
+                if (serverCertificate != null) {
+                    if (CertPathUtil.canBeUsedForAuthentication(serverCertificate, false)) {
+                        if (!CertPathUtil.canBeUsedForAuthentication(serverCertificate, true)) {
+                            dtlsConfig.set(DtlsConfig.DTLS_ROLE, DtlsRole.SERVER_ONLY);
+                            LOG.warn("Server certificate does not allow Client Authentication usage."
+                                    + "\nThis will prevent this LWM2M server to initiate DTLS connection."
+                                    + "\nSee : https://github.com/eclipse/leshan/wiki/Server-Failover#about-connections");
+                        }
                     }
                 }
             }
