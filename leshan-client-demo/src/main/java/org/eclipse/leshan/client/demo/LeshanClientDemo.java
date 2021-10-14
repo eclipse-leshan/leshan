@@ -73,7 +73,8 @@ public class LeshanClientDemo {
     private static final Logger LOG = LoggerFactory.getLogger(LeshanClientDemo.class);
     private static final int OBJECT_ID_TEMPERATURE_SENSOR = 3303;
     private static final int OBJECT_ID_LWM2M_TEST_OBJECT = 3441;
-    private static final String CONFIGURATION_HEADER = "Leshan's Client " + Configuration.DEFAULT_HEADER;
+    private static final String CF_CONFIGURATION_FILENAME = "Californium3.client.properties";
+    private static final String CF_CONFIGURATION_HEADER = "Leshan Client Demo - " + Configuration.DEFAULT_HEADER;
 
     public static void main(String[] args) {
 
@@ -190,7 +191,7 @@ public class LeshanClientDemo {
         List<LwM2mObjectEnabler> enablers = initializer.createAll();
 
         // Create CoAP Config
-        File configFile = new File(Configuration.DEFAULT_FILE_NAME);
+        File configFile = new File(CF_CONFIGURATION_FILENAME);
         Configuration coapConfig = LeshanClientBuilder.createDefaultNetworkConfig();
         // these configuration values are always overwritten by CLI
         // therefore set them to transient.
@@ -201,7 +202,7 @@ public class LeshanClientDemo {
         if (configFile.isFile()) {
             coapConfig.load(configFile);
         } else {
-            coapConfig.store(configFile, CONFIGURATION_HEADER);
+            coapConfig.store(configFile, CF_CONFIGURATION_HEADER);
         }
 
         // Create DTLS Config

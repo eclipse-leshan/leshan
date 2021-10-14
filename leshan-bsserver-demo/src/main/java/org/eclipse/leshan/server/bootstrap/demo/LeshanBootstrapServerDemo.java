@@ -61,7 +61,9 @@ public class LeshanBootstrapServerDemo {
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanBootstrapServerDemo.class);
-    private static final String CONFIGURATION_HEADER = "Leshan's Bootstrap Server " + Configuration.DEFAULT_HEADER;
+    private static final String CF_CONFIGURATION_FILENAME = "Californium3.bsserver.properties";
+    private static final String CF_CONFIGURATION_HEADER = "Leshan Bootstrap Server Demo - "
+            + Configuration.DEFAULT_HEADER;
 
     public static void main(String[] args) {
 
@@ -109,12 +111,12 @@ public class LeshanBootstrapServerDemo {
         LeshanBootstrapServerBuilder builder = new LeshanBootstrapServerBuilder();
 
         // Create CoAP Config
-        File configFile = new File(Configuration.DEFAULT_FILE_NAME);
+        File configFile = new File(CF_CONFIGURATION_FILENAME);
         Configuration coapConfig = LeshanBootstrapServerBuilder.createDefaultNetworkConfig();
         if (configFile.isFile()) {
             coapConfig.load(configFile);
         } else {
-            coapConfig.store(configFile, CONFIGURATION_HEADER);
+            coapConfig.store(configFile, CF_CONFIGURATION_HEADER);
         }
         builder.setCoapConfig(coapConfig);
 
