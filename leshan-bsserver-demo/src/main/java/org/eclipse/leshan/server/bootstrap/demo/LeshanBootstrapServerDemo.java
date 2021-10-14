@@ -42,7 +42,6 @@ import org.eclipse.leshan.server.bootstrap.demo.cli.LeshanBsServerDemoCLI;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.BootstrapServlet;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.EventServlet;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.ServerServlet;
-import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServer;
 import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServerBuilder;
 import org.eclipse.leshan.server.model.VersionedBootstrapModelProvider;
@@ -111,7 +110,7 @@ public class LeshanBootstrapServerDemo {
 
         // Create CoAP Config
         File configFile = new File(Configuration.DEFAULT_FILE_NAME);
-        Configuration coapConfig = LeshanServerBuilder.createDefaultNetworkConfig();
+        Configuration coapConfig = LeshanBootstrapServerBuilder.createDefaultNetworkConfig();
         if (configFile.isFile()) {
             coapConfig.load(configFile);
         } else {

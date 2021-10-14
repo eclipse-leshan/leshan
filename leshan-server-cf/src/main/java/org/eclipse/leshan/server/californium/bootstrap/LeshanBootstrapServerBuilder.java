@@ -389,7 +389,7 @@ public class LeshanBootstrapServerBuilder {
      * 
      * @return the default CoAP config.
      */
-    public Configuration createDefaultNetworkConfig() {
+    public static Configuration createDefaultNetworkConfig() {
         Configuration networkConfig = new Configuration(CoapConfig.DEFINITIONS, DtlsConfig.DEFINITIONS,
                 UdpConfig.DEFINITIONS, SystemConfig.DEFINITIONS);
         networkConfig.set(CoapConfig.MID_TRACKER, TrackerMode.NULL);
