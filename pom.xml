@@ -345,7 +345,7 @@ Contributors:
                     <artifactId>formatter-maven-plugin</artifactId>
                     <version>2.16.0</version>
                     <configuration>
-                        <configFile>${project.basedir}/../eclipse/eclipse-code-style.xml</configFile>
+                        <configFile>${project.basedir}/../eclipse/eclipse-code-style-2.xml</configFile>
                         <lineEnding>LF</lineEnding>
                         <encoding>UTF-8</encoding>
                     </configuration>
