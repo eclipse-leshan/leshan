@@ -22,10 +22,13 @@ import java.util.Random;
 import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Token;
+import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
 import org.eclipse.californium.core.test.lockstep.LockstepEndpoint;
 import org.eclipse.californium.elements.RawData;
 import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.californium.elements.config.SystemConfig;
+import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.leshan.client.californium.request.CoapRequestBuilder;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
@@ -44,8 +47,9 @@ public class LockStepLwM2mClient extends LockstepEndpoint {
     private final LwM2mEncoder encoder;
     private final LwM2mModel model;
 
-    public LockStepLwM2mClient(final InetSocketAddress destination, Configuration coapConfig) {
-        super(destination, coapConfig);
+    public LockStepLwM2mClient(final InetSocketAddress destination) {
+        super(destination, new Configuration(
+                new Configuration(CoapConfig.DEFINITIONS, UdpConfig.DEFINITIONS, SystemConfig.DEFINITIONS)));
         this.destination = destination;
         this.encoder = new DefaultLwM2mEncoder();
         List<ObjectModel> models = ObjectLoader.loadDefault();
