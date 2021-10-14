@@ -343,7 +343,7 @@ public class LeshanServerBuilder {
      * Sets a new {@link ClientAwakeTimeProvider} object different from the default one.
      * <p>
      * By default a {@link StaticClientAwakeTimeProvider} will be used initialized with the
-     * <code>MAX_TRANSMIT_WAIT</code> value available in CoAP {@link NetworkConfig} which should be by default 93s as
+     * <code>MAX_TRANSMIT_WAIT</code> value available in CoAP {@link Configuration} which should be by default 93s as
      * defined in <a href="https://tools.ietf.org/html/rfc7252#section-4.8.2">RFC7252</a>.
      * 
      * @param awakeTimeProvider the {@link ClientAwakeTimeProvider} to set.
