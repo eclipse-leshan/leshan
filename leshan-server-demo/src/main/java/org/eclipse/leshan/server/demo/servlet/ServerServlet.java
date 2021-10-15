@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Orange - keep one JSON dependency
  *******************************************************************************/
 package org.eclipse.leshan.server.demo.servlet;
 
@@ -28,13 +29,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.leshan.server.californium.LeshanServer;
 import org.eclipse.leshan.server.core.demo.json.PublicKeySerDes;
-import org.eclipse.leshan.server.core.demo.json.SecuritySerializer;
 import org.eclipse.leshan.server.core.demo.json.X509CertificateSerDes;
-import org.eclipse.leshan.server.security.SecurityInfo;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.gson.GsonBuilder;
 
 public class ServerServlet extends HttpServlet {
 
@@ -49,8 +47,6 @@ public class ServerServlet extends HttpServlet {
 
     public ServerServlet(LeshanServer server, X509Certificate serverCertificate) {
         this.server = server;
-        GsonBuilder builder = new GsonBuilder();
-        builder.registerTypeAdapter(SecurityInfo.class, new SecuritySerializer());
         certificateSerDes = new X509CertificateSerDes();
         publicKeySerDes = new PublicKeySerDes();
 
@@ -60,8 +56,6 @@ public class ServerServlet extends HttpServlet {
 
     public ServerServlet(LeshanServer server, PublicKey serverPublicKey) {
         this.server = server;
-        GsonBuilder builder = new GsonBuilder();
-        builder.registerTypeAdapter(SecurityInfo.class, new SecuritySerializer());
         certificateSerDes = new X509CertificateSerDes();
         publicKeySerDes = new PublicKeySerDes();
         this.publicKey = serverPublicKey;

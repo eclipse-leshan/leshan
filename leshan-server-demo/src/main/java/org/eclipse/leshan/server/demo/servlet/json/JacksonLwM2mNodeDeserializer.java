@@ -12,15 +12,17 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Orange - keep one JSON dependency
  *******************************************************************************/
 package org.eclipse.leshan.server.demo.servlet.json;
 
-import java.lang.reflect.Type;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 
+import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
@@ -29,58 +31,56 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class LwM2mNodeDeserializer implements JsonDeserializer<LwM2mNode> {
+public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
 
     @Override
-    public LwM2mNode deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-            throws JsonParseException {
+    public LwM2mNode deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 
-        if (json == null) {
-            return null;
-        }
+        ObjectMapper om = (ObjectMapper) p.getCodec();
+        om.setConfig(ctxt.getConfig());
 
-        LwM2mNode node;
+        JsonNode object = p.getCodec().readTree(p);
 
-        if (json.isJsonObject()) {
-            JsonObject object = (JsonObject) json;
+        LwM2mNode node = null;
+
+        if (object.isObject()) {
 
             Integer id = null;
             if (object.has("id")) {
-                id = object.get("id").getAsInt();
+                id = object.get("id").asInt();
             }
 
             String type = null;
             if (object.has("type")) {
-                type = object.get("type").getAsString();
+                type = object.get("type").asText();
             }
 
             if ("obj".equals(type) || object.has("instances")) {
                 if (id == null) {
-                    throw new JsonParseException("Missing id");
+                    throw new JsonParseException(p, "Missing id");
                 }
 
-                JsonArray array = object.get("instances").getAsJsonArray();
-                LwM2mObjectInstance[] instances = new LwM2mObjectInstance[array.size()];
+                JsonNode array = object.get("instances");
+                LwM2mObjectInstance[] instances = new LwM2mObjectInstance[object.get("instances").size()];
 
                 for (int i = 0; i < array.size(); i++) {
-                    instances[i] = context.deserialize(array.get(i), LwM2mNode.class);
+                    instances[i] = (LwM2mObjectInstance) om.treeToValue(array.get(i), LwM2mNode.class);
                 }
                 node = new LwM2mObject(id, instances);
 
             } else if ("instance".equals(type) || object.has("resources")) {
-                JsonArray array = object.get("resources").getAsJsonArray();
+                JsonNode array = object.get("resources");
                 LwM2mResource[] resources = new LwM2mResource[array.size()];
 
                 for (int i = 0; i < array.size(); i++) {
-                    resources[i] = context.deserialize(array.get(i), LwM2mNode.class);
+                    resources[i] = (LwM2mResource) om.treeToValue(array.get(i), LwM2mNode.class);
                 }
                 if (id == null) {
                     node = new LwM2mObjectInstance(Arrays.asList(resources));
@@ -89,77 +89,86 @@ public class LwM2mNodeDeserializer implements JsonDeserializer<LwM2mNode> {
                 }
             } else if ("multiResource".equals(type) || object.has("values")) {
                 if (id == null) {
-                    throw new JsonParseException("Missing id");
+                    throw new JsonParseException(p, "Missing id");
                 }
                 // multi-instances resource
                 Map<Integer, Object> values = new HashMap<>();
                 org.eclipse.leshan.core.model.ResourceModel.Type expectedType = null;
-                for (Entry<String, JsonElement> entry : object.get("values").getAsJsonObject().entrySet()) {
-                    JsonPrimitive pval = entry.getValue().getAsJsonPrimitive();
-                    expectedType = getTypeFor(pval);
-                    values.put(Integer.valueOf(entry.getKey()), deserializeValue(pval, expectedType));
+
+                JsonNode valuesNode = object.get("values");
+                if (!valuesNode.isObject()) {
+                    throw new JsonParseException(p, "Values element is not an object");
                 }
+
+                for (Iterator<String> it = valuesNode.fieldNames(); it.hasNext();) {
+                    String nodeName = it.next();
+                    JsonNode nodeValue = valuesNode.get(nodeName);
+
+                    expectedType = getTypeFor(nodeValue);
+                    values.put(Integer.valueOf(nodeName), deserializeValue(nodeValue, expectedType));
+                }
+
                 // use string by default;
                 if (expectedType == null)
                     expectedType = org.eclipse.leshan.core.model.ResourceModel.Type.STRING;
                 node = LwM2mMultipleResource.newResource(id, values, expectedType);
             } else if (object.has("value")) {
                 if (id == null) {
-                    throw new JsonParseException("Missing id");
+                    throw new JsonParseException(p, "Missing id");
                 }
 
                 if ("resourceInstance".equals(type)) {
                     // resource instance
-                    JsonPrimitive val = object.get("value").getAsJsonPrimitive();
+                    JsonNode val = object.get("value");
                     org.eclipse.leshan.core.model.ResourceModel.Type expectedType = getTypeFor(val);
                     node = LwM2mResourceInstance.newInstance(id, deserializeValue(val, expectedType), expectedType);
                 } else {
                     // single value resource
-                    JsonPrimitive val = object.get("value").getAsJsonPrimitive();
+                    JsonNode val = object.get("value");
                     org.eclipse.leshan.core.model.ResourceModel.Type expectedType = getTypeFor(val);
                     node = LwM2mSingleResource.newResource(id, deserializeValue(val, expectedType), expectedType);
                 }
             } else {
-                throw new JsonParseException("Invalid node element");
+                throw new JsonParseException(p, "Invalid node element");
             }
         } else {
-            throw new JsonParseException("Invalid node element");
+            throw new JsonParseException(p, "Invalid node element");
         }
 
         return node;
     }
 
-    private org.eclipse.leshan.core.model.ResourceModel.Type getTypeFor(JsonPrimitive val) {
+    private org.eclipse.leshan.core.model.ResourceModel.Type getTypeFor(JsonNode val) {
         if (val.isBoolean())
             return org.eclipse.leshan.core.model.ResourceModel.Type.BOOLEAN;
-        if (val.isString())
+        if (val.isTextual())
             return org.eclipse.leshan.core.model.ResourceModel.Type.STRING;
         if (val.isNumber()) {
-            if (val.getAsDouble() == val.getAsLong()) {
-                return org.eclipse.leshan.core.model.ResourceModel.Type.INTEGER;
-            } else {
+            if (val.isDouble()) {
                 return org.eclipse.leshan.core.model.ResourceModel.Type.FLOAT;
+            } else {
+                return org.eclipse.leshan.core.model.ResourceModel.Type.INTEGER;
             }
         }
         // use string as default value
         return org.eclipse.leshan.core.model.ResourceModel.Type.STRING;
     }
 
-    private Object deserializeValue(JsonPrimitive val, org.eclipse.leshan.core.model.ResourceModel.Type expectedType) {
+    private Object deserializeValue(JsonNode val, ResourceModel.Type expectedType) {
         switch (expectedType) {
         case BOOLEAN:
-            return val.getAsBoolean();
+            return val.asBoolean();
         case STRING:
-            return val.getAsString();
+            return val.asText();
         case INTEGER:
-            return val.getAsLong();
+            return val.asLong();
         case FLOAT:
-            return val.getAsDouble();
+            return val.asDouble();
         case TIME:
         case OPAQUE:
         default:
             // TODO we need to better handle this.
-            return val.getAsString();
+            return val.asText();
         }
     }
 }

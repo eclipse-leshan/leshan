@@ -13,6 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - add json as storage format
+ *     Orange - keep one JSON dependency
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap.demo;
 
@@ -21,26 +22,29 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.lang.reflect.Type;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.EditableBootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.InMemoryBootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.InvalidConfigurationException;
-import org.eclipse.leshan.server.bootstrap.demo.json.BindingModeTypeAdapter;
+import org.eclipse.leshan.server.bootstrap.demo.json.ByteArraySerializer;
+import org.eclipse.leshan.server.bootstrap.demo.json.EnumSetDeserializer;
+import org.eclipse.leshan.server.bootstrap.demo.json.EnumSetSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.type.CollectionType;
 
 /**
  * A {@link EditableBootstrapConfigStore} which persist configuration in a file using json format.
@@ -58,8 +62,7 @@ public class JSONFileBootstrapStore extends InMemoryBootstrapConfigStore {
     public static final String DEFAULT_FILE = "data/bootstrap.json";
 
     private final String filename;
-    private final Gson gson;
-    private final Type gsonType;
+    private final ObjectMapper mapper;
 
     public JSONFileBootstrapStore() {
         this(DEFAULT_FILE);
@@ -70,14 +73,19 @@ public class JSONFileBootstrapStore extends InMemoryBootstrapConfigStore {
      */
     public JSONFileBootstrapStore(String filename) {
         Validate.notEmpty(filename);
-        GsonBuilder builder = new GsonBuilder();
-        builder.setPrettyPrinting();
-        builder.registerTypeAdapter(new TypeToken<EnumSet<BindingMode>>() {
-        }.getType(), new BindingModeTypeAdapter());
 
-        this.gson = builder.create();
-        this.gsonType = new TypeToken<Map<String, BootstrapConfig>>() {
-        }.getType();
+        mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        SimpleModule module = new SimpleModule();
+        module.addDeserializer(EnumSet.class, new EnumSetDeserializer());
+
+        CollectionType collectionType = mapper.getTypeFactory().constructCollectionType(EnumSet.class, Object.class);
+        module.addSerializer(new EnumSetSerializer(collectionType));
+
+        module.addSerializer(new ByteArraySerializer(ByteArraySerializer.ByteMode.SIGNED));
+        mapper.registerModule(module);
+
         this.filename = filename;
         this.loadFromFile();
     }
@@ -125,7 +133,9 @@ public class JSONFileBootstrapStore extends InMemoryBootstrapConfigStore {
             File file = new File(filename);
             if (file.exists()) {
                 try (InputStreamReader in = new InputStreamReader(new FileInputStream(file))) {
-                    Map<String, BootstrapConfig> configs = gson.fromJson(in, gsonType);
+                    TypeReference<Map<String, BootstrapConfig>> bootstrapConfigTypeRef = new TypeReference<Map<String, BootstrapConfig>>() {
+                    };
+                    Map<String, BootstrapConfig> configs = mapper.readValue(in, bootstrapConfigTypeRef);
                     for (Map.Entry<String, BootstrapConfig> config : configs.entrySet()) {
                         addToStore(config.getKey(), config.getValue());
                     }
@@ -151,7 +161,7 @@ public class JSONFileBootstrapStore extends InMemoryBootstrapConfigStore {
 
             // Write file
             try (OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(filename))) {
-                out.write(gson.toJson(getAll(), gsonType));
+                out.write(mapper.writeValueAsString(getAll()));
             }
         } catch (Exception e) {
             LOG.error("Could not save bootstrap infos to file", e);

@@ -13,10 +13,12 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
+ *     Orange - keep one JSON dependency
  *******************************************************************************/
 package org.eclipse.leshan.server.demo.servlet;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -37,8 +39,8 @@ import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.californium.LeshanServer;
-import org.eclipse.leshan.server.demo.servlet.json.LwM2mNodeSerializer;
-import org.eclipse.leshan.server.demo.servlet.json.RegistrationSerializer;
+import org.eclipse.leshan.server.demo.servlet.json.JacksonLwM2mNodeSerializer;
+import org.eclipse.leshan.server.demo.servlet.json.JacksonRegistrationSerializer;
 import org.eclipse.leshan.server.demo.servlet.log.CoapMessage;
 import org.eclipse.leshan.server.demo.servlet.log.CoapMessageListener;
 import org.eclipse.leshan.server.demo.servlet.log.CoapMessageTracer;
@@ -51,9 +53,13 @@ import org.eclipse.leshan.server.send.SendListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import jline.internal.Log;
 
 public class EventServlet extends EventSourceServlet {
 
@@ -79,7 +85,7 @@ public class EventServlet extends EventSourceServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(EventServlet.class);
 
-    private final Gson gson;
+    private final ObjectMapper mapper;
 
     private final CoapMessageTracer coapMessageTracer;
 
@@ -91,7 +97,12 @@ public class EventServlet extends EventSourceServlet {
         @Override
         public void registered(Registration registration, Registration previousReg,
                 Collection<Observation> previousObsersations) {
-            String jReg = EventServlet.this.gson.toJson(registration);
+            String jReg = null;
+            try {
+                jReg = EventServlet.this.mapper.writeValueAsString(registration);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
             sendEvent(EVENT_REGISTRATION, jReg, registration.getEndpoint());
         }
 
@@ -101,14 +112,24 @@ public class EventServlet extends EventSourceServlet {
             RegUpdate regUpdate = new RegUpdate();
             regUpdate.registration = updatedRegistration;
             regUpdate.update = update;
-            String jReg = EventServlet.this.gson.toJson(regUpdate);
+            String jReg = null;
+            try {
+                jReg = EventServlet.this.mapper.writeValueAsString(regUpdate);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
             sendEvent(EVENT_UPDATED, jReg, updatedRegistration.getEndpoint());
         }
 
         @Override
         public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
                 Registration newReg) {
-            String jReg = EventServlet.this.gson.toJson(registration);
+            String jReg = null;
+            try {
+                jReg = EventServlet.this.mapper.writeValueAsString(registration);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
             sendEvent(EVENT_DEREGISTRATION, jReg, registration.getEndpoint());
         }
 
@@ -141,7 +162,12 @@ public class EventServlet extends EventSourceServlet {
             String path = getObservationPaths(observation);
             LwM2mNode content = response.getContent();
             String stringContent = content.toString();
-            String jsonContent = gson.toJson(content);
+            String jsonContent = null;
+            try {
+                jsonContent = mapper.writeValueAsString(content);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
 
             onResponseCommon(registration, path, stringContent, jsonContent);
         }
@@ -153,7 +179,12 @@ public class EventServlet extends EventSourceServlet {
 
             Map<LwM2mPath, LwM2mNode> content = response.getContent();
             String stringContent = content.toString();
-            String jsonContent = gson.toJson(content);
+            String jsonContent = null;
+            try {
+                jsonContent = mapper.writeValueAsString(content);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
 
             onResponseCommon(registration, path, stringContent, jsonContent);
         }
@@ -167,7 +198,7 @@ public class EventServlet extends EventSourceServlet {
 
             if (registration != null) {
                 String data = new StringBuilder("{\"ep\":\"") //
-                        .append(registration.getEndpoint()) // 
+                        .append(registration.getEndpoint()) //
                         .append("\",\"res\":\"") //
                         .append(path).append("\",\"val\":") //
                         .append(jsonContent) //
@@ -201,11 +232,20 @@ public class EventServlet extends EventSourceServlet {
             }
 
             if (registration != null) {
-                String jsonContent = gson.toJson(data);
-                String eventData = new StringBuilder("{\"ep\":\"").append(registration.getEndpoint())
-                        .append("\",\"val\":").append(jsonContent).append("}").toString();
+                try {
+                    String jsonContent = EventServlet.this.mapper.writeValueAsString(data);
 
-                sendEvent(EVENT_SEND, eventData, registration.getEndpoint());
+                    String eventData = new StringBuilder("{\"ep\":\"") //
+                            .append(registration.getEndpoint()) //
+                            .append("\",\"val\":") //
+                            .append(jsonContent) //
+                            .append("}") //
+                            .toString(); //
+
+                    sendEvent(EVENT_SEND, eventData, registration.getEndpoint());
+                } catch (JsonProcessingException e) {
+                    Log.warn(String.format("Error while processing json [%s] : [%s]", data.toString(), e.getMessage()));
+                }
             }
         }
     };
@@ -232,12 +272,14 @@ public class EventServlet extends EventSourceServlet {
             endpoint.addInterceptor(coapMessageTracer);
         }
 
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeHierarchyAdapter(Registration.class,
-                new RegistrationSerializer(server.getPresenceService()));
-        gsonBuilder.registerTypeHierarchyAdapter(LwM2mNode.class, new LwM2mNodeSerializer());
-        gsonBuilder.setDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
-        this.gson = gsonBuilder.create();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(Registration.class, new JacksonRegistrationSerializer(server.getPresenceService()));
+        module.addSerializer(LwM2mNode.class, new JacksonLwM2mNodeSerializer());
+        mapper.registerModule(module);
+        mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX"));
+        this.mapper = mapper;
     }
 
     private synchronized void sendEvent(String event, String data, String endpoint) {
@@ -262,10 +304,14 @@ public class EventServlet extends EventSourceServlet {
 
         @Override
         public void trace(CoapMessage message) {
-            JsonElement coapLog = EventServlet.this.gson.toJsonTree(message);
-            coapLog.getAsJsonObject().addProperty("ep", this.endpoint);
-            String coapLogWithEndPoint = EventServlet.this.gson.toJson(coapLog);
-            sendEvent(EVENT_COAP_LOG, coapLogWithEndPoint, endpoint);
+            try {
+                ObjectNode coapLog = EventServlet.this.mapper.valueToTree(message);
+                coapLog.put("ep", this.endpoint);
+                sendEvent(EVENT_COAP_LOG, EventServlet.this.mapper.writeValueAsString(coapLog), endpoint);
+            } catch (JsonProcessingException e) {
+                Log.warn(String.format("Error while processing json [%s] : [%s]", message.toString(), e.getMessage()));
+                sendEvent(EVENT_COAP_LOG, message.toString(), endpoint);
+            }
         }
 
     }
