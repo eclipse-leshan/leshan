@@ -31,7 +31,7 @@ import org.eclipse.leshan.core.util.StringUtils;
 public class DefaultLinkParser implements LinkParser {
 
     private static final Pattern parnamePattern = Pattern.compile("[!#$&+\\-.^_`|~a-zA-Z0-9]+");
-    private final Pattern ptokenPattern = Pattern.compile("[!#$%&'()*+\\-.:<=>?@\\[\\]^_`{|}~a-zA-Z0-9]+");
+    private final Pattern ptokenPattern = Pattern.compile("[/!#$%&'()*+\\-.:<=>?@\\[\\]^_`{|}~a-zA-Z0-9]+");
     private final Pattern uriSegmentPattern = Pattern
             .compile("([\\-._~a-zA-Z0-9:@!$&'()*+,;=]|%[a-fA-F0-9][a-fA-F0-9])+");
 
@@ -261,29 +261,32 @@ public class DefaultLinkParser implements LinkParser {
         List<String> linkValueList = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         boolean quote = false;
-        boolean parname = false;
+        boolean uriPart = false;
         boolean escape = false;
+        boolean uriPartCanBegin = true;
         for (int i = 0; i < content.length(); i++) {
             char ch = content.charAt(i);
             if (ch == '\\') {
                 escape = !escape;
                 sb.append(ch);
+                uriPartCanBegin = false;
                 continue;
             }
 
-            if (ch == delimiter && !quote && !parname) {
+            if (ch == delimiter && !quote && !uriPart) {
                 linkValueList.add(sb.toString());
                 sb = new StringBuilder();
                 escape = false;
+                uriPartCanBegin = true;
                 continue;
             }
             if (!escape) {
                 if (!quote) {
-                    if (ch == '<') {
-                        parname = true;
+                    if (ch == '<' && uriPartCanBegin) {
+                        uriPart = true;
                     }
                     if (ch == '>') {
-                        parname = false;
+                        uriPart = false;
                     }
                 }
                 if (ch == '"') {
@@ -293,6 +296,7 @@ public class DefaultLinkParser implements LinkParser {
             }
             sb.append(ch);
             escape = false;
+            uriPartCanBegin = false;
         }
 
         linkValueList.add(sb.toString());
