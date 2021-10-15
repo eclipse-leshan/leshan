@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 Sierra Wireless and others.
+ * Copyright (c) 2021 Orange.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -11,7 +11,7 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  * 
  * Contributors:
- *     Sierra Wireless - initial API and implementation
+ *     Orange - keep one JSON dependency
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap.demo.json;
 
@@ -20,19 +20,22 @@ import java.util.EnumSet;
 
 import org.eclipse.leshan.core.request.BindingMode;
 
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.TreeNode;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.node.TextNode;
 
-public class BindingModeTypeAdapter extends TypeAdapter<EnumSet<BindingMode>> {
-
+public class EnumSetBindingModeDeserializer extends JsonDeserializer<EnumSet<BindingMode>> {
     @Override
-    public void write(JsonWriter out, EnumSet<BindingMode> value) throws IOException {
-        out.value(BindingMode.toString(value));
-    }
+    public EnumSet<BindingMode> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 
-    @Override
-    public EnumSet<BindingMode> read(JsonReader in) throws IOException {
-        return BindingMode.parse(in.nextString());
+        TreeNode treeNode = p.getCodec().readTree(p);
+
+        if (treeNode instanceof TextNode) {
+            return BindingMode.parse(((TextNode) treeNode).asText());
+        } else {
+            return null;
+        }
     }
 }

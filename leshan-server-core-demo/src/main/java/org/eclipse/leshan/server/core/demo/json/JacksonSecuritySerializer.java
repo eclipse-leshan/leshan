@@ -12,45 +12,54 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Orange - keep one JSON dependency
  *******************************************************************************/
 package org.eclipse.leshan.server.core.demo.json;
 
-import java.lang.reflect.Type;
+import java.io.IOException;
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.security.SecurityInfo;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
-// /!\ This class is a COPY of org.eclipse.leshan.server.bootstrap.demo.json.SecuritySerializer /!\
-public class SecuritySerializer implements JsonSerializer<SecurityInfo> {
+public class JacksonSecuritySerializer extends StdSerializer<SecurityInfo> {
+
+    protected JacksonSecuritySerializer(Class<SecurityInfo> t) {
+        super(t);
+    }
+
+    public JacksonSecuritySerializer() {
+        this(null);
+    }
 
     @Override
-    public JsonElement serialize(SecurityInfo src, Type typeOfSrc, JsonSerializationContext context) {
-        JsonObject element = new JsonObject();
+    public void serialize(SecurityInfo src, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        Map<String, Object> element = new HashMap<>();
 
-        element.addProperty("endpoint", src.getEndpoint());
+        element.put("endpoint", src.getEndpoint());
 
         if (src.getIdentity() != null) {
-            JsonObject psk = new JsonObject();
-            psk.addProperty("identity", src.getIdentity());
-            psk.addProperty("key", Hex.encodeHexString(src.getPreSharedKey()));
-            element.add("psk", psk);
+            Map<String, Object> psk = new HashMap<>();
+            psk.put("identity", src.getIdentity());
+            psk.put("key", Hex.encodeHexString(src.getPreSharedKey()));
+            element.put("psk", psk);
         }
 
         if (src.getRawPublicKey() != null) {
-            JsonObject rpk = new JsonObject();
+            Map<String, Object> rpk = new HashMap<>();
             PublicKey rawPublicKey = src.getRawPublicKey();
             if (rawPublicKey instanceof ECPublicKey) {
-                rpk.addProperty("key", Hex.encodeHexString(rawPublicKey.getEncoded()));
+                rpk.put("key", Hex.encodeHexString(rawPublicKey.getEncoded()));
 
                 // TODO all the fields above is no more used should be removed it ?
                 ECPublicKey ecPublicKey = (ECPublicKey) rawPublicKey;
@@ -58,29 +67,29 @@ public class SecuritySerializer implements JsonSerializer<SecurityInfo> {
                 byte[] x = ecPublicKey.getW().getAffineX().toByteArray();
                 if (x[0] == 0)
                     x = Arrays.copyOfRange(x, 1, x.length);
-                rpk.addProperty("x", Hex.encodeHexString(x));
+                rpk.put("x", Hex.encodeHexString(x));
 
                 // Get Y coordinate
                 byte[] y = ecPublicKey.getW().getAffineY().toByteArray();
                 if (y[0] == 0)
                     y = Arrays.copyOfRange(y, 1, y.length);
-                rpk.addProperty("y", Hex.encodeHexString(y));
+                rpk.put("y", Hex.encodeHexString(y));
 
                 // Get Curves params
-                rpk.addProperty("params", ecPublicKey.getParams().toString());
+                rpk.put("params", ecPublicKey.getParams().toString());
 
                 // Get raw public key in format PKCS8 (DER encoding)
-                rpk.addProperty("pkcs8", Base64.encodeBase64String(ecPublicKey.getEncoded()));
+                rpk.put("pkcs8", Base64.encodeBase64String(ecPublicKey.getEncoded()));
             } else {
-                throw new JsonParseException("Unsupported Public Key Format (only ECPublicKey supported).");
+                throw new JsonGenerationException("Unsupported Public Key Format (only ECPublicKey supported).", gen);
             }
-            element.add("rpk", rpk);
+            element.put("rpk", rpk);
         }
 
         if (src.useX509Cert()) {
-            element.addProperty("x509", true);
+            element.put("x509", true);
         }
 
-        return element;
+        gen.writeObject(element);
     }
 }
