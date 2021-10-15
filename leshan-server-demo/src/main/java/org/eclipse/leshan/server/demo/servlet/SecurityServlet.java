@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Orange - keep one JSON dependency
  *******************************************************************************/
 package org.eclipse.leshan.server.demo.servlet;
 
@@ -20,6 +21,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 
 import javax.servlet.ServletException;
@@ -28,21 +30,22 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.leshan.server.core.demo.json.JacksonSecuritySerializer;
 import org.eclipse.leshan.server.core.demo.json.PublicKeySerDes;
-import org.eclipse.leshan.server.core.demo.json.SecuritySerializer;
 import org.eclipse.leshan.server.core.demo.json.X509CertificateSerDes;
-import org.eclipse.leshan.server.demo.servlet.json.SecurityDeserializer;
+import org.eclipse.leshan.server.demo.servlet.json.JacksonSecurityDeserializer;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParseException;
 
 /**
  * Service HTTP REST API calls for security information.
@@ -59,9 +62,8 @@ public class SecurityServlet extends HttpServlet {
 
     private final X509CertificateSerDes certificateSerDes;
     private final PublicKeySerDes publicKeySerDes;
-    // TODO we must remove Gson dependency.
-    private final Gson gsonSer;
-    private final Gson gsonDes;
+
+    private final ObjectMapper mapper;
 
     public SecurityServlet(EditableSecurityStore store, X509Certificate serverCertificate) {
         this(store, null, serverCertificate);
@@ -79,13 +81,12 @@ public class SecurityServlet extends HttpServlet {
         certificateSerDes = new X509CertificateSerDes();
         publicKeySerDes = new PublicKeySerDes();
 
-        GsonBuilder builder = new GsonBuilder();
-        builder.registerTypeAdapter(SecurityInfo.class, new SecuritySerializer());
-        this.gsonSer = builder.create();
-
-        builder = new GsonBuilder();
-        builder.registerTypeAdapter(SecurityInfo.class, new SecurityDeserializer());
-        this.gsonDes = builder.create();
+        this.mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        SimpleModule module = new SimpleModule();
+        module.addDeserializer(SecurityInfo.class, new JacksonSecurityDeserializer());
+        module.addSerializer(SecurityInfo.class, new JacksonSecuritySerializer());
+        mapper.registerModule(module);
     }
 
     /**
@@ -101,7 +102,7 @@ public class SecurityServlet extends HttpServlet {
         }
 
         try {
-            SecurityInfo info = gsonDes.fromJson(new InputStreamReader(req.getInputStream()), SecurityInfo.class);
+            SecurityInfo info = mapper.readValue(new InputStreamReader(req.getInputStream()), SecurityInfo.class);
             LOG.debug("New security info for end-point {}: {}", info.getEndpoint(), info);
 
             store.add(info);
@@ -137,7 +138,7 @@ public class SecurityServlet extends HttpServlet {
         if ("clients".equals(path[0])) {
             Collection<SecurityInfo> infos = this.store.getAll();
 
-            String json = this.gsonSer.toJson(infos);
+            String json = this.mapper.writeValueAsString(infos);
             resp.setContentType("application/json");
             resp.getOutputStream().write(json.getBytes(StandardCharsets.UTF_8));
             resp.setStatus(HttpServletResponse.SC_OK);

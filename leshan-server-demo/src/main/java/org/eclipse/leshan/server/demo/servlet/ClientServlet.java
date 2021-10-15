@@ -12,11 +12,13 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Orange - keep one JSON dependency
  *******************************************************************************/
 package org.eclipse.leshan.server.demo.servlet;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -64,18 +66,19 @@ import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.server.californium.LeshanServer;
-import org.eclipse.leshan.server.demo.servlet.json.LwM2mNodeDeserializer;
-import org.eclipse.leshan.server.demo.servlet.json.LwM2mNodeSerializer;
-import org.eclipse.leshan.server.demo.servlet.json.RegistrationSerializer;
-import org.eclipse.leshan.server.demo.servlet.json.ResponseSerializer;
+import org.eclipse.leshan.server.demo.servlet.json.JacksonLwM2mNodeDeserializer;
+import org.eclipse.leshan.server.demo.servlet.json.JacksonLwM2mNodeSerializer;
+import org.eclipse.leshan.server.demo.servlet.json.JacksonRegistrationSerializer;
+import org.eclipse.leshan.server.demo.servlet.json.JacksonResponseSerializer;
 import org.eclipse.leshan.server.demo.utils.MagicLwM2mValueConverter;
 import org.eclipse.leshan.server.registration.Registration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonSyntaxException;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 /**
  * Service HTTP REST API calls.
@@ -94,7 +97,7 @@ public class ClientServlet extends HttpServlet {
 
     private final LeshanServer server;
 
-    private final Gson gson;
+    private final ObjectMapper mapper;
 
     private final LwM2mModel model;
 
@@ -103,14 +106,16 @@ public class ClientServlet extends HttpServlet {
     public ClientServlet(LeshanServer server) {
         this.server = server;
 
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeHierarchyAdapter(Registration.class,
-                new RegistrationSerializer(server.getPresenceService()));
-        gsonBuilder.registerTypeHierarchyAdapter(LwM2mResponse.class, new ResponseSerializer());
-        gsonBuilder.registerTypeHierarchyAdapter(LwM2mNode.class, new LwM2mNodeSerializer());
-        gsonBuilder.registerTypeHierarchyAdapter(LwM2mNode.class, new LwM2mNodeDeserializer());
-        gsonBuilder.setDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
-        this.gson = gsonBuilder.create();
+        mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(Registration.class, new JacksonRegistrationSerializer(server.getPresenceService()));
+        module.addSerializer(LwM2mResponse.class, new JacksonResponseSerializer());
+        module.addSerializer(LwM2mNode.class, new JacksonLwM2mNodeSerializer());
+        module.addDeserializer(LwM2mNode.class, new JacksonLwM2mNodeDeserializer());
+        mapper.registerModule(module);
+        mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX"));
+
         this.model = new StaticModel(ObjectLoader.loadDefault());
         this.converter = new MagicLwM2mValueConverter();
     }
@@ -129,7 +134,7 @@ public class ClientServlet extends HttpServlet {
                 registrations.add(iterator.next());
             }
 
-            String json = this.gson.toJson(registrations.toArray(new Registration[] {}));
+            String json = this.mapper.writeValueAsString(registrations.toArray(new Registration[] {}));
             resp.setContentType("application/json");
             resp.getOutputStream().write(json.getBytes(StandardCharsets.UTF_8));
             resp.setStatus(HttpServletResponse.SC_OK);
@@ -148,7 +153,8 @@ public class ClientServlet extends HttpServlet {
             Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
             if (registration != null) {
                 resp.setContentType("application/json");
-                resp.getOutputStream().write(this.gson.toJson(registration).getBytes(StandardCharsets.UTF_8));
+                resp.getOutputStream()
+                        .write(this.mapper.writeValueAsString(registration).getBytes(StandardCharsets.UTF_8));
                 resp.setStatus(HttpServletResponse.SC_OK);
             } else {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -427,7 +433,7 @@ public class ClientServlet extends HttpServlet {
             resp.setStatus(HttpServletResponse.SC_GATEWAY_TIMEOUT);
             resp.getWriter().append("Request timeout").flush();
         } else {
-            String response = this.gson.toJson(cResponse);
+            String response = this.mapper.writeValueAsString(cResponse);
             resp.setContentType("application/json");
             resp.getOutputStream().write(response.getBytes());
             resp.setStatus(HttpServletResponse.SC_OK);
@@ -440,7 +446,7 @@ public class ClientServlet extends HttpServlet {
             String content = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
             LwM2mNode node;
             try {
-                node = gson.fromJson(content, LwM2mNode.class);
+                node = mapper.readValue(content, LwM2mNode.class);
                 if (node instanceof LwM2mSingleResource) {
                     // TODO HACK resource type should be extracted from json value but this is not yet available.
                     LwM2mSingleResource singleResource = (LwM2mSingleResource) node;
@@ -452,7 +458,7 @@ public class ClientServlet extends HttpServlet {
                         node = LwM2mSingleResource.newResource(node.getId(), expectedValue, expectedType);
                     }
                 }
-            } catch (JsonSyntaxException e) {
+            } catch (JsonProcessingException e) {
                 throw new InvalidRequestException(e, "unable to parse json to tlv:%s", e.getMessage());
             }
             return node;

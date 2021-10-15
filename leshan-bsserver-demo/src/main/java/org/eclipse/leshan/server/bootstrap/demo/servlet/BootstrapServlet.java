@@ -12,13 +12,13 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
+ *     Orange - keep one JSON dependency
  *******************************************************************************/
 
 package org.eclipse.leshan.server.bootstrap.demo.servlet;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
 
@@ -28,23 +28,18 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.EditableBootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.InvalidConfigurationException;
-import org.eclipse.leshan.server.bootstrap.demo.json.BindingModeTypeAdapter;
+import org.eclipse.leshan.server.bootstrap.demo.json.ByteArraySerializer;
+import org.eclipse.leshan.server.bootstrap.demo.json.EnumSetDeserializer;
+import org.eclipse.leshan.server.bootstrap.demo.json.EnumSetSerializer;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 /**
  * Servlet for REST API in charge of adding bootstrap information to the bootstrap server.
@@ -52,32 +47,21 @@ import com.google.gson.reflect.TypeToken;
 public class BootstrapServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-
-    private static class SignedByteUnsignedByteAdapter implements JsonSerializer<Byte>, JsonDeserializer<Byte> {
-
-        @Override
-        public Byte deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-                throws JsonParseException {
-            return json.getAsByte();
-        }
-
-        @Override
-        public JsonElement serialize(Byte src, Type typeOfSrc, JsonSerializationContext context) {
-            return new JsonPrimitive((int) src & 0xff);
-        }
-    }
+    private final ObjectMapper mapper;
 
     private final EditableBootstrapConfigStore bsStore;
-
-    private final Gson gson;
 
     public BootstrapServlet(EditableBootstrapConfigStore bsStore) {
         this.bsStore = bsStore;
 
-        this.gson = new GsonBuilder()//
-                .registerTypeAdapter(new TypeToken<EnumSet<BindingMode>>() {
-                }.getType(), new BindingModeTypeAdapter()) //
-                .registerTypeHierarchyAdapter(Byte.class, new SignedByteUnsignedByteAdapter()).create();
+        mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        SimpleModule module = new SimpleModule();
+        module.addDeserializer(EnumSet.class, new EnumSetDeserializer());
+        module.addSerializer(new EnumSetSerializer());
+        module.addSerializer(new ByteArraySerializer(ByteArraySerializer.ByteMode.UNSIGNED));
+        mapper.registerModule(module);
     }
 
     @Override
@@ -89,7 +73,8 @@ public class BootstrapServlet extends HttpServlet {
 
         resp.setStatus(HttpServletResponse.SC_OK);
         resp.setContentType("application/json");
-        resp.getOutputStream().write(gson.toJson(bsStore.getAll()).getBytes(StandardCharsets.UTF_8));
+
+        resp.getOutputStream().write(mapper.writeValueAsString(bsStore.getAll()).getBytes(StandardCharsets.UTF_8));
     }
 
     @Override
@@ -112,7 +97,7 @@ public class BootstrapServlet extends HttpServlet {
         String endpoint = path[0];
 
         try {
-            BootstrapConfig cfg = gson.fromJson(new InputStreamReader(req.getInputStream()), BootstrapConfig.class);
+            BootstrapConfig cfg = mapper.readValue(new InputStreamReader(req.getInputStream()), BootstrapConfig.class);
 
             if (cfg == null) {
                 sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "no content");
@@ -120,7 +105,7 @@ public class BootstrapServlet extends HttpServlet {
                 bsStore.add(endpoint, cfg);
                 resp.setStatus(HttpServletResponse.SC_OK);
             }
-        } catch (JsonSyntaxException | InvalidConfigurationException e) {
+        } catch (JsonParseException | InvalidConfigurationException e) {
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         }
     }

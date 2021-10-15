@@ -14,6 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - add support for californium
  *                                                     endpoint context
+ *     Orange - keep one JSON dependency
  *******************************************************************************/
 package org.eclipse.leshan.server.redis.serialization;
 
