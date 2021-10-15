@@ -33,6 +33,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
+import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.californium.LeshanServer;
@@ -46,6 +47,7 @@ import org.eclipse.leshan.server.queue.PresenceListener;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationListener;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
+import org.eclipse.leshan.server.send.SendListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,6 +68,8 @@ public class EventServlet extends EventSourceServlet {
     private static final String EVENT_SLEEPING = "SLEEPING";
 
     private static final String EVENT_NOTIFICATION = "NOTIFICATION";
+
+    private static final String EVENT_SEND = "SEND";
 
     private static final String EVENT_COAP_LOG = "COAPLOG";
 
@@ -162,12 +166,12 @@ public class EventServlet extends EventSourceServlet {
             }
 
             if (registration != null) {
-                String data = new StringBuilder("{\"ep\":\"")
-                        .append(registration.getEndpoint())
-                        .append("\",\"res\":\"")
-                        .append(path).append("\",\"val\":")
-                        .append(jsonContent)
-                        .append("}")
+                String data = new StringBuilder("{\"ep\":\"") //
+                        .append(registration.getEndpoint()) // 
+                        .append("\",\"res\":\"") //
+                        .append(path).append("\",\"val\":") //
+                        .append(jsonContent) //
+                        .append("}") //
                         .toString();
 
                 sendEvent(EVENT_NOTIFICATION, data, registration.getEndpoint());
@@ -187,6 +191,25 @@ public class EventServlet extends EventSourceServlet {
         }
     };
 
+    private final SendListener sendListener = new SendListener() {
+
+        @Override
+        public void dataReceived(Registration registration, Map<String, LwM2mNode> data, SendRequest request) {
+
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Received Send request from [{}] containing value [{}]", registration, data.toString());
+            }
+
+            if (registration != null) {
+                String jsonContent = gson.toJson(data);
+                String eventData = new StringBuilder("{\"ep\":\"").append(registration.getEndpoint())
+                        .append("\",\"val\":").append(jsonContent).append("}").toString();
+
+                sendEvent(EVENT_SEND, eventData, registration.getEndpoint());
+            }
+        }
+    };
+
     private String getObservationPaths(final Observation observation) {
         String path = null;
         if (observation instanceof SingleObservation) {
@@ -201,6 +224,7 @@ public class EventServlet extends EventSourceServlet {
         server.getRegistrationService().addListener(this.registrationListener);
         server.getObservationService().addListener(this.observationListener);
         server.getPresenceService().addListener(this.presenceListener);
+        server.getSendService().addListener(this.sendListener);
 
         // add an interceptor to each endpoint to trace all CoAP messages
         coapMessageTracer = new CoapMessageTracer(server.getRegistrationService());

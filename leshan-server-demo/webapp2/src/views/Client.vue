@@ -153,6 +153,11 @@ export default {
       .on("SLEEPING", () => {
         this.registration.sleeping = true;
       })
+      .on("SEND", (msg) => {
+        for (let path in msg.val) {
+          this.$store.newNode(this.$route.params.endpoint, path, msg.val[path]);
+        }
+      })
       .on("NOTIFICATION", (msg) => {
         if (msg.val.type === "instance") {
           this.$store.newInstanceValue(

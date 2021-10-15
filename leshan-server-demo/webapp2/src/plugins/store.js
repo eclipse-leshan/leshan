@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2021 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
-*******************************************************************************/
+ *******************************************************************************/
 
 import Vue from "vue";
 
@@ -169,6 +169,22 @@ class Store {
     resources.forEach((res) => {
       this.newResourceValue(endpoint, path + "/" + res.id, res, supposed);
     });
+  }
+
+  /**
+   * @param {String} endpoint endpoint of the client
+   * @param {String} path path to the node (object, instance, resource or resource instance)
+   * @param {Array} node the node value
+   * @param {Boolean} supposed true means the value is supposed (not really send by the client)
+   */
+  newNode(endpoint, path, node, supposed = false) {
+    if (node.type === "singleResource") {
+      this.newResourceValue(endpoint, path, node, supposed);
+    } else if (node.type === "resourceInstance") {
+      this.newResourceInstanceValueFromPath(endpoint, path, node, supposed);
+    } else {
+      console.log(node.type, " not yet supported");
+    }
   }
 
   /**
