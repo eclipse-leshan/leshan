@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2013-2015 Sierra Wireless and others.
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- *
+ * 
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- *
+ * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Orange - keep one JSON dependency
@@ -28,6 +28,7 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -56,7 +57,12 @@ public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
                 id = object.get("id").asInt();
             }
 
-            if (object.has("instances")) {
+            String type = null;
+            if (object.has("type")) {
+                type = object.get("type").asText();
+            }
+
+            if ("obj".equals(type) || object.has("instances")) {
                 if (id == null) {
                     throw new JsonParseException(p, "Missing id");
                 }
@@ -69,7 +75,7 @@ public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
                 }
                 node = new LwM2mObject(id, instances);
 
-            } else if (object.has("resources")) {
+            } else if ("instance".equals(type) || object.has("resources")) {
                 JsonNode array = object.get("resources");
                 LwM2mResource[] resources = new LwM2mResource[array.size()];
 
@@ -81,15 +87,7 @@ public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
                 } else {
                     node = new LwM2mObjectInstance(id, resources);
                 }
-            } else if (object.has("value")) {
-                if (id == null) {
-                    throw new JsonParseException(p, "Missing id");
-                }
-                // single value resource
-                JsonNode val = object.get("value");
-                org.eclipse.leshan.core.model.ResourceModel.Type expectedType = getTypeFor(val);
-                node = LwM2mSingleResource.newResource(id, deserializeValue(val, expectedType), expectedType);
-            } else if (object.has("values")) {
+            } else if ("multiResource".equals(type) || object.has("values")) {
                 if (id == null) {
                     throw new JsonParseException(p, "Missing id");
                 }
@@ -114,6 +112,22 @@ public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
                 if (expectedType == null)
                     expectedType = org.eclipse.leshan.core.model.ResourceModel.Type.STRING;
                 node = LwM2mMultipleResource.newResource(id, values, expectedType);
+            } else if (object.has("value")) {
+                if (id == null) {
+                    throw new JsonParseException(p, "Missing id");
+                }
+
+                if ("resourceInstance".equals(type)) {
+                    // resource instance
+                    JsonNode val = object.get("value");
+                    org.eclipse.leshan.core.model.ResourceModel.Type expectedType = getTypeFor(val);
+                    node = LwM2mResourceInstance.newInstance(id, deserializeValue(val, expectedType), expectedType);
+                } else {
+                    // single value resource
+                    JsonNode val = object.get("value");
+                    org.eclipse.leshan.core.model.ResourceModel.Type expectedType = getTypeFor(val);
+                    node = LwM2mSingleResource.newResource(id, deserializeValue(val, expectedType), expectedType);
+                }
             } else {
                 throw new JsonParseException(p, "Invalid node element");
             }
