@@ -49,6 +49,28 @@ public class DefaultLinkParserTest {
     }
 
     @Test
+    public void allow_less_and_greater_sign_as_attributes() {
+        Link[] parsed = parser.parse("</foo>;param=<,</bar>;param=>".getBytes());
+        Assert.assertEquals("/foo", parsed[0].getUriReference());
+        Assert.assertTrue(parsed[0].getLinkParams().containsKey("param"));
+        Assert.assertEquals("<", parsed[0].getLinkParams().get("param").toString());
+
+        Assert.assertEquals("/bar", parsed[1].getUriReference());
+        Assert.assertTrue(parsed[1].getLinkParams().containsKey("param"));
+        Assert.assertEquals(">", parsed[1].getLinkParams().get("param").toString());
+    }
+
+    @Test
+    public void allow_slash_as_attributes() {
+        Link[] parsed;
+
+        parsed = parser.parse("</foo>;param=/".getBytes());
+        Assert.assertEquals("/foo", parsed[0].getUriReference());
+        Assert.assertTrue(parsed[0].getLinkParams().containsKey("param"));
+        Assert.assertEquals("/", parsed[0].getLinkParams().get("param").toString());
+    }
+
+    @Test
     public void allow_escaped_characters() {
         Link[] parsed = parser.parse("</foo>;param=\",\",</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
