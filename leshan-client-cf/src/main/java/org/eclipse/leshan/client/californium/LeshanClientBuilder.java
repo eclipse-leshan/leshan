@@ -151,6 +151,9 @@ public class LeshanClientBuilder {
 
     /**
      * Set the Californium/CoAP {@link Configuration}.
+     * <p>
+     * This is strongly recommended to create the {@link Configuration} with {@link #createDefaultCoapConfiguration()}
+     * before to modify it.
      */
     public LeshanClientBuilder setCoapConfig(Configuration config) {
         this.coapConfig = config;
@@ -254,7 +257,7 @@ public class LeshanClientBuilder {
         return this;
     }
 
-    public static Configuration createDefaultNetworkConfig() {
+    public static Configuration createDefaultCoapConfiguration() {
         Configuration networkConfig = new Configuration(CoapConfig.DEFINITIONS, DtlsConfig.DEFINITIONS,
                 UdpConfig.DEFINITIONS, SystemConfig.DEFINITIONS);
         networkConfig.set(CoapConfig.MID_TRACKER, TrackerMode.NULL);
@@ -293,7 +296,7 @@ public class LeshanClientBuilder {
         if (decoder == null)
             decoder = new DefaultLwM2mDecoder();
         if (coapConfig == null) {
-            coapConfig = createDefaultNetworkConfig();
+            coapConfig = createDefaultCoapConfiguration();
         }
         if (engineFactory == null) {
             engineFactory = new DefaultRegistrationEngineFactory();

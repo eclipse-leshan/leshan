@@ -240,7 +240,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         List<LwM2mObjectEnabler> objects = initializer.createAll();
 
         InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
-        Configuration configuration = LeshanClientBuilder.createDefaultNetworkConfig();
+        Configuration configuration = LeshanClientBuilder.createDefaultCoapConfiguration();
         LeshanClientBuilder builder = new LeshanClientBuilder(getCurrentEndpoint());
         builder.setRegistrationEngineFactory(new DefaultRegistrationEngineFactory().setQueueMode(queueMode));
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
@@ -351,7 +351,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         List<LwM2mObjectEnabler> objects = initializer.createAll();
 
         InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
-        Configuration configuration = LeshanClientBuilder.createDefaultNetworkConfig();
+        Configuration configuration = LeshanClientBuilder.createDefaultCoapConfiguration();
         LeshanClientBuilder builder = new LeshanClientBuilder(getCurrentEndpoint());
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
 
@@ -383,7 +383,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         List<LwM2mObjectEnabler> objects = initializer.createAll();
 
         InetSocketAddress clientAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
-        Configuration configuration = LeshanClientBuilder.createDefaultNetworkConfig();
+        Configuration configuration = LeshanClientBuilder.createDefaultCoapConfiguration();
         LeshanClientBuilder builder = new LeshanClientBuilder(getCurrentEndpoint());
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
         builder.setTrustStore(clientTrustStore);
@@ -410,7 +410,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
     protected LeshanServerBuilder createServerBuilder(Boolean serverOnly) {
         LeshanServerBuilder builder = super.createServerBuilder();
-        Configuration configuration = LeshanServerBuilder.createDefaultNetworkConfig();
+        Configuration configuration = LeshanServerBuilder.createDefaultCoapConfiguration();
         Builder dtlsConfig = DtlsConnectorConfig.builder(configuration);
         dtlsConfig.set(DtlsConfig.DTLS_MAX_RETRANSMISSIONS, 1);
         dtlsConfig.set(DtlsConfig.DTLS_RETRANSMISSION_TIMEOUT, 300, TimeUnit.MILLISECONDS);

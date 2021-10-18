@@ -284,6 +284,9 @@ public class LeshanServerBuilder {
 
     /**
      * Set the Californium/CoAP {@link Configuration}.
+     * <p>
+     * This is strongly recommended to create the {@link Configuration} with {@link #createDefaultCoapConfiguration()}
+     * before to modify it.
      */
     public LeshanServerBuilder setCoapConfig(Configuration config) {
         this.coapConfig = config;
@@ -392,7 +395,7 @@ public class LeshanServerBuilder {
     /**
      * The default Californium/CoAP {@link Configuration} used by the builder.
      */
-    public static Configuration createDefaultNetworkConfig() {
+    public static Configuration createDefaultCoapConfiguration() {
         Configuration networkConfig = new Configuration(CoapConfig.DEFINITIONS, DtlsConfig.DEFINITIONS,
                 UdpConfig.DEFINITIONS, SystemConfig.DEFINITIONS);
         networkConfig.set(CoapConfig.MID_TRACKER, TrackerMode.NULL);
@@ -426,7 +429,7 @@ public class LeshanServerBuilder {
         if (decoder == null)
             decoder = new DefaultLwM2mDecoder();
         if (coapConfig == null)
-            coapConfig = createDefaultNetworkConfig();
+            coapConfig = createDefaultCoapConfiguration();
         if (awakeTimeProvider == null) {
             int maxTransmitWait = coapConfig.getTimeAsInt(CoapConfig.MAX_TRANSMIT_WAIT, TimeUnit.MILLISECONDS);
             if (maxTransmitWait == 0) {

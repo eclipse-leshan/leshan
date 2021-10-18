@@ -323,7 +323,8 @@ public class LeshanBootstrapServerBuilder {
     /**
      * Set the CoAP/Californium {@link Configuration}.
      * <p>
-     * For advanced CoAP setting, see {@link CoapConfig} for more details.
+     * This is strongly recommended to create the {@link Configuration} with {@link #createDefaultCoapConfiguration()}
+     * before to modify it.
      * 
      * @param coapConfig the CoAP configuration.
      * @return the builder for fluent Bootstrap Server creation.
@@ -388,7 +389,7 @@ public class LeshanBootstrapServerBuilder {
      * 
      * @return the default CoAP config.
      */
-    public static Configuration createDefaultNetworkConfig() {
+    public static Configuration createDefaultCoapConfiguration() {
         Configuration networkConfig = new Configuration(CoapConfig.DEFINITIONS, DtlsConfig.DEFINITIONS,
                 UdpConfig.DEFINITIONS, SystemConfig.DEFINITIONS);
         networkConfig.set(CoapConfig.MID_TRACKER, TrackerMode.NULL);
@@ -431,7 +432,7 @@ public class LeshanBootstrapServerBuilder {
                     new BootstrapConfigStoreTaskProvider(configStore), modelProvider);
         }
         if (coapConfig == null) {
-            coapConfig = createDefaultNetworkConfig();
+            coapConfig = createDefaultCoapConfiguration();
         }
         if (endpointFactory == null) {
             endpointFactory = new DefaultEndpointFactory("LWM2M BS Server", false);
