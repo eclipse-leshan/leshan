@@ -21,7 +21,6 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 
 import javax.servlet.ServletException;

@@ -34,7 +34,6 @@ import org.eclipse.leshan.server.security.SecurityInfo;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -42,8 +41,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class JacksonSecurityDeserializer extends JsonDeserializer<SecurityInfo> {
 
     @Override
-    public SecurityInfo deserialize(JsonParser p, DeserializationContext ctxt)
-            throws IOException, JsonProcessingException {
+    public SecurityInfo deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 
         JsonNode node = p.getCodec().readTree(p);
 

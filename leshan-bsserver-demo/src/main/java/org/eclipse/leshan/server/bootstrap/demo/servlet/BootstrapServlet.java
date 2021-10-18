@@ -40,6 +40,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.type.CollectionType;
 
 /**
  * Servlet for REST API in charge of adding bootstrap information to the bootstrap server.
@@ -59,7 +60,10 @@ public class BootstrapServlet extends HttpServlet {
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         SimpleModule module = new SimpleModule();
         module.addDeserializer(EnumSet.class, new EnumSetDeserializer());
-        module.addSerializer(new EnumSetSerializer());
+
+        CollectionType collectionType = mapper.getTypeFactory().constructCollectionType(EnumSet.class, Object.class);
+        module.addSerializer(new EnumSetSerializer(collectionType));
+
         module.addSerializer(new ByteArraySerializer(ByteArraySerializer.ByteMode.UNSIGNED));
         mapper.registerModule(module);
     }

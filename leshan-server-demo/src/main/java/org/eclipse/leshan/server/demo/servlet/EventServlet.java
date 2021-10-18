@@ -198,7 +198,7 @@ public class EventServlet extends EventSourceServlet {
 
             if (registration != null) {
                 String data = new StringBuilder("{\"ep\":\"") //
-                        .append(registration.getEndpoint()) // 
+                        .append(registration.getEndpoint()) //
                         .append("\",\"res\":\"") //
                         .append(path).append("\",\"val\":") //
                         .append(jsonContent) //
