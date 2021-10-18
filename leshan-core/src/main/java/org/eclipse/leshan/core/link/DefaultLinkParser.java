@@ -40,8 +40,10 @@ public class DefaultLinkParser implements LinkParser {
      * RFC6690 (https://datatracker.ietf.org/doc/html/RFC6690#section-2)):
      * 
      * <pre>
+     * {@code
      * Link            = link-value-list
      * link-value-list = [ link-value *[ "," link-value ]]
+     * }
      * </pre>
      * 
      * @param bytes a byte arrays representing {@code String} encoding with UTF_8 {@link Charset}.
@@ -74,9 +76,11 @@ public class DefaultLinkParser implements LinkParser {
      * (https://datatracker.ietf.org/doc/html/RFC6690#section-2)):
      * 
      * <pre>
+     * {@code
      * link-value     = "<" URI-Reference ">" *( ";" link-param )
      * link-param = link-extension
      * link-extension = ( parmname [ "=" ( ptoken / quoted-string ) ] )
+     * }
      * </pre>
      */
     protected Link parseLinkValue(String linkValue) {
@@ -96,9 +100,9 @@ public class DefaultLinkParser implements LinkParser {
     }
 
     /**
-     * Validate with rule: "<" URI-Reference ">"
+     * Validate with rule: {@code "<" URI-Reference ">"}
      *
-     * @param uriReferenceDecorated URI-Reference with extra "<" and ">" tags.
+     * @param uriReferenceDecorated URI-Reference with extra {@code "<"} and {@code ">"} tags.
      */
     protected void validateUriReferenceDecorated(String uriReferenceDecorated) {
         if (uriReferenceDecorated.length() <= 2) {
@@ -118,7 +122,9 @@ public class DefaultLinkParser implements LinkParser {
      * Parse a link-extension with rules:
      * 
      * <pre>
+     * {@code
      * link-extension = ( parmname [ "=" ( ptoken / quoted-string ) ] )
+     * }
      * </pre>
      */
     private void parseLinkExtension(List<String> parts, Map<String, LinkParamValue> linkParams, int i) {
@@ -146,11 +152,13 @@ public class DefaultLinkParser implements LinkParser {
      * From RFC5987 (https://datatracker.ietf.org/doc/html/rfc5987#section-3.2.1):
      * 
      * <pre>
+     * {@code
      * parmname      = 1*attr-char
      * attr-char     = ALPHA / DIGIT
      *                    / "!" / "#" / "$" / "&" / "+" / "-" / "."
      *                    / "^" / "_" / "`" / "|" / "~"
      *                    ; token except ( "*" / "'" / "%" )
+     * }
      * </pre>
      */
     protected static void validateParmname(String parmname) {
@@ -163,7 +171,9 @@ public class DefaultLinkParser implements LinkParser {
      * Validate value of link-extension
      * 
      * <pre>
+     * {@code
      * link-extension = ( parmname [ "=" ( ptoken / quoted-string ) ] )
+     * }
      * </pre>
      */
     protected void validateLinkExtensionValue(String value) {
@@ -183,9 +193,11 @@ public class DefaultLinkParser implements LinkParser {
      * (https://datatracker.ietf.org/doc/html/rfc2616#section-2.2)):
      * 
      * <pre>
+     * {@code
      * quoted-string  = ( <"> *(qdtext | quoted-pair ) <"> )
      * qdtext         = <any TEXT except <">>
      * quoted-pair    = "\" CHAR
+     * }
      * </pre>
      */
     protected void validateQuotedString(String value) {
@@ -200,9 +212,9 @@ public class DefaultLinkParser implements LinkParser {
      * 
      * <pre>
      * ptoken         = 1*ptokenchar
-     * ptokenchar     = "!" / "#" / "$" / "%" / "&" / "'" / "("
+     * ptokenchar     = "!" / "#" / "$" / "%" / "{@code &}" / "'" / "("
      *                    / ")" / "*" / "+" / "-" / "." / "/" / DIGIT
-     *                    / ":" / "<" / "=" / ">" / "?" / "@" / ALPHA
+     *                    / ":" / "{@code <}" / "=" / "{@code >}" / "?" / "@" / ALPHA
      *                    / "[" / "]" / "^" / "_" / "`" / "{" / "|"
      *                    / "}" / "~"
      * </pre>
@@ -217,12 +229,14 @@ public class DefaultLinkParser implements LinkParser {
      * Validate URI-Reference with rules (subset of RFC3986 (https://datatracker.ietf.org/doc/html/rfc3986#appendix-A)):
      * 
      * <pre>
+     * {@code
      * URI-reference = relative-ref
      *
      * relative-ref  = relative-part
      * relative-part =  path-absolute
      *
      * path-absolute = "/" [ segment-nz *( "/" segment ) ]   ; begins with "/" but not "//"
+     * }
      * </pre>
      */
     private void validateUriReference(String uriReference) {
@@ -252,6 +266,7 @@ public class DefaultLinkParser implements LinkParser {
      * (https://datatracker.ietf.org/doc/html/rfc3986#appendix-A)):
      * 
      * <pre>
+     * {@code
      * segment       = *pchar
      * segment-nz    = 1*pchar
      *
@@ -260,6 +275,7 @@ public class DefaultLinkParser implements LinkParser {
      * unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
      * sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
      *              / "*" / "+" / "," / ";" / "="
+     * }
      * </pre>
      */
     private void validateUriSegment(String segment) {
