@@ -113,7 +113,8 @@ public class SecurityInfoSerDes {
                 i = SecurityInfo.newRawPublicKeyInfo(ep, key);
             }
 
-        } catch (IllegalArgumentException | InvalidKeySpecException | NoSuchAlgorithmException | InvalidParameterSpecException | JsonProcessingException e) {
+        } catch (IllegalArgumentException | InvalidKeySpecException | NoSuchAlgorithmException
+                | InvalidParameterSpecException | JsonProcessingException e) {
             throw new IllegalStateException("Invalid security info content", e);
         }
         return i;

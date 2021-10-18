@@ -141,7 +141,7 @@ public class RegistrationSerDes {
 
             Map<String, String> attMap = new HashMap<>();
             JsonNode att = ol.get("at");
-            for (Iterator<String> it = att.fieldNames(); it.hasNext(); ) {
+            for (Iterator<String> it = att.fieldNames(); it.hasNext();) {
                 String k = it.next();
                 JsonNode jsonValue = att.get(k);
                 if (jsonValue.isNull()) {
@@ -161,7 +161,7 @@ public class RegistrationSerDes {
         // additional attributes
         Map<String, String> addAttr = new HashMap<>();
         ObjectNode o = (ObjectNode) jObj.get("addAttr");
-        for (Iterator<String> it = o.fieldNames(); it.hasNext(); ) {
+        for (Iterator<String> it = o.fieldNames(); it.hasNext();) {
             String k = it.next();
             addAttr.put(k, o.get(k).asText(""));
         }
@@ -186,7 +186,7 @@ public class RegistrationSerDes {
             b.extractDataFromObjectLink(true);
         } else {
             Map<Integer, String> supportedObject = new HashMap<>();
-            for (Iterator<String> it = so.fieldNames(); it.hasNext(); ) {
+            for (Iterator<String> it = so.fieldNames(); it.hasNext();) {
                 String key = it.next();
                 supportedObject.put(Integer.parseInt(key), so.get(key).asText());
             }
@@ -196,7 +196,7 @@ public class RegistrationSerDes {
         // app data
         Map<String, String> appData = new HashMap<>();
         ObjectNode oap = (ObjectNode) jObj.get("appdata");
-        for (Iterator<String> it = oap.fieldNames(); it.hasNext(); ) {
+        for (Iterator<String> it = oap.fieldNames(); it.hasNext();) {
             String key = it.next();
             JsonNode jv = oap.get(key);
             if (jv.isNull()) {

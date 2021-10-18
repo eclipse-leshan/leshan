@@ -44,6 +44,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.type.CollectionType;
 
 /**
  * A {@link EditableBootstrapConfigStore} which persist configuration in a file using json format.
@@ -78,7 +79,10 @@ public class JSONFileBootstrapStore extends InMemoryBootstrapConfigStore {
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         SimpleModule module = new SimpleModule();
         module.addDeserializer(EnumSet.class, new EnumSetDeserializer());
-        module.addSerializer(new EnumSetSerializer());
+
+        CollectionType collectionType = mapper.getTypeFactory().constructCollectionType(EnumSet.class, Object.class);
+        module.addSerializer(new EnumSetSerializer(collectionType));
+
         module.addSerializer(new ByteArraySerializer(ByteArraySerializer.ByteMode.SIGNED));
         mapper.registerModule(module);
 

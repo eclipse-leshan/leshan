@@ -130,7 +130,7 @@ public class EndpointContextSerDes {
             endpointContext = new AddressEndpointContext(socketAddress, principal);
         } else {
             Attributes attributes = new Attributes();
-            for (Iterator<String> it = value.fieldNames(); it.hasNext(); ) {
+            for (Iterator<String> it = value.fieldNames(); it.hasNext();) {
                 String name = it.next();
                 Definition<?> key = MapBasedEndpointContext.ATTRIBUTE_DEFINITIONS.get(name);
                 if (key != null) {

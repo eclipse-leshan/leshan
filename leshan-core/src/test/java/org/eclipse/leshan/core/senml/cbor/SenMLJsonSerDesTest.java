@@ -36,7 +36,7 @@ public class SenMLJsonSerDesTest extends AbstractSenMLTest {
     public static Collection<?> senMLJsonencoderDecoder() {
         SenMLJsonJacksonEncoderDecoder jackson = new SenMLJsonJacksonEncoderDecoder();
         return Arrays.asList(new Object[][] { //
-                                { jackson, jackson, "jackson" } });
+                { jackson, jackson, "jackson" } });
     }
 
     private SenMLEncoder encoder;

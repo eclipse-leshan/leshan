@@ -33,14 +33,11 @@ public class EnumSetSerializer extends StdSerializer<EnumSet<?>> {
 
     private static final long serialVersionUID = 7456682518094775441L;
 
-    protected EnumSetSerializer(Class<EnumSet<?>> t) {
-        super(t);
+    public EnumSetSerializer(JavaType type) {
+        super(type);
     }
 
-    public EnumSetSerializer() {
-        this((Class<EnumSet<? extends Enum<?>>>) (Object) EnumSet.class);
-    }
-
+    @SuppressWarnings("unchecked")
     @Override
     public void serialize(EnumSet<?> value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         if (value == null) {
@@ -54,7 +51,8 @@ public class EnumSetSerializer extends StdSerializer<EnumSet<?>> {
         }
     }
 
-    private void defaultEnumSetSerializer(EnumSet<?> value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    private void defaultEnumSetSerializer(EnumSet<?> value, JsonGenerator gen, SerializerProvider serializers)
+            throws IOException {
         JavaType valueType = serializers.getConfig().constructType(value.getClass());
         com.fasterxml.jackson.databind.ser.std.EnumSetSerializer enumSetSerializer = new com.fasterxml.jackson.databind.ser.std.EnumSetSerializer(
                 valueType);
