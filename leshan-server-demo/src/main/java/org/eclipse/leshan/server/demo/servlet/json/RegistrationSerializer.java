@@ -16,13 +16,18 @@
 package org.eclipse.leshan.server.demo.servlet.json;
 
 import java.lang.reflect.Type;
+import java.util.Map.Entry;
 
+import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.LinkParamValue;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.queue.PresenceService;
 import org.eclipse.leshan.server.registration.Registration;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
@@ -48,7 +53,7 @@ public class RegistrationSerializer implements JsonSerializer<Registration> {
         element.addProperty("lifetime", src.getLifeTimeInSec());
         element.addProperty("bindingMode", BindingMode.toString(src.getBindingMode()));
         element.add("rootPath", context.serialize(src.getRootPath()));
-        element.add("objectLinks", context.serialize(src.getSortedObjectLinks()));
+        element.add("objectLinks", serializeLinks(src.getSortedObjectLinks()));
         element.add("secure", context.serialize(src.getIdentity().isSecure()));
         element.add("additionalRegistrationAttributes", context.serialize(src.getAdditionalRegistrationAttributes()));
         element.add("queuemode", context.serialize(src.usesQueueMode()));
@@ -58,5 +63,25 @@ public class RegistrationSerializer implements JsonSerializer<Registration> {
         }
 
         return element;
+    }
+
+    private JsonArray serializeLinks(Link[] links) {
+        JsonArray jlinks = new JsonArray(links.length);
+        for (int i = 0; i < links.length; i++) {
+            Link link = links[i];
+            JsonObject jlink = new JsonObject();
+
+            // add url
+            jlink.add("url", new JsonPrimitive(link.getUriReference()));
+
+            // add attributes
+            JsonObject attributes = new JsonObject();
+            for (Entry<String, LinkParamValue> linkParam : link.getLinkParams().entrySet()) {
+                attributes.add(linkParam.getKey(), new JsonPrimitive(linkParam.getValue().toString()));
+            }
+            jlink.add("attributes", attributes);
+            jlinks.add(jlink);
+        }
+        return jlinks;
     }
 }
