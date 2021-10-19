@@ -97,7 +97,7 @@ myModule.factory('lwResources',["$http", function($http) {
             for (var i = 0; i < objectLinks.length; i++) {
 
                 // remove root path from link
-                var link = objectLinks[i].url;
+                var link = objectLinks[i].uriReference;
                 if(link.indexOf(rootPath) == 0) {
                     link.slice(rootPath.length);
                 }
@@ -154,7 +154,7 @@ myModule.factory('lwResources',["$http", function($http) {
             for (var i = 0; i < objectLinks.length; i++) {
 
                 // remove root path from link
-                var link = objectLinks[i].url;
+                var link = objectLinks[i].uriReference;
                 if(link.indexOf(rootPath) == 0) {
                     link.slice(rootPath.length);
                 }
@@ -184,9 +184,9 @@ myModule.factory('lwResources',["$http", function($http) {
             // remove extra object instances
             result = tree.filter(function (object) {
                 // remove extra instances
-                object.instances = object.instances.filter(instance => objectLinks.find(link => link.url.startsWith(rootPath+object.id+"/"+instance.id)));
+                object.instances = object.instances.filter(instance => objectLinks.find(link => link.uriReference.startsWith(rootPath+object.id+"/"+instance.id)));
                 // filter object
-                return objectLinks.find(link => link.url.startsWith(rootPath+object.id));
+                return objectLinks.find(link => link.uriReference.startsWith(rootPath+object.id));
             });
 
             // sort object

@@ -89,7 +89,7 @@ export default {
       let instances = [];
       if (this.registration) {
         this.registration.objectLinks.forEach((o) => {
-          let ids = o.url.split("/");
+          let ids = o.uriReference.split("/");
           if (ids.length === 3 && ids[1] == this.$route.params.objectid)
             instances.push({ id: ids[2] });
         });
