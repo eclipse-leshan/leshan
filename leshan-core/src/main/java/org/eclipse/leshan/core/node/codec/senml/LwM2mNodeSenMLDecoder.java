@@ -214,15 +214,27 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
             if (recordsByInstanceId.size() > 1)
                 throw new CodecException("Only one instance expected in the payload [path:%s]", path);
 
-            // Extract resources
-            Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(
-                    recordsByInstanceId.values().iterator().next(), path, model);
+            // handle empty multi instance resource ?
+            if (recordsByInstanceId.size() == 0) {
+                ResourceModel resourceModel = model.getResourceModel(path.getObjectId(), path.getResourceId());
+                if (resourceModel == null || !resourceModel.multiple) {
+                    throw new CodecException(
+                            "One resource should be present in the payload [path:%s] for single instance resource",
+                            path);
+                }
 
-            // validate there is only 1 resource
-            if (resourcesMap.size() != 1)
-                throw new CodecException("One resource should be present in the payload [path:%s]", path);
+                node = new LwM2mMultipleResource(path.getResourceId(), resourceModel.type);
+            } else {
+                // Extract resources
+                Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(
+                        recordsByInstanceId.values().iterator().next(), path, model);
 
-            node = resourcesMap.values().iterator().next();
+                // validate there is only 1 resource
+                if (resourcesMap.size() != 1)
+                    throw new CodecException("One resource should be present in the payload [path:%s]", path);
+
+                node = resourcesMap.values().iterator().next();
+            }
         } else if (nodeClass == LwM2mResourceInstance.class) {
             // validate we have resources for only 1 instance
             if (recordsByInstanceId.size() > 1)

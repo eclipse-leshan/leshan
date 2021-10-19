@@ -64,12 +64,18 @@ public class SenMLJsonJacksonEncoderDecoder implements SenMLDecoder, SenMLEncode
     @Override
     public SenMLPack fromSenML(byte[] jsonString) throws SenMLException {
         try {
+            // handle empty payload
+            if (jsonString == null || jsonString.length == 0) {
+                return new SenMLPack();
+            }
+
             JsonNode node = mapper.readTree(jsonString);
             if (!node.isArray()) {
                 throw new SenMLException("Unable to parse SenML JSON: JsonArray expected but was %s",
                         node.getNodeType());
             }
             return new SenMLPack(serDes.deserialize(node.iterator()));
+
         } catch (JsonException | ParseException | IOException e) {
             throw new SenMLException("Unable to parse SenML JSON.", e);
         }

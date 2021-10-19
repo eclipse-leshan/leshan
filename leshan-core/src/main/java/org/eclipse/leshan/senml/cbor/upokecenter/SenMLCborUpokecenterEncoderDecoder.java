@@ -71,6 +71,11 @@ public class SenMLCborUpokecenterEncoderDecoder implements SenMLDecoder, SenMLEn
     @Override
     public SenMLPack fromSenML(byte[] data) throws SenMLException {
         try {
+            // handle empty payload
+            if (data.length == 0) {
+                return new SenMLPack();
+            }
+
             CBORObject cborObject = CBORObject.DecodeFromBytes(data);
             if (cborObject.getType() != CBORType.Array) {
                 throw new SenMLException("Unable to parse SenML CBOR: Array expected but was %s", cborObject.getType());

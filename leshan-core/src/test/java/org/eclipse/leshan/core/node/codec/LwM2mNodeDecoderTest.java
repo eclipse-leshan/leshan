@@ -369,7 +369,7 @@ public class LwM2mNodeDecoderTest {
         // this is "special" case where instance ID is not defined ...
         byte[] content = TlvEncoder
                 .encode(new Tlv[] { new Tlv(TlvType.RESOURCE_VALUE, null, TlvEncoder.encodeInteger(11), 1),
-                                        new Tlv(TlvType.RESOURCE_VALUE, null, TlvEncoder.encodeInteger(10), 2) })
+                        new Tlv(TlvType.RESOURCE_VALUE, null, TlvEncoder.encodeInteger(10), 2) })
                 .array();
 
         LwM2mObject object = (LwM2mObject) decoder.decode(content, ContentFormat.TLV, new LwM2mPath(2), model);
@@ -381,8 +381,7 @@ public class LwM2mNodeDecoderTest {
     public void tlv_unknown_object__missing_instance_tlv() throws CodecException {
 
         byte[] content = TlvEncoder.encode(new Tlv[] { new Tlv(TlvType.RESOURCE_VALUE, null, "value1".getBytes(), 1),
-                                new Tlv(TlvType.RESOURCE_VALUE, null, "value1".getBytes(), 2) })
-                .array();
+                new Tlv(TlvType.RESOURCE_VALUE, null, "value1".getBytes(), 2) }).array();
 
         LwM2mObject obj = (LwM2mObject) decoder.decode(content, ContentFormat.TLV, new LwM2mPath(10234), model);
 
@@ -951,6 +950,40 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
+    public void senml_json_empty_multi_resource() {
+        // see : https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/494
+
+        // empty byte array
+        LwM2mResource resource = null;
+        resource = (LwM2mResource) decoder.decode(new byte[0], ContentFormat.SENML_JSON, new LwM2mPath(3, 0, 6), model);
+        assertNotNull(resource);
+        assertTrue(resource instanceof LwM2mMultipleResource);
+        assertEquals(6, resource.getId());
+        assertTrue(resource.getInstances().isEmpty());
+
+        // empty string
+        resource = null;
+        StringBuilder b = new StringBuilder();
+        b.append("");
+        resource = (LwM2mResource) decoder.decode(b.toString().getBytes(), ContentFormat.SENML_JSON,
+                new LwM2mPath(3, 0, 6), model);
+        assertNotNull(resource);
+        assertTrue(resource instanceof LwM2mMultipleResource);
+        assertEquals(6, resource.getId());
+        assertTrue(resource.getInstances().isEmpty());
+
+        // empty Array
+        b = new StringBuilder();
+        b.append("[]");
+        resource = (LwM2mResource) decoder.decode(b.toString().getBytes(), ContentFormat.SENML_JSON,
+                new LwM2mPath(3, 0, 6), model);
+        assertNotNull(resource);
+        assertTrue(resource instanceof LwM2mMultipleResource);
+        assertEquals(6, resource.getId());
+        assertTrue(resource.getInstances().isEmpty());
+    }
+
+    @Test
     public void senml_timestamped_resources() throws CodecException {
         // json content for instance 0 of device object
         StringBuilder b = new StringBuilder();
@@ -1191,5 +1224,27 @@ public class LwM2mNodeDecoderTest {
         LwM2mResource expected = LwM2mSingleResource.newBinaryResource(3, bytes);
 
         Assert.assertEquals(expected, oResource);
+    }
+
+    @Test
+    public void senml_cbor_empty_multi_resource() {
+        // see : https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/494
+
+        // empty byte array
+        LwM2mResource resource = null;
+        resource = (LwM2mResource) decoder.decode(new byte[0], ContentFormat.SENML_CBOR, new LwM2mPath(3, 0, 6), model);
+        assertNotNull(resource);
+        assertTrue(resource instanceof LwM2mMultipleResource);
+        assertEquals(6, resource.getId());
+        assertTrue(resource.getInstances().isEmpty());
+
+        // empty Array
+        // value : []
+        byte[] cbor = Hex.decodeHex("80".toCharArray());
+        resource = (LwM2mResource) decoder.decode(cbor, ContentFormat.SENML_CBOR, new LwM2mPath(3, 0, 6), model);
+        assertNotNull(resource);
+        assertTrue(resource instanceof LwM2mMultipleResource);
+        assertEquals(6, resource.getId());
+        assertTrue(resource.getInstances().isEmpty());
     }
 }
