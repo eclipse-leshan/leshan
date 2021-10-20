@@ -236,7 +236,7 @@ public class LeshanServerDemo {
         Server server = new Server(jettyAddr);
         WebAppContext root = new WebAppContext();
         root.setContextPath("/");
-        root.setResourceBase(LeshanServerDemo.class.getClassLoader().getResource("webapp2").toExternalForm());
+        root.setResourceBase(LeshanServerDemo.class.getClassLoader().getResource("webapp").toExternalForm());
         root.setParentLoaderPriority(true);
         server.setHandler(root);
 

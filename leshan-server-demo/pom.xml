@@ -107,7 +107,7 @@ Contributors:
                         <configuration>
                             <environmentVariables>
                                 <!-- this variable will be used by webapp/vue.config.js -->
-                                <MAVEN_OUTPUT_DIR>${project.build.outputDirectory}/webapp2</MAVEN_OUTPUT_DIR>
+                                <MAVEN_OUTPUT_DIR>${project.build.outputDirectory}/webapp</MAVEN_OUTPUT_DIR>
                                 <!-- this variable is used by the webapp  -->
                                 <VUE_APP_COMMIT_ID>${buildNumber}</VUE_APP_COMMIT_ID>
                                 <VUE_APP_VERSION>${project.version}</VUE_APP_VERSION>
@@ -117,7 +117,7 @@ Contributors:
                     </execution>
                 </executions>
                 <configuration>
-                    <workingDirectory>webapp2</workingDirectory>
+                    <workingDirectory>webapp</workingDirectory>
                     <nodeVersion>v12.22.5</nodeVersion>
                     <yarnVersion>v1.22.10</yarnVersion>
                 </configuration>
