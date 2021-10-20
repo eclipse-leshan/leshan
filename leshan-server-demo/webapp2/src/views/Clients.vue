@@ -12,26 +12,6 @@
   ----------------------------------------------------------------------------->
 <template>
   <div>
-    <v-layout justify-center>
-      <v-alert
-        border="left"
-        outlined
-        type="info"
-        elevation="2"
-        icon="mdi-alert-decagram"
-        dismissible
-        prominent
-        class="ma-2"
-        v-model="shownews"
-      >
-        <p>
-          This is the new UI for Leshan Server Demo. If needed, you can still
-          use the old version which should be available
-          <a href="../old/"><strong>here</strong></a> but not for so long as it
-          <strong> will be removed very soon !</strong>
-        </p>
-      </v-alert>
-    </v-layout>
     <v-data-table
       dense
       :loading="loading"
@@ -81,7 +61,6 @@
 
 <script>
 import ClientInfo from "../components/ClientInfo.vue";
-import { preference } from "vue-preferences";
 
 export default {
   components: { ClientInfo },
@@ -99,12 +78,6 @@ export default {
     ],
     search: "",
   }),
-  computed: {
-    shownews: preference("shownews", {
-      defaultValue: true,
-      ttl: 60 * 60 * 24,
-    }),
-  },
   methods: {
     openLink(reg) {
       this.$router.push(`/clients/${reg.endpoint}/3`);

@@ -35,9 +35,8 @@ import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.DefaultServlet;
-import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.core.model.ObjectLoader;
@@ -235,45 +234,19 @@ public class LeshanServerDemo {
             jettyAddr = new InetSocketAddress(cli.main.webhost, cli.main.webPort);
         }
         Server server = new Server(jettyAddr);
-        /*
-         * TODO this should be added again when old demo will be removed.
-         * 
-         * WebAppContext root = new WebAppContext(); root.setContextPath("/");
-         * root.setResourceBase(LeshanServerDemo.class.getClassLoader().getResource("webapp").toExternalForm());
-         * root.setParentLoaderPriority(true); server.setHandler(root);
-         */
-
-        /* ******** Temporary code to be able to serve both UI ********** */
-        ServletContextHandler root = new ServletContextHandler(null, "/", true, false);
-        // Configuration for new demo
-        DefaultServlet aServlet = new DefaultServlet();
-        ServletHolder aHolder = new ServletHolder(aServlet);
-        aHolder.setInitParameter("resourceBase",
-                LeshanServerDemo.class.getClassLoader().getResource("webapp2").toExternalForm());
-        aHolder.setInitParameter("pathInfoOnly", "true");
-        root.addServlet(aHolder, "/*");
-
-        // Configuration for old demo
-        DefaultServlet bServlet = new DefaultServlet();
-        ServletHolder bHolder = new ServletHolder(bServlet);
-        bHolder.setInitParameter("resourceBase",
-                LeshanServerDemo.class.getClassLoader().getResource("webapp").toExternalForm());
-        bHolder.setInitParameter("pathInfoOnly", "true");
-        root.addServlet(bHolder, "/old/*");
-
+        WebAppContext root = new WebAppContext();
+        root.setContextPath("/");
+        root.setResourceBase(LeshanServerDemo.class.getClassLoader().getResource("webapp2").toExternalForm());
+        root.setParentLoaderPriority(true);
         server.setHandler(root);
-        /* **************************************************************** */
 
         // Create Servlet
         EventServlet eventServlet = new EventServlet(lwServer, lwServer.getSecuredAddress().getPort());
         ServletHolder eventServletHolder = new ServletHolder(eventServlet);
-        root.addServlet(eventServletHolder, "/event/*"); // Temporary code to be able to serve both UI
         root.addServlet(eventServletHolder, "/api/event/*");
-        root.addServlet(eventServletHolder, "/old/api/event/*"); // Temporary code to be able to serve both UI
 
         ServletHolder clientServletHolder = new ServletHolder(new ClientServlet(lwServer));
         root.addServlet(clientServletHolder, "/api/clients/*");
-        root.addServlet(clientServletHolder, "/old/api/clients/*");// Temporary code to be able to serve both UI
 
         ServletHolder securityServletHolder;
         if (cli.identity.isRPK()) {
@@ -284,7 +257,6 @@ public class LeshanServerDemo {
                     (EditableSecurityStore) lwServer.getSecurityStore(), cli.identity.getCertChain()[0]));
         }
         root.addServlet(securityServletHolder, "/api/security/*");
-        root.addServlet(securityServletHolder, "/old/api/security/*");// Temporary code to be able to serve both UI
 
         ServletHolder serverServletHolder;
         if (cli.identity.isRPK()) {
@@ -293,12 +265,10 @@ public class LeshanServerDemo {
             serverServletHolder = new ServletHolder(new ServerServlet(lwServer, cli.identity.getCertChain()[0]));
         }
         root.addServlet(serverServletHolder, "/api/server/*");
-        root.addServlet(serverServletHolder, "/old/api/server/*");// Temporary code to be able to serve both UI
 
         ServletHolder objectSpecServletHolder = new ServletHolder(
                 new ObjectSpecServlet(lwServer.getModelProvider(), lwServer.getRegistrationService()));
         root.addServlet(objectSpecServletHolder, "/api/objectspecs/*");
-        root.addServlet(objectSpecServletHolder, "/old/api/objectspecs/*");// Temporary code to be able to serve both UI
 
         return server;
     }

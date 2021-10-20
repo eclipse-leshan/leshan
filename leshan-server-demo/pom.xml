@@ -145,30 +145,6 @@ Contributors:
                 </executions>
             </plugin>
             <plugin>
-                <groupId>com.google.code.maven-replacer-plugin</groupId>
-                <artifactId>replacer</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>replace</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <file>${project.build.directory}/classes/webapp/index.html</file>
-                    <replacements>
-                        <replacement>
-                            <token>@commit-id@</token>
-                            <value>${buildNumber}</value>
-                        </replacement>
-                        <replacement>
-                            <token>@version@</token>
-                            <value>${project.version}</value>
-                        </replacement>
-                    </replacements>
-                </configuration>
-            </plugin>
-            <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
                     <failOnWarnings>false</failOnWarnings>
