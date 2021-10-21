@@ -178,7 +178,7 @@ public class LeshanBootstrapServerDemo {
         Server server = new Server(jettyAddr);
         WebAppContext root = new WebAppContext();
         root.setContextPath("/");
-        root.setResourceBase(LeshanBootstrapServerDemo.class.getClassLoader().getResource("webapp2").toExternalForm());
+        root.setResourceBase(LeshanBootstrapServerDemo.class.getClassLoader().getResource("webapp").toExternalForm());
         root.setParentLoaderPriority(true);
 
         ServletHolder bsServletHolder = new ServletHolder(new BootstrapServlet(bsStore));
