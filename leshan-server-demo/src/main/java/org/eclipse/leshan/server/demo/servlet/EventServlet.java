@@ -232,11 +232,20 @@ public class EventServlet extends EventSourceServlet {
             }
 
             if (registration != null) {
-                String jsonContent = gson.toJson(data);
-                String eventData = new StringBuilder("{\"ep\":\"").append(registration.getEndpoint())
-                        .append("\",\"val\":").append(jsonContent).append("}").toString();
+                try {
+                    String jsonContent = EventServlet.this.mapper.writeValueAsString(data);
 
-                sendEvent(EVENT_SEND, eventData, registration.getEndpoint());
+                    String eventData = new StringBuilder("{\"ep\":\"") //
+                            .append(registration.getEndpoint()) //
+                            .append("\",\"val\":") //
+                            .append(jsonContent) //
+                            .append("}") //
+                            .toString(); //
+
+                    sendEvent(EVENT_SEND, eventData, registration.getEndpoint());
+                } catch (JsonProcessingException e) {
+                    Log.warn(String.format("Error while processing json [%s] : [%s]", data.toString(), e.getMessage()));
+                }
             }
         }
     };

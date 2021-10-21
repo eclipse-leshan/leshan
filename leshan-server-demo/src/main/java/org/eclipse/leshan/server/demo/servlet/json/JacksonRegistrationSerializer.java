@@ -17,9 +17,14 @@
 package org.eclipse.leshan.server.demo.servlet.json;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.LinkParamValue;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.queue.PresenceService;
 import org.eclipse.leshan.server.registration.Registration;
@@ -71,5 +76,24 @@ public class JacksonRegistrationSerializer extends StdSerializer<Registration> {
         }
 
         gen.writeObject(map);
+    }
+
+    private List<Map<String, Object>> serializeLinks(Link[] links) {
+        List<Map<String, Object>> jlinks = new ArrayList<>(links.length);
+        for (Link link : links) {
+            Map<String, Object> jlink = new HashMap<>();
+
+            // add url
+            jlink.put("url", link.getUriReference());
+
+            // add attributes
+            Map<String, String> attributes = new HashMap<>();
+            for (Map.Entry<String, LinkParamValue> linkParam : link.getLinkParams().entrySet()) {
+                attributes.put(linkParam.getKey(), linkParam.getValue().toString());
+            }
+            jlink.put("attributes", attributes);
+            jlinks.add(jlink);
+        }
+        return jlinks;
     }
 }
