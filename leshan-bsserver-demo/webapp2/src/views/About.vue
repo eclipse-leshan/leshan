@@ -51,23 +51,6 @@
           >
         </p>
       </v-col>
-      <v-layout justify-center>
-        <v-alert
-          border="top"
-          colored-border
-          type="info"
-          elevation="2"
-          max-width="600"
-          icon="mdi-alert-decagram"
-        >
-          <p>
-            This is the new UI for Leshan Bootstrap Server Demo. If needed, you
-            can still use the old version which should be available
-            <a href="../old/"><strong>here</strong></a> but not for so long as
-            it <strong> will be removed very soon !</strong>
-          </p>
-        </v-alert>
-      </v-layout>
     </v-row>
   </div>
 </template>

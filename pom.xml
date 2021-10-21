@@ -341,11 +341,6 @@ Contributors:
                     <version>1.6.8</version>
                 </plugin>
                 <plugin>
-                    <groupId>com.google.code.maven-replacer-plugin</groupId>
-                    <artifactId>replacer</artifactId>
-                    <version>1.5.3</version>
-                </plugin>
-                <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.8.1</version>
                     <configuration>
@@ -489,25 +484,6 @@ Contributors:
                     <configuration>
                         <lifecycleMappingMetadata>
                             <pluginExecutions>
-                                <pluginExecution>
-                                    <pluginExecutionFilter>
-                                        <groupId>
-                                            com.google.code.maven-replacer-plugin
-                                        </groupId>
-                                        <artifactId>
-                                            replacer
-                                        </artifactId>
-                                        <versionRange>
-                                            [1.5.3,)
-                                        </versionRange>
-                                        <goals>
-                                            <goal>replace</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <ignore></ignore>
-                                    </action>
-                                </pluginExecution>
                                 <pluginExecution>
                                     <!-- Disable `frontend-maven-plugin` build as it slow down build in 
                                     eclipse and it is not needed for development workflow -->

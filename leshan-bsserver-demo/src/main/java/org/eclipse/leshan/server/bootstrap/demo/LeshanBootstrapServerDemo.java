@@ -29,9 +29,8 @@ import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.DefaultServlet;
-import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -177,36 +176,12 @@ public class LeshanBootstrapServerDemo {
             jettyAddr = new InetSocketAddress(cli.main.webhost, cli.main.webPort);
         }
         Server server = new Server(jettyAddr);
-        /*
-         * TODO this should be added again when old demo will be removed.
-         * 
-         * WebAppContext root = new WebAppContext(); root.setContextPath("/");
-         * root.setResourceBase(LeshanBootstrapServerDemo.class.getClassLoader().getResource("webapp").toExternalForm())
-         * ; root.setParentLoaderPriority(true);
-         */
-
-        /* ******** Temporary code to be able to serve both UI ********** */
-        ServletContextHandler root = new ServletContextHandler(null, "/", true, false);
-        // Configuration for new demo
-        // Configuration for new demo
-        DefaultServlet aServlet = new DefaultServlet();
-        ServletHolder aHolder = new ServletHolder(aServlet);
-        aHolder.setInitParameter("resourceBase",
-                LeshanBootstrapServerDemo.class.getClassLoader().getResource("webapp2").toExternalForm());
-        aHolder.setInitParameter("pathInfoOnly", "true");
-        root.addServlet(aHolder, "/*");
-
-        // Configuration for old demo
-        DefaultServlet bServlet = new DefaultServlet();
-        ServletHolder bHolder = new ServletHolder(bServlet);
-        bHolder.setInitParameter("resourceBase",
-                LeshanBootstrapServerDemo.class.getClassLoader().getResource("webapp").toExternalForm());
-        bHolder.setInitParameter("pathInfoOnly", "true");
-        root.addServlet(bHolder, "/old/*");
-        /* **************************************************************** */
+        WebAppContext root = new WebAppContext();
+        root.setContextPath("/");
+        root.setResourceBase(LeshanBootstrapServerDemo.class.getClassLoader().getResource("webapp2").toExternalForm());
+        root.setParentLoaderPriority(true);
 
         ServletHolder bsServletHolder = new ServletHolder(new BootstrapServlet(bsStore));
-        root.addServlet(bsServletHolder, "/old/api/bootstrap/*"); // Temporary code to be able to serve both UI
         root.addServlet(bsServletHolder, "/api/bootstrap/*");
 
         ServletHolder serverServletHolder;
@@ -215,17 +190,13 @@ public class LeshanBootstrapServerDemo {
         } else {
             serverServletHolder = new ServletHolder(new ServerServlet(bsServer, cli.identity.getCertChain()[0]));
         }
-        root.addServlet(serverServletHolder, "/old/api/server/*"); // Temporary code to be able to serve both UI
         root.addServlet(serverServletHolder, "/api/server/*");
 
         EventServlet eventServlet = new EventServlet(bsServer);
         ServletHolder eventServletHolder = new ServletHolder(eventServlet);
-        root.addServlet(eventServletHolder, "/old/event/*"); // Temporary code to be able to serve both UI
         root.addServlet(eventServletHolder, "/api/event/*");
-        root.addServlet(eventServletHolder, "/old/api/event/*"); // Temporary code to be able to serve both UI
 
         server.setHandler(root);
-        /* **************************************************************** */
 
         return server;
     }
