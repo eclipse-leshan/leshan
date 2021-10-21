@@ -80,7 +80,7 @@ public class ObservationSerDes {
             JsonNode ctxValue = v.get("context");
             if (ctxValue != null) {
                 Map<String, String> context = new HashMap<>();
-                for (Iterator<String> it = ctxValue.fieldNames(); it.hasNext(); ) {
+                for (Iterator<String> it = ctxValue.fieldNames(); it.hasNext();) {
                     String name = it.next();
                     context.put(name, ctxValue.get(name).asText());
                 }
