@@ -24,8 +24,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.eclipse.leshan.core.Link;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
+import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.LinkParamValue;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.server.registration.Registration;
@@ -60,13 +61,13 @@ public class RegistrationSerDes {
         ArrayNode links = JsonNodeFactory.instance.arrayNode();
         for (Link l : r.getObjectLinks()) {
             ObjectNode ol = JsonNodeFactory.instance.objectNode();
-            ol.put("url", l.getUrl());
+            ol.put("url", l.getUriReference());
             ObjectNode at = JsonNodeFactory.instance.objectNode();
-            for (Map.Entry<String, String> e : l.getAttributes().entrySet()) {
+            for (Map.Entry<String, LinkParamValue> e : l.getLinkParams().entrySet()) {
                 if (e.getValue() == null) {
                     at.set(e.getKey(), null);
                 } else {
-                    at.put(e.getKey(), e.getValue());
+                    at.put(e.getKey(), e.getValue().toString());
                 }
             }
             ol.set("at", at);
@@ -139,18 +140,20 @@ public class RegistrationSerDes {
         for (int i = 0; i < links.size(); i++) {
             ObjectNode ol = (ObjectNode) links.get(i);
 
-            Map<String, String> attMap = new HashMap<>();
+            Map<String, LinkParamValue> attMap = new HashMap<>();
             JsonNode att = ol.get("at");
             for (Iterator<String> it = att.fieldNames(); it.hasNext();) {
                 String k = it.next();
                 JsonNode jsonValue = att.get(k);
                 if (jsonValue.isNull()) {
                     attMap.put(k, null);
-                } else if (jsonValue.isNumber()) {
-                    // This else block is just needed for retro-compatibility
-                    attMap.put(k, Integer.toString(jsonValue.asInt()));
                 } else {
-                    attMap.put(k, jsonValue.asText());
+                    if (jsonValue.isNumber()) {
+                        // This else block is just needed for retro-compatibility
+                        attMap.put(k, new LinkParamValue(Integer.toString(jsonValue.asInt())));
+                    } else {
+                        attMap.put(k, new LinkParamValue(jsonValue.asText()));
+                    }
                 }
             }
             Link o = new Link(ol.get("url").asText(), attMap);
