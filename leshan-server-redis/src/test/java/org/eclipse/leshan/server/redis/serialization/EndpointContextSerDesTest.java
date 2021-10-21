@@ -27,7 +27,7 @@ import org.eclipse.californium.elements.MapBasedEndpointContext.Attributes;
 import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.junit.Test;
 
-import com.eclipsesource.json.JsonObject;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class EndpointContextSerDesTest {
 
@@ -43,7 +43,7 @@ public class EndpointContextSerDesTest {
         Principal principal = new PreSharedKeyIdentity("me");
         EndpointContext endpoint = new MapBasedEndpointContext(address6, principal, attributes);
 
-        JsonObject data = EndpointContextSerDes.serialize(endpoint);
+        ObjectNode data = EndpointContextSerDes.serialize(endpoint);
 
         EndpointContext endpoint2 = EndpointContextSerDes.deserialize(data);
         assertEquals(endpoint.getPeerAddress(), endpoint2.getPeerAddress());

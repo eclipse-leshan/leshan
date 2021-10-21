@@ -12,6 +12,7 @@
  * 
  * Contributors:
  *    Achim Kraus (Bosch Software Innovations GmbH) - initial implementation.
+ *    Orange - keep one JSON dependency
  ******************************************************************************/
 package org.eclipse.leshan.server.redis.serialization;
 
@@ -28,25 +29,19 @@ import java.util.Map;
 import javax.security.auth.x500.X500Principal;
 
 import org.eclipse.californium.elements.AddressEndpointContext;
-import org.eclipse.californium.elements.DtlsEndpointContext;
 import org.eclipse.californium.elements.Definition;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.MapBasedEndpointContext;
 import org.eclipse.californium.elements.MapBasedEndpointContext.Attributes;
-import org.eclipse.californium.elements.UdpEndpointContext;
 import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.auth.X509CertPath;
 import org.eclipse.californium.elements.util.Bytes;
 import org.eclipse.californium.elements.util.StringUtil;
-import org.eclipse.californium.scandium.dtls.ConnectionId;
-import org.eclipse.californium.scandium.dtls.SessionId;
 import org.eclipse.leshan.core.util.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.JsonObject.Member;
-import com.eclipsesource.json.JsonValue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -65,7 +60,7 @@ public class EndpointContextSerDes {
     private static final String KEY_RPK = "rpk";
     private static final String KEY_ATTRIBUTES = "attributes";
 
-    public static JsonObject serialize(EndpointContext context) {
+    public static ObjectNode serialize(EndpointContext context) {
         ObjectNode peer = JsonNodeFactory.instance.objectNode();
         addAddress(peer, context.getPeerAddress());
         Principal principal = context.getPeerIdentity();
@@ -94,7 +89,7 @@ public class EndpointContextSerDes {
                     if (value instanceof Bytes) {
                         value = ((Bytes) value).getAsString();
                     }
-                    attContext.set(key.getKey(), value.toString());
+                    attContext.put(key.getKey(), value.toString());
                 }
             }
             peer.set(KEY_ATTRIBUTES, attContext);
@@ -102,6 +97,7 @@ public class EndpointContextSerDes {
         return peer;
     }
 
+    @SuppressWarnings("unchecked")
     public static EndpointContext deserialize(JsonNode peer) {
 
         final InetSocketAddress socketAddress = getAddress(peer);
@@ -129,12 +125,12 @@ public class EndpointContextSerDes {
             endpointContext = new AddressEndpointContext(socketAddress, principal);
         } else {
             Attributes attributes = new Attributes();
-            for (Iterator<String> it = value.fieldNames(); it.hasNext(); ) {
+            for (Iterator<String> it = value.fieldNames(); it.hasNext();) {
                 String name = it.next();
                 Definition<?> key = MapBasedEndpointContext.ATTRIBUTE_DEFINITIONS.get(name);
                 if (key != null) {
                     if (key.getValueType().equals(InetSocketAddress.class)) {
-                        InetSocketAddress address = getAddress(member.getValue().asObject());
+                        InetSocketAddress address = getAddress(value.get(name));
                         attributes.add((Definition<InetSocketAddress>) key, address);
                     } else {
                         String attributeValue = value.get(name).asText();
