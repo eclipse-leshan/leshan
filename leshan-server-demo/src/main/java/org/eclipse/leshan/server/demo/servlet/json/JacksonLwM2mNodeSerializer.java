@@ -34,6 +34,8 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 public class JacksonLwM2mNodeSerializer extends StdSerializer<LwM2mNode> {
 
+    private static final long serialVersionUID = 1L;
+
     protected JacksonLwM2mNodeSerializer(Class<LwM2mNode> t) {
         super(t);
     }

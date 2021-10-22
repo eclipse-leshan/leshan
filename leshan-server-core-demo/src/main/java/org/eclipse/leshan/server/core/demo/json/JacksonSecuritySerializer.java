@@ -34,6 +34,8 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 public class JacksonSecuritySerializer extends StdSerializer<SecurityInfo> {
 
+    private static final long serialVersionUID = 1L;
+
     protected JacksonSecuritySerializer(Class<SecurityInfo> t) {
         super(t);
     }

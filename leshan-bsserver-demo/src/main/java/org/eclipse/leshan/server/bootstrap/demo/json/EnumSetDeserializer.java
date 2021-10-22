@@ -62,6 +62,6 @@ public class EnumSetDeserializer extends JsonDeserializer<EnumSet<?>> implements
         Class<?> rawClass = contentType.getRawClass();
         DeserializationConfig config = ctxt.getConfig();
 
-        return EnumResolver.constructUnsafe(rawClass, config.getAnnotationIntrospector());
+        return EnumResolver.constructFor(config, rawClass);
     }
 }

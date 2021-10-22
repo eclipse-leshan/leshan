@@ -66,7 +66,7 @@ public class JacksonRegistrationSerializer extends StdSerializer<Registration> {
         map.put("bindingMode", BindingMode.toString(src.getBindingMode()));
 
         map.put("rootPath", src.getRootPath());
-        map.put("objectLinks", src.getSortedObjectLinks());
+        map.put("objectLinks", serializeLinks(src.getSortedObjectLinks()));
         map.put("secure", src.getIdentity().isSecure());
         map.put("additionalRegistrationAttributes", src.getAdditionalRegistrationAttributes());
         map.put("queuemode", src.usesQueueMode());
