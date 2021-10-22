@@ -33,13 +33,13 @@ import org.eclipse.leshan.server.bootstrap.EditableBootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.InvalidConfigurationException;
 import org.eclipse.leshan.server.bootstrap.demo.json.ByteArraySerializer;
 import org.eclipse.leshan.server.bootstrap.demo.json.EnumSetDeserializer;
+import org.eclipse.leshan.server.bootstrap.demo.json.EnumSetSerializer;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.std.EnumSetSerializer;
 import com.fasterxml.jackson.databind.type.CollectionType;
 
 /**
@@ -78,7 +78,12 @@ public class BootstrapServlet extends HttpServlet {
         resp.setStatus(HttpServletResponse.SC_OK);
         resp.setContentType("application/json");
 
-        resp.getOutputStream().write(mapper.writeValueAsString(bsStore.getAll()).getBytes(StandardCharsets.UTF_8));
+        try {
+            resp.getOutputStream().write(mapper.writeValueAsString(bsStore.getAll()).getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
