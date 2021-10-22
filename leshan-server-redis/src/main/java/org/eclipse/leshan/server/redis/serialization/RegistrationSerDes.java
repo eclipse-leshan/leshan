@@ -214,10 +214,11 @@ public class RegistrationSerDes {
     }
 
     public static Registration deserialize(byte[] data) {
+        String json = new String(data);
         try {
-            return deserialize(new ObjectMapper().readTree(new String(data)));
+            return deserialize(new ObjectMapper().readTree(json));
         } catch (JsonProcessingException e) {
-            return null;
+            throw new IllegalArgumentException(String.format("Unable to deserialize Registration %s", json), e);
         }
     }
 }

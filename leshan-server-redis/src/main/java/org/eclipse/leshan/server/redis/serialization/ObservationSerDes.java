@@ -69,8 +69,9 @@ public class ObservationSerDes {
     }
 
     public static Observation deserialize(byte[] data) {
+        String json = new String(data);
         try {
-            JsonNode v = new ObjectMapper().readTree(new String(data));
+            JsonNode v = new ObjectMapper().readTree(json);
 
             EndpointContext endpointContext = EndpointContextSerDes.deserialize(v.get("peer"));
             byte[] req = Hex.decodeHex(v.get("request").asText().toCharArray());
@@ -90,7 +91,7 @@ public class ObservationSerDes {
 
             return new Observation(request, endpointContext);
         } catch (JsonProcessingException e) {
-            return null;
+            throw new IllegalArgumentException(String.format("Unable to deserialize Observation %s", json), e);
         }
     }
 
