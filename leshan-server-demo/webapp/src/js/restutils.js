@@ -27,7 +27,7 @@
  * @returns a LWM2M object instance usable for REST API.
  */
 function instanceToREST(model, id, value) {
-  let data = { type: "instance", resources: [] };
+  let data = { kind: "instance", resources: [] };
 
   // set ID
   if (id != null) {
@@ -66,7 +66,7 @@ function resourceToREST(model, value) {
 function singleInstanceResourceToREST(model, value) {
   let res = {};
   res.id = model.id;
-  res.type = "singleResource";
+  res.kind = "singleResource";
   res.value = value;
   return res;
 }
@@ -79,7 +79,7 @@ function singleInstanceResourceToREST(model, value) {
 function multiInstanceResourceToREST(model, value) {
   let res = {};
   res.id = model.id;
-  res.type = "multiResource";
+  res.kind = "multiResource";
   res.values = value.reduce(function(resource, instance) {
     resource[instance.id] = instance.val;
     return resource;

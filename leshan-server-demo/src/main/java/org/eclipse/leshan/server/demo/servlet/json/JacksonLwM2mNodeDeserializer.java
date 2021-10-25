@@ -57,12 +57,12 @@ public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
                 id = object.get("id").asInt();
             }
 
-            String type = null;
-            if (object.has("type")) {
-                type = object.get("type").asText();
+            String kind = null;
+            if (object.has("kind")) {
+                kind = object.get("kind").asText();
             }
 
-            if ("obj".equals(type) || object.has("instances")) {
+            if ("obj".equals(kind) || object.has("instances")) {
                 if (id == null) {
                     throw new JsonParseException(p, "Missing id");
                 }
@@ -75,7 +75,7 @@ public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
                 }
                 node = new LwM2mObject(id, instances);
 
-            } else if ("instance".equals(type) || object.has("resources")) {
+            } else if ("instance".equals(kind) || object.has("resources")) {
                 JsonNode array = object.get("resources");
                 LwM2mResource[] resources = new LwM2mResource[array.size()];
 
@@ -87,7 +87,7 @@ public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
                 } else {
                     node = new LwM2mObjectInstance(id, resources);
                 }
-            } else if ("multiResource".equals(type) || object.has("values")) {
+            } else if ("multiResource".equals(kind) || object.has("values")) {
                 if (id == null) {
                     throw new JsonParseException(p, "Missing id");
                 }
@@ -117,7 +117,7 @@ public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
                     throw new JsonParseException(p, "Missing id");
                 }
 
-                if ("resourceInstance".equals(type)) {
+                if ("resourceInstance".equals(kind)) {
                     // resource instance
                     JsonNode val = object.get("value");
                     org.eclipse.leshan.core.model.ResourceModel.Type expectedType = getTypeFor(val);

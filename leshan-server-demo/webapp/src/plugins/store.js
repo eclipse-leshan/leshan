@@ -178,12 +178,12 @@ class Store {
    * @param {Boolean} supposed true means the value is supposed (not really send by the client)
    */
   newNode(endpoint, path, node, supposed = false) {
-    if (node.type === "singleResource") {
+    if (node.kind === "singleResource") {
       this.newResourceValue(endpoint, path, node, supposed);
-    } else if (node.type === "resourceInstance") {
+    } else if (node.kind === "resourceInstance") {
       this.newResourceInstanceValueFromPath(endpoint, path, node, supposed);
     } else {
-      console.log(node.type, " not yet supported");
+      console.log(node.kind, " not yet supported");
     }
   }
 

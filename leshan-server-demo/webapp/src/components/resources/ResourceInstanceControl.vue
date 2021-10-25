@@ -158,7 +158,7 @@ export default {
         .put(this.requestPath() + this.requestOption(), {
           id: this.instanceId,
           value: value,
-          type: "resourceInstance",
+          kind: "resourceInstance",
         })
         .then((response) => {
           this.updateState(response.data, requestButton);

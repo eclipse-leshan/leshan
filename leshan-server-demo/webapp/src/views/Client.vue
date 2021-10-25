@@ -159,28 +159,28 @@ export default {
         }
       })
       .on("NOTIFICATION", (msg) => {
-        if (msg.val.type === "instance") {
+        if (msg.val.kind === "instance") {
           this.$store.newInstanceValue(
             this.$route.params.endpoint,
             msg.res,
             msg.val.resources,
             false
           );
-        } else if (msg.val.type === "singleResource") {
+        } else if (msg.val.kind === "singleResource") {
           this.$store.newSingleResourceValue(
             this.$route.params.endpoint,
             msg.res,
             msg.val.value,
             false
           );
-        } else if (msg.val.type === "multiResource") {
+        } else if (msg.val.kind === "multiResource") {
           this.$store.newMultiResourceValue(
             this.$route.params.endpoint,
             msg.res,
             msg.val.values,
             false
           );
-        } else if (msg.val.type === "resourceInstance") {
+        } else if (msg.val.kind === "resourceInstance") {
           this.$store.newResourceInstanceValueFromPath(
             this.$route.params.endpoint,
             msg.res,
