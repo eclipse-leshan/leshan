@@ -22,7 +22,7 @@ public class DefaultLinkSerializer implements LinkSerializer {
 
     private static final String TRAILER = ",";
 
-    /***
+    /**
      * Serialize severals {@code Link} to {@code String} as defined in http://tools.ietf.org/html/rfc6690.
      * 
      * @param linkObjects links to serialize.

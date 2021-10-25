@@ -12,6 +12,7 @@
  *
  * Contributors:
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690.
+ *     Orange - Make LinkParser extensible.
  *******************************************************************************/
 package org.eclipse.leshan.core.link;
 
@@ -46,6 +47,12 @@ public class DefaultLinkParserTest {
 
         parsed = parser.parse("</-._~a-zA-Z0-9:@!$&'()*+,;=>".getBytes());
         Assert.assertEquals("/-._~a-zA-Z0-9:@!$&'()*+,;=", parsed[0].getUriReference());
+
+        parsed = parser.parse("".getBytes());
+        Assert.assertEquals(0, parsed.length);
+
+        parsed = parser.parse((byte[]) null);
+        Assert.assertEquals(0, parsed.length);
     }
 
     @Test
@@ -178,22 +185,22 @@ public class DefaultLinkParserTest {
 
     @Test
     public void allow_ptoken() throws LinkParseException {
-        Link[] parsed = parser.parse("</foo>;param=!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9".getBytes());
+        Link[] parsed = parser.parse("</foo>;param=/!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
         Map<String, LinkParamValue> attResult = new HashMap<>();
-        attResult.put("param", new LinkParamValue("!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9"));
+        attResult.put("param", new LinkParamValue("/!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9"));
         Assert.assertEquals(attResult, parsed[0].getLinkParams());
     }
 
     @Test
     public void allow_mixed_attributes() throws LinkParseException {
         Link[] parsed = parser
-                .parse("</foo>;param=!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9;param2=\"foo\";param3,</bar>".getBytes());
+                .parse("</foo>;param=/!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9;param2=\"foo\";param3,</bar>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
         Map<String, LinkParamValue> attResult = new HashMap<>();
-        attResult.put("param", new LinkParamValue("!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9"));
+        attResult.put("param", new LinkParamValue("/!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9"));
         attResult.put("param2", new LinkParamValue("\"foo\""));
         attResult.put("param3", null);
         Assert.assertEquals(attResult, parsed[0].getLinkParams());

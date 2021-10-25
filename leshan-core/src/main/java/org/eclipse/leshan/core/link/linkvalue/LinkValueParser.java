@@ -11,29 +11,27 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  *
  * Contributors:
- *     Michał Wadowski (Orange) - Improved compliance with rfc6690.
  *     Orange - Make LinkParser extensible.
  *******************************************************************************/
-package org.eclipse.leshan.core.link;
+package org.eclipse.leshan.core.link.linkvalue;
+
+import java.util.List;
+
+import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.Parser;
 
 /**
- * A CoRE Link parser interface.
- * <p>
- * Parser should implement rules defined in https://datatracker.ietf.org/doc/html/RFC6690#section-2
+ * A CoRE Link link-value parser interface defined in RFC6690 (https://datatracker.ietf.org/doc/html/RFC6690#section-2).
  */
-public interface LinkParser extends Parser<Link[]> {
+public interface LinkValueParser extends Parser<Link> {
 
     /**
-     * Validate text content in format defined in RFC RFC6690 into array of links {@link Link}.
+     * Method should split content by delimiter respecting escaped characters.
      *
-     * @param bytes content to parse as array of bytes.
+     * @param content content to parse.
+     * @param delimiter character around content is split.
+     * @return content divided by delimiter.
      */
-    boolean isValid(byte[] bytes);
+    List<String> extractLinks(String content, char delimiter);
 
-    /**
-     * Parse text content in format defined in RFC RFC6690 into array of links {@link Link}.
-     *
-     * @param bytes content to parse as array of bytes.
-     */
-    Link[] parse(byte[] bytes) throws LinkParseException;
 }
