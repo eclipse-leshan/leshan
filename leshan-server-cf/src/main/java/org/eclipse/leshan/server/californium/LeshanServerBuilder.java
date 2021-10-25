@@ -24,6 +24,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.californium.core.config.CoapConfig;
@@ -40,6 +41,7 @@ import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.CertificateType;
+import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.californium.scandium.dtls.x509.SingleCertificateProvider;
 import org.eclipse.californium.scandium.dtls.x509.StaticNewAdvancedCertificateVerifier;
 import org.eclipse.leshan.core.LwM2m;
@@ -476,7 +478,11 @@ public class LeshanServerBuilder {
                 LOG.warn(
                         "PskStore should be automatically set by Leshan. Using a custom implementation is not advised.");
             } else if (securityStore != null) {
-                dtlsConfigBuilder.setAdvancedPskStore(new LwM2mPskStore(this.securityStore, registrationStore));
+                List<CipherSuite> ciphers = incompleteConfig.getConfiguration().get(DtlsConfig.DTLS_CIPHER_SUITES);
+                if (ciphers == null // if null, ciphers will be chosen automatically by Scandium
+                        || CipherSuite.containsPskBasedCipherSuite(ciphers)) {
+                    dtlsConfigBuilder.setAdvancedPskStore(new LwM2mPskStore(this.securityStore, registrationStore));
+                }
             }
 
             // Handle secure address
