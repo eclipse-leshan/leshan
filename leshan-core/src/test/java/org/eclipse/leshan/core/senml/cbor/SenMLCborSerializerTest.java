@@ -22,7 +22,6 @@ import org.eclipse.leshan.senml.SenMLDecoder;
 import org.eclipse.leshan.senml.SenMLEncoder;
 import org.eclipse.leshan.senml.SenMLException;
 import org.eclipse.leshan.senml.SenMLPack;
-import org.eclipse.leshan.senml.cbor.jackson.SenMLCborJacksonEncoderDecoder;
 import org.eclipse.leshan.senml.cbor.upokecenter.SenMLCborUpokecenterEncoderDecoder;
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,10 +34,9 @@ public class SenMLCborSerializerTest extends AbstractSenMLTest {
     @Parameterized.Parameters(name = "{2}")
     public static Collection<?> senMLJsonencoderDecoder() {
         SenMLCborUpokecenterEncoderDecoder cborJava = new SenMLCborUpokecenterEncoderDecoder(true, false);
-        SenMLCborJacksonEncoderDecoder jackson = new SenMLCborJacksonEncoderDecoder();
         return Arrays.asList(new Object[][] { //
-                                { cborJava, cborJava, "cbor-java" }, //
-                                { jackson, jackson, "jackson" } });
+                { cborJava, cborJava, "cbor-java" }, //
+        });
     }
 
     private SenMLEncoder encoder;

@@ -39,10 +39,6 @@ Contributors:
             <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-cbor</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.upokecenter</groupId>
             <artifactId>cbor</artifactId>
         </dependency>

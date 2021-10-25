@@ -681,11 +681,6 @@ Contributors:
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson.dataformat</groupId>
-                <artifactId>jackson-dataformat-cbor</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.upokecenter</groupId>
                 <artifactId>cbor</artifactId>
                 <version>4.4.4</version>
