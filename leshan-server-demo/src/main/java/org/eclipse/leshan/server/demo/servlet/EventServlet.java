@@ -18,7 +18,6 @@
 package org.eclipse.leshan.server.demo.servlet;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -278,7 +277,6 @@ public class EventServlet extends EventSourceServlet {
         module.addSerializer(Registration.class, new JacksonRegistrationSerializer(server.getPresenceService()));
         module.addSerializer(LwM2mNode.class, new JacksonLwM2mNodeSerializer());
         mapper.registerModule(module);
-        mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX"));
         this.mapper = mapper;
     }
 

@@ -23,6 +23,12 @@
     :value="value"
     @input="$emit('input', convertValue($event))"
   />
+  <date-time-value-input
+    v-else-if="resourcedef.type == 'time'"
+    :resourcedef="resourcedef"
+    :value="value"
+    @input="$emit('input', convertValue($event))"
+  />
   <v-text-field
     v-else
     :label="resourcedef.type"
@@ -34,13 +40,14 @@
 </template>
 <script>
 import BooleanValueInput from "./BooleanValueInput.vue";
+import DateTimeValueInput from './DateTimeValueInput.vue';
 import OpaqueValueInput from "./OpaqueValueInput.vue";
 
 /**
  * An input for single value LWM2M node ("Single Instance Resource" or "Resource Instance")
  */
 export default {
-  components: { BooleanValueInput, OpaqueValueInput },
+  components: { BooleanValueInput, OpaqueValueInput, DateTimeValueInput },
   props: {
     value: null, // the input value for this LWM2M Node (v-model) 
     resourcedef: Object, // the model of the resource 

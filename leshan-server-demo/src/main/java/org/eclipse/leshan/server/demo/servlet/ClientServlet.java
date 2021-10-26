@@ -18,7 +18,6 @@ package org.eclipse.leshan.server.demo.servlet;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -104,7 +103,6 @@ public class ClientServlet extends HttpServlet {
         module.addSerializer(LwM2mNode.class, new JacksonLwM2mNodeSerializer());
         module.addDeserializer(LwM2mNode.class, new JacksonLwM2mNodeDeserializer());
         mapper.registerModule(module);
-        mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX"));
     }
 
     /**

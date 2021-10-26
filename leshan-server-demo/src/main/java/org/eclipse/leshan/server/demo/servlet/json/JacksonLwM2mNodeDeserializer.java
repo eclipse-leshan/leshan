@@ -18,13 +18,10 @@ package org.eclipse.leshan.server.demo.servlet.json;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -35,7 +32,6 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
-import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.util.Hex;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -150,13 +146,7 @@ public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
         case FLOAT:
             return val.asDouble();
         case TIME:
-            try {
-                DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
-                XMLGregorianCalendar cal = datatypeFactory.newXMLGregorianCalendar(val.asText());
-                return cal.toGregorianCalendar().getTime();
-            } catch (DatatypeConfigurationException | IllegalArgumentException e) {
-                throw new CodecException("Unable to convert string (%s) to date", val.asText(), e);
-            }
+            return new Date(val.asLong());
         case OPAQUE:
             return Hex.decodeHex((val.asText()).toCharArray());
         default:
