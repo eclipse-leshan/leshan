@@ -40,8 +40,9 @@
 </template>
 <script>
 import BooleanValueInput from "./BooleanValueInput.vue";
-import DateTimeValueInput from './DateTimeValueInput.vue';
+import DateTimeValueInput from "./DateTimeValueInput.vue";
 import OpaqueValueInput from "./OpaqueValueInput.vue";
+import { isInteger, isNumber } from "../../../js/utils.js";
 
 /**
  * An input for single value LWM2M node ("Single Instance Resource" or "Resource Instance")
@@ -49,8 +50,8 @@ import OpaqueValueInput from "./OpaqueValueInput.vue";
 export default {
   components: { BooleanValueInput, OpaqueValueInput, DateTimeValueInput },
   props: {
-    value: null, // the input value for this LWM2M Node (v-model) 
-    resourcedef: Object, // the model of the resource 
+    value: null, // the input value for this LWM2M Node (v-model)
+    resourcedef: Object, // the model of the resource
     hint: { type: String, default: null }, // hint displayed on `?` tooltip. If `null`, the "?" icon is not displayed"
   },
   methods: {
@@ -59,12 +60,10 @@ export default {
       if (this.resourcedef.type != undefined) {
         switch (this.resourcedef.type) {
           case "integer":
-            val = parseInt(strValue);
-            val = isNaN(val) ? strValue : val;
+            val = isInteger(strValue) ? Number(val) : strValue;
             break;
           case "float":
-            val = parseFloat(strValue);
-            val = isNaN(val) ? strValue : val;
+            val = isNumber(val) ? Number(val) : strValue;
             break;
           default:
             val = strValue;

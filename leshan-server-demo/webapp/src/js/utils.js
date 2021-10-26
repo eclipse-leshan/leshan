@@ -24,4 +24,17 @@ function isInteger(value) {
   return false;
 }
 
-export { isInteger };
+/**
+ * @param {*} value the value to check
+ * @returns true if the value is a number
+ */
+function isNumber(value) {
+  if (typeof value === "number") {
+    return true;
+  } else if (typeof value === "string" && value.trim() !== "") {
+    return value === String(Number(value));
+  }
+  return false;
+}
+
+export { isInteger, isNumber };

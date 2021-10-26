@@ -40,6 +40,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 
 public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
 
@@ -138,19 +139,58 @@ public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
     private Object deserializeValue(JsonNode val, ResourceModel.Type type) {
         switch (type) {
         case BOOLEAN:
-            return val.asBoolean();
+            if (val.isBoolean()) {
+                return val.asBoolean();
+            } else {
+                raiseUnexpectedType(val, type, "boolean", val.getNodeType());
+            }
+            break;
         case STRING:
-            return val.asText();
+            if (val.isTextual()) {
+                return val.asText();
+            } else {
+                raiseUnexpectedType(val, type, "string", val.getNodeType());
+            }
+            break;
         case INTEGER:
-            return val.asLong();
+            if (val.canConvertToLong() && val.canConvertToExactIntegral()) {
+                return val.asLong();
+            } else {
+                raiseUnexpectedType(val, type, "number(long)", val.getNodeType());
+            }
+            break;
         case FLOAT:
-            return val.asDouble();
+            // TODO we should maybe be more strict but didn't find obvious way for now.
+            if (val.isNumber()) {
+                return val.asDouble();
+            } else {
+                raiseUnexpectedType(val, type, "number(float)", val.getNodeType());
+            }
+            break;
         case TIME:
-            return new Date(val.asLong());
+            if (val.canConvertToLong() && val.canConvertToExactIntegral()) {
+                return new Date(val.asLong());
+            } else {
+                raiseUnexpectedType(val, type, "number(long)", val.getNodeType());
+            }
+            break;
         case OPAQUE:
-            return Hex.decodeHex((val.asText()).toCharArray());
+            if (val.isTextual()) {
+                return Hex.decodeHex((val.asText()).toCharArray());
+            } else {
+                raiseUnexpectedType(val, type, "string", val.getNodeType());
+            }
+            break;
         default:
-            throw new UnsupportedOperationException(String.format("Type %s is not supported for now", type));
+            break;
         }
+        throw new UnsupportedOperationException(String.format("Type %s is not supported for now", type));
+    }
+
+    private void raiseUnexpectedType(JsonNode value, ResourceModel.Type modelType, String expectedType,
+            JsonNodeType currentType) {
+        throw new IllegalArgumentException(
+                String.format("Unexpected JSON type of 'value' field [%s]: a JSON %s is expected for %s but was %s",
+                        value.toString(), expectedType, modelType, currentType.toString().toLowerCase()));
     }
 }

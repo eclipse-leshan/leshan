@@ -15,8 +15,6 @@
     <v-col cols="1">
       <v-checkbox
         v-model="booleanValue"
-        true-value="true"
-        false-value="false"
         :indeterminate="state !== ''"
         :key="state"
         :indeterminate-icon="icon"
@@ -51,18 +49,28 @@ export default {
   },
   watch: {
     value(v) {
-      this.localValue = v;
+      this.localValue = v; // string or boolean value
     },
   },
 
+  methods: {
+    toBoolean(value) {
+      if (typeof value === "boolean") {
+        return value;
+      } else if (typeof value === "string") {
+        if (value == "true") return true;
+        if (value == "false") return false;
+      }
+      return value;
+    },
+  },
   computed: {
     booleanValue: {
       get() {
         return this.localValue;
       },
       set(v) {
-        this.localValue = v;
-        this.$emit("input", this.localValue);
+        this.$emit("input", this.toBoolean(v));
       },
     },
     state() {
@@ -83,7 +91,7 @@ export default {
       );
     },
     isNotBoolean() {
-      return this.booleanValue != "true" && this.booleanValue != "false";
+      return typeof(this.booleanValue) !== "boolean";
     },
     icon() {
       if (this.isNotSet) {
