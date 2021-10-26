@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2021 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
-*******************************************************************************/
+ *******************************************************************************/
 
 /**
  * Helper function to convert data from UI Component format
@@ -68,6 +68,7 @@ function singleInstanceResourceToREST(model, value) {
   res.id = model.id;
   res.kind = "singleResource";
   res.value = value;
+  res.type = model.type;
   return res;
 }
 
@@ -80,6 +81,7 @@ function multiInstanceResourceToREST(model, value) {
   let res = {};
   res.id = model.id;
   res.kind = "multiResource";
+  res.type = model.type;
   res.values = value.reduce(function(resource, instance) {
     resource[instance.id] = instance.val;
     return resource;
@@ -87,4 +89,19 @@ function multiInstanceResourceToREST(model, value) {
   return res;
 }
 
-export { resourceToREST, instanceToREST };
+/**
+ * @param {Object} model model of the resource.
+ * @param {Number} instanceId the id of the resource instance
+ * @param {*} value the value of the resource instance from UI Component.
+ * @returns a resource instance usable for REST API.
+ */
+function resourceInstanceToREST(model, instanceId, value) {
+  let res = {};
+  res.id = instanceId;
+  res.kind = "resourceInstance";
+  res.value = value;
+  res.type = model.type;
+  return res;
+}
+
+export { resourceToREST, instanceToREST, resourceInstanceToREST };

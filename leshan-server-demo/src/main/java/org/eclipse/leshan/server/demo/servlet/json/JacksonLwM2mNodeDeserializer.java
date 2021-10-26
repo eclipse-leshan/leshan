@@ -22,7 +22,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+
 import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
@@ -30,6 +35,8 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.codec.CodecException;
+import org.eclipse.leshan.core.util.Hex;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -93,7 +100,7 @@ public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
                 }
                 // multi-instances resource
                 Map<Integer, Object> values = new HashMap<>();
-                org.eclipse.leshan.core.model.ResourceModel.Type expectedType = null;
+                Type type = Type.valueOf(object.get("type").asText().toUpperCase());
 
                 JsonNode valuesNode = object.get("values");
                 if (!valuesNode.isObject()) {
@@ -103,15 +110,9 @@ public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
                 for (Iterator<String> it = valuesNode.fieldNames(); it.hasNext();) {
                     String nodeName = it.next();
                     JsonNode nodeValue = valuesNode.get(nodeName);
-
-                    expectedType = getTypeFor(nodeValue);
-                    values.put(Integer.valueOf(nodeName), deserializeValue(nodeValue, expectedType));
+                    values.put(Integer.valueOf(nodeName), deserializeValue(nodeValue, type));
                 }
-
-                // use string by default;
-                if (expectedType == null)
-                    expectedType = org.eclipse.leshan.core.model.ResourceModel.Type.STRING;
-                node = LwM2mMultipleResource.newResource(id, values, expectedType);
+                node = LwM2mMultipleResource.newResource(id, values, type);
             } else if (object.has("value")) {
                 if (id == null) {
                     throw new JsonParseException(p, "Missing id");
@@ -120,13 +121,13 @@ public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
                 if ("resourceInstance".equals(kind)) {
                     // resource instance
                     JsonNode val = object.get("value");
-                    org.eclipse.leshan.core.model.ResourceModel.Type expectedType = getTypeFor(val);
-                    node = LwM2mResourceInstance.newInstance(id, deserializeValue(val, expectedType), expectedType);
+                    Type type = Type.valueOf(object.get("type").asText().toUpperCase());
+                    node = LwM2mResourceInstance.newInstance(id, deserializeValue(val, type), type);
                 } else {
                     // single value resource
                     JsonNode val = object.get("value");
-                    org.eclipse.leshan.core.model.ResourceModel.Type expectedType = getTypeFor(val);
-                    node = LwM2mSingleResource.newResource(id, deserializeValue(val, expectedType), expectedType);
+                    Type type = Type.valueOf(object.get("type").asText().toUpperCase());
+                    node = LwM2mSingleResource.newResource(id, deserializeValue(val, type), type);
                 }
             } else {
                 throw new JsonParseException(p, "Invalid node element");
@@ -138,24 +139,8 @@ public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
         return node;
     }
 
-    private org.eclipse.leshan.core.model.ResourceModel.Type getTypeFor(JsonNode val) {
-        if (val.isBoolean())
-            return org.eclipse.leshan.core.model.ResourceModel.Type.BOOLEAN;
-        if (val.isTextual())
-            return org.eclipse.leshan.core.model.ResourceModel.Type.STRING;
-        if (val.isNumber()) {
-            if (val.isDouble()) {
-                return org.eclipse.leshan.core.model.ResourceModel.Type.FLOAT;
-            } else {
-                return org.eclipse.leshan.core.model.ResourceModel.Type.INTEGER;
-            }
-        }
-        // use string as default value
-        return org.eclipse.leshan.core.model.ResourceModel.Type.STRING;
-    }
-
-    private Object deserializeValue(JsonNode val, ResourceModel.Type expectedType) {
-        switch (expectedType) {
+    private Object deserializeValue(JsonNode val, ResourceModel.Type type) {
+        switch (type) {
         case BOOLEAN:
             return val.asBoolean();
         case STRING:
@@ -165,10 +150,17 @@ public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
         case FLOAT:
             return val.asDouble();
         case TIME:
+            try {
+                DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
+                XMLGregorianCalendar cal = datatypeFactory.newXMLGregorianCalendar(val.asText());
+                return cal.toGregorianCalendar().getTime();
+            } catch (DatatypeConfigurationException | IllegalArgumentException e) {
+                throw new CodecException("Unable to convert string (%s) to date", val.asText(), e);
+            }
         case OPAQUE:
+            return Hex.decodeHex((val.asText()).toCharArray());
         default:
-            // TODO we need to better handle this.
-            return val.asText();
+            throw new UnsupportedOperationException(String.format("Type %s is not supported for now", type));
         }
     }
 }

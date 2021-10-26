@@ -49,6 +49,7 @@
 import RequestButton from "../RequestButton.vue";
 import ResourceInstanceWriteDialog from "./ResourceInstanceWriteDialog.vue";
 import { preference } from "vue-preferences";
+import { resourceInstanceToREST } from "../../js/restutils";
 
 const timeout = preference("timeout", { defaultValue: 5 });
 const singleFormat = preference("singleformat", { defaultValue: "TLV" });
@@ -155,11 +156,10 @@ export default {
     write(value) {
       let requestButton = this.$refs.W;
       this.axios
-        .put(this.requestPath() + this.requestOption(), {
-          id: this.instanceId,
-          value: value,
-          kind: "resourceInstance",
-        })
+        .put(
+          this.requestPath() + this.requestOption(),
+          resourceInstanceToREST(this.resourcedef, this.instanceId, value)
+        )
         .then((response) => {
           this.updateState(response.data, requestButton);
           if (response.data.success)

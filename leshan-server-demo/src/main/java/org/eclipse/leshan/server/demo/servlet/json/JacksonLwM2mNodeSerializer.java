@@ -70,8 +70,10 @@ public class JacksonLwM2mNodeSerializer extends StdSerializer<LwM2mNode> {
                 }
                 element.put("kind", "multiResource");
                 element.put("values", values);
+                element.put("type", rsc.getType());
             } else {
                 element.put("kind", "singleResource");
+                element.put("type", rsc.getType());
                 if (rsc.getType() == org.eclipse.leshan.core.model.ResourceModel.Type.OPAQUE) {
                     element.put("value", new String(Hex.encodeHex((byte[]) rsc.getValue())));
                 } else {
@@ -81,6 +83,7 @@ public class JacksonLwM2mNodeSerializer extends StdSerializer<LwM2mNode> {
         } else if (src instanceof LwM2mResourceInstance) {
             element.put("kind", "resourceInstance");
             LwM2mResourceInstance rsc = (LwM2mResourceInstance) src;
+            element.put("type", rsc.getType());
             if (rsc.getType() == org.eclipse.leshan.core.model.ResourceModel.Type.OPAQUE) {
                 element.put("value", new String(Hex.encodeHex((byte[]) rsc.getValue())));
             } else {
