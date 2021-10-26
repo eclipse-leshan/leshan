@@ -31,11 +31,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.leshan.core.attributes.AttributeSet;
-import org.eclipse.leshan.core.model.LwM2mModel;
-import org.eclipse.leshan.core.model.ObjectLoader;
-import org.eclipse.leshan.core.model.ResourceModel;
-import org.eclipse.leshan.core.model.ResourceModel.Type;
-import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -70,7 +65,6 @@ import org.eclipse.leshan.server.demo.servlet.json.JacksonLwM2mNodeDeserializer;
 import org.eclipse.leshan.server.demo.servlet.json.JacksonLwM2mNodeSerializer;
 import org.eclipse.leshan.server.demo.servlet.json.JacksonRegistrationSerializer;
 import org.eclipse.leshan.server.demo.servlet.json.JacksonResponseSerializer;
-import org.eclipse.leshan.server.demo.utils.MagicLwM2mValueConverter;
 import org.eclipse.leshan.server.registration.Registration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,10 +93,6 @@ public class ClientServlet extends HttpServlet {
 
     private final ObjectMapper mapper;
 
-    private final LwM2mModel model;
-
-    private final MagicLwM2mValueConverter converter;
-
     public ClientServlet(LeshanServer server) {
         this.server = server;
 
@@ -115,9 +105,6 @@ public class ClientServlet extends HttpServlet {
         module.addDeserializer(LwM2mNode.class, new JacksonLwM2mNodeDeserializer());
         mapper.registerModule(module);
         mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX"));
-
-        this.model = new StaticModel(ObjectLoader.loadDefault());
-        this.converter = new MagicLwM2mValueConverter();
     }
 
     /**
@@ -447,17 +434,6 @@ public class ClientServlet extends HttpServlet {
             LwM2mNode node;
             try {
                 node = mapper.readValue(content, LwM2mNode.class);
-                if (node instanceof LwM2mSingleResource) {
-                    // TODO HACK resource type should be extracted from json value but this is not yet available.
-                    LwM2mSingleResource singleResource = (LwM2mSingleResource) node;
-                    ResourceModel resourceModel = model.getResourceModel(path.getObjectId(), singleResource.getId());
-                    if (resourceModel != null) {
-                        Type expectedType = resourceModel.type;
-                        Object expectedValue = converter.convertValue(singleResource.getValue(),
-                                singleResource.getType(), expectedType, path);
-                        node = LwM2mSingleResource.newResource(node.getId(), expectedValue, expectedType);
-                    }
-                }
             } catch (JsonProcessingException e) {
                 throw new InvalidRequestException(e, "unable to parse json to tlv:%s", e.getMessage());
             }

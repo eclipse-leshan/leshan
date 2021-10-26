@@ -41,7 +41,6 @@ import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
-import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.server.californium.LeshanServer;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.demo.cli.LeshanServerDemoCLI;
@@ -50,7 +49,6 @@ import org.eclipse.leshan.server.demo.servlet.EventServlet;
 import org.eclipse.leshan.server.demo.servlet.ObjectSpecServlet;
 import org.eclipse.leshan.server.demo.servlet.SecurityServlet;
 import org.eclipse.leshan.server.demo.servlet.ServerServlet;
-import org.eclipse.leshan.server.demo.utils.MagicLwM2mValueConverter;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.VersionedModelProvider;
 import org.eclipse.leshan.server.redis.RedisRegistrationStore;
@@ -136,9 +134,6 @@ public class LeshanServerDemo {
     public static LeshanServer createLeshanServer(LeshanServerDemoCLI cli) throws Exception {
         // Prepare LWM2M server
         LeshanServerBuilder builder = new LeshanServerBuilder();
-
-        // use a magic converter to support bad type send by the UI.
-        builder.setEncoder(new DefaultLwM2mEncoder(new MagicLwM2mValueConverter()));
 
         // Create CoAP Config
         File configFile = new File(CF_CONFIGURATION_FILENAME);
