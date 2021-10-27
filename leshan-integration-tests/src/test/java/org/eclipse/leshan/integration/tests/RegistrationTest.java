@@ -42,6 +42,7 @@ import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.leshan.core.ResponseCode;
+import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
@@ -79,7 +80,7 @@ public class RegistrationTest {
     }
 
     @Test
-    public void register_update_deregister() {
+    public void register_update_deregister() throws LinkParseException {
         // Check client is not registered
         helper.assertClientNotRegisterered();
 
@@ -105,7 +106,7 @@ public class RegistrationTest {
     }
 
     @Test
-    public void deregister_cancel_multiple_pending_request() throws InterruptedException {
+    public void deregister_cancel_multiple_pending_request() throws InterruptedException, LinkParseException {
         // Check client is not registered
         helper.assertClientNotRegisterered();
 
@@ -248,7 +249,7 @@ public class RegistrationTest {
     }
 
     @Test
-    public void register_with_additional_attributes() throws InterruptedException {
+    public void register_with_additional_attributes() throws InterruptedException, LinkParseException {
         // Create client with additional attributes
         Map<String, String> additionalAttributes = new HashMap<>();
         additionalAttributes.put("key1", "value1");

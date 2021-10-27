@@ -29,6 +29,7 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.californium.ObserveUtil;
 import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -140,7 +141,11 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 throw new InvalidResponseException("Client [%s] returned unexpected content format [%s] for [%s]",
                         clientEndpoint, coapResponse.getOptions().getContentFormat(), request);
             } else {
-                links = linkParser.parse(coapResponse.getPayload());
+                try {
+                    links = linkParser.parse(coapResponse.getPayload());
+                } catch (LinkParseException e) {
+                    throw new IllegalArgumentException(e);
+                }
             }
             lwM2mresponse = new DiscoverResponse(ResponseCode.CONTENT, links, null, coapResponse);
         } else {
@@ -358,7 +363,11 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 throw new InvalidResponseException("Client [%s] returned unexpected content format [%s] for [%s]",
                         clientEndpoint, coapResponse.getOptions().getContentFormat(), request);
             } else {
-                links = linkParser.parse(coapResponse.getPayload());
+                try {
+                    links = linkParser.parse(coapResponse.getPayload());
+                } catch (LinkParseException e) {
+                    throw new IllegalArgumentException(e);
+                }
             }
             lwM2mresponse = new BootstrapDiscoverResponse(ResponseCode.CONTENT, links, null, coapResponse);
         } else {

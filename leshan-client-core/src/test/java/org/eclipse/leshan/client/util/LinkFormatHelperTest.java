@@ -37,6 +37,7 @@ import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.link.DefaultLinkParser;
 import org.eclipse.leshan.core.link.DefaultLinkSerializer;
 import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.model.ObjectLoader;
@@ -158,7 +159,7 @@ public class LinkFormatHelperTest {
     }
 
     @Test
-    public void encode_1_content_format() {
+    public void encode_1_content_format() throws LinkParseException {
         List<LwM2mObjectEnabler> objectEnablers = new ArrayList<>();
         Map<Integer, LwM2mInstanceEnabler> instancesMap = Collections.emptyMap();
         objectEnablers.add(
@@ -170,7 +171,7 @@ public class LinkFormatHelperTest {
     }
 
     @Test
-    public void encode_several_content_format() {
+    public void encode_several_content_format() throws LinkParseException {
         List<LwM2mObjectEnabler> objectEnablers = new ArrayList<>();
         Map<Integer, LwM2mInstanceEnabler> instancesMap = Collections.emptyMap();
         objectEnablers.add(

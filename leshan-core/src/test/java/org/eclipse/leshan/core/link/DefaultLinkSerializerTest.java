@@ -63,7 +63,7 @@ public class DefaultLinkSerializerTest {
     }
 
     @Test
-    public void serialise_then_parse_with_severals_attributes() {
+    public void serialise_then_parse_with_severals_attributes() throws LinkParseException {
         HashMap<String, Object> attributesObj1 = new HashMap<>();
         attributesObj1.put("number1", 1);
         attributesObj1.put("number2", 1);
@@ -82,7 +82,7 @@ public class DefaultLinkSerializerTest {
     }
 
     @Test
-    public void parse_then_serialise_with_rt_attribute() {
+    public void parse_then_serialise_with_rt_attribute() throws LinkParseException {
         String input = "</lwm2m>;rt=\"oma.lwm2m\",</lwm2m/1/101>,</lwm2m/1/102>,</lwm2m/2/0>";
         Link[] objs = parser.parse(input.getBytes());
         String output = serializer.serialize(objs);

@@ -50,7 +50,7 @@ public class DefaultLinkParser implements LinkParser {
      * @return an array of {@code Link}
      */
     @Override
-    public Link[] parse(byte[] bytes) {
+    public Link[] parse(byte[] bytes) throws LinkParseException {
         if (bytes == null || bytes.length == 0) {
             return new Link[] {};
         }
@@ -83,7 +83,7 @@ public class DefaultLinkParser implements LinkParser {
      * }
      * </pre>
      */
-    protected Link parseLinkValue(String linkValue) {
+    protected Link parseLinkValue(String linkValue) throws LinkParseException {
         List<String> parts = splitIgnoringEscaped(linkValue, ';');
 
         String uriReferenceDecorated = parts.get(0);
@@ -104,7 +104,7 @@ public class DefaultLinkParser implements LinkParser {
      *
      * @param uriReferenceDecorated URI-Reference with extra {@code "<"} and {@code ">"} tags.
      */
-    protected void validateUriReferenceDecorated(String uriReferenceDecorated) {
+    protected void validateUriReferenceDecorated(String uriReferenceDecorated) throws LinkParseException {
         if (uriReferenceDecorated.length() <= 2) {
             throw new LinkParseException("URI-Reference [%s] is too short", uriReferenceDecorated);
         }
@@ -127,7 +127,8 @@ public class DefaultLinkParser implements LinkParser {
      * }
      * </pre>
      */
-    private void parseLinkExtension(List<String> parts, Map<String, LinkParamValue> linkParams, int i) {
+    private void parseLinkExtension(List<String> parts, Map<String, LinkParamValue> linkParams, int i)
+            throws LinkParseException {
         String linkExtension = parts.get(i);
         String[] attParts = linkExtension.split("=", 2);
 
@@ -161,7 +162,7 @@ public class DefaultLinkParser implements LinkParser {
      * }
      * </pre>
      */
-    protected static void validateParmname(String parmname) {
+    protected static void validateParmname(String parmname) throws LinkParseException {
         if (!parnamePattern.matcher(parmname).matches()) {
             throw new LinkParseException("invalid parmname [%s]", parmname);
         }
@@ -176,7 +177,7 @@ public class DefaultLinkParser implements LinkParser {
      * }
      * </pre>
      */
-    protected void validateLinkExtensionValue(String value) {
+    protected void validateLinkExtensionValue(String value) throws LinkParseException {
         if (value.length() == 0) {
             throw new LinkParseException("invalid parmname value [%s] : no value passed", value);
         }
@@ -200,7 +201,7 @@ public class DefaultLinkParser implements LinkParser {
      * }
      * </pre>
      */
-    protected void validateQuotedString(String value) {
+    protected void validateQuotedString(String value) throws LinkParseException {
         value = removeEscapedChars(value);
         if (value.charAt(value.length() - 1) != '\"') {
             throw new LinkParseException("invalid quoted-string [%s]", value);
@@ -219,7 +220,7 @@ public class DefaultLinkParser implements LinkParser {
      *                    / "}" / "~"
      * </pre>
      */
-    protected void validatePtoken(String value) {
+    protected void validatePtoken(String value) throws LinkParseException {
         if (!ptokenPattern.matcher(value).matches()) {
             throw new LinkParseException("invalid ptoken [%s]", value);
         }
@@ -239,7 +240,7 @@ public class DefaultLinkParser implements LinkParser {
      * }
      * </pre>
      */
-    private void validateUriReference(String uriReference) {
+    private void validateUriReference(String uriReference) throws LinkParseException {
         if (uriReference.length() > 0) {
             if (uriReference.charAt(0) != '/') {
                 throw new LinkParseException("URI-Reference [%s] should begins with \"/\"", uriReference);
@@ -278,7 +279,7 @@ public class DefaultLinkParser implements LinkParser {
      * }
      * </pre>
      */
-    private void validateUriSegment(String segment) {
+    private void validateUriSegment(String segment) throws LinkParseException {
         if (!uriSegmentPattern.matcher(segment).matches()) {
             throw new LinkParseException("invalid segment: [%s]", segment);
         }

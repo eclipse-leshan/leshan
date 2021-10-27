@@ -74,7 +74,7 @@ public class LinkParserValidationTest {
     public void parse_invalid_formats() {
         assertThrows(LinkParseException.class, new ThrowingRunnable() {
             @Override
-            public void run() {
+            public void run() throws LinkParseException {
                 parser.parse(linkValueList.getBytes());
             }
         });

@@ -20,6 +20,7 @@ package org.eclipse.leshan.integration.tests;
 import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.linkParser;
 import static org.junit.Assert.*;
 
+import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.integration.tests.util.QueueModeIntegrationTestHelper;
@@ -48,7 +49,7 @@ public class QueueModeTest {
     }
 
     @Test
-    public void awake_sleeping_awake_sleeping() {
+    public void awake_sleeping_awake_sleeping() throws LinkParseException {
         // Check client is not registered
         queueModeHelper.assertClientNotRegisterered();
 

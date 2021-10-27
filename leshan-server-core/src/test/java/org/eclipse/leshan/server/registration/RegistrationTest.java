@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.leshan.core.link.DefaultLinkParser;
+import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -37,7 +38,7 @@ public class RegistrationTest {
     private final LinkParser linkParser = new DefaultLinkParser();
 
     @Test
-    public void test_object_links_without_version_nor_rootpath() {
+    public void test_object_links_without_version_nor_rootpath() throws LinkParseException {
         Registration reg = given_a_registration_with_object_link_like("</1/0>,</3/0>");
 
         // check root path
@@ -56,7 +57,7 @@ public class RegistrationTest {
     }
 
     @Test
-    public void test_object_links_with_ct_but_with_rt() {
+    public void test_object_links_with_ct_but_with_rt() throws LinkParseException {
         Registration reg = given_a_registration_with_object_link_like("</>;ct=\"0 42 11543\",</1/0>,</3/0>");
 
         // check root path
@@ -81,7 +82,7 @@ public class RegistrationTest {
     }
 
     @Test
-    public void test_object_links_with_ct_with_1_content_format_with_quote() {
+    public void test_object_links_with_ct_with_1_content_format_with_quote() throws LinkParseException {
         Registration reg = given_a_registration_with_object_link_like("</>;ct=\"42\",</1/0>,</3/0>");
 
         // check root path
@@ -105,7 +106,7 @@ public class RegistrationTest {
     }
 
     @Test
-    public void test_object_links_with_ct_with_1_content_format_without_quote() {
+    public void test_object_links_with_ct_with_1_content_format_without_quote() throws LinkParseException {
         Registration reg = given_a_registration_with_object_link_like("</>;ct=42,</1/0>,</3/0>");
 
         // check root path
@@ -129,7 +130,7 @@ public class RegistrationTest {
     }
 
     @Test
-    public void test_object_links_with_default_rootpath() {
+    public void test_object_links_with_default_rootpath() throws LinkParseException {
         Registration reg = given_a_registration_with_object_link_like(
                 "</>;rt=\"oma.lwm2m\";ct=\"0 42 11543\",</1/0>,</3/0>");
 
@@ -155,7 +156,7 @@ public class RegistrationTest {
     }
 
     @Test
-    public void test_object_links_with_rootpath() {
+    public void test_object_links_with_rootpath() throws LinkParseException {
         Registration reg = given_a_registration_with_object_link_like("</root>;rt=\"oma.lwm2m\",</root/1/0>,</3/0>");
 
         // check root path
@@ -174,7 +175,7 @@ public class RegistrationTest {
     }
 
     @Test
-    public void test_object_links_with_unquoted_rootpath() {
+    public void test_object_links_with_unquoted_rootpath() throws LinkParseException {
         Registration reg = given_a_registration_with_object_link_like("</root>;rt=oma.lwm2m,</root/1/0>,</3/0>");
 
         // check root path
@@ -193,7 +194,7 @@ public class RegistrationTest {
     }
 
     @Test
-    public void test_object_links_with_version() {
+    public void test_object_links_with_version() throws LinkParseException {
         Registration reg = given_a_registration_with_object_link_like("</1/0>,</3>;ver=\"1.1\",</3/0>");
 
         // check root path
@@ -212,7 +213,7 @@ public class RegistrationTest {
     }
 
     @Test
-    public void test_object_links_with_text_in_not_lwm2m_path() {
+    public void test_object_links_with_text_in_not_lwm2m_path() throws LinkParseException {
         Registration reg = given_a_registration_with_object_link_like(
                 "</root>;rt=\"oma.lwm2m\",</text>,</1/text/0/in/path>,</2/O/test/in/path>,</root/3/0>;ver=\"1.1\",</root/4/0/0/>");
 
@@ -230,13 +231,13 @@ public class RegistrationTest {
         assertTrue(availableInstances.containsAll(Arrays.asList(new LwM2mPath(3, 0))));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void test_object_links_with_text_in_lwm2m_path() {
+    @Test(expected = LinkParseException.class)
+    public void test_object_links_with_text_in_lwm2m_path() throws LinkParseException {
         given_a_registration_with_object_link_like(
                 "<text>,</1/text/0/in/path>,empty,</2/O/test/in/path>,</3/0>;ver=\"1.1\",</4/0/0/>");
     }
 
-    private Registration given_a_registration_with_object_link_like(String objectLinks) {
+    private Registration given_a_registration_with_object_link_like(String objectLinks) throws LinkParseException {
         Builder builder = new Registration.Builder("id", "endpoint",
                 Identity.unsecure(InetSocketAddress.createUnresolved("localhost", 0)));
         builder.extractDataFromObjectLink(true);

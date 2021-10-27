@@ -3,7 +3,7 @@ package org.eclipse.leshan.core.link;
 /**
  * Exception to throw if CoRE Link parsing fails.
  */
-public class LinkParseException extends IllegalArgumentException {
+public class LinkParseException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
