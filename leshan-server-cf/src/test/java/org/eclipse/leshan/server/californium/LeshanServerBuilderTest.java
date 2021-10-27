@@ -122,7 +122,7 @@ public class LeshanServerBuilderTest {
     @Test
     public void create_server_without_psk_cipher() {
         Configuration coapConfiguration = LeshanServerBuilder.createDefaultCoapConfiguration();
-        coapConfiguration.setList(DtlsConfig.DTLS_CIPHER_SUITES, CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8);
+        coapConfiguration.setAsList(DtlsConfig.DTLS_CIPHER_SUITES, CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8);
         builder.setCoapConfig(coapConfiguration);
         builder.setPrivateKey(privateKey);
         builder.setPublicKey(publicKey);

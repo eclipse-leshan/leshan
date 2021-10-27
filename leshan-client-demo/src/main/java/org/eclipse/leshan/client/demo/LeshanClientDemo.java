@@ -208,7 +208,7 @@ public class LeshanClientDemo {
         dtlsConfig.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, !cli.dtls.supportDeprecatedCiphers);
         dtlsConfig.set(DtlsConfig.DTLS_CONNECTION_ID_LENGTH, cli.dtls.cid);
         if (cli.dtls.ciphers != null) {
-            dtlsConfig.setSupportedCipherSuites(cli.dtls.ciphers);
+            dtlsConfig.set(DtlsConfig.DTLS_CIPHER_SUITES, cli.dtls.ciphers);
         }
 
         // Configure Registration Engine

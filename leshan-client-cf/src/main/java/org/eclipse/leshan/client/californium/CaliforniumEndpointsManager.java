@@ -393,6 +393,6 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                 filteredCiphers.add(cipher);
             }
         }
-        dtlsConfigurationBuilder.setSupportedCipherSuites(filteredCiphers);
+        dtlsConfigurationBuilder.set(DtlsConfig.DTLS_CIPHER_SUITES, filteredCiphers);
     }
 }
