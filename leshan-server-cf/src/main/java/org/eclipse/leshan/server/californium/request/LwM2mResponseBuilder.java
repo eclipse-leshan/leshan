@@ -144,7 +144,9 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 try {
                     links = linkParser.parse(coapResponse.getPayload());
                 } catch (LinkParseException e) {
-                    throw new IllegalArgumentException(e);
+                    throw new InvalidResponseException(e,
+                            "Unable to decode response payload of request [%s] from client [%s]", request,
+                            clientEndpoint);
                 }
             }
             lwM2mresponse = new DiscoverResponse(ResponseCode.CONTENT, links, null, coapResponse);
@@ -366,7 +368,9 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 try {
                     links = linkParser.parse(coapResponse.getPayload());
                 } catch (LinkParseException e) {
-                    throw new IllegalArgumentException(e);
+                    throw new InvalidResponseException(e,
+                            "Unable to decode response payload of request [%s] from client [%s]", request,
+                            clientEndpoint);
                 }
             }
             lwM2mresponse = new BootstrapDiscoverResponse(ResponseCode.CONTENT, links, null, coapResponse);

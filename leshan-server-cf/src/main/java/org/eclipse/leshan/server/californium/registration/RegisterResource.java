@@ -145,7 +145,8 @@ public class RegisterResource extends LwM2mCoapResource {
         try {
             objectLinks = linkParser.parse(request.getPayload());
         } catch (LinkParseException e) {
-            throw new IllegalArgumentException(e);
+            handleInvalidRequest(exchange.advanced(), e.getMessage() != null ? e.getMessage() : "Invalid Links", e);
+            return;
         }
 
         Map<String, String> additionalParams = new HashMap<>();
@@ -223,7 +224,8 @@ public class RegisterResource extends LwM2mCoapResource {
             try {
                 objectLinks = linkParser.parse(request.getPayload());
             } catch (LinkParseException e) {
-                throw new IllegalArgumentException(e);
+                handleInvalidRequest(exchange.advanced(), e.getMessage() != null ? e.getMessage() : "Invalid Links", e);
+                return;
             }
         }
         Request coapRequest = exchange.advanced().getRequest();
