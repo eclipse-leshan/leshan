@@ -18,6 +18,7 @@ package org.eclipse.leshan.server.demo.servlet.json;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -79,6 +80,9 @@ public class JacksonRegistrationSerializer extends StdSerializer<Registration> {
     }
 
     private List<Map<String, Object>> serializeLinks(Link[] links) {
+        if (links == null)
+            return Collections.emptyList();
+
         List<Map<String, Object>> jlinks = new ArrayList<>(links.length);
         for (Link link : links) {
             Map<String, Object> jlink = new HashMap<>();
