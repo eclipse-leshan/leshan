@@ -164,8 +164,19 @@ class Store {
    * @param {String} path path to the instance e.g. /3/0
    * @param {Array} resources Array of resources (example of resource : {id:0, value:"myvalue"})
    * @param {Boolean} supposed true means the value is supposed (not really send by the client)
+   * @param {Boolean} update true if we should just update some resource of the instance OR
+   *                         false if it should replace the whole instance (deleting all previous value).
    */
-  newInstanceValue(endpoint, path, resources, supposed = false) {
+  newInstanceValue(
+    endpoint,
+    path,
+    resources,
+    supposed = false,
+    update = false
+  ) {
+    if (!update) {
+      this.removeInstanceValue(endpoint, path);
+    }
     resources.forEach((res) => {
       this.newResourceValue(endpoint, path + "/" + res.id, res, supposed);
     });

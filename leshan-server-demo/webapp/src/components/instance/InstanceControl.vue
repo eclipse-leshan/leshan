@@ -152,7 +152,8 @@ export default {
               this.endpoint,
               this.path,
               data.resources,
-              true
+              true,
+              !replace
             );
           }
         })
