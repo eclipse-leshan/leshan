@@ -180,7 +180,7 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
                         changingResources.add(getResourcePath(newResource.getId()));
                     }
                     LwM2mResource previous = resources.put(newResource.getId(), newResource);
-                    if (previous.isMultiInstances()) {
+                    if (previous != null && previous.isMultiInstances()) {
                         for (Integer instanceID : previous.getInstances().keySet()) {
                             changingResources.add(getResourceInstancePath(previous.getId(), instanceID));
                         }
