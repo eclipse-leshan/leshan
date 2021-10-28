@@ -183,13 +183,30 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
         if (replace) {
             // REPLACE
             for (ResourceModel resourceModel : model.resources.values()) {
-                if (!identity.isLwm2mServer() || resourceModel.operations.isWritable()) {
+                if (identity.isSystem() || identity.isLwm2mBootstrapServer()) {
+                    // For request comes from System or Bootstrap server we handle all resources.
                     LwM2mResource writeResource = resourcesToWrite.remove(resourceModel.id);
                     if (null != writeResource) {
                         write(identity, true, resourceModel.id, writeResource);
                     } else {
                         reset(resourceModel.id);
                     }
+
+                } else if (identity.isLwm2mServer()) {
+                    if (resourceModel.operations.isWritable()) {
+                        // For writable resource, Write resource if there something to write, if not reset value
+                        LwM2mResource writeResource = resourcesToWrite.remove(resourceModel.id);
+                        if (null != writeResource) {
+                            write(identity, true, resourceModel.id, writeResource);
+                        } else {
+                            reset(resourceModel.id);
+                        }
+                    } else if (resourceModel.operations.isReadable()) {
+                        // For readable value, just reset value
+                        reset(resourceModel.id);
+                    }
+                } else {
+                    throw new IllegalStateException("Unsupported type of server identity " + identity);
                 }
             }
         }
