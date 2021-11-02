@@ -14,7 +14,7 @@
   <div>
     <v-data-table
       dense
-      :loading="loading"
+      v-if="!loading"
       :headers="headers"
       :items="registrations"
       item-key="endpoint"
