@@ -11,7 +11,7 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
   ----------------------------------------------------------------------------->
 <template>
-  <v-app-bar :dark="true" flat dense max-height="48">
+  <v-app-bar dark flat dense max-height="48">
     <v-toolbar-title v-if="$vuetify.breakpoint.smAndUp">
       <!-- See more details about why we use "eager" : https://github.com/eclipse/leshan/issues/1134 -->
       <v-img
