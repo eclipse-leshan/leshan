@@ -11,8 +11,8 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
   ----------------------------------------------------------------------------->
 <template>
-  <v-app-bar :dark="true" flat dense max-height="48">
-    <v-toolbar-title>
+  <v-app-bar dark="true" flat dense max-height="48">
+    <v-toolbar-title v-if="$vuetify.breakpoint.smAndUp">
       <!-- See more details about why we use "eager" : https://github.com/eclipse/leshan/issues/1134 -->
       <v-img
         src="@/assets/image/logo.png"
@@ -23,15 +23,18 @@
     </v-toolbar-title>
 
     <v-spacer></v-spacer>
-    <v-tabs right>
+    <v-tabs
+      :right="$vuetify.breakpoint.smAndUp"
+      :centered="!$vuetify.breakpoint.smAndUp"
+    >
       <v-tab
         v-for="page in pages"
         :key="page.title"
         fixed-tabs
         :to="page.route"
       >
-        <v-icon class="pr-2">{{ page.icon }}</v-icon>
-        <span v-if="$vuetify.breakpoint.smAndUp">
+        <v-icon class="pr-2">{{ page.icon }}</v-icon
+        ><span v-if="$vuetify.breakpoint.smAndUp">
           {{ page.title }}
         </span></v-tab
       >
