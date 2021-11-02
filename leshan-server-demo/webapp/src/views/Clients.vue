@@ -22,6 +22,8 @@
       class="elevation-0 fill-height ma-3"
       @click:row="openLink"
       :search="search"
+      sort-by="registrationDate"
+      sort-desc
     >
       <template v-slot:top>
         <v-toolbar flat>
