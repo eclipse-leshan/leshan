@@ -12,17 +12,25 @@
   ----------------------------------------------------------------------------->
 <template>
   <v-app-bar :dark="true" flat dense max-height="48">
-    <v-toolbar-title v-if="$vuetify.breakpoint.smAndUp"
-      ><v-img src="@/assets/image/logo.png" max-height="32" contain></v-img>
+    <v-toolbar-title v-if="$vuetify.breakpoint.smAndUp">
+      <!-- See more details about why we use "eager" : https://github.com/eclipse/leshan/issues/1134 -->
+      <v-img
+        src="@/assets/image/logo.png"
+        max-height="32"
+        eager
+        contain
+      ></v-img>
     </v-toolbar-title>
 
     <v-spacer></v-spacer>
-    <v-tabs :right="$vuetify.breakpoint.smAndUp" :centered="!$vuetify.breakpoint.smAndUp">
+    <v-tabs
+      :right="$vuetify.breakpoint.smAndUp"
+      :centered="!$vuetify.breakpoint.smAndUp"
+    >
       <v-tab
         v-for="page in pages"
         :key="page.title"
         fixed-tabs
-        router
         :to="page.route"
       >
         <v-icon class="pr-2">{{ page.icon }}</v-icon
