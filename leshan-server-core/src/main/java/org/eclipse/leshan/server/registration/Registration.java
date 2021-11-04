@@ -709,24 +709,19 @@ public class Registration {
         private void addSupportedObject(Link link, LwM2mPath path) {
             // extract object id and version
             int objectId = path.getObjectId();
-            LinkParamValue version = link.getLinkParams().get(Attribute.OBJECT_VERSION);
+            LinkParamValue versionParamValue = link.getLinkParams().get(Attribute.OBJECT_VERSION);
 
-            String currentVersion = supportedObjects.get(objectId);
+            if (versionParamValue != null) {
+                // if there is a version attribute then use it as version for this object
 
-            // store it in map
-            if (currentVersion == null) {
-                // we never find version for this object add it
-                if (version != null) {
-                    // un-quote version (see https://github.com/eclipse/leshan/issues/732)
-                    supportedObjects.put(objectId, version.getUnquoted());
-                } else {
-                    supportedObjects.put(objectId, ObjectModel.DEFAULT_VERSION);
-                }
+                // un-quote version (see https://github.com/eclipse/leshan/issues/732)
+                supportedObjects.put(objectId, versionParamValue.getUnquoted());
             } else {
-                // if version is already set, we override it only if new version is not DEFAULT_VERSION
-                if (version != null && !version.equals(ObjectModel.DEFAULT_VERSION)) {
-                    // un-quote version (see https://github.com/eclipse/leshan/issues/732)
-                    supportedObjects.put(objectId, version.getUnquoted());
+                // there is no version attribute attached.
+                // In this case we use the DEFAULT_VERSION only if this object stored as supported object.
+                String currentVersion = supportedObjects.get(objectId);
+                if (currentVersion == null) {
+                    supportedObjects.put(objectId, ObjectModel.DEFAULT_VERSION);
                 }
             }
         }
