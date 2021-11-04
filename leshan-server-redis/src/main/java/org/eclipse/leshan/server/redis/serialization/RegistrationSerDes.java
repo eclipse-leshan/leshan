@@ -27,6 +27,7 @@ import java.util.Set;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkParamValue;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.server.registration.Registration;
@@ -97,6 +98,13 @@ public class RegistrationSerDes {
         }
         o.set("suppObjs", so);
 
+        // handle available instances
+        ArrayNode ai = JsonNodeFactory.instance.arrayNode();
+        for (LwM2mPath instance : r.getAvailableInstances()) {
+            ai.add(instance.toString());
+        }
+        o.set("objInstances", ai);
+
         // handle application data
         ObjectNode ad = JsonNodeFactory.instance.objectNode();
         for (Entry<String, String> appData : r.getApplicationData().entrySet()) {
@@ -161,7 +169,7 @@ public class RegistrationSerDes {
         }
         b.objectLinks(linkObjs);
 
-        // additional attributes
+        // parse additional attributes
         Map<String, String> addAttr = new HashMap<>();
         ObjectNode o = (ObjectNode) jObj.get("addAttr");
         for (Iterator<String> it = o.fieldNames(); it.hasNext();) {
@@ -170,10 +178,10 @@ public class RegistrationSerDes {
         }
         b.additionalRegistrationAttributes(addAttr);
 
-        // add supported content format
+        // parse supported content format
         JsonNode ct = jObj.get("ct");
         if (ct == null) {
-            // Backward compatibility : if suppObjs doesn't exist we extract supported object from object link
+            // Backward compatibility : if ct doesn't exist we extract supported content format from object link
             b.extractDataFromObjectLink(true);
         } else {
             Set<ContentFormat> supportedContentFormat = new HashSet<>();
@@ -196,7 +204,20 @@ public class RegistrationSerDes {
             b.supportedObjects(supportedObject);
         }
 
-        // app data
+        // parse available instances
+        JsonNode ai = jObj.get("objInstances");
+        if (ai == null) {
+            // Backward compatibility : if objInstances doesn't exist we extract available instances from object link
+            b.extractDataFromObjectLink(true);
+        } else {
+            Set<LwM2mPath> availableInstances = new HashSet<>();
+            for (JsonNode aiPath : ai) {
+                availableInstances.add(new LwM2mPath(aiPath.asText()));
+            }
+            b.availableInstances(availableInstances);
+        }
+
+        // parse app data
         Map<String, String> appData = new HashMap<>();
         ObjectNode oap = (ObjectNode) jObj.get("appdata");
         for (Iterator<String> it = oap.fieldNames(); it.hasNext();) {

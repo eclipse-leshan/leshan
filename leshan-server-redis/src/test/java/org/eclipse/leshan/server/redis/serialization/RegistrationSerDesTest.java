@@ -46,6 +46,7 @@ public class RegistrationSerDesTest {
                         .supportedContentFormats(ContentFormat.TLV, ContentFormat.TEXT);
 
         builder.registrationDate(new Date(100L));
+        builder.extractDataFromObjectLink(true);
         builder.lastUpdate(new Date(101L));
         Registration r = builder.build();
 
@@ -75,6 +76,7 @@ public class RegistrationSerDesTest {
 
         builder.registrationDate(new Date(100L));
         builder.lastUpdate(new Date(101L));
+        builder.extractDataFromObjectLink(true);
         Registration r = builder.build();
 
         byte[] ser = RegistrationSerDes.bSerialize(r);
