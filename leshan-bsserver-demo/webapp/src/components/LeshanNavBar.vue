@@ -13,28 +13,25 @@
 <template>
   <v-app-bar dark flat dense max-height="48">
     <v-toolbar-title v-if="$vuetify.breakpoint.smAndUp">
-      <!-- See more details about why we use "eager" : https://github.com/eclipse/leshan/issues/1134 -->
-      <v-img
-        src="@/assets/image/logo.png"
-        max-height="32"
-        eager
-        contain
-      ></v-img>
+      <v-img src="@/assets/image/logo.png" max-height="32" contain></v-img>
     </v-toolbar-title>
 
-    <v-spacer></v-spacer>
+    <!-- See more details about why we hide-slider and replace it by custom css (active-class="active") :
+         https://github.com/eclipse/leshan/issues/1134 -->
     <v-tabs
       :right="$vuetify.breakpoint.smAndUp"
-      :centered="!$vuetify.breakpoint.smAndUp"
+      :grow="!$vuetify.breakpoint.smAndUp"
+      hide-slider
     >
       <v-tab
         v-for="page in pages"
         :key="page.title"
         fixed-tabs
         :to="page.route"
+        active-class="active"
       >
-        <v-icon class="pr-2">{{ page.icon }}</v-icon
-        ><span v-if="$vuetify.breakpoint.smAndUp">
+        <v-icon>{{ page.icon }}</v-icon
+        ><span class="pl-2" v-if="$vuetify.breakpoint.smAndUp">
           {{ page.title }}
         </span></v-tab
       >
@@ -55,3 +52,21 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+@keyframes becomeActive {
+  from {
+    border-bottom: 2px solid black;
+  }
+  to {
+    border-bottom: 2px solid white;
+  }
+}
+
+.active {
+  border-spacing: 2px;
+  border-bottom: 2px solid white;
+  animation-name: becomeActive;
+  animation-duration: 500ms;
+}
+</style>
