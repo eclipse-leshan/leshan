@@ -18,8 +18,6 @@ package org.eclipse.leshan.core.attributes;
 
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.leshan.core.util.Validate;
 
@@ -31,74 +29,12 @@ import org.eclipse.leshan.core.util.Validate;
  */
 public class Attribute {
 
-    public static final String DIMENSION = "dim";
-    public static final String OBJECT_VERSION = "ver";
-    public static final String MINIMUM_PERIOD = "pmin";
-    public static final String MAXIMUM_PERIOD = "pmax";
-    public static final String GREATER_THAN = "gt";
-    public static final String LESSER_THAN = "lt";
-    public static final String STEP = "st";
-    public static final String EVALUATE_MINIMUM_PERIOD = "epmin";
-    public static final String EVALUATE_MAXIMUM_PERIOD = "epmax";
-
-    /**
-     * Metadata container for LwM2m attributes
-     */
-    private static class AttributeModel {
-        private final String coRELinkParam;
-        private final Attachment attachment;
-        private final Set<AssignationLevel> assignationLevels;
-        private final AccessMode accessMode;
-        private final Class<?> valueClass;
-
-        private AttributeModel(String coRELinkParam, Attachment attachment, Set<AssignationLevel> assignationLevels,
-                AccessMode accessMode, Class<?> valueClass) {
-            this.coRELinkParam = coRELinkParam;
-            this.attachment = attachment;
-            this.assignationLevels = assignationLevels;
-            this.accessMode = accessMode;
-            this.valueClass = valueClass;
-        }
-    }
-
-    private static Map<String, AttributeModel> modelMap;
-
-    static {
-        modelMap = new HashMap<>();
-        modelMap.put(DIMENSION, new Attribute.AttributeModel(DIMENSION, Attachment.RESOURCE,
-                EnumSet.of(AssignationLevel.RESOURCE), AccessMode.R, Long.class));
-        modelMap.put(OBJECT_VERSION, new Attribute.AttributeModel(OBJECT_VERSION, Attachment.OBJECT,
-                EnumSet.of(AssignationLevel.OBJECT), AccessMode.R, String.class));
-        modelMap.put(MINIMUM_PERIOD,
-                new Attribute.AttributeModel(MINIMUM_PERIOD, Attachment.RESOURCE,
-                        EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE),
-                        AccessMode.RW, Long.class));
-        modelMap.put(MAXIMUM_PERIOD,
-                new Attribute.AttributeModel(MAXIMUM_PERIOD, Attachment.RESOURCE,
-                        EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE),
-                        AccessMode.RW, Long.class));
-        modelMap.put(GREATER_THAN, new AttributeModel(GREATER_THAN, Attachment.RESOURCE,
-                EnumSet.of(AssignationLevel.RESOURCE), AccessMode.RW, Double.class));
-        modelMap.put(LESSER_THAN, new AttributeModel(LESSER_THAN, Attachment.RESOURCE,
-                EnumSet.of(AssignationLevel.RESOURCE), AccessMode.RW, Double.class));
-        modelMap.put(STEP, new AttributeModel(STEP, Attachment.RESOURCE, EnumSet.of(AssignationLevel.RESOURCE),
-                AccessMode.RW, Double.class));
-        modelMap.put(EVALUATE_MINIMUM_PERIOD,
-                new Attribute.AttributeModel(EVALUATE_MINIMUM_PERIOD, Attachment.RESOURCE,
-                        EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE),
-                        AccessMode.RW, Long.class));
-        modelMap.put(EVALUATE_MAXIMUM_PERIOD,
-                new Attribute.AttributeModel(EVALUATE_MAXIMUM_PERIOD, Attachment.RESOURCE,
-                        EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE),
-                        AccessMode.RW, Long.class));
-    }
-
     private final AttributeModel model;
     private final Object value;
 
     public Attribute(String coRELinkParam) {
         Validate.notEmpty(coRELinkParam);
-        this.model = modelMap.get(coRELinkParam);
+        this.model = AttributeModel.get(coRELinkParam);
         if (model == null) {
             throw new IllegalArgumentException(String.format("Unsupported attribute '%s'", coRELinkParam));
         }
@@ -107,7 +43,7 @@ public class Attribute {
 
     public Attribute(String coRELinkParam, Object value) {
         Validate.notEmpty(coRELinkParam);
-        this.model = modelMap.get(coRELinkParam);
+        this.model = AttributeModel.get(coRELinkParam);
         if (model == null) {
             throw new IllegalArgumentException(String.format("Unsupported attribute '%s'", coRELinkParam));
         }
@@ -123,22 +59,22 @@ public class Attribute {
     private Object ensureMatchingValue(AttributeModel model, Object value) {
         // Ensure that the attribute value has the correct type
         // If the value is a string, we make an attempt to convert it
-        Class<?> expectedClass = model.valueClass;
+        Class<?> expectedClass = model.getValueClass();
         if (!expectedClass.equals(value.getClass()) && value instanceof String) {
             if (expectedClass.equals(Long.class)) {
                 return Long.parseLong(value.toString());
             } else if (expectedClass.equals(Double.class)) {
                 return Double.parseDouble(value.toString());
             }
-        } else if (!this.model.valueClass.equals(value.getClass())) {
+        } else if (!this.model.getValueClass().equals(value.getClass())) {
             throw new IllegalArgumentException(String.format("Attribute '%s' must have a value of type %s",
-                    model.coRELinkParam, model.valueClass.getSimpleName()));
+                    model.getCoRELinkParam(), model.getValueClass().getSimpleName()));
         }
         return value;
     }
 
     public String getCoRELinkParam() {
-        return model.coRELinkParam;
+        return model.getCoRELinkParam();
     }
 
     public Object getValue() {
@@ -146,15 +82,15 @@ public class Attribute {
     }
 
     public Attachment getAttachment() {
-        return model.attachment;
+        return model.getAttachment();
     }
 
     public boolean isWritable() {
-        return model.accessMode == AccessMode.W || model.accessMode == AccessMode.RW;
+        return model.getAccessMode() == AccessMode.W || model.getAccessMode() == AccessMode.RW;
     }
 
     public boolean canBeAssignedTo(AssignationLevel assignationLevel) {
-        return model.assignationLevels.contains(assignationLevel);
+        return model.getAssignationLevels().contains(assignationLevel);
     }
 
     @Override

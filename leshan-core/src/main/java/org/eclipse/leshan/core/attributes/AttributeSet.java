@@ -59,15 +59,15 @@ public class AttributeSet {
                         attr.getCoRELinkParam(), assignationLevel.name()));
             }
         }
-        Attribute pmin = attributeMap.get(Attribute.MINIMUM_PERIOD);
-        Attribute pmax = attributeMap.get(Attribute.MAXIMUM_PERIOD);
+        Attribute pmin = attributeMap.get(AttributeModel.MINIMUM_PERIOD);
+        Attribute pmax = attributeMap.get(AttributeModel.MAXIMUM_PERIOD);
         if ((pmin != null) && (pmax != null) && (Long) pmin.getValue() > (Long) pmax.getValue()) {
             throw new IllegalArgumentException(String.format("Cannot write attributes where '%s' > '%s'",
                     pmin.getCoRELinkParam(), pmax.getCoRELinkParam()));
         }
 
-        Attribute epmin = attributeMap.get(Attribute.EVALUATE_MINIMUM_PERIOD);
-        Attribute epmax = attributeMap.get(Attribute.EVALUATE_MAXIMUM_PERIOD);
+        Attribute epmin = attributeMap.get(AttributeModel.EVALUATE_MINIMUM_PERIOD);
+        Attribute epmax = attributeMap.get(AttributeModel.EVALUATE_MAXIMUM_PERIOD);
         if ((epmin != null) && (epmax != null) && (Long) epmin.getValue() > (Long) epmax.getValue()) {
             throw new IllegalArgumentException(String.format("Cannot write attributes where '%s' > '%s'",
                     epmin.getCoRELinkParam(), epmax.getCoRELinkParam()));
