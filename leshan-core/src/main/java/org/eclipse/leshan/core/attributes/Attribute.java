@@ -25,7 +25,7 @@ import org.eclipse.leshan.core.util.Validate;
  * applicable to resources, but it can be assigned on all levels and then inherited by underlying resources.
  */
 public class Attribute {
-    private final AttributeModel model;
+    private final AttributeModel<?> model;
     private final Object value;
 
     public Attribute(String coRELinkParam) {
@@ -52,7 +52,7 @@ public class Attribute {
      * 
      * @return the converted or original value
      */
-    private Object ensureMatchingValue(AttributeModel model, Object value) {
+    private Object ensureMatchingValue(AttributeModel<?> model, Object value) {
         // Ensure that the attribute value has the correct type
         // If the value is a string, we make an attempt to convert it
         Class<?> expectedClass = model.valueClass;
