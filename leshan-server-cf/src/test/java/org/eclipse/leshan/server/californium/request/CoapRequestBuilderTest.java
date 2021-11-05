@@ -28,6 +28,7 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.core.attributes.Attribute;
+import org.eclipse.leshan.core.attributes.AttributeModel;
 import org.eclipse.leshan.core.attributes.AttributeSet;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkParamValue;
@@ -200,8 +201,8 @@ public class CoapRequestBuilderTest {
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
                 reg.getEndpoint(), model, encoder, false, null);
-        AttributeSet attributes = new AttributeSet(new Attribute(Attribute.MINIMUM_PERIOD, 10L),
-                new Attribute(Attribute.MAXIMUM_PERIOD, 100L));
+        AttributeSet attributes = new AttributeSet(new Attribute(AttributeModel.MINIMUM_PERIOD, 10L),
+                new Attribute(AttributeModel.MAXIMUM_PERIOD, 100L));
         WriteAttributesRequest request = new WriteAttributesRequest(3, 0, 14, attributes);
         builder.visit(request);
 
@@ -220,8 +221,8 @@ public class CoapRequestBuilderTest {
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
                 reg.getEndpoint(), model, encoder, false, null);
-        AttributeSet attributes = new AttributeSet(new Attribute(Attribute.MINIMUM_PERIOD),
-                new Attribute(Attribute.MAXIMUM_PERIOD));
+        AttributeSet attributes = new AttributeSet(new Attribute(AttributeModel.MINIMUM_PERIOD),
+                new Attribute(AttributeModel.MAXIMUM_PERIOD));
         WriteAttributesRequest request = new WriteAttributesRequest(3, 0, 14, attributes);
         builder.visit(request);
 

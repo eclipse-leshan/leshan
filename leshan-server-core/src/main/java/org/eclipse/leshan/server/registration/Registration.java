@@ -31,7 +31,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
-import org.eclipse.leshan.core.attributes.Attribute;
+import org.eclipse.leshan.core.attributes.AttributeModel;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkParamValue;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -709,7 +709,7 @@ public class Registration {
         private void addSupportedObject(Link link, LwM2mPath path) {
             // extract object id and version
             int objectId = path.getObjectId();
-            LinkParamValue versionParamValue = link.getLinkParams().get(Attribute.OBJECT_VERSION);
+            LinkParamValue versionParamValue = link.getLinkParams().get(AttributeModel.OBJECT_VERSION);
 
             if (versionParamValue != null) {
                 // if there is a version attribute then use it as version for this object
