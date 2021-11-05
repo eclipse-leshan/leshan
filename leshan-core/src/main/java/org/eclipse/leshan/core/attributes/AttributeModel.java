@@ -25,6 +25,7 @@ import java.util.Set;
  */
 public class AttributeModel<T> {
 
+    // TODO this constant should be deleted replaced by the ones below
     public static final String DIMENSION = "dim";
     public static final String OBJECT_VERSION = "ver";
     public static final String MINIMUM_PERIOD = "pmin";
@@ -34,6 +35,61 @@ public class AttributeModel<T> {
     public static final String STEP = "st";
     public static final String EVALUATE_MINIMUM_PERIOD = "epmin";
     public static final String EVALUATE_MAXIMUM_PERIOD = "epmax";
+
+    // TODO we should reuse the name above waiting, I suffix by _ATTR
+    public static final AttributeModel<Long> DIMENSION_ATTR = new AttributeModel<Long>(//
+            DIMENSION, //
+            Attachment.RESOURCE, //
+            EnumSet.of(AssignationLevel.RESOURCE), //
+            AccessMode.R, //
+            Long.class);
+    public static final AttributeModel<String> OBJECT_VERSION_ATTR = new AttributeModel<String>(//
+            OBJECT_VERSION, //
+            Attachment.OBJECT, //
+            EnumSet.of(AssignationLevel.OBJECT), //
+            AccessMode.R, //
+            String.class);
+    public static final AttributeModel<Long> MINIMUM_PERIOD_ATTR = new AttributeModel<Long>(//
+            MINIMUM_PERIOD, //
+            Attachment.RESOURCE, //
+            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE), //
+            AccessMode.RW, //
+            Long.class);
+    public static final AttributeModel<Long> MAXIMUM_PERIOD_ATTR = new AttributeModel<Long>( //
+            MAXIMUM_PERIOD, //
+            Attachment.RESOURCE, //
+            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE), //
+            AccessMode.RW, Long.class);
+    public static final AttributeModel<Double> GREATER_THAN_ATTR = new AttributeModel<Double>(//
+            GREATER_THAN, //
+            Attachment.RESOURCE, //
+            EnumSet.of(AssignationLevel.RESOURCE), //
+            AccessMode.RW, //
+            Double.class);
+    public static final AttributeModel<Double> LESSER_THAN_ATTR = new AttributeModel<Double>( //
+            LESSER_THAN, //
+            Attachment.RESOURCE, //
+            EnumSet.of(AssignationLevel.RESOURCE), //
+            AccessMode.RW, //
+            Double.class);
+    public static final AttributeModel<Double> STEP_ATTR = new AttributeModel<Double>(//
+            STEP, //
+            Attachment.RESOURCE, //
+            EnumSet.of(AssignationLevel.RESOURCE), //
+            AccessMode.RW, //
+            Double.class);
+    public static final AttributeModel<Long> EVALUATE_MINIMUM_PERIOD_ATTR = new AttributeModel<Long>(//
+            EVALUATE_MINIMUM_PERIOD, //
+            Attachment.RESOURCE, //
+            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE), //
+            AccessMode.RW, //
+            Long.class);
+    public static final AttributeModel<Long> EVALUATE_MAXIMUM_PERIOD_ATTR = new AttributeModel<Long>( //
+            EVALUATE_MAXIMUM_PERIOD, //
+            Attachment.RESOURCE,
+            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE), //
+            AccessMode.RW, //
+            Long.class);
 
     final String coRELinkParam;
     final Attachment attachment;
@@ -54,31 +110,14 @@ public class AttributeModel<T> {
 
     static {
         modelMap = new HashMap<>();
-        modelMap.put(DIMENSION, new AttributeModel<Long>(DIMENSION, Attachment.RESOURCE,
-                EnumSet.of(AssignationLevel.RESOURCE), AccessMode.R, Long.class));
-        modelMap.put(OBJECT_VERSION, new AttributeModel<String>(OBJECT_VERSION, Attachment.OBJECT,
-                EnumSet.of(AssignationLevel.OBJECT), AccessMode.R, String.class));
-        modelMap.put(MINIMUM_PERIOD,
-                new AttributeModel<Long>(MINIMUM_PERIOD, Attachment.RESOURCE,
-                        EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE),
-                        AccessMode.RW, Long.class));
-        modelMap.put(MAXIMUM_PERIOD,
-                new AttributeModel<Long>(MAXIMUM_PERIOD, Attachment.RESOURCE,
-                        EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE),
-                        AccessMode.RW, Long.class));
-        modelMap.put(GREATER_THAN, new AttributeModel<Double>(GREATER_THAN, Attachment.RESOURCE,
-                EnumSet.of(AssignationLevel.RESOURCE), AccessMode.RW, Double.class));
-        modelMap.put(LESSER_THAN, new AttributeModel<Double>(LESSER_THAN, Attachment.RESOURCE,
-                EnumSet.of(AssignationLevel.RESOURCE), AccessMode.RW, Double.class));
-        modelMap.put(STEP, new AttributeModel<Double>(STEP, Attachment.RESOURCE, EnumSet.of(AssignationLevel.RESOURCE),
-                AccessMode.RW, Double.class));
-        modelMap.put(EVALUATE_MINIMUM_PERIOD,
-                new AttributeModel<Long>(EVALUATE_MINIMUM_PERIOD, Attachment.RESOURCE,
-                        EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE),
-                        AccessMode.RW, Long.class));
-        modelMap.put(EVALUATE_MAXIMUM_PERIOD,
-                new AttributeModel<Long>(EVALUATE_MAXIMUM_PERIOD, Attachment.RESOURCE,
-                        EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE),
-                        AccessMode.RW, Long.class));
+        modelMap.put(DIMENSION, DIMENSION_ATTR);
+        modelMap.put(OBJECT_VERSION, OBJECT_VERSION_ATTR);
+        modelMap.put(MINIMUM_PERIOD, MINIMUM_PERIOD_ATTR);
+        modelMap.put(MAXIMUM_PERIOD, MAXIMUM_PERIOD_ATTR);
+        modelMap.put(GREATER_THAN, GREATER_THAN_ATTR);
+        modelMap.put(LESSER_THAN, LESSER_THAN_ATTR);
+        modelMap.put(STEP, STEP_ATTR);
+        modelMap.put(EVALUATE_MINIMUM_PERIOD, EVALUATE_MINIMUM_PERIOD_ATTR);
+        modelMap.put(EVALUATE_MAXIMUM_PERIOD, EVALUATE_MAXIMUM_PERIOD_ATTR);
     }
 }
