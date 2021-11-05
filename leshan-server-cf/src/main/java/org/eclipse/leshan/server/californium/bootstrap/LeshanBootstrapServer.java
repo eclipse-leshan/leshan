@@ -27,7 +27,7 @@ import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
-import org.eclipse.leshan.core.link.LinkParser;
+import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.util.Validate;
@@ -56,7 +56,7 @@ public class LeshanBootstrapServer {
     private final BootstrapSessionDispatcher dispatcher = new BootstrapSessionDispatcher();
 
     private final LwM2mBootstrapRequestSender requestSender;
-    private final LinkParser linkParser;
+    private final LwM2mLinkParser linkParser;
 
     /**
      * /** Initialize a server which will bind to the specified address and port.
@@ -70,11 +70,11 @@ public class LeshanBootstrapServer {
      * @param coapConfig the CoAP {@link Configuration}.
      * @param encoder encode used to encode request payload.
      * @param decoder decoder used to decode response payload.
-     * @param linkParser a parser {@link LinkParser} used to parse a CoRE Link.
+     * @param linkParser a parser {@link LwM2mLinkParser} used to parse a CoRE Link.
      */
     public LeshanBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory,
-            Configuration coapConfig, LwM2mEncoder encoder, LwM2mDecoder decoder, LinkParser linkParser) {
+            Configuration coapConfig, LwM2mEncoder encoder, LwM2mDecoder decoder, LwM2mLinkParser linkParser) {
         this.linkParser = linkParser;
 
         Validate.notNull(bsSessionManager, "session manager must not be null");

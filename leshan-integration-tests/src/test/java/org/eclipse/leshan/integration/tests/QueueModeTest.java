@@ -62,7 +62,7 @@ public class QueueModeTest {
 
         // Check client is well registered
         queueModeHelper.assertClientRegisterered();
-        assertArrayEquals(linkParser.parse(
+        assertArrayEquals(linkParser.parseCoreLinkFormat(
                 "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 11542 11543\",</1>;ver=1.1,</1/0>,</2>,</3>;ver=1.1,</3/0>,</2000/0>"
                         .getBytes()),
                 queueModeHelper.getCurrentRegistration().getObjectLinks());

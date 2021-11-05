@@ -81,7 +81,7 @@ public class LockStepSendTest {
         // Register client
         LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
         Token token = client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1",
-                EnumSet.of(BindingMode.U), null, null, linkParser.parse("</1>,</2>,</3>".getBytes()), null));
+                EnumSet.of(BindingMode.U), null, null, linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().token(token).code(ResponseCode.CREATED).go();
         helper.waitForRegistrationAtServerSide(1);
 

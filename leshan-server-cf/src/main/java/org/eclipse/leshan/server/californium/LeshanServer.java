@@ -33,7 +33,7 @@ import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
 import org.eclipse.leshan.core.californium.CoapResponseCallback;
-import org.eclipse.leshan.core.link.LinkParser;
+import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
@@ -124,7 +124,7 @@ public class LeshanServer {
     /** since 1.1 */
     protected final boolean updateRegistrationOnNotification;
 
-    protected final LinkParser linkParser;
+    protected final LwM2mLinkParser linkParser;
 
     /**
      * Initialize a server which will bind to the specified address and port.
@@ -143,13 +143,13 @@ public class LeshanServer {
      * @param noQueueMode true to disable presenceService.
      * @param awakeTimeProvider to set the client awake time if queue mode is used.
      * @param registrationIdProvider to provide registrationId using for location-path option values on response of
-     * @param linkParser a parser {@link LinkParser} used to parse a CoRE Link.
+     * @param linkParser a parser {@link LwM2mLinkParser} used to parse a CoRE Link.
      */
     public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder, Configuration coapConfig,
             boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
-            RegistrationIdProvider registrationIdProvider, LinkParser linkParser) {
+            RegistrationIdProvider registrationIdProvider, LwM2mLinkParser linkParser) {
         this(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer, modelProvider, encoder,
                 decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider, false, linkParser);
     }
@@ -173,7 +173,7 @@ public class LeshanServer {
      * @param registrationIdProvider to provide registrationId using for location-path option values on response of
      *        Register operation.
      * @param updateRegistrationOnNotification will activate registration update on observe notification.
-     * @param linkParser a parser {@link LinkParser} used to parse a CoRE Link.
+     * @param linkParser a parser {@link LwM2mLinkParser} used to parse a CoRE Link.
      * @since 1.1
      */
     public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
@@ -181,7 +181,7 @@ public class LeshanServer {
             LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder, Configuration coapConfig,
             boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
             RegistrationIdProvider registrationIdProvider, boolean updateRegistrationOnNotification,
-            LinkParser linkParser) {
+            LwM2mLinkParser linkParser) {
         this.linkParser = linkParser;
 
         Validate.notNull(registrationStore, "registration store cannot be null");

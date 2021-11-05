@@ -31,9 +31,14 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
-import org.eclipse.leshan.core.attributes.Attribute;
+import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.link.Link;
-import org.eclipse.leshan.core.link.LinkParamValue;
+import org.eclipse.leshan.core.link.attributes.Attributes;
+import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
+import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
+import org.eclipse.leshan.core.link.lwm2m.MixedLwM2mLink;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -42,15 +47,11 @@ import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.util.StringUtils;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.security.Authorizer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * An immutable structure which represent a LW-M2M client registration on the server
  */
 public class Registration {
-
-    private static final Logger LOG = LoggerFactory.getLogger(Registration.class);
 
     private static final long DEFAULT_LIFETIME_IN_SEC = 86400L;
 
@@ -84,7 +85,7 @@ public class Registration {
     private final Set<ContentFormat> supportedContentFormats;
 
     // All supported object (object id => version)
-    private final Map<Integer, String> supportedObjects;
+    private final Map<Integer, Version> supportedObjects;
 
     // All available instances
     private final Set<LwM2mPath> availableInstances;
@@ -327,14 +328,14 @@ public class Registration {
      * @return the supported version of the object with the id {@code objectid}. If the object is not supported return
      *         {@code null}
      */
-    public String getSupportedVersion(Integer objectid) {
+    public Version getSupportedVersion(Integer objectid) {
         return getSupportedObject().get(objectid);
     }
 
     /**
      * @return a map from {@code objectId} {@literal =>} {@code supportedVersion} for each supported objects. supported.
      */
-    public Map<Integer, String> getSupportedObject() {
+    public Map<Integer, Version> getSupportedObject() {
         return supportedObjects;
     }
 
@@ -485,7 +486,7 @@ public class Registration {
         private Link[] objectLinks;
         private String rootPath;
         private Set<ContentFormat> supportedContentFormats;
-        private Map<Integer, String> supportedObjects;
+        private Map<Integer, Version> supportedObjects;
         private Set<LwM2mPath> availableInstances;
         private Map<String, String> additionalRegistrationAttributes;
         private Map<String, String> applicationData;
@@ -593,7 +594,7 @@ public class Registration {
             return this;
         }
 
-        public Builder supportedObjects(Map<Integer, String> supportedObjects) {
+        public Builder supportedObjects(Map<Integer, Version> supportedObjects) {
             this.supportedObjects = supportedObjects;
             return this;
         }
@@ -615,21 +616,39 @@ public class Registration {
 
         private void extractDataFromObjectLinks() {
             if (objectLinks != null) {
-                // Define default RootPath;
-                rootPath = "/";
 
-                // Parse object link to extract root path
+                // Search LWM2M root link
+                Link root = null;
                 for (Link link : objectLinks) {
-                    LinkParamValue rt = null;
                     if (link != null) {
-                        rt = link.getLinkParams().get("rt");
-                    }
-                    if (rt != null && "oma.lwm2m".equals(rt.getUnquoted())) {
-                        rootPath = link.getUriReference();
-                        if (!rootPath.endsWith("/")) {
-                            rootPath = rootPath + "/";
+                        ResourceTypeAttribute rt = link.getAttributes().get(Attributes.RT);
+                        if (rt != null && rt.getValue().contains("oma.lwm2m")) {
+                            // this link has the ResourceType oma.lwm2m this is the LWM2M root for sure.
+                            root = link;
+                            break;
+                        } else if (link.getUriReference().equals("/")) {
+                            // this link refer to "/", so could be the LWM2M root link unless another one has the
+                            // ResourceType oma.lwm2m, so we continue to search.
+                            root = link;
                         }
-                        break;
+                    }
+                }
+
+                // extract root path
+                if (root != null) {
+                    rootPath = root.getUriReference();
+                    if (!rootPath.endsWith("/")) {
+                        rootPath = rootPath + "/";
+                    }
+                } else {
+                    rootPath = "/";
+                }
+
+                // extract supported Content format in root link
+                if (root != null) {
+                    ContentFormatAttribute ctValue = root.getAttributes().get(Attributes.CT);
+                    if (ctValue != null) {
+                        supportedContentFormats = extractContentFormat(ctValue);
                     }
                 }
 
@@ -637,65 +656,25 @@ public class Registration {
                 supportedObjects = new HashMap<>();
                 availableInstances = new HashSet<>();
                 for (Link link : objectLinks) {
-                    if (link != null) {
-                        // search supported Content format in root link
-                        if (rootPath.equals(link.getUriReference())) {
-                            LinkParamValue ctValue = link.getLinkParams().get("ct");
-                            if (ctValue != null) {
-                                supportedContentFormats = extractContentFormat(ctValue);
-                            }
-                        } else {
-                            LwM2mPath path = LwM2mPath.parse(link.getUriReference(), rootPath);
-                            if (path != null) {
-                                // add supported objects
-                                if (path.isObject()) {
-                                    addSupportedObject(link, path);
-                                } else if (path.isObjectInstance()) {
-                                    addSupportedObject(link, path);
-                                    availableInstances.add(path);
-                                }
-                            }
+                    if (link instanceof MixedLwM2mLink) {
+                        LwM2mPath path = ((MixedLwM2mLink) link).getPath();
+                        // add supported objects
+                        if (path.isObject()) {
+                            addSupportedObject(link, path);
+                        } else if (path.isObjectInstance()) {
+                            addSupportedObject(link, path);
+                            availableInstances.add(path);
                         }
                     }
                 }
             }
         }
 
-        private Set<ContentFormat> extractContentFormat(LinkParamValue ctValue) {
+        private Set<ContentFormat> extractContentFormat(ContentFormatAttribute ctValue) {
             Set<ContentFormat> supportedContentFormats = new HashSet<>();
 
             // add content format from ct attributes
-            if (!ctValue.toString().startsWith("\"")) {
-                try {
-                    supportedContentFormats.add(ContentFormat.fromCode(ctValue.toString()));
-                } catch (NumberFormatException e) {
-                    LOG.warn(
-                            "Invalid supported Content format for ct attributes for registration {} of client {} :  [{}] is not an Integer",
-                            registrationId, endpoint, ctValue);
-                }
-            } else {
-                if (!ctValue.toString().endsWith("\"")) {
-                    LOG.warn("Invalid ct value [{}] attributes for registration {} of client {} : end quote is missing",
-                            ctValue, registrationId, endpoint);
-                } else {
-                    String[] formats = ctValue.getUnquoted().split(" ");
-                    for (String codeAsString : formats) {
-                        try {
-                            ContentFormat contentformat = ContentFormat.fromCode(codeAsString);
-                            if (supportedContentFormats.contains(contentformat)) {
-                                LOG.warn(
-                                        "Duplicate Content format [{}] in ct={} attributes for registration {} of client {} ",
-                                        codeAsString, ctValue, registrationId, endpoint);
-                            }
-                            supportedContentFormats.add(contentformat);
-                        } catch (NumberFormatException e) {
-                            LOG.warn(
-                                    "Invalid supported Content format in ct={} attributes for registration {} of client {}: [{}] is not an Integer",
-                                    ctValue, registrationId, endpoint, codeAsString);
-                        }
-                    }
-                }
-            }
+            supportedContentFormats.addAll(ctValue.getValue());
 
             // add mandatory content format
             for (ContentFormat format : ContentFormat.knownContentFormat) {
@@ -709,19 +688,17 @@ public class Registration {
         private void addSupportedObject(Link link, LwM2mPath path) {
             // extract object id and version
             int objectId = path.getObjectId();
-            LinkParamValue versionParamValue = link.getLinkParams().get(Attribute.OBJECT_VERSION);
+            LwM2mAttribute<Version> versionParamValue = link.getAttributes().get(LwM2mAttributes.OBJECT_VERSION);
 
             if (versionParamValue != null) {
                 // if there is a version attribute then use it as version for this object
-
-                // un-quote version (see https://github.com/eclipse/leshan/issues/732)
-                supportedObjects.put(objectId, versionParamValue.getUnquoted());
+                supportedObjects.put(objectId, versionParamValue.getValue());
             } else {
                 // there is no version attribute attached.
                 // In this case we use the DEFAULT_VERSION only if this object stored as supported object.
-                String currentVersion = supportedObjects.get(objectId);
+                Version currentVersion = supportedObjects.get(objectId);
                 if (currentVersion == null) {
-                    supportedObjects.put(objectId, ObjectModel.DEFAULT_VERSION);
+                    supportedObjects.put(objectId, new Version(ObjectModel.DEFAULT_VERSION));
                 }
             }
         }

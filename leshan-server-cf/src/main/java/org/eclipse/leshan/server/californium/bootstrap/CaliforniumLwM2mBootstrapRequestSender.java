@@ -18,7 +18,7 @@ package org.eclipse.leshan.server.californium.bootstrap;
 
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.core.Destroyable;
-import org.eclipse.leshan.core.link.LinkParser;
+import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
@@ -52,10 +52,10 @@ public class CaliforniumLwM2mBootstrapRequestSender implements LwM2mBootstrapReq
      * @param nonSecureEndpoint The endpoint used to send coap request.
      * @param encoder The {@link LwM2mEncoder} used to encode {@link LwM2mNode}.
      * @param decoder The {@link LwM2mDecoder} used to encode {@link LwM2mNode}.
-     * @param linkParser a parser {@link LinkParser} used to parse a CoRE Link.
+     * @param linkParser a parser {@link LwM2mLinkParser} used to parse a CoRE Link.
      */
     public CaliforniumLwM2mBootstrapRequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint,
-            LwM2mEncoder encoder, LwM2mDecoder decoder, LinkParser linkParser) {
+            LwM2mEncoder encoder, LwM2mDecoder decoder, LwM2mLinkParser linkParser) {
         this.sender = new RequestSender(secureEndpoint, nonSecureEndpoint, encoder, decoder, linkParser);
     }
 

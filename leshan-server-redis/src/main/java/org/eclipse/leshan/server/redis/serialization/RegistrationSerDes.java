@@ -16,17 +16,29 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.redis.serialization;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
+import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.link.Link;
-import org.eclipse.leshan.core.link.LinkParamValue;
+import org.eclipse.leshan.core.link.attributes.Attribute;
+import org.eclipse.leshan.core.link.attributes.AttributeModel;
+import org.eclipse.leshan.core.link.attributes.AttributeParser;
+import org.eclipse.leshan.core.link.attributes.Attributes;
+import org.eclipse.leshan.core.link.attributes.DefaultAttributeParser;
+import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
+import org.eclipse.leshan.core.link.lwm2m.MixedLwM2mLink;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
+import org.eclipse.leshan.core.link.lwm2m.attributes.MixedLwM2mAttributeSet;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -44,7 +56,23 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public class RegistrationSerDes {
 
-    public static JsonNode jSerialize(Registration r) {
+    private AttributeParser attributeParser;
+
+    public RegistrationSerDes() {
+        // Define all supported Attributes
+        Collection<AttributeModel<?>> suppportedAttributes = new ArrayList<AttributeModel<?>>();
+        suppportedAttributes.addAll(Attributes.ALL);
+        suppportedAttributes.addAll(LwM2mAttributes.ALL);
+
+        // Create default link Parser
+        this.attributeParser = new DefaultAttributeParser(suppportedAttributes);
+    }
+
+    public RegistrationSerDes(AttributeParser attributeParser) {
+        this.attributeParser = attributeParser;
+    }
+
+    public JsonNode jSerialize(Registration r) {
         ObjectNode o = JsonNodeFactory.instance.objectNode();
         o.put("regDate", r.getRegistrationDate().getTime());
         o.set("identity", IdentitySerDes.serialize(r.getIdentity()));
@@ -64,11 +92,12 @@ public class RegistrationSerDes {
             ObjectNode ol = JsonNodeFactory.instance.objectNode();
             ol.put("url", l.getUriReference());
             ObjectNode at = JsonNodeFactory.instance.objectNode();
-            for (Map.Entry<String, LinkParamValue> e : l.getLinkParams().entrySet()) {
-                if (e.getValue() == null) {
-                    at.set(e.getKey(), null);
+            for (Attribute a : l.getAttributes()) {
+                if (a.hasValue()) {
+                    at.put(a.getName(), a.getCoreLinkValue());
                 } else {
-                    at.put(e.getKey(), e.getValue().toString());
+                    at.set(a.getName(), null);
+
                 }
             }
             ol.set("at", at);
@@ -93,8 +122,8 @@ public class RegistrationSerDes {
 
         // handle supported object
         ObjectNode so = JsonNodeFactory.instance.objectNode();
-        for (Entry<Integer, String> supportedObject : r.getSupportedObject().entrySet()) {
-            so.put(supportedObject.getKey().toString(), supportedObject.getValue());
+        for (Entry<Integer, Version> supportedObject : r.getSupportedObject().entrySet()) {
+            so.put(supportedObject.getKey().toString(), supportedObject.getValue().toString());
         }
         o.set("suppObjs", so);
 
@@ -114,15 +143,15 @@ public class RegistrationSerDes {
         return o;
     }
 
-    public static String sSerialize(Registration r) {
+    public String sSerialize(Registration r) {
         return jSerialize(r).toString();
     }
 
-    public static byte[] bSerialize(Registration r) {
+    public byte[] bSerialize(Registration r) {
         return jSerialize(r).toString().getBytes();
     }
 
-    public static Registration deserialize(JsonNode jObj) {
+    public Registration deserialize(JsonNode jObj) {
         Registration.Builder b = new Registration.Builder(jObj.get("regId").asText(), jObj.get("ep").asText(),
                 IdentitySerDes.deserialize(jObj.get("identity")));
         b.bindingMode(BindingMode.parse(jObj.get("bnd").asText()));
@@ -141,30 +170,47 @@ public class RegistrationSerDes {
             b.smsNumber(jObj.get("sms").asText(""));
         }
 
-        b.rootPath(jObj.get("root").asText("/"));
+        String rootPath = jObj.get("root").asText("/");
+        b.rootPath(rootPath);
 
         ArrayNode links = (ArrayNode) jObj.get("objLink");
         Link[] linkObjs = new Link[links.size()];
         for (int i = 0; i < links.size(); i++) {
             ObjectNode ol = (ObjectNode) links.get(i);
 
-            Map<String, LinkParamValue> attMap = new HashMap<>();
+            List<Attribute> atts = new ArrayList<>();
             JsonNode att = ol.get("at");
             for (Iterator<String> it = att.fieldNames(); it.hasNext();) {
                 String k = it.next();
                 JsonNode jsonValue = att.get(k);
+                String attValue;
                 if (jsonValue.isNull()) {
-                    attMap.put(k, null);
+                    attValue = null;
                 } else {
                     if (jsonValue.isNumber()) {
                         // This else block is just needed for retro-compatibility
-                        attMap.put(k, new LinkParamValue(Integer.toString(jsonValue.asInt())));
+                        attValue = Integer.toString(jsonValue.asInt());
                     } else {
-                        attMap.put(k, new LinkParamValue(jsonValue.asText()));
+                        attValue = jsonValue.asText();
                     }
                 }
+                try {
+                    atts.add(attributeParser.parseCoreLinkValue(k, attValue));
+                } catch (InvalidAttributeException e) {
+                    throw new IllegalStateException(
+                            String.format("Unable to deserialize attribute value from links of registraiton %s/%s",
+                                    jObj.get("regId").asText(), jObj.get("ep").asText()));
+                }
             }
-            Link o = new Link(ol.get("url").asText(), attMap);
+            // handle lwm2m path
+            String path = ol.get("url").asText();
+            Link o;
+            if (path.startsWith(rootPath)) {
+                LwM2mPath lwm2mPath = LwM2mPath.parse(path, rootPath);
+                o = new MixedLwM2mLink(rootPath, lwm2mPath, new MixedLwM2mAttributeSet(atts));
+            } else {
+                o = new Link(path, atts);
+            }
             linkObjs[i] = o;
         }
         b.objectLinks(linkObjs);
@@ -196,10 +242,10 @@ public class RegistrationSerDes {
             // Backward compatibility : if suppObjs doesn't exist we extract supported object from object link
             b.extractDataFromObjectLink(true);
         } else {
-            Map<Integer, String> supportedObject = new HashMap<>();
+            Map<Integer, Version> supportedObject = new HashMap<>();
             for (Iterator<String> it = so.fieldNames(); it.hasNext();) {
                 String key = it.next();
-                supportedObject.put(Integer.parseInt(key), so.get(key).asText());
+                supportedObject.put(Integer.parseInt(key), new Version(so.get(key).asText()));
             }
             b.supportedObjects(supportedObject);
         }
@@ -234,7 +280,7 @@ public class RegistrationSerDes {
         return b.build();
     }
 
-    public static Registration deserialize(byte[] data) {
+    public Registration deserialize(byte[] data) {
         String json = new String(data);
         try {
             return deserialize(new ObjectMapper().readTree(json));

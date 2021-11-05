@@ -47,8 +47,8 @@ import org.eclipse.californium.scandium.dtls.x509.StaticNewAdvancedCertificateVe
 import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
-import org.eclipse.leshan.core.link.DefaultLinkParser;
-import org.eclipse.leshan.core.link.LinkParser;
+import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
+import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
@@ -111,7 +111,7 @@ public class LeshanServerBuilder {
     private boolean noQueueMode = false;
     /** @since 1.1 */
     protected boolean updateRegistrationOnNotification;
-    private LinkParser linkParser;
+    private LwM2mLinkParser linkParser;
 
     /**
      * <p>
@@ -289,11 +289,11 @@ public class LeshanServerBuilder {
     }
 
     /**
-     * Set the CoRE Link parser {@link LinkParser}
+     * Set the CoRE Link parser {@link LwM2mLinkParser}
      * <p>
-     * By default the {@link DefaultLinkParser} is used.
+     * By default the {@link DefaultLwM2mLinkParser} is used.
      */
-    public void setLinkParser(LinkParser linkParser) {
+    public void setLinkParser(LwM2mLinkParser linkParser) {
         this.linkParser = linkParser;
     }
 
@@ -445,7 +445,7 @@ public class LeshanServerBuilder {
         if (decoder == null)
             decoder = new DefaultLwM2mDecoder();
         if (linkParser == null)
-            linkParser = new DefaultLinkParser();
+            linkParser = new DefaultLwM2mLinkParser();
         if (coapConfig == null)
             coapConfig = createDefaultCoapConfiguration();
         if (awakeTimeProvider == null) {
@@ -599,7 +599,7 @@ public class LeshanServerBuilder {
      * @param awakeTimeProvider to set the client awake time if queue mode is used.
      * @param registrationIdProvider to provide registrationId using for location-path option values on response of
      *        Register operation.
-     * @param linkParser a parser {@link LinkParser} used to parse a CoRE Link.
+     * @param linkParser a parser {@link LwM2mLinkParser} used to parse a CoRE Link.
      * 
      * @return the LWM2M server
      */
@@ -607,7 +607,7 @@ public class LeshanServerBuilder {
             CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder, Configuration coapConfig,
             boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
-            RegistrationIdProvider registrationIdProvider, LinkParser linkParser) {
+            RegistrationIdProvider registrationIdProvider, LwM2mLinkParser linkParser) {
         return new LeshanServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
                 modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider,
                 updateRegistrationOnNotification, linkParser);

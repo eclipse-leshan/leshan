@@ -14,15 +14,26 @@
  *     Sierra Wireless - initial API and implementation
  *     Daniel Persson (Husqvarna Group) - Attribute support
  *******************************************************************************/
-package org.eclipse.leshan.core.attributes;
+package org.eclipse.leshan.core.link.lwm2m.attributes;
 
 /**
- * The assignation level of an {@link Attribute}. An attribute can only be applied on one level,
- * but it can be assigned on many levels and then be inherited down to its application
- * level.
+ * operation allowed on a {@link LwM2mAttribute} by the LwM2M Server
  */
-public enum AssignationLevel {
-    OBJECT,
-    INSTANCE, 
-    RESOURCE
+public enum AccessMode {
+    /**
+     * READ
+     */
+    R,
+    /**
+     * WRITE
+     */
+    W,
+    /**
+     * READ/WRITE
+     */
+    RW;
+
+    public boolean isWritable() {
+        return this == W || this == RW;
+    }
 }

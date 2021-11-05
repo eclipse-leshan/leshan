@@ -14,19 +14,24 @@
  *     Sierra Wireless - initial API and implementation
  *     Daniel Persson (Husqvarna Group) - Attribute support
  *******************************************************************************/
-package org.eclipse.leshan.core.attributes;
+package org.eclipse.leshan.core.link.lwm2m.attributes;
+
+import java.util.Collection;
 
 /**
- * The attachment level of an LwM2m attribute.
- * 
- * This indicates the level (object, instance or resource) where an attribute can
- * be applied. E.g. the 'pmin' attribute can only be applied on the Resource level,
- * but it can be assigned on all levels. 'pmin' attributes that are assigned to
- * the object or instance level are then inherited by all resources that don't have
- * their own 'pmin' attribute. 
+ * An {@link MixedLwM2mAttributeSet} but which allow only {@link LwM2mAttribute}
  */
-public enum Attachment {
-    OBJECT,
-    INSTANCE,
-    RESOURCE
+public class LwM2mAttributeSet extends MixedLwM2mAttributeSet {
+
+    public LwM2mAttributeSet(LwM2mAttribute<?>... attributes) {
+        super(attributes);
+    }
+
+    public LwM2mAttributeSet(Collection<? extends LwM2mAttribute<?>> attributes) {
+        super(attributes);
+    }
+
+    public boolean contains(LwM2mAttributeModel<?> model) {
+        return super.contains(model.getName());
+    }
 }

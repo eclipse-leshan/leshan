@@ -161,7 +161,7 @@ public class DDFFileParser {
         Map<Integer, ResourceModel> resources = new HashMap<>();
         String urn = null;
         String description2 = null;
-        String lwm2mVersion = ObjectModel.DEFAULT_VERSION;
+        String lwm2mVersion = LwM2mVersion.getDefault().toString();
 
         for (int i = 0; i < object.getChildNodes().getLength(); i++) {
             Node field = object.getChildNodes().item(i);

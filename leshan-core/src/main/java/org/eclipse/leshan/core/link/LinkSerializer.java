@@ -28,5 +28,5 @@ public interface LinkSerializer {
      * 
      * @param linkObjects array of {@link Link}
      */
-    String serialize(Link... linkObjects);
+    String serializeCoreLinkFormat(Link... linkObjects);
 }

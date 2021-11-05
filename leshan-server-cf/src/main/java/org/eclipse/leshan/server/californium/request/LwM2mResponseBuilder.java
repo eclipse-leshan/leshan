@@ -28,9 +28,9 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.californium.ObserveUtil;
-import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkParseException;
-import org.eclipse.leshan.core.link.LinkParser;
+import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
+import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -100,10 +100,10 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     private final String clientEndpoint;
     private final LwM2mModel model;
     private final LwM2mDecoder decoder;
-    private final LinkParser linkParser;
+    private final LwM2mLinkParser linkParser;
 
     public LwM2mResponseBuilder(Request coapRequest, Response coapResponse, String clientEndpoint, LwM2mModel model,
-            LwM2mDecoder decoder, LinkParser linkParser) {
+            LwM2mDecoder decoder, LwM2mLinkParser linkParser) {
         this.coapRequest = coapRequest;
         this.coapResponse = coapResponse;
         this.clientEndpoint = clientEndpoint;
@@ -136,13 +136,16 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     coapResponse.getPayloadString(), coapResponse);
         } else if (isResponseCodeContent()) {
             // handle success response:
-            Link[] links;
+            LwM2mLink[] links;
             if (MediaTypeRegistry.APPLICATION_LINK_FORMAT != coapResponse.getOptions().getContentFormat()) {
                 throw new InvalidResponseException("Client [%s] returned unexpected content format [%s] for [%s]",
                         clientEndpoint, coapResponse.getOptions().getContentFormat(), request);
             } else {
                 try {
-                    links = linkParser.parse(coapResponse.getPayload());
+                    // We don't know if root path should be present in discover response.
+                    // See : https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/534
+                    String rootpath = null;
+                    links = linkParser.parseLwM2mLinkFromCoreLinkFormat(coapResponse.getPayload(), rootpath);
                 } catch (LinkParseException e) {
                     throw new InvalidResponseException(e,
                             "Unable to decode response payload of request [%s] from client [%s]", request,
@@ -360,13 +363,13 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     coapResponse.getPayloadString(), coapResponse);
         } else if (isResponseCodeContent()) {
             // handle success response:
-            Link[] links;
+            LwM2mLink[] links;
             if (MediaTypeRegistry.APPLICATION_LINK_FORMAT != coapResponse.getOptions().getContentFormat()) {
                 throw new InvalidResponseException("Client [%s] returned unexpected content format [%s] for [%s]",
                         clientEndpoint, coapResponse.getOptions().getContentFormat(), request);
             } else {
                 try {
-                    links = linkParser.parse(coapResponse.getPayload());
+                    links = linkParser.parseLwM2mLinkFromCoreLinkFormat(coapResponse.getPayload(), null);
                 } catch (LinkParseException e) {
                     throw new InvalidResponseException(e,
                             "Unable to decode response payload of request [%s] from client [%s]", request,

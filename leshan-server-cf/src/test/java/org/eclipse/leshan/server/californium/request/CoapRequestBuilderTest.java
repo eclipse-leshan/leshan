@@ -21,16 +21,15 @@ import static org.junit.Assert.*;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.leshan.core.attributes.Attribute;
-import org.eclipse.leshan.core.attributes.AttributeSet;
 import org.eclipse.leshan.core.link.Link;
-import org.eclipse.leshan.core.link.LinkParamValue;
+import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.StaticModel;
@@ -80,9 +79,7 @@ public class CoapRequestBuilderTest {
                 Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354));
         b.extractDataFromObjectLink(true);
         if (rootpath != null) {
-            Map<String, LinkParamValue> attr = new HashMap<>();
-            attr.put("rt", new LinkParamValue("\"oma.lwm2m\""));
-            b.objectLinks(new Link[] { new Link(rootpath, attr) });
+            b.objectLinks(new Link[] { new Link(rootpath, new ResourceTypeAttribute("oma.lwm2m")) });
         }
         return b.build();
     }
@@ -200,8 +197,9 @@ public class CoapRequestBuilderTest {
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
                 reg.getEndpoint(), model, encoder, false, null);
-        AttributeSet attributes = new AttributeSet(new Attribute(Attribute.MINIMUM_PERIOD, 10L),
-                new Attribute(Attribute.MAXIMUM_PERIOD, 100L));
+        LwM2mAttributeSet attributes = new LwM2mAttributeSet(
+                new LwM2mAttribute<Long>(LwM2mAttributes.MINIMUM_PERIOD, 10L),
+                new LwM2mAttribute<Long>(LwM2mAttributes.MAXIMUM_PERIOD, 100L));
         WriteAttributesRequest request = new WriteAttributesRequest(3, 0, 14, attributes);
         builder.visit(request);
 
@@ -220,8 +218,8 @@ public class CoapRequestBuilderTest {
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
                 reg.getEndpoint(), model, encoder, false, null);
-        AttributeSet attributes = new AttributeSet(new Attribute(Attribute.MINIMUM_PERIOD),
-                new Attribute(Attribute.MAXIMUM_PERIOD));
+        LwM2mAttributeSet attributes = new LwM2mAttributeSet(new LwM2mAttribute<Long>(LwM2mAttributes.MINIMUM_PERIOD),
+                new LwM2mAttribute<Long>(LwM2mAttributes.MAXIMUM_PERIOD));
         WriteAttributesRequest request = new WriteAttributesRequest(3, 0, 14, attributes);
         builder.visit(request);
 

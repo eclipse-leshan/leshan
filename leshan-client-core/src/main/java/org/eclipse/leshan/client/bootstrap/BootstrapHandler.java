@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
-import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
@@ -143,7 +143,7 @@ public class BootstrapHandler {
         LwM2mPath path = request.getPath();
         if (path.isRoot()) {
             // Manage discover on object
-            Link[] ObjectLinks = LinkFormatHelper.getBootstrapClientDescription(objects.values());
+            LwM2mLink[] ObjectLinks = LinkFormatHelper.getBootstrapClientDescription(objects.values());
             return BootstrapDiscoverResponse.success(ObjectLinks);
         }
         return BootstrapDiscoverResponse.badRequest("invalid path");

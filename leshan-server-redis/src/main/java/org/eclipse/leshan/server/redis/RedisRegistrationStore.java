@@ -105,6 +105,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     private final long gracePeriod; // in seconds
 
     private final JedisLock lock;
+    private final RegistrationSerDes registrationSerDes;
 
     public RedisRegistrationStore(Pool<Jedis> p) {
         this(p, DEFAULT_CLEAN_PERIOD, DEFAULT_GRACE_PERIOD, DEFAULT_CLEAN_LIMIT); // default clean period 60s
@@ -121,17 +122,21 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
         this(p, schedExecutor, cleanPeriodInSec, lifetimeGracePeriodInSec, cleanLimit, new SingleInstanceJedisLock());
     }
 
-    /**
-     * @since 1.1
-     */
     public RedisRegistrationStore(Pool<Jedis> p, ScheduledExecutorService schedExecutor, long cleanPeriodInSec,
             long lifetimeGracePeriodInSec, int cleanLimit, JedisLock redisLock) {
+        this(p, schedExecutor, cleanPeriodInSec, lifetimeGracePeriodInSec, cleanLimit, redisLock,
+                new RegistrationSerDes());
+    }
+
+    public RedisRegistrationStore(Pool<Jedis> p, ScheduledExecutorService schedExecutor, long cleanPeriodInSec,
+            long lifetimeGracePeriodInSec, int cleanLimit, JedisLock redisLock, RegistrationSerDes registrationSerDes) {
         this.pool = p;
         this.schedExecutor = schedExecutor;
         this.cleanPeriod = cleanPeriodInSec;
         this.cleanLimit = cleanLimit;
         this.gracePeriod = lifetimeGracePeriodInSec;
         this.lock = redisLock;
+        this.registrationSerDes = registrationSerDes;
     }
 
     /* *************** Redis Key utility function **************** */
@@ -474,11 +479,11 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
     }
 
     private byte[] serializeReg(Registration registration) {
-        return RegistrationSerDes.bSerialize(registration);
+        return registrationSerDes.bSerialize(registration);
     }
 
     private Registration deserializeReg(byte[] data) {
-        return RegistrationSerDes.deserialize(data);
+        return registrationSerDes.deserialize(data);
     }
 
     /* *************** Leshan Observation API **************** */

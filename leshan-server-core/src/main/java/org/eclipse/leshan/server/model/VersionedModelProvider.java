@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -66,7 +67,7 @@ public class VersionedModelProvider implements LwM2mModelProvider {
 
         @Override
         public ObjectModel getObjectModel(int objectId) {
-            String version = registration.getSupportedVersion(objectId);
+            Version version = registration.getSupportedVersion(objectId);
             if (version != null) {
                 return repository.getObjectModel(objectId, version);
             }
@@ -75,9 +76,9 @@ public class VersionedModelProvider implements LwM2mModelProvider {
 
         @Override
         public Collection<ObjectModel> getObjectModels() {
-            Map<Integer, String> supportedObjects = registration.getSupportedObject();
+            Map<Integer, Version> supportedObjects = registration.getSupportedObject();
             Collection<ObjectModel> result = new ArrayList<>(supportedObjects.size());
-            for (Entry<Integer, String> supportedObject : supportedObjects.entrySet()) {
+            for (Entry<Integer, Version> supportedObject : supportedObjects.entrySet()) {
                 ObjectModel objectModel = repository.getObjectModel(supportedObject.getKey(),
                         supportedObject.getValue());
                 if (objectModel != null)

@@ -143,7 +143,7 @@ public class RegisterResource extends LwM2mCoapResource {
         // Get object Links
         Link[] objectLinks;
         try {
-            objectLinks = linkParser.parse(request.getPayload());
+            objectLinks = linkParser.parseCoreLinkFormat(request.getPayload());
         } catch (LinkParseException e) {
             handleInvalidRequest(exchange.advanced(), e.getMessage() != null ? e.getMessage() : "Invalid Links", e);
             return;
@@ -222,7 +222,7 @@ public class RegisterResource extends LwM2mCoapResource {
         }
         if (request.getPayload() != null && request.getPayload().length > 0) {
             try {
-                objectLinks = linkParser.parse(request.getPayload());
+                objectLinks = linkParser.parseCoreLinkFormat(request.getPayload());
             } catch (LinkParseException e) {
                 handleInvalidRequest(exchange.advanced(), e.getMessage() != null ? e.getMessage() : "Invalid Links", e);
                 return;

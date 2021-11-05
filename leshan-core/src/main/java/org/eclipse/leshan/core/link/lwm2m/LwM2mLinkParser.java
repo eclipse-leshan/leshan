@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2018 Sierra Wireless and others.
+ * Copyright (c) 2022 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -12,12 +12,16 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
- *     Daniel Persson (Husqvarna Group) - Attribute support
  *******************************************************************************/
-package org.eclipse.leshan.core.attributes;
+package org.eclipse.leshan.core.link.lwm2m;
 
-public enum AccessMode {
-    R,
-    W,
-    RW
+import org.eclipse.leshan.core.link.LinkParseException;
+import org.eclipse.leshan.core.link.LinkParser;
+
+/**
+ * A {@link LinkParser} with some LWM2M flavor.
+ */
+public interface LwM2mLinkParser extends LinkParser {
+
+    LwM2mLink[] parseLwM2mLinkFromCoreLinkFormat(byte[] bytes, String rootPath) throws LinkParseException;
 }

@@ -23,10 +23,10 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.leshan.core.link.DefaultLinkParser;
+import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.LinkParser;
-import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
@@ -35,7 +35,7 @@ import org.junit.Test;
 
 public class RegistrationTest {
 
-    private final LinkParser linkParser = new DefaultLinkParser();
+    private final LinkParser linkParser = new DefaultLwM2mLinkParser();
 
     @Test
     public void test_object_links_without_version_nor_rootpath() throws LinkParseException {
@@ -45,10 +45,10 @@ public class RegistrationTest {
         assertEquals("/", reg.getRootPath());
 
         // Ensure supported objects are correct
-        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        Map<Integer, Version> supportedObject = reg.getSupportedObject();
         assertEquals(2, supportedObject.size());
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(3));
+        assertEquals(Version.getDefault(), supportedObject.get(1));
+        assertEquals(Version.getDefault(), supportedObject.get(3));
 
         // ensure available instances are correct
         Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
@@ -64,10 +64,10 @@ public class RegistrationTest {
         assertEquals("/", reg.getRootPath());
 
         // Ensure supported objects are correct
-        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        Map<Integer, Version> supportedObject = reg.getSupportedObject();
         assertEquals(2, supportedObject.size());
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(3));
+        assertEquals(Version.getDefault(), supportedObject.get(1));
+        assertEquals(Version.getDefault(), supportedObject.get(3));
 
         // Check Supported Content format
         Set<ContentFormat> supportedContentFormats = reg.getSupportedContentFormats();
@@ -89,10 +89,10 @@ public class RegistrationTest {
         assertEquals("/", reg.getRootPath());
 
         // Ensure supported objects are correct
-        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        Map<Integer, Version> supportedObject = reg.getSupportedObject();
         assertEquals(2, supportedObject.size());
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(3));
+        assertEquals(Version.getDefault(), supportedObject.get(1));
+        assertEquals(Version.getDefault(), supportedObject.get(3));
 
         // Check Supported Content format
         Set<ContentFormat> supportedContentFormats = reg.getSupportedContentFormats();
@@ -113,10 +113,10 @@ public class RegistrationTest {
         assertEquals("/", reg.getRootPath());
 
         // Ensure supported objects are correct
-        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        Map<Integer, Version> supportedObject = reg.getSupportedObject();
         assertEquals(2, supportedObject.size());
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(3));
+        assertEquals(Version.getDefault(), supportedObject.get(1));
+        assertEquals(Version.getDefault(), supportedObject.get(3));
 
         // Check Supported Content format
         Set<ContentFormat> supportedContentFormats = reg.getSupportedContentFormats();
@@ -138,10 +138,10 @@ public class RegistrationTest {
         assertEquals("/", reg.getRootPath());
 
         // Ensure supported objects are correct
-        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        Map<Integer, Version> supportedObject = reg.getSupportedObject();
         assertEquals(2, supportedObject.size());
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(3));
+        assertEquals(Version.getDefault(), supportedObject.get(1));
+        assertEquals(Version.getDefault(), supportedObject.get(3));
 
         // Check Supported Content format
         Set<ContentFormat> supportedContentFormats = reg.getSupportedContentFormats();
@@ -163,9 +163,9 @@ public class RegistrationTest {
         assertEquals("/root/", reg.getRootPath());
 
         // Ensure supported objects are correct
-        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        Map<Integer, Version> supportedObject = reg.getSupportedObject();
         assertEquals(1, supportedObject.size());
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
+        assertEquals(Version.getDefault(), supportedObject.get(1));
         assertNull(supportedObject.get(3));
 
         // ensure available instances are correct
@@ -182,9 +182,9 @@ public class RegistrationTest {
         assertEquals("/root/", reg.getRootPath());
 
         // Ensure supported objects are correct
-        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        Map<Integer, Version> supportedObject = reg.getSupportedObject();
         assertEquals(1, supportedObject.size());
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
+        assertEquals(Version.getDefault(), supportedObject.get(1));
         assertNull(supportedObject.get(3));
 
         // ensure available instances are correct
@@ -195,16 +195,16 @@ public class RegistrationTest {
 
     @Test
     public void test_object_links_with_version() throws LinkParseException {
-        Registration reg = given_a_registration_with_object_link_like("</1/0>,</3>;ver=\"1.1\",</3/0>");
+        Registration reg = given_a_registration_with_object_link_like("</1/0>,</3>;ver=1.1,</3/0>");
 
         // check root path
         assertEquals("/", reg.getRootPath());
 
         // Ensure supported objects are correct
-        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        Map<Integer, Version> supportedObject = reg.getSupportedObject();
         assertEquals(2, supportedObject.size());
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
-        assertEquals("1.1", supportedObject.get(3));
+        assertEquals(Version.getDefault(), supportedObject.get(1));
+        assertEquals(new Version("1.1"), supportedObject.get(3));
 
         // ensure available instances are correct
         Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
@@ -215,15 +215,15 @@ public class RegistrationTest {
     @Test
     public void test_object_links_with_text_in_not_lwm2m_path() throws LinkParseException {
         Registration reg = given_a_registration_with_object_link_like(
-                "</root>;rt=\"oma.lwm2m\",</text>,</1/text/0/in/path>,</2/O/test/in/path>,</root/3/0>;ver=\"1.1\",</root/4/0/0/>");
+                "</root>;rt=\"oma.lwm2m\",</text>,</1/text/0/in/path>,</2/O/test/in/path>,</root/3>;ver=1.1,</root/3/0>,</root/4/0/0/>");
 
         // check root path
         assertEquals("/root/", reg.getRootPath());
 
         // Ensure supported objects are correct
-        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        Map<Integer, Version> supportedObject = reg.getSupportedObject();
         assertEquals(1, supportedObject.size());
-        assertEquals("1.1", supportedObject.get(3));
+        assertEquals(new Version("1.1"), supportedObject.get(3));
 
         // ensure available instances are correct
         Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
@@ -234,14 +234,14 @@ public class RegistrationTest {
     @Test(expected = LinkParseException.class)
     public void test_object_links_with_text_in_lwm2m_path() throws LinkParseException {
         given_a_registration_with_object_link_like(
-                "<text>,</1/text/0/in/path>,empty,</2/O/test/in/path>,</3/0>;ver=\"1.1\",</4/0/0/>");
+                "<text>,</1/text/0/in/path>,empty,</2/O/test/in/path>,</3/0>;ver=1.1,</4/0/0/>");
     }
 
     private Registration given_a_registration_with_object_link_like(String objectLinks) throws LinkParseException {
         Builder builder = new Registration.Builder("id", "endpoint",
                 Identity.unsecure(InetSocketAddress.createUnresolved("localhost", 0)));
         builder.extractDataFromObjectLink(true);
-        builder.objectLinks(linkParser.parse(objectLinks.getBytes()));
+        builder.objectLinks(linkParser.parseCoreLinkFormat(objectLinks.getBytes()));
         return builder.build();
     }
 }

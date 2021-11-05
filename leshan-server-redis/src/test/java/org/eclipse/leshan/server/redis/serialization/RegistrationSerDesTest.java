@@ -24,6 +24,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.attributes.AttributeSet;
+import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
+import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
+import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
+import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
+import org.eclipse.leshan.core.link.attributes.ValuelessAttribute;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.registration.Registration;
@@ -31,14 +37,18 @@ import org.junit.Test;
 
 public class RegistrationSerDesTest {
 
+    private RegistrationSerDes registrationSerDes = new RegistrationSerDes();
+
     @Test
     public void ser_and_des_are_equals() {
         Link[] objs = new Link[2];
-        Map<String, Object> att = new HashMap<>();
-        att.put("ts", 12);
-        att.put("rt", "test");
-        att.put("hb", null);
-        objs[0] = new Link("/0/1024/2", att, Object.class);
+        AttributeSet attrs = new AttributeSet( //
+                new UnquotedStringAttribute("us", "12"), //
+                new QuotedStringAttribute("sq", "test"), //
+                new ResourceTypeAttribute("oma.lwm2m"), //
+                new ContentFormatAttribute(ContentFormat.CBOR, ContentFormat.JSON), //
+                new ValuelessAttribute("hb"));
+        objs[0] = new Link("/0/1024/2", attrs);
         objs[1] = new Link("/0/2");
 
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
@@ -50,8 +60,8 @@ public class RegistrationSerDesTest {
         builder.lastUpdate(new Date(101L));
         Registration r = builder.build();
 
-        byte[] ser = RegistrationSerDes.bSerialize(r);
-        Registration r2 = RegistrationSerDes.deserialize(ser);
+        byte[] ser = registrationSerDes.bSerialize(r);
+        Registration r2 = registrationSerDes.deserialize(ser);
 
         assertEquals(r, r2);
     }
@@ -59,11 +69,13 @@ public class RegistrationSerDesTest {
     @Test
     public void ser_and_des_are_equals_with_app_data() {
         Link[] objs = new Link[2];
-        Map<String, Object> att = new HashMap<>();
-        att.put("ts", 12);
-        att.put("rt", "test");
-        att.put("hb", null);
-        objs[0] = new Link("/0/1024/2", att, Object.class);
+        AttributeSet attrs = new AttributeSet( //
+                new UnquotedStringAttribute("us", "12"), //
+                new QuotedStringAttribute("qt", "test"), //
+                new ResourceTypeAttribute("oma.lwm2m"), //
+                new ContentFormatAttribute(ContentFormat.CBOR, ContentFormat.JSON), //
+                new ValuelessAttribute("hb"));
+        objs[0] = new Link("/0/1024/2", attrs);
         objs[1] = new Link("/0/2");
 
         Map<String, String> appData = new HashMap<>();
@@ -79,8 +91,8 @@ public class RegistrationSerDesTest {
         builder.extractDataFromObjectLink(true);
         Registration r = builder.build();
 
-        byte[] ser = RegistrationSerDes.bSerialize(r);
-        Registration r2 = RegistrationSerDes.deserialize(ser);
+        byte[] ser = registrationSerDes.bSerialize(r);
+        Registration r2 = registrationSerDes.deserialize(ser);
 
         assertEquals(r, r2);
     }
