@@ -8,7 +8,7 @@ public class AttributeTest {
 
     @Test
     public void should_pick_correct_model() {
-        Attribute verAttribute = new Attribute(AttributeModel.OBJECT_VERSION, "1.0");
+        LwM2mAttribute verAttribute = new LwM2mAttribute(LwM2mAttributeModel.OBJECT_VERSION, "1.0");
         assertEquals("ver", verAttribute.getCoRELinkParam());
         assertEquals("1.0", verAttribute.getValue());
         assertTrue(verAttribute.canBeAssignedTo(AssignationLevel.OBJECT));
@@ -17,6 +17,6 @@ public class AttributeTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void should_throw_on_invalid_value_type() {
-        new Attribute(AttributeModel.OBJECT_VERSION, 123);
+        new LwM2mAttribute(LwM2mAttributeModel.OBJECT_VERSION, 123);
     }
 }

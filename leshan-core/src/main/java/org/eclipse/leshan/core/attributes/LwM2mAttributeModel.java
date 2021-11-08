@@ -23,7 +23,7 @@ import java.util.Set;
 /**
  * Metadata container for LwM2m attributes
  */
-public class AttributeModel<T> {
+public class LwM2mAttributeModel<T> {
 
     // TODO this constant should be deleted replaced by the ones below
     public static final String DIMENSION = "dim";
@@ -37,54 +37,54 @@ public class AttributeModel<T> {
     public static final String EVALUATE_MAXIMUM_PERIOD = "epmax";
 
     // TODO we should reuse the name above waiting, I suffix by _ATTR
-    public static final AttributeModel<Long> DIMENSION_ATTR = new AttributeModel<Long>(//
+    public static final LwM2mAttributeModel<Long> DIMENSION_ATTR = new LwM2mAttributeModel<Long>(//
             DIMENSION, //
             Attachment.RESOURCE, //
             EnumSet.of(AssignationLevel.RESOURCE), //
             AccessMode.R, //
             Long.class);
-    public static final AttributeModel<String> OBJECT_VERSION_ATTR = new AttributeModel<String>(//
+    public static final LwM2mAttributeModel<String> OBJECT_VERSION_ATTR = new LwM2mAttributeModel<String>(//
             OBJECT_VERSION, //
             Attachment.OBJECT, //
             EnumSet.of(AssignationLevel.OBJECT), //
             AccessMode.R, //
             String.class);
-    public static final AttributeModel<Long> MINIMUM_PERIOD_ATTR = new AttributeModel<Long>(//
+    public static final LwM2mAttributeModel<Long> MINIMUM_PERIOD_ATTR = new LwM2mAttributeModel<Long>(//
             MINIMUM_PERIOD, //
             Attachment.RESOURCE, //
             EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE), //
             AccessMode.RW, //
             Long.class);
-    public static final AttributeModel<Long> MAXIMUM_PERIOD_ATTR = new AttributeModel<Long>( //
+    public static final LwM2mAttributeModel<Long> MAXIMUM_PERIOD_ATTR = new LwM2mAttributeModel<Long>( //
             MAXIMUM_PERIOD, //
             Attachment.RESOURCE, //
             EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE), //
             AccessMode.RW, Long.class);
-    public static final AttributeModel<Double> GREATER_THAN_ATTR = new AttributeModel<Double>(//
+    public static final LwM2mAttributeModel<Double> GREATER_THAN_ATTR = new LwM2mAttributeModel<Double>(//
             GREATER_THAN, //
             Attachment.RESOURCE, //
             EnumSet.of(AssignationLevel.RESOURCE), //
             AccessMode.RW, //
             Double.class);
-    public static final AttributeModel<Double> LESSER_THAN_ATTR = new AttributeModel<Double>( //
+    public static final LwM2mAttributeModel<Double> LESSER_THAN_ATTR = new LwM2mAttributeModel<Double>( //
             LESSER_THAN, //
             Attachment.RESOURCE, //
             EnumSet.of(AssignationLevel.RESOURCE), //
             AccessMode.RW, //
             Double.class);
-    public static final AttributeModel<Double> STEP_ATTR = new AttributeModel<Double>(//
+    public static final LwM2mAttributeModel<Double> STEP_ATTR = new LwM2mAttributeModel<Double>(//
             STEP, //
             Attachment.RESOURCE, //
             EnumSet.of(AssignationLevel.RESOURCE), //
             AccessMode.RW, //
             Double.class);
-    public static final AttributeModel<Long> EVALUATE_MINIMUM_PERIOD_ATTR = new AttributeModel<Long>(//
+    public static final LwM2mAttributeModel<Long> EVALUATE_MINIMUM_PERIOD_ATTR = new LwM2mAttributeModel<Long>(//
             EVALUATE_MINIMUM_PERIOD, //
             Attachment.RESOURCE, //
             EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE), //
             AccessMode.RW, //
             Long.class);
-    public static final AttributeModel<Long> EVALUATE_MAXIMUM_PERIOD_ATTR = new AttributeModel<Long>( //
+    public static final LwM2mAttributeModel<Long> EVALUATE_MAXIMUM_PERIOD_ATTR = new LwM2mAttributeModel<Long>( //
             EVALUATE_MAXIMUM_PERIOD, //
             Attachment.RESOURCE,
             EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE), //
@@ -97,7 +97,7 @@ public class AttributeModel<T> {
     final AccessMode accessMode;
     final Class<?> valueClass;
 
-    AttributeModel(String coRELinkParam, Attachment attachment, Set<AssignationLevel> assignationLevels,
+    LwM2mAttributeModel(String coRELinkParam, Attachment attachment, Set<AssignationLevel> assignationLevels,
             AccessMode accessMode, Class<T> valueClass) {
         this.coRELinkParam = coRELinkParam;
         this.attachment = attachment;
@@ -106,7 +106,7 @@ public class AttributeModel<T> {
         this.valueClass = valueClass;
     }
 
-    public static Map<String, AttributeModel<?>> modelMap;
+    public static Map<String, LwM2mAttributeModel<?>> modelMap;
 
     static {
         modelMap = new HashMap<>();

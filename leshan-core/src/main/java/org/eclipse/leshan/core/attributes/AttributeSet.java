@@ -26,21 +26,21 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A collection of {@link Attribute} instances that are handled as a collection that must adhere to rules that are
+ * A collection of {@link LwM2mAttribute} instances that are handled as a collection that must adhere to rules that are
  * specified in LwM2m, e.g. that the 'pmin' attribute must be less than the 'pmax' attribute, if they're both part of
  * the same AttributeSet.
  */
 public class AttributeSet {
 
-    private final Map<String, Attribute> attributeMap = new LinkedHashMap<>();
+    private final Map<String, LwM2mAttribute> attributeMap = new LinkedHashMap<>();
 
-    public AttributeSet(Attribute... attributes) {
+    public AttributeSet(LwM2mAttribute... attributes) {
         this(Arrays.asList(attributes));
     }
 
-    public AttributeSet(Collection<Attribute> attributes) {
+    public AttributeSet(Collection<LwM2mAttribute> attributes) {
         if (attributes != null && !attributes.isEmpty()) {
-            for (Attribute attr : attributes) {
+            for (LwM2mAttribute attr : attributes) {
                 // Check for duplicates
                 if (attributeMap.containsKey(attr.getCoRELinkParam())) {
                     throw new IllegalArgumentException(String.format(
@@ -53,21 +53,21 @@ public class AttributeSet {
 
     public void validate(AssignationLevel assignationLevel) {
         // Can all attributes be assigned to this level?
-        for (Attribute attr : attributeMap.values()) {
+        for (LwM2mAttribute attr : attributeMap.values()) {
             if (!attr.canBeAssignedTo(assignationLevel)) {
                 throw new IllegalArgumentException(String.format("Attribute '%s' cannot be assigned to level %s",
                         attr.getCoRELinkParam(), assignationLevel.name()));
             }
         }
-        Attribute pmin = attributeMap.get(AttributeModel.MINIMUM_PERIOD);
-        Attribute pmax = attributeMap.get(AttributeModel.MAXIMUM_PERIOD);
+        LwM2mAttribute pmin = attributeMap.get(LwM2mAttributeModel.MINIMUM_PERIOD);
+        LwM2mAttribute pmax = attributeMap.get(LwM2mAttributeModel.MAXIMUM_PERIOD);
         if ((pmin != null) && (pmax != null) && (Long) pmin.getValue() > (Long) pmax.getValue()) {
             throw new IllegalArgumentException(String.format("Cannot write attributes where '%s' > '%s'",
                     pmin.getCoRELinkParam(), pmax.getCoRELinkParam()));
         }
 
-        Attribute epmin = attributeMap.get(AttributeModel.EVALUATE_MINIMUM_PERIOD);
-        Attribute epmax = attributeMap.get(AttributeModel.EVALUATE_MAXIMUM_PERIOD);
+        LwM2mAttribute epmin = attributeMap.get(LwM2mAttributeModel.EVALUATE_MINIMUM_PERIOD);
+        LwM2mAttribute epmax = attributeMap.get(LwM2mAttributeModel.EVALUATE_MAXIMUM_PERIOD);
         if ((epmin != null) && (epmax != null) && (Long) epmin.getValue() > (Long) epmax.getValue()) {
             throw new IllegalArgumentException(String.format("Cannot write attributes where '%s' > '%s'",
                     epmin.getCoRELinkParam(), epmax.getCoRELinkParam()));
@@ -81,8 +81,8 @@ public class AttributeSet {
      * @return a new {@link AttributeSet} containing the filtered attributes
      */
     public AttributeSet filter(Attachment attachment) {
-        List<Attribute> attrs = new ArrayList<>();
-        for (Attribute attr : getAttributes()) {
+        List<LwM2mAttribute> attrs = new ArrayList<>();
+        for (LwM2mAttribute attr : getAttributes()) {
             if (attr.getAttachment() == attachment) {
                 attrs.add(attr);
             }
@@ -99,12 +99,12 @@ public class AttributeSet {
      * @return the merged AttributeSet
      */
     public AttributeSet merge(AttributeSet attributes) {
-        Map<String, Attribute> merged = new LinkedHashMap<>();
-        for (Attribute attr : getAttributes()) {
+        Map<String, LwM2mAttribute> merged = new LinkedHashMap<>();
+        for (LwM2mAttribute attr : getAttributes()) {
             merged.put(attr.getCoRELinkParam(), attr);
         }
         if (attributes != null) {
-            for (Attribute attr : attributes.getAttributes()) {
+            for (LwM2mAttribute attr : attributes.getAttributes()) {
                 merged.put(attr.getCoRELinkParam(), attr);
             }
         }
@@ -118,19 +118,19 @@ public class AttributeSet {
      */
     public Map<String, Object> getMap() {
         Map<String, Object> result = new LinkedHashMap<>();
-        for (Attribute attr : attributeMap.values()) {
+        for (LwM2mAttribute attr : attributeMap.values()) {
             result.put(attr.getCoRELinkParam(), attr.getValue());
         }
         return Collections.unmodifiableMap(result);
     }
 
-    public Collection<Attribute> getAttributes() {
+    public Collection<LwM2mAttribute> getAttributes() {
         return attributeMap.values();
     }
 
     public String[] toQueryParams() {
         List<String> queries = new LinkedList<>();
-        for (Attribute attr : attributeMap.values()) {
+        for (LwM2mAttribute attr : attributeMap.values()) {
             if (attr.getValue() != null) {
                 queries.add(String.format("%s=%s", attr.getCoRELinkParam(), attr.getValue()));
             } else {
@@ -209,14 +209,14 @@ public class AttributeSet {
      * </pre>
      */
     public static AttributeSet parse(Collection<String> queryParams) {
-        ArrayList<Attribute> attributes = new ArrayList<>();
+        ArrayList<LwM2mAttribute> attributes = new ArrayList<>();
 
         for (String param : queryParams) {
             String[] keyAndValue = param.split("=");
             if (keyAndValue.length == 1) {
-                attributes.add(new Attribute(keyAndValue[0]));
+                attributes.add(new LwM2mAttribute(keyAndValue[0]));
             } else if (keyAndValue.length == 2) {
-                attributes.add(new Attribute(keyAndValue[0], keyAndValue[1]));
+                attributes.add(new LwM2mAttribute(keyAndValue[0], keyAndValue[1]));
             } else {
                 throw new IllegalArgumentException(String.format("Cannot parse query param '%s'", param));
             }

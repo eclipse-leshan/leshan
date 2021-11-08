@@ -24,22 +24,22 @@ import org.eclipse.leshan.core.util.Validate;
  * The {@link Attachment} level of the attribute indicates where it can be applied, e.g. the 'pmin' attribute is only
  * applicable to resources, but it can be assigned on all levels and then inherited by underlying resources.
  */
-public class Attribute {
-    private final AttributeModel<?> model;
+public class LwM2mAttribute {
+    private final LwM2mAttributeModel<?> model;
     private final Object value;
 
-    public Attribute(String coRELinkParam) {
+    public LwM2mAttribute(String coRELinkParam) {
         Validate.notEmpty(coRELinkParam);
-        this.model = AttributeModel.modelMap.get(coRELinkParam);
+        this.model = LwM2mAttributeModel.modelMap.get(coRELinkParam);
         if (model == null) {
             throw new IllegalArgumentException(String.format("Unsupported attribute '%s'", coRELinkParam));
         }
         this.value = null;
     }
 
-    public Attribute(String coRELinkParam, Object value) {
+    public LwM2mAttribute(String coRELinkParam, Object value) {
         Validate.notEmpty(coRELinkParam);
-        this.model = AttributeModel.modelMap.get(coRELinkParam);
+        this.model = LwM2mAttributeModel.modelMap.get(coRELinkParam);
         if (model == null) {
             throw new IllegalArgumentException(String.format("Unsupported attribute '%s'", coRELinkParam));
         }
@@ -52,7 +52,7 @@ public class Attribute {
      * 
      * @return the converted or original value
      */
-    private Object ensureMatchingValue(AttributeModel<?> model, Object value) {
+    private Object ensureMatchingValue(LwM2mAttributeModel<?> model, Object value) {
         // Ensure that the attribute value has the correct type
         // If the value is a string, we make an attempt to convert it
         Class<?> expectedClass = model.valueClass;
@@ -106,7 +106,7 @@ public class Attribute {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        Attribute other = (Attribute) obj;
+        LwM2mAttribute other = (LwM2mAttribute) obj;
         if (model == null) {
             if (other.model != null)
                 return false;
