@@ -64,21 +64,15 @@ public class AttributeSet {
         return params;
     }
 
-    public AttributeSet(Collection<Attribute> attributes) {
+    public AttributeSet(Collection<? extends Attribute> attributes) {
         if (attributes != null && !attributes.isEmpty()) {
 
             for (Attribute attr : attributes) {
-                if (!(attr instanceof LinkParamValueAttribute)) {
+                // Check for duplicates
+                if (this.attributes.containsKey(attr.getName())) {
                     throw new IllegalArgumentException(
-                            attr.getClass().getSimpleName() + " is not supported by AttributeSet");
+                            String.format("Cannot create attribute set with duplicates (attr: '%s')", attr.getName()));
                 }
-
-                // TODO we must check if duplicates are allowed in CoRE Link Format
-//                // Check for duplicates
-//                if (this.attributes.containsKey(attr.getName())) {
-//                    throw new IllegalArgumentException(
-//                            String.format("Cannot create attribute set with duplicates (attr: '%s')", attr.getName()));
-//                }
                 this.attributes.put(attr.getName(), attr);
             }
         }
