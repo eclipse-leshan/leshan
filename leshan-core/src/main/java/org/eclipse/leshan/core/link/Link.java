@@ -16,11 +16,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.leshan.core.link.attributes.AttributeSet;
 import org.eclipse.leshan.core.util.Validate;
 
 /**
@@ -30,7 +30,7 @@ public class Link {
 
     private final String uriReference;
 
-    private final Map<String, LinkParamValue> linkParams;
+    private final AttributeSet attributes;
 
     /**
      * Creates a new Link without attributes.
@@ -47,13 +47,14 @@ public class Link {
      * @param uriReference the link URL
      * @param linkParams the object link attributes or <code>null</code> if the link has no attributes
      */
+    // TODO remove this contructor
     public Link(String uriReference, Map<String, LinkParamValue> linkParams) {
         Validate.notNull(uriReference);
         this.uriReference = uriReference;
         if (linkParams != null) {
-            this.linkParams = Collections.unmodifiableMap(new HashMap<>(linkParams));
+            this.attributes = new AttributeSet(linkParams);
         } else {
-            this.linkParams = Collections.emptyMap();
+            this.attributes = new AttributeSet();
         }
     }
 
@@ -63,27 +64,22 @@ public class Link {
      * @param uriReference the link URL
      * @param linkParams the object link attributes or <code>null</code> if the link has no attributes
      */
-    @SuppressWarnings("unchecked")
     public <T> Link(String uriReference, Map<String, T> linkParams, Class<T> clazz) {
         Validate.notNull(uriReference);
         this.uriReference = uriReference;
         if (linkParams == null || linkParams.isEmpty()) {
-            this.linkParams = Collections.emptyMap();
+            this.attributes = new AttributeSet();
         } else {
-            if (String.class.equals(clazz)) {
-                this.linkParams = Collections.unmodifiableMap((Map<String, LinkParamValue>) new HashMap<>(linkParams));
-            } else {
-                HashMap<String, LinkParamValue> attributesMap = new HashMap<>();
-                for (Entry<String, T> attr : linkParams.entrySet()) {
-                    if (attr.getValue() == null) {
-                        attributesMap.put(attr.getKey(), null);
-                    } else {
-                        attributesMap.put(attr.getKey(), new LinkParamValue(attr.getValue().toString()));
-                    }
-
+            HashMap<String, LinkParamValue> attributesMap = new HashMap<>();
+            for (Entry<String, T> attr : linkParams.entrySet()) {
+                if (attr.getValue() == null) {
+                    attributesMap.put(attr.getKey(), null);
+                } else {
+                    attributesMap.put(attr.getKey(), new LinkParamValue(attr.getValue().toString()));
                 }
-                this.linkParams = Collections.unmodifiableMap(attributesMap);
+
             }
+            this.attributes = new AttributeSet(attributesMap);
         }
     }
 
@@ -98,7 +94,7 @@ public class Link {
         Validate.notNull(uriReference);
         this.uriReference = uriReference;
         if (linkParams == null || linkParams.length == 0) {
-            this.linkParams = Collections.emptyMap();
+            this.attributes = new AttributeSet();
         } else {
             if (linkParams.length % 2 != 0) {
                 throw new IllegalArgumentException("Each attributes key must have a value");
@@ -109,7 +105,7 @@ public class Link {
                 String value = linkParams[i + 1];
                 attributesMap.put(linkParams[i], value != null ? new LinkParamValue(value) : null);
             }
-            this.linkParams = Collections.unmodifiableMap(attributesMap);
+            this.attributes = new AttributeSet(attributesMap);
         }
     }
 
@@ -127,8 +123,13 @@ public class Link {
      * 
      * @return an unmodifiable map containing the link attributes
      */
+    // TODO remove it
     public Map<String, LinkParamValue> getLinkParams() {
-        return linkParams;
+        return attributes.toLinkParams();
+    }
+
+    public AttributeSet getAttributes() {
+        return attributes;
     }
 
     @Override
@@ -156,7 +157,7 @@ public class Link {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((linkParams == null) ? 0 : linkParams.hashCode());
+        result = prime * result + ((attributes == null) ? 0 : attributes.hashCode());
         result = prime * result + ((uriReference == null) ? 0 : uriReference.hashCode());
         return result;
     }
@@ -170,10 +171,10 @@ public class Link {
         if (getClass() != obj.getClass())
             return false;
         Link other = (Link) obj;
-        if (linkParams == null) {
-            if (other.linkParams != null)
+        if (attributes == null) {
+            if (other.attributes != null)
                 return false;
-        } else if (!linkParams.equals(other.linkParams))
+        } else if (!attributes.equals(other.attributes))
             return false;
         if (uriReference == null) {
             if (other.uriReference != null)
@@ -182,5 +183,4 @@ public class Link {
             return false;
         return true;
     }
-
 }
