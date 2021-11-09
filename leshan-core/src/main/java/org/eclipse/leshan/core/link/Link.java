@@ -58,6 +58,13 @@ public class Link {
         }
     }
 
+    public Link(String uriReference, AttributeSet attributes) {
+        Validate.notNull(uriReference);
+        Validate.notNull(attributes);
+        this.uriReference = uriReference;
+        this.attributes = attributes;
+    }
+
     /**
      * Creates a new link and with its attributes.
      * 
