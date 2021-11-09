@@ -15,43 +15,43 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import org.eclipse.leshan.core.attributes.AttributeSet;
+import org.eclipse.leshan.core.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
 
 public class WriteAttributesRequest extends AbstractSimpleDownlinkRequest<WriteAttributesResponse> {
 
-    private final AttributeSet attributes;
+    private final LwM2mAttributeSet attributes;
 
-    public WriteAttributesRequest(int objectId, AttributeSet attributes) throws InvalidRequestException {
+    public WriteAttributesRequest(int objectId, LwM2mAttributeSet attributes) throws InvalidRequestException {
         this(newPath(objectId), attributes, null);
     }
 
-    public WriteAttributesRequest(int objectId, int objectInstanceId, AttributeSet attributes)
+    public WriteAttributesRequest(int objectId, int objectInstanceId, LwM2mAttributeSet attributes)
             throws InvalidRequestException {
         this(newPath(objectId, objectInstanceId), attributes, null);
     }
 
-    public WriteAttributesRequest(int objectId, int objectInstanceId, int resourceId, AttributeSet attributes)
+    public WriteAttributesRequest(int objectId, int objectInstanceId, int resourceId, LwM2mAttributeSet attributes)
             throws InvalidRequestException {
         this(newPath(objectId, objectInstanceId, resourceId), attributes, null);
     }
 
     public WriteAttributesRequest(int objectId, int objectInstanceId, int resourceId, int resourceInstanceId,
-            AttributeSet attributes) throws InvalidRequestException {
+            LwM2mAttributeSet attributes) throws InvalidRequestException {
         this(newPath(objectId, objectInstanceId, resourceId, resourceInstanceId), attributes, null);
     }
 
-    public WriteAttributesRequest(String path, AttributeSet attributes) {
+    public WriteAttributesRequest(String path, LwM2mAttributeSet attributes) {
         this(newPath(path), attributes, null);
     }
 
-    public WriteAttributesRequest(String path, AttributeSet attributes, Object coapRequest) {
+    public WriteAttributesRequest(String path, LwM2mAttributeSet attributes, Object coapRequest) {
         this(newPath(path), attributes, coapRequest);
     }
 
-    private WriteAttributesRequest(LwM2mPath path, AttributeSet attributes, Object coapRequest)
+    private WriteAttributesRequest(LwM2mPath path, LwM2mAttributeSet attributes, Object coapRequest)
             throws InvalidRequestException {
         super(path, coapRequest);
         if (path.isRoot())
@@ -67,7 +67,7 @@ public class WriteAttributesRequest extends AbstractSimpleDownlinkRequest<WriteA
         visitor.visit(this);
     }
 
-    public AttributeSet getAttributes() {
+    public LwM2mAttributeSet getAttributes() {
         return this.attributes;
     }
 

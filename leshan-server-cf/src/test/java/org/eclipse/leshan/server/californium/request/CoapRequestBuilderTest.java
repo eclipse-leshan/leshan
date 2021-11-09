@@ -29,7 +29,7 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.core.attributes.LwM2mAttribute;
 import org.eclipse.leshan.core.attributes.LwM2mAttributeModel;
-import org.eclipse.leshan.core.attributes.AttributeSet;
+import org.eclipse.leshan.core.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkParamValue;
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -201,7 +201,7 @@ public class CoapRequestBuilderTest {
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
                 reg.getEndpoint(), model, encoder, false, null);
-        AttributeSet attributes = new AttributeSet(new LwM2mAttribute(LwM2mAttributeModel.MINIMUM_PERIOD, 10L),
+        LwM2mAttributeSet attributes = new LwM2mAttributeSet(new LwM2mAttribute(LwM2mAttributeModel.MINIMUM_PERIOD, 10L),
                 new LwM2mAttribute(LwM2mAttributeModel.MAXIMUM_PERIOD, 100L));
         WriteAttributesRequest request = new WriteAttributesRequest(3, 0, 14, attributes);
         builder.visit(request);
@@ -221,7 +221,7 @@ public class CoapRequestBuilderTest {
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
                 reg.getEndpoint(), model, encoder, false, null);
-        AttributeSet attributes = new AttributeSet(new LwM2mAttribute(LwM2mAttributeModel.MINIMUM_PERIOD),
+        LwM2mAttributeSet attributes = new LwM2mAttributeSet(new LwM2mAttribute(LwM2mAttributeModel.MINIMUM_PERIOD),
                 new LwM2mAttribute(LwM2mAttributeModel.MAXIMUM_PERIOD));
         WriteAttributesRequest request = new WriteAttributesRequest(3, 0, 14, attributes);
         builder.visit(request);

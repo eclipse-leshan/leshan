@@ -33,7 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.leshan.core.attributes.AttributeSet;
+import org.eclipse.leshan.core.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -322,7 +322,7 @@ public class ClientServlet extends HttpServlet {
                 if (path.length >= 3 && "attributes".equals(path[path.length - 1])) {
                     // create & process request WriteAttributes request
                     target = StringUtils.removeEnd(target, path[path.length - 1]);
-                    AttributeSet attributes = AttributeSet.parse(req.getQueryString());
+                    LwM2mAttributeSet attributes = LwM2mAttributeSet.parse(req.getQueryString());
                     WriteAttributesRequest request = new WriteAttributesRequest(target, attributes);
                     WriteAttributesResponse cResponse = server.send(registration, request, extractTimeout(req));
                     processDeviceResponse(req, resp, cResponse);

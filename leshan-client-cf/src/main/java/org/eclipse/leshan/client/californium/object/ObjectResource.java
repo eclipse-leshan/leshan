@@ -36,7 +36,7 @@ import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.servers.ServerIdentity;
-import org.eclipse.leshan.core.attributes.AttributeSet;
+import org.eclipse.leshan.core.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.StaticModel;
@@ -221,10 +221,10 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
         Request coapRequest = coapExchange.advanced().getRequest();
 
         // get Observe Spec
-        AttributeSet attributes = null;
+        LwM2mAttributeSet attributes = null;
         if (coapRequest.getOptions().getURIQueryCount() != 0) {
             List<String> uriQueries = coapRequest.getOptions().getUriQuery();
-            attributes = AttributeSet.parse(uriQueries);
+            attributes = LwM2mAttributeSet.parse(uriQueries);
         }
 
         // Manage Write Attributes Request

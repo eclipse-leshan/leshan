@@ -30,15 +30,15 @@ import java.util.Map;
  * specified in LwM2m, e.g. that the 'pmin' attribute must be less than the 'pmax' attribute, if they're both part of
  * the same AttributeSet.
  */
-public class AttributeSet {
+public class LwM2mAttributeSet {
 
     private final Map<String, LwM2mAttribute> attributeMap = new LinkedHashMap<>();
 
-    public AttributeSet(LwM2mAttribute... attributes) {
+    public LwM2mAttributeSet(LwM2mAttribute... attributes) {
         this(Arrays.asList(attributes));
     }
 
-    public AttributeSet(Collection<LwM2mAttribute> attributes) {
+    public LwM2mAttributeSet(Collection<LwM2mAttribute> attributes) {
         if (attributes != null && !attributes.isEmpty()) {
             for (LwM2mAttribute attr : attributes) {
                 // Check for duplicates
@@ -78,16 +78,16 @@ public class AttributeSet {
      * Returns a new AttributeSet, containing only the attributes that have a matching Attachment level.
      * 
      * @param attachment the Attachment level to filter by
-     * @return a new {@link AttributeSet} containing the filtered attributes
+     * @return a new {@link LwM2mAttributeSet} containing the filtered attributes
      */
-    public AttributeSet filter(Attachment attachment) {
+    public LwM2mAttributeSet filter(Attachment attachment) {
         List<LwM2mAttribute> attrs = new ArrayList<>();
         for (LwM2mAttribute attr : getAttributes()) {
             if (attr.getAttachment() == attachment) {
                 attrs.add(attr);
             }
         }
-        return new AttributeSet(attrs);
+        return new LwM2mAttributeSet(attrs);
     }
 
     /**
@@ -98,7 +98,7 @@ public class AttributeSet {
      *        be a clone of the existing one
      * @return the merged AttributeSet
      */
-    public AttributeSet merge(AttributeSet attributes) {
+    public LwM2mAttributeSet merge(LwM2mAttributeSet attributes) {
         Map<String, LwM2mAttribute> merged = new LinkedHashMap<>();
         for (LwM2mAttribute attr : getAttributes()) {
             merged.put(attr.getCoRELinkParam(), attr);
@@ -108,7 +108,7 @@ public class AttributeSet {
                 merged.put(attr.getCoRELinkParam(), attr);
             }
         }
-        return new AttributeSet(merged.values());
+        return new LwM2mAttributeSet(merged.values());
     }
 
     /**
@@ -166,7 +166,7 @@ public class AttributeSet {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        AttributeSet other = (AttributeSet) obj;
+        LwM2mAttributeSet other = (LwM2mAttributeSet) obj;
         if (attributeMap == null) {
             if (other.attributeMap != null)
                 return false;
@@ -180,12 +180,12 @@ public class AttributeSet {
      * 
      * @param uriQueries the URI queries to parse. e.g. {@literal pmin=10&pmax=60}
      */
-    public static AttributeSet parse(String uriQueries) {
+    public static LwM2mAttributeSet parse(String uriQueries) {
         if (uriQueries == null)
             return null;
 
         String[] queriesArray = uriQueries.split("&");
-        return AttributeSet.parse(queriesArray);
+        return LwM2mAttributeSet.parse(queriesArray);
     }
 
     /**
@@ -196,8 +196,8 @@ public class AttributeSet {
      * queryParams[1] = "pmax=10";
      * </pre>
      */
-    public static AttributeSet parse(String... queryParams) {
-        return AttributeSet.parse(Arrays.asList(queryParams));
+    public static LwM2mAttributeSet parse(String... queryParams) {
+        return LwM2mAttributeSet.parse(Arrays.asList(queryParams));
     }
 
     /**
@@ -208,7 +208,7 @@ public class AttributeSet {
      * queryParams.get(1) = "pmax=10";
      * </pre>
      */
-    public static AttributeSet parse(Collection<String> queryParams) {
+    public static LwM2mAttributeSet parse(Collection<String> queryParams) {
         ArrayList<LwM2mAttribute> attributes = new ArrayList<>();
 
         for (String param : queryParams) {
@@ -222,6 +222,6 @@ public class AttributeSet {
             }
 
         }
-        return new AttributeSet(attributes);
+        return new LwM2mAttributeSet(attributes);
     }
 }
