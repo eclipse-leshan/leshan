@@ -17,6 +17,7 @@ package org.eclipse.leshan.core.link;
 
 import static org.junit.Assert.assertEquals;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -120,7 +121,7 @@ public class DefaultLinkParserTest {
 
     @Test
     public void dont_escape_non_ascii_chars() throws LinkParseException {
-        Link[] parsed = parser.parse("</foo>;param=\" \\ą \",</bar>".getBytes());
+        Link[] parsed = parser.parse("</foo>;param=\" \\ą \",</bar>".getBytes(StandardCharsets.UTF_8));
         Assert.assertEquals("/foo", parsed[0].getUriReference());
 
         Map<String, LinkParamValue> attResult = new HashMap<>();
