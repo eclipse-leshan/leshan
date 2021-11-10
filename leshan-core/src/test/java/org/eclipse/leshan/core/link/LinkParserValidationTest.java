@@ -17,6 +17,7 @@ package org.eclipse.leshan.core.link;
 
 import static org.junit.Assert.assertThrows;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -75,7 +76,7 @@ public class LinkParserValidationTest {
         assertThrows(LinkParseException.class, new ThrowingRunnable() {
             @Override
             public void run() throws LinkParseException {
-                parser.parse(linkValueList.getBytes());
+                parser.parse(linkValueList.getBytes(StandardCharsets.UTF_8));
             }
         });
     }
