@@ -16,6 +16,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import org.eclipse.leshan.core.request.execute.ExecuteRequest;
+
 /**
  * An abstract adapter class for visiting down link request. The methods in this class are empty. This class exists as
  * convenience for creating message observer objects.

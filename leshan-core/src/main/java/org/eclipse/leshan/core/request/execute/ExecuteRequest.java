@@ -13,9 +13,11 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.request;
+package org.eclipse.leshan.core.request.execute;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.request.AbstractSimpleDownlinkRequest;
+import org.eclipse.leshan.core.request.DownlinkRequestVisitor;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 
@@ -24,7 +26,7 @@ import org.eclipse.leshan.core.response.ExecuteResponse;
  */
 public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteResponse> {
 
-    private final String parameters;
+    private final Arguments arguments;
 
     /**
      * Creates a new <em>execute</em> request for a resource that does not require any parameters.
@@ -90,12 +92,23 @@ public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteRespons
 
         if (!path.isResource())
             throw new InvalidRequestException("Invalid path %s : Only resource can be executed.", path);
-        this.parameters = parameters;
+
+        ArgumentParser argumentParser = getArgumentParser();
+        arguments = argumentParser.parse(parameters);
+    }
+
+    /**
+     * Creates a default {@link ArgumentParser} for parsing ExecuteRequest arguments.
+     *
+     * Method can be overridden to allow use different parser.
+     */
+    protected ArgumentParser getArgumentParser() {
+        return new DefaultArgumentParser();
     }
 
     @Override
     public String toString() {
-        return String.format("ExecuteRequest [path=%s, parameters=%s]", getPath(), getParameters());
+        return String.format("ExecuteRequest [path=%s, arguments=%s]", getPath(), getArguments());
     }
 
     @Override
@@ -103,15 +116,15 @@ public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteRespons
         visitor.visit(this);
     }
 
-    public String getParameters() {
-        return parameters;
+    public Arguments getArguments() {
+        return arguments;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + ((parameters == null) ? 0 : parameters.hashCode());
+        result = prime * result + ((arguments == null) ? 0 : arguments.hashCode());
         return result;
     }
 
@@ -124,10 +137,10 @@ public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteRespons
         if (getClass() != obj.getClass())
             return false;
         ExecuteRequest other = (ExecuteRequest) obj;
-        if (parameters == null) {
-            if (other.parameters != null)
+        if (arguments == null) {
+            if (other.arguments != null)
                 return false;
-        } else if (!parameters.equals(other.parameters))
+        } else if (!arguments.equals(other.arguments))
             return false;
         return true;
     }

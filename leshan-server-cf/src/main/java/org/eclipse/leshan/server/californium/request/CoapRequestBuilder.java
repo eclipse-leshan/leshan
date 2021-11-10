@@ -44,7 +44,9 @@ import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.DownlinkRequestVisitor;
-import org.eclipse.leshan.core.request.ExecuteRequest;
+import org.eclipse.leshan.core.request.execute.ArgumentSerializer;
+import org.eclipse.leshan.core.request.execute.DefaultArgumentSerializer;
+import org.eclipse.leshan.core.request.execute.ExecuteRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
@@ -131,11 +133,21 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     public void visit(ExecuteRequest request) {
         coapRequest = Request.newPost();
         setTarget(coapRequest, request.getPath());
-        if (request.getParameters() != null) {
-            coapRequest.setPayload(request.getParameters());
+        byte[] payload = getArgumentSerializer().serialize(request.getArguments());
+        if (payload != null) {
+            coapRequest.setPayload(payload);
             coapRequest.getOptions().setContentFormat(MediaTypeRegistry.TEXT_PLAIN);
         }
         applyLowerLayerConfig(coapRequest);
+    }
+
+    /**
+     * Creates a default {@link ArgumentSerializer} for serialize ExecuteRequest arguments.
+     *
+     * Method can be overridden to allow use different parser.
+     */
+    protected ArgumentSerializer getArgumentSerializer() {
+        return new DefaultArgumentSerializer();
     }
 
     @Override

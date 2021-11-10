@@ -46,7 +46,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DownlinkRequest;
-import org.eclipse.leshan.core.request.ExecuteRequest;
+import org.eclipse.leshan.core.request.execute.ExecuteRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
@@ -347,7 +347,7 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
         if (instance == null) {
             return ExecuteResponse.notFound();
         }
-        return instance.execute(identity, path.getResourceId(), request.getParameters());
+        return instance.execute(identity, path.getResourceId(), request.getArguments());
     }
 
     @Override

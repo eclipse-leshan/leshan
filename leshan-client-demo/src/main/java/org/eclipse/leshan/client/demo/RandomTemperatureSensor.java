@@ -13,6 +13,7 @@ import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.request.execute.Arguments;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
@@ -66,14 +67,14 @@ public class RandomTemperatureSensor extends BaseInstanceEnabler implements Dest
     }
 
     @Override
-    public synchronized ExecuteResponse execute(ServerIdentity identity, int resourceId, String params) {
+    public synchronized ExecuteResponse execute(ServerIdentity identity, int resourceId, Arguments arguments) {
         LOG.info("Execute on Temperature resource /{}/{}/{}", getModel().id, getId(), resourceId);
         switch (resourceId) {
         case RESET_MIN_MAX_MEASURED_VALUES:
             resetMinMaxMeasuredValues();
             return ExecuteResponse.success();
         default:
-            return super.execute(identity, resourceId, params);
+            return super.execute(identity, resourceId, arguments);
         }
     }
 

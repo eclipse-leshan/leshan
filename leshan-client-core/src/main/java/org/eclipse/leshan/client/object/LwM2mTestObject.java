@@ -25,6 +25,7 @@ import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.ObjectLink;
+import org.eclipse.leshan.core.request.execute.Arguments;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.RandomStringUtils;
@@ -118,26 +119,9 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
         fireResourcesChange(applyValues(randomValues));
     }
 
-    private void storeParams(String params) {
-        // TODO add a real Execute Argument Parser
-        // https://github.com/eclipse/leshan/issues/1097
-        Map<Integer, String> arguments = new HashMap<>();
-        if (params != null && !params.isEmpty()) {
-            String[] args = params.split(",");
-
-            for (String arg : args) {
-                String[] part = arg.split("=");
-                Integer id = Integer.parseInt(part[0]);
-                if (part.length > 1) {
-                    arguments.put(id, part[1].substring(1, part[1].length() - 1));
-                } else {
-                    arguments.put(id, "");
-                }
-            }
-        }
-
+    private void storeArguments(Arguments arguments) {
         Map<Integer, Object> newParams = new HashMap<>();
-        newParams.put(4, arguments);
+        newParams.put(4, arguments.toMap());
         fireResourcesChange(applyValues(newParams));
     }
 
@@ -150,7 +134,7 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
     }
 
     @Override
-    public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
+    public ExecuteResponse execute(ServerIdentity identity, int resourceid, Arguments arguments) {
         switch (resourceid) {
         case 0:
             resetValues();
@@ -162,10 +146,10 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
             clearValues();
             return ExecuteResponse.success();
         case 3:
-            storeParams(params);
+            storeArguments(arguments);
             return ExecuteResponse.success();
         default:
-            return super.execute(identity, resourceid, params);
+            return super.execute(identity, resourceid, arguments);
         }
     }
 

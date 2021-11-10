@@ -18,6 +18,7 @@ import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.request.execute.Arguments;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
@@ -90,10 +91,10 @@ public class MyDevice extends BaseInstanceEnabler implements Destroyable {
     }
 
     @Override
-    public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
+    public ExecuteResponse execute(ServerIdentity identity, int resourceid, Arguments arguments) {
         String withParams = null;
-        if (params != null && params.length() != 0)
-            withParams = " with params " + params;
+        if (arguments.size() != 0)
+            withParams = " with params " + arguments;
         LOG.info("Execute on Device resource /{}/{}/{} {}", getModel().id, getId(), resourceid,
                 withParams != null ? withParams : "");
 

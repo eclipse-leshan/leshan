@@ -37,7 +37,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.BootstrapReadRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.ExecuteRequest;
+import org.eclipse.leshan.core.request.execute.ExecuteRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
