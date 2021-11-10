@@ -31,6 +31,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
+import org.eclipse.leshan.core.request.argument.Arguments;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -187,12 +188,12 @@ public interface LwM2mInstanceEnabler {
      * @param identity the identity of the requester. This could be an internal call in this case
      *        <code> identity == ServerIdentity.SYSTEM</code>.
      * @param resourceid the ID of the resource to set the value for
-     * @param params the input parameters of the operation
+     * @param arguments the input arguments of the operation
      * @return the response object representing the outcome of the operation. An implementation should set the result's
      *         {@link ExecuteResponse#getCode() response code} to either reflect the success or reason for failure to
      *         execute the operation.
      */
-    ExecuteResponse execute(ServerIdentity identity, int resourceid, String params);
+    ExecuteResponse execute(ServerIdentity identity, int resourceid, Arguments arguments);
 
     /**
      * Performs an observe register the whole LWM2M object instance.

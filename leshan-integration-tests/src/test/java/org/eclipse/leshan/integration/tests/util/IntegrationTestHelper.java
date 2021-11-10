@@ -57,6 +57,7 @@ import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.UplinkRequest;
+import org.eclipse.leshan.core.request.argument.Arguments;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.server.californium.LeshanServer;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
@@ -176,11 +177,11 @@ public class IntegrationTestHelper {
         }
 
         @Override
-        public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
+        public ExecuteResponse execute(ServerIdentity identity, int resourceid, Arguments arguments) {
             if (resourceid == 4) {
                 return ExecuteResponse.success();
             } else {
-                return super.execute(identity, resourceid, params);
+                return super.execute(identity, resourceid, arguments);
             }
         }
     }

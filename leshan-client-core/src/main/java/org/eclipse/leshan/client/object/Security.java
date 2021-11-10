@@ -28,6 +28,7 @@ import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.request.argument.Arguments;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
@@ -263,8 +264,8 @@ public class Security extends BaseInstanceEnabler {
     }
 
     @Override
-    public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
-        return super.execute(identity, resourceid, params);
+    public ExecuteResponse execute(ServerIdentity identity, int resourceid, Arguments arguments) {
+        return super.execute(identity, resourceid, arguments);
     }
 
     @Override

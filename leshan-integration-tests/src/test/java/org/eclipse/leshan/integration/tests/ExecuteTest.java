@@ -126,7 +126,7 @@ public class ExecuteTest {
     public void can_execute_resource_with_parameters() throws InterruptedException {
         // execute reboot after 60 seconds on device
         ExecuteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new ExecuteRequest(3, 0, 4, "60"));
+                new ExecuteRequest(3, 0, 4, "6"));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());

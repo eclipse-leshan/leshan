@@ -16,6 +16,8 @@
 package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.request.argument.Arguments;
+import org.eclipse.leshan.core.request.argument.InvalidArgumentException;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 
@@ -24,44 +26,68 @@ import org.eclipse.leshan.core.response.ExecuteResponse;
  */
 public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteResponse> {
 
-    private final String parameters;
+    private final Arguments arguments;
 
     /**
-     * Creates a new <em>execute</em> request for a resource that does not require any parameters.
+     * Creates a new <em>execute</em> request for a resource that does not require any arguments.
      *
      * @param path the path of the resource to execute
      * @exception InvalidRequestException if the path is not valid.
      */
     public ExecuteRequest(String path) throws InvalidRequestException {
-        this(path, null);
+        this(path, (Arguments) null);
     }
 
     /**
-     * Creates a new <em>execute</em> request for a resource accepting parameters encoded as plain text.
+     * Creates a new <em>execute</em> request for a resource accepting arguments encoded as plain text.
      *
      * @param path the path of the resource to execute
-     * @param parameters the parameters
+     * @param arguments the arguments
      * @exception InvalidRequestException if the path is not valid.
      */
-    public ExecuteRequest(String path, String parameters) throws InvalidRequestException {
-        this(newPath(path), parameters, null);
+    public ExecuteRequest(String path, String arguments) throws InvalidRequestException {
+        this(newPath(path), newArguments(arguments), null);
     }
 
     /**
-     * Creates a new <em>execute</em> request for a resource accepting parameters encoded as plain text.
+     * Creates a new <em>execute</em> request for a resource accepting arguments encoded as plain text.
      *
      * @param path the path of the resource to execute
-     * @param parameters the parameters
+     * @param arguments the arguments
+     * @exception InvalidRequestException if the path is not valid.
+     */
+    public ExecuteRequest(String path, Arguments arguments) throws InvalidRequestException {
+        this(newPath(path), arguments, null);
+    }
+
+    /**
+     * Creates a new <em>execute</em> request for a resource accepting arguments encoded as plain text.
+     *
+     * @param path the path of the resource to execute
+     * @param arguments the arguments
      * @param coapRequest the underlying request
      * 
      * @exception InvalidRequestException if the path is not valid.
      */
-    public ExecuteRequest(String path, String parameters, Object coapRequest) throws InvalidRequestException {
-        this(newPath(path), parameters, coapRequest);
+    public ExecuteRequest(String path, String arguments, Object coapRequest) throws InvalidRequestException {
+        this(newPath(path), newArguments(arguments), coapRequest);
     }
 
     /**
-     * Creates a new <em>execute</em> request for a resource that does not require any parameters.
+     * Creates a new <em>execute</em> request for a resource accepting arguments encoded as plain text.
+     *
+     * @param path the path of the resource to execute
+     * @param arguments the arguments
+     * @param coapRequest the underlying request
+     * 
+     * @exception InvalidRequestException if the path is not valid.
+     */
+    public ExecuteRequest(String path, Arguments arguments, Object coapRequest) throws InvalidRequestException {
+        this(newPath(path), arguments, coapRequest);
+    }
+
+    /**
+     * Creates a new <em>execute</em> request for a resource that does not require any arguments.
      *
      * @param objectId the resource's object ID
      * @param objectInstanceId the resource's object instance ID
@@ -72,30 +98,55 @@ public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteRespons
     }
 
     /**
-     * Creates a new <em>execute</em> request for a resource accepting parameters encoded as plain text.
+     * Creates a new <em>execute</em> request for a resource accepting arguments encoded as plain text.
      *
      * @param objectId the resource's object ID
      * @param objectInstanceId the resource's object instance ID
      * @param resourceId the resource's ID
-     * @param parameters the parameters
+     * @param arguments the arguments
      */
-    public ExecuteRequest(int objectId, int objectInstanceId, int resourceId, String parameters) {
-        this(newPath(objectId, objectInstanceId, resourceId), parameters, null);
+    public ExecuteRequest(int objectId, int objectInstanceId, int resourceId, String arguments) {
+        this(newPath(objectId, objectInstanceId, resourceId), newArguments(arguments), null);
     }
 
-    private ExecuteRequest(LwM2mPath path, String parameters, Object coapRequest) {
+    /**
+     * Creates a new <em>execute</em> request for a resource accepting arguments encoded as plain text.
+     *
+     * @param objectId the resource's object ID
+     * @param objectInstanceId the resource's object instance ID
+     * @param resourceId the resource's ID
+     * @param arguments the arguments
+     */
+    public ExecuteRequest(int objectId, int objectInstanceId, int resourceId, Arguments arguments) {
+        this(new LwM2mPath(objectId, objectInstanceId, resourceId), arguments, null);
+    }
+
+    private ExecuteRequest(LwM2mPath path, Arguments arguments, Object coapRequest) {
         super(path, coapRequest);
         if (path.isRoot())
             throw new InvalidRequestException("Execute request cannot target root path");
 
         if (!path.isResource())
             throw new InvalidRequestException("Invalid path %s : Only resource can be executed.", path);
-        this.parameters = parameters;
+
+        if (arguments == null) {
+            this.arguments = Arguments.emptyArguments();
+        } else {
+            this.arguments = arguments;
+        }
+    }
+
+    private static Arguments newArguments(String arguments) {
+        try {
+            return Arguments.parse(arguments);
+        } catch (InvalidArgumentException e) {
+            throw new InvalidRequestException(e, "Invalid Execute request : [%s]", e.getMessage());
+        }
     }
 
     @Override
     public String toString() {
-        return String.format("ExecuteRequest [path=%s, parameters=%s]", getPath(), getParameters());
+        return String.format("ExecuteRequest [path=%s, arguments=%s]", getPath(), getArguments());
     }
 
     @Override
@@ -103,15 +154,15 @@ public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteRespons
         visitor.visit(this);
     }
 
-    public String getParameters() {
-        return parameters;
+    public Arguments getArguments() {
+        return arguments;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + ((parameters == null) ? 0 : parameters.hashCode());
+        result = prime * result + ((arguments == null) ? 0 : arguments.hashCode());
         return result;
     }
 
@@ -124,10 +175,10 @@ public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteRespons
         if (getClass() != obj.getClass())
             return false;
         ExecuteRequest other = (ExecuteRequest) obj;
-        if (parameters == null) {
-            if (other.parameters != null)
+        if (arguments == null) {
+            if (other.arguments != null)
                 return false;
-        } else if (!parameters.equals(other.parameters))
+        } else if (!arguments.equals(other.arguments))
             return false;
         return true;
     }

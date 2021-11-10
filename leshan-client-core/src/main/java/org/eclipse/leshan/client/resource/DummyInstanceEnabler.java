@@ -28,6 +28,7 @@ import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
+import org.eclipse.leshan.core.request.argument.Arguments;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
@@ -79,9 +80,9 @@ public class DummyInstanceEnabler extends SimpleInstanceEnabler {
     }
 
     @Override
-    public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
+    public ExecuteResponse execute(ServerIdentity identity, int resourceid, Arguments arguments) {
         LOG.info("Execute {} Resource /{}/{}/{} with params {}", getModel().name, getModel().id, getId(), resourceid,
-                params);
+                arguments);
         return ExecuteResponse.success();
     }
 

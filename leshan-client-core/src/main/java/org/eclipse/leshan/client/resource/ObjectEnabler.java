@@ -347,7 +347,7 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
         if (instance == null) {
             return ExecuteResponse.notFound();
         }
-        return instance.execute(identity, path.getResourceId(), request.getParameters());
+        return instance.execute(identity, path.getResourceId(), request.getArguments());
     }
 
     @Override

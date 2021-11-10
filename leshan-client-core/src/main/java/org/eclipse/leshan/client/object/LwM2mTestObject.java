@@ -18,6 +18,7 @@ package org.eclipse.leshan.client.object;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
 
@@ -25,6 +26,8 @@ import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.ObjectLink;
+import org.eclipse.leshan.core.request.argument.Argument;
+import org.eclipse.leshan.core.request.argument.Arguments;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.RandomStringUtils;
@@ -118,26 +121,16 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
         fireResourcesChange(applyValues(randomValues));
     }
 
-    private void storeParams(String params) {
-        // TODO add a real Execute Argument Parser
-        // https://github.com/eclipse/leshan/issues/1097
-        Map<Integer, String> arguments = new HashMap<>();
-        if (params != null && !params.isEmpty()) {
-            String[] args = params.split(",");
-
-            for (String arg : args) {
-                String[] part = arg.split("=");
-                Integer id = Integer.parseInt(part[0]);
-                if (part.length > 1) {
-                    arguments.put(id, part[1].substring(1, part[1].length() - 1));
-                } else {
-                    arguments.put(id, "");
-                }
-            }
+    private void storeArguments(Arguments arguments) {
+        // convert Arguments to Map
+        Map<Integer, String> argValues = new LinkedHashMap<Integer, String>();
+        for (Argument argument : arguments) {
+            String value = argument.getValue() == null ? "" : argument.getValue();
+            argValues.put(argument.getDigit(), value);
         }
-
+        // put value in resource (4)
         Map<Integer, Object> newParams = new HashMap<>();
-        newParams.put(4, arguments);
+        newParams.put(4, argValues);
         fireResourcesChange(applyValues(newParams));
     }
 
@@ -150,7 +143,7 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
     }
 
     @Override
-    public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
+    public ExecuteResponse execute(ServerIdentity identity, int resourceid, Arguments arguments) {
         switch (resourceid) {
         case 0:
             resetValues();
@@ -162,10 +155,10 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
             clearValues();
             return ExecuteResponse.success();
         case 3:
-            storeParams(params);
+            storeArguments(arguments);
             return ExecuteResponse.success();
         default:
-            return super.execute(identity, resourceid, params);
+            return super.execute(identity, resourceid, arguments);
         }
     }
 

@@ -29,6 +29,7 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.leshan.core.request.argument.Arguments;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
@@ -196,7 +197,7 @@ public class Server extends BaseInstanceEnabler {
     }
 
     @Override
-    public ExecuteResponse execute(ServerIdentity identity, int resourceid, String params) {
+    public ExecuteResponse execute(ServerIdentity identity, int resourceid, Arguments arguments) {
         LOG.debug("Execute on Server resource /{}/{}/{}", getModel().id, getId(), resourceid);
         if (resourceid == 8) {
             getLwM2mClient().triggerRegistrationUpdate(identity);
@@ -209,7 +210,7 @@ public class Server extends BaseInstanceEnabler {
                 return ExecuteResponse.badRequest("probably no bootstrap server configured");
             }
         } else {
-            return super.execute(identity, resourceid, params);
+            return super.execute(identity, resourceid, arguments);
         }
     }
 
