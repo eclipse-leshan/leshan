@@ -1,6 +1,6 @@
 package org.eclipse.leshan.core.request.execute;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,9 +30,9 @@ public class ArgumentsTest {
 
     @Test
     public void should_create_map_from_arguments() {
-        List<SingleArgument> argumentList = new ArrayList<>();
-        argumentList.add(new SingleArgument(3, "stringValue"));
-        argumentList.add(new SingleArgument(4));
+        List<Argument> argumentList = new ArrayList<>();
+        argumentList.add(new Argument(3, "stringValue"));
+        argumentList.add(new Argument(4));
 
         Arguments arguments = new Arguments(argumentList);
 
@@ -45,7 +45,7 @@ public class ArgumentsTest {
 
     @Test
     public void should_allow_to_create_empty_arguments() {
-        List<SingleArgument> argumentList = new ArrayList<>();
+        List<Argument> argumentList = new ArrayList<>();
 
         Arguments arguments = new Arguments(argumentList);
 

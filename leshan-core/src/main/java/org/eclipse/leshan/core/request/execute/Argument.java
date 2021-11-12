@@ -1,17 +1,17 @@
 package org.eclipse.leshan.core.request.execute;
 
-public class SingleArgument {
+public class Argument {
 
     private final int digit;
 
     private final String value;
 
-    public SingleArgument(int digit, String value) {
+    public Argument(int digit, String value) {
         this.digit = digit;
         this.value = value;
     }
 
-    public SingleArgument(int digit) {
+    public Argument(int digit) {
         this.digit = digit;
         this.value = null;
     }
@@ -27,9 +27,9 @@ public class SingleArgument {
     @Override
     public String toString() {
         if (value == null)
-            return String.format("SingleArgument [digit=%d]", digit);
+            return String.format("Argument [digit=%d]", digit);
         else
-            return String.format("SingleArgument [digit=%d, value=%s]", digit, value);
+            return String.format("Argument [digit=%d, value=%s]", digit, value);
     }
 
     @Override
@@ -49,7 +49,7 @@ public class SingleArgument {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        SingleArgument other = (SingleArgument) obj;
+        Argument other = (Argument) obj;
         if (digit != other.digit)
             return false;
         if (value == null) {

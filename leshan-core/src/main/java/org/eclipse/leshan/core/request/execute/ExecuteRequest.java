@@ -93,17 +93,7 @@ public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteRespons
         if (!path.isResource())
             throw new InvalidRequestException("Invalid path %s : Only resource can be executed.", path);
 
-        ArgumentParser argumentParser = getArgumentParser();
-        arguments = argumentParser.parse(parameters);
-    }
-
-    /**
-     * Creates a default {@link ArgumentParser} for parsing ExecuteRequest arguments.
-     *
-     * Method can be overridden to allow use different parser.
-     */
-    protected ArgumentParser getArgumentParser() {
-        return new DefaultArgumentParser();
+        arguments = Arguments.parse(parameters);
     }
 
     @Override
