@@ -72,7 +72,7 @@ public class LeshanClientDemo {
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanClientDemo.class);
     private static final int OBJECT_ID_TEMPERATURE_SENSOR = 3303;
-    private static final int OBJECT_ID_LWM2M_TEST_OBJECT = 3441;
+    private static final int OBJECT_ID_LWM2M_TEST_OBJECT = 3442;
     private static final String CF_CONFIGURATION_FILENAME = "Californium3.client.properties";
     private static final String CF_CONFIGURATION_HEADER = "Leshan Client Demo - " + Configuration.DEFAULT_HEADER;
 

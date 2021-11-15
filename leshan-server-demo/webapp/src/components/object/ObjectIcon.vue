@@ -61,7 +61,9 @@ export default {
           return "mdi-toggle-switch";
         case 3347: // Push Button
           return "mdi-gesture-tap-button";
-        case 3441: // Test Object
+        case 3441: // LWM2M v1.0 Test Object
+          return "mdi-list-status";
+        case 3442: // LWM2M v1.1 Test Object
           return "mdi-list-status";
         case 10259: // System Log
           return "mdi-text-box-outline";
