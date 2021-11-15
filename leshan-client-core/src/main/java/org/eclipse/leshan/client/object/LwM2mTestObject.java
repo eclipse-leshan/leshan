@@ -31,6 +31,7 @@ import org.eclipse.leshan.core.request.argument.Arguments;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.RandomStringUtils;
+import org.eclipse.leshan.core.util.datatype.ULong;
 
 /**
  * This aims to implements LWM2M Test Object(Id:3441) from LWM2M registry.
@@ -48,6 +49,7 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
         // single
         initialValues.put(110, "initial value");
         initialValues.put(120, 64l);
+        initialValues.put(125, ULong.valueOf("9223372036854775808"));
         initialValues.put(130, 3.14159d);
         initialValues.put(140, true);
         initialValues.put(150, Hex.decodeHex("0123456789ABCDEF".toCharArray()));
@@ -57,6 +59,8 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
         // multi
         initialValues.put(1110, LwM2mResourceInstance.newStringInstance(0, "initial value"));
         initialValues.put(1120, LwM2mResourceInstance.newIntegerInstance(0, 64l));
+        initialValues.put(1125,
+                LwM2mResourceInstance.newUnsignedIntegerInstance(0, ULong.valueOf("9223372036854775808")));
         initialValues.put(1130, LwM2mResourceInstance.newFloatInstance(0, 3.14159d));
         initialValues.put(1140, LwM2mResourceInstance.newBooleanInstance(0, true));
         initialValues.put(1150,
@@ -73,6 +77,7 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
         // single
         clearedValues.put(110, "");
         clearedValues.put(120, 0l);
+        clearedValues.put(125, ULong.valueOf(0l));
         clearedValues.put(130, 0.0d);
         clearedValues.put(140, false);
         clearedValues.put(150, new byte[0]);
@@ -82,6 +87,7 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
         // multi
         clearedValues.put(1110, Collections.EMPTY_MAP);
         clearedValues.put(1120, Collections.EMPTY_MAP);
+        clearedValues.put(1125, Collections.EMPTY_MAP);
         clearedValues.put(1130, Collections.EMPTY_MAP);
         clearedValues.put(1140, Collections.EMPTY_MAP);
         clearedValues.put(1150, Collections.EMPTY_MAP);
@@ -103,6 +109,7 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
         // single
         randomValues.put(110, new StringGenerator().generate());
         randomValues.put(120, new LongGenerator().generate());
+        randomValues.put(125, new ULongGenerator().generate());
         randomValues.put(130, new DoubleGenerator().generate());
         randomValues.put(140, new BooleanGenerator().generate());
         randomValues.put(150, new BytesGenerator().generate());
@@ -112,6 +119,7 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
         // multi
         randomValues.put(1110, generateResourceInstances(new StringGenerator()));
         randomValues.put(1120, generateResourceInstances(new LongGenerator()));
+        randomValues.put(1125, generateResourceInstances(new ULongGenerator()));
         randomValues.put(1130, generateResourceInstances(new DoubleGenerator()));
         randomValues.put(1140, generateResourceInstances(new BooleanGenerator()));
         randomValues.put(1150, generateResourceInstances(new BytesGenerator()));
@@ -179,6 +187,13 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
         @Override
         public Long generate() {
             return random.nextLong();
+        }
+    }
+
+    class ULongGenerator implements ValueGenerator<ULong> {
+        @Override
+        public ULong generate() {
+            return ULong.valueOf(random.nextLong());
         }
     }
 
