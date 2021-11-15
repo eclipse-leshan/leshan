@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.leshan.core.util.StringUtils;
+
 public class Arguments implements Iterable<Argument> {
 
     private final List<Argument> argumentList;
@@ -15,11 +17,11 @@ public class Arguments implements Iterable<Argument> {
         this.argumentList = argumentList;
     }
 
-    public Arguments(Map<Integer, String> argumentsMap) {
+    public Arguments(Map<Integer, String> argumentsMap) throws InvalidArgumentException {
         this(buildArgumentList(argumentsMap));
     }
 
-    private static List<Argument> buildArgumentList(Map<Integer, String> argumentsMap) {
+    private static List<Argument> buildArgumentList(Map<Integer, String> argumentsMap) throws InvalidArgumentException {
         List<Argument> argumentList = new ArrayList<>(2);
         for (Integer key : argumentsMap.keySet()) {
             argumentList.add(new Argument(key, argumentsMap.get(key)));
@@ -65,19 +67,75 @@ public class Arguments implements Iterable<Argument> {
         return size() == 0;
     }
 
-    static Arguments parse(String content) {
+    static Arguments parse(String content) throws InvalidArgumentException {
         List<Argument> argumentList = new ArrayList<>();
 
         if (content != null && !content.isEmpty()) {
-            String[] arguments = content.split(",");
-            for (String argument : arguments) {
-                String[] keyValue = argument.split("=");
-                String value = keyValue.length == 1 ? null : keyValue[1].substring(1, keyValue[1].length() - 1);
-                argumentList.add(new Argument(Integer.parseInt(keyValue[0]), value));
+            int beginProbe = 0;
+            int validBegin = 0;
+            while (true) {
+                int separatorIndex = content.indexOf(',', beginProbe);
+                if (separatorIndex == -1) {
+                    break;
+                }
+                String argument = content.substring(validBegin, separatorIndex);
+
+                ArgumentParser argumentParser = new ArgumentParser(argument, content);
+                if (argumentParser.isValid()) {
+                    argumentList.add(argumentParser.parse());
+                    validBegin = separatorIndex + 1;
+                }
+                beginProbe = separatorIndex + 1;
             }
+
+            String argument = content.substring(beginProbe);
+            ArgumentParser argumentParser = new ArgumentParser(argument, content);
+            argumentList.add(argumentParser.parse());
         }
 
         return new Arguments(argumentList);
+    }
+
+    private static class ArgumentParser {
+        private final String digitPart;
+        private final String valueDecorated;
+        private final String content;
+
+        public ArgumentParser(String argument, String content) {
+            this.content = content;
+            String[] keyValue = argument.split("=", 2);
+            digitPart = keyValue[0];
+            valueDecorated = keyValue.length == 1 ? null : keyValue[1];
+        }
+
+        private void validate() throws InvalidArgumentException {
+            if (!isValid()) {
+                throw new InvalidArgumentException("Unable to parse Arguments [%s]", content);
+            }
+        }
+
+        public Argument parse() throws InvalidArgumentException {
+            validate();
+            int digit = Integer.parseInt(digitPart);
+            String value = null;
+            if (valueDecorated != null) {
+                value = StringUtils.removeEnd(StringUtils.removeStart(valueDecorated, "'"), "'");
+            }
+
+            return new Argument(digit, value);
+        }
+
+        public boolean isValid() {
+            if (digitPart.length() != 1) {
+                return false;
+            }
+
+            if (valueDecorated != null) {
+                return valueDecorated.length() >= 2 && valueDecorated.charAt(0) == '\''
+                        && valueDecorated.charAt(valueDecorated.length() - 1) == '\'';
+            }
+            return true;
+        }
     }
 
     public byte[] serialize() {

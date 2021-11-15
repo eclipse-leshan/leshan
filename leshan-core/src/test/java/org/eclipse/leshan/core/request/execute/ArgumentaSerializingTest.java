@@ -11,7 +11,7 @@ import org.junit.Test;
 public class ArgumentaSerializingTest {
 
     @Test
-    public void should_serialize_arguments_into_text() {
+    public void should_serialize_arguments_into_text() throws InvalidArgumentException {
         List<Argument> argumentList = new ArrayList<>();
         argumentList.add(new Argument(3, "stringValue"));
 
@@ -21,7 +21,7 @@ public class ArgumentaSerializingTest {
     }
 
     @Test
-    public void should_serialize_multiple_arguments_into_text() {
+    public void should_serialize_multiple_arguments_into_text() throws InvalidArgumentException {
         List<Argument> argumentList = new ArrayList<>();
         argumentList.add(new Argument(3, "stringValue"));
         argumentList.add(new Argument(4));
@@ -32,7 +32,7 @@ public class ArgumentaSerializingTest {
     }
 
     @Test
-    public void should_serialize_argument_with_empty_string_value_into_text() {
+    public void should_serialize_argument_with_empty_string_value_into_text() throws InvalidArgumentException {
         List<Argument> argumentList = new ArrayList<>();
         argumentList.add(new Argument(3, ""));
 

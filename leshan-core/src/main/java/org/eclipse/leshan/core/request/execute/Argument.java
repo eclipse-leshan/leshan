@@ -1,19 +1,38 @@
 package org.eclipse.leshan.core.request.execute;
 
+import java.util.regex.Pattern;
+
 public class Argument {
+
+    private static final Pattern valuePattern = Pattern.compile("[!\\x23-\\x26\\x28-\\x5B\\x5D-\\x7E]*");
 
     private final int digit;
 
     private final String value;
 
-    public Argument(int digit, String value) {
+    public Argument(int digit, String value) throws InvalidArgumentException {
+        validateDigit(digit);
+        validateValue(digit, value);
         this.digit = digit;
         this.value = value;
     }
 
-    public Argument(int digit) {
+    public Argument(int digit) throws InvalidArgumentException {
+        validateDigit(digit);
         this.digit = digit;
         this.value = null;
+    }
+
+    private void validateDigit(int digit) throws InvalidArgumentException {
+        if (digit < 0 || digit > 9) {
+            throw new InvalidArgumentException("Invalid Argument digit [%s]", Integer.toString(digit));
+        }
+    }
+
+    private void validateValue(int digit, String value) throws InvalidArgumentException {
+        if (value != null && !valuePattern.matcher(value).matches()) {
+            throw new InvalidArgumentException("Invalid Argument value [%s] for digit [%s]", value, digit);
+        }
     }
 
     public int getDigit() {

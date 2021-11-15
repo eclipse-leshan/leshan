@@ -93,7 +93,11 @@ public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteRespons
         if (!path.isResource())
             throw new InvalidRequestException("Invalid path %s : Only resource can be executed.", path);
 
-        arguments = Arguments.parse(parameters);
+        try {
+            arguments = Arguments.parse(parameters);
+        } catch (InvalidArgumentException e) {
+            throw new InvalidRequestException(e, "Invalid Execute request : [%s]", e.getMessage());
+        }
     }
 
     @Override

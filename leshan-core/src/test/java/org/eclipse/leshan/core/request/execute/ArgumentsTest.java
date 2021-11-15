@@ -12,7 +12,7 @@ import org.junit.Test;
 public class ArgumentsTest {
 
     @Test
-    public void should_create_arguments_from_map() {
+    public void should_create_arguments_from_map() throws InvalidArgumentException {
         Map<Integer, String> argumentsMap = new HashMap<>();
         argumentsMap.put(3, "stringValue");
         argumentsMap.put(4, null);
@@ -29,7 +29,7 @@ public class ArgumentsTest {
     }
 
     @Test
-    public void should_create_map_from_arguments() {
+    public void should_create_map_from_arguments() throws InvalidArgumentException {
         List<Argument> argumentList = new ArrayList<>();
         argumentList.add(new Argument(3, "stringValue"));
         argumentList.add(new Argument(4));
