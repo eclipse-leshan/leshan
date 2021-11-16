@@ -34,6 +34,7 @@ import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.util.Hex;
+import org.eclipse.leshan.core.util.datatype.ULong;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -218,7 +219,27 @@ public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
             }
             raiseUnexpectedType(val, type, "object{objectId:integer, objectInstanceId:integer}", val.getNodeType());
             break;
-
+        case UNSIGNED_INTEGER:
+            // we use String for UNSIGNED_INTEGER because
+            // Javascript number does not support safely number larger than Number.MAX_SAFE_INTEGER (2^53 - 1)
+            // without usage of BigInt...
+            if (val.isTextual()) {
+                try {
+                    return ULong.valueOf(val.asText());
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException(String.format("%s is not a valid Unsigned Long.", val), e);
+                }
+            } else if (val.canConvertToExactIntegral()) {
+                // we also tolerate number but this is not advised
+                if (val.canConvertToLong()) {
+                    return ULong.valueOf(val.asLong());
+                } else {
+                    return ULong.valueOf(val.bigIntegerValue());
+                }
+            } else {
+                raiseUnexpectedType(val, type, "string", val.getNodeType(), "(number is tolerated but not advised)");
+            }
+            break;
         default:
             break;
         }

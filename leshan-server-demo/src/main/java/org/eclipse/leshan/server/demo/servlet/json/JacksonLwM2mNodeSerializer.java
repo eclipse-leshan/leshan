@@ -88,7 +88,8 @@ public class JacksonLwM2mNodeSerializer extends StdSerializer<LwM2mNode> {
         case OPAQUE:
             return new String(Hex.encodeHex((byte[]) value));
         case INTEGER:
-            // we use String for INTEGER because
+        case UNSIGNED_INTEGER:
+            // we use String for INTEGER and UNSIGNED INTEGER because
             // Javascript number does not support safely number larger than Number.MAX_SAFE_INTEGER (2^53 - 1)
             // without usage of BigInt...
             return value.toString();
