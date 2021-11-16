@@ -15,25 +15,25 @@
     v-if="resourcedef.type == 'boolean'"
     :resourcedef="resourcedef"
     :value="value"
-    @input="$emit('input', convertValue($event))"
+    @input="$emit('input', $event)"
   />
   <opaque-value-input
     v-else-if="resourcedef.type == 'opaque'"
     :resourcedef="resourcedef"
     :value="value"
-    @input="$emit('input', convertValue($event))"
+    @input="$emit('input', $event)"
   />
   <date-time-value-input
     v-else-if="resourcedef.type == 'time'"
     :resourcedef="resourcedef"
     :value="value"
-    @input="$emit('input', convertValue($event))"
+    @input="$emit('input', $event)"
   />
   <obj-link-value-input
     v-else-if="resourcedef.type == 'objlnk'"
     :resourcedef="resourcedef"
     :value="value"
-    @input="$emit('input', convertValue($event))"
+    @input="$emit('input', $event)"
   />
   <v-text-field
     v-else
@@ -41,14 +41,13 @@
     :hint="hint"
     :suffix="resourcedef.units"
     :value="value"
-    @input="$emit('input', convertValue($event))"
+    @input="$emit('input', $event)"
   />
 </template>
 <script>
 import BooleanValueInput from "./BooleanValueInput.vue";
 import DateTimeValueInput from "./DateTimeValueInput.vue";
 import OpaqueValueInput from "./OpaqueValueInput.vue";
-import { isNumber } from "../../../js/utils.js";
 import ObjLinkValueInput from './ObjLinkValueInput.vue';
 
 /**
@@ -60,21 +59,6 @@ export default {
     value: null, // the input value for this LWM2M Node (v-model)
     resourcedef: Object, // the model of the resource
     hint: { type: String, default: null }, // hint displayed on `?` tooltip. If `null`, the "?" icon is not displayed"
-  },
-  methods: {
-    convertValue(strValue) {
-      var val = strValue;
-      if (this.resourcedef.type != undefined) {
-        switch (this.resourcedef.type) {
-          case "float":
-            val = isNumber(val) ? Number(val) : strValue;
-            break;
-          default:
-            val = strValue;
-        }
-      }
-      return val;
-    },
   },
 };
 </script>

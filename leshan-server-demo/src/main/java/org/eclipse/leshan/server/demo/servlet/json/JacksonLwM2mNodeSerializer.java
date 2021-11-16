@@ -92,6 +92,10 @@ public class JacksonLwM2mNodeSerializer extends StdSerializer<LwM2mNode> {
             // Javascript number does not support safely number larger than Number.MAX_SAFE_INTEGER (2^53 - 1)
             // without usage of BigInt...
             return value.toString();
+        case FLOAT:
+            // We use String to be consistent with INTEGER but to be sure to not get any restriction from javascript
+            // world.
+            return value.toString();
         default:
             return value;
         }

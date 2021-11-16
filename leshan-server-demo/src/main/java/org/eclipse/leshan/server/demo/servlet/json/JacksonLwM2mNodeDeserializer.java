@@ -171,11 +171,24 @@ public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
             }
             break;
         case FLOAT:
-            // TODO we should maybe be more strict but didn't find obvious way for now.
-            if (val.isNumber()) {
+            // We use String to be consistent with INTEGER but to be sure to not get any restriction from javascript
+            // world.
+            if (val.isTextual()) {
+                try {
+                    double d = Double.parseDouble(val.asText());
+                    if (Double.isNaN(d) || Double.isInfinite(d)) {
+                        throw new IllegalArgumentException(String.format("%s is not a valid Double.", val));
+                    }
+                    return d;
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException(String.format("%s is not a valid Double.", val), e);
+                }
+            } else if (val.isNumber()) {
+                // TODO we should maybe be more strict but didn't find obvious way for now.
+                // we also tolerate number but this is not advice
                 return val.asDouble();
             } else {
-                raiseUnexpectedType(val, type, "number(float)", val.getNodeType());
+                raiseUnexpectedType(val, type, "string", val.getNodeType(), "(number is tolerated but not adviced)");
             }
             break;
         case TIME:
