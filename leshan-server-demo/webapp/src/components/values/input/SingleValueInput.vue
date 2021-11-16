@@ -48,7 +48,7 @@
 import BooleanValueInput from "./BooleanValueInput.vue";
 import DateTimeValueInput from "./DateTimeValueInput.vue";
 import OpaqueValueInput from "./OpaqueValueInput.vue";
-import { isInteger, isNumber } from "../../../js/utils.js";
+import { isNumber } from "../../../js/utils.js";
 import ObjLinkValueInput from './ObjLinkValueInput.vue';
 
 /**
@@ -66,9 +66,6 @@ export default {
       var val = strValue;
       if (this.resourcedef.type != undefined) {
         switch (this.resourcedef.type) {
-          case "integer":
-            val = isInteger(strValue) ? Number(val) : strValue;
-            break;
           case "float":
             val = isNumber(val) ? Number(val) : strValue;
             break;

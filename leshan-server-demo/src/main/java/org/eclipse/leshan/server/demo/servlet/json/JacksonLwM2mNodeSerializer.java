@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -61,12 +62,7 @@ public class JacksonLwM2mNodeSerializer extends StdSerializer<LwM2mNode> {
             if (rsc.isMultiInstances()) {
                 Map<String, Object> values = new HashMap<>();
                 for (Entry<Integer, LwM2mResourceInstance> entry : rsc.getInstances().entrySet()) {
-                    if (rsc.getType() == org.eclipse.leshan.core.model.ResourceModel.Type.OPAQUE) {
-                        values.put(entry.getKey().toString(),
-                                new String(Hex.encodeHex((byte[]) entry.getValue().getValue())));
-                    } else {
-                        values.put(entry.getKey().toString(), entry.getValue().getValue());
-                    }
+                    values.put(entry.getKey().toString(), convertValue(rsc.getType(), entry.getValue().getValue()));
                 }
                 element.put("kind", "multiResource");
                 element.put("values", values);
@@ -74,23 +70,30 @@ public class JacksonLwM2mNodeSerializer extends StdSerializer<LwM2mNode> {
             } else {
                 element.put("kind", "singleResource");
                 element.put("type", rsc.getType());
-                if (rsc.getType() == org.eclipse.leshan.core.model.ResourceModel.Type.OPAQUE) {
-                    element.put("value", new String(Hex.encodeHex((byte[]) rsc.getValue())));
-                } else {
-                    element.put("value", rsc.getValue());
-                }
+                element.put("value", convertValue(rsc.getType(), rsc.getValue()));
             }
         } else if (src instanceof LwM2mResourceInstance) {
             element.put("kind", "resourceInstance");
             LwM2mResourceInstance rsc = (LwM2mResourceInstance) src;
             element.put("type", rsc.getType());
-            if (rsc.getType() == org.eclipse.leshan.core.model.ResourceModel.Type.OPAQUE) {
-                element.put("value", new String(Hex.encodeHex((byte[]) rsc.getValue())));
-            } else {
-                element.put("value", rsc.getValue());
-            }
+            element.put("value", convertValue(rsc.getType(), rsc.getValue()));
+
         }
 
         gen.writeObject(element);
+    }
+
+    private Object convertValue(Type type, Object value) {
+        switch (type) {
+        case OPAQUE:
+            return new String(Hex.encodeHex((byte[]) value));
+        case INTEGER:
+            // we use String for INTEGER because
+            // Javascript number does not support safely number larger than Number.MAX_SAFE_INTEGER (2^53 - 1)
+            // without usage of BigInt...
+            return value.toString();
+        default:
+            return value;
+        }
     }
 }

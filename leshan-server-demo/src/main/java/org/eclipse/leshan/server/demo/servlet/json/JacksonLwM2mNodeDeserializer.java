@@ -154,10 +154,20 @@ public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
             }
             break;
         case INTEGER:
-            if (val.canConvertToLong() && val.canConvertToExactIntegral()) {
+            // we use String for INTEGER because
+            // Javascript number does not support safely number larger than Number.MAX_SAFE_INTEGER (2^53 - 1)
+            // without usage of BigInt...
+            if (val.isTextual()) {
+                try {
+                    return Long.parseLong(val.asText());
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException(String.format("%s is not a valid Long.", val), e);
+                }
+            } else if (val.canConvertToLong() && val.canConvertToExactIntegral()) {
+                // we also tolerate number but this is not advised
                 return val.asLong();
             } else {
-                raiseUnexpectedType(val, type, "number(long)", val.getNodeType());
+                raiseUnexpectedType(val, type, "string", val.getNodeType(), "(number is tolerated but not advised)");
             }
             break;
         case FLOAT:
@@ -204,8 +214,13 @@ public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
 
     private void raiseUnexpectedType(JsonNode value, ResourceModel.Type modelType, String expectedType,
             JsonNodeType currentType) {
-        throw new IllegalArgumentException(
-                String.format("Unexpected JSON type of 'value' field [%s]: a JSON %s is expected for %s but was %s",
-                        value.toString(), expectedType, modelType, currentType.toString().toLowerCase()));
+        raiseUnexpectedType(value, modelType, expectedType, currentType, null);
+    }
+
+    private void raiseUnexpectedType(JsonNode value, ResourceModel.Type modelType, String expectedType,
+            JsonNodeType currentType, String postDescription) {
+        throw new IllegalArgumentException(String.format(
+                "Unexpected JSON type of 'value' field [%s]: a JSON %s is expected for %s but was %s. %s",
+                value.toString(), expectedType, modelType, currentType.toString().toLowerCase(), postDescription));
     }
 }
