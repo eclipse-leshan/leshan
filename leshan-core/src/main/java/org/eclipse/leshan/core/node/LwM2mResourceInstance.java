@@ -101,6 +101,10 @@ public class LwM2mResourceInstance implements LwM2mNode {
             if (!(value instanceof ObjectLink))
                 throw new LwM2mNodeException(doesNotMatchMessage);
             break;
+        case UNSIGNED_INTEGER:
+            if (!(value instanceof ULong))
+                throw new LwM2mNodeException(doesNotMatchMessage);
+            break;
         default:
             throw new LwM2mNodeException(String.format("Type %s is not supported", type.name()));
         }
