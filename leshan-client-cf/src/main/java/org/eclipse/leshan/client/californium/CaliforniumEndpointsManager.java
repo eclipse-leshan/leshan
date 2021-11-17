@@ -163,14 +163,10 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
 
                 if (certificateUsage == CertificateUsage.CA_CONSTRAINT) {
                     X509Certificate[] trustedCertificates = null;
-                    // - trustStore is combination of client's configured trust store and provided certificate in server
-                    // info
-                    ArrayList<X509Certificate> newTrustedCertificatesList = new ArrayList<>();
                     if (this.trustStore != null) {
-                        newTrustedCertificatesList.addAll(CertPathUtil.toX509CertificatesList(this.trustStore));
+                        trustedCertificates = CertPathUtil.toX509CertificatesList(this.trustStore)
+                                .toArray(new X509Certificate[this.trustStore.size()]);
                     }
-                    newTrustedCertificatesList.add((X509Certificate) serverInfo.serverCertificate);
-                    trustedCertificates = newTrustedCertificatesList.toArray(new X509Certificate[0]);
                     newBuilder.setAdvancedCertificateVerifier(
                             new CaConstraintCertificateVerifier(serverInfo.serverCertificate, trustedCertificates));
                 } else if (certificateUsage == CertificateUsage.SERVICE_CERTIFICATE_CONSTRAINT) {
@@ -179,7 +175,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                     // - trustStore is client's configured trust store
                     if (this.trustStore != null) {
                         trustedCertificates = CertPathUtil.toX509CertificatesList(this.trustStore)
-                                .toArray(new X509Certificate[0]);
+                                .toArray(new X509Certificate[this.trustStore.size()]);
                     }
 
                     newBuilder.setAdvancedCertificateVerifier(new ServiceCertificateConstraintCertificateVerifier(

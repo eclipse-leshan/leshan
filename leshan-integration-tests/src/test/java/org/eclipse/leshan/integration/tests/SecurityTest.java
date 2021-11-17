@@ -22,8 +22,11 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
@@ -788,6 +791,45 @@ public class SecurityTest {
         // check we can send request to client.
         ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
         assertTrue(response.isSuccess());
+
+    }
+
+    /**
+     * <pre>
+     * Test scenario:
+     * - Certificate Usage = CA constraint
+     * - Server Certificate = intermediate CA certificate
+     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = does not contain server root CA. 
+     *
+     * Expected outcome:
+     * - Client is not able to connect as our CaConstraintCertificateVerifier does not support trust anchor mode.
+     * </pre>
+     */
+    @Test
+    public void registered_device_with_empty_truststore_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_ca_intca_given()
+            throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
+        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
+                helper.trustedCertificates, true);
+
+        helper.server.start();
+
+        helper.setEndpointNameFromX509(helper.clientX509Cert);
+
+        // create a not empty trustore which does not contains any certificate of server certchain.
+        List<Certificate> truststore = new ArrayList<>();
+        truststore.add(helper.serverIntX509CertSelfSigned); // e.g. we use a selfsigned certificate not used in
+                                                            // certchain of this test.
+
+        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
+                truststore, helper.serverIntX509CertChain[1], CertificateUsage.CA_CONSTRAINT);
+
+        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+
+        helper.assertClientNotRegisterered();
+        helper.client.start();
+        helper.ensureNoRegistration(1);
 
     }
 

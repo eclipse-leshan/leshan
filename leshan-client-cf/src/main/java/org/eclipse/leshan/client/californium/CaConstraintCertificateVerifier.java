@@ -50,6 +50,11 @@ import org.eclipse.leshan.core.util.Validate;
  * 
  * For details about Certificate Usage please see:
  * <a href="https://tools.ietf.org/html/rfc6698#section-2.1.1">rfc6698#section-2.1.1</a> - The Certificate Usage Field
+ * <p>
+ * The RFC says this certificate usage allows both trust anchors and CA certificates, but this raises some issue like
+ * explained in <a href="https://github.com/eclipse/leshan/issues/936">leshan issue #936</a>. So this implementation
+ * does not support CA certificate as trust anchors. If you need trust anchor usage, you should rather use
+ * {@link TrustAnchorAssertionCertificateVerifier}.
  */
 public class CaConstraintCertificateVerifier extends BaseCertificateVerifier {
 
@@ -71,6 +76,7 @@ public class CaConstraintCertificateVerifier extends BaseCertificateVerifier {
 
         validateCertificateChainNotEmpty(messageChain);
         X509Certificate receivedServerCertificate = validateReceivedCertificateIsSupported(messageChain);
+        validateNotDirectTrust(messageChain);
 
         // - must do PKIX validation with trustStore
         CertPath certPath;
@@ -94,4 +100,13 @@ public class CaConstraintCertificateVerifier extends BaseCertificateVerifier {
         return certPath;
     }
 
+    protected void validateNotDirectTrust(CertPath messageChain) throws HandshakeException {
+        Certificate certificate = messageChain.getCertificates().get(0);
+        if (certificate.equals(caCertificate)) {
+            AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE);
+            throw new HandshakeException(
+                    "Invalid certificate path : direct trust is not allowed with 'CA Constraint' usage. Use 'Service Certificate Constraint' instead.",
+                    alert);
+        }
+    }
 }
