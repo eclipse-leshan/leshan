@@ -192,7 +192,7 @@ class Store {
     if (node.kind === "singleResource") {
       this.newResourceValue(endpoint, path, node, supposed);
     } else if (node.kind === "resourceInstance") {
-      this.newResourceInstanceValueFromPath(endpoint, path, node, supposed);
+      this.newResourceInstanceValueFromPath(endpoint, path, node.value, supposed);
     } else {
       console.log(node.kind, " not yet supported");
     }
