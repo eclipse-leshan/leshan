@@ -41,7 +41,11 @@ import org.eclipse.leshan.server.bootstrap.demo.servlet.EventServlet;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.ServerServlet;
 import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServer;
 import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServerBuilder;
+import org.eclipse.leshan.server.core.demo.json.servlet.SecurityServlet;
 import org.eclipse.leshan.server.model.VersionedBootstrapModelProvider;
+import org.eclipse.leshan.server.security.BootstrapSecurityStoreAdapter;
+import org.eclipse.leshan.server.security.EditableSecurityStore;
+import org.eclipse.leshan.server.security.FileSecurityStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,14 +80,15 @@ public class LeshanBootstrapServerDemo {
             System.exit(0);
 
         try {
-            // Create configStore
+            // Create Stores
             EditableBootstrapConfigStore bsConfigStore = new JSONFileBootstrapStore(cli.main.configFilename);
+            EditableSecurityStore securityStore = new FileSecurityStore("data/bssecurity.data");
 
             // Create LWM2M Server
-            LeshanBootstrapServer lwm2mBsServer = createBsLeshanServer(cli, bsConfigStore);
+            LeshanBootstrapServer lwm2mBsServer = createBsLeshanServer(cli, bsConfigStore, securityStore);
 
             // Create Web Server
-            Server webServer = createJettyServer(cli, lwm2mBsServer, bsConfigStore);
+            Server webServer = createJettyServer(cli, lwm2mBsServer, bsConfigStore, securityStore);
 
             // Start servers
             lwm2mBsServer.start();
@@ -103,7 +108,7 @@ public class LeshanBootstrapServerDemo {
     }
 
     public static LeshanBootstrapServer createBsLeshanServer(LeshanBsServerDemoCLI cli,
-            EditableBootstrapConfigStore bsConfigStore) throws Exception {
+            EditableBootstrapConfigStore bsConfigStore, EditableSecurityStore securityStore) throws Exception {
         // Prepare LWM2M server
         LeshanBootstrapServerBuilder builder = new LeshanBootstrapServerBuilder();
 
@@ -159,15 +164,14 @@ public class LeshanBootstrapServerDemo {
         }
         builder.setObjectModelProvider(new VersionedBootstrapModelProvider(models));
 
-        // Set security store & config store
         builder.setConfigStore(bsConfigStore);
-        builder.setSecurityStore(new BootstrapConfigSecurityStore(bsConfigStore));
+        builder.setSecurityStore(new BootstrapSecurityStoreAdapter(securityStore));
 
         return builder.build();
     }
 
     private static Server createJettyServer(LeshanBsServerDemoCLI cli, LeshanBootstrapServer bsServer,
-            EditableBootstrapConfigStore bsStore) {
+            EditableBootstrapConfigStore bsStore, EditableSecurityStore securityStore) {
         // Now prepare and start jetty
         InetSocketAddress jettyAddr;
         if (cli.main.webhost == null) {
@@ -181,7 +185,7 @@ public class LeshanBootstrapServerDemo {
         root.setResourceBase(LeshanBootstrapServerDemo.class.getClassLoader().getResource("webapp").toExternalForm());
         root.setParentLoaderPriority(true);
 
-        ServletHolder bsServletHolder = new ServletHolder(new BootstrapServlet(bsStore));
+        ServletHolder bsServletHolder = new ServletHolder(new BootstrapServlet(bsStore, securityStore));
         root.addServlet(bsServletHolder, "/api/bootstrap/*");
 
         ServletHolder serverServletHolder;
@@ -191,6 +195,15 @@ public class LeshanBootstrapServerDemo {
             serverServletHolder = new ServletHolder(new ServerServlet(bsServer, cli.identity.getCertChain()[0]));
         }
         root.addServlet(serverServletHolder, "/api/server/*");
+
+        ServletHolder securityServletHolder;
+        if (cli.identity.isRPK()) {
+            securityServletHolder = new ServletHolder(new SecurityServlet(securityStore, cli.identity.getPublicKey()));
+        } else {
+            securityServletHolder = new ServletHolder(
+                    new SecurityServlet(securityStore, cli.identity.getCertChain()[0]));
+        }
+        root.addServlet(securityServletHolder, "/api/security/*");
 
         EventServlet eventServlet = new EventServlet(bsServer);
         ServletHolder eventServletHolder = new ServletHolder(eventServlet);
