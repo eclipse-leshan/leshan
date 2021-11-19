@@ -39,18 +39,6 @@ Contributors:
             <groupId>org.eclipse.leshan</groupId>
             <artifactId>leshan-server-core-demo</artifactId>
         </dependency>
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-webapp</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlets</artifactId>
-        </dependency>
 
         <!-- runtime dependencies -->
         <dependency>
