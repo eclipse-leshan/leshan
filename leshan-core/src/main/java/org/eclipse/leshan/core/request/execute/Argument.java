@@ -72,29 +72,4 @@ public class Argument {
             return false;
         return true;
     }
-
-    public static ArgumentBuilder builder() {
-        return new ArgumentBuilder();
-    }
-
-    public static class ArgumentBuilder {
-        private Integer digit;
-
-        private String value;
-
-        public ArgumentBuilder digit(int digit) {
-            this.digit = digit;
-            return this;
-        }
-
-        public ArgumentBuilder value(String value) {
-            this.value = value;
-            return this;
-        }
-
-        public Argument build() throws InvalidArgumentException {
-            return new Argument(digit, value);
-        }
-    }
-
 }
