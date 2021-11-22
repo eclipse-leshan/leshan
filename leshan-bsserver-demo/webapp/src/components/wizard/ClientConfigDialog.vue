@@ -168,8 +168,8 @@ export default {
         };
         this.currentStep = 1;
         for (let i = 1; i <= this.nbSteps; i++) {
-          if (this.$refs["step" + i]) this.$refs["step" + i].resetValidation();
           this.valid[i] = true;
+          if (this.$refs["step" + i]) this.$refs["step" + i].resetValidation();
         }
       }
     },
