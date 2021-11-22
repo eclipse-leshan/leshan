@@ -96,7 +96,7 @@
 </template>
 <script>
 import { configsFromRestToUI, configFromUIToRest } from "../js/bsconfigutil.js";
-import ClientConfigDialog from "../components/ClientConfigDialog.vue";
+import ClientConfigDialog from "../components/wizard/ClientConfigDialog.vue";
 
 export default {
   components: { ClientConfigDialog },

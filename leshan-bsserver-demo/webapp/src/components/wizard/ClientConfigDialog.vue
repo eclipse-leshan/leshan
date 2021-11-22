@@ -41,88 +41,31 @@
 
         <v-stepper-items>
           <v-stepper-content step="1">
-            <v-card class="mb-12" elevation="0">
-              <v-card-text class="pb-0">
-                <p>
-                  To allow a client to bootstrap to this server you need to
-                  create a configuration for it.
-                </p>
-                <p>
-                  This wizard is pretty limitted. It create a configuration
-                  which starts by deleting objects <code>/0</code> and
-                  <code>/1</code>, then write instance for those objects for 1
-                  LWM2M server and 1 LWM2M BootstrapServer with provided data.
-                </p>
-                <p>
-                  How the client is supposed to connect to this bootstrap server
-                  <a
-                    href="https://github.com/eclipse/leshan/issues/690#issuecomment-490949978"
-                    target="_blank"
-                    >is guessed</a
-                  >
-                  from the
-                  <strong>LWM2M Bootstrap Server Configuration</strong>.
-                </p>
-              </v-card-text>
-              <v-form ref="form1" v-model="valid[1]">
-                <v-text-field
-                  v-model="config.endpoint"
-                  :rules="[(v) => !!v || 'Endpoint is required']"
-                  label="Your Client Endpoint Name"
-                  required
-                  autofocus
-                ></v-text-field>
-              </v-form>
-            </v-card>
+            <endpoint-step
+              ref="step1"
+              :valid.sync="valid[1]"
+              v-model="config.endpoint"
+            />
           </v-stepper-content>
-
           <v-stepper-content step="2">
-            <v-card class="mb-12" elevation="0">
-              <v-card-text class="pb-0">
-                <p>
-                  This information will be used to add a
-                  <strong>LWM2M Server</strong> to your LWM2M Client during the
-                  bootstrap Session by writing 1 instance for objects
-                  <code>/0</code> and <code>/1</code>.
-                </p>
-              </v-card-text>
-              <v-form ref="form2" v-model="valid[2]">
-                <server-input
-                  v-model="config.dm"
-                  :defaultNoSecValue="defval.dm.url.nosec"
-                  :defaultSecureValue="defval.dm.url.sec"
-                />
-              </v-form>
-            </v-card>
+            <server-step
+              ref="step2"
+              :valid.sync="valid[2]"
+              v-model="config.dm"
+              :defaultNoSecValue="defval.dm.url.nosec"
+              :defaultSecureValue="defval.dm.url.sec"
+            />
           </v-stepper-content>
           <v-stepper-content step="3">
-            <v-card class="mb-12" elevation="0">
-              <v-card-text class="pb-0">
-                <p>
-                  This information will be used to add a
-                  <strong>LWM2M Bootstrap Server</strong> to your LWM2M Client
-                  during the bootstrap Session by writing an instance for object
-                  <code>/0</code>.
-                </p>
-                <p>
-                  This data will also be used
-                  <a
-                    href="https://github.com/eclipse/leshan/issues/690#issuecomment-490949978"
-                    target="_blank"
-                    >to know how the client must connect to this server</a
-                  >.
-                </p>
-              </v-card-text>
-              <v-form ref="form3" v-model="valid[3]">
-                <server-input
-                  v-model="config.bs"
-                  :defaultNoSecValue="defval.bs.url.nosec"
-                  :defaultSecureValue="defval.bs.url.sec"
-                  :defaultx509="defaultx509"
-                  :defaultrpk="defaultrpk" 
-                />
-              </v-form>
-            </v-card>
+            <bootstrap-server-step
+              ref="step3"
+              :valid.sync="valid[3]"
+              v-model="config.bs"
+              :defaultNoSecValue="defval.bs.url.nosec"
+              :defaultSecureValue="defval.bs.url.sec"
+              :defaultx509="defaultx509"
+              :defaultrpk="defaultrpk"
+            />
           </v-stepper-content>
         </v-stepper-items>
       </v-stepper>
@@ -159,11 +102,13 @@
   </v-dialog>
 </template>
 <script>
-import ServerInput from "./bsconfig/ServerInput.vue";
-import { toHex, base64ToBytes } from "../js/byteutils.js";
+import { toHex, base64ToBytes } from "../../js/byteutils.js";
+import EndpointStep from "./EndpointStep.vue";
+import ServerStep from "./ServerStep.vue";
+import BootstrapServerStep from "./BootstrapServerStep.vue";
 
 export default {
-  components: { ServerInput },
+  components: { EndpointStep, ServerStep, BootstrapServerStep },
   props: { value: Boolean /*open/close dialog*/ },
   data() {
     return {
@@ -175,8 +120,8 @@ export default {
         dm: { url: {} },
         bs: { url: {} },
       },
-      defaultrpk:{},
-      defaultx509:{},    
+      defaultrpk: {},
+      defaultx509: {},
     };
   },
   computed: {
@@ -200,11 +145,13 @@ export default {
     this.axios.get("api/server/security").then((response) => {
       if (response.data.certificate) {
         let certificate = response.data.certificate;
-        this.defaultx509.server_certificate = toHex(base64ToBytes(certificate.b64Der));
+        this.defaultx509.server_certificate = toHex(
+          base64ToBytes(certificate.b64Der)
+        );
         let pubkey = response.data.certificate.pubkey;
         this.defaultrpk.server_pub_key = toHex(base64ToBytes(pubkey.b64Der));
       } else if (response.data.pubkey) {
-        this.defaultx509={};
+        this.defaultx509 = {};
         let pubkey = response.data.certificate.pubkey;
         this.defaultrpk.server_pub_key = toHex(base64ToBytes(pubkey.b64Der));
       }
@@ -221,12 +168,13 @@ export default {
         };
         this.currentStep = 1;
         for (let i = 1; i <= this.nbSteps; i++) {
-          if (this.$refs["form" + i]) this.$refs["form" + i].resetValidation();
+          if (this.$refs["step" + i]) this.$refs["step" + i].resetValidation();
           this.valid[i] = true;
         }
       }
     },
   },
+
   methods: {
     applyDefault(c) {
       // do a deep copy
@@ -247,7 +195,7 @@ export default {
       // apply default rpk value for bs server
       if (res.bs.mode == "rpk") {
         for (const key in this.defaultrpk) {
-          if (!res.bs.details[key]){
+          if (!res.bs.details[key]) {
             res.bs.details[key] = this.defaultrpk[key];
           }
         }
@@ -255,7 +203,7 @@ export default {
       // apply default x509 value for bs server
       if (res.bs.mode == "x509") {
         for (const key in this.defaultx509) {
-          if (!res.bs.details[key]){
+          if (!res.bs.details[key]) {
             res.bs.details[key] = this.defaultx509[key];
           }
         }
