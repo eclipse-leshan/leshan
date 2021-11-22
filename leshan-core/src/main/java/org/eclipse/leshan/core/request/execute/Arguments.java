@@ -14,20 +14,8 @@ public class Arguments implements Iterable<Argument> {
 
     private final List<Argument> argumentList;
 
-    public Arguments(List<Argument> argumentList) {
+    private Arguments(List<Argument> argumentList) {
         this.argumentList = argumentList;
-    }
-
-    public Arguments(Map<Integer, String> argumentsMap) throws InvalidArgumentException {
-        this(buildArgumentList(argumentsMap));
-    }
-
-    private static List<Argument> buildArgumentList(Map<Integer, String> argumentsMap) throws InvalidArgumentException {
-        List<Argument> argumentList = new ArrayList<>(2);
-        for (Integer key : argumentsMap.keySet()) {
-            argumentList.add(new Argument(key, argumentsMap.get(key)));
-        }
-        return argumentList;
     }
 
     @Override
