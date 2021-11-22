@@ -10,22 +10,16 @@ public class Argument {
 
     private final String value;
 
-    public Argument(int digit, String value) throws InvalidArgumentException {
+    public Argument(Integer digit, String value) throws InvalidArgumentException {
         validateDigit(digit);
         validateValue(digit, value);
         this.digit = digit;
         this.value = value;
     }
 
-    public Argument(int digit) throws InvalidArgumentException {
-        validateDigit(digit);
-        this.digit = digit;
-        this.value = null;
-    }
-
-    private void validateDigit(int digit) throws InvalidArgumentException {
-        if (digit < 0 || digit > 9) {
-            throw new InvalidArgumentException("Invalid Argument digit [%s]", Integer.toString(digit));
+    private void validateDigit(Integer digit) throws InvalidArgumentException {
+        if (digit == null || digit < 0 || digit > 9) {
+            throw new InvalidArgumentException("Invalid Argument digit [%s]", digit != null ? Integer.toString(digit) : "null");
         }
     }
 
@@ -77,6 +71,30 @@ public class Argument {
         } else if (!value.equals(other.value))
             return false;
         return true;
+    }
+
+    public static ArgumentBuilder builder() {
+        return new ArgumentBuilder();
+    }
+
+    public static class ArgumentBuilder {
+        private Integer digit;
+
+        private String value;
+
+        public ArgumentBuilder digit(int digit) {
+            this.digit = digit;
+            return this;
+        }
+
+        public ArgumentBuilder value(String value) {
+            this.value = value;
+            return this;
+        }
+
+        public Argument build() throws InvalidArgumentException {
+            return new Argument(digit, value);
+        }
     }
 
 }

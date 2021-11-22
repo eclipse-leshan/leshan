@@ -30,11 +30,10 @@ public class ArgumentsTest {
 
     @Test
     public void should_create_map_from_arguments() throws InvalidArgumentException {
-        List<Argument> argumentList = new ArrayList<>();
-        argumentList.add(new Argument(3, "stringValue"));
-        argumentList.add(new Argument(4));
-
-        Arguments arguments = new Arguments(argumentList);
+        Arguments arguments = Arguments.builder() //
+                .addArgument(3, "stringValue") //
+                .addArgument(4) //
+                .build();
 
         Map<Integer, String> argumentsMap = arguments.toMap();
 

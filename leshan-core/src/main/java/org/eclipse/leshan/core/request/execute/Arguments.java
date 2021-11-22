@@ -2,6 +2,7 @@ package org.eclipse.leshan.core.request.execute;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -178,5 +179,35 @@ public class Arguments implements Iterable<Argument> {
     @Override
     public Iterator<Argument> iterator() {
         return argumentList.iterator();
+    }
+
+    public static ArgumentsBuilder builder() {
+        return new ArgumentsBuilder();
+    }
+
+    public static class ArgumentsBuilder {
+
+        private List<Map<Integer, String>> keyValuePairs = new ArrayList<>();
+
+        public ArgumentsBuilder addArgument(int digit, String value) {
+            keyValuePairs.add(Collections.singletonMap(digit, value));
+            return this;
+        }
+
+        public ArgumentsBuilder addArgument(int digit) {
+            keyValuePairs.add(Collections.singletonMap(digit, (String) null));
+            return this;
+        }
+
+        public Arguments build() throws InvalidArgumentException {
+            List<Argument> argumentList = new ArrayList<>();
+
+            for (Map<Integer, String> pair: keyValuePairs) {
+                Integer digit = pair.keySet().iterator().next();
+                String value = pair.get(digit);
+                argumentList.add(new Argument(digit, value));
+            }
+            return new Arguments(argumentList);
+        }
     }
 }

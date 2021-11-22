@@ -12,40 +12,36 @@ public class ArgumentaSerializingTest {
 
     @Test
     public void should_serialize_arguments_into_text() throws InvalidArgumentException {
-        List<Argument> argumentList = new ArrayList<>();
-        argumentList.add(new Argument(3, "stringValue"));
-
-        byte[] content = new Arguments(argumentList).serialize();
+        byte[] content = Arguments.builder() //
+                .addArgument(3, "stringValue") //
+                .build().serialize();
 
         assertArrayEquals("3='stringValue'".getBytes(StandardCharsets.UTF_8), content);
     }
 
     @Test
     public void should_serialize_multiple_arguments_into_text() throws InvalidArgumentException {
-        List<Argument> argumentList = new ArrayList<>();
-        argumentList.add(new Argument(3, "stringValue"));
-        argumentList.add(new Argument(4));
-
-        byte[] content = new Arguments(argumentList).serialize();
+        byte[] content = Arguments.builder() //
+                .addArgument(3, "stringValue") //
+                .addArgument(4) //
+                .build().serialize();
 
         assertArrayEquals("3='stringValue',4".getBytes(StandardCharsets.UTF_8), content);
     }
 
     @Test
     public void should_serialize_argument_with_empty_string_value_into_text() throws InvalidArgumentException {
-        List<Argument> argumentList = new ArrayList<>();
-        argumentList.add(new Argument(3, ""));
-
-        byte[] content = new Arguments(argumentList).serialize();
+        byte[] content = Arguments.builder() //
+                .addArgument(3, "") //
+                .build().serialize();
 
         assertArrayEquals("3=''".getBytes(StandardCharsets.UTF_8), content);
     }
 
     @Test
-    public void should_serialize_as_null_empty_arguments() {
-        List<Argument> argumentList = new ArrayList<>();
-
-        byte[] content = new Arguments(argumentList).serialize();
+    public void should_serialize_as_null_empty_arguments() throws InvalidArgumentException {
+        byte[] content = Arguments.builder() //
+                .build().serialize();
 
         assertNull(content);
     }
