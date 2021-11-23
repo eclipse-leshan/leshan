@@ -124,7 +124,6 @@ export default {
       .then(
         (response) => (this.clientConfigs = configsFromRestToUI(response.data))
       )
-      .catch((error) => console.log(error));
   },
 
   methods: {
@@ -266,16 +265,6 @@ export default {
           }
           this.dialogOpened = false;
         })
-        .catch((error) => {
-          console.log(error);
-          this.$dialog.message.error(
-            error.response ? error.response.data : error.toString(),
-            {
-              position: "bottom",
-              timeout: 5000,
-            }
-          );
-        });
     },
     onDelete(config) {
       // if try to remove security info first
@@ -292,16 +281,6 @@ export default {
         .then(() => {
           this.clientConfigs.splice(this.indexToRemove, 1);
         })
-        .catch((error) => {
-          console.log(error);
-          this.$dialog.message.error(
-            error.response ? error.response.data : error.toString(),
-            {
-              position: "bottom",
-              timeout: 5000,
-            }
-          );
-        });
     },
   },
 };
