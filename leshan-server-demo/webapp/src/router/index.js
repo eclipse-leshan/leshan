@@ -17,7 +17,7 @@ import Clients from "../views/Clients.vue";
 import Client from "../views/Client.vue";
 import ObjectView from "../views/ObjectView.vue";
 import Security from "../views/Security.vue";
-import Server from "../views/Server.vue";
+import Server from "@leshan-server-core-demo/views/Server.vue";
 import About from "../views/About.vue";
 
 Vue.use(VueRouter);
@@ -51,6 +51,7 @@ const routes = [
     path: "/server",
     name: "Server",
     component: Server,
+    props: { pubkeyFileName: "serverPubKey.der", certFileName: "serverCertificate.der" },
   },
   {
     path: "/about",

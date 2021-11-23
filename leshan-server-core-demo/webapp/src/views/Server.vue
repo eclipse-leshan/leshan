@@ -75,7 +75,7 @@
               <v-btn
                 icon
                 title="Download Public Key"
-                @click="saveFile('bsServerPubKey.der', pubkey.bytesDer)"
+                @click="saveFile(pubkeyFileName, pubkey.bytesDer)"
               >
                 <v-icon>mdi-download</v-icon>
               </v-btn>
@@ -135,7 +135,7 @@
                 icon
                 title="Download Certificate"
                 @click="
-                  saveFile('bsServerCertificate.der', certificate.bytesDer)
+                  saveFile(certFileName, certificate.bytesDer)
                 "
               >
                 <v-icon>mdi-download</v-icon>
@@ -168,6 +168,7 @@ import { toHex, base64ToBytes } from "../js/byteutils.js";
 import { saveAs } from "file-saver";
 
 export default {
+  props: { pubkeyFileName: String, certFileName: String },
   data() {
     return {
       coapurl: "",

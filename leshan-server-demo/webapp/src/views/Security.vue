@@ -104,7 +104,7 @@
   </v-data-table>
 </template>
 <script>
-import SecurityInfoDialog from "../components/security/SecurityInfoDialog.vue";
+import SecurityInfoDialog from "@leshan-server-core-demo/components/security/SecurityInfoDialog.vue";
 
 export default {
   components: { SecurityInfoDialog },

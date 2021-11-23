@@ -102,7 +102,7 @@
   </v-dialog>
 </template>
 <script>
-import { toHex, base64ToBytes } from "../../js/byteutils.js";
+import { toHex, base64ToBytes } from "@leshan-server-core-demo/js/byteutils.js";
 import EndpointStep from "./EndpointStep.vue";
 import ServerStep from "./ServerStep.vue";
 import BootstrapServerStep from "./BootstrapServerStep.vue";
