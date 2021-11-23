@@ -18,14 +18,6 @@
         <strong>LWM2M Bootstrap Server</strong> to your LWM2M Client during the
         bootstrap Session by writing an instance for object <code>/0</code>.
       </p>
-      <p>
-        This data will also be used
-        <a
-          href="https://github.com/eclipse/leshan/issues/690#issuecomment-490949978"
-          target="_blank"
-          >to know how the client must connect to this server</a
-        >.
-      </p>
     </v-card-text>
     <v-form ref="form" :value="valid" @input="$emit('update:valid', $event)">
       <server-input

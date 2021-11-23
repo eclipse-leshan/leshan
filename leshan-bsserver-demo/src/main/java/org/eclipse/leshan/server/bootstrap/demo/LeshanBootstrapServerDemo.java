@@ -185,7 +185,7 @@ public class LeshanBootstrapServerDemo {
         root.setResourceBase(LeshanBootstrapServerDemo.class.getClassLoader().getResource("webapp").toExternalForm());
         root.setParentLoaderPriority(true);
 
-        ServletHolder bsServletHolder = new ServletHolder(new BootstrapServlet(bsStore, securityStore));
+        ServletHolder bsServletHolder = new ServletHolder(new BootstrapServlet(bsStore));
         root.addServlet(bsServletHolder, "/api/bootstrap/*");
 
         ServletHolder serverServletHolder;

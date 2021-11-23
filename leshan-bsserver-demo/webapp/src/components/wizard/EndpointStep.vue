@@ -14,24 +14,14 @@
   <v-card class="mb-12" elevation="0">
     <v-card-text class="pb-0">
       <p>
-        To allow a client to bootstrap to this server you need to create a
-        configuration for it.
+        To allow a <strong>LWM2M client</strong> to bootstrap to this server you
+        need to create a configuration for it.
       </p>
       <p>
-        This wizard is pretty limitted. It create a configuration which starts
+        This wizard is pretty limitted. It creates a configuration which starts
         by deleting objects <code>/0</code> and <code>/1</code>, then write
-        instance for those objects for 1 LWM2M server and 1 LWM2M
-        BootstrapServer with provided data.
-      </p>
-      <p>
-        How the client is supposed to connect to this bootstrap server
-        <a
-          href="https://github.com/eclipse/leshan/issues/690#issuecomment-490949978"
-          target="_blank"
-          >is guessed</a
-        >
-        from the
-        <strong>LWM2M Bootstrap Server Configuration</strong>.
+        instances for those objects to add one LWM2M server and/or one LWM2M
+        Bootstrap Server.
       </p>
     </v-card-text>
     <v-form ref="form" :value="valid" @input="$emit('update:valid', $event)">

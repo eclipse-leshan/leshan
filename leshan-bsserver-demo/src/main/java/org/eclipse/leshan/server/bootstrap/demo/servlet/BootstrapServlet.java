@@ -20,9 +20,7 @@ package org.eclipse.leshan.server.bootstrap.demo.servlet;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
 import java.util.EnumSet;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -30,18 +28,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.leshan.core.SecurityMode;
-import org.eclipse.leshan.core.util.SecurityUtil;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 import org.eclipse.leshan.server.bootstrap.EditableBootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.InvalidConfigurationException;
 import org.eclipse.leshan.server.bootstrap.demo.json.ByteArraySerializer;
 import org.eclipse.leshan.server.bootstrap.demo.json.EnumSetDeserializer;
 import org.eclipse.leshan.server.bootstrap.demo.json.EnumSetSerializer;
-import org.eclipse.leshan.server.security.EditableSecurityStore;
-import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
-import org.eclipse.leshan.server.security.SecurityInfo;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -49,8 +41,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.CollectionType;
-
-import jline.internal.Log;
 
 /**
  * Servlet for REST API in charge of adding bootstrap information to the bootstrap server.
@@ -61,11 +51,9 @@ public class BootstrapServlet extends HttpServlet {
     private final ObjectMapper mapper;
 
     private final EditableBootstrapConfigStore bsStore;
-    private final EditableSecurityStore securityStore;
 
-    public BootstrapServlet(EditableBootstrapConfigStore bsStore, EditableSecurityStore securityStore) {
+    public BootstrapServlet(EditableBootstrapConfigStore bsStore) {
         this.bsStore = bsStore;
-        this.securityStore = securityStore;
 
         mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -123,40 +111,11 @@ public class BootstrapServlet extends HttpServlet {
             if (cfg == null) {
                 sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "no content");
             } else {
-                // try to add securityInfo if needed.
-                if (cfg.security != null) {
-                    for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> bsEntry : cfg.security.entrySet()) {
-                        ServerSecurity value = bsEntry.getValue();
-                        // Extract PSK security info
-                        if (value.bootstrapServer) {
-                            SecurityInfo securityInfo = null;
-                            if (value.securityMode == SecurityMode.PSK) {
-                                securityInfo = SecurityInfo.newPreSharedKeyInfo(endpoint,
-                                        new String(value.publicKeyOrId, StandardCharsets.UTF_8), value.secretKey);
-                            }
-                            // Extract RPK security info
-                            else if (value.securityMode == SecurityMode.RPK) {
-                                securityInfo = SecurityInfo.newRawPublicKeyInfo(endpoint,
-                                        SecurityUtil.publicKey.decode(value.publicKeyOrId));
-                            }
-                            // Extract X509 security info
-                            else if (value.securityMode == SecurityMode.X509) {
-                                securityInfo = SecurityInfo.newX509CertInfo(endpoint);
-                            }
-                            if (securityInfo != null) {
-                                securityStore.add(securityInfo);
-                            }
-                            break;
-                        }
-                    }
-                }
-
                 // Add bootstrap config
                 bsStore.add(endpoint, cfg);
                 resp.setStatus(HttpServletResponse.SC_OK);
             }
-        } catch (JsonParseException | InvalidConfigurationException | NonUniqueSecurityInfoException
-                | GeneralSecurityException e) {
+        } catch (JsonParseException | InvalidConfigurationException e) {
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         }
     }
@@ -179,14 +138,6 @@ public class BootstrapServlet extends HttpServlet {
         }
 
         String endpoint = path[0];
-
-        // try to remove from securityStore
-        try {
-            securityStore.remove(endpoint, true);
-        } catch (RuntimeException e) {
-            // Best effort here we just try to remove, if it failed we try to remove bsconfig anyway.
-            Log.warn("unable to remove security info for client {}", endpoint, e);
-        }
 
         // try to remove from bootstrap config store
         if (bsStore.remove(endpoint) != null) {

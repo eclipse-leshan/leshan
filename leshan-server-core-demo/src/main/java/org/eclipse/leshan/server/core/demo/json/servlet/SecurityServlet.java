@@ -173,9 +173,12 @@ public class SecurityServlet extends HttpServlet {
 
         LOG.debug("Removing security info for end-point {}", endpoint);
         if (this.store.remove(endpoint, true) != null) {
-            resp.sendError(HttpServletResponse.SC_OK);
+            resp.setStatus(HttpServletResponse.SC_OK);
         } else {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            resp.setContentType("application/json");
+            resp.getOutputStream()
+                    .write("{\"message\":\"not_found\"}".getBytes(StandardCharsets.UTF_8));
+            resp.setStatus(HttpServletResponse.SC_OK);
         }
     }
 }

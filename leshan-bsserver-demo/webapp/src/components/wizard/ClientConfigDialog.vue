@@ -22,7 +22,6 @@
       <v-card-title class="headline grey lighten-2">
         <span>Add Client Configuration</span>
       </v-card-title>
-
       <!-- Form -->
       <v-stepper v-model="currentStep">
         <v-stepper-header>
@@ -31,10 +30,14 @@
           </v-stepper-step>
           <v-divider></v-divider>
           <v-stepper-step :complete="currentStep > 2" step="2">
-            LWM2M Server Configuration
+            Credentials
           </v-stepper-step>
           <v-divider></v-divider>
           <v-stepper-step :complete="currentStep > 3" step="3">
+            LWM2M Server Configuration
+          </v-stepper-step>
+          <v-divider></v-divider>
+          <v-stepper-step :complete="currentStep > 4" step="4">
             LWM2M Bootstrap Server Configuration
           </v-stepper-step>
         </v-stepper-header>
@@ -47,19 +50,26 @@
               v-model="config.endpoint"
             />
           </v-stepper-content>
-          <v-stepper-content step="2">
-            <server-step
+           <v-stepper-content step="2">
+            <security-step
               ref="step2"
               :valid.sync="valid[2]"
+              v-model="config.security"
+            />
+          </v-stepper-content>
+          <v-stepper-content step="3">
+            <server-step
+              ref="step3"
+              :valid.sync="valid[3]"
               v-model="config.dm"
               :defaultNoSecValue="defval.dm.url.nosec"
               :defaultSecureValue="defval.dm.url.sec"
             />
           </v-stepper-content>
-          <v-stepper-content step="3">
+          <v-stepper-content step="4">
             <bootstrap-server-step
-              ref="step3"
-              :valid.sync="valid[3]"
+              ref="step4"
+              :valid.sync="valid[4]"
               v-model="config.bs"
               :defaultNoSecValue="defval.bs.url.nosec"
               :defaultSecureValue="defval.bs.url.sec"
@@ -98,21 +108,23 @@
           Cancel
         </v-btn>
       </v-card-actions>
+      
     </v-card>
   </v-dialog>
 </template>
 <script>
 import { toHex, base64ToBytes } from "@leshan-server-core-demo/js/byteutils.js";
 import EndpointStep from "./EndpointStep.vue";
+import SecurityStep from "./SecurityStep.vue";
 import ServerStep from "./ServerStep.vue";
 import BootstrapServerStep from "./BootstrapServerStep.vue";
 
 export default {
-  components: { EndpointStep, ServerStep, BootstrapServerStep },
+  components: { EndpointStep, SecurityStep, ServerStep, BootstrapServerStep },
   props: { value: Boolean /*open/close dialog*/ },
   data() {
     return {
-      nbSteps: 3,
+      nbSteps: 4,
       config: {}, // local state for current config
       valid: [],
       currentStep: 1,
@@ -163,6 +175,7 @@ export default {
         // reset validation and set initial value when dialog opens
         this.config = {
           endpoint: null,
+          security: null,
           dm: { mode: "no_sec" },
           bs: { mode: "no_sec" },
         };

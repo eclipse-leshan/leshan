@@ -56,7 +56,7 @@
           <!-- add client configuration dialog -->
           <client-config-dialog
             v-model="dialogOpened"
-            @add="addConfig($event)"
+            @add="onAdd($event)"
             :initialValue="editedSecurityInfo"
           />
         </v-toolbar>
@@ -89,7 +89,7 @@
       </template>
       <!--custom display for "actions" column-->
       <template v-slot:item.actions="{ item }">
-        <v-icon small @click.stop="deleteConfig(item)"> mdi-delete </v-icon>
+        <v-icon small @click.stop="onDelete(item)"> mdi-delete </v-icon>
       </template>
     </v-data-table>
   </div>
@@ -146,7 +146,6 @@ export default {
       return bytes;
     },
     formatData(c) {
-      console.log(c);
       let s = {};
       s.securityMode = c.mode.toUpperCase();
       s.uri = c.url;
@@ -169,6 +168,40 @@ export default {
       }
       return s;
     },
+    adaptToAPI(sec, endpoint) {
+      // TODO this is a bit tricky, probably better to adapt the REST API
+      // But do not want to change it while we have 2 demo UI (old & new)
+      let s = {};
+      s.endpoint = endpoint;
+      if (sec.mode == "x509") {
+        s[sec.mode] = true;
+      } else if (sec.mode != "unsupported") {
+        s[sec.mode] = sec.details;
+      }
+      return s;
+    },
+
+    onAdd(config) {
+      if (config.security) {
+        // if we have security we try to add security first
+        this.axios
+          .put(
+            "api/security/clients/",
+            this.adaptToAPI(config.security, config.endpoint)
+          )
+          .then(() => {
+            this.addConfig(config);
+          });
+      } else {
+        // if we don't have security, we remove existing one first
+        this.axios
+          .delete("api/security/clients/" + encodeURIComponent(config.endpoint))
+          .then(() => {
+            this.addConfig(config);
+          });
+      }
+    },
+
     addConfig(config) {
       let dmServer = this.formatData(config.dm);
       let bsServer = this.formatData(config.bs);
@@ -242,6 +275,14 @@ export default {
               timeout: 5000,
             }
           );
+        });
+    },
+    onDelete(config) {
+      // if try to remove security info first
+      this.axios
+        .delete("api/security/clients/" + encodeURIComponent(config.endpoint))
+        .then(() => {
+          this.deleteConfig(config);
         });
     },
     deleteConfig(config) {
