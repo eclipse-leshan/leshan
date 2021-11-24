@@ -211,11 +211,15 @@ export default {
     },
 
     addConfig(config) {
-      let dmServer = this.formatData(config.dm);
-      let bsServer = this.formatData(config.bs);
       let c = {
         endpoint: config.endpoint,
-        dm: [
+        dm: [],
+        bs: [],
+      };
+
+      if (config.dm) {
+        let dmServer = this.formatData(config.dm);
+        c.dm = [
           {
             binding: "U",
             defaultMinPeriod: 1,
@@ -238,26 +242,28 @@ export default {
               uri: dmServer.uri,
             },
           },
-        ],
-        bs: [
-          {
-            security: {
-              bootstrapServer: true,
-              certificateUsage: bsServer.certificateUsage,
-              clientOldOffTime: 1,
-              publicKeyOrId: bsServer.publicKeyOrId,
-              secretKey: bsServer.secretKey,
-              securityMode: bsServer.securityMode,
-              serverPublicKey: bsServer.serverPublicKey,
-              serverSmsNumber: "",
-              smsBindingKeyParam: [],
-              smsBindingKeySecret: [],
-              smsSecurityMode: "NO_SEC",
-              uri: bsServer.uri,
-            },
+        ];
+      }
+      let bsServer = this.formatData(config.bs);
+      c.bs = [
+        {
+          security: {
+            bootstrapServer: true,
+            certificateUsage: bsServer.certificateUsage,
+            clientOldOffTime: 1,
+            publicKeyOrId: bsServer.publicKeyOrId,
+            secretKey: bsServer.secretKey,
+            securityMode: bsServer.securityMode,
+            serverPublicKey: bsServer.serverPublicKey,
+            serverSmsNumber: "",
+            smsBindingKeyParam: [],
+            smsBindingKeySecret: [],
+            smsSecurityMode: "NO_SEC",
+            uri: bsServer.uri,
           },
-        ],
-      };
+        },
+      ];
+
       if (config.security) {
         c.security = config.security;
       }

@@ -19,10 +19,25 @@
         Session by writing 1 instance for objects <code>/0</code> and
         <code>/1</code>.
       </p>
+      <p>
+        By default a LWM2M Server <code>{{ defaultNoSecValue }}</code> with
+        <strong>NO_SEC</strong> Security Mode is created.
+      </p>
     </v-card-text>
-    <v-form ref="form" :value="valid" @input="$emit('update:valid', $event)">
+    <v-form
+      ref="form"
+      :value="valid"
+      @input="$emit('update:valid', !addServer || $event)"
+    >
+      <v-switch
+        class="pl-5"
+        v-model="addServer"
+        label="Add a DM Server"
+        @change="updateAddServer($event)"
+      ></v-switch>
       <server-input
-        :value="value"
+        v-show="addServer"
+        :value="internalServer"
         @input="$emit('input', $event)"
         :defaultNoSecValue="defaultNoSecValue"
         :defaultSecureValue="defaultSecureValue"
@@ -40,7 +55,35 @@ export default {
     defaultNoSecValue: String, // default url for nosec endpoint
     defaultSecureValue: String, // default url for secured endpoint
   },
+  data() {
+    return {
+      addServer: true,
+      internalServer: { mode: "no_sec" }, // internal server Config
+    };
+  },
+  watch: {
+    value(v) {
+      if (!v) {
+        this.addServer = false;
+        this.internalServer = { mode: "no_sec" };
+      } else {
+        this.addServer = true;
+        this.internalServer = v;
+      }
+    },
+  },
   methods: {
+    updateAddServer(addServer) {
+      if (addServer) {
+        this.$emit("input", this.internalServer);
+        this.resetValidation();
+        this.$emit("update:valid", true);
+      } else {
+        this.$emit("input", null);
+        this.$emit("update:valid", true);
+      }
+    },
+
     resetValidation() {
       this.$refs.form.resetValidation();
     },

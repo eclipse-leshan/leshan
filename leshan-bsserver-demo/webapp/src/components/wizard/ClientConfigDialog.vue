@@ -50,7 +50,7 @@
               v-model="config.endpoint"
             />
           </v-stepper-content>
-           <v-stepper-content step="2">
+          <v-stepper-content step="2">
             <security-step
               ref="step2"
               :valid.sync="valid[2]"
@@ -108,7 +108,6 @@
           Cancel
         </v-btn>
       </v-card-actions>
-      
     </v-card>
   </v-dialog>
 </template>
@@ -193,31 +192,38 @@ export default {
       // do a deep copy
       // we should maybe rather use cloneDeep from lodash
       let res = JSON.parse(JSON.stringify(c));
-      if (!res.dm.url) {
-        res.dm.url =
-          res.dm.mode == "no_sec"
-            ? this.defval.dm.url.nosec
-            : this.defval.dm.url.sec;
-      }
-      if (!res.bs.url) {
-        res.bs.url =
-          res.bs.mode == "no_sec"
-            ? this.defval.bs.url.nosec
-            : this.defval.bs.url.sec;
-      }
-      // apply default rpk value for bs server
-      if (res.bs.mode == "rpk") {
-        for (const key in this.defaultrpk) {
-          if (!res.bs.details[key]) {
-            res.bs.details[key] = this.defaultrpk[key];
-          }
+      // Apply default for dm
+      if (res.dm) {
+        if (!res.dm.url) {
+          res.dm.url =
+            res.dm.mode == "no_sec"
+              ? this.defval.dm.url.nosec
+              : this.defval.dm.url.sec;
         }
       }
-      // apply default x509 value for bs server
-      if (res.bs.mode == "x509") {
-        for (const key in this.defaultx509) {
-          if (!res.bs.details[key]) {
-            res.bs.details[key] = this.defaultx509[key];
+      // Apply default for bs
+      if (res.bs) {
+        if (!res.bs.url) {
+          res.bs.url =
+            res.bs.mode == "no_sec"
+              ? this.defval.bs.url.nosec
+              : this.defval.bs.url.sec;
+        }
+
+        // apply default rpk value for bs server
+        if (res.bs.mode == "rpk") {
+          for (const key in this.defaultrpk) {
+            if (!res.bs.details[key]) {
+              res.bs.details[key] = this.defaultrpk[key];
+            }
+          }
+        }
+        // apply default x509 value for bs server
+        if (res.bs.mode == "x509") {
+          for (const key in this.defaultx509) {
+            if (!res.bs.details[key]) {
+              res.bs.details[key] = this.defaultx509[key];
+            }
           }
         }
       }
