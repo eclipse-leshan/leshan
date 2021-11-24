@@ -59,12 +59,7 @@
     </template>
     <!--custom display for "mode" column-->
     <template v-slot:item.mode="{ item }">
-      <v-chip small>
-        <v-icon left small>
-          {{ getModeIcon(item.mode) }}
-        </v-icon>
-        {{ item.mode }}
-      </v-chip>
+      <security-info-chip :securityInfo="item" />
     </template>
     <!--custom display for "details" column-->
     <template v-slot:item.details="{ item }">
@@ -105,9 +100,14 @@
 </template>
 <script>
 import SecurityInfoDialog from "@leshan-server-core-demo/components/security/SecurityInfoDialog.vue";
+import SecurityInfoChip from "@leshan-server-core-demo/components/security/SecurityInfoChip.vue";
+import {
+  adaptToUI,
+  adaptToAPI,
+} from "@leshan-server-core-demo/js/securityutils.js";
 
 export default {
-  components: { SecurityInfoDialog },
+  components: { SecurityInfoDialog, SecurityInfoChip },
   data: () => ({
     dialogOpened: false,
     headers: [
@@ -116,7 +116,7 @@ export default {
       { text: "Details", value: "details", sortable: false, width: "60%" },
       { text: "Actions", value: "actions", sortable: false },
     ],
-    search:"",
+    search: "",
     securityInfos: [],
     editedSecurityInfo: {}, // initial value for Security Information dialog
   }),
@@ -125,54 +125,12 @@ export default {
     this.axios.get("api/security/clients").then(
       (response) =>
         (this.securityInfos = response.data.map((c) => {
-          return this.adaptToUI(c);
+          return adaptToUI(c);
         }))
     );
   },
 
   methods: {
-    adaptToUI(sec) {
-      // TODO this is a bit tricky, probably better to adapt the REST API
-      // But do not want to change it while we have 2 demo UI (old & new)
-      let s = {};
-      s.endpoint = sec.endpoint;
-      s.mode = this.getMode(sec);
-      if (s.mode != "unsupported" && s.mode != "x509") s.details = sec[s.mode];
-      return s;
-    },
-    adaptToAPI(sec) {
-      // TODO this is a bit tricky, probably better to adapt the REST API
-      // But do not want to change it while we have 2 demo UI (old & new)
-      let s = {};
-      s.endpoint = sec.endpoint;
-      if (sec.mode == "x509") {
-        s[sec.mode] = true;
-      } else if (sec.mode != "unsupported") {
-        s[sec.mode] = sec.details;
-      }
-      return s;
-    },
-
-    getMode(sec) {
-      if (sec.x509) return "x509";
-      else if (sec.psk) return "psk";
-      else if (sec.rpk) return "rpk";
-      else return "unsupported";
-    },
-
-    getModeIcon(mode) {
-      switch (mode) {
-        case "x509":
-          return "mdi-certificate";
-        case "psk":
-          return "mdi-lock";
-        case "rpk":
-          return "mdi-key-change";
-        default:
-          return "mdi-help-rhombus-outline";
-      }
-    },
-
     openNewSec() {
       this.editedSecurityInfo = null;
       this.dialogOpened = true;
@@ -180,7 +138,7 @@ export default {
 
     newSec(cred) {
       this.axios
-        .put("api/security/clients/", this.adaptToAPI(cred))
+        .put("api/security/clients/", adaptToAPI(cred, cred.endpoint))
         .then(() => {
           this.securityInfos.push(cred);
           this.dialogOpened = false;
@@ -193,12 +151,14 @@ export default {
     },
 
     editSec(sec) {
-      this.axios.put("api/security/clients/", this.adaptToAPI(sec)).then(() => {
-        this.securityInfos = this.securityInfos.map((s) =>
-          s.endpoint == sec.endpoint ? sec : s
-        );
-        this.dialogOpened = false;
-      });
+      this.axios
+        .put("api/security/clients/", adaptToAPI(sec, sec.endpoint))
+        .then(() => {
+          this.securityInfos = this.securityInfos.map((s) =>
+            s.endpoint == sec.endpoint ? sec : s
+          );
+          this.dialogOpened = false;
+        });
     },
 
     deleteSec(sec) {

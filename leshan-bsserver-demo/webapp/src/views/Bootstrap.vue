@@ -59,22 +59,7 @@
       </template>
       <!--custom display for "security" column-->
       <template v-slot:item.security="{ item }">
-        <div v-if="item.security">
-          <v-chip small>
-            <v-icon left small>
-              {{ getModeIcon(item.security.mode) }}
-            </v-icon>
-            {{ item.security.mode }}
-          </v-chip>
-        </div>
-        <div v-else>
-          <v-chip small>
-            <v-icon left small>
-              mdi-lock-open-remove
-            </v-icon>
-            Nothing
-          </v-chip>
-        </div>
+        <security-info-chip :securityInfo="item.security" />
       </template>
       <!--custom display for "dm" column-->
       <template v-slot:item.dm="{ item }">
@@ -112,10 +97,15 @@
 <script>
 import { configsFromRestToUI, configFromUIToRest } from "../js/bsconfigutil.js";
 import { fromHex, fromAscii } from "@leshan-server-core-demo/js/byteutils.js";
+import SecurityInfoChip from "@leshan-server-core-demo/components/security/SecurityInfoChip.vue";
+import {
+  adaptToUI,
+  adaptToAPI,
+} from "@leshan-server-core-demo/js/securityutils.js";
 import ClientConfigDialog from "../components/wizard/ClientConfigDialog.vue";
 
 export default {
-  components: { ClientConfigDialog },
+  components: { ClientConfigDialog, SecurityInfoChip },
   data: () => ({
     dialogOpened: false,
     headers: [
@@ -154,11 +144,11 @@ export default {
                 (c) => c.endpoint === sec.endpoint
               );
               if (existingConfig) {
-                existingConfig.security = this.adaptToUI(sec);
+                existingConfig.security = adaptToUI(sec);
               } else {
                 newConfigs.push({
                   endpoint: sec.endpoint,
-                  security: this.adaptToUI(sec),
+                  security: adaptToUI(sec),
                 });
               }
             })
@@ -199,56 +189,13 @@ export default {
       return s;
     },
 
-    adaptToUI(sec) {
-      // TODO this is a bit tricky, probably better to adapt the REST API
-      // But do not want to change it while we have 2 demo UI (old & new)
-      let s = {};
-      s.endpoint = sec.endpoint;
-      s.mode = this.getMode(sec);
-      if (s.mode != "unsupported" && s.mode != "x509") s.details = sec[s.mode];
-      return s;
-    },
-
-    getMode(sec) {
-      if (sec.x509) return "x509";
-      else if (sec.psk) return "psk";
-      else if (sec.rpk) return "rpk";
-      else return "unsupported";
-    },
-
-    getModeIcon(mode) {
-      switch (mode) {
-        case "x509":
-          return "mdi-certificate";
-        case "psk":
-          return "mdi-lock";
-        case "rpk":
-          return "mdi-key-change";
-        default:
-          return "mdi-help-rhombus-outline";
-      }
-    },
-
-    adaptToAPI(sec, endpoint) {
-      // TODO this is a bit tricky, probably better to adapt the REST API
-      // But do not want to change it while we have 2 demo UI (old & new)
-      let s = {};
-      s.endpoint = endpoint;
-      if (sec.mode == "x509") {
-        s[sec.mode] = true;
-      } else if (sec.mode != "unsupported") {
-        s[sec.mode] = sec.details;
-      }
-      return s;
-    },
-
     onAdd(config) {
       if (config.security) {
         // if we have security we try to add security first
         this.axios
           .put(
             "api/security/clients/",
-            this.adaptToAPI(config.security, config.endpoint)
+            adaptToAPI(config.security, config.endpoint)
           )
           .then(() => {
             this.addConfig(config);
