@@ -54,11 +54,7 @@
           </v-btn>
 
           <!-- add client configuration dialog -->
-          <client-config-dialog
-            v-model="dialogOpened"
-            @add="onAdd($event)"
-            :initialValue="editedSecurityInfo"
-          />
+          <client-config-dialog v-model="dialogOpened" @add="onAdd($event)" />
         </v-toolbar>
       </template>
       <!--custom display for "dm" column-->
@@ -96,6 +92,7 @@
 </template>
 <script>
 import { configsFromRestToUI, configFromUIToRest } from "../js/bsconfigutil.js";
+import { fromHex, fromAscii } from "@leshan-server-core-demo/js/byteutils.js";
 import ClientConfigDialog from "../components/wizard/ClientConfigDialog.vue";
 
 export default {
@@ -115,7 +112,6 @@ export default {
     ],
     search: "",
     clientConfigs: [],
-    editedSecurityInfo: {}, // initial value for Security Information dialog
   }),
 
   beforeMount() {
@@ -123,50 +119,38 @@ export default {
       .get("api/bootstrap")
       .then(
         (response) => (this.clientConfigs = configsFromRestToUI(response.data))
-      )
+      );
   },
 
   methods: {
     openLink(bs) {
       this.$router.push(`/bootstrap/${bs.endpoint}`);
     },
-    fromAscii(ascii) {
-      var bytearray = [];
-      for (var i in ascii) {
-        bytearray[i] = ascii.charCodeAt(i);
-      }
-      return bytearray;
-    },
-    fromHex(hex) {
-      var bytes = [];
-      for (var i = 0; i < hex.length - 1; i += 2) {
-        bytes.push(parseInt(hex.substr(i, 2), 16));
-      }
-      return bytes;
-    },
+
     formatData(c) {
       let s = {};
       s.securityMode = c.mode.toUpperCase();
       s.uri = c.url;
       switch (c.mode) {
         case "psk":
-          s.publicKeyOrId = this.fromAscii(c.details.identity);
-          s.secretKey = this.fromHex(c.details.key);
+          s.publicKeyOrId = fromAscii(c.details.identity);
+          s.secretKey = fromHex(c.details.key);
           break;
         case "rpk":
-          s.publicKeyOrId = this.fromHex(c.details.client_pub_key);
-          s.secretKey = this.fromHex(c.details.client_pri_key);
-          s.serverPublicKey = this.fromHex(c.details.server_pub_key);
+          s.publicKeyOrId = fromHex(c.details.client_pub_key);
+          s.secretKey = fromHex(c.details.client_pri_key);
+          s.serverPublicKey = fromHex(c.details.server_pub_key);
           break;
         case "x509":
-          s.publicKeyOrId = this.fromHex(c.details.client_certificate);
-          s.secretKey = this.fromHex(c.details.client_pri_key);
-          s.serverPublicKey = this.fromHex(c.details.server_certificate);
+          s.publicKeyOrId = fromHex(c.details.client_certificate);
+          s.secretKey = fromHex(c.details.client_pri_key);
+          s.serverPublicKey = fromHex(c.details.server_certificate);
           s.certificateUsage = c.certificate_usage;
           break;
       }
       return s;
     },
+
     adaptToAPI(sec, endpoint) {
       // TODO this is a bit tricky, probably better to adapt the REST API
       // But do not want to change it while we have 2 demo UI (old & new)
@@ -249,6 +233,7 @@ export default {
           },
         ],
       };
+
       this.axios
         .post(
           "api/bootstrap/" + encodeURIComponent(config.endpoint),
@@ -264,7 +249,7 @@ export default {
             this.clientConfigs.push(c);
           }
           this.dialogOpened = false;
-        })
+        });
     },
     onDelete(config) {
       // if try to remove security info first
@@ -280,7 +265,7 @@ export default {
         .delete("api/bootstrap/" + encodeURIComponent(config.endpoint))
         .then(() => {
           this.clientConfigs.splice(this.indexToRemove, 1);
-        })
+        });
     },
   },
 };
