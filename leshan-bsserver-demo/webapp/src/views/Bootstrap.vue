@@ -57,6 +57,25 @@
           <client-config-dialog v-model="dialogOpened" @add="onAdd($event)" />
         </v-toolbar>
       </template>
+      <!--custom display for "security" column-->
+      <template v-slot:item.security="{ item }">
+        <div v-if="item.security">
+          <v-chip small>
+            <v-icon left small>
+              {{ getModeIcon(item.security.mode) }}
+            </v-icon>
+            {{ item.security.mode }}
+          </v-chip>
+        </div>
+        <div v-else>
+          <v-chip small>
+            <v-icon left small>
+              mdi-lock-open-remove
+            </v-icon>
+            Nothing
+          </v-chip>
+        </div>
+      </template>
       <!--custom display for "dm" column-->
       <template v-slot:item.dm="{ item }">
         <div v-for="server in item.dm" :key="server.shortid">
@@ -100,12 +119,13 @@ export default {
   data: () => ({
     dialogOpened: false,
     headers: [
-      { text: "Endpoint", value: "endpoint", width: "20%" },
-      { text: "LWM2M Server", value: "dm", width: "40%", sortable: false },
+      { text: "Endpoint", value: "endpoint", width: "15%" },
+      { text: "Credentials", value: "security", width: "15%", sortable: false },
+      { text: "LWM2M Server", value: "dm", width: "35%", sortable: false },
       {
         text: "LWM2M Bootstrap Server",
         value: "bs",
-        width: "40%",
+        width: "35%",
         sortable: false,
       },
       { text: "Actions", value: "actions", sortable: false },
@@ -115,11 +135,39 @@ export default {
   }),
 
   beforeMount() {
+    var newConfigs = [];
     this.axios
       .get("api/bootstrap")
-      .then(
-        (response) => (this.clientConfigs = configsFromRestToUI(response.data))
-      );
+      .then((response) => {
+        // on success
+        newConfigs = configsFromRestToUI(response.data);
+      })
+      .then(() => {
+        // in any case
+        this.axios
+          .get("api/security/clients")
+          .then((response) =>
+            // on success
+            // merge config
+            response.data.forEach((sec) => {
+              let existingConfig = newConfigs.find(
+                (c) => c.endpoint === sec.endpoint
+              );
+              if (existingConfig) {
+                existingConfig.security = this.adaptToUI(sec);
+              } else {
+                newConfigs.push({
+                  endpoint: sec.endpoint,
+                  security: this.adaptToUI(sec),
+                });
+              }
+            })
+          )
+          .then(() => {
+            // in any case
+            this.clientConfigs = newConfigs;
+          });
+      });
   },
 
   methods: {
@@ -149,6 +197,36 @@ export default {
           break;
       }
       return s;
+    },
+
+    adaptToUI(sec) {
+      // TODO this is a bit tricky, probably better to adapt the REST API
+      // But do not want to change it while we have 2 demo UI (old & new)
+      let s = {};
+      s.endpoint = sec.endpoint;
+      s.mode = this.getMode(sec);
+      if (s.mode != "unsupported" && s.mode != "x509") s.details = sec[s.mode];
+      return s;
+    },
+
+    getMode(sec) {
+      if (sec.x509) return "x509";
+      else if (sec.psk) return "psk";
+      else if (sec.rpk) return "rpk";
+      else return "unsupported";
+    },
+
+    getModeIcon(mode) {
+      switch (mode) {
+        case "x509":
+          return "mdi-certificate";
+        case "psk":
+          return "mdi-lock";
+        case "rpk":
+          return "mdi-key-change";
+        default:
+          return "mdi-help-rhombus-outline";
+      }
     },
 
     adaptToAPI(sec, endpoint) {
@@ -233,6 +311,9 @@ export default {
           },
         ],
       };
+      if (config.security) {
+        c.security = config.security;
+      }
 
       this.axios
         .post(
