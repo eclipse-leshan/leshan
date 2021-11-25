@@ -1,6 +1,20 @@
+/*******************************************************************************
+ * Copyright (c) 2021 Orange.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v2.0
+ * and Eclipse Distribution License v1.0 which accompany this distribution.
+ *
+ * The Eclipse Public License is available at
+ *    http://www.eclipse.org/legal/epl-v20.html
+ * and the Eclipse Distribution License is available at
+ *    http://www.eclipse.org/org/documents/edl-v10.html.
+ *
+ * Contributors:
+ *     Orange - Add better support for Arguments of Execute Operation.
+ *******************************************************************************/
 package org.eclipse.leshan.core.request.execute;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,10 +24,16 @@ import java.util.Map;
 
 import org.eclipse.leshan.core.util.StringUtils;
 
+/**
+ * Arguments for Execute Operation.
+ */
 public class Arguments implements Iterable<Argument> {
 
     private final List<Argument> argumentList;
 
+    /**
+     * Arguments should be build using {@link ArgumentsBuilder}.
+     */
     private Arguments(List<Argument> argumentList) {
         this.argumentList = argumentList;
     }
@@ -48,28 +68,50 @@ public class Arguments implements Iterable<Argument> {
         return true;
     }
 
+    /**
+     * Returns number of arguments.
+     */
     public int size() {
         return argumentList.size();
     }
 
+    /**
+     * Check if Arguments has any elements.
+     */
     public boolean isEmpty() {
         return size() == 0;
     }
 
-    static Arguments parse(String content) throws InvalidArgumentException {
+    /**
+     * Parse String into {@link Arguments}
+     *
+     * <pre>
+     * {@code
+     * arglist = arg *( "," arg )
+     * arg = DIGIT / DIGIT "=" "'" *CHAR "'"
+     * DIGIT = "0" / "1" / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9"
+     * CHAR = "!" / %x23-26 / %x28-5B / %x5D-7E
+     * }
+     * </pre>
+     * 
+     * @param arglist String contains arguments to parse.
+     * @return {@link Arguments} represents list of arguments.
+     * @throws InvalidArgumentException if text has invalid format.
+     */
+    static Arguments parse(String arglist) throws InvalidArgumentException {
         List<Argument> argumentList = new ArrayList<>();
 
-        if (content != null && !content.isEmpty()) {
+        if (arglist != null && !arglist.isEmpty()) {
             int beginProbe = 0;
             int validBegin = 0;
             while (true) {
-                int separatorIndex = content.indexOf(',', beginProbe);
+                int separatorIndex = arglist.indexOf(',', beginProbe);
                 if (separatorIndex == -1) {
                     break;
                 }
-                String argument = content.substring(validBegin, separatorIndex);
+                String argument = arglist.substring(validBegin, separatorIndex);
 
-                ArgumentParser argumentParser = new ArgumentParser(argument, content);
+                ArgumentParser argumentParser = new ArgumentParser(argument, arglist);
                 if (argumentParser.isValid()) {
                     argumentList.add(argumentParser.parse());
                     validBegin = separatorIndex + 1;
@@ -77,8 +119,8 @@ public class Arguments implements Iterable<Argument> {
                 beginProbe = separatorIndex + 1;
             }
 
-            String argument = content.substring(beginProbe);
-            ArgumentParser argumentParser = new ArgumentParser(argument, content);
+            String argument = arglist.substring(beginProbe);
+            ArgumentParser argumentParser = new ArgumentParser(argument, arglist);
             argumentList.add(argumentParser.parse());
         }
 
@@ -103,7 +145,7 @@ public class Arguments implements Iterable<Argument> {
             }
         }
 
-        public Argument parse() throws InvalidArgumentException {
+        private Argument parse() throws InvalidArgumentException {
             validate();
             int digit = Integer.parseInt(digitPart);
             String value = null;
@@ -114,7 +156,7 @@ public class Arguments implements Iterable<Argument> {
             return new Argument(digit, value);
         }
 
-        public boolean isValid() {
+        private boolean isValid() {
             if (digitPart.length() != 1) {
                 return false;
             }
@@ -127,7 +169,10 @@ public class Arguments implements Iterable<Argument> {
         }
     }
 
-    public byte[] serialize() {
+    /**
+     * Serialize {$link Arguments} into text representation. In case of empty arguments returns null.
+     */
+    public String serialize() {
         StringBuilder sb = new StringBuilder();
 
         for (Argument argument : this) {
@@ -148,16 +193,15 @@ public class Arguments implements Iterable<Argument> {
             return null;
         }
 
-        return sb.toString().getBytes(StandardCharsets.UTF_8);
+        return sb.toString();
     }
 
     /**
-     * Creates a map that represents arguments.
-     * Every argument's null value is converted to empty string "".
+     * Creates a map that represents arguments. Every argument's null value is converted to empty string "".
      */
     public Map<Integer, String> toMap() {
         Map<Integer, String> result = new HashMap<>();
-        for (Argument argument: this) {
+        for (Argument argument : this) {
             String value = argument.getValue();
             result.put(argument.getDigit(), value != null ? value : "");
         }
@@ -169,28 +213,43 @@ public class Arguments implements Iterable<Argument> {
         return argumentList.iterator();
     }
 
+    /**
+     * Create a builder for {$link Arguments}.
+     */
     public static ArgumentsBuilder builder() {
         return new ArgumentsBuilder();
     }
 
+    /**
+     * Builder for creating {$link Arguments}.
+     */
     public static class ArgumentsBuilder {
 
-        private List<Map<Integer, String>> keyValuePairs = new ArrayList<>();
+        private final List<Map<Integer, String>> keyValuePairs = new ArrayList<>();
 
+        /**
+         * Add an argument with digit and value.
+         */
         public ArgumentsBuilder addArgument(int digit, String value) {
             keyValuePairs.add(Collections.singletonMap(digit, value));
             return this;
         }
 
+        /**
+         * Add an argument with digit with no value.
+         */
         public ArgumentsBuilder addArgument(int digit) {
             keyValuePairs.add(Collections.singletonMap(digit, (String) null));
             return this;
         }
 
+        /**
+         * Builds {$link Arguments}. In case of any argument is invalid it throws InvalidArgumentException exception.
+         */
         public Arguments build() throws InvalidArgumentException {
             List<Argument> argumentList = new ArrayList<>();
 
-            for (Map<Integer, String> pair: keyValuePairs) {
+            for (Map<Integer, String> pair : keyValuePairs) {
                 Integer digit = pair.keySet().iterator().next();
                 String value = pair.get(digit);
                 argumentList.add(new Argument(digit, value));

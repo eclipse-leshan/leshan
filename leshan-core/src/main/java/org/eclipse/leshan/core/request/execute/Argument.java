@@ -1,7 +1,25 @@
+/*******************************************************************************
+ * Copyright (c) 2021 Orange.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v2.0
+ * and Eclipse Distribution License v1.0 which accompany this distribution.
+ *
+ * The Eclipse Public License is available at
+ *    http://www.eclipse.org/legal/epl-v20.html
+ * and the Eclipse Distribution License is available at
+ *    http://www.eclipse.org/org/documents/edl-v10.html.
+ *
+ * Contributors:
+ *     Orange - Add better support for Arguments of Execute Operation.
+ *******************************************************************************/
 package org.eclipse.leshan.core.request.execute;
 
 import java.util.regex.Pattern;
 
+/**
+ * Single element of {@link Arguments} for Execute Operation.
+ */
 public class Argument {
 
     private static final Pattern valuePattern = Pattern.compile("[!\\x23-\\x26\\x28-\\x5B\\x5D-\\x7E]*");
@@ -10,6 +28,21 @@ public class Argument {
 
     private final String value;
 
+    /**
+     * Creates an Argument from digit and optional value.
+     *
+     * <pre>
+     * {@code
+     * value =  *CHAR
+     * CHAR =   "!" / %x23-26 / %x28-5B / %x5D-7E
+     * }
+     * </pre>
+     *
+     * @param digit number from 0 to 9. digit is required.
+     * @param value optional value of argument. Can be null.
+     *
+     * @throws InvalidArgumentException in case invalid digit or value
+     */
     public Argument(Integer digit, String value) throws InvalidArgumentException {
         validateDigit(digit);
         validateValue(digit, value);
@@ -17,9 +50,23 @@ public class Argument {
         this.value = value;
     }
 
+    /**
+     * Creates an Argument consist of digit and value.
+     *
+     * @param digit number from 0 to 9
+     *
+     * @throws InvalidArgumentException in case invalid digit.
+     */
+    public Argument(Integer digit) throws InvalidArgumentException {
+        validateDigit(digit);
+        this.digit = digit;
+        this.value = null;
+    }
+
     private void validateDigit(Integer digit) throws InvalidArgumentException {
         if (digit == null || digit < 0 || digit > 9) {
-            throw new InvalidArgumentException("Invalid Argument digit [%s]", digit != null ? Integer.toString(digit) : "null");
+            throw new InvalidArgumentException("Invalid Argument digit [%s]",
+                    digit != null ? Integer.toString(digit) : "null");
         }
     }
 

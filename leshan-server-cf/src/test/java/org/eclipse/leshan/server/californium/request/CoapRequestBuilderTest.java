@@ -42,13 +42,13 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
-import org.eclipse.leshan.core.request.execute.ExecuteRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
+import org.eclipse.leshan.core.request.execute.ExecuteRequest;
 import org.eclipse.leshan.core.tlv.Tlv;
 import org.eclipse.leshan.core.tlv.Tlv.TlvType;
 import org.eclipse.leshan.core.tlv.TlvDecoder;
@@ -240,7 +240,7 @@ public class CoapRequestBuilderTest {
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
                 reg.getEndpoint(), model, encoder, false, null);
-        ExecuteRequest request = new ExecuteRequest(3, 0, 12, "params");
+        ExecuteRequest request = new ExecuteRequest(3, 0, 12, "0='params'");
         builder.visit(request);
 
         // verify
@@ -249,7 +249,7 @@ public class CoapRequestBuilderTest {
         assertEquals("127.0.0.1", coapRequest.getDestinationContext().getPeerAddress().getAddress().getHostAddress());
         assertEquals(12354, coapRequest.getDestinationContext().getPeerAddress().getPort());
         assertEquals("coap://127.0.0.1:12354/3/0/12", coapRequest.getURI());
-        assertEquals("params", coapRequest.getPayloadString());
+        assertEquals("0='params'", coapRequest.getPayloadString());
     }
 
     @Test
