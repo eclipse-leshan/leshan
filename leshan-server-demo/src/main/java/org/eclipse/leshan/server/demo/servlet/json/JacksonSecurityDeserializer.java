@@ -101,7 +101,7 @@ public class JacksonSecurityDeserializer extends JsonDeserializer<SecurityInfo> 
                     throw new JsonParseException(p, "Invalid security info content", e);
                 }
                 info = SecurityInfo.newRawPublicKeyInfo(endpoint, key);
-            } else if (x509.isMissingNode() && x509.asBoolean()) {
+            } else if (x509 != null && x509.asBoolean()) {
                 info = SecurityInfo.newX509CertInfo(endpoint);
             } else {
                 throw new JsonParseException(p, "Invalid security info content");
