@@ -61,30 +61,34 @@
       <template v-slot:item.security="{ item }">
         <security-info-chip :securityInfo="item.security" />
       </template>
-      <!--custom display for "dm" column-->
-      <template v-slot:item.dm="{ item }">
-        <div v-for="server in item.dm" :key="server.shortid">
-          <p>
-            <strong>{{ server.security.uri }}</strong
-            ><br />
-            security mode : {{ server.security.securityMode }}<br />
-            <span v-if="server.security.certificateUsage">
-              certificate usage : {{ server.security.certificateUsage }}<br />
+      <!--custom display for "config" column-->
+      <template v-slot:item.config="{ item }">
+        <div class="pa-2">
+          <span v-for="server in item.dm" :key="server.shortid">
+            Add Server: <code>{{ server.security.uri }}</code>
+            <span v-if="server.security.securityMode.toLowerCase() != 'no_sec'">
+              using
+              <v-chip small>
+                <v-icon left small>
+                  {{ modeIcon(server.security.securityMode.toLowerCase()) }}
+                </v-icon>
+                {{ server.security.securityMode.toLowerCase() }}
+              </v-chip>
             </span>
-          </p>
-        </div>
-      </template>
-      <!--custom display for "bs" column-->
-      <template v-slot:item.bs="{ item }">
-        <div v-for="server in item.bs" :key="server.security.uri">
-          <p>
-            <strong>{{ server.security.uri }}</strong
-            ><br />
-            security mode : {{ server.security.securityMode }}<br />
-            <span v-if="server.security.certificateUsage">
-              certificate usage : {{ server.security.certificateUsage }}<br />
+            <br />
+          </span>
+          <span v-for="server in item.bs" :key="server.security.uri">
+            Add Bootstrap Server: <code>{{ server.security.uri }}</code>
+            <span v-if="server.security.securityMode.toLowerCase() != 'no_sec'">
+              using
+              <v-chip small>
+                <v-icon left small>
+                  {{ modeIcon(server.security.securityMode.toLowerCase()) }}
+                </v-icon>
+                {{ server.security.securityMode.toLowerCase() }}
+              </v-chip>
             </span>
-          </p>
+          </span>
         </div>
       </template>
       <!--custom display for "actions" column-->
@@ -103,6 +107,7 @@ import {
   adaptToAPI,
 } from "@leshan-server-core-demo/js/securityutils.js";
 import ClientConfigDialog from "../components/wizard/ClientConfigDialog.vue";
+import { getModeIcon } from "@leshan-server-core-demo/js/securityutils.js";
 
 export default {
   components: { ClientConfigDialog, SecurityInfoChip },
@@ -111,11 +116,10 @@ export default {
     headers: [
       { text: "Endpoint", value: "endpoint", width: "15%" },
       { text: "Credentials", value: "security", width: "15%", sortable: false },
-      { text: "LWM2M Server", value: "dm", width: "35%", sortable: false },
       {
-        text: "LWM2M Bootstrap Server",
-        value: "bs",
-        width: "35%",
+        text: "Bootstrap Config",
+        value: "config",
+        width: "70%",
         sortable: false,
       },
       { text: "Actions", value: "actions", sortable: false },
@@ -163,6 +167,9 @@ export default {
   methods: {
     openLink(bs) {
       this.$router.push(`/bootstrap/${bs.endpoint}`);
+    },
+    modeIcon(securitymode) {
+      return getModeIcon(securitymode);
     },
 
     formatData(c) {
