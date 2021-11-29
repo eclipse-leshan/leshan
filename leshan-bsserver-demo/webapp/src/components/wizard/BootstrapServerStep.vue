@@ -15,13 +15,27 @@
     <v-card-text class="pb-0">
       <p>
         This information will be used to add a
-        <strong>LWM2M Bootstrap Server</strong> to your LWM2M Client during the
-        bootstrap Session by writing an instance for object <code>/0</code>.
+        <strong>LWM2M Bootstrap Server</strong> to your LWM2M Client during the bootstrap
+        Session by writing 1 instance for object <code>/0</code>.
+      </p>
+      <p>
+        By default no LWM2M Bootstrap server is added.
       </p>
     </v-card-text>
-    <v-form ref="form" :value="valid" @input="$emit('update:valid', $event)">
+    <v-form
+      ref="form"
+      :value="valid"
+      @input="$emit('update:valid', !addServer || $event)"
+    >
+      <v-switch
+        class="pl-5"
+        v-model="addServer"
+        label="Add a Bootstrap Server"
+        @change="updateAddServer($event)"
+      ></v-switch>
       <server-input
-        :value="value"
+        v-show="addServer"
+        :value="internalServer"
         @input="$emit('input', $event)"
         :defaultNoSecValue="defaultNoSecValue"
         :defaultSecureValue="defaultSecureValue"
@@ -43,7 +57,35 @@ export default {
     defaultx509: Object, // default server certificate
     defaultrpk: Object, // default server public key
   },
+  data() {
+    return {
+      addServer: false,
+      internalServer: { mode: "no_sec" }, // internal Bootstrap server Config
+    };
+  },
+  watch: {
+    value(v) {
+      if (!v) {
+        this.addServer = false;
+        this.internalServer = { mode: "no_sec" };
+      } else {
+        this.addServer = true;
+        this.internalServer = v;
+      }
+    },
+  },
   methods: {
+    updateAddServer(addServer) {
+      if (addServer) {
+        this.$emit("input", this.internalServer);
+        this.resetValidation();
+        this.$emit("update:valid", true);
+      } else {
+        this.$emit("input", null);
+        this.$emit("update:valid", true);
+      }
+    },
+
     resetValidation() {
       this.$refs.form.resetValidation();
     },

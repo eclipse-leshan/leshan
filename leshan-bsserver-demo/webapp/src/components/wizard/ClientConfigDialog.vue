@@ -176,7 +176,7 @@ export default {
           endpoint: null,
           security: null,
           dm: { mode: "no_sec" },
-          bs: { mode: "no_sec" },
+          bs: null,
         };
         this.currentStep = 1;
         for (let i = 1; i <= this.nbSteps; i++) {

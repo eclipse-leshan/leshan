@@ -244,25 +244,27 @@ export default {
           },
         ];
       }
-      let bsServer = this.formatData(config.bs);
-      c.bs = [
-        {
-          security: {
-            bootstrapServer: true,
-            certificateUsage: bsServer.certificateUsage,
-            clientOldOffTime: 1,
-            publicKeyOrId: bsServer.publicKeyOrId,
-            secretKey: bsServer.secretKey,
-            securityMode: bsServer.securityMode,
-            serverPublicKey: bsServer.serverPublicKey,
-            serverSmsNumber: "",
-            smsBindingKeyParam: [],
-            smsBindingKeySecret: [],
-            smsSecurityMode: "NO_SEC",
-            uri: bsServer.uri,
+      if (config.bs) {
+        let bsServer = this.formatData(config.bs);
+        c.bs = [
+          {
+            security: {
+              bootstrapServer: true,
+              certificateUsage: bsServer.certificateUsage,
+              clientOldOffTime: 1,
+              publicKeyOrId: bsServer.publicKeyOrId,
+              secretKey: bsServer.secretKey,
+              securityMode: bsServer.securityMode,
+              serverPublicKey: bsServer.serverPublicKey,
+              serverSmsNumber: "",
+              smsBindingKeyParam: [],
+              smsBindingKeySecret: [],
+              smsSecurityMode: "NO_SEC",
+              uri: bsServer.uri,
+            },
           },
-        },
-      ];
+        ];
+      }
 
       if (config.security) {
         c.security = config.security;
