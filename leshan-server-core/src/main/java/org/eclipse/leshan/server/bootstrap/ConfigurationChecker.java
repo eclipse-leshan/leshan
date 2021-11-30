@@ -22,8 +22,10 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.util.SecurityUtil;
 import org.eclipse.leshan.core.util.StringUtils;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
@@ -43,6 +45,9 @@ public class ConfigurationChecker {
      * @throws InvalidConfigurationException if bootstrap configuration is not invalid.
      */
     public void verify(BootstrapConfig config) throws InvalidConfigurationException {
+        // validate path
+        validatePath(config.toDelete);
+
         // check security configurations
         for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> e : config.security.entrySet()) {
             BootstrapConfig.ServerSecurity sec = e.getValue();
@@ -109,6 +114,17 @@ public class ConfigurationChecker {
         assertIf(isEmpty(sec.serverPublicKey), "x509 mode, server public key must not be empty");
         assertIf(decodeCertificate(sec.serverPublicKey) == null,
                 "x509 mode, server public key must be DER encoded X.509 certificate");
+    }
+
+    protected void validatePath(List<String> pathtoDelete) throws InvalidConfigurationException {
+        for (String path : pathtoDelete) {
+            try {
+                new LwM2mPath(path);
+            } catch (IllegalArgumentException e) {
+                throw new InvalidConfigurationException(String.format(" %s is not a valid path", path), e);
+            }
+        }
+
     }
 
     protected void validateMandatoryField(ServerSecurity sec) throws InvalidConfigurationException {
