@@ -22,18 +22,41 @@
         then you will be able to define LWM2M Server and LWM2M Bootstrap Server
         to add.
       </p>
+      <p>
+        Note that Security <code>/0</code> Object Instance storing LWM2M
+        Bootstrap server data can not be deleted using Delete Request. <br />
+        Adding Security instance without knowing the Instance ID of Bootstrap
+        Server could lead to some unexpected behavior (see
+        <a
+          href="https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/522"
+          >OMA#522</a
+        >,
+        <a
+          href="https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/523"
+          >OMA#523</a
+        >). <br />
+        By default, this wizard use the convention that LWM2M Bootstrap Server
+        Security instance ID is 0. <br />If your client don't use this
+        convention, you can use <code>autoIdForSecurityObject=true </code> and
+        so Leshan will start the Bootstrap session with a Discover request to
+        know which Security instance ID is used for the Bootstrap Server.
+      </p>
     </v-card-text>
     <v-form ref="form" :value="valid" @input="$emit('update:valid', $event)">
+      <v-switch class="pl-5" label="Auto ID For Security Object" :value="autoId" @change="$emit('update:autoId',$event)"/>
       <span>
         <v-btn small @click="addPath"> Add Path to Delete </v-btn>
       </span>
       <v-btn small @click="removeAllPath"> Remove All </v-btn>
-      <div v-for="(path, index) in value" :key="index">
+      <div v-for="(path, index) in pathToDelete" :key="index">
         <v-text-field
           :value="path"
           :rules="[
             (v) => !!v || 'path can not be empty required',
-            (v) => !v || /^((\/([1-9][0-9]{0,4}|[0])){0,4})$|^\/$/.test(v) || 'invalid path',
+            (v) =>
+              !v ||
+              /^((\/([1-9][0-9]{0,4}|[0])){0,4})$|^\/$/.test(v) ||
+              'invalid path',
           ]"
           required
           dense
@@ -48,7 +71,8 @@
 <script>
 export default {
   props: {
-    value: Array, // path to delete
+    pathToDelete: Array, // path to delete
+    autoId:Boolean, // auto id for security Object
     valid: Boolean, // validation state of the form
   },
   methods: {
@@ -56,20 +80,20 @@ export default {
       this.$refs.form.resetValidation();
     },
     addPath() {
-      this.$emit("input", [...this.value, ""]);
+      this.$emit("update:pathToDelete", [...this.pathToDelete, ""]);
     },
     removeAllPath() {
-      this.$emit("input", []);
+      this.$emit("update:pathToDelete", []);
     },
     updatePath(index, value) {
-      let res = [...this.value];
+      let res = [...this.pathToDelete];
       res.splice(index, 1, value);
-      this.$emit("input", res);
+      this.$emit("update:pathToDelete", res);
     },
     removePath(index) {
-      let res = [...this.value];
+      let res = [...this.pathToDelete];
       res.splice(index, 1);
-      this.$emit("input", res);
+      this.$emit("update:pathToDelete", res);
     },
   },
 };

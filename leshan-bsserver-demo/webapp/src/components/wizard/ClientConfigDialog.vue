@@ -65,7 +65,8 @@
             <delete-step
               ref="step3"
               :valid.sync="valid[3]"
-              v-model="config.toDelete"
+              :pathToDelete.sync="config.toDelete"
+              :autoId.sync="config.autoIdForSecurityObject"
             />
           </v-stepper-content>
           <v-stepper-content step="4">
@@ -90,7 +91,6 @@
           </v-stepper-content>
         </v-stepper-items>
       </v-stepper>
-
       <!-- Buttons -->
       <v-card-actions>
         <v-spacer></v-spacer>
@@ -190,6 +190,7 @@ export default {
           dm: { mode: "no_sec" },
           bs: null,
           toDelete: ["/0", "/1"],
+          autoIdForSecurityObject:false
         };
         this.currentStep = 1;
         for (let i = 1; i <= this.nbSteps; i++) {

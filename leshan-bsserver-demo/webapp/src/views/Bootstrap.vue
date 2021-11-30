@@ -73,6 +73,9 @@
             </span>
             <br />
           </span>
+          <span v-if="item.autoIdForSecurityObject"
+            >Use Auto ID For Security Object<br /></span
+          >
           <!-- LWM2M Server to add -->
           <span v-for="server in item.dm" :key="server.shortid">
             Add Server: <code>{{ server.security.uri }}</code>
@@ -289,6 +292,9 @@ export default {
       }
       if (config.toDelete) {
         c.toDelete = config.toDelete;
+      }
+      if (config.autoIdForSecurityObject) {
+        c.autoIdForSecurityObject = config.autoIdForSecurityObject;
       }
 
       this.axios

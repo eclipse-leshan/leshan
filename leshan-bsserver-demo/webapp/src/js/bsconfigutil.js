@@ -35,6 +35,7 @@ var configFromRestToUI = function(config) {
     }
   }
   newConfig.toDelete = config.toDelete;
+  newConfig.autoIdForSecurityObject = config.autoIdForSecurityObject;
   return newConfig;
 };
 var configsFromRestToUI = function(configs) {
@@ -57,6 +58,11 @@ var configFromUIToRest = function(c) {
     var bs = config.bs[i];
     newConfig.security[i] = bs.security;
   }
+  if (i == 0) {
+    // To be sure that we are not using instance ID 0 for a DM server.
+    // The convention is to keep it for Bootstrap server.
+    i = 1;
+  }
   for (var j = 0; j < config.dm.length; j++) {
     var dm = config.dm[j];
     newConfig.security[i + j] = dm.security;
@@ -64,6 +70,7 @@ var configFromUIToRest = function(c) {
     newConfig.servers[j] = dm;
   }
   newConfig.toDelete = config.toDelete;
+  newConfig.autoIdForSecurityObject = config.autoIdForSecurityObject;
   return newConfig;
 };
 
