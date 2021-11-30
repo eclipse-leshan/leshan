@@ -92,11 +92,10 @@ public class MyDevice extends BaseInstanceEnabler implements Destroyable {
 
     @Override
     public ExecuteResponse execute(ServerIdentity identity, int resourceid, Arguments arguments) {
-        String withArguments = null;
+        String withArguments = "";
         if (!arguments.isEmpty())
             withArguments = " with arguments " + arguments;
-        LOG.info("Execute on Device resource /{}/{}/{} {}", getModel().id, getId(), resourceid,
-                withArguments != null ? withArguments : "");
+        LOG.info("Execute on Device resource /{}/{}/{} {}", getModel().id, getId(), resourceid, withArguments);
 
         if (resourceid == 4) {
             new Timer("Reboot Lwm2mClient").schedule(new TimerTask() {

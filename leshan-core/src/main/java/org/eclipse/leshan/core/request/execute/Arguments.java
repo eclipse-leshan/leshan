@@ -139,15 +139,16 @@ public class Arguments implements Iterable<Argument> {
             valueDecorated = keyValue.length == 1 ? null : keyValue[1];
         }
 
-        private void validate() throws InvalidArgumentException {
+        private Argument parse() throws InvalidArgumentException {
             if (!isValid()) {
                 throw new InvalidArgumentException("Unable to parse Arguments [%s]", content);
             }
-        }
-
-        private Argument parse() throws InvalidArgumentException {
-            validate();
-            int digit = Integer.parseInt(digitPart);
+            int digit;
+            try {
+                digit = Integer.parseInt(digitPart);
+            } catch (NumberFormatException e) {
+                throw new InvalidArgumentException(e, "Unable to parse Arguments [%s] with digit [%s]", content, digitPart);
+            }
             String value = null;
             if (valueDecorated != null) {
                 value = StringUtils.removeEnd(StringUtils.removeStart(valueDecorated, "'"), "'");
@@ -197,13 +198,13 @@ public class Arguments implements Iterable<Argument> {
     }
 
     /**
-     * Creates a map that represents arguments. Every argument's null value is converted to empty string "".
+     * Creates a map that represents arguments.
      */
     public Map<Integer, String> toMap() {
         Map<Integer, String> result = new HashMap<>();
         for (Argument argument : this) {
             String value = argument.getValue();
-            result.put(argument.getDigit(), value != null ? value : "");
+            result.put(argument.getDigit(), value);
         }
         return result;
     }

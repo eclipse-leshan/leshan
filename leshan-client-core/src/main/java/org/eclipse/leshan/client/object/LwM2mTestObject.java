@@ -25,6 +25,7 @@ import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.ObjectLink;
+import org.eclipse.leshan.core.request.execute.Argument;
 import org.eclipse.leshan.core.request.execute.Arguments;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.util.Hex;
@@ -120,8 +121,14 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
     }
 
     private void storeArguments(Arguments arguments) {
+        Map<Integer, String> argValues = arguments.toMap();
+        for (Argument argument: arguments) {
+            String value = argument.getValue() == null ? "" : argument.getValue();
+            argValues.put(argument.getDigit(), value);
+        }
+
         Map<Integer, Object> newParams = new HashMap<>();
-        newParams.put(4, arguments.toMap());
+        newParams.put(4, argValues);
         fireResourcesChange(applyValues(newParams));
     }
 

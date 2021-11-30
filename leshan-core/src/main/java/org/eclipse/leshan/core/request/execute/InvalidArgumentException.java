@@ -27,4 +27,8 @@ public class InvalidArgumentException extends Exception {
     public InvalidArgumentException(String message, Object... args) {
         super(String.format(message, args));
     }
+
+    public InvalidArgumentException(Exception exception, String message, Object... args) {
+        super(String.format(message, args), exception);
+    }
 }

@@ -120,6 +120,11 @@ public class ArgumentsParsingTest {
     }
 
     @Test(expected = InvalidArgumentException.class)
+    public void should_not_parse_non_digit_into_argument() throws InvalidArgumentException {
+        Arguments.parse("a='hello'");
+    }
+
+    @Test(expected = InvalidArgumentException.class)
     public void should_not_parse_text_into_argument_with_value_without_equal() throws InvalidArgumentException {
         Arguments.parse("3'hello'");
     }

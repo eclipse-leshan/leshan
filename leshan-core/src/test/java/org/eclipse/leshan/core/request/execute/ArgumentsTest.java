@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request.execute;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.Map;
 
@@ -34,7 +34,7 @@ public class ArgumentsTest {
 
         assertEquals(2, argumentsMap.size());
         assertEquals("stringValue", argumentsMap.get(3));
-        assertEquals("", argumentsMap.get(4));
+        assertNull(argumentsMap.get(4));
     }
 
     @Test

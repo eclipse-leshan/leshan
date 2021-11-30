@@ -29,69 +29,50 @@ import org.junit.runners.Parameterized;
 @RunWith(Parameterized.class)
 public class ArgumentValidationTest {
 
-    @Parameterized.Parameters(name = "{index} : {0}")
+    private final int digit;
+    private final String value;
+    private final Class<? extends Throwable> exception;
+
+    public ArgumentValidationTest(int digit, String value, Class<? extends Throwable> exception) {
+        this.digit = digit;
+        this.value = value;
+        this.exception = exception;
+    }
+
+    @Parameterized.Parameters(name = "{index} : digit: {0}, value: {1}, expected exception: {2}")
     public static Collection<?> linkValueListProvider() {
-        return Arrays.asList( //
-                new TestParams(0, "hello", null), //
-                new TestParams(9, "hello", null), //
-                new TestParams(-1, "hello", InvalidArgumentException.class), //
-                new TestParams(10, "hello", InvalidArgumentException.class), //
-                new TestParams(1, null, null), //
-                new TestParams(1, "", null), //
-                new TestParams(1,
-                        "!" + new String(new byte[] { 0x23, 0x26, 0x28, 0x5B, 0x5D, 0x7E }, StandardCharsets.UTF_8),
-                        null), //
-                new TestParams(1, new String(new byte[] { 0x22 }, StandardCharsets.UTF_8),
-                        InvalidArgumentException.class), // " character
-                new TestParams(1, new String(new byte[] { 0x27 }, StandardCharsets.UTF_8),
-                        InvalidArgumentException.class), // ' character
-                new TestParams(1, new String(new byte[] { 0x5C }, StandardCharsets.UTF_8),
-                        InvalidArgumentException.class), // \ character
-                new TestParams(1, new String(new byte[] { 0x7F }, StandardCharsets.UTF_8),
-                        InvalidArgumentException.class), // DEL character
-                new TestParams(1, "`aAzZ190-=~!@#$%^&*()_+[]{}|;:<>/?,.", null) // more visualized character rules above
-        );
-    }
-
-    private static class TestParams {
-        private final int digit;
-        private final String value;
-        private final Class<? extends Throwable> exception;
-
-        public TestParams(int digit, String value, Class<? extends Throwable> exception) {
-            this.digit = digit;
-            this.value = value;
-            this.exception = exception;
-        }
-
-        @Override
-        public String toString() {
-            if (exception != null) {
-                return "new Argument(" + digit + ", \"" + value + "\"): expects " + exception.getSimpleName()
-                        + " exception";
-            } else {
-                return "new Argument(" + digit + ", \"" + value + "\")";
-            }
-        }
-    }
-
-    private final TestParams testParams;
-
-    public ArgumentValidationTest(TestParams testParams) {
-        this.testParams = testParams;
+        return Arrays.asList(new Object[][] { //
+                        { 0, "hello", null }, //
+                        { 9, "hello", null }, //
+                        { -1, "hello", InvalidArgumentException.class }, //
+                        { 10, "hello", InvalidArgumentException.class }, //
+                        { 1, null, null }, //
+                        { 1, "", null }, //
+                        { 1, "!" + new String(new byte[] { 0x23, 0x26, 0x28, 0x5B, 0x5D, 0x7E }, StandardCharsets.UTF_8),
+                                null }, //
+                        { 1, new String(new byte[] { 0x22 }, StandardCharsets.UTF_8), InvalidArgumentException.class },
+                        // " character
+                        { 1, new String(new byte[] { 0x27 }, StandardCharsets.UTF_8), InvalidArgumentException.class },
+                        // ' character
+                        { 1, new String(new byte[] { 0x5C }, StandardCharsets.UTF_8), InvalidArgumentException.class },
+                        // \ character
+                        { 1, new String(new byte[] { 0x7F }, StandardCharsets.UTF_8), InvalidArgumentException.class },
+                        // DEL character
+                        { 1, "`aAzZ190-=~!@#$%^&*()_+[]{}|;:<>/?,.", null } // more visualized character rules above
+                });
     }
 
     @Test
     public void perform_tests() throws InvalidArgumentException {
-        if (testParams.exception != null) {
-            assertThrows(testParams.exception, new ThrowingRunnable() {
+        if (exception != null) {
+            assertThrows(exception, new ThrowingRunnable() {
                 @Override
                 public void run() throws InvalidArgumentException {
-                    new Argument(testParams.digit, testParams.value);
+                    new Argument(digit, value);
                 }
             });
         } else {
-            new Argument(testParams.digit, testParams.value);
+            new Argument(digit, value);
         }
     }
 
