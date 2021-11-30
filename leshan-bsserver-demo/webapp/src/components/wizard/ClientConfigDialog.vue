@@ -34,10 +34,14 @@
           </v-stepper-step>
           <v-divider></v-divider>
           <v-stepper-step :complete="currentStep > 3" step="3">
-            LWM2M Server Configuration
+            Paths to delete
           </v-stepper-step>
           <v-divider></v-divider>
           <v-stepper-step :complete="currentStep > 4" step="4">
+            LWM2M Server Configuration
+          </v-stepper-step>
+          <v-divider></v-divider>
+          <v-stepper-step :complete="currentStep > 5" step="5">
             LWM2M Bootstrap Server Configuration
           </v-stepper-step>
         </v-stepper-header>
@@ -58,18 +62,25 @@
             />
           </v-stepper-content>
           <v-stepper-content step="3">
-            <server-step
+            <delete-step
               ref="step3"
               :valid.sync="valid[3]"
+              v-model="config.toDelete"
+            />
+          </v-stepper-content>
+          <v-stepper-content step="4">
+            <server-step
+              ref="step4"
+              :valid.sync="valid[4]"
               v-model="config.dm"
               :defaultNoSecValue="defval.dm.url.nosec"
               :defaultSecureValue="defval.dm.url.sec"
             />
           </v-stepper-content>
-          <v-stepper-content step="4">
+          <v-stepper-content step="5">
             <bootstrap-server-step
-              ref="step4"
-              :valid.sync="valid[4]"
+              ref="step5"
+              :valid.sync="valid[5]"
               v-model="config.bs"
               :defaultNoSecValue="defval.bs.url.nosec"
               :defaultSecureValue="defval.bs.url.sec"
@@ -115,15 +126,16 @@
 import { toHex, base64ToBytes } from "@leshan-server-core-demo/js/byteutils.js";
 import EndpointStep from "./EndpointStep.vue";
 import SecurityStep from "./SecurityStep.vue";
+import DeleteStep from './DeleteStep.vue';
 import ServerStep from "./ServerStep.vue";
 import BootstrapServerStep from "./BootstrapServerStep.vue";
 
 export default {
-  components: { EndpointStep, SecurityStep, ServerStep, BootstrapServerStep },
+  components: { EndpointStep, SecurityStep, ServerStep, BootstrapServerStep, DeleteStep },
   props: { value: Boolean /*open/close dialog*/ },
   data() {
     return {
-      nbSteps: 4,
+      nbSteps: 5,
       config: {}, // local state for current config
       valid: [],
       currentStep: 1,

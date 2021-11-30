@@ -18,10 +18,7 @@
         need to create a configuration for it.
       </p>
       <p>
-        This wizard is pretty limitted. It creates a configuration which starts
-        by deleting objects <code>/0</code> and <code>/1</code>, then write
-        instances for those objects to add one LWM2M server and/or one LWM2M
-        Bootstrap Server.
+        This wizard is pretty limitted, the Leshan library allow you much more.
       </p>
     </v-card-text>
     <v-form ref="form" :value="valid" @input="$emit('update:valid', $event)">
