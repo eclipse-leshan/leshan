@@ -64,6 +64,16 @@
       <!--custom display for "config" column-->
       <template v-slot:item.config="{ item }">
         <div class="pa-2">
+          <!-- Path to delete -->
+          <span v-if="item.toDelete && item.toDelete.length > 0">
+            Delete :
+            <span v-for="path in item.toDelete" :key="path">
+              <code>{{ path }}</code
+              >,
+            </span>
+            <br />
+          </span>
+          <!-- LWM2M Server to add -->
           <span v-for="server in item.dm" :key="server.shortid">
             Add Server: <code>{{ server.security.uri }}</code>
             <span v-if="server.security.securityMode.toLowerCase() != 'no_sec'">
@@ -77,6 +87,7 @@
             </span>
             <br />
           </span>
+          <!-- LWM2M Bootstrap Server to add -->
           <span v-for="server in item.bs" :key="server.security.uri">
             Add Bootstrap Server: <code>{{ server.security.uri }}</code>
             <span v-if="server.security.securityMode.toLowerCase() != 'no_sec'">
@@ -275,6 +286,9 @@ export default {
 
       if (config.security) {
         c.security = config.security;
+      }
+      if (config.toDelete) {
+        c.toDelete = config.toDelete;
       }
 
       this.axios

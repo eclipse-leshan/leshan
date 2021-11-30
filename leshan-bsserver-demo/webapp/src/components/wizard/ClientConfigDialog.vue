@@ -177,6 +177,7 @@ export default {
           security: null,
           dm: { mode: "no_sec" },
           bs: null,
+          toDelete: ["/0", "/1"],
         };
         this.currentStep = 1;
         for (let i = 1; i <= this.nbSteps; i++) {
