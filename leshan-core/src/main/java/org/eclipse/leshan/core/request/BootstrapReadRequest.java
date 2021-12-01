@@ -37,7 +37,7 @@ public class BootstrapReadRequest extends AbstractSimpleDownlinkRequest<Bootstra
      * @param objectId the object ID of the resource
      */
     public BootstrapReadRequest(int objectId) {
-        this(null, new LwM2mPath(objectId), null);
+        this(null, newPath(objectId), null);
     }
 
     /**
@@ -47,7 +47,7 @@ public class BootstrapReadRequest extends AbstractSimpleDownlinkRequest<Bootstra
      * @param objectId the object ID of the resource
      */
     public BootstrapReadRequest(ContentFormat format, int objectId) {
-        this(format, new LwM2mPath(objectId), null);
+        this(format, newPath(objectId), null);
     }
 
     /**
@@ -57,7 +57,7 @@ public class BootstrapReadRequest extends AbstractSimpleDownlinkRequest<Bootstra
      * @param objectInstanceId the object instance ID
      */
     public BootstrapReadRequest(int objectId, int objectInstanceId) {
-        this(null, new LwM2mPath(objectId, objectInstanceId), null);
+        this(null, newPath(objectId, objectInstanceId), null);
     }
 
     /**
@@ -68,7 +68,7 @@ public class BootstrapReadRequest extends AbstractSimpleDownlinkRequest<Bootstra
      * @param objectInstanceId the object instance ID
      */
     public BootstrapReadRequest(ContentFormat format, int objectId, int objectInstanceId) {
-        this(format, new LwM2mPath(objectId, objectInstanceId), null);
+        this(format, newPath(objectId, objectInstanceId), null);
     }
 
     /**
@@ -78,7 +78,7 @@ public class BootstrapReadRequest extends AbstractSimpleDownlinkRequest<Bootstra
      * @throws IllegalArgumentException if the target path is not valid
      */
     public BootstrapReadRequest(String path) {
-        this(null, new LwM2mPath(path), null);
+        this(null, newPath(path), null);
     }
 
     /**
@@ -89,7 +89,7 @@ public class BootstrapReadRequest extends AbstractSimpleDownlinkRequest<Bootstra
      * @throws IllegalArgumentException if the target path is not valid
      */
     public BootstrapReadRequest(ContentFormat format, String path) {
-        this(format, new LwM2mPath(path), null);
+        this(format, newPath(path), null);
     }
 
     /**
@@ -102,7 +102,7 @@ public class BootstrapReadRequest extends AbstractSimpleDownlinkRequest<Bootstra
      * @throws IllegalArgumentException if the target path is not valid
      */
     public BootstrapReadRequest(ContentFormat format, String path, Object coapRequest) {
-        this(format, new LwM2mPath(path), coapRequest);
+        this(format, newPath(path), coapRequest);
     }
 
     /**

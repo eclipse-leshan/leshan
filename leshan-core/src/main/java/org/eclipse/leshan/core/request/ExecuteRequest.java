@@ -68,7 +68,7 @@ public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteRespons
      * @param resourceId the resource's ID
      */
     public ExecuteRequest(int objectId, int objectInstanceId, int resourceId) {
-        this(new LwM2mPath(objectId, objectInstanceId, resourceId), null, null);
+        this(newPath(objectId, objectInstanceId, resourceId), null, null);
     }
 
     /**
@@ -80,7 +80,7 @@ public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteRespons
      * @param parameters the parameters
      */
     public ExecuteRequest(int objectId, int objectInstanceId, int resourceId, String parameters) {
-        this(new LwM2mPath(objectId, objectInstanceId, resourceId), parameters, null);
+        this(newPath(objectId, objectInstanceId, resourceId), parameters, null);
     }
 
     private ExecuteRequest(LwM2mPath path, String parameters, Object coapRequest) {

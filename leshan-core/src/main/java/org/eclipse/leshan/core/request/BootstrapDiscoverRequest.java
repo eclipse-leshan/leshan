@@ -41,7 +41,7 @@ public class BootstrapDiscoverRequest extends AbstractSimpleDownlinkRequest<Boot
      * @param objectId the object type
      */
     public BootstrapDiscoverRequest(int objectId) {
-        this(new LwM2mPath(objectId), null);
+        this(newPath(objectId), null);
     }
 
     /**

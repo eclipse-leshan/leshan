@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.util.SecurityUtil;
 import org.eclipse.leshan.core.util.StringUtils;
@@ -120,7 +121,7 @@ public class ConfigurationChecker {
         for (String path : pathtoDelete) {
             try {
                 new LwM2mPath(path);
-            } catch (IllegalArgumentException e) {
+            } catch (InvalidLwM2mPathException e) {
                 throw new InvalidConfigurationException(String.format(" %s is not a valid path", path), e);
             }
         }

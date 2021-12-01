@@ -27,8 +27,10 @@ public class LwM2mIncompletePath extends LwM2mPath {
      * Create a path to an object instance without object instance id
      *
      * @param objectId the object identifier
+     * 
+     * @throws InvalidLwM2mPathException if you try to create path with invalid inputs
      */
-    public LwM2mIncompletePath(int objectId) {
+    public LwM2mIncompletePath(int objectId) throws InvalidLwM2mPathException {
         super(objectId, LwM2mObjectInstance.UNDEFINED, null, null);
         validate();
     }
@@ -38,8 +40,10 @@ public class LwM2mIncompletePath extends LwM2mPath {
      *
      * @param objectId the object identifier
      * @param resourceId the resource identifier
+     * 
+     * @throws InvalidLwM2mPathException if you try to create path with invalid inputs
      */
-    public LwM2mIncompletePath(int objectId, int resourceId) {
+    public LwM2mIncompletePath(int objectId, int resourceId) throws InvalidLwM2mPathException {
         super(objectId, LwM2mObjectInstance.UNDEFINED, resourceId, null);
         validate();
     }
@@ -50,8 +54,10 @@ public class LwM2mIncompletePath extends LwM2mPath {
      * @param objectId the object identifier
      * @param resourceId the resource identifier
      * @param resourceInstanceId the resource instance identifier
+     * 
+     * @throws InvalidLwM2mPathException if you try to create path with invalid inputs
      */
-    public LwM2mIncompletePath(int objectId, int resourceId, int resourceInstanceId) {
+    public LwM2mIncompletePath(int objectId, int resourceId, int resourceInstanceId) throws InvalidLwM2mPathException {
         super(objectId, LwM2mObjectInstance.UNDEFINED, resourceId, resourceInstanceId);
         validate();
     }
@@ -86,7 +92,7 @@ public class LwM2mIncompletePath extends LwM2mPath {
     }
 
     @Override
-    protected void validate() {
+    protected void validate() throws InvalidLwM2mPathException {
         LwM2mNodeUtil.validateIncompletePath(this);
     }
 

@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec.senml;
 
-import org.eclipse.leshan.core.node.LwM2mNodeException;
+import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.senml.SenMLException;
 import org.eclipse.leshan.senml.SenMLRecord;
 import org.eclipse.leshan.senml.SenMLResolver;
@@ -30,7 +30,7 @@ public class LwM2mSenMLResolver extends SenMLResolver<LwM2mResolvedSenMLRecord> 
             Long resolvedTimestamp) throws SenMLException {
         try {
             return new LwM2mResolvedSenMLRecord(unresolvedRecord, resolvedName, resolvedTimestamp);
-        } catch (IllegalArgumentException | LwM2mNodeException e) {
+        } catch (InvalidLwM2mPathException e) {
             throw new SenMLException(e, "Unable to resolve record, invalid path", resolvedName);
         }
     }

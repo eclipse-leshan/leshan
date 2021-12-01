@@ -31,7 +31,7 @@ public class DeleteRequest extends AbstractSimpleDownlinkRequest<DeleteResponse>
      * @param objectInstanceId the object instance
      */
     public DeleteRequest(int objectId, int objectInstanceId) {
-        this(new LwM2mPath(objectId, objectInstanceId), null);
+        this(newPath(objectId, objectInstanceId), null);
     }
 
     /**

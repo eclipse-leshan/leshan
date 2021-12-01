@@ -40,7 +40,7 @@ public class BootstrapDeleteRequest extends AbstractSimpleDownlinkRequest<Bootst
      * @param objectId the object Id
      */
     public BootstrapDeleteRequest(int objectId) {
-        this(new LwM2mPath(objectId), null);
+        this(newPath(objectId), null);
     }
 
     /**
@@ -51,7 +51,7 @@ public class BootstrapDeleteRequest extends AbstractSimpleDownlinkRequest<Bootst
      * @param objectInstanceId the object instance
      */
     public BootstrapDeleteRequest(int objectId, int objectInstanceId) {
-        this(new LwM2mPath(objectId, objectInstanceId), null);
+        this(newPath(objectId, objectInstanceId), null);
     }
 
     /**

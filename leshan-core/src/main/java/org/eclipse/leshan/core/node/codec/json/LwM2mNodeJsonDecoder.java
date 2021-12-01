@@ -41,6 +41,7 @@ import org.eclipse.leshan.core.node.LwM2mNodeException;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
@@ -82,7 +83,7 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
                 // return the most recent value
                 return (T) timestampedNodes.get(0).getNode();
             }
-        } catch (LwM2mJsonException | LwM2mNodeException e) {
+        } catch (LwM2mJsonException | LwM2mNodeException | InvalidLwM2mPathException e) {
             throw new CodecException(e, "Unable to deserialize json [path:%s]", path);
         }
     }
@@ -94,7 +95,7 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
             String jsonStrValue = new String(content);
             JsonRootObject json = decoder.fromJsonLwM2m(jsonStrValue);
             return parseJSON(json, path, model, nodeClass);
-        } catch (LwM2mJsonException e) {
+        } catch (LwM2mJsonException | InvalidLwM2mPathException e) {
             throw new CodecException(e, "Unable to deserialize json [path:%s]", path);
         }
     }

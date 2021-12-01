@@ -60,13 +60,17 @@ public class ObjectLink {
      * Create a Object Link referencing an object instance with the given path.
      */
     public static ObjectLink fromPath(String path) {
-        LwM2mPath lwM2mPath = new LwM2mPath(path);
-        if (lwM2mPath.isRoot()) {
-            return new ObjectLink(); // create null link
-        } else if (lwM2mPath.isObjectInstance()) {
-            return new ObjectLink(lwM2mPath.getObjectId(), lwM2mPath.getObjectInstanceId());
-        } else {
-            throw new IllegalArgumentException("Invalid path: ObjectLink should reference an object instance");
+        try {
+            LwM2mPath lwM2mPath = new LwM2mPath(path);
+            if (lwM2mPath.isRoot()) {
+                return new ObjectLink(); // create null link
+            } else if (lwM2mPath.isObjectInstance()) {
+                return new ObjectLink(lwM2mPath.getObjectId(), lwM2mPath.getObjectInstanceId());
+            } else {
+                throw new IllegalArgumentException("Invalid path: ObjectLink should reference an object instance");
+            }
+        } catch (InvalidLwM2mPathException e) {
+            throw new IllegalArgumentException("Invalid path " + path, e);
         }
     }
 

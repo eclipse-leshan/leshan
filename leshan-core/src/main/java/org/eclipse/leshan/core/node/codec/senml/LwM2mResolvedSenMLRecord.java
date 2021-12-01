@@ -15,8 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec.senml;
 
-import org.eclipse.leshan.core.node.LwM2mNodeException;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.senml.ResolvedSenMLRecord;
 import org.eclipse.leshan.senml.SenMLRecord;
 
@@ -31,10 +31,10 @@ public class LwM2mResolvedSenMLRecord extends ResolvedSenMLRecord {
 
     /**
      * @throws IllegalArgumentException if path is invalid
-     * @throws LwM2mNodeException if path is invalid
+     * @throws InvalidLwM2mPathException if path is invalid
      */
     public LwM2mResolvedSenMLRecord(SenMLRecord unresolvedRecord, String resolvedName, Long resolvedTimestamp)
-            throws IllegalArgumentException, LwM2mNodeException {
+            throws InvalidLwM2mPathException {
         super(unresolvedRecord, resolvedName, resolvedTimestamp);
         this.path = new LwM2mPath(resolvedName);
     }

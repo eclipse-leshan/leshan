@@ -30,7 +30,7 @@ public class DiscoverRequest extends AbstractSimpleDownlinkRequest<DiscoverRespo
      * @param objectId the object type
      */
     public DiscoverRequest(int objectId) {
-        this(new LwM2mPath(objectId), null);
+        this(newPath(objectId), null);
     }
 
     /**
@@ -40,7 +40,7 @@ public class DiscoverRequest extends AbstractSimpleDownlinkRequest<DiscoverRespo
      * @param objectInstanceId the object instance
      */
     public DiscoverRequest(int objectId, int objectInstanceId) {
-        this(new LwM2mPath(objectId, objectInstanceId), null);
+        this(newPath(objectId, objectInstanceId), null);
     }
 
     /**
@@ -51,7 +51,7 @@ public class DiscoverRequest extends AbstractSimpleDownlinkRequest<DiscoverRespo
      * @param resourceId the resource
      */
     public DiscoverRequest(int objectId, int objectInstanceId, int resourceId) {
-        this(new LwM2mPath(objectId, objectInstanceId, resourceId), null);
+        this(newPath(objectId, objectInstanceId, resourceId), null);
     }
 
     /**

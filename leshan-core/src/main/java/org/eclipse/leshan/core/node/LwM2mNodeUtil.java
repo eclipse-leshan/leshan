@@ -216,10 +216,10 @@ public class LwM2mNodeUtil {
         return null;
     }
 
-    public static void validatePath(LwM2mPath path) throws LwM2mNodeException {
+    public static void validatePath(LwM2mPath path) throws InvalidLwM2mPathException {
         String err = getInvalidPathCause(path);
         if (err != null)
-            throw new LwM2mNodeException(err);
+            throw new InvalidLwM2mPathException(err);
     }
 
     private static String getInvalidIncompletePathCause(LwM2mPath path) {
@@ -261,9 +261,9 @@ public class LwM2mNodeUtil {
         return null;
     }
 
-    public static void validateIncompletePath(LwM2mPath path) throws LwM2mNodeException {
+    public static void validateIncompletePath(LwM2mPath path) throws InvalidLwM2mPathException {
         String err = getInvalidIncompletePathCause(path);
         if (err != null)
-            throw new LwM2mNodeException(err);
+            throw new InvalidLwM2mPathException(err);
     }
 }

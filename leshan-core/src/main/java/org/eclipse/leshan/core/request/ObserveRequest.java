@@ -41,7 +41,7 @@ public class ObserveRequest extends AbstractSimpleDownlinkRequest<ObserveRespons
      * @param objectId the object ID of the resource
      */
     public ObserveRequest(int objectId) {
-        this(null, new LwM2mPath(objectId), null, null);
+        this(null, newPath(objectId), null, null);
     }
 
     /**
@@ -51,7 +51,7 @@ public class ObserveRequest extends AbstractSimpleDownlinkRequest<ObserveRespons
      * @param objectId the object ID of the resource
      */
     public ObserveRequest(ContentFormat format, int objectId) {
-        this(format, new LwM2mPath(objectId), null, null);
+        this(format, newPath(objectId), null, null);
     }
 
     /**
@@ -61,7 +61,7 @@ public class ObserveRequest extends AbstractSimpleDownlinkRequest<ObserveRespons
      * @param objectInstanceId the object instance ID
      */
     public ObserveRequest(int objectId, int objectInstanceId) {
-        this(null, new LwM2mPath(objectId, objectInstanceId), null, null);
+        this(null, newPath(objectId, objectInstanceId), null, null);
     }
 
     /**
@@ -72,7 +72,7 @@ public class ObserveRequest extends AbstractSimpleDownlinkRequest<ObserveRespons
      * @param objectInstanceId the object instance ID
      */
     public ObserveRequest(ContentFormat format, int objectId, int objectInstanceId) {
-        this(format, new LwM2mPath(objectId, objectInstanceId), null, null);
+        this(format, newPath(objectId, objectInstanceId), null, null);
     }
 
     /**
@@ -83,7 +83,7 @@ public class ObserveRequest extends AbstractSimpleDownlinkRequest<ObserveRespons
      * @param resourceId the (individual) resource's ID
      */
     public ObserveRequest(int objectId, int objectInstanceId, int resourceId) {
-        this(null, new LwM2mPath(objectId, objectInstanceId, resourceId), null, null);
+        this(null, newPath(objectId, objectInstanceId, resourceId), null, null);
     }
 
     /**
@@ -95,7 +95,7 @@ public class ObserveRequest extends AbstractSimpleDownlinkRequest<ObserveRespons
      * @param resourceId the (individual) resource's ID
      */
     public ObserveRequest(ContentFormat format, int objectId, int objectInstanceId, int resourceId) {
-        this(format, new LwM2mPath(objectId, objectInstanceId, resourceId), null, null);
+        this(format, newPath(objectId, objectInstanceId, resourceId), null, null);
     }
 
     /**
@@ -106,7 +106,7 @@ public class ObserveRequest extends AbstractSimpleDownlinkRequest<ObserveRespons
      * @param resourceId the (individual) resource's ID
      */
     public ObserveRequest(int objectId, int objectInstanceId, int resourceId, int resourceInstanceId) {
-        this(null, new LwM2mPath(objectId, objectInstanceId, resourceId, resourceInstanceId), null, null);
+        this(null, newPath(objectId, objectInstanceId, resourceId, resourceInstanceId), null, null);
     }
 
     /**
@@ -119,7 +119,7 @@ public class ObserveRequest extends AbstractSimpleDownlinkRequest<ObserveRespons
      */
     public ObserveRequest(ContentFormat format, int objectId, int objectInstanceId, int resourceId,
             int resourceInstanceId) {
-        this(format, new LwM2mPath(objectId, objectInstanceId, resourceId, resourceInstanceId), null, null);
+        this(format, newPath(objectId, objectInstanceId, resourceId, resourceInstanceId), null, null);
     }
 
     /**
@@ -170,8 +170,7 @@ public class ObserveRequest extends AbstractSimpleDownlinkRequest<ObserveRespons
         this(format, newPath(path), context, null);
     }
 
-    public ObserveRequest(ContentFormat format, LwM2mPath path, Object coapRequest)
-            throws InvalidRequestException {
+    public ObserveRequest(ContentFormat format, LwM2mPath path, Object coapRequest) throws InvalidRequestException {
         this(format, path, null, coapRequest);
     }
 

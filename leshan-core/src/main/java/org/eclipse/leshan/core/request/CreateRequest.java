@@ -48,7 +48,7 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
      */
     public CreateRequest(ContentFormat contentFormat, int objectId, LwM2mResource... resources)
             throws InvalidRequestException {
-        this(contentFormat, new LwM2mPath(objectId), null, resources, null);
+        this(contentFormat, newPath(objectId), null, resources, null);
     }
 
     /**
@@ -59,7 +59,7 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
      * @param resources the resource values for the new instance
      */
     public CreateRequest(int objectId, LwM2mResource... resources) {
-        this(null, new LwM2mPath(objectId), null, resources, null);
+        this(null, newPath(objectId), null, resources, null);
     }
 
     /**
@@ -99,7 +99,7 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
      */
     public CreateRequest(ContentFormat contentFormat, int objectId, LwM2mObjectInstance... instances)
             throws InvalidRequestException {
-        this(contentFormat, new LwM2mPath(objectId), null, null, instances);
+        this(contentFormat, newPath(objectId), null, null, instances);
     }
 
     /**

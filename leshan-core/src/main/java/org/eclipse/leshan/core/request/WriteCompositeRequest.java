@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
@@ -60,7 +61,7 @@ public class WriteCompositeRequest extends AbstractLwM2mRequest<WriteCompositeRe
         super(null);
         HashMap<LwM2mPath, LwM2mNode> internalNodes = new HashMap<>();
         for (Entry<String, Object> entry : values.entrySet()) {
-            LwM2mPath path = new LwM2mPath(entry.getKey());
+            LwM2mPath path = newPath(entry.getKey());
             if (path.isResource()) {
                 internalNodes.put(path, LwM2mSingleResource.newResource(path.getResourceId(), entry.getValue()));
             } else if (path.isResourceInstance()) {
@@ -126,5 +127,13 @@ public class WriteCompositeRequest extends AbstractLwM2mRequest<WriteCompositeRe
 
     public ContentFormat getContentFormat() {
         return contentFormat;
+    }
+
+    protected LwM2mPath newPath(String path) {
+        try {
+            return new LwM2mPath(path);
+        } catch (InvalidLwM2mPathException e) {
+            throw new InvalidRequestException();
+        }
     }
 }

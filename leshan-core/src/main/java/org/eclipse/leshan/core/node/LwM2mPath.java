@@ -46,8 +46,10 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
      * Create a path to an object
      *
      * @param objectId the object identifier
+     * 
+     * @throws InvalidLwM2mPathException if you try to create path with invalid inputs
      */
-    public LwM2mPath(int objectId) {
+    public LwM2mPath(int objectId) throws InvalidLwM2mPathException {
         this(objectId, null, null, null);
         validate();
     }
@@ -57,8 +59,10 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
      *
      * @param objectId the object identifier
      * @param objectInstanceId the instance identifier
+     * 
+     * @throws InvalidLwM2mPathException if you try to create path with invalid inputs
      */
-    public LwM2mPath(int objectId, int objectInstanceId) {
+    public LwM2mPath(int objectId, int objectInstanceId) throws InvalidLwM2mPathException {
         this(objectId, objectInstanceId, null, null);
         validate();
     }
@@ -69,8 +73,10 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
      * @param objectId the object identifier
      * @param objectInstanceId the instance identifier
      * @param resourceId the resource identifier
+     * 
+     * @throws InvalidLwM2mPathException if you try to create path with invalid inputs
      */
-    public LwM2mPath(int objectId, int objectInstanceId, int resourceId) {
+    public LwM2mPath(int objectId, int objectInstanceId, int resourceId) throws InvalidLwM2mPathException {
         this(objectId, objectInstanceId, resourceId, null);
         validate();
     }
@@ -82,8 +88,11 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
      * @param objectInstanceId the instance identifier
      * @param resourceId the resource identifier
      * @param resourceInstanceId the resource instance identifier
+     * 
+     * @throws InvalidLwM2mPathException if you try to create path with invalid inputs
      */
-    public LwM2mPath(int objectId, int objectInstanceId, int resourceId, int resourceInstanceId) {
+    public LwM2mPath(int objectId, int objectInstanceId, int resourceId, int resourceInstanceId)
+            throws InvalidLwM2mPathException {
         this((Integer) objectId, (Integer) objectInstanceId, (Integer) resourceId, (Integer) resourceInstanceId);
         validate();
     }
@@ -92,8 +101,10 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
      * Constructs a {@link LwM2mPath} from a string representation
      *
      * @param path the path (e.g. "/3/0/1" or "/3")
+     * 
+     * @throws InvalidLwM2mPathException if you try to create path with invalid inputs
      */
-    public LwM2mPath(String path) {
+    public LwM2mPath(String path) throws InvalidLwM2mPathException {
         Validate.notNull(path);
         if (path.startsWith("/")) {
             path = path.substring(1);
@@ -103,7 +114,7 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
         }
         String[] p = path.split("/");
         if (0 > p.length || p.length > 4) {
-            throw new IllegalArgumentException("Invalid length for path: " + path);
+            throw new InvalidLwM2mPathException("Invalid length for path: ", path);
         }
         try {
             this.objectId = (p.length >= 1 && !p[0].isEmpty()) ? Integer.valueOf(p[0]) : null;
@@ -112,7 +123,7 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
             this.resourceInstanceId = (p.length == 4) ? Integer.valueOf(p[3]) : null;
             validate();
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid elements in path: " + path, e);
+            throw new InvalidLwM2mPathException(e, "Invalid elements in path: ", path);
         }
     }
 
@@ -127,8 +138,9 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
      * Validate the current path and raise {@link IllegalArgumentException} is path is not valid
      * 
      * @see LwM2mNodeUtil#validatePath(LwM2mPath)
+     * @throws InvalidLwM2mPathException if you try to create path with invalid inputs
      */
-    protected void validate() {
+    protected void validate() throws InvalidLwM2mPathException {
         LwM2mNodeUtil.validatePath(this);
     }
 

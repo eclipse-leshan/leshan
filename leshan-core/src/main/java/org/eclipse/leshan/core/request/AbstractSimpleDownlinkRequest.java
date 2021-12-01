@@ -16,6 +16,7 @@
 package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
@@ -70,10 +71,43 @@ public abstract class AbstractSimpleDownlinkRequest<T extends LwM2mResponse> ext
         return true;
     }
 
+    protected static LwM2mPath newPath(Integer objectId) {
+        try {
+            return new LwM2mPath(objectId);
+        } catch (InvalidLwM2mPathException e) {
+            throw new InvalidRequestException();
+        }
+    }
+
+    protected static LwM2mPath newPath(Integer objectId, Integer objectInstanceId) {
+        try {
+            return new LwM2mPath(objectId, objectInstanceId);
+        } catch (InvalidLwM2mPathException e) {
+            throw new InvalidRequestException();
+        }
+    }
+
+    protected static LwM2mPath newPath(Integer objectId, Integer objectInstanceId, Integer resourceId) {
+        try {
+            return new LwM2mPath(objectId, objectInstanceId, resourceId);
+        } catch (InvalidLwM2mPathException e) {
+            throw new InvalidRequestException();
+        }
+    }
+
+    protected static LwM2mPath newPath(Integer objectId, Integer objectInstanceId, Integer resourceId,
+            Integer resourceInstancId) {
+        try {
+            return new LwM2mPath(objectId, objectInstanceId, resourceId, resourceInstancId);
+        } catch (InvalidLwM2mPathException e) {
+            throw new InvalidRequestException();
+        }
+    }
+
     protected static LwM2mPath newPath(String path) {
         try {
             return new LwM2mPath(path);
-        } catch (IllegalArgumentException e) {
+        } catch (InvalidLwM2mPathException e) {
             throw new InvalidRequestException();
         }
     }

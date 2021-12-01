@@ -44,6 +44,7 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
@@ -63,6 +64,7 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
 import org.eclipse.leshan.core.response.BootstrapReadResponse;
@@ -149,7 +151,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                 ObserveRequest observeRequest = new ObserveRequest(requestedContentFormat, URI, coapRequest);
                 ObserveResponse response = nodeEnabler.observe(identity, observeRequest);
                 if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CONTENT) {
-                    LwM2mPath path = new LwM2mPath(URI);
+                    LwM2mPath path = getPath(URI);
                     LwM2mNode content = response.getContent();
                     LwM2mModel model = new StaticModel(nodeEnabler.getObjectModel());
                     ContentFormat format = getContentFormat(observeRequest, requestedContentFormat);
@@ -167,7 +169,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                             coapRequest);
                     BootstrapReadResponse response = nodeEnabler.read(identity, readRequest);
                     if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CONTENT) {
-                        LwM2mPath path = new LwM2mPath(URI);
+                        LwM2mPath path = getPath(URI);
                         LwM2mNode content = response.getContent();
                         LwM2mModel model = new StaticModel(nodeEnabler.getObjectModel());
                         ContentFormat format = getContentFormat(readRequest, requestedContentFormat);
@@ -183,7 +185,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                     ReadRequest readRequest = new ReadRequest(requestedContentFormat, URI, coapRequest);
                     ReadResponse response = nodeEnabler.read(identity, readRequest);
                     if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CONTENT) {
-                        LwM2mPath path = new LwM2mPath(URI);
+                        LwM2mPath path = getPath(URI);
                         LwM2mNode content = response.getContent();
                         LwM2mModel model = new StaticModel(nodeEnabler.getObjectModel());
                         ContentFormat format = getContentFormat(readRequest, requestedContentFormat);
@@ -238,7 +240,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
         }
         // Manage Write and Bootstrap Write Request (replace)
         else {
-            LwM2mPath path = new LwM2mPath(URI);
+            LwM2mPath path = getPath(URI);
 
             if (!coapExchange.getRequestOptions().hasContentFormat()) {
                 handleInvalidRequest(coapExchange, "Content Format is mandatory");
@@ -290,7 +292,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
         String URI = exchange.getRequestOptions().getUriPathString();
         Request coapRequest = exchange.advanced().getRequest();
 
-        LwM2mPath path = new LwM2mPath(URI);
+        LwM2mPath path = getPath(URI);
 
         // Manage Execute Request
         if (path.isResource()) {
@@ -443,5 +445,13 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
 
     @Override
     public void objectInstancesRemoved(LwM2mObjectEnabler object, int... instanceIds) {
+    }
+
+    protected LwM2mPath getPath(String URI) throws InvalidRequestException {
+        try {
+            return new LwM2mPath(URI);
+        } catch (InvalidLwM2mPathException e) {
+            throw new InvalidRequestException(e, "Invalid path : %s", e.getMessage());
+        }
     }
 }

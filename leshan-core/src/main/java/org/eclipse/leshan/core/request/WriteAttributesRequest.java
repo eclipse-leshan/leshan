@@ -25,22 +25,22 @@ public class WriteAttributesRequest extends AbstractSimpleDownlinkRequest<WriteA
     private final AttributeSet attributes;
 
     public WriteAttributesRequest(int objectId, AttributeSet attributes) throws InvalidRequestException {
-        this(new LwM2mPath(objectId), attributes, null);
+        this(newPath(objectId), attributes, null);
     }
 
     public WriteAttributesRequest(int objectId, int objectInstanceId, AttributeSet attributes)
             throws InvalidRequestException {
-        this(new LwM2mPath(objectId, objectInstanceId), attributes, null);
+        this(newPath(objectId, objectInstanceId), attributes, null);
     }
 
     public WriteAttributesRequest(int objectId, int objectInstanceId, int resourceId, AttributeSet attributes)
             throws InvalidRequestException {
-        this(new LwM2mPath(objectId, objectInstanceId, resourceId), attributes, null);
+        this(newPath(objectId, objectInstanceId, resourceId), attributes, null);
     }
 
     public WriteAttributesRequest(int objectId, int objectInstanceId, int resourceId, int resourceInstanceId,
             AttributeSet attributes) throws InvalidRequestException {
-        this(new LwM2mPath(objectId, objectInstanceId, resourceId, resourceInstanceId), attributes, null);
+        this(newPath(objectId, objectInstanceId, resourceId, resourceInstanceId), attributes, null);
     }
 
     public WriteAttributesRequest(String path, AttributeSet attributes) {
