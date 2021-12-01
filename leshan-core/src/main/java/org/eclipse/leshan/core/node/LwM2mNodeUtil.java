@@ -25,13 +25,13 @@ import org.eclipse.leshan.core.model.ResourceModel.Type;
  */
 public class LwM2mNodeUtil {
 
-    public static void validateNotNull(Object value, String message, Object... args) {
+    public static void validateNotNull(Object value, String message, Object... args) throws LwM2mNodeException {
         if (value == null) {
             throw new LwM2mNodeException(message, args);
         }
     }
 
-    public static void allElementsOfType(Collection<?> collection, Class<?> clazz) {
+    public static void allElementsOfType(Collection<?> collection, Class<?> clazz) throws LwM2mNodeException {
         int i = 0;
         for (Iterator<?> it = collection.iterator(); it.hasNext(); i++) {
             if (clazz.isInstance(it.next()) == false) {
@@ -41,7 +41,7 @@ public class LwM2mNodeUtil {
         }
     }
 
-    public static void noNullElements(Collection<?> collection) {
+    public static void noNullElements(Collection<?> collection) throws LwM2mNodeException {
         validateNotNull(collection, "collection MUST NOT be null");
         int i = 0;
         for (Iterator<?> it = collection.iterator(); it.hasNext(); i++) {
@@ -53,94 +53,6 @@ public class LwM2mNodeUtil {
 
     public static boolean isUnsignedInt(Integer id) {
         return id != null && 0 <= id && id <= 65535;
-    }
-
-    public static boolean isValidObjectId(Integer id) {
-        return isUnsignedInt(id);
-    }
-
-    public static void validateObjectId(Integer id) {
-        if (!isValidObjectId(id)) {
-            throw new LwM2mNodeException("Invalid object id %d, It MUST be an unsigned int.", id);
-        }
-    }
-
-    public static boolean isValidObjectInstanceId(Integer id) {
-        // MAX_ID 65535 is a reserved value and MUST NOT be used for identifying an Object Instance.
-        return id != null && 0 <= id && id <= 65534;
-    }
-
-    public static void validateObjectInstanceId(Integer id) {
-        if (!isValidObjectInstanceId(id)) {
-            throw new LwM2mNodeException(
-                    "Invalid object instance id %d, It MUST be an unsigned int. (65535 is reserved)", id);
-        }
-    }
-
-    public static boolean isValidResourceId(Integer id) {
-        return isUnsignedInt(id);
-    }
-
-    public static void validateResourceId(Integer id) {
-        if (!isValidResourceId(id)) {
-            throw new LwM2mNodeException("Invalid resource id %d, It MUST be an unsigned int.", id);
-        }
-    }
-
-    public static boolean isValidResourceInstanceId(Integer id) {
-        return isUnsignedInt(id);
-    }
-
-    public static void validateResourceInstanceId(Integer id) {
-        if (!isValidResourceInstanceId(id)) {
-            throw new LwM2mNodeException("Invalid resource instance id %d, It MUST be an unsigned int.", id);
-        }
-    }
-
-    public static void validatePath(LwM2mPath path) {
-        if (path.isObject()) {
-            LwM2mNodeUtil.validateObjectId(path.getObjectId());
-        } else if (path.isObjectInstance()) {
-            LwM2mNodeUtil.validateObjectId(path.getObjectId());
-            LwM2mNodeUtil.validateObjectInstanceId(path.getObjectInstanceId());
-        } else if (path.isResource()) {
-            LwM2mNodeUtil.validateObjectId(path.getObjectId());
-            LwM2mNodeUtil.validateObjectInstanceId(path.getObjectInstanceId());
-            LwM2mNodeUtil.validateResourceId(path.getResourceId());
-        } else if (path.isResourceInstance()) {
-            LwM2mNodeUtil.validateObjectId(path.getObjectId());
-            LwM2mNodeUtil.validateObjectInstanceId(path.getObjectInstanceId());
-            LwM2mNodeUtil.validateResourceId(path.getResourceId());
-            LwM2mNodeUtil.validateResourceInstanceId(path.getResourceInstanceId());
-        } else if (!path.isRoot()) {
-            throw new LwM2mNodeException("Invalid LWM2M path (%d,%d,%d,%d)", path.getObjectId(),
-                    path.getObjectInstanceId(), path.getResourceId(), path.getResourceInstanceId());
-        }
-    }
-
-    public static void validateIncompletePath(LwM2mPath path) {
-        if (path.isObjectInstance()) {
-            LwM2mNodeUtil.validateObjectId(path.getObjectId());
-            LwM2mNodeUtil.validateUndefinedObjecInstanceId(path.getObjectInstanceId());
-        } else if (path.isResource()) {
-            LwM2mNodeUtil.validateObjectId(path.getObjectId());
-            LwM2mNodeUtil.validateUndefinedObjecInstanceId(path.getObjectInstanceId());
-            LwM2mNodeUtil.validateResourceId(path.getResourceId());
-        } else if (path.isResourceInstance()) {
-            LwM2mNodeUtil.validateObjectId(path.getObjectId());
-            LwM2mNodeUtil.validateUndefinedObjecInstanceId(path.getObjectInstanceId());
-            LwM2mNodeUtil.validateResourceId(path.getResourceId());
-            LwM2mNodeUtil.validateResourceInstanceId(path.getResourceInstanceId());
-        } else if (!path.isRoot()) {
-            throw new LwM2mNodeException("Invalid LWM2M path (%d,%d,%d,%d)", path.getObjectId(),
-                    path.getObjectInstanceId(), path.getResourceId(), path.getResourceInstanceId());
-        }
-    }
-
-    public static void validateUndefinedObjecInstanceId(int id) {
-        if (id != LwM2mObjectInstance.UNDEFINED) {
-            throw new LwM2mNodeException("Instance id should be undefined");
-        }
     }
 
     public static void valueToPrettyString(StringBuilder b, Object value, Type type) {
@@ -157,5 +69,201 @@ public class LwM2mNodeUtil {
             b.append(value);
             break;
         }
+    }
+
+    // --------------------------
+    // Validate OBJECT
+    // --------------------------
+
+    public static boolean isValidObjectId(Integer id) {
+        return isUnsignedInt(id);
+    }
+
+    private static String getInvalidObjectIdCause(Integer id) {
+        if (!isValidObjectId(id)) {
+            return String.format("Invalid object id %d, It MUST be an unsigned int.", id);
+        }
+        return null;
+    }
+
+    public static void validateObjectId(Integer id) throws LwM2mNodeException {
+        String err = getInvalidObjectIdCause(id);
+        if (err != null)
+            throw new LwM2mNodeException(err);
+    }
+
+    // --------------------------
+    // Validate OBJECT INSTANCE
+    // --------------------------
+
+    public static boolean isValidObjectInstanceId(Integer id) {
+        // MAX_ID 65535 is a reserved value and MUST NOT be used for identifying an Object Instance.
+        return id != null && 0 <= id && id <= 65534;
+    }
+
+    private static String getInvalidObjectInstanceIdCause(Integer id) {
+        if (!isValidObjectInstanceId(id)) {
+            return String.format("Invalid object instance id %d, It MUST be an unsigned int. (65535 is reserved)", id);
+        }
+        return null;
+    }
+
+    public static void validateObjectInstanceId(Integer id) throws LwM2mNodeException {
+        String err = getInvalidObjectInstanceIdCause(id);
+        if (err != null)
+            throw new LwM2mNodeException(err);
+    }
+
+    private static String getInvalidUndefinedObjectInstanceIdCause(Integer id) {
+        if (id != LwM2mObjectInstance.UNDEFINED) {
+            return String.format("Instance id should be undefined(%d) but was %d", LwM2mObjectInstance.UNDEFINED, id);
+        }
+        return null;
+    }
+
+    public static void validateUndefinedObjecInstanceId(int id) throws LwM2mNodeException {
+        String err = getInvalidUndefinedObjectInstanceIdCause(id);
+        if (err != null)
+            throw new LwM2mNodeException(err);
+    }
+
+    // --------------------------
+    // Validate RESOURCE
+    // --------------------------
+
+    public static boolean isValidResourceId(Integer id) {
+        return isUnsignedInt(id);
+    }
+
+    private static String getInvalidResourceIdCause(Integer id) {
+        if (!isValidResourceId(id)) {
+            return String.format("Invalid resource id %d, It MUST be an unsigned int.", id);
+        }
+        return null;
+    }
+
+    public static void validateResourceId(Integer id) throws LwM2mNodeException {
+        String err = getInvalidResourceIdCause(id);
+        if (err != null)
+            throw new LwM2mNodeException(err);
+    }
+
+    // --------------------------
+    // Validate RESOURCE INSTANCE
+    // --------------------------
+
+    public static boolean isValidResourceInstanceId(Integer id) {
+        return isUnsignedInt(id);
+    }
+
+    private static String getInvalidResourceInstanceIdCause(Integer id) {
+        if (!isValidResourceInstanceId(id)) {
+            return String.format("Invalid resource instance id %d, It MUST be an unsigned int.", id);
+        }
+        return null;
+    }
+
+    public static void validateResourceInstanceId(Integer id) throws LwM2mNodeException {
+        String err = getInvalidResourceInstanceIdCause(id);
+        if (err != null)
+            throw new LwM2mNodeException(err);
+    }
+
+    // --------------------------
+    // Validate Path
+    // --------------------------
+
+    private static String getInvalidPathCause(LwM2mPath path) {
+        String cause;
+        if (path.isObject()) {
+            cause = getInvalidObjectIdCause(path.getObjectId());
+            if (cause != null)
+                return cause;
+        } else if (path.isObjectInstance()) {
+            cause = getInvalidObjectIdCause(path.getObjectId());
+            if (cause != null)
+                return cause;
+            cause = getInvalidObjectInstanceIdCause(path.getObjectInstanceId());
+            if (cause != null)
+                return cause;
+        } else if (path.isResource()) {
+            cause = getInvalidObjectIdCause(path.getObjectId());
+            if (cause != null)
+                return cause;
+            cause = getInvalidObjectInstanceIdCause(path.getObjectInstanceId());
+            if (cause != null)
+                return cause;
+            cause = getInvalidResourceIdCause(path.getResourceId());
+            if (cause != null)
+                return cause;
+        } else if (path.isResourceInstance()) {
+            cause = getInvalidObjectIdCause(path.getObjectId());
+            if (cause != null)
+                return cause;
+            cause = getInvalidObjectInstanceIdCause(path.getObjectInstanceId());
+            if (cause != null)
+                return cause;
+            cause = getInvalidResourceIdCause(path.getResourceId());
+            if (cause != null)
+                return cause;
+            cause = getInvalidResourceInstanceIdCause(path.getResourceInstanceId());
+            if (cause != null)
+                return cause;
+        } else if (!path.isRoot()) {
+            return String.format("Invalid LWM2M path (%d,%d,%d,%d)", path.getObjectId(), path.getObjectInstanceId(),
+                    path.getResourceId(), path.getResourceInstanceId());
+        }
+        return null;
+    }
+
+    public static void validatePath(LwM2mPath path) throws LwM2mNodeException {
+        String err = getInvalidPathCause(path);
+        if (err != null)
+            throw new LwM2mNodeException(err);
+    }
+
+    private static String getInvalidIncompletePathCause(LwM2mPath path) {
+        String cause;
+        if (path.isObjectInstance()) {
+            cause = getInvalidObjectIdCause(path.getObjectId());
+            if (cause != null)
+                return cause;
+            cause = getInvalidUndefinedObjectInstanceIdCause(path.getObjectInstanceId());
+            if (cause != null)
+                return cause;
+        } else if (path.isResource()) {
+            cause = getInvalidObjectIdCause(path.getObjectId());
+            if (cause != null)
+                return cause;
+            cause = getInvalidUndefinedObjectInstanceIdCause(path.getObjectInstanceId());
+            if (cause != null)
+                return cause;
+            cause = getInvalidResourceIdCause(path.getResourceId());
+            if (cause != null)
+                return cause;
+        } else if (path.isResourceInstance()) {
+            cause = getInvalidObjectIdCause(path.getObjectId());
+            if (cause != null)
+                return cause;
+            cause = getInvalidUndefinedObjectInstanceIdCause(path.getObjectInstanceId());
+            if (cause != null)
+                return cause;
+            cause = getInvalidResourceIdCause(path.getResourceId());
+            if (cause != null)
+                return cause;
+            cause = getInvalidResourceInstanceIdCause(path.getResourceInstanceId());
+            if (cause != null)
+                return cause;
+        } else {
+            return String.format("Invalid 'Incomplete LWM2M path' (%d,%d,%d,%d)", path.getObjectId(),
+                    path.getObjectInstanceId(), path.getResourceId(), path.getResourceInstanceId());
+        }
+        return null;
+    }
+
+    public static void validateIncompletePath(LwM2mPath path) throws LwM2mNodeException {
+        String err = getInvalidIncompletePathCause(path);
+        if (err != null)
+            throw new LwM2mNodeException(err);
     }
 }
