@@ -41,6 +41,11 @@ public class ArgumentsParsingTest {
         assertEquals(new Argument(4, null), arguments.get(4));
     }
 
+    @Test(expected = InvalidArgumentException.class)
+    public void should_not_parse_arguments_with_same_digits() throws InvalidArgumentException {
+        Arguments.parse("4,4");
+    }
+
     @Test
     public void should_parse_null_into_arguments() throws InvalidArgumentException {
         Arguments arguments = Arguments.parse(null);

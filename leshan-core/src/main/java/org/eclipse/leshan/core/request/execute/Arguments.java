@@ -140,7 +140,7 @@ public class Arguments {
      * @throws InvalidArgumentException if text has invalid format.
      */
     static Arguments parse(String arglist) throws InvalidArgumentException {
-        Map<Integer, Argument> argumentMap = new HashMap<>();
+        ArgumentsBuilder builder = builder();
 
         if (arglist != null && !arglist.isEmpty()) {
             int beginProbe = 0;
@@ -155,7 +155,7 @@ public class Arguments {
                 ArgumentParser argumentParser = new ArgumentParser(argumentText, arglist);
                 if (argumentParser.isValid()) {
                     Argument argument = argumentParser.parse();
-                    argumentMap.put(argument.getDigit(), argument);
+                    builder.addArgument(argument);
                     validBegin = separatorIndex + 1;
                 }
                 beginProbe = separatorIndex + 1;
@@ -164,10 +164,11 @@ public class Arguments {
             String argumentText = arglist.substring(beginProbe);
             ArgumentParser argumentParser = new ArgumentParser(argumentText, arglist);
             Argument argument = argumentParser.parse();
-            argumentMap.put(argument.getDigit(), argument);
+            builder.addArgument(argument);
         }
 
-        return new Arguments(argumentMap);
+        // Use builder capability to validate arguments uniqueness.
+        return builder.build();
     }
 
     private static class ArgumentParser {
@@ -275,11 +276,20 @@ public class Arguments {
         }
 
         /**
-         * Add an argument with digit with no value.
+         * Add an argument with digit and no value.
          */
         public ArgumentsBuilder addArgument(int digit) {
             keyValuePairs.add(Collections.singletonMap(digit, (String) null));
             return this;
+        }
+
+        /**
+         * Add an argument.
+         */
+        public void addArgument(Argument argument) {
+            if (argument != null) {
+                addArgument(argument.getDigit(), argument.getValue());
+            }
         }
 
         /**
