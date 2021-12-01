@@ -16,7 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import org.eclipse.leshan.core.request.execute.ExecuteRequest;
+import org.eclipse.leshan.core.request.argument.ExecuteRequest;
 
 /**
  * An abstract adapter class for visiting down link request. The methods in this class are empty. This class exists as

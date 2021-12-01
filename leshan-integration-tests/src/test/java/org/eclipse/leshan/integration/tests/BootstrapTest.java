@@ -40,7 +40,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
-import org.eclipse.leshan.core.request.execute.ExecuteRequest;
+import org.eclipse.leshan.core.request.argument.ExecuteRequest;
 import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
 import org.eclipse.leshan.core.response.BootstrapReadResponse;
 import org.eclipse.leshan.core.response.ExecuteResponse;

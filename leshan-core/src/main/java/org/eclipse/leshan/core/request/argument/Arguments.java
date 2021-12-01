@@ -13,7 +13,7 @@
  * Contributors:
  *     Orange - Add better support for Arguments of Execute Operation.
  *******************************************************************************/
-package org.eclipse.leshan.core.request.execute;
+package org.eclipse.leshan.core.request.argument;
 
 import java.util.ArrayList;
 import java.util.Collection;

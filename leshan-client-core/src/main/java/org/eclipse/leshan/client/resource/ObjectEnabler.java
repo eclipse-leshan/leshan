@@ -50,7 +50,7 @@ import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
-import org.eclipse.leshan.core.request.execute.ExecuteRequest;
+import org.eclipse.leshan.core.request.argument.ExecuteRequest;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.core.response.BootstrapReadResponse;
 import org.eclipse.leshan.core.response.BootstrapWriteResponse;

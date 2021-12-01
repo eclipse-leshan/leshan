@@ -59,7 +59,7 @@ import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteCompositeRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
-import org.eclipse.leshan.core.request.execute.ExecuteRequest;
+import org.eclipse.leshan.core.request.argument.ExecuteRequest;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
 import org.eclipse.leshan.core.response.BootstrapFinishResponse;

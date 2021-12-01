@@ -52,7 +52,7 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteCompositeRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
-import org.eclipse.leshan.core.request.execute.ExecuteRequest;
+import org.eclipse.leshan.core.request.argument.ExecuteRequest;
 import org.eclipse.leshan.core.util.StringUtils;
 import org.eclipse.leshan.server.request.LowerLayerConfig;
 
