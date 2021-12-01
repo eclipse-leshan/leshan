@@ -17,10 +17,6 @@ package org.eclipse.leshan.core.request.execute;
 
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import org.junit.Test;
 
 public class ArgumentsParsingTest {
@@ -31,16 +27,8 @@ public class ArgumentsParsingTest {
 
         assertNotNull(arguments);
         assertEquals(1, arguments.size());
-
-        List<Argument> caughtArguments = new ArrayList<>();
-        for (Argument arg : arguments) {
-            caughtArguments.add(arg);
-        }
-
-        assertEquals(1, caughtArguments.size());
-        assertEquals(new Argument(3, "stringValue"), caughtArguments.get(0));
-        assertEquals(3, caughtArguments.get(0).getDigit());
-        assertEquals("stringValue", caughtArguments.get(0).getValue());
+        assertTrue(arguments.hasDigit(3));
+        assertEquals(new Argument(3, "stringValue"), arguments.get(3));
     }
 
     @Test
@@ -49,15 +37,8 @@ public class ArgumentsParsingTest {
 
         assertNotNull(arguments);
         assertEquals(2, arguments.size());
-
-        List<Argument> caughtArguments = new ArrayList<>();
-        for (Argument arg : arguments) {
-            caughtArguments.add(arg);
-        }
-
-        assertEquals(2, caughtArguments.size());
-        assertEquals(new Argument(3, "stringValue"), caughtArguments.get(0));
-        assertEquals(new Argument(4, null), caughtArguments.get(1));
+        assertEquals(new Argument(3, "stringValue"), arguments.get(3));
+        assertEquals(new Argument(4, null), arguments.get(4));
     }
 
     @Test
@@ -82,41 +63,34 @@ public class ArgumentsParsingTest {
 
         assertNotNull(arguments);
         assertEquals(1, arguments.size());
-        Argument argument = arguments.iterator().next();
-        assertEquals(3, argument.getDigit());
-        assertEquals("", argument.getValue());
+        assertEquals(3, arguments.get(3).getDigit());
+        assertEquals("", arguments.get(3).getValue());
     }
 
     @Test
     public void should_parse_text_into_argument_with_comma_value() throws InvalidArgumentException {
         Arguments arguments = Arguments.parse("3=',',4");
-        Iterator<Argument> argumentIterator = arguments.iterator();
 
         assertNotNull(arguments);
         assertEquals(2, arguments.size());
-        Argument argument = argumentIterator.next();
-        assertEquals(3, argument.getDigit());
-        assertEquals(",", argument.getValue());
+        assertEquals(3, arguments.get(3).getDigit());
+        assertEquals(",", arguments.get(3).getValue());
 
-        argument = argumentIterator.next();
-        assertEquals(4, argument.getDigit());
-        assertNull(argument.getValue());
+        assertEquals(4, arguments.get(4).getDigit());
+        assertNull(arguments.get(4).getValue());
     }
 
     @Test
     public void should_parse_text_into_argument_with_equal_value() throws InvalidArgumentException {
         Arguments arguments = Arguments.parse("3='=',4");
-        Iterator<Argument> argumentIterator = arguments.iterator();
 
         assertNotNull(arguments);
         assertEquals(2, arguments.size());
-        Argument argument = argumentIterator.next();
-        assertEquals(3, argument.getDigit());
-        assertEquals("=", argument.getValue());
+        assertEquals(3, arguments.get(3).getDigit());
+        assertEquals("=", arguments.get(3).getValue());
 
-        argument = argumentIterator.next();
-        assertEquals(4, argument.getDigit());
-        assertNull(argument.getValue());
+        assertEquals(4, arguments.get(4).getDigit());
+        assertNull(arguments.get(4).getValue());
     }
 
     @Test(expected = InvalidArgumentException.class)

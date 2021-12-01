@@ -16,38 +16,39 @@
 package org.eclipse.leshan.core.request.execute;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.leshan.core.util.StringUtils;
 
 /**
  * Arguments for Execute Operation.
  */
-public class Arguments implements Iterable<Argument> {
+public class Arguments {
 
-    private final List<Argument> argumentList;
+    private final Map<Integer, Argument> argumentMap;
 
     /**
      * Arguments should be build using {@link ArgumentsBuilder}.
      */
-    private Arguments(List<Argument> argumentList) {
-        this.argumentList = argumentList;
+    private Arguments(Map<Integer, Argument> argumentMap) {
+        this.argumentMap = argumentMap;
     }
 
     @Override
     public String toString() {
-        return String.format("Arguments [argumentList=%s]", argumentList.toString());
+        return String.format("Arguments [argumentMap=%s]", argumentMap.toString());
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((argumentList == null) ? 0 : argumentList.hashCode());
+        result = prime * result + ((argumentMap == null) ? 0 : argumentMap.hashCode());
         return result;
     }
 
@@ -60,10 +61,10 @@ public class Arguments implements Iterable<Argument> {
         if (getClass() != obj.getClass())
             return false;
         Arguments other = (Arguments) obj;
-        if (argumentList == null) {
-            if (other.argumentList != null)
+        if (argumentMap == null) {
+            if (other.argumentMap != null)
                 return false;
-        } else if (!argumentList.equals(other.argumentList))
+        } else if (!argumentMap.equals(other.argumentMap))
             return false;
         return true;
     }
@@ -72,7 +73,7 @@ public class Arguments implements Iterable<Argument> {
      * Returns number of arguments.
      */
     public int size() {
-        return argumentList.size();
+        return argumentMap.size();
     }
 
     /**
@@ -80,6 +81,46 @@ public class Arguments implements Iterable<Argument> {
      */
     public boolean isEmpty() {
         return size() == 0;
+    }
+
+    /**
+     * Checks if  {@link Arguments} has {@link Argument} with digit.
+     */
+    public boolean hasDigit(int digit) {
+        for (Integer mapKey: argumentMap.keySet()) {
+            if (mapKey == digit) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Gets {@link Argument} by digit.
+     *
+     * @throws IllegalArgumentException if digit doesn't exists in {@link Arguments}
+     */
+    public Argument get(int digit) {
+        if (!hasDigit(digit)) {
+            throw new IllegalArgumentException();
+        }
+
+        return argumentMap.get(digit);
+    }
+
+    /**
+     * Gets digit keys of arguments.
+     */
+    public Set<Integer> getDigits() {
+        return argumentMap.keySet();
+    }
+
+    /**
+     * Gets collection of {@link Argument}.
+     */
+    public Collection<Argument> getValues() {
+        return argumentMap.values();
     }
 
     /**
@@ -99,7 +140,7 @@ public class Arguments implements Iterable<Argument> {
      * @throws InvalidArgumentException if text has invalid format.
      */
     static Arguments parse(String arglist) throws InvalidArgumentException {
-        List<Argument> argumentList = new ArrayList<>();
+        Map<Integer, Argument> argumentMap = new HashMap<>();
 
         if (arglist != null && !arglist.isEmpty()) {
             int beginProbe = 0;
@@ -109,22 +150,24 @@ public class Arguments implements Iterable<Argument> {
                 if (separatorIndex == -1) {
                     break;
                 }
-                String argument = arglist.substring(validBegin, separatorIndex);
+                String argumentText = arglist.substring(validBegin, separatorIndex);
 
-                ArgumentParser argumentParser = new ArgumentParser(argument, arglist);
+                ArgumentParser argumentParser = new ArgumentParser(argumentText, arglist);
                 if (argumentParser.isValid()) {
-                    argumentList.add(argumentParser.parse());
+                    Argument argument = argumentParser.parse();
+                    argumentMap.put(argument.getDigit(), argument);
                     validBegin = separatorIndex + 1;
                 }
                 beginProbe = separatorIndex + 1;
             }
 
-            String argument = arglist.substring(beginProbe);
-            ArgumentParser argumentParser = new ArgumentParser(argument, arglist);
-            argumentList.add(argumentParser.parse());
+            String argumentText = arglist.substring(beginProbe);
+            ArgumentParser argumentParser = new ArgumentParser(argumentText, arglist);
+            Argument argument = argumentParser.parse();
+            argumentMap.put(argument.getDigit(), argument);
         }
 
-        return new Arguments(argumentList);
+        return new Arguments(argumentMap);
     }
 
     private static class ArgumentParser {
@@ -176,7 +219,7 @@ public class Arguments implements Iterable<Argument> {
     public String serialize() {
         StringBuilder sb = new StringBuilder();
 
-        for (Argument argument : this) {
+        for (Argument argument : getValues()) {
             if (sb.length() > 0) {
                 sb.append(",");
             }
@@ -202,16 +245,11 @@ public class Arguments implements Iterable<Argument> {
      */
     public Map<Integer, String> toMap() {
         Map<Integer, String> result = new HashMap<>();
-        for (Argument argument : this) {
+        for (Argument argument : getValues()) {
             String value = argument.getValue();
             result.put(argument.getDigit(), value);
         }
         return result;
-    }
-
-    @Override
-    public Iterator<Argument> iterator() {
-        return argumentList.iterator();
     }
 
     /**
@@ -245,17 +283,22 @@ public class Arguments implements Iterable<Argument> {
         }
 
         /**
-         * Builds {$link Arguments}. In case of any argument is invalid it throws InvalidArgumentException exception.
+         * Builds {$link Arguments}.
+         *
+         * @throws InvalidArgumentException In case of any argument is invalid or digit exists more than once.
          */
         public Arguments build() throws InvalidArgumentException {
-            List<Argument> argumentList = new ArrayList<>();
+            Map<Integer, Argument> argumentMap = new HashMap<>();
 
             for (Map<Integer, String> pair : keyValuePairs) {
                 Integer digit = pair.keySet().iterator().next();
                 String value = pair.get(digit);
-                argumentList.add(new Argument(digit, value));
+                if (argumentMap.containsKey(digit)) {
+                    throw new InvalidArgumentException("Unable to build Arguments : %d digit exists more than once", digit);
+                }
+                argumentMap.put(digit, new Argument(digit, value));
             }
-            return new Arguments(argumentList);
+            return new Arguments(argumentMap);
         }
     }
 }
