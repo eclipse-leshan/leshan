@@ -18,6 +18,8 @@ package org.eclipse.leshan.core.request.argument;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,7 +29,7 @@ import org.eclipse.leshan.core.util.StringUtils;
 /**
  * Arguments for Execute Operation.
  */
-public class Arguments {
+public class Arguments implements Iterable<Argument> {
 
     private final Map<Integer, Argument> argumentMap;
 
@@ -112,6 +114,11 @@ public class Arguments {
      */
     public Collection<Argument> getValues() {
         return argumentMap.values();
+    }
+
+    @Override
+    public Iterator<Argument> iterator() {
+        return argumentMap.values().iterator();
     }
 
     private void validateDigit(int digit) throws IllegalArgumentException {
@@ -339,7 +346,7 @@ public class Arguments {
          * @throws InvalidArgumentException In case of any argument is invalid or digit exists more than once.
          */
         public Arguments build() throws InvalidArgumentException {
-            Map<Integer, Argument> argumentMap = new HashMap<>();
+            Map<Integer, Argument> argumentMap = new LinkedHashMap<>();
 
             for (PendingArgument argument : pendingArguments) {
                 if (argumentMap.containsKey(argument.digit)) {
