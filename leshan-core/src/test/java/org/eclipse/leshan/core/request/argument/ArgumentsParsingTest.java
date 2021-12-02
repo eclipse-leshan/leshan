@@ -112,4 +112,10 @@ public class ArgumentsParsingTest {
     public void should_not_parse_text_into_argument_with_value_without_quotes() throws InvalidArgumentException {
         Arguments.parse("3=hello");
     }
+
+    @Test(expected = InvalidArgumentException.class)
+    public void should_not_parse_unquoted_value() throws InvalidArgumentException {
+        Arguments.parse("3=string,4='Value'");
+    }
+
 }
