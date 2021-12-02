@@ -55,17 +55,47 @@
 
       <v-divider />
 
+      <!-- Composite Operations-->
+      <span>
+        <v-list dense v-if="registration && registration.lwM2mVersion != '1.0'">
+          <v-list-item-group>
+            <v-list-item
+              :to="'/clients/' + $route.params.endpoint + '/composite'"
+            >
+              <v-list-item-icon class="me-2">
+                <v-icon>mdi-format-list-checkbox</v-icon>
+              </v-list-item-icon>
+              <v-list-item-content>
+                <v-list-item-title>Composite Operations</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list-item-group>
+        </v-list>
+        <v-divider />
+      </span>
+
       <!-- object selector -->
       <object-selector :objects="objectdefs" v-show="objectdefs" />
       <v-divider></v-divider>
     </v-col>
     <v-col no-gutters cols="12" md="10">
       <!-- object viewer -->
-      <router-view
-        v-if="objectdefs"
-        :objectdef="objectdef"
-        :instances="instances"
-      ></router-view>
+      <div v-if="$route.params.objectid">
+        <!-- objectView case -->
+        <router-view
+          v-if="objectdefs"
+          :objectdef="objectdef"
+          :instances="instances"
+        ></router-view>
+      </div>
+      <div v-else>
+        <!-- compositeOperationView case -->
+        <router-view
+          v-if="objectdefs && registration"
+          :objectdefs="objectdefs"
+          :allInstances="registration.availableInstances"
+        ></router-view>
+      </div>
     </v-col>
   </v-row>
 </template>

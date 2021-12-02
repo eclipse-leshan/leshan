@@ -41,13 +41,18 @@
       tile
       v-if="objectdef && typeof instanceId == 'number' && endpoint"
     >
-      <resource-expansion-panel v-for="resource in resources" :key="resource.path" :resource="resource" :endpoint="endpoint" />
+      <resource-expansion-panel
+        v-for="resource in resources"
+        :key="resource.path"
+        :resource="resource"
+        :endpoint="endpoint"
+      />
     </v-expansion-panels>
   </div>
 </template>
 <script>
 import InstanceControl from "./InstanceControl.vue";
-import ResourceExpansionPanel from '../resources/view/ResourceExpansionPanel.vue';
+import ResourceExpansionPanel from "../resources/view/ResourceExpansionPanel.vue";
 
 export default {
   components: {
@@ -66,7 +71,10 @@ export default {
     },
     resources() {
       return this.objectdef.resourcedefs.map((r) => {
-        return { path: `/${this.objectdef.id}/${this.instanceId}/${r.id}`, def: r };
+        return {
+          path: `/${this.objectdef.id}/${this.instanceId}/${r.id}`,
+          def: r,
+        };
       });
     },
     instancePath() {

@@ -15,9 +15,15 @@
 </template>
 <script>
 export default {
-  props: { objectId: Number },
+  props: {
+    objectId: Number,
+    unknowObjectIcon: { type: String, default: "mdi-alpha-o-circle-outline" },
+    invalidObjectIcon: { type: String, default: "mdi-alert-circle-outline" },
+  },
   methods: {
     idToIcon(id) {
+      if (id < 0 || id > 65535) return this.invalidObjectIcon;
+
       switch (id) {
         case 1: // server
           return "mdi-server";
@@ -62,7 +68,7 @@ export default {
         case 10260: // RDB (Runtime Database)
           return "mdi-database";
         default:
-          return "mdi-alpha-o-circle-outline";
+          return this.unknowObjectIcon;
       }
     },
   },

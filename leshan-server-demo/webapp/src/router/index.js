@@ -15,7 +15,10 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import Clients from "../views/Clients.vue";
 import Client from "../views/Client.vue";
+import CompositeOperationView from "../views/CompositeOperationView.vue";
+import CompositeObjectView from "../views/CompositeObjectView.vue"
 import ObjectView from "../views/ObjectView.vue";
+
 import Security from "../views/Security.vue";
 import Server from "@leshan-server-core-demo/views/Server.vue";
 import About from "../views/About.vue";
@@ -31,6 +34,16 @@ const routes = [
     path: "/clients/:endpoint",
     component: Client,
     children: [
+      {
+        path: "composite",
+        component: CompositeOperationView,
+        children: [
+          {
+            path: ":compositeObjectName",
+            component: CompositeObjectView,
+          },
+        ],
+      },
       {
         path: ":objectid",
         component: ObjectView,
@@ -51,7 +64,10 @@ const routes = [
     path: "/server",
     name: "Server",
     component: Server,
-    props: { pubkeyFileName: "serverPubKey.der", certFileName: "serverCertificate.der" },
+    props: {
+      pubkeyFileName: "serverPubKey.der",
+      certFileName: "serverCertificate.der",
+    },
   },
   {
     path: "/about",
