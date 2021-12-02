@@ -17,6 +17,7 @@ package org.eclipse.leshan.core.request.argument;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -265,6 +266,13 @@ public class Arguments implements Iterable<Argument> {
      */
     public static ArgumentsBuilder builder() {
         return new ArgumentsBuilder();
+    }
+
+    /**
+     * Create a builder for {$link Arguments}.
+     */
+    public static Arguments emptyArguments() {
+        return new Arguments(Collections.emptyMap());
     }
 
     /**

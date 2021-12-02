@@ -130,7 +130,7 @@ public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteRespons
             throw new InvalidRequestException("Invalid path %s : Only resource can be executed.", path);
 
         if (arguments == null) {
-            this.arguments = newArguments(null);
+            this.arguments = Arguments.emptyArguments();
         } else {
             this.arguments = arguments;
         }
