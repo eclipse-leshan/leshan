@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.leshan.core.util.StringUtils;
-
 /**
  * Arguments for Execute Operation.
  */
@@ -147,119 +145,81 @@ public class Arguments implements Iterable<Argument> {
         ArgumentsBuilder builder = builder();
 
         if (arglist != null && !arglist.isEmpty()) {
-            int beginProbe = 0;
-            int validBegin = 0;
+            int cursor = 0;
             while (true) {
-                int separatorIndex = arglist.indexOf(',', beginProbe);
-                if (separatorIndex == -1) {
+                // consume argument
+                cursor = consumeArgument(arglist, cursor, builder);
+
+                // no more argument we finished
+                if (cursor == arglist.length()) {
                     break;
                 }
-                String argumentText = arglist.substring(validBegin, separatorIndex);
 
-                ArgumentParser argumentParser = new ArgumentParser(argumentText, arglist);
-                ArgumentParser.ValidationError validationError = argumentParser.isValid();
-
-                if (argumentParser.isValid() == ArgumentParser.ValidationError.NO_ERROR) {
-                    Argument argument = argumentParser.parse();
-                    builder.addArgument(argument);
-                    validBegin = separatorIndex + 1;
+                // else consume separator ','
+                if (arglist.charAt(cursor) == ',') {
+                    cursor++;
                 } else {
-                    if (validationError == ArgumentParser.ValidationError.INVALID_DIGIT_FORMAT
-                            || validationError == ArgumentParser.ValidationError.INVALID_DIGIT_RANGE) {
-                        throw new InvalidArgumentException(validationError.getValidationMessage(argumentText,
-                                argumentParser.digitPart, argumentParser.valueDecorated));
-                    }
+                    throw new InvalidArgumentException(
+                            "Unable to parse Arguments [%s] : [,] separator expected at index %d after [%s]", arglist,
+                            cursor, arglist.substring(0, cursor));
                 }
-                beginProbe = separatorIndex + 1;
             }
-
-            String argumentText = arglist.substring(beginProbe);
-            ArgumentParser argumentParser = new ArgumentParser(argumentText, arglist);
-            Argument argument = argumentParser.parse();
-            builder.addArgument(argument);
         }
-
         // Use builder capability to validate arguments uniqueness.
         return builder.build();
+
     }
 
-    private static class ArgumentParser {
+    static int consumeArgument(String arglist, final int initialCursor, ArgumentsBuilder builder)
+            throws InvalidArgumentException {
+        int currentCursor = initialCursor;
+        int digit;
+        String value = null;
 
-        private enum ValidationError {
-            NO_ERROR, INVALID_DIGIT_FORMAT, INVALID_DIGIT_RANGE, VALUE_SHOULD_HAVE_QUOTES;
-
-            public String getValidationMessage(String content, String digitPart, String valueDecorated) {
-                switch (this) {
-                case INVALID_DIGIT_FORMAT:
-                    return String.format("Unable to parse Argument [%s] : Invalid digit format : [%s]", content,
-                            digitPart);
-                case INVALID_DIGIT_RANGE:
-                    return String.format(
-                            "Unable to parse Argument [%s] : Digit should be between 0 and 9 but was : [%s]", content,
-                            digitPart);
-                case VALUE_SHOULD_HAVE_QUOTES:
-                    return String.format(
-                            "Unable to parse Argument [%s] : Argument value should be quoted but was: [%s]", content,
-                            valueDecorated);
-                case NO_ERROR:
-                default:
-                    return null;
-                }
-            }
+        // consume digit
+        if (currentCursor == arglist.length()) {
+            throw new InvalidArgumentException(
+                    "Unable to parse Arguments [%s] : unexpected EOF, expected argument after %s", arglist,
+                    arglist.substring(0, currentCursor));
+        }
+        String digitChar = arglist.substring(currentCursor, currentCursor + 1);
+        try {
+            digit = Integer.parseInt(digitChar);
+            currentCursor++;
+        } catch (NumberFormatException e) {
+            throw new InvalidArgumentException(
+                    "Unable to parse Arguments [%s] : Invalid digit [%s] (an integer between 0 and 9 is expected)",
+                    arglist, digitChar);
         }
 
-        private final String digitPart;
-        private final String valueDecorated;
-        private final String content;
+        // consume quoted value
+        if (currentCursor < arglist.length() && arglist.charAt(currentCursor) == '=') {
+            // consume '='
+            currentCursor++;
 
-        public ArgumentParser(String argument, String content) {
-            this.content = content;
-            String[] keyValue = argument.split("=", 2);
-            digitPart = keyValue[0];
-            valueDecorated = keyValue.length == 1 ? null : keyValue[1];
-        }
-
-        private Argument parse() throws InvalidArgumentException {
-            ValidationError validationError = isValid();
-            if (validationError != ValidationError.NO_ERROR) {
+            // consume quote
+            if (currentCursor < arglist.length() && arglist.charAt(currentCursor) != '\'') {
                 throw new InvalidArgumentException(
-                        validationError.getValidationMessage(content, digitPart, valueDecorated));
+                        "Unable to parse Arguments [%s] : opening quote ['] is expected at index %d after [%s]",
+                        arglist, currentCursor, arglist.substring(0, currentCursor));
             }
+            currentCursor++;
 
-            String value = null;
-            if (valueDecorated != null) {
-                value = StringUtils.removeEnd(StringUtils.removeStart(valueDecorated, "'"), "'");
+            // consume value
+            int indexOf = arglist.indexOf('\'', currentCursor);
+            if (indexOf == -1) {
+                throw new InvalidArgumentException(
+                        "Unable to parse Arguments [%s] : Argument value must end with quote['].", arglist);
+            } else {
+                value = arglist.substring(currentCursor, indexOf);
             }
-
-            return new Argument(Integer.parseInt(digitPart), value);
+            currentCursor = indexOf;
+            // move cursor after quote
+            currentCursor++;
         }
 
-        private ValidationError isValid() {
-            if (digitPart.length() == 0) {
-                return ValidationError.INVALID_DIGIT_FORMAT;
-            }
-
-            int digit;
-
-            try {
-                digit = Integer.parseInt(digitPart);
-            } catch (NumberFormatException e) {
-                return ValidationError.INVALID_DIGIT_FORMAT;
-            }
-
-            if (digit < 0 || digit > 9) {
-                return ValidationError.INVALID_DIGIT_RANGE;
-            }
-
-            if (valueDecorated != null) {
-                if (valueDecorated.length() < 2 || valueDecorated.charAt(0) != '\''
-                        || valueDecorated.charAt(valueDecorated.length() - 1) != '\'') {
-                    return ValidationError.VALUE_SHOULD_HAVE_QUOTES;
-                }
-            }
-
-            return ValidationError.NO_ERROR;
-        }
+        builder.addArgument(digit, value);
+        return currentCursor;
     }
 
     /**
