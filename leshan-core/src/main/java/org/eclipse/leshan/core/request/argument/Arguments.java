@@ -17,7 +17,6 @@ package org.eclipse.leshan.core.request.argument;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -253,7 +252,7 @@ public class Arguments implements Iterable<Argument> {
      * Creates a map that represents arguments.
      */
     public Map<Integer, String> toMap() {
-        Map<Integer, String> result = new HashMap<>();
+        Map<Integer, String> result = new LinkedHashMap<>();
         for (Argument argument : getValues()) {
             String value = argument.getValue();
             result.put(argument.getDigit(), value);
