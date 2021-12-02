@@ -17,7 +17,6 @@ package org.eclipse.leshan.core.request.argument;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,16 +83,11 @@ public class Arguments {
     }
 
     /**
-     * Checks if  {@link Arguments} has {@link Argument} with digit.
+     * Checks if {@link Arguments} has {@link Argument} with digit.
      */
     public boolean hasDigit(int digit) {
-        for (Integer mapKey: argumentMap.keySet()) {
-            if (mapKey == digit) {
-                return true;
-            }
-        }
-
-        return false;
+        validateDigit(digit);
+        return argumentMap.containsKey(digit);
     }
 
     /**
@@ -102,10 +96,7 @@ public class Arguments {
      * @throws IllegalArgumentException if digit doesn't exists in {@link Arguments}
      */
     public Argument get(int digit) {
-        if (!hasDigit(digit)) {
-            throw new IllegalArgumentException();
-        }
-
+        validateDigit(digit);
         return argumentMap.get(digit);
     }
 
@@ -121,6 +112,12 @@ public class Arguments {
      */
     public Collection<Argument> getValues() {
         return argumentMap.values();
+    }
+
+    private void validateDigit(int digit) throws IllegalArgumentException {
+        if (digit < 0 || digit > 9) {
+            throw new IllegalArgumentException(String.format("Invalid digit [%s]", digit));
+        }
     }
 
     /**
@@ -153,10 +150,18 @@ public class Arguments {
                 String argumentText = arglist.substring(validBegin, separatorIndex);
 
                 ArgumentParser argumentParser = new ArgumentParser(argumentText, arglist);
-                if (argumentParser.isValid()) {
+                ArgumentParser.ValidationError validationError = argumentParser.isValid();
+
+                if (argumentParser.isValid() == ArgumentParser.ValidationError.NO_ERROR) {
                     Argument argument = argumentParser.parse();
                     builder.addArgument(argument);
                     validBegin = separatorIndex + 1;
+                } else {
+                    if (validationError == ArgumentParser.ValidationError.INVALID_DIGIT_FORMAT
+                            || validationError == ArgumentParser.ValidationError.INVALID_DIGIT_RANGE) {
+                        throw new InvalidArgumentException(validationError.getValidationMessage(argumentText,
+                                argumentParser.digitPart, argumentParser.valueDecorated));
+                    }
                 }
                 beginProbe = separatorIndex + 1;
             }
@@ -172,6 +177,30 @@ public class Arguments {
     }
 
     private static class ArgumentParser {
+
+        private enum ValidationError {
+            NO_ERROR, INVALID_DIGIT_FORMAT, INVALID_DIGIT_RANGE, VALUE_SHOULD_HAVE_QUOTES;
+
+            public String getValidationMessage(String content, String digitPart, String valueDecorated) {
+                switch (this) {
+                case INVALID_DIGIT_FORMAT:
+                    return String.format("Unable to parse Argument [%s] : Invalid digit format : [%s]", content,
+                            digitPart);
+                case INVALID_DIGIT_RANGE:
+                    return String.format(
+                            "Unable to parse Argument [%s] : Digit should be between 0 and 9 but was : [%s]", content,
+                            digitPart);
+                case VALUE_SHOULD_HAVE_QUOTES:
+                    return String.format(
+                            "Unable to parse Argument [%s] : Argument value should be quoted but was: [%s]", content,
+                            valueDecorated);
+                case NO_ERROR:
+                default:
+                    return null;
+                }
+            }
+        }
+
         private final String digitPart;
         private final String valueDecorated;
         private final String content;
@@ -184,33 +213,45 @@ public class Arguments {
         }
 
         private Argument parse() throws InvalidArgumentException {
-            if (!isValid()) {
-                throw new InvalidArgumentException("Unable to parse Arguments [%s]", content);
+            ValidationError validationError = isValid();
+            if (validationError != ValidationError.NO_ERROR) {
+                throw new InvalidArgumentException(
+                        validationError.getValidationMessage(content, digitPart, valueDecorated));
             }
-            int digit;
-            try {
-                digit = Integer.parseInt(digitPart);
-            } catch (NumberFormatException e) {
-                throw new InvalidArgumentException(e, "Unable to parse Arguments [%s] with digit [%s]", content, digitPart);
-            }
+
             String value = null;
             if (valueDecorated != null) {
                 value = StringUtils.removeEnd(StringUtils.removeStart(valueDecorated, "'"), "'");
             }
 
-            return new Argument(digit, value);
+            return new Argument(Integer.parseInt(digitPart), value);
         }
 
-        private boolean isValid() {
-            if (digitPart.length() != 1) {
-                return false;
+        private ValidationError isValid() {
+            if (digitPart.length() == 0) {
+                return ValidationError.INVALID_DIGIT_FORMAT;
+            }
+
+            int digit;
+
+            try {
+                digit = Integer.parseInt(digitPart);
+            } catch (NumberFormatException e) {
+                return ValidationError.INVALID_DIGIT_FORMAT;
+            }
+
+            if (digit < 0 || digit > 9) {
+                return ValidationError.INVALID_DIGIT_RANGE;
             }
 
             if (valueDecorated != null) {
-                return valueDecorated.length() >= 2 && valueDecorated.charAt(0) == '\''
-                        && valueDecorated.charAt(valueDecorated.length() - 1) == '\'';
+                if (valueDecorated.length() < 2 || valueDecorated.charAt(0) != '\''
+                        || valueDecorated.charAt(valueDecorated.length() - 1) != '\'') {
+                    return ValidationError.VALUE_SHOULD_HAVE_QUOTES;
+                }
             }
-            return true;
+
+            return ValidationError.NO_ERROR;
         }
     }
 
@@ -265,13 +306,13 @@ public class Arguments {
      */
     public static class ArgumentsBuilder {
 
-        private final List<Map<Integer, String>> keyValuePairs = new ArrayList<>();
+        private final List<PendingArgument> pendingArguments = new ArrayList<>();
 
         /**
          * Add an argument with digit and value.
          */
         public ArgumentsBuilder addArgument(int digit, String value) {
-            keyValuePairs.add(Collections.singletonMap(digit, value));
+            pendingArguments.add(new PendingArgument(digit, value));
             return this;
         }
 
@@ -279,7 +320,7 @@ public class Arguments {
          * Add an argument with digit and no value.
          */
         public ArgumentsBuilder addArgument(int digit) {
-            keyValuePairs.add(Collections.singletonMap(digit, (String) null));
+            pendingArguments.add(new PendingArgument(digit, null));
             return this;
         }
 
@@ -300,15 +341,24 @@ public class Arguments {
         public Arguments build() throws InvalidArgumentException {
             Map<Integer, Argument> argumentMap = new HashMap<>();
 
-            for (Map<Integer, String> pair : keyValuePairs) {
-                Integer digit = pair.keySet().iterator().next();
-                String value = pair.get(digit);
-                if (argumentMap.containsKey(digit)) {
-                    throw new InvalidArgumentException("Unable to build Arguments : %d digit exists more than once", digit);
+            for (PendingArgument argument : pendingArguments) {
+                if (argumentMap.containsKey(argument.digit)) {
+                    throw new InvalidArgumentException("Unable to build Arguments : digit [%d] exists more than once",
+                            argument.digit);
                 }
-                argumentMap.put(digit, new Argument(digit, value));
+                argumentMap.put(argument.digit, new Argument(argument.digit, argument.value));
             }
             return new Arguments(argumentMap);
+        }
+
+        private static class PendingArgument {
+            private final Integer digit;
+            private final String value;
+
+            public PendingArgument(Integer digit, String value) {
+                this.digit = digit;
+                this.value = value;
+            }
         }
     }
 }

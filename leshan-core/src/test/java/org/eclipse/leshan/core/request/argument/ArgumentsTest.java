@@ -41,12 +41,28 @@ public class ArgumentsTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void should_throw_exception_if_get_argument_with_nonexisting_digit() throws InvalidArgumentException {
+    public void should_throw_exception_if_use_invalid_digit_for_hasDigit() throws InvalidArgumentException {
+        Arguments arguments = Arguments.builder() //
+                .build();
+
+        arguments.hasDigit(10);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void should_throw_exception_if_use_invalid_digit_for_get() throws InvalidArgumentException {
+        Arguments arguments = Arguments.builder() //
+                .build();
+
+        arguments.get(-1);
+    }
+
+    @Test()
+    public void should_returns_null_if_get_argument_with_nonexistent_digit() throws InvalidArgumentException {
         Arguments arguments = Arguments.builder() //
                 .addArgument(4) //
                 .build();
 
-        arguments.get(5);
+        assertNull(arguments.get(5));
     }
 
     @Test
