@@ -35,7 +35,7 @@ public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteRespons
      * @exception InvalidRequestException if the path is not valid.
      */
     public ExecuteRequest(String path) throws InvalidRequestException {
-        this(path, null);
+        this(path, (Arguments) null);
     }
 
     /**
@@ -46,6 +46,17 @@ public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteRespons
      * @exception InvalidRequestException if the path is not valid.
      */
     public ExecuteRequest(String path, String arguments) throws InvalidRequestException {
+        this(newPath(path), newArguments(arguments), null);
+    }
+
+    /**
+     * Creates a new <em>execute</em> request for a resource accepting arguments encoded as plain text.
+     *
+     * @param path the path of the resource to execute
+     * @param arguments the arguments
+     * @exception InvalidRequestException if the path is not valid.
+     */
+    public ExecuteRequest(String path, Arguments arguments) throws InvalidRequestException {
         this(newPath(path), arguments, null);
     }
 
@@ -59,6 +70,19 @@ public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteRespons
      * @exception InvalidRequestException if the path is not valid.
      */
     public ExecuteRequest(String path, String arguments, Object coapRequest) throws InvalidRequestException {
+        this(newPath(path), newArguments(arguments), coapRequest);
+    }
+
+    /**
+     * Creates a new <em>execute</em> request for a resource accepting arguments encoded as plain text.
+     *
+     * @param path the path of the resource to execute
+     * @param arguments the arguments
+     * @param coapRequest the underlying request
+     * 
+     * @exception InvalidRequestException if the path is not valid.
+     */
+    public ExecuteRequest(String path, Arguments arguments, Object coapRequest) throws InvalidRequestException {
         this(newPath(path), arguments, coapRequest);
     }
 
@@ -82,10 +106,22 @@ public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteRespons
      * @param arguments the arguments
      */
     public ExecuteRequest(int objectId, int objectInstanceId, int resourceId, String arguments) {
+        this(new LwM2mPath(objectId, objectInstanceId, resourceId), newArguments(arguments), null);
+    }
+
+    /**
+     * Creates a new <em>execute</em> request for a resource accepting arguments encoded as plain text.
+     *
+     * @param objectId the resource's object ID
+     * @param objectInstanceId the resource's object instance ID
+     * @param resourceId the resource's ID
+     * @param arguments the arguments
+     */
+    public ExecuteRequest(int objectId, int objectInstanceId, int resourceId, Arguments arguments) {
         this(new LwM2mPath(objectId, objectInstanceId, resourceId), arguments, null);
     }
 
-    private ExecuteRequest(LwM2mPath path, String arguments, Object coapRequest) {
+    private ExecuteRequest(LwM2mPath path, Arguments arguments, Object coapRequest) {
         super(path, coapRequest);
         if (path.isRoot())
             throw new InvalidRequestException("Execute request cannot target root path");
@@ -93,8 +129,16 @@ public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteRespons
         if (!path.isResource())
             throw new InvalidRequestException("Invalid path %s : Only resource can be executed.", path);
 
+        if (arguments == null) {
+            this.arguments = newArguments(null);
+        } else {
+            this.arguments = arguments;
+        }
+    }
+
+    private static Arguments newArguments(String arguments) {
         try {
-            this.arguments = Arguments.parse(arguments);
+            return Arguments.parse(arguments);
         } catch (InvalidArgumentException e) {
             throw new InvalidRequestException(e, "Invalid Execute request : [%s]", e.getMessage());
         }
