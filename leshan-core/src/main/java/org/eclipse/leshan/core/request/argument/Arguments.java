@@ -141,7 +141,7 @@ public class Arguments implements Iterable<Argument> {
      * @return {@link Arguments} represents list of arguments.
      * @throws InvalidArgumentException if text has invalid format.
      */
-    static Arguments parse(String arglist) throws InvalidArgumentException {
+    public static Arguments parse(String arglist) throws InvalidArgumentException {
         ArgumentsBuilder builder = builder();
 
         if (arglist != null && !arglist.isEmpty()) {

@@ -17,8 +17,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import org.eclipse.leshan.core.request.argument.ExecuteRequest;
-
 /**
  * A visitor to visit a Downlink Lightweight M2M request.
  */

@@ -13,11 +13,11 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.request.argument;
+package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.request.AbstractSimpleDownlinkRequest;
-import org.eclipse.leshan.core.request.DownlinkRequestVisitor;
+import org.eclipse.leshan.core.request.argument.Arguments;
+import org.eclipse.leshan.core.request.argument.InvalidArgumentException;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 
