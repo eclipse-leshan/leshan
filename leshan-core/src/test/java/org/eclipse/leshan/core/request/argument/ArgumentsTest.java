@@ -19,26 +19,11 @@ import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
 
 public class ArgumentsTest {
-
-    @Test
-    public void should_create_map_from_arguments() throws InvalidArgumentException {
-        Arguments arguments = Arguments.builder() //
-                .addArgument(3, "stringValue") //
-                .addArgument(4) //
-                .build();
-
-        Map<Integer, String> argumentsMap = arguments.toMap();
-
-        assertEquals(2, argumentsMap.size());
-        assertEquals("stringValue", argumentsMap.get(3));
-        assertNull(argumentsMap.get(4));
-    }
 
     @Test(expected = IllegalArgumentException.class)
     public void should_throw_exception_if_use_invalid_digit_for_hasDigit() throws InvalidArgumentException {
@@ -67,9 +52,11 @@ public class ArgumentsTest {
 
     @Test
     public void should_allow_to_create_empty_arguments() throws InvalidArgumentException {
-        Map<Integer, String> argumentsMap = Arguments.builder().build().toMap();
+        Arguments arguments = Arguments.builder().build();
+        assertEquals(0, arguments.size());
 
-        assertEquals(0, argumentsMap.size());
+        arguments = Arguments.emptyArguments();
+        assertEquals(0, arguments.size());
     }
 
     @Test

@@ -18,6 +18,7 @@ package org.eclipse.leshan.client.object;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
 
@@ -121,12 +122,13 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
     }
 
     private void storeArguments(Arguments arguments) {
-        Map<Integer, String> argValues = arguments.toMap();
-        for (Argument argument: arguments) {
+        // convert Arguments to Map
+        Map<Integer, String> argValues = new LinkedHashMap<Integer, String>();
+        for (Argument argument : arguments) {
             String value = argument.getValue() == null ? "" : argument.getValue();
             argValues.put(argument.getDigit(), value);
         }
-
+        // put value in resource (4)
         Map<Integer, Object> newParams = new HashMap<>();
         newParams.put(4, argValues);
         fireResourcesChange(applyValues(newParams));

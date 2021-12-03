@@ -250,18 +250,6 @@ public class Arguments implements Iterable<Argument> {
     }
 
     /**
-     * Creates a map that represents arguments.
-     */
-    public Map<Integer, String> toMap() {
-        Map<Integer, String> result = new LinkedHashMap<>();
-        for (Argument argument : getValues()) {
-            String value = argument.getValue();
-            result.put(argument.getDigit(), value);
-        }
-        return result;
-    }
-
-    /**
      * Create a builder for {$link Arguments}.
      */
     public static ArgumentsBuilder builder() {
