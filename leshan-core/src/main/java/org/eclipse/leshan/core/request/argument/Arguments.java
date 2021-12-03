@@ -104,19 +104,19 @@ public class Arguments implements Iterable<Argument> {
      * Gets digit keys of arguments.
      */
     public Set<Integer> getDigits() {
-        return argumentMap.keySet();
+        return Collections.unmodifiableSet(argumentMap.keySet());
     }
 
     /**
      * Gets collection of {@link Argument}.
      */
     public Collection<Argument> getValues() {
-        return argumentMap.values();
+        return Collections.unmodifiableCollection(argumentMap.values());
     }
 
     @Override
     public Iterator<Argument> iterator() {
-        return argumentMap.values().iterator();
+        return Collections.unmodifiableCollection(argumentMap.values()).iterator();
     }
 
     private void validateDigit(int digit) throws IllegalArgumentException {
