@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.util.datatype;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.upokecenter.numbers.EInteger;
@@ -45,7 +46,19 @@ public class NumberUtil {
         }
 
         // handle FLOATING-POINT
-        // TODO should we support a safe floating-point conversion
+        BigDecimal bigDec = null;
+        if (number instanceof Float || number instanceof Double) {
+            bigDec = new BigDecimal(number.doubleValue());
+        } else if (number instanceof BigDecimal) {
+            bigDec = (BigDecimal) number;
+        }
+        if (bigDec != null) {
+            try {
+                return bigDec.longValueExact();
+            } catch (ArithmeticException e) {
+                throw new IllegalStateException(String.format("%s  : can not be store in a long", bigDec));
+            }
+        }
 
         // handle UNSIGNED
         if (number instanceof ULong) {
@@ -88,7 +101,28 @@ public class NumberUtil {
         }
 
         // handle FLOATING-POINT
-        // TODO should we support a safe floating-point conversion
+        BigDecimal bigDec = null;
+        if (number instanceof Float || number instanceof Double) {
+            bigDec = new BigDecimal(number.doubleValue());
+        } else if (number instanceof BigDecimal) {
+            bigDec = (BigDecimal) number;
+        }
+        if (bigDec != null) {
+            if (bigDec.signum() == -1) {
+                throw new IllegalStateException(String.format("%s  : can not be store in an unsigned long", bigDec));
+            } else {
+                try {
+                    BigInteger bigInt = bigDec.toBigIntegerExact();
+                    if (bigInt.compareTo(ULong.MAX_VALUE) > 0) {
+                        throw new IllegalStateException(
+                                String.format("%s  : can not be store in an unsigned long", bigInt));
+                    }
+                    return ULong.valueOf(bigInt);
+                } catch (ArithmeticException e) {
+                    throw new IllegalStateException(String.format("%s  : can not be store in a long", bigDec));
+                }
+            }
+        }
 
         // handle UNSIGNED
         if (number instanceof ULong) {
