@@ -910,6 +910,18 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
+    public void senml_json_decode_single_resource_using_exponantial_notation() {
+        String payload = "[{\"bn\":\"/3/0/13\",\"v\":1.638435E9}]";
+        LwM2mResource resource = decoder.decode(payload.getBytes(), ContentFormat.SENML_JSON, new LwM2mPath("/3/0/13"),
+                model, LwM2mResource.class);
+
+        assertNotNull(resource);
+        assertTrue(!resource.isMultiInstances());
+        assertEquals(13, resource.getId());
+        assertEquals(new Date(1638435000000l), resource.getValue());
+    }
+
+    @Test
     public void senml_json_decode_multiple_resource() {
         StringBuilder payload = new StringBuilder();
         payload.append("[{\"bn\":\"/3/0/7/\",\"n\":\"0\",\"v\":3800},");
