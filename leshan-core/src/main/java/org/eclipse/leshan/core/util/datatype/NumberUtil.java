@@ -30,7 +30,7 @@ public class NumberUtil {
      * 
      * @throws IllegalArgumentException if the number can not be store in a long.
      */
-    public static Long numberToLong(Number number) throws IllegalStateException {
+    public static Long numberToLong(Number number) throws IllegalArgumentException {
         // handle INTEGER
         if (number instanceof Byte || number instanceof Short || number instanceof Integer || number instanceof Long) {
             return number.longValue();
@@ -40,7 +40,7 @@ public class NumberUtil {
             BigInteger bigInt = (BigInteger) number;
             if (bigInt.compareTo(BigInteger.valueOf(Long.MIN_VALUE)) < 0
                     || bigInt.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) > 0) {
-                throw new IllegalStateException(String.format("%s  : can not be store in a long", bigInt));
+                throw new IllegalArgumentException(String.format("%s  : can not be store in a long", bigInt));
             }
             return bigInt.longValue();
         }
@@ -56,7 +56,7 @@ public class NumberUtil {
             try {
                 return bigDec.longValueExact();
             } catch (ArithmeticException e) {
-                throw new IllegalStateException(String.format("%s  : can not be store in a long", bigDec));
+                throw new IllegalArgumentException(String.format("%s  : can not be store in a long", bigDec));
             }
         }
 
@@ -65,11 +65,11 @@ public class NumberUtil {
             long longValue = number.longValue();
             // if long value is negative this means that this is a too long unsigned long
             if (longValue < 0) {
-                throw new IllegalStateException(String.format("%s  : can not be store in a long", number));
+                throw new IllegalArgumentException(String.format("%s  : can not be store in a long", number));
             }
             return longValue;
         }
-        throw new IllegalStateException(String.format("Can not convert %s to long safely : Unsupported number %s",
+        throw new IllegalArgumentException(String.format("Can not convert %s to long safely : Unsupported number %s",
                 number, number.getClass().getCanonicalName()));
     }
 
@@ -81,12 +81,12 @@ public class NumberUtil {
      * 
      * @throws IllegalArgumentException if the number can not be store in a long.
      */
-    public static ULong numberToULong(Number number) throws IllegalStateException {
+    public static ULong numberToULong(Number number) throws IllegalArgumentException {
         // handle INTEGER
         if (number instanceof Byte || number instanceof Short || number instanceof Integer || number instanceof Long) {
             long longValue = number.longValue();
             if (longValue < 0) {
-                throw new IllegalStateException(
+                throw new IllegalArgumentException(
                         String.format("%s  : can not convert negative number to an unsigned long", number));
             }
             return ULong.valueOf(longValue);
@@ -95,7 +95,7 @@ public class NumberUtil {
             // check big integer is not too big for a long
             BigInteger bigInt = (BigInteger) number;
             if (bigInt.signum() == -1 || bigInt.compareTo(ULong.MAX_VALUE) > 0) {
-                throw new IllegalStateException(String.format("%s  : can not be store in an unsigned long", bigInt));
+                throw new IllegalArgumentException(String.format("%s  : can not be store in an unsigned long", bigInt));
             }
             return ULong.valueOf(bigInt);
         }
@@ -109,17 +109,17 @@ public class NumberUtil {
         }
         if (bigDec != null) {
             if (bigDec.signum() == -1) {
-                throw new IllegalStateException(String.format("%s  : can not be store in an unsigned long", bigDec));
+                throw new IllegalArgumentException(String.format("%s  : can not be store in an unsigned long", bigDec));
             } else {
                 try {
                     BigInteger bigInt = bigDec.toBigIntegerExact();
                     if (bigInt.compareTo(ULong.MAX_VALUE) > 0) {
-                        throw new IllegalStateException(
+                        throw new IllegalArgumentException(
                                 String.format("%s  : can not be store in an unsigned long", bigInt));
                     }
                     return ULong.valueOf(bigInt);
                 } catch (ArithmeticException e) {
-                    throw new IllegalStateException(String.format("%s  : can not be store in a long", bigDec));
+                    throw new IllegalArgumentException(String.format("%s  : can not be store in a long", bigDec));
                 }
             }
         }
@@ -128,7 +128,7 @@ public class NumberUtil {
         if (number instanceof ULong) {
             return (ULong) number;
         }
-        throw new IllegalStateException(String.format("Can not convert %s to long safely : Unsupported number %s",
+        throw new IllegalArgumentException(String.format("Can not convert %s to long safely : Unsupported number %s",
                 number, number.getClass().getCanonicalName()));
     }
 
