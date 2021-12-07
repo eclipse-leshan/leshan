@@ -166,8 +166,11 @@ public class Arguments implements Iterable<Argument> {
             }
         }
         // Use builder capability to validate arguments uniqueness.
-        return builder.build();
-
+        try {
+            return builder.build();
+        } catch (InvalidArgumentException e) {
+            throw new InvalidArgumentException(e, "Unable to parse Arguments [%s] : %s ", arglist, e.getMessage());
+        }
     }
 
     static int consumeArgument(String arglist, final int initialCursor, ArgumentsBuilder builder)
