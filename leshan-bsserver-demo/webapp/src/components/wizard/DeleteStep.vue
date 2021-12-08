@@ -43,57 +43,33 @@
       </p>
     </v-card-text>
     <v-form ref="form" :value="valid" @input="$emit('update:valid', $event)">
-      <v-switch class="pl-5" label="Auto ID For Security Object" :value="autoId" @change="$emit('update:autoId',$event)"/>
-      <span>
-        <v-btn small @click="addPath"> Add Path to Delete </v-btn>
-      </span>
-      <v-btn small @click="removeAllPath"> Remove All </v-btn>
-      <div v-for="(path, index) in pathToDelete" :key="index">
-        <v-text-field
-          :value="path"
-          :rules="[
-            (v) => !!v || 'path can not be empty required',
-            (v) =>
-              !v ||
-              /^((\/([1-9][0-9]{0,4}|[0])){0,4})$|^\/$/.test(v) ||
-              'invalid path',
-          ]"
-          required
-          dense
-          @input="updatePath(index, $event)"
-          append-outer-icon="mdi-delete"
-          @click:append-outer="removePath(index)"
-        ></v-text-field>
-      </div>
+      <v-switch
+        class="pl-5"
+        label="Auto ID For Security Object"
+        :value="autoId"
+        @change="$emit('update:autoId', $event)"
+      />
+      <paths-input
+        :value="pathToDelete"
+        @input="$emit('update:pathToDelete', $event)"
+        addButtonText="Add Path to Delete"
+      />
     </v-form>
   </v-card>
 </template>
 <script>
+import PathsInput from "@leshan-server-core-demo/components/path/PathsInput.vue";
+
 export default {
+  components: { PathsInput },
   props: {
     pathToDelete: Array, // path to delete
-    autoId:Boolean, // auto id for security Object
+    autoId: Boolean, // auto id for security Object
     valid: Boolean, // validation state of the form
   },
   methods: {
     resetValidation() {
       this.$refs.form.resetValidation();
-    },
-    addPath() {
-      this.$emit("update:pathToDelete", [...this.pathToDelete, ""]);
-    },
-    removeAllPath() {
-      this.$emit("update:pathToDelete", []);
-    },
-    updatePath(index, value) {
-      let res = [...this.pathToDelete];
-      res.splice(index, 1, value);
-      this.$emit("update:pathToDelete", res);
-    },
-    removePath(index) {
-      let res = [...this.pathToDelete];
-      res.splice(index, 1);
-      this.$emit("update:pathToDelete", res);
     },
   },
 };
