@@ -20,6 +20,7 @@ import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.util.Arrays;
 
+import org.eclipse.leshan.core.OscoreObject;
 import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.security.SecurityInfo;
@@ -83,7 +84,21 @@ public class SecuritySerializer implements JsonSerializer<SecurityInfo> {
             element.addProperty("x509", true);
         }
 
-        // TODO OSCORE : implement serialization for OSCORE.
+        if (src.useOSCORE()) {
+            JsonObject oscoreNode = new JsonObject();
+
+            OscoreObject oscoreObject = src.getOscoreObject();
+
+            oscoreNode.addProperty("masterSecret", Hex.encodeHexString(oscoreObject.getMasterSecret()));
+            oscoreNode.addProperty("senderId", Hex.encodeHexString(oscoreObject.getSenderId()));
+            oscoreNode.addProperty("recipientId", Hex.encodeHexString(oscoreObject.getRecipientId()));
+            oscoreNode.addProperty("masterSalt", Hex.encodeHexString(oscoreObject.getMasterSalt()));
+
+            oscoreNode.addProperty("aeadAlgorithm", oscoreObject.getAeadAlgorithm());
+            oscoreNode.addProperty("hkdfAlgorithm", oscoreObject.getHmacAlgorithm());
+
+            element.add("oscore", oscoreNode);
+        }
 
         return element;
     }

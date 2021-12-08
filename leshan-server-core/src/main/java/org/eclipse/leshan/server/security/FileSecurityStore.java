@@ -21,6 +21,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Collection;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.eclipse.leshan.core.util.Validate;
 import org.slf4j.Logger;
@@ -33,9 +36,11 @@ import org.slf4j.LoggerFactory;
  * server is restarted.
  * </p>
  */
-public class FileSecurityStore extends InMemorySecurityStore {
+public class FileSecurityStore implements EditableSecurityStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileSecurityStore.class);
+
+    protected final Lock writeLock = new ReentrantReadWriteLock().writeLock();
 
     // the name of the file used to persist the store content
     private final String filename;
@@ -43,25 +48,29 @@ public class FileSecurityStore extends InMemorySecurityStore {
     // default location for persistence
     private static final String DEFAULT_FILE = "data/security.data";
 
-    public FileSecurityStore() {
-        this(DEFAULT_FILE);
-    }
+    private final EditableSecurityStore editableSecurityStore;
 
-    public FileSecurityStore(String file) {
+    public FileSecurityStore(String file, EditableSecurityStore editableSecurityStore) {
+        this.editableSecurityStore = editableSecurityStore;
         Validate.notEmpty(file);
         filename = file;
         loadFromFile();
     }
 
-    protected SecurityInfo addToStore(SecurityInfo info) throws NonUniqueSecurityInfoException {
-        return super.add(info);
+    public FileSecurityStore(EditableSecurityStore editableSecurityStore) {
+        this(DEFAULT_FILE, editableSecurityStore);
+    }
+
+    @Override
+    public Collection<SecurityInfo> getAll() {
+        return editableSecurityStore.getAll();
     }
 
     @Override
     public SecurityInfo add(SecurityInfo info) throws NonUniqueSecurityInfoException {
         writeLock.lock();
         try {
-            SecurityInfo previous = addToStore(info);
+            SecurityInfo previous = editableSecurityStore.add(info);
             saveToFile();
             return previous;
         } finally {
@@ -73,7 +82,7 @@ public class FileSecurityStore extends InMemorySecurityStore {
     public SecurityInfo remove(String endpoint, boolean infosAreCompromised) {
         writeLock.lock();
         try {
-            SecurityInfo info = super.remove(endpoint, infosAreCompromised);
+            SecurityInfo info = editableSecurityStore.remove(endpoint, infosAreCompromised);
             if (info != null) {
                 saveToFile();
             }
@@ -81,6 +90,11 @@ public class FileSecurityStore extends InMemorySecurityStore {
         } finally {
             writeLock.unlock();
         }
+    }
+
+    @Override
+    public void setListener(SecurityStoreListener listener) {
+        editableSecurityStore.setListener(listener);
     }
 
     protected void loadFromFile() {
@@ -94,7 +108,7 @@ public class FileSecurityStore extends InMemorySecurityStore {
 
             if (infos != null) {
                 for (SecurityInfo info : infos) {
-                    addToStore(info);
+                    editableSecurityStore.add(info);
                 }
                 if (infos.length > 0) {
                     LOG.debug("{} security infos loaded", infos.length);
@@ -121,5 +135,15 @@ public class FileSecurityStore extends InMemorySecurityStore {
         } catch (IOException e) {
             LOG.error("Could not save security infos to file", e);
         }
+    }
+
+    @Override
+    public SecurityInfo getByEndpoint(String endpoint) {
+        return editableSecurityStore.getByEndpoint(endpoint);
+    }
+
+    @Override
+    public SecurityInfo getByIdentity(String pskIdentity) {
+        return editableSecurityStore.getByIdentity(pskIdentity);
     }
 }

@@ -87,12 +87,12 @@ public class InMemorySecurityStore implements EditableSecurityStore {
         try {
             String identity = info.getIdentity();
             if (identity != null) {
-                SecurityInfo infoByIdentity = securityByIdentity.get(info.getIdentity());
+                SecurityInfo infoByIdentity = securityByIdentity.get(identity);
                 if (infoByIdentity != null && !info.getEndpoint().equals(infoByIdentity.getEndpoint())) {
-                    throw new NonUniqueSecurityInfoException("PSK Identity " + info.getIdentity() + " is already used");
+                    throw new NonUniqueSecurityInfoException("PSK Identity " + identity + " is already used");
                 }
 
-                securityByIdentity.put(info.getIdentity(), info);
+                securityByIdentity.put(identity, info);
             }
 
             SecurityInfo previous = securityByEp.put(info.getEndpoint(), info);

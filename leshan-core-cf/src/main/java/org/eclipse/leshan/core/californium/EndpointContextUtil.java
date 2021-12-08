@@ -34,6 +34,7 @@ import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.auth.X509CertPath;
 import org.eclipse.californium.oscore.OSCoreEndpointContextInfo;
+import org.eclipse.leshan.core.OSCoreIdentity;
 import org.eclipse.leshan.core.request.Identity;
 
 /**
@@ -70,9 +71,10 @@ public class EndpointContextUtil {
         } else {
             // Build identity for OSCORE if it is used
             if (context.get(OSCoreEndpointContextInfo.OSCORE_SENDER_ID) != null) {
-                String oscoreIdentity = "sid=" + context.get(OSCoreEndpointContextInfo.OSCORE_SENDER_ID) + ",rid="
-                        + context.get(OSCoreEndpointContextInfo.OSCORE_RECIPIENT_ID);
-                return Identity.oscoreOnly(peerAddress, oscoreIdentity.toLowerCase());
+                OSCoreIdentity oscoreIdentity = new OSCoreIdentity(
+                        context.get(OSCoreEndpointContextInfo.OSCORE_SENDER_ID),
+                        context.get(OSCoreEndpointContextInfo.OSCORE_RECIPIENT_ID));
+                return Identity.oscoreOnly(peerAddress, oscoreIdentity);
             }
         }
         return Identity.unsecure(peerAddress);

@@ -76,6 +76,8 @@ import org.eclipse.leshan.server.redis.RedisRegistrationStore;
 import org.eclipse.leshan.server.redis.RedisSecurityStore;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.FileSecurityStore;
+import org.eclipse.leshan.server.security.InMemorySecurityStore;
+import org.eclipse.leshan.server.security.OSCoreSecurityStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -559,10 +561,10 @@ public class LeshanServerDemo {
         EditableSecurityStore securityStore;
         if (jedis == null) {
             // use file persistence
-            securityStore = new FileSecurityStore();
+            securityStore = new FileSecurityStore(new OSCoreSecurityStore(new InMemorySecurityStore()));
         } else {
             // use Redis Store
-            securityStore = new RedisSecurityStore(jedis);
+            securityStore = new OSCoreSecurityStore(new RedisSecurityStore(jedis));
             builder.setRegistrationStore(new RedisRegistrationStore(jedis));
         }
         builder.setSecurityStore(securityStore);
