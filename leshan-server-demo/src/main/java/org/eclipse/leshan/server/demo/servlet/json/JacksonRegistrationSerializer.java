@@ -23,9 +23,14 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkParamValue;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.queue.PresenceService;
 import org.eclipse.leshan.server.registration.Registration;
@@ -71,12 +76,28 @@ public class JacksonRegistrationSerializer extends StdSerializer<Registration> {
         map.put("secure", src.getIdentity().isSecure());
         map.put("additionalRegistrationAttributes", src.getAdditionalRegistrationAttributes());
         map.put("queuemode", src.usesQueueMode());
+        map.put("availableInstances", serializeAvailableInstances(src.getAvailableInstances()));
 
         if (src.usesQueueMode()) {
             map.put("sleeping", !presenceService.isClientAwake(src));
         }
 
         gen.writeObject(map);
+    }
+
+    private Map<Integer, Set<Integer>> serializeAvailableInstances(Set<LwM2mPath> instances) {
+        SortedMap<Integer, Set<Integer>> result = new TreeMap<>();
+        for (LwM2mPath path : instances) {
+            Set<Integer> instancesList = result.get(path.getObjectId());
+            // add list if does not already exist
+            if (instancesList == null) {
+                instancesList = new TreeSet<Integer>();
+                result.put(path.getObjectId(), instancesList);
+            }
+            // add instance id to the list
+            instancesList.add(path.getObjectInstanceId());
+        }
+        return result;
     }
 
     private List<Map<String, Object>> serializeLinks(Link[] links) {

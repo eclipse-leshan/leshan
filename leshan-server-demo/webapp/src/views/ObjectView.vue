@@ -29,10 +29,10 @@
       <p style="white-space: pre-wrap">{{ objectdef.description }}</p>
     </div>
     <v-divider></v-divider>
-    <div v-for="instance in instances" :key="objectdef.id + '/' + instance.id">
+    <div v-for="instanceId in instances" :key="objectdef.id + '/' + instanceId">
       <instance-view
         :objectdef="objectdef"
-        :instanceId="instance.id"
+        :instanceId="instanceId"
         :endpoint="$route.params.endpoint"
       />
     </div>

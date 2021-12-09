@@ -63,7 +63,7 @@
       <!-- object viewer -->
       <router-view
         v-if="objectdefs"
-        :objectdef="objectdefs.find((o) => o.id == $route.params.objectid)"
+        :objectdef="objectdef"
         :instances="instances"
       ></router-view>
     </v-col>
@@ -94,19 +94,17 @@ export default {
     },
   },
   computed: {
-    // a computed getter
+    objectdef: function() {
+      return this.objectdefs.find((o) => o.id == this.$route.params.objectid);
+    },
     instances: function() {
-      // should probably be returned by REST API
-      // TODO we need to handle rootpath
-      let instances = [];
       if (this.registration) {
-        this.registration.objectLinks.forEach((o) => {
-          let ids = o.url.split("/");
-          if (ids.length === 3 && ids[1] == this.$route.params.objectid)
-            instances.push({ id: ids[2] });
-        });
+        let instances = this.registration.availableInstances[
+          this.$route.params.objectid
+        ];
+        if (instances) return instances;
       }
-      return instances;
+      return [];
     },
   },
   watch: {

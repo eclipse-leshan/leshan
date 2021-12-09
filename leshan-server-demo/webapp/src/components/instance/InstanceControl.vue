@@ -55,7 +55,7 @@ export default {
     endpoint: String, // endpoint name of the LWM2M client
     path: String, // path of the LWM2M object
     objectdef: Object, // model of the LWM2M object
-    id: String, // ID of the LWM2M Object Instance
+    id: Number, // ID of the LWM2M Object Instance
   },
   data() {
     return {

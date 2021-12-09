@@ -39,7 +39,7 @@
       multiple
       dense
       tile
-      v-if="objectdef && instanceId && endpoint"
+      v-if="objectdef && typeof instanceId == 'number' && endpoint"
     >
       <v-expansion-panel v-for="resource in resources" :key="resource.path">
         <v-expansion-panel-header style="min-height:32px" class="pa-3">
@@ -134,7 +134,7 @@ export default {
   },
   props: {
     objectdef: Object,
-    instanceId: String,
+    instanceId: Number,
     endpoint: String,
   },
 

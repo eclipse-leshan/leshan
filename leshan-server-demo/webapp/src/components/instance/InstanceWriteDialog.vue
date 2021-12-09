@@ -65,7 +65,7 @@ export default {
   props: {
     value: Boolean, // control if the dialog is displayed (v-model)
     objectdef: Object, // the model of the object
-    id: String, // ID of the Object Instance
+    id: Number, // ID of the Object Instance
   },
   data() {
     return {
