@@ -30,6 +30,7 @@ import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
+import org.eclipse.leshan.server.OscoreBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfigurationStore;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
@@ -187,6 +188,9 @@ public class LeshanBootstrapServer {
         } else if (requestSender instanceof Stoppable) {
             ((Stoppable) requestSender).stop();
         }
+
+        OscoreBootstrapHandler.purge();
+
         LOG.info("Bootstrap server destroyed.");
     }
 

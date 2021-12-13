@@ -24,7 +24,7 @@ import org.eclipse.californium.oscore.HashMapCtxDB;
 import org.eclipse.californium.oscore.OSCoreCtx;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.Validate;
-import org.eclipse.leshan.server.OscoreHandler;
+import org.eclipse.leshan.server.OscoreServerHandler;
 
 /**
  * The security info for a client.
@@ -118,7 +118,7 @@ public class SecurityInfo implements Serializable {
         Validate.notNull(oscoreCtx);
 
         // Add the OSCORE Context to the context database
-        HashMapCtxDB db = OscoreHandler.getContextDB();
+        HashMapCtxDB db = OscoreServerHandler.getContextDB();
         db.addContext(oscoreCtx);
 
         return new SecurityInfo(endpoint, null, null, null, false, oscoreCtx);

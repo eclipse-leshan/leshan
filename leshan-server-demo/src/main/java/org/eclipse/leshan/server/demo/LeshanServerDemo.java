@@ -48,7 +48,6 @@ import org.apache.commons.cli.ParseException;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 import org.eclipse.californium.elements.util.SslContextUtil;
-import org.eclipse.californium.oscore.OSCoreCoapStackFactory;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.dtls.SingleNodeConnectionIdGenerator;
 import org.eclipse.jetty.server.Server;
@@ -62,7 +61,7 @@ import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mNodeEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mNodeDecoder;
 import org.eclipse.leshan.core.util.SecurityUtil;
-import org.eclipse.leshan.server.OscoreHandler;
+import org.eclipse.leshan.server.OscoreServerHandler;
 import org.eclipse.leshan.server.californium.LeshanServer;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.demo.servlet.ClientServlet;
@@ -419,9 +418,7 @@ public class LeshanServerDemo {
         LwM2mNodeDecoder decoder = new DefaultLwM2mNodeDecoder();
         builder.setDecoder(decoder);
 
-        // Enable OSCORE stack (fine to do even when using DTLS or only CoAP)
-        // TODO OSCORE : OSCoreCoapStack should be created in DefaultEndpointFactory.
-        OSCoreCoapStackFactory.useAsDefault(OscoreHandler.getContextDB());
+        builder.setOscoreCtxDB(OscoreServerHandler.getContextDB());
 
         // Create CoAP Config
         NetworkConfig coapConfig;

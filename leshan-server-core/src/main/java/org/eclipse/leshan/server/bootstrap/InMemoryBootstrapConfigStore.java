@@ -28,7 +28,7 @@ import org.eclipse.californium.oscore.OSException;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.util.Hex;
-import org.eclipse.leshan.server.OscoreHandler;
+import org.eclipse.leshan.server.OscoreBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,7 +119,7 @@ public class InMemoryBootstrapConfigStore implements EditableBootstrapConfigStor
     // If an OSCORE configuration came, add it to the context db
     // TODO this should be done via a kind of OSCORE Store
     public void addOscoreContext(BootstrapConfig config) {
-        HashMapCtxDB db = OscoreHandler.getContextDB();
+        HashMapCtxDB db = OscoreBootstrapHandler.getContextDB();
         for (ServerSecurity security : config.security.values()) {
             // Make sure to only add OSCORE context for the BS-Client connection
             BootstrapConfig.OscoreObject osc = config.oscore.get(security.oscoreSecurityMode);

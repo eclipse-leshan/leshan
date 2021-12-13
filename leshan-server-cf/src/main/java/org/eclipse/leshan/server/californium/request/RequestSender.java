@@ -58,7 +58,7 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.eclipse.leshan.core.util.Validate;
-import org.eclipse.leshan.server.OscoreHandler;
+import org.eclipse.leshan.server.OscoreServerHandler;
 import org.eclipse.leshan.server.request.LowerLayerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,7 +141,7 @@ public class RequestSender implements Destroyable {
 
         // Toggle OSCORE use in the request if the target URI of the request has an OSCORE context registered
         // TODO OSCORE : this should be added in CoapRequestBuilder
-        HashMapCtxDB db = OscoreHandler.getContextDB();
+        HashMapCtxDB db = OscoreServerHandler.getContextDB();
         try {
             if (db.getContext(coapRequest.getURI()) != null) {
                 coapRequest.getOptions().setOscore(Bytes.EMPTY);
@@ -229,7 +229,7 @@ public class RequestSender implements Destroyable {
 
         // Toggle OSCORE use in the request if the target URI of the request has an OSCORE context registered
         // TODO OSCORE : this should be added in CoapRequestBuilder
-        HashMapCtxDB db = OscoreHandler.getContextDB();
+        HashMapCtxDB db = OscoreServerHandler.getContextDB();
         try {
             if (db.getContext(coapRequest.getURI()) != null) {
                 coapRequest.getOptions().setOscore(Bytes.EMPTY);
