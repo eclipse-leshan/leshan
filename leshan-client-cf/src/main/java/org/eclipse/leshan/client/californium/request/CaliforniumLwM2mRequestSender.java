@@ -27,7 +27,7 @@ import org.eclipse.californium.elements.util.Bytes;
 import org.eclipse.californium.oscore.HashMapCtxDB;
 import org.eclipse.californium.oscore.OSException;
 import org.eclipse.leshan.client.californium.CaliforniumEndpointsManager;
-import org.eclipse.leshan.client.californium.OscoreHandler;
+import org.eclipse.leshan.client.californium.OscoreClientHandler;
 import org.eclipse.leshan.client.request.LwM2mRequestSender;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.californium.AsyncRequestObserver;
@@ -79,7 +79,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
         // TODO OSCORE : this should be added in CoapRequestBuilder
         // Toggle OSCORE use in the request if the target URI of the request has an OSCORE context registered
-        HashMapCtxDB db = OscoreHandler.getContextDB();
+        HashMapCtxDB db = OscoreClientHandler.getContextDB();
         try {
             if (db.getContext(coapRequest.getURI()) != null) {
                 coapRequest.getOptions().setOscore(Bytes.EMPTY);
@@ -118,7 +118,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender {
 
         // TODO OSCORE : this should be added in CoapRequestBuilder
         // Toggle OSCORE use in the request if the target URI of the request has an OSCORE context registered
-        HashMapCtxDB db = OscoreHandler.getContextDB();
+        HashMapCtxDB db = OscoreClientHandler.getContextDB();
         try {
             if (db.getContext(coapRequest.getURI()) != null) {
                 coapRequest.getOptions().setOscore(Bytes.EMPTY);

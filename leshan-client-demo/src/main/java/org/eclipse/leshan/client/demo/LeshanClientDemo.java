@@ -53,8 +53,6 @@ import org.eclipse.californium.cose.AlgorithmID;
 import org.eclipse.californium.cose.CoseException;
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.util.SslContextUtil;
-import org.eclipse.californium.oscore.HashMapCtxDB;
-import org.eclipse.californium.oscore.OSCoreCoapStackFactory;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.dtls.ClientHandshaker;
@@ -70,7 +68,6 @@ import org.eclipse.californium.scandium.dtls.SingleNodeConnectionIdGenerator;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
-import org.eclipse.leshan.client.californium.OscoreHandler;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.Oscore;
 import org.eclipse.leshan.client.object.Server;
@@ -651,10 +648,6 @@ public class LeshanClientDemo {
 
         // Get models folder
         String modelsFolderPath = cl.getOptionValue("m");
-
-        // TODO OSCORE : OSCoreCoapStack should be create in Default endpoint factory
-        HashMapCtxDB db = OscoreHandler.getContextDB();
-        OSCoreCoapStackFactory.useAsDefault(db);
 
         // Set parameters controlling OSCORE usage
         OSCoreSettings oscoreSettings = null;

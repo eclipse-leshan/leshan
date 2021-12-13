@@ -16,6 +16,8 @@
 
 package org.eclipse.leshan.integration.tests.util;
 
+import static org.eclipse.leshan.client.object.Security.*;
+import static org.eclipse.leshan.core.LwM2mId.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
@@ -42,9 +44,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.oscore.HashMapCtxDB;
+import org.eclipse.californium.oscore.OSCoreCtx;
+import org.eclipse.californium.oscore.OSException;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.Device;
+import org.eclipse.leshan.client.object.Oscore;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
@@ -58,6 +64,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
 import org.eclipse.leshan.core.util.Hex;
+import org.eclipse.leshan.server.OscoreBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ACLConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
@@ -85,6 +92,11 @@ import org.eclipse.leshan.server.security.SecurityInfo;
  * 
  */
 public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper {
+
+    public static final byte[] OSCORE_BOOTSTRAP_MASTER_SECRET = Hex.decodeHex("BB1234567890".toCharArray());
+    public static final byte[] OSCORE_BOOTSTRAP_MASTER_SALT = Hex.decodeHex("BB0987654321".toCharArray());
+    public static final byte[] OSCORE_BOOTSTRAP_SENDER_ID = Hex.decodeHex("BBABCDEF".toCharArray());
+    public static final byte[] OSCORE_BOOTSTRAP_RECIPIENT_ID = Hex.decodeHex("BBFEDCBA".toCharArray());
 
     public LeshanBootstrapServer bootstrapServer;
     public final PublicKey bootstrapServerPublicKey;
@@ -154,6 +166,8 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
             }
         });
 
+        builder.setOscoreCtxDB(OscoreBootstrapHandler.getContextDB());
+
         return builder;
     }
 
@@ -208,6 +222,16 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         return Security.noSecBootstap(bsUrl);
     }
 
+    public void createOscoreOnlyBootstrapClient() {
+        String bsServerUri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
+                + bootstrapServer.getUnsecuredAddress().getPort();
+
+        Oscore oscoreObject = getOscoreBootstrapClientObject();
+        ObjectsInitializer initializer = new TestObjectsInitializer();
+        initializer.setInstancesForObject(OSCORE, oscoreObject);
+        createClient(oscoreOnlyBootstrap(bsServerUri, null, oscoreObject.getId()), initializer);
+    }
+
     @Override
     public void createClient() {
         createClient(withoutSecurity(), null);
@@ -258,6 +282,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         initializer.setInstancesForObject(LwM2mId.DEVICE,
                 new Device("Eclipse Leshan", IntegrationTestHelper.MODEL_NUMBER, "12345"));
         initializer.setClassForObject(LwM2mId.SERVER, DummyInstanceEnabler.class);
+        initializer.setClassForObject(LwM2mId.OSCORE, Oscore.class);
         createClient(initializer, additionalAttributes, preferredContentFormat, supportedContentFormat);
     }
 
@@ -312,6 +337,15 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                         return Arrays.asList(info).iterator();
                     } else if (mode == SecurityMode.RPK) {
                         info = rpkSecurityInfo();
+                        return Arrays.asList(info).iterator();
+                    } else  if (mode == SecurityMode.NO_SEC) {
+                        byte[] rid = OSCORE_BOOTSTRAP_SENDER_ID;
+
+                        HashMapCtxDB db = OscoreBootstrapHandler.getContextDB();
+                        OSCoreCtx ctx = db.getContext(rid);
+
+                        // Create the security info (will re-add the context to the db)
+                        info = SecurityInfo.newOSCoreInfo(endpoint, ctx);
                         return Arrays.asList(info).iterator();
                     }
                 }
@@ -523,6 +557,154 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 return new BootstrapConfiguration(BootstrapUtil.toRequests(bsConfig, session.getContentFormat()));
             }
         };
+    }
+
+    public BootstrapConfigurationStore unsecuredBootstrapStoreWithOscoreServer() {
+        return new BootstrapConfigurationStore() {
+
+            @Override
+            public BootstrapConfiguration get(String endpoint, Identity deviceIdentity, BootstrapSession session) {
+
+                BootstrapConfig bsConfig = new BootstrapConfig();
+
+                // security for BS server
+                ServerSecurity bsSecurity = new ServerSecurity();
+                bsSecurity.bootstrapServer = true;
+                bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
+                        + bootstrapServer.getUnsecuredAddress().getPort();
+                bsSecurity.securityMode = SecurityMode.NO_SEC;
+                bsConfig.security.put(0, bsSecurity);
+
+                // security for DM server
+                ServerSecurity dmSecurity = new ServerSecurity();
+                dmSecurity.uri = "coap://" + server.getUnsecuredAddress().getHostString() + ":"
+                        + server.getUnsecuredAddress().getPort();
+                dmSecurity.serverId = 2222;
+                dmSecurity.securityMode = SecurityMode.NO_SEC;
+                dmSecurity.oscoreSecurityMode = 1;
+                bsConfig.security.put(1, dmSecurity);
+                bsConfig.oscore.put(1, getOscoreBootstrapObject(false));
+
+                // DM server
+                ServerConfig dmConfig = new ServerConfig();
+                dmConfig.shortId = 2222;
+                bsConfig.servers.put(0, dmConfig);
+
+                return new BootstrapConfiguration(BootstrapUtil.toRequests(bsConfig, session.getContentFormat()));
+            }
+        };
+    }
+
+    public BootstrapConfigurationStore oscoreBootstrapStoreWithOscoreServer() {
+        OscoreBootstrapHandler.getContextDB().addContext(getOsCoreBootstrapCtx());
+
+        return new BootstrapConfigurationStore() {
+
+            @Override
+            public BootstrapConfiguration get(String endpoint, Identity deviceIdentity, BootstrapSession session) {
+
+                BootstrapConfig bsConfig = new BootstrapConfig();
+
+                // security for BS server
+                ServerSecurity bsSecurity = new ServerSecurity();
+                bsSecurity.bootstrapServer = true;
+                bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
+                        + bootstrapServer.getUnsecuredAddress().getPort();
+                bsSecurity.securityMode = SecurityMode.NO_SEC;
+                bsSecurity.oscoreSecurityMode = 1;
+                bsConfig.security.put(0, bsSecurity);
+                bsConfig.oscore.put(0, getOscoreBootstrapObject(true));
+
+                // security for DM server
+                ServerSecurity dmSecurity = new ServerSecurity();
+                dmSecurity.uri = "coap://" + server.getUnsecuredAddress().getHostString() + ":"
+                        + server.getUnsecuredAddress().getPort();
+                dmSecurity.serverId = 2222;
+                dmSecurity.securityMode = SecurityMode.NO_SEC;
+                dmSecurity.oscoreSecurityMode = 1;
+                bsConfig.security.put(1, dmSecurity);
+                bsConfig.oscore.put(1, getOscoreBootstrapObject(false));
+
+                // DM server
+                ServerConfig dmConfig = new ServerConfig();
+                dmConfig.shortId = 2222;
+                bsConfig.servers.put(0, dmConfig);
+
+                return new BootstrapConfiguration(BootstrapUtil.toRequests(bsConfig, session.getContentFormat()));
+            }
+        };
+    }
+
+    public BootstrapConfigurationStore oscoreBootstrapStoreWithUnsecuredServer() {
+        OscoreBootstrapHandler.getContextDB().addContext(BootstrapIntegrationTestHelper.getOsCoreBootstrapCtx());
+
+        return new BootstrapConfigurationStore() {
+
+            @Override
+            public BootstrapConfiguration get(String endpoint, Identity deviceIdentity, BootstrapSession session) {
+
+                BootstrapConfig bsConfig = new BootstrapConfig();
+
+                // security for BS server
+                ServerSecurity bsSecurity = new ServerSecurity();
+                bsSecurity.bootstrapServer = true;
+                bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
+                        + bootstrapServer.getUnsecuredAddress().getPort();
+                bsSecurity.securityMode = SecurityMode.NO_SEC;
+                bsSecurity.oscoreSecurityMode = 1;
+                bsConfig.security.put(0, bsSecurity);
+                bsConfig.oscore.put(0, getOscoreBootstrapObject(true));
+
+                // security for DM server
+                ServerSecurity dmSecurity = new ServerSecurity();
+                dmSecurity.uri = "coap://" + server.getUnsecuredAddress().getHostString() + ":"
+                        + server.getUnsecuredAddress().getPort();
+                dmSecurity.serverId = 2222;
+                dmSecurity.securityMode = SecurityMode.NO_SEC;
+                bsConfig.security.put(1, dmSecurity);
+
+                // DM server
+                ServerConfig dmConfig = new ServerConfig();
+                dmConfig.shortId = 2222;
+                bsConfig.servers.put(0, dmConfig);
+
+                return new BootstrapConfiguration(BootstrapUtil.toRequests(bsConfig, session.getContentFormat()));
+            }
+        };
+    }
+
+    protected static Oscore getOscoreBootstrapClientObject() {
+        return new Oscore(12345,
+                new String(Hex.encodeHex(OSCORE_BOOTSTRAP_MASTER_SECRET)),
+                new String(Hex.encodeHex(OSCORE_BOOTSTRAP_SENDER_ID)),
+                new String(Hex.encodeHex(OSCORE_BOOTSTRAP_RECIPIENT_ID)),
+                OSCORE_ALGORITHM.AsCBOR().AsInt32(),
+                OSCORE_KDF_ALGORITHM.AsCBOR().AsInt32(),
+                new String(Hex.encodeHex(OSCORE_BOOTSTRAP_MASTER_SALT)));
+    }
+
+    protected static BootstrapConfig.OscoreObject getOscoreBootstrapObject(boolean bootstrap) {
+        BootstrapConfig.OscoreObject oscoreObject = new BootstrapConfig.OscoreObject();
+
+        oscoreObject.oscoreMasterSecret = new String(Hex.encodeHex(bootstrap ? OSCORE_BOOTSTRAP_MASTER_SECRET : OSCORE_MASTER_SECRET));
+        oscoreObject.oscoreSenderId = new String(Hex.encodeHex(bootstrap ? OSCORE_BOOTSTRAP_SENDER_ID : OSCORE_SENDER_ID));
+        oscoreObject.oscoreRecipientId = new String(Hex.encodeHex(bootstrap ? OSCORE_BOOTSTRAP_RECIPIENT_ID : OSCORE_RECIPIENT_ID));
+        oscoreObject.oscoreAeadAlgorithm = OSCORE_ALGORITHM.AsCBOR().AsInt32();
+        oscoreObject.oscoreHmacAlgorithm = OSCORE_KDF_ALGORITHM.AsCBOR().AsInt32();
+        oscoreObject.oscoreMasterSalt = new String(Hex.encodeHex(bootstrap ? OSCORE_BOOTSTRAP_MASTER_SALT : OSCORE_MASTER_SALT));
+
+        return oscoreObject;
+    }
+
+    public static OSCoreCtx getOsCoreBootstrapCtx() {
+        try {
+            OSCoreCtx osCoreCtx = new OSCoreCtx(OSCORE_BOOTSTRAP_MASTER_SECRET, true, OSCORE_ALGORITHM, OSCORE_BOOTSTRAP_RECIPIENT_ID,
+                    OSCORE_BOOTSTRAP_SENDER_ID, OSCORE_KDF_ALGORITHM, 32, OSCORE_BOOTSTRAP_MASTER_SALT, null);
+            osCoreCtx.setContextRederivationEnabled(true);
+            return osCoreCtx;
+        } catch (OSException ignored) {
+            return null;
+        }
     }
 
     @Override

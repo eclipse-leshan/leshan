@@ -34,7 +34,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.BootstrapResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
-import org.eclipse.leshan.server.OscoreHandler;
+import org.eclipse.leshan.server.OscoreBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +67,7 @@ public class BootstrapResource extends LwM2mCoapResource {
 
             // Update the URI of the associated OSCORE Context with the client's URI
             // So the server can send requests to the client
-            HashMapCtxDB db = OscoreHandler.getContextDB();
+            HashMapCtxDB db = OscoreBootstrapHandler.getContextDB();
             OSCoreCtx clientCtx = db.getContext(exchange.advanced().getCryptographicContextID());
 
             try {

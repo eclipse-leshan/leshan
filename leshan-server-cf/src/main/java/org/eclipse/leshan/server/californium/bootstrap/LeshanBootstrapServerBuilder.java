@@ -27,6 +27,7 @@ import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.network.config.NetworkConfig.Keys;
 import org.eclipse.californium.elements.UDPConnector;
+import org.eclipse.californium.oscore.HashMapCtxDB;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
@@ -391,6 +392,13 @@ public class LeshanBootstrapServerBuilder {
         return networkConfig;
     }
 
+    HashMapCtxDB oscoreCtxDB;
+
+    public LeshanBootstrapServerBuilder setOscoreCtxDB(HashMapCtxDB oscoreCtxDB) {
+        this.oscoreCtxDB = oscoreCtxDB;
+        return this;
+    }
+
     /**
      * Create the {@link LeshanBootstrapServer}.
      * <p>
@@ -553,7 +561,7 @@ public class LeshanBootstrapServerBuilder {
 
         CoapEndpoint unsecuredEndpoint = null;
         if (!noUnsecuredEndpoint) {
-            unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, null);
+            unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, oscoreCtxDB);
         }
 
         CoapEndpoint securedEndpoint = null;

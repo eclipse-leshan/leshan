@@ -50,7 +50,7 @@ import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.util.SecurityUtil;
-import org.eclipse.leshan.server.OscoreHandler;
+import org.eclipse.leshan.server.OscoreBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfigurationStoreAdapter;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.BootstrapServlet;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.ServerServlet;
@@ -352,10 +352,6 @@ public class LeshanBootstrapServerDemo {
             boolean supportDeprecatedCiphers, PublicKey publicKey, PrivateKey privateKey, X509Certificate[] certificate,
             List<Certificate> trustStore, Integer cid) throws Exception {
 
-        // Enable OSCORE stack (fine to do even when using DTLS or only CoAP)
-        // TODO OSCORE : this should be done in DefaultEndpointFactory ?
-        OSCoreCoapStackFactory.useAsDefault(OscoreHandler.getContextDB());
-
         // Create Models
         List<ObjectModel> models = ObjectLoader.loadDefault();
         if (modelsFolderPath != null) {
@@ -364,6 +360,9 @@ public class LeshanBootstrapServerDemo {
 
         // Prepare and start bootstrap server
         LeshanBootstrapServerBuilder builder = new LeshanBootstrapServerBuilder();
+
+        builder.setOscoreCtxDB(OscoreBootstrapHandler.getContextDB());
+
         JSONFileBootstrapStore bsStore = new JSONFileBootstrapStore(configFilename);
         builder.setConfigStore(new BootstrapConfigurationStoreAdapter(bsStore));
         builder.setSecurityStore(new BootstrapConfigSecurityStore(bsStore));

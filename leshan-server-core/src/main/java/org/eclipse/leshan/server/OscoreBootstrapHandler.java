@@ -18,7 +18,7 @@ package org.eclipse.leshan.server;
 import org.eclipse.californium.oscore.HashMapCtxDB;
 
 // TODO OSCORE : remove this class and static access.
-public class OscoreHandler {
+public class OscoreBootstrapHandler {
 
     private static HashMapCtxDB db;
 
@@ -27,5 +27,9 @@ public class OscoreHandler {
             db = new HashMapCtxDB();
         }
         return db;
+    }
+
+    public static void purge() {
+        db = null;
     }
 }

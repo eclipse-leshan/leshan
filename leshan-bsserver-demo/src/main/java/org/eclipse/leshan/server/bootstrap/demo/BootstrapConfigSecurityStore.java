@@ -28,7 +28,7 @@ import org.eclipse.californium.oscore.OSCoreCtx;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.SecurityUtil;
-import org.eclipse.leshan.server.OscoreHandler;
+import org.eclipse.leshan.server.OscoreBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.OscoreObject;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
@@ -106,7 +106,7 @@ public class BootstrapConfigSecurityStore implements BootstrapSecurityStore {
                 if (security.bootstrapServer && oscoreInstanceId != null) {
                     OscoreObject oscoreObject = bsConfig.oscore.get(oscoreInstanceId);
 
-                    HashMapCtxDB db = OscoreHandler.getContextDB();
+                    HashMapCtxDB db = OscoreBootstrapHandler.getContextDB();
                     byte[] rid = Hex.decodeHex(oscoreObject.oscoreRecipientId.toCharArray());
                     OSCoreCtx ctx = db.getContext(rid);
 

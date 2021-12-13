@@ -218,7 +218,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             // oscore only mode
             LOG.info("Adding OSCORE context for " + serverInfo.getFullUri().toASCIIString());
             // TODO OSCORE : use OscoreStore instead ?
-            HashMapCtxDB db = OscoreHandler.getContextDB();
+            HashMapCtxDB db = OscoreClientHandler.getContextDB();
 
             AlgorithmID hkdfAlg = null;
             try {
