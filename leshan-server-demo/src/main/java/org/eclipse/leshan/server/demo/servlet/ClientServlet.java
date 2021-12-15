@@ -19,8 +19,10 @@ package org.eclipse.leshan.server.demo.servlet;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -41,6 +43,7 @@ import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
+import org.eclipse.leshan.core.request.ReadCompositeRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
@@ -56,6 +59,7 @@ import org.eclipse.leshan.core.response.DiscoverResponse;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
+import org.eclipse.leshan.core.response.ReadCompositeResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
@@ -81,6 +85,11 @@ public class ClientServlet extends HttpServlet {
     private static final String FORMAT_PARAM = "format";
     private static final String TIMEOUT_PARAM = "timeout";
     private static final String REPLACE_PARAM = "replace";
+
+    // for composite operation
+    private static final String PATH_PARAM = "paths";
+    private static final String PATH_FORMAT_PARAM = "pathformat";
+    private static final String NODE_FORMAT_PARAM = "nodeformat";
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientServlet.class);
 
@@ -144,6 +153,39 @@ public class ClientServlet extends HttpServlet {
             } else {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
+            }
+            return;
+        }
+        // /composite : do Read-Composite request.
+        if (path.length == 2 && "composite".equals(path[1])) {
+            try {
+                Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
+                if (registration != null) {
+                    // get paths
+                    String pathParam = req.getParameter(PATH_PARAM);
+                    List<String> paths = Arrays.asList(pathParam.split(","));
+
+                    // get content format
+                    String pathContentFormatParam = req.getParameter(PATH_FORMAT_PARAM);
+                    ContentFormat pathContentFormat = pathContentFormatParam != null
+                            ? ContentFormat.fromName(pathContentFormatParam.toUpperCase())
+                            : null;
+                    String nodeContentFormatParam = req.getParameter(NODE_FORMAT_PARAM);
+                    ContentFormat nodeContentFormat = nodeContentFormatParam != null
+                            ? ContentFormat.fromName(nodeContentFormatParam.toUpperCase())
+                            : null;
+
+                    // create & process request
+                    ReadCompositeRequest request = new ReadCompositeRequest(pathContentFormat, nodeContentFormat,
+                            paths);
+                    ReadCompositeResponse cResponse = server.send(registration, request, extractTimeout(req));
+                    processDeviceResponse(req, resp, cResponse);
+                } else {
+                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    resp.getWriter().format("No registered client with id '%s'", clientEndpoint).flush();
+                }
+            } catch (RuntimeException | InterruptedException e) {
+                handleException(e, resp);
             }
             return;
         }

@@ -23,6 +23,7 @@ import java.util.Map;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DiscoverResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.ReadCompositeResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -56,6 +57,8 @@ public class JacksonResponseSerializer extends StdSerializer<LwM2mResponse> {
             map.put("objectLinks", ((DiscoverResponse) src).getObjectLinks());
         } else if (src instanceof CreateResponse) {
             map.put("location", ((CreateResponse) src).getLocation());
+        } else if (src instanceof ReadCompositeResponse) {
+            map.put("content", ((ReadCompositeResponse) src).getContent());
         }
 
         if (src.isFailure() && src.getErrorMessage() != null && !src.getErrorMessage().isEmpty()) {

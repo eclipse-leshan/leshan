@@ -26,10 +26,14 @@
       </v-card-title>
       <!-- Form -->
       <v-card-text>
-        <div class="subtitle-1">
+        <p class="subtitle-1">
           A Composite Object has a name and a list of path to LWM2M node
           (Object, Object Instance, Resource, Resource Instance).
-        </div>
+        </p>
+        <p class="subtitle-1">
+          Root path is not yet supported. <br />
+          Overlapped path will not work. (e.g. /3/0 with /3/0/1 is not valid)
+        </p>
         <div>
           Note if you create Composite Object composed of too much resources,
           you could face some UI performance issue.

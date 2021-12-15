@@ -17,6 +17,10 @@
         <composite-object-icons :compositeObject="compositeObject" />{{
           compositeObject.name
         }}
+        <composite-object-control
+          :endpoint="$route.params.endpoint"
+          :compositeObject="compositeObject"
+        />
       </h3>
       <p>
         This Composite object is composed of following resources :
@@ -110,12 +114,14 @@ import ResourceInstanceExpansionPanel from "../components/resources/view/Resourc
 import { preference } from "vue-preferences";
 import { LwM2mPath } from "../js/lwm2mpath.js";
 import CompositeObjectIcons from "../components/compositeOperation/CompositeObjectIcons.vue";
+import CompositeObjectControl from "../components/compositeOperation/CompositeObjectControl.vue";
 
 export default {
   components: {
     ResourceExpansionPanel,
     ResourceInstanceExpansionPanel,
     CompositeObjectIcons,
+    CompositeObjectControl,
   },
   props: { objectdefs: Array, allInstances: Object },
   data() {

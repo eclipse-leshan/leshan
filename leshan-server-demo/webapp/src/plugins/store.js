@@ -184,6 +184,24 @@ class Store {
 
   /**
    * @param {String} endpoint endpoint of the client
+   * @param {String} path path to the instance e.g. /3/0
+   * @param {Array} instances Array of instances
+   * @param {Boolean} supposed true means the value is supposed (not really send by the client)
+   */
+  newObjectValue(endpoint, path, instances, supposed = false) {
+    this.removeObjectValue(endpoint, path);
+    instances.forEach((ins) => {
+      this.newInstanceValue(
+        endpoint,
+        path + "/" + ins.id,
+        ins.resources,
+        supposed
+      );
+    });
+  }
+
+  /**
+   * @param {String} endpoint endpoint of the client
    * @param {String} path path to the node (object, instance, resource or resource instance)
    * @param {Array} node the node value
    * @param {Boolean} supposed true means the value is supposed (not really send by the client)
@@ -191,11 +209,38 @@ class Store {
   newNode(endpoint, path, node, supposed = false) {
     if (node.kind === "singleResource") {
       this.newResourceValue(endpoint, path, node, supposed);
+    } else if (node.kind === "multiResource") {
+      this.newMultiResourceValue(
+        endpoint,
+        path,
+        node['values'],
+        supposed
+      );
     } else if (node.kind === "resourceInstance") {
-      this.newResourceInstanceValueFromPath(endpoint, path, node.value, supposed);
+      this.newResourceInstanceValueFromPath(
+        endpoint,
+        path,
+        node.value,
+        supposed
+      );
+    } else if (node.kind === "instance") {
+      this.newInstanceValue(endpoint, path, node.resources, supposed);
+    } else if (node.kind === "obj") {
+      this.newObjectValue(endpoint, path, node.instances, supposed);
     } else {
       console.log(node.kind, " not yet supported");
     }
+  }
+
+  /**
+   * @param {String} endpoint endpoint of the client
+   * @param {Object} nodes the nodes map {path:node Object}
+   * @param {Boolean} supposed true means the value is supposed (not really send by the client)
+   */
+  newNodes(endpoint, nodes, supposed = false) {
+    Object.entries(nodes).forEach(([path, node]) => {
+      this.newNode(endpoint, path, node, supposed);
+    });
   }
 
   /**
@@ -207,6 +252,20 @@ class Store {
     let s = this.state[endpoint];
     Object.keys(s.data).forEach((p) => {
       if (p.startsWith(instancePath)) {
+        delete s.data[p];
+      }
+    });
+  }
+
+  /**
+   * @param {String} endpoint endpoint of the client
+   * @param {String} path path to the instance e.g. /3
+   */
+  removeObjectValue(endpoint, path) {
+    let objectPath = path + "/";
+    let s = this.state[endpoint];
+    Object.keys(s.data).forEach((p) => {
+      if (p.startsWith(objectPath)) {
         delete s.data[p];
       }
     });
