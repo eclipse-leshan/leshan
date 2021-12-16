@@ -35,10 +35,11 @@ public class ObjectLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(ObjectLoader.class);
 
-    static final String[] ddfpaths = new String[] { "LWM2M_Security-v1_0.xml", "LWM2M_Server-v1_0.xml",
-                            "LWM2M_Access_Control-v1_0_3.xml", "LWM2M_Device-v1_0_3.xml",
-                            "LWM2M_Connectivity_Monitoring-v1_0_2.xml", "LWM2M_Firmware_Update-v1_0_3.xml",
-                            "LWM2M_Location-v1_0_2.xml", "LWM2M_Connectivity_Statistics-v1_0_4.xml" };
+    static final String[] ddfpaths = new String[] { "0-1_0.xml", "1-1_0.xml", "2-1_0.xml", "3-1_0.xml", "4-1_0.xml",
+            "5-1_0.xml", "6.xml", "7.xml" };
+
+    static final String[] lastestddfspath = new String[] { "0-1_0.xml", "1-1_0.xml", "2.xml", "3-1_0.xml", "4-1_1.xml",
+            "5-1_0.xml", "6.xml", "7.xml" };
 
     /**
      * Load the default LWM2M objects
@@ -49,6 +50,23 @@ public class ObjectLoader {
         // standard objects
         LOG.debug("Loading OMA standard object models");
         models.addAll(loadDdfResources("/models/", ddfpaths));
+
+        return models;
+    }
+
+    /**
+     * Load the core LWM2M objects in their last version.
+     * <p>
+     * Warning : between 2 minor version of Leshan, you could load different version.
+     * 
+     * @since 1.4
+     */
+    public static List<ObjectModel> loadLastestDefault() {
+        List<ObjectModel> models = new ArrayList<>();
+
+        // lastest standard objects
+        LOG.debug("Loading OMA standard object models");
+        models.addAll(loadDdfResources("/models/", lastestddfspath));
 
         return models;
     }

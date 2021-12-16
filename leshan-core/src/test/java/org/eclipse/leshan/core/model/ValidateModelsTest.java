@@ -25,4 +25,9 @@ public class ValidateModelsTest {
     public void validate_embedded_models() throws InvalidModelException, InvalidDDFFileException, IOException {
         ObjectLoader.loadDdfResources("/models/", ObjectLoader.ddfpaths, true);
     }
+
+    @Test
+    public void validate_lastest_embedded_models() throws InvalidModelException, InvalidDDFFileException, IOException {
+        ObjectLoader.loadDdfResources("/models/", ObjectLoader.lastestddfspath, true);
+    }
 }
