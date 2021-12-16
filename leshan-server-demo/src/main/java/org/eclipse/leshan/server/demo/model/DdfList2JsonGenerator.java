@@ -42,6 +42,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+/**
+ * @deprecated use {@link DdfDownloader} and {@link FileLister} instead.
+ */
+@Deprecated
 public class DdfList2JsonGenerator {
 
     private static final Logger LOG = LoggerFactory.getLogger(DdfList2JsonGenerator.class);
