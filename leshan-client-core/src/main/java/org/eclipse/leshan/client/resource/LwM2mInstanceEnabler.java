@@ -26,6 +26,7 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
+import org.eclipse.leshan.core.request.argument.Arguments;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -46,10 +47,9 @@ import org.eclipse.leshan.core.response.WriteResponse;
  * acceptable resource IDs for the <code>read, write</code> and <code>execute</code> methods.
  * <p>
  * {@code LeshanClient#destroy()} is called, {@code LwM2mInstanceEnabler#destroy()} is also called if it implements the
- * {@link org.eclipse.leshan.core.Destroyable} interface.
- * And {@link org.eclipse.leshan.core.Startable} ({@code #start()}) and {@link org.eclipse.leshan.core.Stoppable} ({@code #stop()})
- * are also same as this.
- * If you need to restart the instance, please implement {@link org.eclipse.leshan.core.Startable} with
+ * {@link org.eclipse.leshan.core.Destroyable} interface. And {@link org.eclipse.leshan.core.Startable}
+ * ({@code #start()}) and {@link org.eclipse.leshan.core.Stoppable} ({@code #stop()}) are also same as this. If you need
+ * to restart the instance, please implement {@link org.eclipse.leshan.core.Startable} with
  * {@link org.eclipse.leshan.core.Stoppable} together.
  */
 public interface LwM2mInstanceEnabler {
@@ -155,6 +155,8 @@ public interface LwM2mInstanceEnabler {
      * @return the response object representing the outcome of the operation. An implementation should set the result's
      *         {@link ExecuteResponse#getCode() response code} to either reflect the success or reason for failure to
      *         execute the operation.
+     * 
+     * @see Arguments#parse(String) to parse arguments.
      */
     ExecuteResponse execute(ServerIdentity identity, int resourceid, String params);
 

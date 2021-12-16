@@ -16,6 +16,8 @@
 package org.eclipse.leshan.core.request;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.request.argument.Arguments;
+import org.eclipse.leshan.core.request.argument.InvalidArgumentException;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 
@@ -41,10 +43,27 @@ public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
      *
      * @param path the path of the resource to execute
      * @param parameters the parameters
-     * @exception InvalidRequestException if the path is not valid.
+     * 
+     * @see Arguments to create valid parameters string.
+     * @exception InvalidRequestException if the path is not valid or use {@link #ExecuteRequest(String, Arguments)}
+     *            instead.
      */
     public ExecuteRequest(String path, String parameters) throws InvalidRequestException {
         this(newPath(path), parameters);
+    }
+
+    /**
+     * Creates a new <em>execute</em> request for a resource accepting parameters encoded as plain text.
+     *
+     * @param path the path of the resource to execute
+     * @param arguments the arguments
+     * 
+     * @exception InvalidRequestException if the path is not valid.
+     * 
+     * @since 1.4
+     */
+    public ExecuteRequest(String path, Arguments arguments) throws InvalidRequestException {
+        this(newPath(path), arguments.serialize());
     }
 
     /**
@@ -65,9 +84,26 @@ public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
      * @param objectInstanceId the resource's object instance ID
      * @param resourceId the resource's ID
      * @param parameters the parameters
+     * 
+     * @see Arguments to create valid parameters string or use {@link #ExecuteRequest(int, int, int, Arguments)}
+     *      instead.
      */
     public ExecuteRequest(int objectId, int objectInstanceId, int resourceId, String parameters) {
         this(new LwM2mPath(objectId, objectInstanceId, resourceId), parameters);
+    }
+
+    /**
+     * Creates a new <em>execute</em> request for a resource accepting parameters encoded as plain text.
+     *
+     * @param objectId the resource's object ID
+     * @param objectInstanceId the resource's object instance ID
+     * @param resourceId the resource's ID
+     * @param arguments the arguments
+     * 
+     * @since 1.4
+     */
+    public ExecuteRequest(int objectId, int objectInstanceId, int resourceId, Arguments arguments) {
+        this(new LwM2mPath(objectId, objectInstanceId, resourceId), arguments.serialize());
     }
 
     private ExecuteRequest(LwM2mPath path, String parameters) {
@@ -90,8 +126,18 @@ public class ExecuteRequest extends AbstractDownlinkRequest<ExecuteResponse> {
         visitor.visit(this);
     }
 
+    /**
+     * @see Arguments#parse(String) to parse arguments or use {@link #getArguments()} instead.
+     */
     public String getParameters() {
         return parameters;
+    }
+
+    /**
+     * @since 1.4
+     */
+    public Arguments getArguments() throws InvalidArgumentException {
+        return Arguments.parse(parameters);
     }
 
     @Override
