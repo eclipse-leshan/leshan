@@ -21,7 +21,9 @@ package org.eclipse.leshan.client.resource;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -107,6 +109,46 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
         }
     }
 
+    protected int[] applyValues(Map<Integer, Object> values) {
+        Set<Integer> changingResources = new HashSet<>();
+
+        for (ResourceModel resourceModel : getModel().resources.values()) {
+            if (resourceModel.operations.isReadable()) {
+                Object value = values.get(resourceModel.id);
+                // create the resource
+                LwM2mResource newResource = null;
+                if (value != null) {
+                    if (resourceModel.multiple) {
+                        if (value instanceof Map) {
+                            @SuppressWarnings("unchecked")
+                            Map<Integer, ?> val = (Map<Integer, ?>) value;
+                            newResource = LwM2mMultipleResource.newResource(resourceModel.id, val, resourceModel.type);
+                        }
+                    } else {
+                        // handle single instances
+                        newResource = LwM2mSingleResource.newResource(resourceModel.id, value, resourceModel.type);
+                    }
+                }
+                // add the resource
+                if (newResource != null) {
+                    resources.put(newResource.getId(), newResource);
+                    changingResources.add(newResource.getId());
+                }
+            }
+        }
+        // add resource
+
+        // convert set to array
+        int[] res = new int[changingResources.size()];
+        int i = 0;
+        for (int resId : changingResources) {
+            res[i] = resId;
+            i++;
+        }
+
+        return res;
+    }
+
     protected LwM2mResource initializeResource(ObjectModel objectModel, ResourceModel resourceModel) {
         if (!resourceModel.multiple) {
             return initializeSingleResource(objectModel, resourceModel);
@@ -150,11 +192,16 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
 
     protected LwM2mMultipleResource initializeMultipleResource(ObjectModel objectModel, ResourceModel resourceModel) {
         if (initialValues != null) {
-            @SuppressWarnings("unchecked")
-            Map<Integer, ?> initialValue = (Map<Integer, ?>) initialValues.get(resourceModel.id);
+            Object initialValue = initialValues.get(resourceModel.id);
             if (initialValue == null)
                 return null;
-            return LwM2mMultipleResource.newResource(resourceModel.id, initialValue, resourceModel.type);
+
+            if (initialValue instanceof Map) {
+                @SuppressWarnings("unchecked")
+                Map<Integer, ?> val = (Map<Integer, ?>) initialValue;
+                return LwM2mMultipleResource.newResource(resourceModel.id, val, resourceModel.type);
+            }
+            return null;
         } else {
             // no default value
             Map<Integer, ?> emptyMap = Collections.emptyMap();
