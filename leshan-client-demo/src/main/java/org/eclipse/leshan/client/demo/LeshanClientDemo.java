@@ -508,7 +508,7 @@ public class LeshanClientDemo {
         locationInstance = new MyLocation(latitude, longitude, scaleFactor);
 
         // Initialize model
-        List<ObjectModel> models = ObjectLoader.loadDefault();
+        List<ObjectModel> models = ObjectLoader.loadLastestDefault();
         models.addAll(ObjectLoader.loadDdfResources("/models", modelPaths));
         if (modelsFolderPath != null) {
             models.addAll(ObjectLoader.loadObjectsFromDir(new File(modelsFolderPath), true));

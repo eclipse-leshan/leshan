@@ -22,12 +22,17 @@ import org.junit.Test;
 public class ValidateModelsTest {
 
     @Test
-    public void validate_embedded_models() throws InvalidModelException, InvalidDDFFileException, IOException {
+    public void validate_default_embedded_models() throws InvalidModelException, InvalidDDFFileException, IOException {
         ObjectLoader.loadDdfResources("/models/", ObjectLoader.ddfpaths, true);
     }
 
     @Test
     public void validate_lastest_embedded_models() throws InvalidModelException, InvalidDDFFileException, IOException {
         ObjectLoader.loadDdfResources("/models/", ObjectLoader.lastestddfspath, true);
+    }
+
+    @Test
+    public void validate_all_embedded_models() throws InvalidModelException, InvalidDDFFileException, IOException {
+        ObjectLoader.loadDdfResources("/models/", ObjectLoader.allddfspath, true);
     }
 }

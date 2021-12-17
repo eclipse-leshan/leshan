@@ -41,8 +41,13 @@ public class ObjectLoader {
     static final String[] lastestddfspath = new String[] { "0-1_0.xml", "1-1_0.xml", "2.xml", "3-1_0.xml", "4-1_1.xml",
             "5-1_0.xml", "6.xml", "7.xml" };
 
+    static final String[] allddfspath = new String[] { "0-1_0.xml", "1-1_0.xml", "2-1_0.xml", "2.xml", "3-1_0.xml",
+            "4-1_0.xml", "4-1_1.xml", "5-1_0.xml", "6.xml", "7.xml" };
+
     /**
-     * Load the default LWM2M objects
+     * Load the default LWM2M objects in the version 1.0.
+     * <p>
+     * So there is only 1 version by object.
      */
     public static List<ObjectModel> loadDefault() {
         List<ObjectModel> models = new ArrayList<>();
@@ -57,7 +62,9 @@ public class ObjectLoader {
     /**
      * Load the core LWM2M objects in their last version.
      * <p>
-     * Warning : between 2 minor version of Leshan, you could load different version.
+     * So there is only 1 version by object.
+     * <p>
+     * Warning : between 2 minor version of Leshan, lastest version could change for a given object.
      * 
      * @since 1.4
      */
@@ -67,6 +74,23 @@ public class ObjectLoader {
         // lastest standard objects
         LOG.debug("Loading OMA standard object models");
         models.addAll(loadDdfResources("/models/", lastestddfspath));
+
+        return models;
+    }
+
+    /**
+     * Load all available version of default LWM2M objects.
+     * <p>
+     * So you could get several versions for same object.
+     * 
+     * @since 1.4
+     */
+    public static List<ObjectModel> loadAllDefault() {
+        List<ObjectModel> models = new ArrayList<>();
+
+        // standard objects
+        LOG.debug("Loading OMA standard object models");
+        models.addAll(loadDdfResources("/models/", allddfspath));
 
         return models;
     }

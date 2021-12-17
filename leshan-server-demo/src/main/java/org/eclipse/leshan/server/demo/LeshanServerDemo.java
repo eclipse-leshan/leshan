@@ -477,7 +477,7 @@ public class LeshanServerDemo {
         builder.setDtlsConfig(dtlsConfig);
 
         // Define model provider
-        List<ObjectModel> models = ObjectLoader.loadDefault();
+        List<ObjectModel> models = ObjectLoader.loadAllDefault();
         models.addAll(ObjectLoader.loadDdfResources("/models/", LwM2mDemoConstant.modelPaths));
         if (modelsFolderPath != null) {
             models.addAll(ObjectLoader.loadObjectsFromDir(new File(modelsFolderPath), true));
