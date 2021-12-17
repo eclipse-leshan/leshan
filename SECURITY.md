@@ -19,3 +19,20 @@ Only Leshan library is concerned. The demos are not covered.
 
 Note: ℹ️ **1.x** version depends on californium 2.x version where support is not clear.   
 See : https://github.com/eclipse/californium/security/policy
+
+
+## Versions Security State
+
+| Version | Safe          | CVE | cause | | 
+| ------- | ------------- |-----|------|-|
+| 2.0.0-M5 + | :heavy_check_mark: | | | | 
+| 2.0.0-M1 -> 2.0.0-M4   | :x: | [CVE-2021-34433](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-34433)| dependency (californium/scandium) |affecting DTLS with x509 and/or RPK |
+| 1.3.2 +  | :heavy_check_mark: |
+| 1.1.0 -> 1.3.1 | :x: | [CVE-2020-27222](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-27222) [CVE-2021-34433](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-34433)| dependency (californium/scandium) |affecting DTLS with x509 and/or RPK |
+| 1.0.0 -> 1.0.2  | :x: | [CVE-2021-34433](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-34433)| dependency (californium/scandium) |affecting DTLS with x509 and/or RPK |
+
+Note: We strongly encourage you to switch last safe version, but for vulnerability caused by a dependency :
+ - if you want to be very conservative
+ - and the concerned library is uing [semantic versioning](https://semver.org/)
+ 
+then you could try to just update the dependency to a safe compatible version without upgrading Leshan. 
