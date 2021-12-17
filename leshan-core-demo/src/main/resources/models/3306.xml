@@ -73,7 +73,7 @@ POSSIBILITY OF SUCH DAMAGE.
 				<Description>The time in seconds that the device has been on. Writing a value of 0 resets the counter.</Description>
 			</Item>
 			<Item ID="5853">
-				<Name>Muti-state Output</Name>
+				<Name>Multi-state Output</Name>
 				<Operations>RW</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>

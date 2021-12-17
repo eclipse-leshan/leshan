@@ -3,17 +3,16 @@
 <!-- 
 FILE INFORMATION
 OMA Permanent Document
-   File: OMA-SUP-XML_503-V1_0-20200717-A
+   File: OMA-SUP-XML_503-V1_0_1-20210119-A
    Path: https://www.openmobilealliance.org/release/ObjLwM2M_Fire_Alarm
-   Type: xml
-   Date: 2020-Jul-17
+   Date: 2021-Jan-19
 Public Reachable Information
    Path: https://github.com/OpenMobileAlliance/lwm2m-registry
    Name: 503.xml
 NORMATIVE INFORMATION
   Send comments to https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues
 LEGAL DISCLAIMER
-Copyright 2020 Open Mobile Alliance. 
+Copyright 2021 Open Mobile Alliance. 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
 are met:
@@ -48,7 +47,7 @@ https://www.omaspecworks.org/about/intellectual-property-rights/
   	    <Description1><![CDATA[This is an alarm that should be raised if the sensor(s) detect fire, based on the values reported from Temperature, Humidity, Smoke (CO2).]]></Description1>
         <ObjectID>503</ObjectID>
         <ObjectURN>urn:oma:lwm2m:oma:503</ObjectURN>
-        <LWM2MVersion></LWM2MVersion>
+        <LWM2MVersion>1.0</LWM2MVersion>
         <ObjectVersion>1.0</ObjectVersion>
         <MultipleInstances>Multiple</MultipleInstances>
         <Mandatory>Optional</Mandatory>

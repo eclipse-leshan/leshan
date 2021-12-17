@@ -52,7 +52,7 @@ https://ioterop.com/
                 <Type>Corelnk</Type>
                 <RangeEnumeration></RangeEnumeration>
                 <Units></Units>
-                <Description><![CDATA[The source of the data to publish (e.g. "</sensors/temp>", or "</3303/0/5700>;</3336/0>"). If this Resource is empty, the published data are implementation dependent.]]></Description>
+                <Description><![CDATA[The source of the data to publish (e.g. </sensors/temp>, or </3303/0/5700>; </3336/0>). If this Resource is empty, the published data are implementation dependent.]]></Description>
             </Item>
             <Item ID="1">
                 <Name>Broker</Name>

@@ -35,8 +35,8 @@ POSSIBILITY OF SUCH DAMAGE.
 		<Description1><![CDATA[This LWM2M Object provides a range of host device related information which can be queried by the LWM2M Server. The host device is any integrated device with an embedded cellular radio module.]]></Description1>
 		<ObjectID>10241</ObjectID>
 		<ObjectURN>urn:oma:lwm2m:x:10241</ObjectURN>
-		<LWM2MVersion />
-		<ObjectVersion />
+		<LWM2MVersion>1.0</LWM2MVersion>
+		<ObjectVersion>1.0</ObjectVersion>
 		<MultipleInstances>Multiple</MultipleInstances>
 		<Mandatory>Optional</Mandatory>
 		<Resources>

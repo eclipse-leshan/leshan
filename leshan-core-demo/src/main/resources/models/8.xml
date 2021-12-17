@@ -4,12 +4,12 @@
 FILE INFORMATION
 
 OMA Permanent Document
-   File: OMA-SUP-XML_LWM2M_LOCKWIPE-V1_0_2-20200616-A
-   Type: xml
+   File: OMA-SUP-XML_8-V1_0_3-20210119-A.xml
+   Path: http://www.openmobilealliance.org/release/LWM2M_LOCKWIPE/
 
-Public Reachable Information
-   Path: http://www.openmobilealliance.org/tech/profiles
-   Name: LWM2M_LOCKWIPE-v1_0_2.xml
+OMNA LwM2M Registry
+   Path: https://github.com/OpenMobileAlliance/lwm2m-registry
+   Name: 8.xml
 
 NORMATIVE INFORMATION
 
@@ -21,15 +21,10 @@ NORMATIVE INFORMATION
 
   Send comments to https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues
 
-CHANGE HISTORY
-
-15062018 Status changed to Approved by DM, Doc Ref # OMA-DM&SE-2018-0059-INP_LWM2M_LOCKWIPE_V1_0_RRP_for_final_Approval
-03102018 Status changed to Approved by DM, Doc Ref # OMA-DM&SE-2018-0105-INP_LWM2M_LOCKWIPE_1_0_1_RRP_for_Approval_notification 
-16062020 Status changed to Approved by DMSE, Doc Ref # OMA-DM&SE-2020-0016-INP_LwM2M_LOCKWIPE_V1_0_2_RRP_for_Final_Approval
 
 LEGAL DISCLAIMER
 
-  Copyright 2020 Open Mobile Alliance.
+  Copyright 2021 Open Mobile Alliance.
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -68,6 +63,8 @@ LEGAL DISCLAIMER
 		<Description1><![CDATA[This LWM2M objects provides the resources needed to perform the lock and wipe operations.]]></Description1>
 		<ObjectID>8</ObjectID>
 		<ObjectURN>urn:oma:lwm2m:oma:8</ObjectURN>
+		<LWM2MVersion>1.0</LWM2MVersion>
+		<ObjectVersion>1.0</ObjectVersion>
 		<MultipleInstances>Single</MultipleInstances>
 		<Mandatory>Optional</Mandatory>
 		<Resources>
@@ -112,7 +109,6 @@ To render the device fully inoperable the device has been fully locked.]]></Desc
 				<Units></Units>
 				<Description><![CDATA[To permanently erase data from the device.]]></Description>
 			</Item>
-			
 			<Item ID="4"><Name>Wipe target</Name>
 				<Operations>W</Operations>
 				<MultipleInstances>Multiple</MultipleInstances>
@@ -136,7 +132,8 @@ To render the device fully inoperable the device has been fully locked.]]></Desc
 4: Wipe operation successful
 5: Partially Lock operation failed
 6: Fully Lock operation failed
-7: Unlock operation failed 8: Wipe operation failed
+7: Unlock operation failed 
+8: Wipe operation failed
 This Resource MAY be reported by sending Observe operation.]]></Description>
 			</Item></Resources>
 		<Description2 />

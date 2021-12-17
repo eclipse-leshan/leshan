@@ -1,21 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
 FILE INFORMATION
 
 OMA Permanent Document
-   File: OMA-SUP-XML_14-V1_0_2-20210119-A.xml
-   Path: http://www.openmobilealliance.org/release/LWM2M_SWMGMT
+   File: OMA-SUP-XML_25-V2_0-20210518-A.xml
+   Path: http://www.openmobilealliance.org/release/LwM2M_Gateway/
 
 OMNA LwM2M Registry
    Path: https://github.com/OpenMobileAlliance/lwm2m-registry
-   Name: 14.xml
+   Name: 25.xml
 
 NORMATIVE INFORMATION
 
   Information about this file can be found in the latest revision of
 
-    OMA-TS-LightweightM2M-V1_0
+    OMA-TS-LightweightM2M_Gateway-V1_1
 
   This is available at http://www.openmobilealliance.org/release/LightweightM2M/
 
@@ -57,83 +56,49 @@ LEGAL DISCLAIMER
 
 -->
 
-<LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
+<LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.openmobilealliance.org/tech/profiles/LWM2M-v1_1.xsd">
 	<Object ObjectType="MODefinition">
-		<Name>LWM2M Software Component</Name>
-		<Description1><![CDATA[If some Objects are not supported after software update, the LwM2M Client MUST delete all the Object Instances of the Objects that are not supported.]]></Description1>
-		<ObjectID>14</ObjectID>
-		<ObjectURN>urn:oma:lwm2m:oma:14</ObjectURN>
-		<LWM2MVersion>1.0</LWM2MVersion>
-		<ObjectVersion>1.0</ObjectVersion>
+		<Name>LwM2M Gateway</Name>
+		<Description1><![CDATA[This object is used by a LwM2M Gateway to maintain the IoT Devices connected to the LwM2M Gateway.]]></Description1>
+		<ObjectID>25</ObjectID>
+		<ObjectURN>urn:oma:lwm2m:oma:25:2.0</ObjectURN>
+		<LWM2MVersion>1.1</LWM2MVersion>
+		<ObjectVersion>2.0</ObjectVersion>
 		<MultipleInstances>Multiple</MultipleInstances>
 		<Mandatory>Optional</Mandatory>
 		<Resources>
 			<Item ID="0">
-				<Name>Component Identity</Name>
+				<Name>Device ID</Name>
 				<Operations>R</Operations>
 				<MultipleInstances>Single</MultipleInstances>
-				<Mandatory>Optional</Mandatory>
+				<Mandatory>Mandatory</Mandatory>
 				<Type>String</Type>
-				<RangeEnumeration>0..255 bytes</RangeEnumeration>
+				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[Name or identifier of the software component]]></Description>
+				<Description><![CDATA[This resource identifies the IoT Device connected to the LwM2M Gateway.]]></Description>
 			</Item>
 			<Item ID="1">
-				<Name>Component Pack</Name>
+				<Name>Prefix</Name>
 				<Operations>R</Operations>
 				<MultipleInstances>Single</MultipleInstances>
-				<Mandatory>Optional</Mandatory>
-				<Type>Opaque</Type>
+				<Mandatory>Mandatory</Mandatory>
+				<Type>String</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[Software components is stored in this resource]]></Description>
-			</Item>
-			<Item ID="2">
-				<Name>Component Version</Name>
-				<Operations>R</Operations>
-				<MultipleInstances>Single</MultipleInstances>
-				<Mandatory>Optional</Mandatory>
-				<Type>String</Type>
-				<RangeEnumeration>0..255 bytes</RangeEnumeration>
-				<Units></Units>
-				<Description><![CDATA[Version of the software component.]]></Description>
+				<Description><![CDATA[This resource defines what prefix MUST be used for access to LwM2M Objects of this IoT Device.]]></Description>
 			</Item>
 			<Item ID="3">
-				<Name>Activate</Name>
-				<Operations>E</Operations>
-				<MultipleInstances>Single</MultipleInstances>
-				<Mandatory>Optional</Mandatory>
-				<Type></Type>
-				<RangeEnumeration></RangeEnumeration>
-				<Units></Units>
-				<Description><![CDATA[This action activates the software previously successfully installed (the SW Update Package Installation State Machine is currently in the INSTALLED state).]]></Description>
-			</Item>
-			<Item ID="4">
-				<Name>Deactivate</Name>
-				<Operations>E</Operations>
-				<MultipleInstances>Single</MultipleInstances>
-				<Mandatory>Optional</Mandatory>
-				<Type></Type>
-				<RangeEnumeration></RangeEnumeration>
-				<Units></Units>
-				<Description><![CDATA[This action deactivates software if the SW Update Package Installation State Machine is currently in the INSTALLED state.]]></Description>
-			</Item>
-			<Item ID="5">
-				<Name>Activation State</Name>
+				<Name>IoT Device Objects</Name>
 				<Operations>R</Operations>
 				<MultipleInstances>Single</MultipleInstances>
-				<Mandatory>Optional</Mandatory>
-				<Type>Boolean</Type>
+				<Mandatory>Mandatory</Mandatory>
+				<Type>Corelnk</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[Indicates the current activation state of this software component:
-0: DISABLED
-Activation State is DISABLED if the Software Component Activation State Machine is in the INACTIVE state or not alive.
-1: ENABLED
-Activation State is ENABLED only if the Software Component Activation State Machine is in the ACTIVE state.
-]]>				</Description>
+				<Description><![CDATA[This resource contains the Objects and Object Instances exposed by the LwM2M Gateway on behalf of the IoT Device. It uses the same CoreLnk format as Registration Interface.]]></Description>
 			</Item>
+			
 		</Resources>
-		<Description2><![CDATA[]]></Description2>
+		<Description2 />
 	</Object>
 </LWM2M>

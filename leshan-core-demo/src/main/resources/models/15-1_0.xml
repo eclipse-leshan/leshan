@@ -4,24 +4,27 @@
 FILE INFORMATION
 
 OMA Permanent Document
-  File: OMA-SUP-XML_15-V2_0-20201208-A.xml
-  Path: http://www.openmobilealliance.org/release/LWM2M_DevCapMgmt
+   File: OMA-SUP-XML_LWM2M_DevCapMgmt-V1_0_1-20200616-A
+   Type: xml
 
-OMNA LwM2M Registry
-  Name: 15.xml   
-  Path: https://github.com/OpenMobileAlliance/lwm2m-registry
-   
+Public Reachable Information
+   Path: http://www.openmobilealliance.org/tech/profiles
+   Name: LWM2M_DevCapMgmt-v1_0_1.xml
 
 NORMATIVE INFORMATION
 
   Information about this file can be found in the latest revision of
 
-    OMA-TS-LWM2M_DevCapMgmt-V1_0_4
+    OMA-TS-LWM2M_DevCapMgmt-V1_0_3
 
-  This is available at http://www.openmobilealliance.org/release/LWM2M_DevCapMgmt
+  This is available at http://www.openmobilealliance.org/release/
 
   Send comments to https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues
 
+CHANGE HISTORY
+
+08032017 Status changed to Approved by TP, TP Ref # OMA-TP-2017-0021R01-INP_LWM2M_DevCapMgmt_1.0.2_for_Final_Approval_Notification
+16062020 Status changed to Approved by DMSE, Doc Ref # OMA-DM&SE-2020-0018-INP_LWM2M_DevCapMgmt_V1_0_3_RRP_for_Final_Approval
 
 LEGAL DISCLAIMER
 
@@ -64,9 +67,7 @@ LEGAL DISCLAIMER
 		<Name>DevCapMgmt</Name>
 		<Description1><![CDATA[This LWM2M Object is dedicated to manage the device capabilities of a device e.g. sensors, communication, etc.]]></Description1>
 		<ObjectID>15</ObjectID>
-		<ObjectURN>urn:oma:lwm2m:oma:15:2.0</ObjectURN>
-		<LWM2MVersion>1.0</LWM2MVersion>
-		<ObjectVersion>2.0</ObjectVersion>
+		<ObjectURN>urn:oma:lwm2m:oma:15</ObjectURN>
 		<MultipleInstances>Multiple</MultipleInstances>
 		<Mandatory>Optional</Mandatory>
 		<Resources>
@@ -152,7 +153,7 @@ In Enabled State, the Device Capability is allowed to work when it is attached t
 			</Item>
 			<Item ID="6"><Name>opDisable</Name>
 				<Operations>E</Operations>
-				<MultipleInstances>Single</MultipleInstances>
+				<MultipleInstances>Multiple</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
 				<Type></Type>
 				<RangeEnumeration></RangeEnumeration>

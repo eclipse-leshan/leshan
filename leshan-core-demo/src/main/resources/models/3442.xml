@@ -28,13 +28,13 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 -->
 <LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
+    xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M-v1_1.xsd">
     <Object ObjectType="MODefinition">
-        <Name>LwM2M v1.0 Test Object</Name>
-        <Description1><![CDATA[This object is for use in interoperability tests of the LwM2M v1.0 technical specification. It contains resources for each available datatype.]]></Description1>
-        <ObjectID>3441</ObjectID>
-        <ObjectURN>urn:oma:lwm2m:ext:3441</ObjectURN>
-        <LWM2MVersion>1.0</LWM2MVersion>
+        <Name>LwM2M v1.1 Test Object</Name>
+        <Description1><![CDATA[This object aims to make easier to do interoperability tests about LWM2M v1.1. It contains resources for each available datatype.]]></Description1>
+        <ObjectID>3442</ObjectID>
+        <ObjectURN>urn:oma:lwm2m:ext:3442</ObjectURN>
+        <LWM2MVersion>1.1</LWM2MVersion>
         <ObjectVersion>1.0</ObjectVersion>
         <MultipleInstances>Multiple</MultipleInstances>
         <Mandatory>Optional</Mandatory>
@@ -109,7 +109,35 @@ E.g. If you send an Exec /3441/0/3 with "3='stringValue',4" as arguments value,
                 <Type>String</Type>
                 <RangeEnumeration />
                 <Units />
-                <Description>List of Arguments from last execute on "Exec With Arguments"(3) resource. This resource is not affected by the "Randomize values"(1) executable resource.
+                <Description>List of Arguments from last execute on "Exec With Arguments"(3) resource. This resource is not affected by "Randomize values"(1) executable resource.
+                </Description>
+            </Item>
+            <Item ID="5">
+                <Name>Send Data</Name>
+                <Operations>E</Operations>
+                <MultipleInstances>Single</MultipleInstances>
+                <Mandatory>Optional</Mandatory>
+                <Type></Type>
+                <RangeEnumeration />
+                <Units />
+                <Description>
+<![CDATA[This resources can be used to test "Send Operation".
+When LWM2M client received the Execute Request, it must send data for each resources listed in "Resources to Send"(6) resource.
+By default LWM2M client chooses the Content format and Timeout to use for this Send Request, but Arguments can optionally be used to change it.
+Argument 0 must contain the Content Format code. e.g. 0='110' for SENML_JSON.
+Argument 1 must contain the request timeout in ms. e.g. 1='2000' for 2s timeout.
+]]>
+               </Description>
+            </Item>
+            <Item ID="6">
+                <Name>Resources to Send</Name>
+                <Operations>RW</Operations>
+                <MultipleInstances>Multiple</MultipleInstances>
+                <Mandatory>Optional</Mandatory>
+                <Type>String</Type>
+                <RangeEnumeration />
+                <Units />
+                <Description>List of path to LWM2M node (Object / Object Instance / Resource / Resource Instance) used by "Send Data "(5) resource. This resource is not affected by "Randomize values"(1) executable resource.
                 </Description>
             </Item>
             <Item ID="110">
@@ -132,6 +160,17 @@ E.g. If you send an Exec /3441/0/3 with "3='stringValue',4" as arguments value,
                 <RangeEnumeration />
                 <Units />
                 <Description>Initial value must be "1024".
+                </Description>
+            </Item>
+            <Item ID="125">
+                <Name>Unsigned Integer Value</Name>
+                <Operations>RW</Operations>
+                <MultipleInstances>Single</MultipleInstances>
+                <Mandatory>Optional</Mandatory>
+                <Type>Unsigned Integer</Type>
+                <RangeEnumeration />
+                <Units />
+                <Description>Initial value must be 2^63 (9223372036854775808).
                 </Description>
             </Item>
             <Item ID="130">
@@ -186,6 +225,16 @@ E.g. If you send an Exec /3441/0/3 with "3='stringValue',4" as arguments value,
                 <Units />
                 <Description>Initial value must be a link to instance 0 of Device Object 3 (3:0).</Description>
             </Item>
+            <Item ID="180">
+                <Name>CoreLnk Value</Name>
+                <Operations>RW</Operations>
+                <MultipleInstances>Single</MultipleInstances>
+                <Mandatory>Optional</Mandatory>
+                <Type>Corelnk</Type>
+                <RangeEnumeration />
+                <Units />
+                <Description><![CDATA[Initial value must be a the "</3442>".]]></Description>
+            </Item>
             <Item ID="1110">
                 <Name>Multiple String Value</Name>
                 <Operations>RW</Operations>
@@ -205,6 +254,17 @@ E.g. If you send an Exec /3441/0/3 with "3='stringValue',4" as arguments value,
                 <RangeEnumeration />
                 <Units />
                 <Description>Initial value must be 1 instance with ID 0 and value "1024".</Description>
+            </Item>
+            <Item ID="1125">
+                <Name>Multiple Unsigned Integer Value</Name>
+                <Operations>RW</Operations>
+                <MultipleInstances>Multiple</MultipleInstances>
+                <Mandatory>Optional</Mandatory>
+                <Type>Unsigned Integer</Type>
+                <RangeEnumeration />
+                <Units />
+                <Description>Initial value must be 1 instance with ID 0 and value 2^63 (9223372036854775808).
+                </Description>
             </Item>
             <Item ID="1130">
                 <Name>Multiple Float Value</Name>
@@ -255,6 +315,16 @@ E.g. If you send an Exec /3441/0/3 with "3='stringValue',4" as arguments value,
                 <RangeEnumeration />
                 <Units />
                 <Description>Initial value must be 1 instance with ID 0 and value "3:0".</Description>
+            </Item>
+             <Item ID="1180">
+                <Name>Multiple CoreLnk Value</Name>
+                <Operations>RW</Operations>
+                <MultipleInstances>Multiple</MultipleInstances>
+                <Mandatory>Optional</Mandatory>
+                <Type>Corelnk</Type>
+                <RangeEnumeration />
+                <Units />
+                <Description><![CDATA[Initial value must be 1 instance with ID 0 and value "</3442>".]]></Description>
             </Item>
         </Resources>
         <Description2></Description2>

@@ -4,31 +4,26 @@
 FILE INFORMATION
 
 OMA Permanent Document
-   File: OMA-SUP-XML_LWM2M_Software_Management-V1_0_1-20200616-A
-   Type: xml
+   File: OMA-SUP-XML_9-V1_0_2-20210119-A.xml
+   Path: http://www.openmobilealliance.org/release/LWM2M_SWMGMT
 
-Public Reachable Information
-   Path: http://www.openmobilealliance.org/tech/profiles
-   Name: LWM2M_Software_Management-v1_0_1.xml
+OMNA LwM2M Registry
+   Path: https://github.com/OpenMobileAlliance/lwm2m-registry
+   Name: 9.xml
 
 NORMATIVE INFORMATION
 
   Information about this file can be found in the latest revision of
 
-    OMA-TS-LightweightM2M-V1_0_1
+    OMA-TS-LightweightM2M-V1_0
 
-  This is available at http://www.openmobilealliance.org/release/
+  This is available at http://www.openmobilealliance.org/release/LightweightM2M/
 
   Send comments to https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues
 
-CHANGE HISTORY
-
-01032018 Status changed to Approved by BoD, Doc Ref # OMA-DM-2018-0014-INP_LwM2M_Object_Software_Management_V1_0_RRP_Final_Approval
-16062020 Status changed to Approved by DMSE, Ref # OMA-DM&SE-2020-0022-INP_LWM2M_SWMGMT_V1_0_1_RRP_for_Final_Approval
-
 LEGAL DISCLAIMER
 
-  Copyright 2020 Open Mobile Alliance.
+  Copyright 2021 Open Mobile Alliance.
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -59,6 +54,7 @@ LEGAL DISCLAIMER
   The above license is used as a license under copyright only.  Please
   reference the OMA IPR Policy for patent licensing terms:
   https://www.omaspecworks.org/about/intellectual-property-rights/
+
 -->
 
 <LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
@@ -67,12 +63,14 @@ LEGAL DISCLAIMER
 		<Description1><![CDATA[This LwM2M objects provides the resources needed to perform software management on the device. Each software component is managed via a dedicated Software Management Object instance.]]></Description1>
 		<ObjectID>9</ObjectID>
 		<ObjectURN>urn:oma:lwm2m:oma:9</ObjectURN>
+		<LWM2MVersion>1.0</LWM2MVersion>
+		<ObjectVersion>1.0</ObjectVersion>
 		<MultipleInstances>Multiple</MultipleInstances>
 		<Mandatory>Optional</Mandatory>
 		<Resources>
 			<Item ID="0">
 				<Name>PkgName</Name>
-        <Operations>R</Operations>
+				<Operations>R</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
 				<Type>String</Type>
@@ -82,7 +80,7 @@ LEGAL DISCLAIMER
 			</Item>
 			<Item ID="1">
 				<Name>PkgVersion</Name>
-        <Operations>R</Operations>
+				<Operations>R</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
 				<Type>String</Type>
@@ -92,7 +90,7 @@ LEGAL DISCLAIMER
 			</Item>
 			<Item ID="2">
 				<Name>Package</Name>
-        <Operations>W</Operations>
+				<Operations>W</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>Opaque</Type>
@@ -101,11 +99,11 @@ LEGAL DISCLAIMER
 				<Description><![CDATA[Software package
 The package can be in one single software component, or any delivery material used by the Device to determine the software component(s) and proceed to their installation.
 Can be archive file, executable, manifest. This resource to be used when it is single block of delivery.
-]]></Description>
+]]>				</Description>
 			</Item>
 			<Item ID="3">
 				<Name>Package URI</Name>
-        <Operations>W</Operations>
+				<Operations>W</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>String</Type>
@@ -113,10 +111,11 @@ Can be archive file, executable, manifest. This resource to be used when it is s
 				<Units></Units>
 				<Description><![CDATA[URI from where the device can download the software package by an alternative mechanism. As soon the device has received the Package URI it performs the download at the next practical opportunity.
 Can be direct link to a single software component or link to archive file, executable, or manifest, used by the Device to determine, then access to the software component(s). This resource to be used when it is single block of delivery.
-]]></Description>
+]]>				</Description>
 			</Item>
-		
-			<Item ID="4"><Name>Install</Name>
+
+			<Item ID="4">
+				<Name>Install</Name>
 				<Operations>E</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
@@ -125,16 +124,18 @@ Can be direct link to a single software component or link to archive file, execu
 				<Units></Units>
 				<Description><![CDATA[Installs software from the package either stored in Package resource, or, downloaded from the Package URI. This Resource is only executable when the value of the State Resource is DELIVERED.]]></Description>
 			</Item>
-			<Item ID="5"><Name>Checkpoint</Name>
+			<Item ID="5">
+				<Name>Checkpoint</Name>
 				<Operations>R</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
 				<Type>Objlnk</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
-				<Description><![CDATA[Link to a Checkpoint" object which allows to specify conditions/dependencies for a software update. E.g. power connected, sufficient memory, target system.]]></Description>
+				<Description><![CDATA[Link to a "Checkpoint" object which allows to specify conditions/dependencies for a software update. E.g. power connected, sufficient memory, target system.]]></Description>
 			</Item>
-			<Item ID="6"><Name>Uninstall</Name>
+			<Item ID="6">
+				<Name>Uninstall</Name>
 				<Operations>E</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
@@ -144,9 +145,10 @@ Can be direct link to a single software component or link to archive file, execu
 				<Description><![CDATA[Uninstalls the software package.
 This executable resource may have one argument.
 If used with no argument or argument is 0, the Package is removed i from the Device. If the argument is 1 ("ForUpdate"), the Client MUST prepare itself for receiving a Package used to upgrade the Software already in place. Update State is set back to INITIAL state.
-]]></Description>
+]]>				</Description>
 			</Item>
-			<Item ID="7"><Name>Update State</Name>
+			<Item ID="7">
+				<Name>Update State</Name>
 				<Operations>R</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
@@ -172,9 +174,10 @@ After executing the UnInstall Resource, the state changes to INITIAL.
 4: INSTALLED
 In that state the software is correctly installed and can be activated or deactivated according to the Activation State Machine.
 (see 5.1.2.5)
-]]></Description>
+]]>				</Description>
 			</Item>
-			<Item ID="8"><Name>Update Supported Objects</Name>
+			<Item ID="8">
+				<Name>Update Supported Objects</Name>
 				<Operations>RW</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
@@ -184,9 +187,10 @@ In that state the software is correctly installed and can be activated or deacti
 				<Description><![CDATA[If this value is true, the LwM2M Client MUST inform the registered LwM2M Servers of Objects and Object Instances parameter by sending an Update or Registration message after the software update operation at the next practical opportunity if supported Objects in the LwM2M Client have changed, in order for the LwM2M Servers to promptly manage newly installed Objects. 
 If false, Objects and Object Instances parameter MUST be reported at the next periodic Update message.
 The default value is false.
-]]></Description>
+]]>				</Description>
 			</Item>
-			<Item ID="9"><Name>Update Result</Name>
+			<Item ID="9">
+				<Name>Update Result</Name>
 				<Operations>R</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
@@ -210,9 +214,10 @@ The default value is false.
 59: Uninstallation Failure during forUpdate(arg=0)
 60-200 : (for expansion, selection to be in blocks depending on new introduction of features)
 This Resource MAY be reported by sending Observe operation.
-]]></Description>
+]]>				</Description>
 			</Item>
-			<Item ID="10"><Name>Activate</Name>
+			<Item ID="10">
+				<Name>Activate</Name>
 				<Operations>E</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
@@ -221,7 +226,8 @@ This Resource MAY be reported by sending Observe operation.
 				<Units></Units>
 				<Description><![CDATA[This action activates the software previously successfully installed (the Package Installation State Machine is currently in the INSTALLED state)]]></Description>
 			</Item>
-			<Item ID="11"><Name>Deactivate</Name>
+			<Item ID="11">
+				<Name>Deactivate</Name>
 				<Operations>E</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
@@ -230,7 +236,8 @@ This Resource MAY be reported by sending Observe operation.
 				<Units></Units>
 				<Description><![CDATA[This action deactivates softwareif the Package Installation State Machine is currently in the INSTALLED state.]]></Description>
 			</Item>
-			<Item ID="12"><Name>Activation State</Name>
+			<Item ID="12">
+				<Name>Activation State</Name>
 				<Operations>R</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
@@ -242,9 +249,10 @@ This Resource MAY be reported by sending Observe operation.
 Activation State is DISABLED if the Software Activation State Machine is in the INACTIVE state or not alive.
 1: ENABLED
 Activation State is ENABLED only if the Software Activation State Machine is in the ACTIVE state
-]]></Description>
+]]>				</Description>
 			</Item>
-			<Item ID="13"><Name>Package Settings</Name>
+			<Item ID="13">
+				<Name>Package Settings</Name>
 				<Operations>RW</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
@@ -253,9 +261,10 @@ Activation State is ENABLED only if the Software Activation State Machine is in 
 				<Units></Units>
 				<Description><![CDATA[Link to "Package Settings" object which allows to modify at any time software configuration settings. This is an application specific object. 
 Note: OMA might provide a template for a Package Settings object in a future release of this specification.
-]]></Description>
+]]>				</Description>
 			</Item>
-			<Item ID="14"><Name>User Name</Name>
+			<Item ID="14">
+				<Name>User Name</Name>
 				<Operations>W</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
@@ -264,9 +273,10 @@ Note: OMA might provide a template for a Package Settings object in a future rel
 				<Units></Units>
 				<Description><![CDATA[User Name for access to SW Update Package in pull mode.
 Key based mechanism can alternatively use for talking to the component server instead of user name and password combination.
-]]></Description>
+]]>				</Description>
 			</Item>
-			<Item ID="15"><Name>Password</Name>
+			<Item ID="15">
+				<Name>Password</Name>
 				<Operations>W</Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
@@ -274,8 +284,38 @@ Key based mechanism can alternatively use for talking to the component server in
 				<RangeEnumeration>0..255 bytes</RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[Password for access to SW Update Package in pull mode.]]></Description>
-			</Item></Resources>
+			</Item>
+			<Item ID="16">
+				<Name>Status Reason</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>String</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[Contains the status of the actions done by the client on the SW Component(s) referred by the present SW Update Package. The status is defined in Appendix B.]]></Description>
+			</Item>
+			<Item ID="17">
+				<Name>Software Component Link</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Multiple</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Objlnk</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[Reference to SW Components downloaded and installed in scope of the present SW Update Package Note: When resource 17 objlink exist, resources 2, 3 and 12 in this table are ignored.]]></Description>
+			</Item>
+			<Item ID="18">
+				<Name>Software Component tree length</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Integer</Type>
+				<RangeEnumeration>0..255</RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[Software Component tree length indicates the number of instances existing for this software package in the Software Component Object.]]></Description>
+			</Item>
+		</Resources>
 		<Description2><![CDATA[]]></Description2>
 	</Object>
 </LWM2M>
-
