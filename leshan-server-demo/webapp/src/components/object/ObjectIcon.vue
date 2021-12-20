@@ -39,6 +39,8 @@ export default {
           return "mdi-map-marker";
         case 7: // connectivity statistics
           return "mdi-signal-distance-variant";
+        case 10: //  LWM2M Cellular Connectivity
+          return "mdi-signal";
         case 11: // LWM2M APN Connection Profile
           return "mdi-sim";
         case 14: // LWM2M Software Component
@@ -49,14 +51,20 @@ export default {
           return "mdi-folder-multiple-outline";
         case 19: // BinaryAppDataContainer
           return "mdi-database-sync-outline";
+        case 3300: // General Sensor
+          return "mdi-gauge";
         case 3303: // Temperature
           return "mdi-thermometer";
+        case 3304: // Humidity
+          return "mdi-water-percent";
         case 3311: // Light Control
           return "mdi-lightbulb-on-outline";
         case 3313: // Accelerometer
           return "mdi-axis-arrow";
         case 3338: // Buzzer
           return "mdi-bell-ring";
+        case 3341: // Addressable Text Display
+          return "mdi-text-recognition";
         case 3342: // On/Off Switch
           return "mdi-toggle-switch";
         case 3347: // Push Button
@@ -69,6 +77,8 @@ export default {
           return "mdi-text-box-outline";
         case 10260: // RDB (Runtime Database)
           return "mdi-database";
+        case 10351: // Door
+          return "mdi-door";
         default:
           return this.unknowObjectIcon;
       }
