@@ -223,7 +223,7 @@ public class DDFFileParser {
                     lwm2mVersion = field.getTextContent();
                     if (schemaVersion != null && !schemaVersion.toString().equals(lwm2mVersion)) {
                         throw new InvalidDDFFileException(
-                                "LWM2MVersion is not consistent with xml shema(xsi:noNamespaceSchemaLocation) in %s : %s  expected but was %s.",
+                                "LWM2MVersion is not consistent with xml schema(xsi:noNamespaceSchemaLocation) in %s : %s  expected but was %s.",
                                 streamName, schemaVersion, lwm2mVersion);
                     }
                 }
