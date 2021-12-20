@@ -28,6 +28,7 @@ import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.BootstrapReadRequest;
@@ -58,7 +59,7 @@ import org.eclipse.leshan.core.response.WriteResponse;
 public class TestObjectsInitializer extends ObjectsInitializer {
 
     public TestObjectsInitializer() {
-        super();
+        super(new StaticModel(TestObjectLoader.loadDefaultObject()));
     }
 
     public TestObjectsInitializer(LwM2mModel model) {

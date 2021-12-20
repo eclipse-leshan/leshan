@@ -47,7 +47,6 @@ import org.eclipse.leshan.core.link.DefaultLinkParser;
 import org.eclipse.leshan.core.link.DefaultLinkSerializer;
 import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.link.LinkSerializer;
-import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Operations;
@@ -112,7 +111,8 @@ public class IntegrationTestHelper {
 
     public List<ObjectModel> createObjectModels() {
         // load default object from the spec
-        List<ObjectModel> objectModels = ObjectLoader.loadDefault();
+        List<ObjectModel> objectModels = TestObjectLoader.loadDefaultObject();
+
         // define custom model for testing purpose
         ResourceModel stringfield = new ResourceModel(STRING_RESOURCE_ID, "stringres", Operations.RW, false, false,
                 Type.STRING, null, null, null);
