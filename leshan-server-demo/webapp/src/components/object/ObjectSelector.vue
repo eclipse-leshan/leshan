@@ -11,30 +11,53 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
   ----------------------------------------------------------------------------->
 <template>
-     <v-list dense>
-        <v-list-item-group>
-          <v-list-item
-            v-for="object in objects"
-            :key="object.id"
-            :to="'/clients/' + $route.params.endpoint + '/' + object.id"
+  <v-list dense>
+    <v-list-item-group>
+      <v-list-item
+        v-for="object in objects"
+        :key="object.id"
+        :to="'/clients/' + $route.params.endpoint + '/' + object.id"
+      >
+        <v-list-item-icon class="me-2">
+          <object-icon :objectId="object.id" />
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title>
+            {{ object.name }}
+            <v-icon
+              v-if="shouldBeHidden(object)"
+              small
+              color="red"
+              :title="`The Object ${object.name} ID:${object.id} MUST NOT be part of Update Objects and Object Instances list in Register Request.`"
+              >mdi-alert-circle</v-icon
+            ></v-list-item-title
           >
-            <v-list-item-icon class="me-2">
-              <object-icon :objectId="object.id"/>
-            </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title v-text="object.name"></v-list-item-title>
-              <v-list-item-subtitle
-                v-text="'/' + object.id"
-              ></v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-        </v-list-item-group>
-      </v-list>
+          <v-list-item-subtitle>
+            {{ "/" + object.id }}
+          </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+    </v-list-item-group>
+  </v-list>
 </template>
 <script>
-import ObjectIcon from './ObjectIcon.vue';
+import ObjectIcon from "./ObjectIcon.vue";
 export default {
   components: { ObjectIcon },
   props: { objects: Array },
+  methods: {
+    shouldBeHidden(object) {
+      if (object) {
+        switch (object.id) {
+          case 0:
+          case 21:
+            return true;
+          default:
+            return false;
+        }
+      }
+      return false;
+    },
+  },
 };
 </script>
