@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.request.SendRequest;
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.server.registration.Registration;
 
 /**
@@ -38,4 +39,5 @@ public interface SendListener {
     void dataReceived(Registration registration, Map<String, LwM2mNode> data, SendRequest request);
 
     // TODO should we add a listener, if called if something wrong happened when we handle SendRequest ?
+    void onError(Registration registration, InvalidRequestException e);
 }
