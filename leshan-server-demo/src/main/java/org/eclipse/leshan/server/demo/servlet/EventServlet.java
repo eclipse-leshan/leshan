@@ -259,6 +259,13 @@ public class EventServlet extends EventSourceServlet {
                 }
             }
         }
+
+        @Override
+        public void onError(Registration registration, Exception error) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(String.format("Unable to handle Send Request from [%s].", registration), error);
+            }
+        }
     };
 
     private String getObservationPaths(final Observation observation) {

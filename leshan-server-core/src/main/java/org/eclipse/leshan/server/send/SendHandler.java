@@ -68,4 +68,10 @@ public class SendHandler implements SendService {
             listener.dataReceived(registration, Collections.unmodifiableMap(nodes), request);
         }
     }
+
+    public void onError(Registration registration, Exception error) {
+        for (SendListener listener : listeners) {
+            listener.onError(registration, error);
+        }
+    }
 }

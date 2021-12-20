@@ -37,5 +37,12 @@ public interface SendListener {
      */
     void dataReceived(Registration registration, Map<String, LwM2mNode> data, SendRequest request);
 
-    // TODO should we add a listener, if called if something wrong happened when we handle SendRequest ?
+    /**
+     * Called when Send Request can't not be handled by server (because of e.g. unsupported content format or invalid
+     * payload or any unexpected error).
+     *
+     * @param registration Registration of the client which send the data.
+     * @param error The cause of the error.
+     */
+    void onError(Registration registration, Exception error);
 }

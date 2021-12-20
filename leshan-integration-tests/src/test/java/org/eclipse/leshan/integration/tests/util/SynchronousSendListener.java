@@ -28,6 +28,10 @@ import org.eclipse.leshan.server.send.SendListener;
 public class SynchronousSendListener implements SendListener {
     private CountDownLatch dataLatch = new CountDownLatch(1);
     private volatile Map<String, LwM2mNode> data;
+
+    private CountDownLatch errorLatch = new CountDownLatch(1);
+    private volatile Exception error;
+
     private volatile Registration registration;
 
     @Override
@@ -35,6 +39,13 @@ public class SynchronousSendListener implements SendListener {
         this.data = data;
         this.registration = registration;
         dataLatch.countDown();
+    }
+
+    @Override
+    public void onError(Registration registration, Exception error) {
+        this.error = error;
+        this.registration = registration;
+        errorLatch.countDown();
     }
 
     public Map<String, LwM2mNode> getData() {
@@ -45,8 +56,17 @@ public class SynchronousSendListener implements SendListener {
         return registration;
     }
 
+    public Exception getError() {
+        return error;
+    }
+
     public void waitForData(int timeout, TimeUnit unit) throws TimeoutException, InterruptedException {
         if (!dataLatch.await(timeout, unit))
             throw new TimeoutException("wait for data timeout");
+    }
+
+    public void waitForError(int timeout, TimeUnit unit) throws TimeoutException, InterruptedException {
+        if (!errorLatch.await(timeout, unit))
+            throw new TimeoutException("wait for error timeout");
     }
 }
