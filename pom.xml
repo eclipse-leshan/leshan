@@ -545,12 +545,11 @@ Contributors:
                             <elements>
                                 <exclude>
                                     <item>
-                                        <!-- Californium is exclude from API check as it does not 
-                                             have clear definition of its API and do not really respect Semantic versioning:
-                                             https://github.com/eclipse/californium/issues/1159 
-                                             https://github.com/eclipse/californium/issues/1166 -->
+                                        <!-- Californium is exclude from API check as it does 
+                                            not have clear definition of its API and do not really respect Semantic versioning: 
+                                            https://github.com/eclipse/californium/issues/1159 https://github.com/eclipse/californium/issues/1166 -->
                                         <matcher>java-package</matcher>
-                                        <match>org\.eclipse\.californium\..*</match>
+                                        <match>/org\.eclipse\.californium(\..*)?/</match>
                                     </item>
                                 </exclude>
                             </elements>
