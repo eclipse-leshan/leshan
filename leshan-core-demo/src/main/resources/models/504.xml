@@ -37,7 +37,7 @@ reference the OMA IPR Policy for patent licensing terms:
 https://www.omaspecworks.org/about/intellectual-property-rights/
 -->
 
-<LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M-v1_1.xsd">
+<LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openmobilealliance.org/tech/profiles/LWM2M.xsd">
 <Object ObjectType="MODefinition">
 		<Name>Remote SIM Provisioning</Name>
 		<Description1><![CDATA[This is a device management object that should be used for Remote SIM Provisioning according to GSMA standards]]></Description1>
