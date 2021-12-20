@@ -22,6 +22,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.request.SendRequest;
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.send.SendListener;
 
@@ -35,6 +36,11 @@ public class SynchronousSendListener implements SendListener {
         this.data = data;
         this.registration = registration;
         dataLatch.countDown();
+    }
+
+    @Override
+    public void onError(Registration registration, Exception e) {
+
     }
 
     public Map<String, LwM2mNode> getData() {

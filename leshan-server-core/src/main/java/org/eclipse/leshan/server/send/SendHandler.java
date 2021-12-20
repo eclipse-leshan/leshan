@@ -25,6 +25,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.SendRequest;
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.SendResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.server.registration.Registration;
@@ -68,4 +69,11 @@ public class SendHandler implements SendService {
             listener.dataReceived(registration, Collections.unmodifiableMap(nodes), request);
         }
     }
+    public void onError(Registration registration, InvalidRequestException e) {
+        for (SendListener listener : listeners) {
+            listener.onError(registration, new InvalidRequestException(e));
+
+        }
+    }
+
 }
