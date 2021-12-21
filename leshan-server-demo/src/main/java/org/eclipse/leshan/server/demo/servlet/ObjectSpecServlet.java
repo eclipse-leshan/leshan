@@ -16,6 +16,10 @@
 package org.eclipse.leshan.server.demo.servlet;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -24,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.util.json.JsonException;
 import org.eclipse.leshan.server.demo.model.ObjectModelSerDes;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
@@ -72,7 +77,15 @@ public class ObjectSpecServlet extends HttpServlet {
         try {
             LwM2mModel model = modelProvider.getObjectModel(registration);
             resp.setContentType("application/json");
-            resp.getOutputStream().write(serializer.bSerialize(model.getObjectModels()));
+            List<ObjectModel> objectModels = new ArrayList<>(model.getObjectModels());
+            Collections.sort(objectModels, new Comparator<ObjectModel>() {
+                @Override
+                public int compare(ObjectModel o1, ObjectModel o2) {
+                    return Integer.compare(o1.id, o2.id);
+                }
+            });
+
+            resp.getOutputStream().write(serializer.bSerialize(objectModels));
             resp.setStatus(HttpServletResponse.SC_OK);
         } catch (JsonException e) {
             throw new ServletException(e);
