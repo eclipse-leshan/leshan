@@ -28,6 +28,7 @@ class Store {
                                                 },    
              },
       observed : { path(object/instance/resource/resourceinstance) : boolean }
+      compositeObserved : { 'path1,path2,...' : boolean}
       }
     };  
    */
@@ -45,6 +46,7 @@ class Store {
     Vue.set(this.state, endpoint, {
       data: {},
       observed: {},
+      compositeObserved: {},
     });
   }
 
@@ -210,12 +212,7 @@ class Store {
     if (node.kind === "singleResource") {
       this.newResourceValue(endpoint, path, node, supposed);
     } else if (node.kind === "multiResource") {
-      this.newMultiResourceValue(
-        endpoint,
-        path,
-        node['values'],
-        supposed
-      );
+      this.newMultiResourceValue(endpoint, path, node["values"], supposed);
     } else if (node.kind === "resourceInstance") {
       this.newResourceInstanceValueFromPath(
         endpoint,
@@ -278,6 +275,38 @@ class Store {
     } else {
       this.state[endpoint].observed[path] = observed;
     }
+  }
+
+  /**
+   * @param {String} endpoint endpoint of the client
+   * @param {Array} nodes the nodes map {path:node Object}
+   * @param {Boolean} supposed true means the paths are "composite" observed.
+   */
+  setCompositePathsObserved(endpoint, paths, observed) {
+    let key = paths.join(",");
+    let o = this.state[endpoint].compositeObserved[key];
+    if (!o) {
+      Vue.set(this.state[endpoint].compositeObserved, key, observed);
+    } else {
+      this.state[endpoint].compositeObserved[key] = observed;
+    }
+  }
+
+  /**
+   * @param {Object} compositeObject
+   * @returns the key used in state.compositeObserved for the given compositeObject
+   */
+  compositeObjectToKey(compositeObject) {
+    return compositeObject.paths.join(",");
+  }
+
+  /**
+   * @param {String} endpoint endpoint of the client
+   * @param {Object} compositeObject A composite object
+   * @param {Boolean} supposed true means the paths are "composite" observed.
+   */
+  setCompositeObjectObserved(endpoint, compositeObject, observed) {
+    this.setCompositePathsObserved(endpoint, compositeObject.paths, observed);
   }
 }
 

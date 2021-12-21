@@ -42,6 +42,7 @@ import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.request.ExecuteRequest;
+import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -58,6 +59,7 @@ import org.eclipse.leshan.core.response.DeleteResponse;
 import org.eclipse.leshan.core.response.DiscoverResponse;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadCompositeResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -325,6 +327,40 @@ public class ClientServlet extends HttpServlet {
         String[] path = StringUtils.split(req.getPathInfo(), '/');
         String clientEndpoint = path[0];
 
+        // /clients/endPoint/composite/observe : do LightWeight M2M observe request on a given client.
+        if (path.length == 3 && "composite".equals(path[1]) && "observe".equals(path[2])) {
+            try {
+                Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
+                if (registration != null) {
+                    // get paths
+                    String pathParam = req.getParameter(PATH_PARAM);
+                    String[] paths = pathParam.split(",");
+
+                    // get content format
+                    String pathContentFormatParam = req.getParameter(PATH_FORMAT_PARAM);
+                    ContentFormat pathContentFormat = pathContentFormatParam != null
+                            ? ContentFormat.fromName(pathContentFormatParam.toUpperCase())
+                            : null;
+                    String nodeContentFormatParam = req.getParameter(NODE_FORMAT_PARAM);
+                    ContentFormat nodeContentFormat = nodeContentFormatParam != null
+                            ? ContentFormat.fromName(nodeContentFormatParam.toUpperCase())
+                            : null;
+
+                    // create & process request
+                    ObserveCompositeRequest request = new ObserveCompositeRequest(pathContentFormat, nodeContentFormat,
+                            paths);
+                    ObserveCompositeResponse cResponse = server.send(registration, request, extractTimeout(req));
+                    processDeviceResponse(req, resp, cResponse);
+                } else {
+                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    resp.getWriter().format("No registered client with id '%s'", clientEndpoint).flush();
+                }
+            } catch (RuntimeException | InterruptedException e) {
+                handleException(e, resp);
+            }
+            return;
+        }
+
         // /clients/endPoint/LWRequest/observe : do LightWeight M2M observe request on a given client.
         if (path.length >= 3 && "observe".equals(path[path.length - 1])) {
             try {
@@ -417,6 +453,27 @@ public class ClientServlet extends HttpServlet {
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String[] path = StringUtils.split(req.getPathInfo(), '/');
         String clientEndpoint = path[0];
+
+        // /clients/endPoint/composite/observe : do LightWeight M2M observe request on a given client.
+        if (path.length == 3 && "composite".equals(path[1]) && "observe".equals(path[2])) {
+            try {
+                Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
+                if (registration != null) {
+                    // get paths
+                    String pathParam = req.getParameter(PATH_PARAM);
+                    String[] paths = pathParam.split(",");
+
+                    server.getObservationService().cancelCompositeObservations(registration, paths);
+                    resp.setStatus(HttpServletResponse.SC_OK);
+                } else {
+                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
+                }
+            } catch (RuntimeException e) {
+                handleException(e, resp);
+            }
+            return;
+        }
 
         // /clients/endPoint/LWRequest/observe : cancel observation for the given resource.
         if (path.length >= 3 && "observe".equals(path[path.length - 1])) {

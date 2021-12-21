@@ -187,36 +187,45 @@ export default {
         }
       })
       .on("NOTIFICATION", (msg) => {
-        if (msg.val.kind === "instance") {
-          this.$store.newInstanceValue(
+        if (msg.kind == "composite") {
+          this.$store.newNodes(this.$route.params.endpoint, msg.val);
+          this.$store.setCompositePathsObserved(
             this.$route.params.endpoint,
-            msg.res,
-            msg.val.resources,
-            false
+            msg.paths,
+            true
           );
-        } else if (msg.val.kind === "singleResource") {
-          this.$store.newSingleResourceValue(
-            this.$route.params.endpoint,
-            msg.res,
-            msg.val.value,
-            false
-          );
-        } else if (msg.val.kind === "multiResource") {
-          this.$store.newMultiResourceValue(
-            this.$route.params.endpoint,
-            msg.res,
-            msg.val.values,
-            false
-          );
-        } else if (msg.val.kind === "resourceInstance") {
-          this.$store.newResourceInstanceValueFromPath(
-            this.$route.params.endpoint,
-            msg.res,
-            msg.val.value,
-            false
-          );
+        } else if (msg.kind == "single") {
+          if (msg.val.kind === "instance") {
+            this.$store.newInstanceValue(
+              this.$route.params.endpoint,
+              msg.res,
+              msg.val.resources,
+              false
+            );
+          } else if (msg.val.kind === "singleResource") {
+            this.$store.newSingleResourceValue(
+              this.$route.params.endpoint,
+              msg.res,
+              msg.val.value,
+              false
+            );
+          } else if (msg.val.kind === "multiResource") {
+            this.$store.newMultiResourceValue(
+              this.$route.params.endpoint,
+              msg.res,
+              msg.val.values,
+              false
+            );
+          } else if (msg.val.kind === "resourceInstance") {
+            this.$store.newResourceInstanceValueFromPath(
+              this.$route.params.endpoint,
+              msg.res,
+              msg.val.value,
+              false
+            );
+          }
+          this.$store.setObserved(this.$route.params.endpoint, msg.res, true);
         }
-        this.$store.setObserved(this.$route.params.endpoint, msg.res, true);
       })
       .on("error", (err) => {
         console.error("sse unexpected error", err);

@@ -21,6 +21,13 @@
           :endpoint="$route.params.endpoint"
           :compositeObject="compositeObject"
         />
+        <v-icon
+          class="pl-3"
+          small
+          v-show="state.compositeObserved[compositeObservationKey]"
+          :title="compositeObservationKey + ' observed'"
+          >mdi-eye-outline</v-icon
+        >
       </h3>
       <p>
         This Composite object is composed of following resources :
@@ -169,6 +176,9 @@ export default {
     },
     state() {
       return this.$store.state[this.endpoint];
+    },
+    compositeObservationKey(){
+      return this.$store.compositeObjectToKey(this.compositeObject);
     },
     lwm2mNodes() {
       if (!this.objectdefs || this.objectdefs.length == 0) return [];

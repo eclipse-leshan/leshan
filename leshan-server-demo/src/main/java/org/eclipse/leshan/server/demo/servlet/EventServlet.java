@@ -18,8 +18,10 @@
 package org.eclipse.leshan.server.demo.servlet;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -158,49 +160,59 @@ public class EventServlet extends EventSourceServlet {
 
         @Override
         public void onResponse(SingleObservation observation, Registration registration, ObserveResponse response) {
-            String path = getObservationPaths(observation);
-            LwM2mNode content = response.getContent();
-            String stringContent = content.toString();
-            String jsonContent = null;
-            try {
-                jsonContent = mapper.writeValueAsString(content);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-
-            onResponseCommon(registration, path, stringContent, jsonContent);
-        }
-
-        @Override
-        public void onResponse(CompositeObservation observation, Registration registration,
-                ObserveCompositeResponse response) {
-            String path = getObservationPaths(observation);
-
-            Map<LwM2mPath, LwM2mNode> content = response.getContent();
-            String stringContent = content.toString();
-            String jsonContent = null;
-            try {
-                jsonContent = mapper.writeValueAsString(content);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-
-            onResponseCommon(registration, path, stringContent, jsonContent);
-        }
-
-        private void onResponseCommon(Registration registration, String path, String stringContent,
-                String jsonContent) {
 
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Received notification from [{}] containing value [{}]", path, stringContent);
+                LOG.debug("Received notification from [{}] containing value [{}]", observation.getPath(),
+                        response.getContent());
+            }
+            String jsonContent = null;
+            try {
+                jsonContent = mapper.writeValueAsString(response.getContent());
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
             }
 
             if (registration != null) {
                 String data = new StringBuilder("{\"ep\":\"") //
                         .append(registration.getEndpoint()) //
+                        .append("\",\"kind\":\"single\"") //
                         .append("\",\"res\":\"") //
-                        .append(path).append("\",\"val\":") //
+                        .append(observation.getPath()).append("\",\"val\":") //
                         .append(jsonContent) //
+                        .append("}") //
+                        .toString();
+
+                sendEvent(EVENT_NOTIFICATION, data, registration.getEndpoint());
+            }
+        }
+
+        @Override
+        public void onResponse(CompositeObservation observation, Registration registration,
+                ObserveCompositeResponse response) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Received composite notificationfrom [{}] containing value [{}]", response.getContent());
+            }
+            String jsonContent = null;
+            String jsonListOfPath = null;
+            try {
+                jsonContent = mapper.writeValueAsString(response.getContent());
+                List<String> paths = new ArrayList<String>();
+                for (LwM2mPath path : response.getObservation().getPaths()) {
+                    paths.add(path.toString());
+                }
+                jsonListOfPath = mapper.writeValueAsString(paths);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+
+            if (registration != null) {
+                String data = new StringBuilder("{\"ep\":\"") //
+                        .append(registration.getEndpoint()) //
+                        .append("\",\"kind\":\"composite\"") //
+                        .append(",\"val\":") //
+                        .append(jsonContent) //
+                        .append(",\"paths\":") //
+                        .append(jsonListOfPath) //
                         .append("}") //
                         .toString();
 

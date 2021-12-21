@@ -13,6 +13,12 @@
 <template>
   <span>
     <request-button @on-click="read" title="Composite Read">R</request-button>
+    <request-button @on-click="observe" title="Composite Observe"
+      >Obs</request-button
+    >
+    <request-button @on-click="stopObserve" title="Passive Cancel Obverse">
+      <v-icon dense small>mdi-eye-remove-outline</v-icon></request-button
+    >
     <composite-operation-setting-menu>
       <template v-slot:activator="{ on, attrs }">
         <v-btn
@@ -94,6 +100,40 @@ export default {
           if (response.data.success) {
             this.$store.newNodes(this.endpoint, response.data.content);
           }
+        })
+        .catch(() => {
+          requestButton.resetState();
+        });
+    },
+    observe(requestButton) {
+      this.axios
+        .post(
+          `${this.requestPath()}/observe${this.requestOption()}&paths=${this.compositeObject.paths.join(
+            ","
+          )}`
+        )
+        .then((response) => {
+          this.updateState(response.data, requestButton);
+          if (response.data.success) {
+            this.$store.newNodes(this.endpoint, response.data.content);
+            this.$store.setCompositeObjectObserved(this.endpoint, this.compositeObject, true);
+          }
+        })
+        .catch(() => {
+          requestButton.resetState();
+        });
+    },
+    stopObserve(requestButton) {
+      this.axios  
+        .delete(
+          `${this.requestPath()}/observe?paths=${this.compositeObject.paths.join(
+            ","
+          )}`
+        )
+        .then(() => {
+          requestButton.changeState("success");
+          this.$store.setObserved(this.endpoint, this.path, false);
+          this.$store.setCompositeObjectObserved(this.endpoint, this.compositeObject, false);
         })
         .catch(() => {
           requestButton.resetState();
