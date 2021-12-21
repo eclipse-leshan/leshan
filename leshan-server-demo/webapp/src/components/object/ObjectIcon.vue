@@ -39,6 +39,8 @@ export default {
           return "mdi-map-marker";
         case 7: // connectivity statistics
           return "mdi-signal-distance-variant";
+        case 9: // LWM2M Software Management
+          return "mdi-package-down";
         case 10: //  LWM2M Cellular Connectivity
           return "mdi-signal";
         case 11: // LWM2M APN Connection Profile
@@ -61,6 +63,10 @@ export default {
           return "mdi-lightbulb-on-outline";
         case 3313: // Accelerometer
           return "mdi-axis-arrow";
+        case 3323: // Pressure
+          return "mdi-arrow-expand-vertical";
+        case 3335: // Colour
+          return "mdi-palette-outline";
         case 3338: // Buzzer
           return "mdi-bell-ring";
         case 3341: // Addressable Text Display
