@@ -35,13 +35,13 @@ import org.eclipse.leshan.core.json.jackson.LwM2mJsonJacksonEncoderDecoder;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mNodeException;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
@@ -482,15 +482,14 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
     }
 
     protected Long numberToLong(Number number) {
-        return NumberUtil.numberToLong(number);
+        return NumberUtil.numberToLong(number, true);
     }
 
     protected ULong numberToULong(Number number) {
-        return NumberUtil.numberToULong(number);
+        return NumberUtil.numberToULong(number, true);
     }
 
     protected Double numberToDouble(Number number) {
-        // we get the better approximate value, meaning we can get precision loss
-        return number.doubleValue();
+        return NumberUtil.numberToDouble(number, true);
     }
 }

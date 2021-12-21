@@ -74,8 +74,9 @@ public class DefaultLwM2mDecoder implements LwM2mDecoder {
         decoders.put(ContentFormat.TEXT, new LwM2mNodeTextDecoder());
         decoders.put(ContentFormat.OPAQUE, new LwM2mNodeOpaqueDecoder());
         decoders.put(ContentFormat.CBOR, new LwM2mNodeCborDecoder());
-        decoders.put(ContentFormat.SENML_JSON, new LwM2mNodeSenMLDecoder(new SenMLJsonJacksonEncoderDecoder()));
-        decoders.put(ContentFormat.SENML_CBOR, new LwM2mNodeSenMLDecoder(new SenMLCborUpokecenterEncoderDecoder()));
+        decoders.put(ContentFormat.SENML_JSON, new LwM2mNodeSenMLDecoder(new SenMLJsonJacksonEncoderDecoder(), true));
+        decoders.put(ContentFormat.SENML_CBOR,
+                new LwM2mNodeSenMLDecoder(new SenMLCborUpokecenterEncoderDecoder(), false));
 
         // tlv
         LwM2mNodeTlvDecoder tlvDecoder = new LwM2mNodeTlvDecoder();

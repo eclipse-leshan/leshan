@@ -58,9 +58,11 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeSenMLDecoder.class);
 
     private final SenMLDecoder decoder;
+    private boolean permissiveNumberConversion;
 
-    public LwM2mNodeSenMLDecoder(SenMLDecoder decoder) {
+    public LwM2mNodeSenMLDecoder(SenMLDecoder decoder, boolean permissiveNumberConversion) {
         this.decoder = decoder;
+        this.permissiveNumberConversion = permissiveNumberConversion;
     }
 
     @SuppressWarnings("unchecked")
@@ -482,15 +484,15 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
         try {
             switch (expectedType) {
             case INTEGER:
-                return numberToLong((Number) value);
+                return numberToLong((Number) value, permissiveNumberConversion);
             case UNSIGNED_INTEGER:
-                return numberToULong((Number) value);
+                return numberToULong((Number) value, permissiveNumberConversion);
             case BOOLEAN:
                 return value;
             case FLOAT:
-                return numberToDouble((Number) value);
+                return numberToDouble((Number) value, permissiveNumberConversion);
             case TIME:
-                return new Date(numberToLong((Number) value) * 1000L);
+                return new Date(numberToLong((Number) value, permissiveNumberConversion) * 1000L);
             case OPAQUE:
                 return value;
             case STRING:
@@ -523,16 +525,15 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
         return Type.STRING;
     }
 
-    protected Long numberToLong(Number number) {
-        return NumberUtil.numberToLong(number);
+    protected Long numberToLong(Number number, boolean permissiveNumberConvertion) {
+        return NumberUtil.numberToLong(number, permissiveNumberConvertion);
     }
 
-    protected ULong numberToULong(Number number) {
-        return NumberUtil.numberToULong(number);
+    protected ULong numberToULong(Number number, boolean permissiveNumberConvertion) {
+        return NumberUtil.numberToULong(number, permissiveNumberConvertion);
     }
 
-    protected Double numberToDouble(Number number) {
-        // we get the better approximate value, meaning we can get precision loss
-        return number.doubleValue();
+    protected Double numberToDouble(Number number, boolean permissiveNumberConvertion) {
+        return NumberUtil.numberToDouble(number, permissiveNumberConvertion);
     }
 }
