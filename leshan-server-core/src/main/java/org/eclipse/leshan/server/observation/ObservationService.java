@@ -43,10 +43,22 @@ public interface ObservationService {
      * the canceled observation.
      * 
      * @param registration the LWM2M Client to cancel observation for
-     * @param resourcepath resource to cancel observation for
+     * @param nodePath LWM2M node path to cancel observation for
      * @return the number of canceled observations
      */
-    int cancelObservations(Registration registration, String resourcepath);
+    int cancelObservations(Registration registration, String nodePath);
+
+    /**
+     * Cancels all active Composite-Observations for the given resources of a given registration.
+     * 
+     * As a consequence the LWM2M Client will stop sending notifications about updated values of resources in scope of
+     * the canceled observation.
+     * 
+     * @param registration the LWM2M Client to cancel composite-observation for
+     * @param nodePaths LWM2M node paths to cancel composite-observation for
+     * @return the number of canceled observations
+     */
+    int cancelCompositeObservations(Registration registration, String[] nodePaths);
 
     /**
      * Cancels an observation.

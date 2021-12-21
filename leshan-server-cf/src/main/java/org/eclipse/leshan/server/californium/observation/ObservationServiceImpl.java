@@ -18,6 +18,7 @@ package org.eclipse.leshan.server.californium.observation;
 
 import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toLwM2mResponseCode;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -148,11 +149,23 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
     }
 
     @Override
-    public int cancelObservations(Registration registration, String resourcepath) {
-        if (registration == null || registration.getId() == null || resourcepath == null || resourcepath.isEmpty())
+    public int cancelObservations(Registration registration, String nodePath) {
+        if (registration == null || registration.getId() == null || nodePath == null || nodePath.isEmpty())
             return 0;
 
-        Set<Observation> observations = getObservations(registration.getId(), resourcepath);
+        Set<Observation> observations = getObservations(registration.getId(), nodePath);
+        for (Observation observation : observations) {
+            cancelObservation(observation);
+        }
+        return observations.size();
+    }
+
+    @Override
+    public int cancelCompositeObservations(Registration registration, String[] nodePaths) {
+        if (registration == null || registration.getId() == null || nodePaths == null || nodePaths.length == 0)
+            return 0;
+
+        Set<Observation> observations = getCompositeObservations(registration.getId(), nodePaths);
         for (Observation observation : observations) {
             cancelObservation(observation);
         }
@@ -192,12 +205,34 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
         return new HashSet<>(registrationStore.getObservations(registrationId));
     }
 
-    private Set<Observation> getObservations(String registrationId, String resourcePath) {
-        if (registrationId == null || resourcePath == null)
+    private Set<Observation> getCompositeObservations(String registrationId, String[] nodePaths) {
+        if (registrationId == null || nodePaths == null)
+            return Collections.emptySet();
+
+        // array of String to array of LWM2M path
+        List<LwM2mPath> lwPaths = new ArrayList<>(nodePaths.length);
+        for (int i = 0; i < nodePaths.length; i++) {
+            lwPaths.add(new LwM2mPath(nodePaths[i]));
+        }
+
+        // search composite-observation
+        Set<Observation> result = new HashSet<>();
+        for (Observation obs : getObservations(registrationId)) {
+            if (obs instanceof CompositeObservation) {
+                if (lwPaths.equals(((CompositeObservation) obs).getPaths())) {
+                    result.add(obs);
+                }
+            }
+        }
+        return result;
+    }
+
+    private Set<Observation> getObservations(String registrationId, String nodePath) {
+        if (registrationId == null || nodePath == null)
             return Collections.emptySet();
 
         Set<Observation> result = new HashSet<>();
-        LwM2mPath lwPath = new LwM2mPath(resourcePath);
+        LwM2mPath lwPath = new LwM2mPath(nodePath);
         for (Observation obs : getObservations(registrationId)) {
             if (obs instanceof SingleObservation) {
                 if (lwPath.equals(((SingleObservation) obs).getPath())) {
