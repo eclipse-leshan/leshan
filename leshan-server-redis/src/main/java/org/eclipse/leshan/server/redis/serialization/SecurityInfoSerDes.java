@@ -30,11 +30,17 @@ import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
 
+import org.eclipse.californium.cose.AlgorithmID;
+import org.eclipse.californium.cose.CoseException;
+import org.eclipse.californium.oscore.OSCoreCtx;
+import org.eclipse.californium.oscore.OSException;
+import org.eclipse.leshan.core.OscoreObject;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.security.SecurityInfo;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
+import com.upokecenter.cbor.CBORObject;
 
 /**
  * Functions for serialize and deserialize security information in JSON for storage.
@@ -77,6 +83,20 @@ public class SecurityInfoSerDes {
             o.set("x509", true);
         }
 
+        if (s.useOSCORE()) {
+            JsonObject oscore = new JsonObject();
+
+            OscoreObject oscoreObject = s.getOscoreObject();
+            oscore.add("senderId", Hex.encodeHexString(oscoreObject.getSenderId()));
+            oscore.add("recipientId", Hex.encodeHexString(oscoreObject.getRecipientId()));
+            oscore.add("masterSecret", Hex.encodeHexString(oscoreObject.getMasterSecret()));
+            oscore.add("aeadAlgorithm", oscoreObject.getAeadAlgorithm());
+            oscore.add("hmacAlgorithm", oscoreObject.getHmacAlgorithm());
+            oscore.add("masterSalt", Hex.encodeHexString(oscoreObject.getMasterSalt()));
+
+            o.set("oscore", oscore);
+        }
+
         return o.toString().getBytes();
     }
 
@@ -90,6 +110,25 @@ public class SecurityInfoSerDes {
                     Hex.decodeHex(o.getString("psk", null).toCharArray()));
         } else if (o.get("x509") != null) {
             i = SecurityInfo.newX509CertInfo(ep);
+        } else if (o.get("oscore") != null) {
+            JsonObject oscore = (JsonObject)o.get("oscore");
+
+            byte[] senderId = Hex.decodeHex(oscore.getString("senderId", null).toCharArray());
+            byte[] recipientId = Hex.decodeHex(oscore.getString("recipientId", null).toCharArray());
+            byte[] masterSecret = Hex.decodeHex(oscore.getString("masterSecret", null).toCharArray());
+            byte[] masterSalt = Hex.decodeHex(oscore.getString("masterSalt", null).toCharArray());
+
+            try {
+                AlgorithmID aeadAlgorithm = AlgorithmID.FromCBOR(CBORObject.FromObject(oscore.getInt("aeadAlgorithm", 0)));
+                AlgorithmID hmacAlgorithm = AlgorithmID.FromCBOR(CBORObject.FromObject(oscore.getInt("hmacAlgorithm", 0)));
+
+                OSCoreCtx oscoreCtx = new OSCoreCtx(masterSecret, false, aeadAlgorithm, senderId, recipientId,
+                        hmacAlgorithm, null, masterSalt, null);
+                i = SecurityInfo.newOSCoreInfo(ep, oscoreCtx);
+
+            } catch (CoseException | OSException e) {
+                throw new IllegalStateException("Invalid security info content", e);
+            }
         } else {
             JsonObject rpk = (JsonObject) o.get("rpk");
             PublicKey key;

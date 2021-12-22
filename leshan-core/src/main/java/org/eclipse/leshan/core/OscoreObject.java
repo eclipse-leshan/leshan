@@ -1,6 +1,8 @@
 package org.eclipse.leshan.core;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Objects;
 
 import org.eclipse.leshan.core.util.Hex;
 
@@ -47,17 +49,58 @@ public class OscoreObject implements Serializable {
     public byte[] getMasterSalt() {
         return masterSalt;
     }
-
+    
     @Override
     public String toString() {
-        // Note : oscoreMasterSecret and oscoreMasterSalt are explicitly excluded from the display for security
-        // purposes
-        return String.format(
-                "OscoreObject [oscoreSenderId=%s, oscoreRecipientId=%s, oscoreAeadAlgorithm=%s, oscoreHmacAlgorithm=%s]",
-                Hex.encodeHexString(senderId), Hex.encodeHexString(recipientId), aeadAlgorithm, hmacAlgorithm);
+        // Note : oscoreMasterSecret and oscoreMasterSalt are explicitly excluded from the display for security purposes
+        return "OscoreObject [senderId=" + Arrays.toString(senderId) + ", recipientId=" + Arrays.toString(recipientId)
+                + ", aeadAlgorithm=" + aeadAlgorithm + ", hmacAlgorithm=" + hmacAlgorithm + "]";
     }
 
     public OSCoreIdentity getOSCoreIdentity() {
         return new OSCoreIdentity(senderId, recipientId);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        OscoreObject other = (OscoreObject) obj;
+        if (aeadAlgorithm == null) {
+            if (other.aeadAlgorithm != null)
+                return false;
+        } else if (!aeadAlgorithm.equals(other.aeadAlgorithm))
+            return false;
+        if (hmacAlgorithm == null) {
+            if (other.hmacAlgorithm != null)
+                return false;
+        } else if (!hmacAlgorithm.equals(other.hmacAlgorithm))
+            return false;
+        if (!Arrays.equals(masterSalt, other.masterSalt))
+            return false;
+        if (!Arrays.equals(masterSecret, other.masterSecret))
+            return false;
+        if (!Arrays.equals(recipientId, other.recipientId))
+            return false;
+        if (!Arrays.equals(senderId, other.senderId))
+            return false;
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((aeadAlgorithm == null) ? 0 : aeadAlgorithm.hashCode());
+        result = prime * result + ((hmacAlgorithm == null) ? 0 : hmacAlgorithm.hashCode());
+        result = prime * result + Arrays.hashCode(masterSalt);
+        result = prime * result + Arrays.hashCode(masterSecret);
+        result = prime * result + Arrays.hashCode(recipientId);
+        result = prime * result + Arrays.hashCode(senderId);
+        return result;
     }
 }

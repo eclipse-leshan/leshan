@@ -28,30 +28,35 @@ public class OSCoreIdentity implements Serializable {
     public byte[] getRecipientId() {
         return recipientId;
     }
-
-    // TODO OSCORE: Generate toString() in Eclipse.
+    
     @Override
     public String toString() {
-        return String.format("OSCoreIdentity [oscoreSenderId=%s, oscoreRecipientId=%s]", Hex.encodeHexString(senderId),
-                Hex.encodeHexString(recipientId));
+        return "OSCoreIdentity [senderId=" + Arrays.toString(senderId) + ", recipientId=" + Arrays.toString(recipientId)
+                + "]";
     }
-
-    // TODO OSCORE: Generate equals() in Eclipse.
+    
     @Override
-    public boolean equals(Object o) {
-        if (this == o)
+    public boolean equals(Object obj) {
+        if (this == obj)
             return true;
-        if (!(o instanceof OSCoreIdentity))
+        if (obj == null)
             return false;
-        OSCoreIdentity that = (OSCoreIdentity) o;
-        return Arrays.equals(senderId, that.senderId) && Arrays.equals(recipientId, that.recipientId);
+        if (getClass() != obj.getClass())
+            return false;
+        OSCoreIdentity other = (OSCoreIdentity) obj;
+        if (!Arrays.equals(recipientId, other.recipientId))
+            return false;
+        if (!Arrays.equals(senderId, other.senderId))
+            return false;
+        return true;
     }
 
-    // TODO OSCORE: Generate hashCode() in Eclipse.
     @Override
     public int hashCode() {
-        int result = Arrays.hashCode(senderId);
-        result = 31 * result + Arrays.hashCode(recipientId);
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + Arrays.hashCode(recipientId);
+        result = prime * result + Arrays.hashCode(senderId);
         return result;
     }
 }
