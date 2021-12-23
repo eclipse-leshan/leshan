@@ -250,7 +250,7 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void onError(Registration registration, InvalidRequestException e) {
+        public void onError(Registration registration, Exception e) {
 
         }
     };

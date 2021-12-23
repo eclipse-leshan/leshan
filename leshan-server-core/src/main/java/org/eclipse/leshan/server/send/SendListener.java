@@ -39,5 +39,12 @@ public interface SendListener {
     void dataReceived(Registration registration, Map<String, LwM2mNode> data, SendRequest request);
 
 
-    void onError(Registration registration, InvalidRequestException e);
+    /**
+     *  Called for any error e.g. if something wrong happened when we handle SendRequest,
+     *  data can't be decoded by server etc.
+     *
+     * @param registration Registration of the client which send the data.
+     * @param e exception
+     */
+    void onError(Registration registration, Exception e);
 }
