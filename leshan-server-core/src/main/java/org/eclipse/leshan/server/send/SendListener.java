@@ -38,6 +38,6 @@ public interface SendListener {
      */
     void dataReceived(Registration registration, Map<String, LwM2mNode> data, SendRequest request);
 
-    // TODO should we add a listener, if called if something wrong happened when we handle SendRequest ?
+
     void onError(Registration registration, InvalidRequestException e);
 }

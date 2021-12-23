@@ -69,12 +69,11 @@ public class SendHandler implements SendService {
             listener.dataReceived(registration, Collections.unmodifiableMap(nodes), request);
         }
     }
-    public void onError(Registration registration, InvalidRequestException e)
-    {
+    public void onError(Registration registration, InvalidRequestException e) {
         for (SendListener listener : listeners) {
-
             listener.onError(registration, new InvalidRequestException(e));
 
         }
     }
+
 }
