@@ -21,8 +21,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -47,6 +49,7 @@ import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
+import org.eclipse.leshan.core.request.WriteCompositeRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.core.request.exception.ClientSleepingException;
@@ -64,6 +67,7 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadCompositeResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
+import org.eclipse.leshan.core.response.WriteCompositeResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.server.californium.LeshanServer;
 import org.eclipse.leshan.server.demo.servlet.json.JacksonLwM2mNodeDeserializer;
@@ -76,6 +80,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
@@ -272,6 +277,37 @@ public class ClientServlet extends HttpServlet {
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String[] path = StringUtils.split(req.getPathInfo(), '/');
         String clientEndpoint = path[0];
+        // /clients/endPoint/composite : do LightWeight M2M WriteComposite request on a given client.
+        if (path.length == 2 && "composite".equals(path[1])) {
+            try {
+
+                Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
+                if (registration != null) {
+                    // get content format
+                    String nodeContentFormatParam = req.getParameter(NODE_FORMAT_PARAM);
+                    ContentFormat nodeContentFormat = nodeContentFormatParam != null
+                            ? ContentFormat.fromName(nodeContentFormatParam.toUpperCase())
+                            : null;
+
+                    // get node values
+                    String content = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
+                    Map<LwM2mPath, LwM2mNode> values = mapper.readValue(content,
+                            new TypeReference<HashMap<LwM2mPath, LwM2mNode>>() {
+                            });
+                    // create & process request
+                    WriteCompositeResponse cResponse = server.send(registration,
+                            new WriteCompositeRequest(nodeContentFormat, values, null), extractTimeout(req));
+                    processDeviceResponse(req, resp, cResponse);
+
+                } else {
+                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
+                }
+            } catch (RuntimeException | InterruptedException e) {
+                handleException(e, resp);
+            }
+            return;
+        }
 
         // at least /endpoint/objectId/instanceId
         if (path.length < 3) {
@@ -327,7 +363,7 @@ public class ClientServlet extends HttpServlet {
         String[] path = StringUtils.split(req.getPathInfo(), '/');
         String clientEndpoint = path[0];
 
-        // /clients/endPoint/composite/observe : do LightWeight M2M observe request on a given client.
+        // /clients/endPoint/composite/observe : do LightWeight M2M Observe-Composite request on a given client.
         if (path.length == 3 && "composite".equals(path[1]) && "observe".equals(path[2])) {
             try {
                 Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);

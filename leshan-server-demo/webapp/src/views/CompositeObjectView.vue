@@ -20,6 +20,7 @@
         <composite-object-control
           :endpoint="$route.params.endpoint"
           :compositeObject="compositeObject"
+          :nodes="lwm2mNodes"
         />
         <v-icon
           class="pl-3"

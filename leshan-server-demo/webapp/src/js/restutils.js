@@ -104,4 +104,24 @@ function resourceInstanceToREST(model, instanceId, value) {
   return res;
 }
 
-export { resourceToREST, instanceToREST, resourceInstanceToREST };
+/**
+ * @param {Object} model model of the resource.
+ * @param {object} path the lwm2m path object
+ * @param {*} value the value of the resource or resource instance from UI Component.
+ * @returns a resource instance or single resource usable for REST API.
+ */
+function singleValueToREST(model, path, value) {
+  if (path.type == "resource" && model.instancetype == "single") {
+    return singleInstanceResourceToREST(model, value);
+  } else if (path.type == "resourceinstance") {
+    return resourceInstanceToREST(model, path.resourceinstanceid, value);
+  }
+  throw new Error(`Unsupported kind of node ${path.type}`);
+}
+
+export {
+  resourceToREST,
+  instanceToREST,
+  resourceInstanceToREST,
+  singleValueToREST,
+};
