@@ -36,9 +36,9 @@
     </div>
     <v-divider></v-divider>
 
-    <div v-for="node in lwm2mNodes" :key="node.path.toString()">
+    <div v-for="(node, path) in lwm2mNodes" :key="path">
       <h4 class="pa-1">
-        {{ node.path }}
+        {{ path }}
         <span
           v-if="node.instanceNotAvailable"
           class="subtitle-2 grey--text text--darken-1"
@@ -177,13 +177,13 @@ export default {
     state() {
       return this.$store.state[this.endpoint];
     },
-    compositeObservationKey(){
+    compositeObservationKey() {
       return this.$store.compositeObjectToKey(this.compositeObject);
     },
     lwm2mNodes() {
-      if (!this.objectdefs || this.objectdefs.length == 0) return [];
+      if (!this.objectdefs || this.objectdefs.length == 0) return {};
 
-      let nodes = this.compositeObject.paths.map((p) => {
+      let nodesArray = this.compositeObject.paths.map((p) => {
         let path = new LwM2mPath(p);
         // handle invalid path
         if (path.type == "invalid") {
@@ -267,7 +267,11 @@ export default {
             return { path: path };
         }
       });
-      return nodes;
+
+      return nodesArray.reduce((NodesObject, node) => {
+        NodesObject[node.path.toString()] = node;
+        return NodesObject;
+      }, {});
     },
   },
 };
