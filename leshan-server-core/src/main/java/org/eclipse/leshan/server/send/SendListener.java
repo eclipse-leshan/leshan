@@ -40,8 +40,7 @@ public interface SendListener {
 
 
     /**
-     *  Called for any error e.g. if something wrong happened when we handle SendRequest,
-     *  data can't be decoded by server etc.
+     *  Called when data can't be decoded by server (because of e.g. unsupported content format or mistake in payload).
      *
      * @param registration Registration of the client which send the data.
      * @param e exception

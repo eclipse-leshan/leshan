@@ -78,6 +78,7 @@ public class SendResource extends LwM2mCoapResource {
         ContentFormat contentFormat = ContentFormat.fromCode(exchange.getRequestOptions().getContentFormat());
         if (!decoder.isSupported(contentFormat)) {
             exchange.respond(ResponseCode.BAD_REQUEST, "Unsupported content format");
+            sendHandler.onError(registration, new InvalidRequestException("Unsupported content format"));
             return;
         }
         Map<LwM2mPath, LwM2mNode> data = null;
