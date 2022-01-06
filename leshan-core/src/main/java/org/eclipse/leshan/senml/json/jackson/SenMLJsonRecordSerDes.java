@@ -17,12 +17,12 @@ package org.eclipse.leshan.senml.json.jackson;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.eclipse.leshan.core.util.json.JacksonJsonSerDes;
 import org.eclipse.leshan.core.util.json.JsonException;
 import org.eclipse.leshan.senml.SenMLRecord;
+import org.eclipse.leshan.senml.SenMLRecord.Type;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -71,8 +71,8 @@ public class SenMLJsonRecordSerDes extends JacksonJsonSerDes<SenMLRecord> {
         Type type = record.getType();
         if (type != null) {
             switch (record.getType()) {
-            case FLOAT:
-                Number value = record.getFloatValue();
+            case NUMBER:
+                Number value = record.getNumberValue();
                 // integer
                 if (value instanceof Byte) {
                     jsonObj.put("v", value.byteValue());
@@ -147,7 +147,7 @@ public class SenMLJsonRecordSerDes extends JacksonJsonSerDes<SenMLRecord> {
         JsonNode v = o.get("v");
         boolean hasValue = false;
         if (v != null && v.isNumber()) {
-            record.setFloatValue(v.numberValue());
+            record.setNumberValue(v.numberValue());
             hasValue = true;
         }
 

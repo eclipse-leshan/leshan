@@ -285,13 +285,13 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
             case INTEGER:
             case UNSIGNED_INTEGER:
             case FLOAT:
-                record.setFloatValue((Number) value);
+                record.setNumberValue((Number) value);
                 break;
             case BOOLEAN:
                 record.setBooleanValue((Boolean) value);
                 break;
             case TIME:
-                record.setFloatValue((((Date) value).getTime() / 1000L));
+                record.setNumberValue((((Date) value).getTime() / 1000L));
                 break;
             case OPAQUE:
                 record.setOpaqueValue((byte[]) value);

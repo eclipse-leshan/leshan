@@ -16,8 +16,6 @@ package org.eclipse.leshan.senml;
 
 import java.util.Arrays;
 
-import org.eclipse.leshan.core.model.ResourceModel;
-import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.util.Hex;
 
 /**
@@ -27,24 +25,28 @@ import org.eclipse.leshan.core.util.Hex;
  */
 public class SenMLRecord {
 
+    public enum Type {
+        STRING, NUMBER, BOOLEAN, OPAQUE, OBJLNK
+    }
+
     private String baseName = null;
     private Long baseTime;
 
     private String name;
     private Long time;
 
-    private Number floatValue;
+    private Number numberValue;
     private Boolean booleanValue;
     private String objectLinkValue;
     private String stringValue;
     private byte[] opaqueValue;
 
-    public ResourceModel.Type getType() {
+    public Type getType() {
         if (booleanValue != null) {
             return Type.BOOLEAN;
         }
-        if (floatValue != null) {
-            return Type.FLOAT;
+        if (numberValue != null) {
+            return Type.NUMBER;
         }
         if (objectLinkValue != null) {
             return Type.OBJLNK;
@@ -74,12 +76,12 @@ public class SenMLRecord {
         this.name = name;
     }
 
-    public Number getFloatValue() {
-        return floatValue;
+    public Number getNumberValue() {
+        return numberValue;
     }
 
-    public void setFloatValue(Number floatValue) {
-        this.floatValue = floatValue;
+    public void setNumberValue(Number numberValue) {
+        this.numberValue = numberValue;
     }
 
     public Boolean getBooleanValue() {
@@ -134,8 +136,8 @@ public class SenMLRecord {
         if (booleanValue != null) {
             return booleanValue;
         }
-        if (floatValue != null) {
-            return floatValue;
+        if (numberValue != null) {
+            return numberValue;
         }
         if (objectLinkValue != null) {
             return objectLinkValue;
@@ -156,7 +158,7 @@ public class SenMLRecord {
         result = prime * result + ((baseName == null) ? 0 : baseName.hashCode());
         result = prime * result + ((baseTime == null) ? 0 : baseTime.hashCode());
         result = prime * result + ((booleanValue == null) ? 0 : booleanValue.hashCode());
-        result = prime * result + ((floatValue == null) ? 0 : floatValue.hashCode());
+        result = prime * result + ((numberValue == null) ? 0 : numberValue.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((objectLinkValue == null) ? 0 : objectLinkValue.hashCode());
         result = prime * result + ((stringValue == null) ? 0 : stringValue.hashCode());
@@ -201,10 +203,10 @@ public class SenMLRecord {
                 return false;
         } else if (!booleanValue.equals(other.booleanValue))
             return false;
-        if (floatValue == null) {
-            if (other.floatValue != null)
+        if (numberValue == null) {
+            if (other.numberValue != null)
                 return false;
-        } else if (!floatValue.equals(other.floatValue))
+        } else if (!numberValue.equals(other.numberValue))
             return false;
         if (name == null) {
             if (other.name != null)
@@ -233,8 +235,8 @@ public class SenMLRecord {
     @Override
     public String toString() {
         return String.format(
-                "SenMLRecord [baseName=%s, baseTime=%d, name=%s, time=%d, floatValue=%s, booleanValue=%s, objectLinkValue=%s, stringValue=%s, opaque=%s]",
-                baseName, baseTime, name, time, floatValue, booleanValue, objectLinkValue, stringValue,
+                "SenMLRecord [baseName=%s, baseTime=%d, name=%s, time=%d, numberValue=%s, booleanValue=%s, objectLinkValue=%s, stringValue=%s, opaque=%s]",
+                baseName, baseTime, name, time, numberValue, booleanValue, objectLinkValue, stringValue,
                 opaqueValue != null ? Hex.encodeHexString(opaqueValue) : "null");
     }
 }

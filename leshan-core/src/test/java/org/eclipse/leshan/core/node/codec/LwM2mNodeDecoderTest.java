@@ -1063,7 +1063,7 @@ public class LwM2mNodeDecoderTest {
                 ((LwM2mObject) timestampedResources.get(1).getNode()).getInstance(0).getResource(1).getValue());
 
         assertEquals(Long.valueOf(268600000 - 50), timestampedResources.get(2).getTimestamp());
-        assertEquals(23.0d,
+        assertEquals(23l,
                 ((LwM2mObject) timestampedResources.get(2).getNode()).getInstance(1).getResource(1).getValue());
         assertEquals("a string",
                 ((LwM2mObject) timestampedResources.get(2).getNode()).getInstance(0).getResource(0).getValue());

@@ -22,7 +22,7 @@ public abstract class AbstractSenMLTest {
     private void givenResourceWithFloatValue(SenMLPack pack, String n, Number value) {
         SenMLRecord elt = new SenMLRecord();
         elt.setName(n);
-        elt.setFloatValue(value);
+        elt.setNumberValue(value);
         pack.addRecord(elt);
     }
 

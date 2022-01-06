@@ -48,9 +48,9 @@ public class SenMLTestUtil {
         assertFieldEquals("opaque value", expected.getOpaqueValue(), actual.getOpaqueValue());
         assertFieldEquals("string value", expected.getStringValue(), actual.getStringValue());
 
-        if (!equals(expected.getFloatValue(), actual.getFloatValue())) {
-            Assert.fail(String.format("Records not equals :float value differ expected %s, actual %s",
-                    expected.getFloatValue(), actual.getFloatValue()));
+        if (!equals(expected.getNumberValue(), actual.getNumberValue())) {
+            Assert.fail(String.format("Records not equals :number value differ expected %s, actual %s",
+                    expected.getNumberValue(), actual.getNumberValue()));
         }
     }
 

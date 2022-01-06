@@ -98,6 +98,6 @@ public class SenMLCborSerializerTest extends AbstractSenMLTest {
         assertEquals(pack.getRecords().size(), 1);
         SenMLRecord record = pack.getRecords().get(0);
         assertEquals("/3442/0/130", record.getBaseName());
-        assertEquals(300.0d, record.getFloatValue());
+        assertEquals(300.0d, record.getNumberValue());
     }
 }

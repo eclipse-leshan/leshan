@@ -13,6 +13,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec.senml;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -513,9 +515,11 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
         if (rscDesc != null && rscDesc.type != null)
             return rscDesc.type;
 
-        // Then json type
+        // TODO not sure that guessing type is a good idea...
+
+        // Then senml type
         if (record != null) {
-            Type type = record.getType();
+            Type type = guessTypeFromRecord(record);
             if (type != null)
                 return type;
         }
@@ -523,6 +527,40 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
         // Else use String as default
         LOG.trace("unknown type for resource use string as default: {}", rscPath);
         return Type.STRING;
+    }
+
+    private Type guessTypeFromRecord(SenMLRecord record) {
+        SenMLRecord.Type type = record.getType();
+
+        switch (type) {
+        case STRING:
+            return Type.STRING;
+        case OPAQUE:
+            return Type.OPAQUE;
+        case BOOLEAN:
+            return Type.BOOLEAN;
+        case OBJLNK:
+            return Type.OBJLNK;
+        case NUMBER:
+            Number numberValue = record.getNumberValue();
+            if (numberValue instanceof ULong) {
+                return Type.UNSIGNED_INTEGER;
+            } else if (numberValue instanceof BigInteger) {
+                if (((BigInteger) numberValue).signum() <= 0) {
+                    return Type.INTEGER;
+                } else {
+                    return Type.UNSIGNED_INTEGER;
+                }
+            } else if (numberValue instanceof Byte || numberValue instanceof Short || numberValue instanceof Integer
+                    || numberValue instanceof Long) {
+                return Type.INTEGER;
+            } else if (numberValue instanceof Float || numberValue instanceof Double
+                    || numberValue instanceof BigDecimal) {
+                return Type.FLOAT;
+            }
+        default:
+            return null;
+        }
     }
 
     protected Long numberToLong(Number number, boolean permissiveNumberConvertion) {

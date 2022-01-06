@@ -22,12 +22,12 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
 
-import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.util.datatype.NumberUtil;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.eclipse.leshan.senml.SenMLException;
 import org.eclipse.leshan.senml.SenMLPack;
 import org.eclipse.leshan.senml.SenMLRecord;
+import org.eclipse.leshan.senml.SenMLRecord.Type;
 
 import com.upokecenter.cbor.CBORNumber;
 import com.upokecenter.cbor.CBORObject;
@@ -85,17 +85,17 @@ public class SenMLCborPackSerDes {
                     case EInteger:
                         if (number.IsNegative()) {
                             if (number.CanFitInInt64()) {
-                                record.setFloatValue(number.ToInt64Unchecked());
+                                record.setNumberValue(number.ToInt64Unchecked());
                             } else {
-                                record.setFloatValue((BigInteger) v.ToObject(BigInteger.class));
+                                record.setNumberValue((BigInteger) v.ToObject(BigInteger.class));
                             }
                         } else {
                             if (number.CanFitInInt64()) {
-                                record.setFloatValue(number.ToInt64Unchecked());
+                                record.setNumberValue(number.ToInt64Unchecked());
                             } else if (number.ToEIntegerIfExact().GetSignedBitLengthAsInt64() == 64) {
-                                record.setFloatValue(ULong.valueOf(number.ToInt64Unchecked()));
+                                record.setNumberValue(ULong.valueOf(number.ToInt64Unchecked()));
                             } else {
-                                record.setFloatValue((BigInteger) v.ToObject(BigInteger.class));
+                                record.setNumberValue((BigInteger) v.ToObject(BigInteger.class));
                             }
                         }
                         break;
@@ -103,9 +103,9 @@ public class SenMLCborPackSerDes {
                     case EFloat:
                     case EDecimal:
                         if (v.AsNumber().CanFitInDouble()) {
-                            record.setFloatValue(v.AsDoubleValue());
+                            record.setNumberValue(v.AsDoubleValue());
                         } else {
-                            record.setFloatValue((BigDecimal) v.ToObject(BigDecimal.class));
+                            record.setNumberValue((BigDecimal) v.ToObject(BigDecimal.class));
                         }
                         break;
                     default:
@@ -177,8 +177,8 @@ public class SenMLCborPackSerDes {
                 Type type = record.getType();
                 if (type != null) {
                     switch (record.getType()) {
-                    case FLOAT:
-                        Number value = record.getFloatValue();
+                    case NUMBER:
+                        Number value = record.getNumberValue();
                         if (value instanceof Byte) {
                             cborRecord.Add(2, value.byteValue());
                         } else if (value instanceof Short) {
