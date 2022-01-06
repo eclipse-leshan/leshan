@@ -191,7 +191,7 @@ public class NumberUtil {
         if (number instanceof Float || number instanceof Double || number instanceof BigDecimal)
             return number.doubleValue();
 
-        throw new IllegalArgumentException(String.format("Floating-point number expected but was %s", number,
+        throw new IllegalArgumentException(String.format("Floating-point number expected but was %s (%s)", number,
                 number.getClass().getCanonicalName()));
     }
 }
