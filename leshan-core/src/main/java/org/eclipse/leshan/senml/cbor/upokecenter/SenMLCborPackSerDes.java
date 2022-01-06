@@ -80,7 +80,9 @@ public class SenMLCborPackSerDes {
                 boolean hasValue = false;
                 if (v != null && v.isNumber()) {
                     CBORNumber number = v.AsNumber();
-                    if (number.IsInteger()) {
+                    switch (number.getKind()) {
+                    case Integer:
+                    case EInteger:
                         if (number.IsNegative()) {
                             if (number.CanFitInInt64()) {
                                 record.setFloatValue(number.ToInt64Unchecked());
@@ -96,12 +98,20 @@ public class SenMLCborPackSerDes {
                                 record.setFloatValue((BigInteger) v.ToObject(BigInteger.class));
                             }
                         }
-                    } else {
+                        break;
+                    case Double:
+                    case EFloat:
+                    case EDecimal:
                         if (v.AsNumber().CanFitInDouble()) {
                             record.setFloatValue(v.AsDoubleValue());
                         } else {
                             record.setFloatValue((BigDecimal) v.ToObject(BigDecimal.class));
                         }
+                        break;
+                    default:
+                        throw new SenMLException(
+                                "Invalid SenML record : unexpected kind of number %s is not supported in %s",
+                                number.getKind(), o);
                     }
                     hasValue = true;
                 }
