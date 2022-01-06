@@ -93,8 +93,13 @@ public class LwM2mNodeCborDecoder implements NodeDecoder {
         case Integer:
             if (cborObject.HasTag(1))
                 return Type.TIME;
-            else
-                return Type.FLOAT;
+            else {
+                if (cborObject.CanValueFitInInt64())
+                    return Type.INTEGER;
+                else {
+                    return Type.UNSIGNED_INTEGER;
+                }
+            }
         case TextString:
             if (cborObject.HasTag(0))
                 return Type.TIME;
