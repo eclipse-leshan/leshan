@@ -38,10 +38,11 @@ public interface SendListener {
     void dataReceived(Registration registration, Map<String, LwM2mNode> data, SendRequest request);
 
     /**
-     * Called when data can't be decoded by server (because of e.g. unsupported content format or mistake in payload).
+     * Called when Send Request can't not be handled by server (because of e.g. unsupported content format or invalid
+     * payload or any unexpected error).
      *
      * @param registration Registration of the client which send the data.
-     * @param e exception
+     * @param error The cause of the error.
      */
-    void onError(Registration registration, Exception e);
+    void onError(Registration registration, Exception error);
 }
