@@ -19,7 +19,6 @@ import java.util.Map;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.request.SendRequest;
-import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.server.registration.Registration;
 
 /**
@@ -38,9 +37,8 @@ public interface SendListener {
      */
     void dataReceived(Registration registration, Map<String, LwM2mNode> data, SendRequest request);
 
-
     /**
-     *  Called when data can't be decoded by server (because of e.g. unsupported content format or mistake in payload).
+     * Called when data can't be decoded by server (because of e.g. unsupported content format or mistake in payload).
      *
      * @param registration Registration of the client which send the data.
      * @param e exception

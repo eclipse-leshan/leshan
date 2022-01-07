@@ -22,7 +22,6 @@ import java.util.concurrent.TimeoutException;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.request.SendRequest;
-import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.send.SendListener;
 
