@@ -79,7 +79,8 @@ public class SendResource extends LwM2mCoapResource {
             ContentFormat contentFormat = ContentFormat.fromCode(exchange.getRequestOptions().getContentFormat());
             if (!decoder.isSupported(contentFormat)) {
                 exchange.respond(ResponseCode.BAD_REQUEST, "Unsupported content format");
-                sendHandler.onError(registration, new InvalidRequestException("Unsupported content format"));
+                sendHandler.onError(registration, new InvalidRequestException(
+                        "Unsupported content format %s in %s from %s", contentFormat, coapRequest, sender));
                 return;
             }
             Map<LwM2mPath, LwM2mNode> data = null;
@@ -102,9 +103,10 @@ public class SendResource extends LwM2mCoapResource {
                 return;
             }
         } catch (CodecException e) {
-            InvalidRequestException invalidreqexception = new InvalidRequestException(e);
-            sendHandler.onError(registration, invalidreqexception);
-            throw invalidreqexception;
+            exchange.respond(ResponseCode.BAD_REQUEST, "Invalid Payload");
+            sendHandler.onError(registration,
+                    new InvalidRequestException(e, "Invalid payload in % from %s", coapRequest, sender));
+            return;
         } catch (RuntimeException e) {
             sendHandler.onError(registration, e);
             throw e;
