@@ -72,39 +72,42 @@ public class SendResource extends LwM2mCoapResource {
             return;
         }
 
-        // Decode payload
-        LwM2mModel model = modelProvider.getObjectModel(registration);
-        byte[] payload = exchange.getRequestPayload();
-        ContentFormat contentFormat = ContentFormat.fromCode(exchange.getRequestOptions().getContentFormat());
-        if (!decoder.isSupported(contentFormat)) {
-            exchange.respond(ResponseCode.BAD_REQUEST, "Unsupported content format");
-            sendHandler.onError(registration, new InvalidRequestException("Unsupported content format"));
-            return;
-        }
-        Map<LwM2mPath, LwM2mNode> data = null;
-
         try {
+            // Decode payload
+            LwM2mModel model = modelProvider.getObjectModel(registration);
+            byte[] payload = exchange.getRequestPayload();
+            ContentFormat contentFormat = ContentFormat.fromCode(exchange.getRequestOptions().getContentFormat());
+            if (!decoder.isSupported(contentFormat)) {
+                exchange.respond(ResponseCode.BAD_REQUEST, "Unsupported content format");
+                sendHandler.onError(registration, new InvalidRequestException("Unsupported content format"));
+                return;
+            }
+            Map<LwM2mPath, LwM2mNode> data = null;
+
             data = decoder.decodeNodes(payload, contentFormat, (List<LwM2mPath>) null, model);
+
+            // Handle "send op request
+            SendRequest sendRequest = new SendRequest(contentFormat, data, coapRequest);
+            SendableResponse<SendResponse> sendableResponse = sendHandler.handleSend(registration, sendRequest);
+            SendResponse response = sendableResponse.getResponse();
+
+            // send reponse
+            if (response.isSuccess()) {
+                exchange.respond(toCoapResponseCode(response.getCode()));
+                sendableResponse.sent();
+                return;
+            } else {
+                exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+                sendableResponse.sent();
+                return;
+            }
         } catch (CodecException e) {
             InvalidRequestException invalidreqexception = new InvalidRequestException(e);
             sendHandler.onError(registration, invalidreqexception);
             throw invalidreqexception;
-        }
-
-        // Handle "send op request
-        SendRequest sendRequest = new SendRequest(contentFormat, data, coapRequest);
-        SendableResponse<SendResponse> sendableResponse = sendHandler.handleSend(registration, sendRequest);
-        SendResponse response = sendableResponse.getResponse();
-
-        // send reponse
-        if (response.isSuccess()) {
-            exchange.respond(toCoapResponseCode(response.getCode()));
-            sendableResponse.sent();
-            return;
-        } else {
-            exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
-            sendableResponse.sent();
-            return;
+        } catch (RuntimeException e) {
+            sendHandler.onError(registration, e);
+            throw e;
         }
     }
 }
