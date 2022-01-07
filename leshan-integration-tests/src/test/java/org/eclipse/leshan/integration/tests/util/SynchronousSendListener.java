@@ -38,7 +38,7 @@ public class SynchronousSendListener implements SendListener {
     }
 
     @Override
-    public void onError(Registration registration, Exception e) {
+    public void onError(Registration registration, Exception error) {
 
     }
 
