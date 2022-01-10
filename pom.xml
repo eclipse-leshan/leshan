@@ -111,12 +111,11 @@ Contributors:
 
         <!-- dependencies version -->
         <californium.version>3.1.0</californium.version>
-        <logback.version>1.2.6</logback.version>
+        <logback.version>1.2.10</logback.version>
         <slf4j.api.version>1.7.32</slf4j.api.version>
         <!-- stuck to 9.4.x for java8 compliance -->
         <jetty.version>9.4.44.v20210927 </jetty.version>
-        <!-- stuck to 2.12.x for java7 compliance -->
-        <jackson.version>2.12.5</jackson.version>
+        <jackson.version>2.13.1</jackson.version>
     </properties>
 
     <profiles>
@@ -477,7 +476,7 @@ Contributors:
                         <dependency>
                             <groupId>org.revapi</groupId>
                             <artifactId>revapi-java</artifactId>
-                            <version>0.26.0</version>
+                            <version>0.26.1</version>
                         </dependency>
                     </dependencies>
                 </plugin>
@@ -645,7 +644,7 @@ Contributors:
             <dependency>
                 <groupId>com.upokecenter</groupId>
                 <artifactId>cbor</artifactId>
-                <version>4.4.4</version>
+                <version>4.5</version>
             </dependency>
             
 
@@ -673,12 +672,12 @@ Contributors:
             <dependency>
                 <groupId>info.picocli</groupId>
                 <artifactId>picocli</artifactId>
-                <version>4.6.1</version>
+                <version>4.6.2</version>
             </dependency>
             <dependency>
                 <groupId>info.picocli</groupId>
                 <artifactId>picocli-shell-jline2</artifactId>
-                <version>4.6.1</version>
+                <version>4.6.2</version>
             </dependency>
             <dependency>
                 <groupId>commons-cli</groupId>
