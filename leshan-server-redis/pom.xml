@@ -37,7 +37,7 @@ Contributors:
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
             <!-- stuck to 3.5.x for java7 compliance -->
-            <version>3.5.2</version>
+            <version>4.0.1</version>
         </dependency>
 
         <!-- test dependencies -->

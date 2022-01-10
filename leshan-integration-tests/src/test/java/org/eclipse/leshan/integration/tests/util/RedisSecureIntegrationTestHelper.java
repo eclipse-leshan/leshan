@@ -28,9 +28,12 @@ public class RedisSecureIntegrationTestHelper extends SecureIntegrationTestHelpe
     protected SecurityStore createSecurityStore() {
         // Create redis store
         String redisURI = System.getenv("REDIS_URI");
-        if (redisURI == null)
-            redisURI = "";
-        Pool<Jedis> jedis = new JedisPool(redisURI);
+        Pool<Jedis> jedis;
+        if (redisURI != null && !redisURI.isEmpty()) {
+            jedis = new JedisPool(redisURI);
+        } else {
+            jedis = new JedisPool();
+        }
         securityStore = new RedisSecurityStore(jedis);
         return securityStore;
     }

@@ -26,8 +26,8 @@ import org.eclipse.leshan.server.security.SecurityStore;
 import org.eclipse.leshan.server.security.SecurityStoreListener;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.params.ScanParams;
+import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.Pool;
 
 /**

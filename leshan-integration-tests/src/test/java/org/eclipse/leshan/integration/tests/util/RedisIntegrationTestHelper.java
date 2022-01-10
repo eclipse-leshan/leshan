@@ -52,8 +52,10 @@ public class RedisIntegrationTestHelper extends IntegrationTestHelper {
 
     public Pool<Jedis> createJedisPool() {
         String redisURI = System.getenv("REDIS_URI");
-        if (redisURI == null)
-            redisURI = "";
-        return new JedisPool(redisURI);
+        if (redisURI != null && !redisURI.isEmpty()) {
+            return new JedisPool(redisURI);
+        } else {
+            return new JedisPool();
+        }
     }
 }
