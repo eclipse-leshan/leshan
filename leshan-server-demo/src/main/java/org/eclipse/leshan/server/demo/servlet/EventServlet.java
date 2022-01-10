@@ -176,7 +176,7 @@ public class EventServlet extends EventSourceServlet {
                 String data = new StringBuilder("{\"ep\":\"") //
                         .append(registration.getEndpoint()) //
                         .append("\",\"kind\":\"single\"") //
-                        .append("\",\"res\":\"") //
+                        .append(",\"res\":\"") //
                         .append(observation.getPath()).append("\",\"val\":") //
                         .append(jsonContent) //
                         .append("}") //
