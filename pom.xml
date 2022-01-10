@@ -263,7 +263,7 @@ Contributors:
                 </plugin>
                 <plugin>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.9.1</version> 
+                    <version>3.10.0</version> 
                 </plugin>
                 <plugin>
                     <artifactId>maven-dependency-plugin</artifactId>
@@ -331,7 +331,7 @@ Contributors:
                 </plugin>
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.2.0</version>
+                    <version>3.2.1</version>
                     <configuration>
                         <archive>
                             <manifestEntries>
@@ -354,7 +354,7 @@ Contributors:
                 <plugin>
                     <groupId>com.github.eirslett</groupId>
                     <artifactId>frontend-maven-plugin</artifactId>
-                    <version>1.12.0</version>
+                    <version>1.12.1</version>
                 </plugin>
                 <plugin>
                     <!-- Deprecated use m2e + mvn resources:copy-resources@configure-eclipse to setup preferences-->
@@ -408,12 +408,12 @@ Contributors:
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-bundle-plugin</artifactId>
-                    <version>5.1.2</version>
+                    <version>5.1.4</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>buildnumber-maven-plugin</artifactId>
-                    <version>1.4</version>
+                    <version>3.0.0</version>
                     <executions>
                         <execution>
                             <goals>
@@ -472,7 +472,7 @@ Contributors:
                 <plugin>
                     <groupId>org.revapi</groupId>
                     <artifactId>revapi-maven-plugin</artifactId>
-                    <version>0.14.5</version>
+                    <version>0.14.6</version>
                     <dependencies>
                         <dependency>
                             <groupId>org.revapi</groupId>
