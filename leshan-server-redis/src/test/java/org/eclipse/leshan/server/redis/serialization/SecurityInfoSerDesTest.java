@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.redis.serialization;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.math.BigInteger;
 import java.security.AlgorithmParameters;
@@ -26,8 +26,10 @@ import java.security.spec.ECPoint;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.KeySpec;
 
+import org.eclipse.californium.cose.AlgorithmID;
+import org.eclipse.californium.oscore.OSCoreCtx;
+import org.eclipse.californium.oscore.OSException;
 import org.eclipse.leshan.core.util.Hex;
-import org.eclipse.leshan.server.redis.serialization.SecurityInfoSerDes;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.junit.Test;
 
@@ -67,6 +69,33 @@ public class SecurityInfoSerDesTest {
         assertEquals(
                 "{\"ep\":\"myendpoint\",\"rpk\":{\"x\":\"89c048261979208666f2bfb188be1968fc9021c416ce12828c06f4e314c167b5\",\"y\":\"cbf1eb7587f08e01688d9ada4be859137ca49f79394bad9179326b3090967b68\",\"params\":\"secp256r1\"}}",
                 new String(data));
+        assertEquals(si, SecurityInfoSerDes.deserialize(data));
+    }
+
+    @Test
+    public void security_info_oscore_ser_des_then_equal() throws OSException {
+        final String OSCORE_MASTER_SECRET = "1234567890";
+        final String OSCORE_MASTER_SALT = "0987654321";
+        final String OSCORE_SENDER_ID = "ABCDEF";
+        final String OSCORE_RECIPIENT_ID = "FEDCBA";
+
+        final AlgorithmID OSCORE_ALGORITHM = AlgorithmID.AES_CCM_16_64_128;
+        final AlgorithmID OSCORE_KDF_ALGORITHM = AlgorithmID.HKDF_HMAC_SHA_256;
+
+        OSCoreCtx oscoreCtx = new OSCoreCtx(Hex.decodeHex(OSCORE_MASTER_SECRET.toCharArray()), false, OSCORE_ALGORITHM,
+                Hex.decodeHex(OSCORE_SENDER_ID.toCharArray()), Hex.decodeHex(OSCORE_RECIPIENT_ID.toCharArray()),
+                OSCORE_KDF_ALGORITHM, null, Hex.decodeHex(OSCORE_MASTER_SALT.toCharArray()), null);
+
+        SecurityInfo si = SecurityInfo.newOSCoreInfo("myendPoint", oscoreCtx);
+
+        byte[] data = SecurityInfoSerDes.serialize(si);
+
+        String dataStr = new String(data);
+        assertTrue(dataStr.toUpperCase().contains(OSCORE_MASTER_SECRET));
+        assertTrue(dataStr.toUpperCase().contains(OSCORE_MASTER_SALT));
+        assertTrue(dataStr.toUpperCase().contains(OSCORE_SENDER_ID));
+        assertTrue(dataStr.toUpperCase().contains(OSCORE_RECIPIENT_ID));
+
         assertEquals(si, SecurityInfoSerDes.deserialize(data));
     }
 }

@@ -53,6 +53,7 @@ import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.client.servers.ServerIdentity.Role;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.CertificateUsage;
+import org.eclipse.leshan.core.OSCoreIdentity;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.request.Identity;
@@ -258,10 +259,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, db);
 
             // Build server identity for OSCORE
-            String sidString = Utils.toHexString(serverInfo.senderId).replace("[", "").replace("]", "").toLowerCase();
-            String ridString = Utils.toHexString(serverInfo.recipientId).replace("[", "").replace("]", "")
-                    .toLowerCase();
-            String oscoreIdentity = "sid=" + sidString + ",rid=" + ridString;
+            OSCoreIdentity oscoreIdentity = new OSCoreIdentity(serverInfo.senderId, serverInfo.recipientId);
             serverIdentity = Identity.oscoreOnly(serverInfo.getAddress(), oscoreIdentity);
         } else {
             currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, null);

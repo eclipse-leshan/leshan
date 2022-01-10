@@ -19,6 +19,7 @@ package org.eclipse.leshan.server.security;
 import java.security.PublicKey;
 import java.util.Iterator;
 
+import org.eclipse.leshan.core.OSCoreIdentity;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.util.Hex;
 import org.slf4j.Logger;
@@ -218,8 +219,8 @@ public class SecurityChecker {
         return true;
     }
 
-    protected boolean matchOscoreIdentity(String endpoint, String receivedOscoreIdentity,
-            String expectedOscoreIdentity) {
+    protected boolean matchOscoreIdentity(String endpoint, OSCoreIdentity receivedOscoreIdentity,
+            OSCoreIdentity expectedOscoreIdentity) {
         if (!receivedOscoreIdentity.equals(expectedOscoreIdentity)) {
             LOG.debug("Invalid identity for client '{}': expected '{}' but was '{}'", endpoint, expectedOscoreIdentity,
                     receivedOscoreIdentity);
