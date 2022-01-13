@@ -29,7 +29,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.eclipse.leshan.core.link.Link;
-import org.eclipse.leshan.core.link.LinkParamValue;
+import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.queue.PresenceService;
@@ -113,8 +113,8 @@ public class JacksonRegistrationSerializer extends StdSerializer<Registration> {
 
             // add attributes
             Map<String, String> attributes = new HashMap<>();
-            for (Map.Entry<String, LinkParamValue> linkParam : link.getLinkParams().entrySet()) {
-                attributes.put(linkParam.getKey(), linkParam.getValue().toString());
+            for (Attribute attr : link.getAttributes()) {
+                attributes.put(attr.getName(), attr.getStringValue());
             }
             jlink.put("attributes", attributes);
             jlinks.add(jlink);

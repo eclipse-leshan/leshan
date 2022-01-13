@@ -16,17 +16,22 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.redis.serialization;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.link.Link;
-import org.eclipse.leshan.core.link.LinkParamValue;
+import org.eclipse.leshan.core.link.attributes.Attribute;
+import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
+import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
+import org.eclipse.leshan.core.link.attributes.ValuelessAttribute;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -64,11 +69,12 @@ public class RegistrationSerDes {
             ObjectNode ol = JsonNodeFactory.instance.objectNode();
             ol.put("url", l.getUriReference());
             ObjectNode at = JsonNodeFactory.instance.objectNode();
-            for (Map.Entry<String, LinkParamValue> e : l.getLinkParams().entrySet()) {
-                if (e.getValue() == null) {
-                    at.set(e.getKey(), null);
+            for (Attribute a : l.getAttributes()) {
+                if (a.hasValue()) {
+                    at.put(a.getName(), a.getCoreLinkValue());
                 } else {
-                    at.put(e.getKey(), e.getValue().toString());
+                    at.set(a.getName(), null);
+
                 }
             }
             ol.set("at", at);
@@ -148,23 +154,29 @@ public class RegistrationSerDes {
         for (int i = 0; i < links.size(); i++) {
             ObjectNode ol = (ObjectNode) links.get(i);
 
-            Map<String, LinkParamValue> attMap = new HashMap<>();
+            List<Attribute> atts = new ArrayList<>();
             JsonNode att = ol.get("at");
             for (Iterator<String> it = att.fieldNames(); it.hasNext();) {
                 String k = it.next();
                 JsonNode jsonValue = att.get(k);
                 if (jsonValue.isNull()) {
-                    attMap.put(k, null);
+                    atts.add(new ValuelessAttribute(k));
                 } else {
                     if (jsonValue.isNumber()) {
                         // This else block is just needed for retro-compatibility
-                        attMap.put(k, new LinkParamValue(Integer.toString(jsonValue.asInt())));
+                        atts.add(new UnquotedStringAttribute(k, Integer.toString(jsonValue.asInt())));
                     } else {
-                        attMap.put(k, new LinkParamValue(jsonValue.asText()));
+                        String value = jsonValue.asText();
+                        if (value.startsWith("\"")) {
+                            atts.add(QuotedStringAttribute.fromCoreLinkCoreValue(k, value));
+                        } else {
+                            atts.add(new UnquotedStringAttribute(k, value));
+                        }
+
                     }
                 }
             }
-            Link o = new Link(ol.get("url").asText(), attMap);
+            Link o = new Link(ol.get("url").asText(), atts);
             linkObjs[i] = o;
         }
         b.objectLinks(linkObjs);

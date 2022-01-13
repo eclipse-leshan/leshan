@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021 Sierra Wireless and others.
+ * Copyright (c) 2022 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -15,20 +15,19 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.attributes;
 
-import org.eclipse.leshan.core.link.LinkParamValue;
+import org.eclipse.leshan.core.util.Validate;
 
-// TODO class to make migration from LinkParamValue to AttributeSet easier
-// we need to remove it and probably replace it by : 
-// - PTokenAttribute
-// - QuotedStringAttribute
-// - ContentTypeAttribute (ct=)
-// - ResourceTypeAttribute (rt=)
-public class LinkParamValueAttribute implements Attribute {
+/**
+ * A base class to implement an {@link Attribute}
+ */
+public abstract class BaseAttribute implements Attribute {
 
     private String name;
-    private LinkParamValue value;
+    private Object value;
 
-    public LinkParamValueAttribute(String name, LinkParamValue value) {
+    public BaseAttribute(String name, Object value) {
+        Validate.notEmpty(name);
+        Validate.notNull(name);
         this.name = name;
         this.value = value;
     }
@@ -39,19 +38,18 @@ public class LinkParamValueAttribute implements Attribute {
     }
 
     @Override
+    public Object getValue() {
+        return value;
+    }
+
+    @Override
     public boolean hasValue() {
         return value != null;
     }
 
     @Override
-    public String getValue() {
-        if (!hasValue())
-            return null;
-        return value.toString();
-    }
-
-    public String getUnquoted() {
-        return value.getUnquoted();
+    public String toCoreLinkFormat() {
+        return name + "=" + getCoreLinkValue();
     }
 
     @Override
@@ -71,7 +69,7 @@ public class LinkParamValueAttribute implements Attribute {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        LinkParamValueAttribute other = (LinkParamValueAttribute) obj;
+        BaseAttribute other = (BaseAttribute) obj;
         if (name == null) {
             if (other.name != null)
                 return false;
@@ -83,5 +81,10 @@ public class LinkParamValueAttribute implements Attribute {
         } else if (!value.equals(other.value))
             return false;
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s=%s", name, value);
     }
 }

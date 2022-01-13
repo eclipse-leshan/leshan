@@ -16,10 +16,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Collection;
 
+import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.link.attributes.AttributeSet;
 import org.eclipse.leshan.core.util.Validate;
 
@@ -33,31 +32,11 @@ public class Link {
     private final AttributeSet attributes;
 
     /**
-     * Creates a new Link without attributes.
-     * 
-     * @param uriReference the object link URL
-     */
-    public Link(String uriReference) {
-        this(uriReference, (Map<String, LinkParamValue>) null);
-    }
-
-    /**
      * Creates a new link and with its attributes.
      * 
      * @param uriReference the link URL
-     * @param linkParams the object link attributes or <code>null</code> if the link has no attributes
+     * @param attributes the object link attributes or <code>null</code> if the link has no attributes
      */
-    // TODO remove this contructor
-    public Link(String uriReference, Map<String, LinkParamValue> linkParams) {
-        Validate.notNull(uriReference);
-        this.uriReference = uriReference;
-        if (linkParams != null) {
-            this.attributes = new AttributeSet(linkParams);
-        } else {
-            this.attributes = new AttributeSet();
-        }
-    }
-
     public Link(String uriReference, AttributeSet attributes) {
         Validate.notNull(uriReference);
         Validate.notNull(attributes);
@@ -69,51 +48,20 @@ public class Link {
      * Creates a new link and with its attributes.
      * 
      * @param uriReference the link URL
-     * @param linkParams the object link attributes or <code>null</code> if the link has no attributes
+     * @param attributes the object link attributes if the link has no attributes
      */
-    public <T> Link(String uriReference, Map<String, T> linkParams, Class<T> clazz) {
-        Validate.notNull(uriReference);
-        this.uriReference = uriReference;
-        if (linkParams == null || linkParams.isEmpty()) {
-            this.attributes = new AttributeSet();
-        } else {
-            HashMap<String, LinkParamValue> attributesMap = new HashMap<>();
-            for (Entry<String, T> attr : linkParams.entrySet()) {
-                if (attr.getValue() == null) {
-                    attributesMap.put(attr.getKey(), null);
-                } else {
-                    attributesMap.put(attr.getKey(), new LinkParamValue(attr.getValue().toString()));
-                }
-
-            }
-            this.attributes = new AttributeSet(attributesMap);
-        }
+    public Link(String uriReference, Attribute... attributes) {
+        this(uriReference, new AttributeSet(attributes));
     }
 
     /**
      * Creates a new link and with its attributes.
      * 
      * @param uriReference the link URL
-     * @param linkParams the object link attributes. The format is attributeKey1, attributeValue1, attributeKey2,
-     *        attributeValue2. For empty attributes null value should be used.
+     * @param attributes the object link attributes if the link has no attributes
      */
-    public Link(String uriReference, String... linkParams) {
-        Validate.notNull(uriReference);
-        this.uriReference = uriReference;
-        if (linkParams == null || linkParams.length == 0) {
-            this.attributes = new AttributeSet();
-        } else {
-            if (linkParams.length % 2 != 0) {
-                throw new IllegalArgumentException("Each attributes key must have a value");
-            }
-
-            HashMap<String, LinkParamValue> attributesMap = new HashMap<>();
-            for (int i = 0; i < linkParams.length; i = i + 2) {
-                String value = linkParams[i + 1];
-                attributesMap.put(linkParams[i], value != null ? new LinkParamValue(value) : null);
-            }
-            this.attributes = new AttributeSet(attributesMap);
-        }
+    public Link(String uriReference, Collection<Attribute> attributes) {
+        this(uriReference, new AttributeSet(attributes));
     }
 
     /**
@@ -130,13 +78,15 @@ public class Link {
      * 
      * @return an unmodifiable map containing the link attributes
      */
-    // TODO remove it
-    public Map<String, LinkParamValue> getLinkParams() {
-        return attributes.toLinkParams();
-    }
-
     public AttributeSet getAttributes() {
         return attributes;
+    }
+
+    /**
+     * @return true if this link has some attributes.
+     */
+    public boolean hasAttribute() {
+        return !attributes.isEmpty();
     }
 
     @Override
@@ -146,16 +96,24 @@ public class Link {
         builder.append(getUriReference());
         builder.append('>');
 
-        Map<String, LinkParamValue> attributes = getLinkParams();
-        if (attributes != null && !attributes.isEmpty()) {
-            for (Entry<String, LinkParamValue> entry : attributes.entrySet()) {
-                builder.append(";");
-                builder.append(entry.getKey());
-                if (entry.getValue() != null) {
-                    builder.append("=");
-                    builder.append(entry.getValue());
-                }
+        for (Attribute attr : getAttributes()) {
+            builder.append(";");
+            builder.append(attr.getName());
+            if (attr.hasValue()) {
+                builder.append("=");
+                builder.append(attr.getValue());
             }
+        }
+        return builder.toString();
+    }
+
+    public String toCoreLinkFormat() {
+        StringBuilder builder = new StringBuilder();
+        builder.append('<');
+        builder.append(getUriReference());
+        builder.append('>');
+        if (hasAttribute()) {
+            builder.append(getAttributes().toCoreLinkFormat());
         }
         return builder.toString();
     }

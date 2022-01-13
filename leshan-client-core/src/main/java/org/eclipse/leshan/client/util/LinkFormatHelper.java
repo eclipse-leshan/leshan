@@ -21,16 +21,17 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.core.LwM2mId;
+import org.eclipse.leshan.core.attributes.LwM2mAttributeModel;
 import org.eclipse.leshan.core.link.Link;
-import org.eclipse.leshan.core.link.LinkParamValue;
+import org.eclipse.leshan.core.link.attributes.Attribute;
+import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
+import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -54,23 +55,22 @@ public final class LinkFormatHelper {
 
         // create links for "object"
         String rootURL = getPath("/", root);
-        Map<String, LinkParamValue> attributes = new HashMap<>();
-        attributes.put("rt", new LinkParamValue("\"oma.lwm2m\""));
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new QuotedStringAttribute("rt", "oma.lwm2m"));
         // serialize contentFormat;
         if (supportedContentFormats != null && !supportedContentFormats.isEmpty()) {
             if (supportedContentFormats.size() == 1) {
-                attributes.put("ct", new LinkParamValue(Integer.toString(supportedContentFormats.get(0).getCode())));
+                attributes.add(
+                        new UnquotedStringAttribute("ct", Integer.toString(supportedContentFormats.get(0).getCode())));
             } else {
                 StringBuilder b = new StringBuilder();
-                b.append("\"");
                 Iterator<ContentFormat> iterator = supportedContentFormats.iterator();
                 b.append(iterator.next().getCode());
                 while (iterator.hasNext()) {
                     b.append(" ");
                     b.append(iterator.next().getCode());
                 }
-                b.append("\"");
-                attributes.put("ct", new LinkParamValue(b.toString()));
+                attributes.add(new QuotedStringAttribute("ct", b.toString()));
             }
         }
 
@@ -91,7 +91,7 @@ public final class LinkFormatHelper {
 
             List<Integer> availableInstance = objectEnabler.getAvailableInstanceIds();
             // Include an object link if there are no instances or there are object attributes (e.g. "ver")
-            Map<String, LinkParamValue> objectAttributes = getObjectAttributes(objectEnabler.getObjectModel());
+            List<Attribute> objectAttributes = getObjectAttributes(objectEnabler.getObjectModel());
             if (availableInstance.isEmpty() || (objectAttributes != null)) {
                 String objectInstanceUrl = getPath("/", root, Integer.toString(objectEnabler.getId()));
                 links.add(new Link(objectInstanceUrl, objectAttributes));
@@ -108,9 +108,7 @@ public final class LinkFormatHelper {
 
     public static Link[] getBootstrapClientDescription(Collection<LwM2mObjectEnabler> objectEnablers) {
         List<Link> links = new ArrayList<>();
-        Map<String, LinkParamValue> rootAttributes = new HashMap<>();
-        rootAttributes.put("lwm2m", new LinkParamValue(ObjectModel.DEFAULT_VERSION));
-        links.add(new Link("/", rootAttributes));
+        links.add(new Link("/", new UnquotedStringAttribute("lwm2m", ObjectModel.DEFAULT_VERSION)));
 
         for (LwM2mObjectEnabler objectEnabler : objectEnablers) {
             links.addAll(getBootstrapObjectDescriptionWithoutRoot(objectEnabler));
@@ -125,7 +123,7 @@ public final class LinkFormatHelper {
         String rootPath = root == null ? "" : root;
 
         // create link for "object"
-        Map<String, LinkParamValue> objectAttributes = getObjectAttributes(objectEnabler.getObjectModel());
+        List<Attribute> objectAttributes = getObjectAttributes(objectEnabler.getObjectModel());
         String objectURL = getPath("/", rootPath, Integer.toString(objectEnabler.getId()));
         links.add(new Link(objectURL, objectAttributes));
 
@@ -139,9 +137,7 @@ public final class LinkFormatHelper {
 
     public static Link[] getBootstrapObjectDescription(LwM2mObjectEnabler objectEnabler) {
         List<Link> links = new ArrayList<>();
-        Map<String, LinkParamValue> rootAttributes = new HashMap<>();
-        rootAttributes.put("lwm2m", new LinkParamValue(ObjectModel.DEFAULT_VERSION));
-        links.add(new Link("/", rootAttributes));
+        links.add(new Link("/", new UnquotedStringAttribute("lwm2m", ObjectModel.DEFAULT_VERSION)));
 
         links.addAll(getBootstrapObjectDescriptionWithoutRoot(objectEnabler));
 
@@ -156,23 +152,21 @@ public final class LinkFormatHelper {
         String objectURL = getPath("/", Integer.toString(objectEnabler.getId()));
         String version = getVersion(objectEnabler.getObjectModel());
         if (version != null) {
-            Map<String, LinkParamValue> objectAttributes = new HashMap<>();
-            objectAttributes.put("ver", new LinkParamValue(version));
-            objectLink = new Link(objectURL, objectAttributes);
+            objectLink = new Link(objectURL, new UnquotedStringAttribute(LwM2mAttributeModel.OBJECT_VERSION, version));
         } else {
             objectLink = new Link(objectURL);
         }
 
         // add object link if needed
         List<Integer> availableInstanceIds = objectEnabler.getAvailableInstanceIds();
-        if (availableInstanceIds.isEmpty() || !objectLink.getLinkParams().isEmpty()) {
+        if (availableInstanceIds.isEmpty() || !objectLink.getAttributes().isEmpty()) {
             links.add(objectLink);
         }
 
         // add instance link
         for (Integer instanceId : objectEnabler.getAvailableInstanceIds()) {
             String instanceURL = getPath("/", Integer.toString(objectEnabler.getId()), Integer.toString(instanceId));
-            Map<String, LinkParamValue> objectAttributes = new HashMap<>();
+            List<Attribute> objectAttributes = new ArrayList<>();
 
             // get short id
             if (objectEnabler.getId() == LwM2mId.SECURITY || objectEnabler.getId() == LwM2mId.SERVER) {
@@ -181,7 +175,7 @@ public final class LinkFormatHelper {
                 if (isBootstrapServer != null && !isBootstrapServer) {
                     Long shortServerId = ServersInfoExtractor.getServerId(objectEnabler, instanceId);
                     if (shortServerId != null)
-                        objectAttributes.put("ssid", new LinkParamValue(shortServerId.toString()));
+                        objectAttributes.add(new UnquotedStringAttribute("ssid", shortServerId.toString()));
                 }
 
             }
@@ -190,7 +184,7 @@ public final class LinkFormatHelper {
             if (objectEnabler.getId() == LwM2mId.SECURITY) {
                 String uri = ServersInfoExtractor.getServerURI(objectEnabler, instanceId);
                 if (uri != null)
-                    objectAttributes.put("uri", new LinkParamValue("\"" + uri + "\""));
+                    objectAttributes.add(new QuotedStringAttribute("uri", uri));
             }
 
             // create link
@@ -294,14 +288,14 @@ public final class LinkFormatHelper {
         return sb.toString();
     }
 
-    private static Map<String, LinkParamValue> getObjectAttributes(ObjectModel objectModel) {
+    private static List<Attribute> getObjectAttributes(ObjectModel objectModel) {
         String version = getVersion(objectModel);
         if (version == null) {
             return null;
         }
 
-        Map<String, LinkParamValue> attributes = new HashMap<>();
-        attributes.put("ver", new LinkParamValue(version));
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new UnquotedStringAttribute(LwM2mAttributeModel.OBJECT_VERSION, version));
         return attributes;
     }
 

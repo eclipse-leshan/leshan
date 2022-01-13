@@ -18,11 +18,15 @@ package org.eclipse.leshan.core.link;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.eclipse.leshan.core.link.attributes.Attribute;
+import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
+import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
+import org.eclipse.leshan.core.link.attributes.ValuelessAttribute;
 import org.eclipse.leshan.core.util.StringUtils;
 
 /**
@@ -90,13 +94,13 @@ public class DefaultLinkParser implements LinkParser {
 
         validateUriReferenceDecorated(uriReferenceDecorated);
 
-        Map<String, LinkParamValue> linkParams = new HashMap<>();
+        Map<String, Attribute> attributes = new LinkedHashMap<>();
 
         for (int i = 1; i < parts.size(); i++) {
-            parseLinkExtension(parts, linkParams, i);
+            parseLinkExtension(parts, attributes, i);
         }
 
-        return new Link(removeUriReferenceDecoration(uriReferenceDecorated), linkParams);
+        return new Link(removeUriReferenceDecoration(uriReferenceDecorated), attributes.values());
     }
 
     /**
@@ -127,7 +131,7 @@ public class DefaultLinkParser implements LinkParser {
      * }
      * </pre>
      */
-    private void parseLinkExtension(List<String> parts, Map<String, LinkParamValue> linkParams, int i)
+    private void parseLinkExtension(List<String> parts, Map<String, Attribute> linkParams, int i)
             throws LinkParseException {
         String linkExtension = parts.get(i);
         String[] attParts = linkExtension.split("=", 2);
@@ -137,12 +141,13 @@ public class DefaultLinkParser implements LinkParser {
         try {
             validateParmname(key);
 
-            String value = null;
+            Attribute attr = null;
             if (attParts.length > 1) {
-                value = attParts[1];
-                validateLinkExtensionValue(value);
+                attr = validateLinkExtensionValue(key, attParts[1]);
+            } else {
+                attr = new ValuelessAttribute(key);
             }
-            linkParams.put(key, applyCharEscaping(value));
+            linkParams.put(key, attr);
 
         } catch (LinkParseException e) {
             throw new LinkParseException(e, "invalid link-extension [%s] : %s", linkExtension, e.getMessage());
@@ -177,15 +182,20 @@ public class DefaultLinkParser implements LinkParser {
      * }
      * </pre>
      */
-    protected void validateLinkExtensionValue(String value) throws LinkParseException {
+    protected Attribute validateLinkExtensionValue(String name, String value) throws LinkParseException {
         if (value.length() == 0) {
             throw new LinkParseException("invalid parmname value [%s] : no value passed", value);
         }
 
         if (value.charAt(0) == '\"') {
             validateQuotedString(value);
+            String unescapedString = applyCharEscaping(value);
+            String unquoted = unescapedString.substring(1, unescapedString.length() - 1);
+            return new QuotedStringAttribute(name, unquoted);
         } else {
             validatePtoken(value);
+            // TODO Double check if there there escaping for ptoken
+            return new UnquotedStringAttribute(name, applyCharEscaping(value));
         }
     }
 
@@ -339,7 +349,7 @@ public class DefaultLinkParser implements LinkParser {
         return StringUtils.removeStart(StringUtils.removeEnd(uriReferenceDecorated, ">"), "<");
     }
 
-    protected LinkParamValue applyCharEscaping(String value) {
+    protected String applyCharEscaping(String value) {
         if (value == null) {
             return null;
         }
@@ -361,7 +371,7 @@ public class DefaultLinkParser implements LinkParser {
 
             sb.append(ch);
         }
-        return new LinkParamValue(sb.toString());
+        return sb.toString();
     }
 
     protected String removeEscapedChars(String value) {

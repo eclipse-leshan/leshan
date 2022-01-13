@@ -33,7 +33,9 @@ import java.util.TreeSet;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.attributes.LwM2mAttributeModel;
 import org.eclipse.leshan.core.link.Link;
-import org.eclipse.leshan.core.link.LinkParamValue;
+import org.eclipse.leshan.core.link.attributes.Attribute;
+import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
+import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -620,11 +622,11 @@ public class Registration {
 
                 // Parse object link to extract root path
                 for (Link link : objectLinks) {
-                    LinkParamValue rt = null;
+                    Attribute rt = null;
                     if (link != null) {
-                        rt = link.getLinkParams().get("rt");
+                        rt = link.getAttributes().getAttribute("rt");
                     }
-                    if (rt != null && "oma.lwm2m".equals(rt.getUnquoted())) {
+                    if (rt != null && "oma.lwm2m".equals(rt.getValue())) {
                         rootPath = link.getUriReference();
                         if (!rootPath.endsWith("/")) {
                             rootPath = rootPath + "/";
@@ -640,7 +642,7 @@ public class Registration {
                     if (link != null) {
                         // search supported Content format in root link
                         if (rootPath.equals(link.getUriReference())) {
-                            LinkParamValue ctValue = link.getLinkParams().get("ct");
+                            Attribute ctValue = link.getAttributes().getAttribute("ct");
                             if (ctValue != null) {
                                 supportedContentFormats = extractContentFormat(ctValue);
                             }
@@ -661,40 +663,38 @@ public class Registration {
             }
         }
 
-        private Set<ContentFormat> extractContentFormat(LinkParamValue ctValue) {
+        private Set<ContentFormat> extractContentFormat(Attribute ctValue) {
             Set<ContentFormat> supportedContentFormats = new HashSet<>();
 
             // add content format from ct attributes
-            if (!ctValue.toString().startsWith("\"")) {
+            if (ctValue instanceof UnquotedStringAttribute) {
                 try {
-                    supportedContentFormats.add(ContentFormat.fromCode(ctValue.toString()));
+                    supportedContentFormats.add(ContentFormat.fromCode(((UnquotedStringAttribute) ctValue).getValue()));
                 } catch (NumberFormatException e) {
                     LOG.warn(
                             "Invalid supported Content format for ct attributes for registration {} of client {} :  [{}] is not an Integer",
-                            registrationId, endpoint, ctValue);
+                            registrationId, endpoint, ctValue.getValue());
                 }
-            } else {
-                if (!ctValue.toString().endsWith("\"")) {
-                    LOG.warn("Invalid ct value [{}] attributes for registration {} of client {} : end quote is missing",
-                            ctValue, registrationId, endpoint);
-                } else {
-                    String[] formats = ctValue.getUnquoted().split(" ");
-                    for (String codeAsString : formats) {
-                        try {
-                            ContentFormat contentformat = ContentFormat.fromCode(codeAsString);
-                            if (supportedContentFormats.contains(contentformat)) {
-                                LOG.warn(
-                                        "Duplicate Content format [{}] in ct={} attributes for registration {} of client {} ",
-                                        codeAsString, ctValue, registrationId, endpoint);
-                            }
-                            supportedContentFormats.add(contentformat);
-                        } catch (NumberFormatException e) {
+            } else if (ctValue instanceof QuotedStringAttribute) {
+                String[] formats = ((QuotedStringAttribute) ctValue).getValue().split(" ");
+                for (String codeAsString : formats) {
+                    try {
+                        ContentFormat contentformat = ContentFormat.fromCode(codeAsString);
+                        if (supportedContentFormats.contains(contentformat)) {
                             LOG.warn(
-                                    "Invalid supported Content format in ct={} attributes for registration {} of client {}: [{}] is not an Integer",
-                                    ctValue, registrationId, endpoint, codeAsString);
+                                    "Duplicate Content format [{}] in ct={} attributes for registration {} of client {} ",
+                                    codeAsString, ctValue.getValue(), registrationId, endpoint);
                         }
+                        supportedContentFormats.add(contentformat);
+                    } catch (NumberFormatException e) {
+                        LOG.warn(
+                                "Invalid supported Content format in ct={} attributes for registration {} of client {}: [{}] is not an Integer",
+                                ctValue.getValue(), registrationId, endpoint, codeAsString);
                     }
                 }
+            } else {
+                LOG.warn("Invalid ct attribute for registration {} of client {} : unsupported attribute %s",
+                        ctValue.getClass().getCanonicalName(), registrationId, endpoint);
             }
 
             // add mandatory content format
@@ -709,13 +709,13 @@ public class Registration {
         private void addSupportedObject(Link link, LwM2mPath path) {
             // extract object id and version
             int objectId = path.getObjectId();
-            LinkParamValue versionParamValue = link.getLinkParams().get(LwM2mAttributeModel.OBJECT_VERSION);
+            Attribute versionParamValue = link.getAttributes().getAttribute(LwM2mAttributeModel.OBJECT_VERSION);
 
             if (versionParamValue != null) {
                 // if there is a version attribute then use it as version for this object
 
                 // un-quote version (see https://github.com/eclipse/leshan/issues/732)
-                supportedObjects.put(objectId, versionParamValue.getUnquoted());
+                supportedObjects.put(objectId, (String) versionParamValue.getValue());
             } else {
                 // there is no version attribute attached.
                 // In this case we use the DEFAULT_VERSION only if this object stored as supported object.

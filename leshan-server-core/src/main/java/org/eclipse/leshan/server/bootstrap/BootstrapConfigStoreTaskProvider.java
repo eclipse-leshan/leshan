@@ -107,7 +107,7 @@ public class BootstrapConfigStoreTaskProvider implements BootstrapTaskProvider {
                 try {
                     LwM2mPath path = new LwM2mPath(link.getUriReference());
                     if (path.isObjectInstance()) {
-                        if (!link.getLinkParams().containsKey("ssid"))
+                        if (!link.getAttributes().contains("ssid"))
                             return path.getObjectInstanceId();
                     }
                 } catch (Exception e) {

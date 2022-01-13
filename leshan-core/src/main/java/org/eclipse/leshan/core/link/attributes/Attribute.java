@@ -22,9 +22,34 @@ package org.eclipse.leshan.core.link.attributes;
  */
 public interface Attribute {
 
+    /**
+     * @return the name of the attribute
+     */
     String getName();
 
+    /**
+     * @return <code>true</code> if this Attribute has a value.
+     */
+    boolean hasValue();
+
+    /**
+     * @return the typed value of the attribute or <code>null</code> if this value hasn't any attribute.
+     */
     Object getValue();
 
-    boolean hasValue();
+    /**
+     * @return the value as a String
+     */
+    String getStringValue();
+
+    /**
+     * @return the value as it should be serialized for the CoreLink Format.
+     */
+    String getCoreLinkValue();
+
+    /**
+     * @return a attribute String as it should be serialized for the coreLink Format. It should looks like :
+     *         <code>"getName()=getCorelinkValue()"</code>
+     */
+    String toCoreLinkFormat();
 }
