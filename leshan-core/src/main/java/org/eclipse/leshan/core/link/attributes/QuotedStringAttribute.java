@@ -26,9 +26,11 @@ import org.eclipse.leshan.core.util.Validate;
  * {@code
  * quoted-string  = ( <"> *(qdtext | quoted-pair ) <"> )
  * qdtext         = <any TEXT except <">>
- * quoted-pair    = "\" CHAR
+ * quoted-pair    = "\" CHAR   
  * }
  * </pre>
+ * 
+ * About quoted-pair we only escaped/unescaped {@code <">} char to have a lossless conversion.
  */
 public class QuotedStringAttribute extends BaseAttribute {
 

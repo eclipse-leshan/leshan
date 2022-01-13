@@ -189,13 +189,10 @@ public class DefaultLinkParser implements LinkParser {
 
         if (value.charAt(0) == '\"') {
             validateQuotedString(value);
-            String unescapedString = applyCharEscaping(value);
-            String unquoted = unescapedString.substring(1, unescapedString.length() - 1);
-            return new QuotedStringAttribute(name, unquoted);
+            return QuotedStringAttribute.fromCoreLinkCoreValue(name, value);
         } else {
             validatePtoken(value);
-            // TODO Double check if there there escaping for ptoken
-            return new UnquotedStringAttribute(name, applyCharEscaping(value));
+            return new UnquotedStringAttribute(name, value);
         }
     }
 

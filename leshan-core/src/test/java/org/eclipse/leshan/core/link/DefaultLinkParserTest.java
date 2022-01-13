@@ -87,7 +87,7 @@ public class DefaultLinkParserTest {
         Link[] parsed = parser.parse("</foo>;param=\" \\\\ \",</bar>".getBytes());
 
         Assert.assertEquals("/foo", parsed[0].getUriReference());
-        AttributeSet attResult = new AttributeSet(new QuotedStringAttribute("param", " \\ "));
+        AttributeSet attResult = new AttributeSet(new QuotedStringAttribute("param", " \\\\ "));
         Assert.assertEquals(attResult, parsed[0].getAttributes());
 
         Assert.assertEquals("/bar", parsed[1].getUriReference());
@@ -95,10 +95,10 @@ public class DefaultLinkParserTest {
 
     @Test
     public void allow_escaped_characters2b() throws LinkParseException {
-        Link[] parsed = parser.parse("</foo>;param=\" \\\" \",</bar>".getBytes());
+        Link[] parsed = parser.parse("</foo>;param=\" \\\" \\\" \",</bar>".getBytes());
 
         Assert.assertEquals("/foo", parsed[0].getUriReference());
-        AttributeSet attResult = new AttributeSet(new QuotedStringAttribute("param", " \" "));
+        AttributeSet attResult = new AttributeSet(new QuotedStringAttribute("param", " \" \" "));
         Assert.assertEquals(attResult, parsed[0].getAttributes());
 
         Assert.assertEquals("/bar", parsed[1].getUriReference());
@@ -109,7 +109,7 @@ public class DefaultLinkParserTest {
         Link[] parsed = parser.parse("</foo>;param=\" \\x \",</bar>".getBytes());
 
         Assert.assertEquals("/foo", parsed[0].getUriReference());
-        AttributeSet attResult = new AttributeSet(new QuotedStringAttribute("param", " x "));
+        AttributeSet attResult = new AttributeSet(new QuotedStringAttribute("param", " \\x "));
         Assert.assertEquals(attResult, parsed[0].getAttributes());
 
         Assert.assertEquals("/bar", parsed[1].getUriReference());
