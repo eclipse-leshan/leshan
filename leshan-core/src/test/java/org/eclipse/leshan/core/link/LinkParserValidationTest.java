@@ -31,7 +31,7 @@ public class LinkParserValidationTest {
 
     private final LinkParser parser = new DefaultLinkParser();
 
-    @Parameterized.Parameters()
+    @Parameterized.Parameters(name = "{index} - {0}")
     public static Collection<?> linkValueListProvider() {
         return Arrays.asList( //
                 "<file:///etc/hosts>", //
