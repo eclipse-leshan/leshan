@@ -34,6 +34,8 @@ import org.junit.Test;
 
 public class RegistrationSerDesTest {
 
+    private RegistrationSerDes registrationSerDes = new RegistrationSerDes();
+
     @Test
     public void ser_and_des_are_equals() {
         Link[] objs = new Link[2];
@@ -53,8 +55,8 @@ public class RegistrationSerDesTest {
         builder.lastUpdate(new Date(101L));
         Registration r = builder.build();
 
-        byte[] ser = RegistrationSerDes.bSerialize(r);
-        Registration r2 = RegistrationSerDes.deserialize(ser);
+        byte[] ser = registrationSerDes.bSerialize(r);
+        Registration r2 = registrationSerDes.deserialize(ser);
 
         assertEquals(r, r2);
     }
@@ -82,8 +84,8 @@ public class RegistrationSerDesTest {
         builder.extractDataFromObjectLink(true);
         Registration r = builder.build();
 
-        byte[] ser = RegistrationSerDes.bSerialize(r);
-        Registration r2 = RegistrationSerDes.deserialize(ser);
+        byte[] ser = registrationSerDes.bSerialize(r);
+        Registration r2 = registrationSerDes.deserialize(ser);
 
         assertEquals(r, r2);
     }

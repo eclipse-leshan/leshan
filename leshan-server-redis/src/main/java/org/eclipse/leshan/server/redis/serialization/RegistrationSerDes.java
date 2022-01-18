@@ -29,9 +29,9 @@ import java.util.Set;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.Attribute;
-import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
-import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
-import org.eclipse.leshan.core.link.attributes.ValuelessAttribute;
+import org.eclipse.leshan.core.link.attributes.AttributeParser;
+import org.eclipse.leshan.core.link.attributes.DefaultAttributeParser;
+import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -49,7 +49,17 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public class RegistrationSerDes {
 
-    public static JsonNode jSerialize(Registration r) {
+    private AttributeParser attributeParser;
+
+    public RegistrationSerDes() {
+        this(new DefaultAttributeParser());
+    }
+
+    public RegistrationSerDes(AttributeParser attributeParser) {
+        this.attributeParser = attributeParser;
+    }
+
+    public JsonNode jSerialize(Registration r) {
         ObjectNode o = JsonNodeFactory.instance.objectNode();
         o.put("regDate", r.getRegistrationDate().getTime());
         o.set("identity", IdentitySerDes.serialize(r.getIdentity()));
@@ -120,15 +130,15 @@ public class RegistrationSerDes {
         return o;
     }
 
-    public static String sSerialize(Registration r) {
+    public String sSerialize(Registration r) {
         return jSerialize(r).toString();
     }
 
-    public static byte[] bSerialize(Registration r) {
+    public byte[] bSerialize(Registration r) {
         return jSerialize(r).toString().getBytes();
     }
 
-    public static Registration deserialize(JsonNode jObj) {
+    public Registration deserialize(JsonNode jObj) {
         Registration.Builder b = new Registration.Builder(jObj.get("regId").asText(), jObj.get("ep").asText(),
                 IdentitySerDes.deserialize(jObj.get("identity")));
         b.bindingMode(BindingMode.parse(jObj.get("bnd").asText()));
@@ -159,21 +169,23 @@ public class RegistrationSerDes {
             for (Iterator<String> it = att.fieldNames(); it.hasNext();) {
                 String k = it.next();
                 JsonNode jsonValue = att.get(k);
+                String attValue;
                 if (jsonValue.isNull()) {
-                    atts.add(new ValuelessAttribute(k));
+                    attValue = null;
                 } else {
                     if (jsonValue.isNumber()) {
                         // This else block is just needed for retro-compatibility
-                        atts.add(new UnquotedStringAttribute(k, Integer.toString(jsonValue.asInt())));
+                        attValue = Integer.toString(jsonValue.asInt());
                     } else {
-                        String value = jsonValue.asText();
-                        if (value.startsWith("\"")) {
-                            atts.add(QuotedStringAttribute.fromCoreLinkCoreValue(k, value));
-                        } else {
-                            atts.add(new UnquotedStringAttribute(k, value));
-                        }
-
+                        attValue = jsonValue.asText();
                     }
+                }
+                try {
+                    atts.add(attributeParser.parse(k, attValue));
+                } catch (InvalidAttributeException e) {
+                    throw new IllegalStateException(
+                            String.format("Unable to deserialize attribute value from links of registraiton %s/%s",
+                                    jObj.get("regId").asText(), jObj.get("ep").asText()));
                 }
             }
             Link o = new Link(ol.get("url").asText(), atts);
@@ -246,7 +258,7 @@ public class RegistrationSerDes {
         return b.build();
     }
 
-    public static Registration deserialize(byte[] data) {
+    public Registration deserialize(byte[] data) {
         String json = new String(data);
         try {
             return deserialize(new ObjectMapper().readTree(json));
