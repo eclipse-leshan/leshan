@@ -130,6 +130,24 @@ public abstract class StringParser<T extends Throwable> {
     }
 
     /**
+     * Consume next char if its ascii code is between <code>min</code> and <code>max</code> argument if not raise an
+     * exception.
+     */
+    protected void consumeNextCharBetween(int min, int max) throws T {
+        if (!hasMoreChar()) {
+            raiseException(
+                    "Unable to parse [%s] : unexpected EOF, expected char between '%c' and '%c' character after %s",
+                    strToParse, min, max, getAlreadyParsedString());
+        }
+        if (!nextCharIsBetween(min, max)) {
+            raiseException(
+                    "Unable to parse [%s] : unexpected character '%s', expected char between '%c' and '%c'  after %s",
+                    strToParse, getNextChar(), min, max, getAlreadyParsedString());
+        }
+        consumeNextChar();
+    }
+
+    /**
      * Consume next char if it is an HEXDIG character, if not raise an exception.
      * 
      * @see #nextCharIsHEXDIG()
@@ -144,6 +162,31 @@ public abstract class StringParser<T extends Throwable> {
                     getNextChar(), getAlreadyParsedString());
         }
         consumeNextChar();
+    }
+
+    /**
+     * Consume cardinal as described at https://datatracker.ietf.org/doc/html/rfc6690#section-2
+     * 
+     * <pre>
+     *  cardinal       = "0" / ( %x31-39 *DIGIT )
+     * </pre>
+     */
+    public String consumeCardinal() throws T {
+        // "0"
+        if (nextCharIs('0')) {
+            consumeNextChar();
+            return "0";
+        }
+        // ( %x31-39 *DIGIT )
+        else {
+            int start = getPosition();
+            consumeNextCharBetween('1', '9');
+            while (nextCharIsDIGIT()) {
+                consumeNextChar();
+            }
+            int end = getPosition();
+            return substring(start, end);
+        }
     }
 
     /**

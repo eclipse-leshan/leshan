@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
@@ -30,6 +29,7 @@ import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.attributes.LwM2mAttributeModel;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.Attribute;
+import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
 import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
 import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -59,19 +59,7 @@ public final class LinkFormatHelper {
         attributes.add(new QuotedStringAttribute("rt", "oma.lwm2m"));
         // serialize contentFormat;
         if (supportedContentFormats != null && !supportedContentFormats.isEmpty()) {
-            if (supportedContentFormats.size() == 1) {
-                attributes.add(
-                        new UnquotedStringAttribute("ct", Integer.toString(supportedContentFormats.get(0).getCode())));
-            } else {
-                StringBuilder b = new StringBuilder();
-                Iterator<ContentFormat> iterator = supportedContentFormats.iterator();
-                b.append(iterator.next().getCode());
-                while (iterator.hasNext()) {
-                    b.append(" ");
-                    b.append(iterator.next().getCode());
-                }
-                attributes.add(new QuotedStringAttribute("ct", b.toString()));
-            }
+            attributes.add(new ContentFormatAttribute(supportedContentFormats));
         }
 
         links.add(new Link(rootURL, attributes));

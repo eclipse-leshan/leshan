@@ -34,8 +34,7 @@ import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.attributes.LwM2mAttributeModel;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.Attribute;
-import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
-import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
+import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -44,15 +43,11 @@ import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.util.StringUtils;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.security.Authorizer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * An immutable structure which represent a LW-M2M client registration on the server
  */
 public class Registration {
-
-    private static final Logger LOG = LoggerFactory.getLogger(Registration.class);
 
     private static final long DEFAULT_LIFETIME_IN_SEC = 86400L;
 
@@ -642,7 +637,8 @@ public class Registration {
                     if (link != null) {
                         // search supported Content format in root link
                         if (rootPath.equals(link.getUriReference())) {
-                            Attribute ctValue = link.getAttributes().getAttribute("ct");
+                            ContentFormatAttribute ctValue = (ContentFormatAttribute) link.getAttributes()
+                                    .getAttribute(ContentFormatAttribute.NAME);
                             if (ctValue != null) {
                                 supportedContentFormats = extractContentFormat(ctValue);
                             }
@@ -663,39 +659,11 @@ public class Registration {
             }
         }
 
-        private Set<ContentFormat> extractContentFormat(Attribute ctValue) {
+        private Set<ContentFormat> extractContentFormat(ContentFormatAttribute ctValue) {
             Set<ContentFormat> supportedContentFormats = new HashSet<>();
 
             // add content format from ct attributes
-            if (ctValue instanceof UnquotedStringAttribute) {
-                try {
-                    supportedContentFormats.add(ContentFormat.fromCode(((UnquotedStringAttribute) ctValue).getValue()));
-                } catch (NumberFormatException e) {
-                    LOG.warn(
-                            "Invalid supported Content format for ct attributes for registration {} of client {} :  [{}] is not an Integer",
-                            registrationId, endpoint, ctValue.getValue());
-                }
-            } else if (ctValue instanceof QuotedStringAttribute) {
-                String[] formats = ((QuotedStringAttribute) ctValue).getValue().split(" ");
-                for (String codeAsString : formats) {
-                    try {
-                        ContentFormat contentformat = ContentFormat.fromCode(codeAsString);
-                        if (supportedContentFormats.contains(contentformat)) {
-                            LOG.warn(
-                                    "Duplicate Content format [{}] in ct={} attributes for registration {} of client {} ",
-                                    codeAsString, ctValue.getValue(), registrationId, endpoint);
-                        }
-                        supportedContentFormats.add(contentformat);
-                    } catch (NumberFormatException e) {
-                        LOG.warn(
-                                "Invalid supported Content format in ct={} attributes for registration {} of client {}: [{}] is not an Integer",
-                                ctValue.getValue(), registrationId, endpoint, codeAsString);
-                    }
-                }
-            } else {
-                LOG.warn("Invalid ct attribute for registration {} of client {} : unsupported attribute %s",
-                        ctValue.getClass().getCanonicalName(), registrationId, endpoint);
-            }
+            supportedContentFormats.addAll(ctValue.getValue());
 
             // add mandatory content format
             for (ContentFormat format : ContentFormat.knownContentFormat) {

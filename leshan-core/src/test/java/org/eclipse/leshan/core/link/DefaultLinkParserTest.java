@@ -20,9 +20,11 @@ import static org.junit.Assert.assertEquals;
 import java.nio.charset.StandardCharsets;
 
 import org.eclipse.leshan.core.link.attributes.AttributeSet;
+import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
 import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
 import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
 import org.eclipse.leshan.core.link.attributes.ValuelessAttribute;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -195,13 +197,17 @@ public class DefaultLinkParserTest {
 
     @Test
     public void parse_with_some_attributes() throws LinkParseException {
-        Link[] parse = parser.parse("</>;rt=\"oma.lwm2m\";ct=100,</1/101>,</1/102>,</2/0>,</2/1>;empty".getBytes());
+        Link[] parse = parser.parse(
+                "</>;rt=\"oma.lwm2m\";ct=100;qs=\"quoted_string\";us=unquoted_string,</1/101>,</1/102>,</2/0>,</2/1>;empty"
+                        .getBytes());
         Assert.assertEquals(5, parse.length);
 
         Assert.assertEquals("/", parse[0].getUriReference());
         AttributeSet attResult = new AttributeSet( //
                 new QuotedStringAttribute("rt", "oma.lwm2m"), //
-                new UnquotedStringAttribute("ct", "100"));
+                new ContentFormatAttribute(ContentFormat.fromCode(100)), //
+                new QuotedStringAttribute("qs", "quoted_string"), //
+                new UnquotedStringAttribute("us", "unquoted_string"));
         Assert.assertEquals(attResult, parse[0].getAttributes());
 
         Assert.assertEquals("/1/101", parse[1].getUriReference());

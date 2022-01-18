@@ -53,10 +53,16 @@ public class DefaultAttributeParser implements AttributeParser {
      */
     @Override
     public <T extends Throwable> Attribute consumeAttributeValue(String parmName, StringParser<T> parser) throws T {
-        // for now we support only ptoken and quoted-string
-        if (parser.nextCharIs('\"')) {
+        // ct=
+        if (parmName.equals(ContentFormatAttribute.NAME)) {
+            return ContentFormatAttribute.consumeCtAttribute(parser);
+        }
+        // quoted-String
+        else if (parser.nextCharIs('\"')) {
             return QuotedStringAttribute.consumeQuotedString(parmName, parser);
-        } else {
+        }
+        // ptoken
+        else {
             return UnquotedStringAttribute.consumePToken(parmName, parser);
         }
     }
