@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.leshan.core.link.attributes.Attribute;
-import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
-import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
+import org.eclipse.leshan.core.link.attributes.AttributeParser;
+import org.eclipse.leshan.core.link.attributes.DefaultAttributeParser;
 import org.eclipse.leshan.core.link.attributes.ValuelessAttribute;
 import org.eclipse.leshan.core.parser.StringParser;
 
@@ -30,6 +30,16 @@ import org.eclipse.leshan.core.parser.StringParser;
  * A Link as defined in http://tools.ietf.org/html/rfc6690.
  */
 public class DefaultLinkParser implements LinkParser {
+
+    private AttributeParser attributeParser;
+
+    public DefaultLinkParser() {
+        this(new DefaultAttributeParser());
+    }
+
+    public DefaultLinkParser(AttributeParser attributeParser) {
+        this.attributeParser = attributeParser;
+    }
 
     /**
      * Parse a byte arrays representation of a {@code String} encoding with UTF_8 {@link Charset} with rules (subset of
@@ -201,7 +211,7 @@ public class DefaultLinkParser implements LinkParser {
         } else {
             // consume '='
             parser.consumeNextChar();
-            return consumeAttributeValue(parmName, parser);
+            return attributeParser.consumeAttributeValue(parmName, parser);
         }
     }
 
@@ -235,95 +245,5 @@ public class DefaultLinkParser implements LinkParser {
                     parser.getStringToParse(), parser.getAlreadyParsedString());
         }
         return parmName;
-    }
-
-    /**
-     * consume Attribute as defined in RFC6690 (https://datatracker.ietf.org/doc/html/RFC6690#section-2):
-     * 
-     * <pre>
-     * {@code
-     * link-extension = ( parmname [ "=" ( ptoken / quoted-string ) ] )
-     * }
-     * </pre>
-     */
-    protected Attribute consumeAttributeValue(String parmName, StringParser<LinkParseException> parser)
-            throws LinkParseException {
-
-        // for now we support only ptoken and quoted-string
-        if (parser.nextCharIs('\"')) {
-            return consumeQuotedString(parmName, parser);
-        } else {
-            return consumePToken(parmName, parser);
-        }
-    }
-
-    /**
-     * Validate a quoted-string with rules (subset of RFC2616
-     * (https://datatracker.ietf.org/doc/html/rfc2616#section-2.2)):
-     * 
-     * <pre>
-     * {@code
-     * quoted-string  = ( <"> *(qdtext | quoted-pair ) <"> )
-     * qdtext         = <any TEXT except <">>
-     * quoted-pair    = "\" CHAR
-     * }
-     * </pre>
-     */
-    protected Attribute consumeQuotedString(String parmName, StringParser<LinkParseException> parser)
-            throws LinkParseException {
-        int start = parser.getPosition();
-        parser.consumeChar('\"');
-        while (!parser.nextCharIs('\"')) {
-            if (!parser.hasMoreChar()) {
-                // missing ending quote
-                throw new LinkParseException("Unable to parse [%s] : missing ending quote to '%s'",
-                        parser.getStringToParse(), parser.substring(start, parser.getPosition()));
-            }
-            // handle escaping
-            if (parser.nextCharIs('\\')) {
-                // consume \ and escaped char
-                parser.consumeNextChar();
-                parser.consumeNextChar();
-            } else {
-                parser.consumeNextChar();
-            }
-        }
-        parser.consumeChar('\"');
-        int end = parser.getPosition();
-
-        return QuotedStringAttribute.fromCoreLinkCoreValue(parmName, parser.substring(start, end));
-    }
-
-    /**
-     * Validate ptoken with rules (subset of RFC6690 (https://datatracker.ietf.org/doc/html/RFC6690#section-2)):
-     * 
-     * <pre>
-     * ptoken         = 1*ptokenchar
-     * ptokenchar     = "!" / "#" / "$" / "%" / "{@code &}" / "'" / "("
-     *                    / ")" / "*" / "+" / "-" / "." / "/" / DIGIT
-     *                    / ":" / "{@code <}" / "=" / "{@code >}" / "?" / "@" / ALPHA
-     *                    / "[" / "]" / "^" / "_" / "`" / "{" / "|"
-     *                    / "}" / "~"
-     * </pre>
-     */
-    protected Attribute consumePToken(String parmName, StringParser<LinkParseException> parser)
-            throws LinkParseException {
-        // loop for ptokenchar
-        int start = parser.getPosition();
-        while (parser.nextCharIsALPHA() || parser.nextCharIsDIGIT()
-                || parser.nextCharIsIn("!#$%&'()*+-./:<=>?@[]^_`{|}~")) {
-            parser.consumeNextChar();
-        }
-        int end = parser.getPosition();
-
-        // get parmName
-        String ptoken = parser.substring(start, end);
-
-        // check parmName is at least 1 char length
-        if (ptoken.length() == 0) {
-            throw new LinkParseException("Unable to parse [%s] : ptoken should not be empty after %s",
-                    parser.getStringToParse(), parser.getAlreadyParsedString());
-        }
-        return new UnquotedStringAttribute(parmName, ptoken);
     }
 }

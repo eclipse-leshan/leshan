@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.attributes;
 
+import org.eclipse.leshan.core.parser.StringParser;
 import org.eclipse.leshan.core.util.Validate;
 
 /**
@@ -30,7 +31,7 @@ import org.eclipse.leshan.core.util.Validate;
  * }
  * </pre>
  * 
- * About quoted-pair we only escaped/unescaped {@code <">} char to have a lossless conversion.
+ * About quoted-pair we only auto-escaped/unescaped {@code <">} char to have a lossless conversion.
  */
 public class QuotedStringAttribute extends BaseAttribute {
 
@@ -55,9 +56,43 @@ public class QuotedStringAttribute extends BaseAttribute {
         return "\"" + valueEscaped + "\"";
     }
 
-    public static QuotedStringAttribute fromCoreLinkCoreValue(String name, String coreLinkValue) {
-        String unquoted = coreLinkValue.substring(1, coreLinkValue.length() - 1);
-        String unescaped = unquoted.replace("\\\"", "\"");
-        return new QuotedStringAttribute(name, unescaped);
+    /**
+     * Validate a quoted-string with rules (subset of RFC2616
+     * (https://datatracker.ietf.org/doc/html/rfc2616#section-2.2)):
+     * 
+     * <pre>
+     * {@code
+     * quoted-string  = ( <"> *(qdtext | quoted-pair ) <"> )
+     * qdtext         = <any TEXT except <">>
+     * quoted-pair    = "\" CHAR
+     * }
+     * </pre>
+     */
+    public static <T extends Throwable> Attribute consumeQuotedString(String parmName, StringParser<T> parser)
+            throws T {
+        parser.consumeChar('\"');
+        int start = parser.getPosition();
+        while (!parser.nextCharIs('\"')) {
+            if (!parser.hasMoreChar()) {
+                // missing ending quote
+                parser.raiseException("Unable to parse [%s] : missing ending quote to '%s'", parser.getStringToParse(),
+                        parser.substring(start - 1, parser.getPosition()));
+            }
+            // handle escaping
+            if (parser.nextCharIs('\\')) {
+                // consume \ and escaped char
+                parser.consumeNextChar();
+                parser.consumeNextChar();
+            } else {
+                parser.consumeNextChar();
+            }
+        }
+        int end = parser.getPosition();
+        parser.consumeChar('\"');
+
+        String unquotedValue = parser.substring(start, end);
+        String valueUnescaped = unquotedValue.replace("\\\"", "\"");
+        return new QuotedStringAttribute(parmName, valueUnescaped);
     }
+
 }

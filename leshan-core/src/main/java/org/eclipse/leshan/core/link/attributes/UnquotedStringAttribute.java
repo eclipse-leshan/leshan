@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.attributes;
 
+import org.eclipse.leshan.core.parser.StringParser;
+
 /**
  * A String Attribute described as ptoken in RFC6690.
  * <p>
@@ -49,5 +51,37 @@ public class UnquotedStringAttribute extends BaseAttribute {
     @Override
     public String getCoreLinkValue() {
         return getValue();
+    }
+
+    /**
+     * Validate ptoken with rules (subset of RFC6690 (https://datatracker.ietf.org/doc/html/RFC6690#section-2)):
+     * 
+     * <pre>
+     * ptoken         = 1*ptokenchar
+     * ptokenchar     = "!" / "#" / "$" / "%" / "{@code &}" / "'" / "("
+     *                    / ")" / "*" / "+" / "-" / "." / "/" / DIGIT
+     *                    / ":" / "{@code <}" / "=" / "{@code >}" / "?" / "@" / ALPHA
+     *                    / "[" / "]" / "^" / "_" / "`" / "{" / "|"
+     *                    / "}" / "~"
+     * </pre>
+     */
+    public static <T extends Throwable> Attribute consumePToken(String parmName, StringParser<T> parser) throws T {
+        // loop for ptokenchar
+        int start = parser.getPosition();
+        while (parser.nextCharIsALPHA() || parser.nextCharIsDIGIT()
+                || parser.nextCharIsIn("!#$%&'()*+-./:<=>?@[]^_`{|}~")) {
+            parser.consumeNextChar();
+        }
+        int end = parser.getPosition();
+
+        // get parmName
+        String ptoken = parser.substring(start, end);
+
+        // check parmName is at least 1 char length
+        if (ptoken.length() == 0) {
+            parser.raiseException("Unable to parse [%s] : ptoken should not be empty after %s",
+                    parser.getStringToParse(), parser.getAlreadyParsedString());
+        }
+        return new UnquotedStringAttribute(parmName, ptoken);
     }
 }
