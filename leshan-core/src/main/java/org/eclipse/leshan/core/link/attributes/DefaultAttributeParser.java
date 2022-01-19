@@ -15,9 +15,32 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.attributes;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.leshan.core.parser.StringParser;
+import org.eclipse.leshan.core.util.Validate;
 
 public class DefaultAttributeParser implements AttributeParser {
+
+    private Map<String, AttributeModel<?>> knownAttributes;
+
+    public DefaultAttributeParser() {
+        this(Attributes.ALL);
+    }
+
+    public DefaultAttributeParser(Collection<AttributeModel<?>> knownAttributes) {
+        Validate.notNull(knownAttributes);
+        this.knownAttributes = new HashMap<>();
+        for (AttributeModel<?> attributeModel : knownAttributes) {
+            AttributeModel<?> previous = this.knownAttributes.put(attributeModel.getName(), attributeModel);
+            if (previous != null) {
+                throw new IllegalStateException(
+                        String.format("Duplicate models for attribute name [%s]", attributeModel.getName()));
+            }
+        }
+    }
 
     @Override
     public Attribute parse(String name, String attributeValue) throws InvalidAttributeException {
@@ -53,10 +76,13 @@ public class DefaultAttributeParser implements AttributeParser {
      */
     @Override
     public <T extends Throwable> Attribute consumeAttributeValue(String parmName, StringParser<T> parser) throws T {
-        // ct=
-        if (parmName.equals(ContentFormatAttribute.NAME)) {
-            return ContentFormatAttribute.consumeCtAttribute(parser);
+        // search in known attribute
+        AttributeModel<?> model = knownAttributes.get(parmName);
+        if (model != null) {
+            return model.consumeAttribute(parser);
         }
+        // ELSE back up on quoted-string or ptoken
+        //
         // quoted-String
         else if (parser.nextCharIs('\"')) {
             return QuotedStringAttribute.consumeQuotedString(parmName, parser);

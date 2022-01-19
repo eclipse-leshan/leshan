@@ -51,6 +51,12 @@ public class AttributeSet implements Iterable<Attribute> {
         return attributes.get(attrName);
     }
 
+    @SuppressWarnings("unchecked")
+    public <T extends Attribute> T get(AttributeModel<T> attrName) {
+        // TODO in case where cast is unsuccessful should we raise an exception or return null ?
+        return (T) attributes.get(attrName.getName());
+    }
+
     public boolean contains(String attrName) {
         return attributes.containsKey(attrName);
     }

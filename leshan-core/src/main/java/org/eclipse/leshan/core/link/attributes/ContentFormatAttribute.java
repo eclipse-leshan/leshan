@@ -31,15 +31,15 @@ import org.eclipse.leshan.core.util.Validate;
  */
 public class ContentFormatAttribute extends BaseAttribute {
 
-    public static String NAME = "ct";
+    public static ContentFormatAttributeModel MODEL = new ContentFormatAttributeModel();
 
     public ContentFormatAttribute(ContentFormat... contentFormats) {
-        super(NAME, Collections.unmodifiableList(Arrays.asList(contentFormats)));
+        super(MODEL.getName(), Collections.unmodifiableList(Arrays.asList(contentFormats)));
         Validate.notEmpty(contentFormats);
     }
 
     public ContentFormatAttribute(Collection<ContentFormat> contentFormats) {
-        super(NAME, Collections.unmodifiableList(new ArrayList<>(contentFormats)));
+        super(MODEL.getName(), Collections.unmodifiableList(new ArrayList<>(contentFormats)));
         Validate.notEmpty(contentFormats);
     }
 
@@ -73,42 +73,50 @@ public class ContentFormatAttribute extends BaseAttribute {
         }
     }
 
-    /**
-     * Consume a 'ct' attribute value as described in :
-     * <ul>
-     * <li>https://datatracker.ietf.org/doc/html/rfc7252#section-7.2.1</li>
-     * <li>https://datatracker.ietf.org/doc/html/rfc6690#section-2</li>
-     * </ul>
-     * Grammar:
-     * 
-     * <pre>
-     *  ct-value =  cardinal
-     *              /  DQUOTE cardinal *( 1*SP cardinal ) DQUOTE
-     *              
-     *  cardinal       = "0" / ( %x31-39 *DIGIT )
-     * </pre>
-     */
-    public static <T extends Throwable> ContentFormatAttribute consumeCtAttribute(StringParser<T> parser) throws T {
-        // cardinal
-        if (!parser.nextCharIs('\"')) {
-            String cardinal = parser.consumeCardinal();
-            return new ContentFormatAttribute(ContentFormat.fromCode(cardinal));
+    public static class ContentFormatAttributeModel extends AttributeModel<ContentFormatAttribute> {
+
+        public ContentFormatAttributeModel() {
+            super("ct");
         }
-        // DQUOTE cardinal *( 1*SP cardinal ) DQUOTE
-        else {
-            List<ContentFormat> cts = new ArrayList<>();
-            // consume DQUOTE
-            parser.consumeNextChar();
-            String cardinal = parser.consumeCardinal();
-            cts.add(ContentFormat.fromCode(cardinal));
-            while (parser.nextCharIs(' ')) {
-                // consume SP
-                parser.consumeNextChar();
-                cardinal = parser.consumeCardinal();
-                cts.add(ContentFormat.fromCode(cardinal));
+
+        /**
+         * Consume a 'ct' attribute value as described in :
+         * <ul>
+         * <li>https://datatracker.ietf.org/doc/html/rfc7252#section-7.2.1</li>
+         * <li>https://datatracker.ietf.org/doc/html/rfc6690#section-2</li>
+         * </ul>
+         * Grammar:
+         * 
+         * <pre>
+         *  ct-value =  cardinal
+         *              /  DQUOTE cardinal *( 1*SP cardinal ) DQUOTE
+         *              
+         *  cardinal       = "0" / ( %x31-39 *DIGIT )
+         * </pre>
+         */
+        @Override
+        public <T extends Throwable> ContentFormatAttribute consumeAttribute(StringParser<T> parser) throws T {
+            // cardinal
+            if (!parser.nextCharIs('\"')) {
+                String cardinal = parser.consumeCardinal();
+                return new ContentFormatAttribute(ContentFormat.fromCode(cardinal));
             }
-            parser.consumeChar('\"');
-            return new ContentFormatAttribute(cts);
+            // DQUOTE cardinal *( 1*SP cardinal ) DQUOTE
+            else {
+                List<ContentFormat> cts = new ArrayList<>();
+                // consume DQUOTE
+                parser.consumeNextChar();
+                String cardinal = parser.consumeCardinal();
+                cts.add(ContentFormat.fromCode(cardinal));
+                while (parser.nextCharIs(' ')) {
+                    // consume SP
+                    parser.consumeNextChar();
+                    cardinal = parser.consumeCardinal();
+                    cts.add(ContentFormat.fromCode(cardinal));
+                }
+                parser.consumeChar('\"');
+                return new ContentFormatAttribute(cts);
+            }
         }
     }
 }

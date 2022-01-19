@@ -34,6 +34,7 @@ import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.attributes.LwM2mAttributeModel;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.Attribute;
+import org.eclipse.leshan.core.link.attributes.Attributes;
 import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -637,8 +638,7 @@ public class Registration {
                     if (link != null) {
                         // search supported Content format in root link
                         if (rootPath.equals(link.getUriReference())) {
-                            ContentFormatAttribute ctValue = (ContentFormatAttribute) link.getAttributes()
-                                    .getAttribute(ContentFormatAttribute.NAME);
+                            ContentFormatAttribute ctValue = link.getAttributes().get(Attributes.CT);
                             if (ctValue != null) {
                                 supportedContentFormats = extractContentFormat(ctValue);
                             }
