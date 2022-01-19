@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import org.eclipse.leshan.core.link.attributes.AttributeSet;
 import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
 import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
+import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
 import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
 import org.eclipse.leshan.core.link.attributes.ValuelessAttribute;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -204,7 +205,7 @@ public class DefaultLinkParserTest {
 
         Assert.assertEquals("/", parse[0].getUriReference());
         AttributeSet attResult = new AttributeSet( //
-                new QuotedStringAttribute("rt", "oma.lwm2m"), //
+                new ResourceTypeAttribute("oma.lwm2m"), //
                 new ContentFormatAttribute(ContentFormat.fromCode(100)), //
                 new QuotedStringAttribute("qs", "quoted_string"), //
                 new UnquotedStringAttribute("us", "unquoted_string"));

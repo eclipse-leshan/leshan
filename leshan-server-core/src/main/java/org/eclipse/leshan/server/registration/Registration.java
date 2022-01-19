@@ -36,6 +36,7 @@ import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.link.attributes.Attributes;
 import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
+import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -618,11 +619,11 @@ public class Registration {
 
                 // Parse object link to extract root path
                 for (Link link : objectLinks) {
-                    Attribute rt = null;
+                    ResourceTypeAttribute rt = null;
                     if (link != null) {
-                        rt = link.getAttributes().getAttribute("rt");
+                        rt = link.getAttributes().get(Attributes.RT);
                     }
-                    if (rt != null && "oma.lwm2m".equals(rt.getValue())) {
+                    if (rt != null && rt.getValue().contains("oma.lwm2m")) {
                         rootPath = link.getUriReference();
                         if (!rootPath.endsWith("/")) {
                             rootPath = rootPath + "/";

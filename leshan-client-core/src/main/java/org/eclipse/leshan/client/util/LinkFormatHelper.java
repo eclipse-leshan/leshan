@@ -31,6 +31,7 @@ import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
 import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
+import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
 import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -56,7 +57,7 @@ public final class LinkFormatHelper {
         // create links for "object"
         String rootURL = getPath("/", root);
         List<Attribute> attributes = new ArrayList<>();
-        attributes.add(new QuotedStringAttribute("rt", "oma.lwm2m"));
+        attributes.add(new ResourceTypeAttribute("oma.lwm2m"));
         // serialize contentFormat;
         if (supportedContentFormats != null && !supportedContentFormats.isEmpty()) {
             attributes.add(new ContentFormatAttribute(supportedContentFormats));

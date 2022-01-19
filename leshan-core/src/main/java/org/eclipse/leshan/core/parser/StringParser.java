@@ -64,6 +64,19 @@ public abstract class StringParser<T extends Throwable> {
     }
 
     /**
+     * LOALPHA as defined at https://datatracker.ietf.org/doc/html/rfc6690#section-2
+     * 
+     * <pre>
+     * LOALPHA        = %x61-7A   ; a-z
+     * </pre>
+     * 
+     * @return<code>true</code> if there is a next char and it is a ALPHA
+     */
+    public boolean nextCharIsLOALPHA() {
+        return nextCharIsBetween('a', 'z');
+    }
+
+    /**
      * ALPHA as defined at https://datatracker.ietf.org/doc/html/rfc2234#section-6.1
      * 
      * <pre>
@@ -159,6 +172,23 @@ public abstract class StringParser<T extends Throwable> {
         }
         if (!nextCharIsHEXDIG()) {
             raiseException("Unable to parse [%s] : unexpected character '%s', expected 'HEXDIG' after %s", strToParse,
+                    getNextChar(), getAlreadyParsedString());
+        }
+        consumeNextChar();
+    }
+
+    /**
+     * Consume next char if it is LOALPHA argument if not raise an exception.
+     * 
+     * @see #nextCharIsLOALPHA()
+     */
+    public void consumeLOALPHA() throws T {
+        if (!hasMoreChar()) {
+            raiseException("Unable to parse [%s] : unexpected EOF, expected 'LOALPHA' character after %s", strToParse,
+                    getAlreadyParsedString());
+        }
+        if (!nextCharIsLOALPHA()) {
+            raiseException("Unable to parse [%s] : unexpected character '%s', expected 'LOALPHA' after %s", strToParse,
                     getNextChar(), getAlreadyParsedString());
         }
         consumeNextChar();

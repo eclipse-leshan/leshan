@@ -25,6 +25,9 @@ import java.util.Map;
 
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.AttributeSet;
+import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
+import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
+import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
 import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
 import org.eclipse.leshan.core.link.attributes.ValuelessAttribute;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -40,8 +43,10 @@ public class RegistrationSerDesTest {
     public void ser_and_des_are_equals() {
         Link[] objs = new Link[2];
         AttributeSet attrs = new AttributeSet( //
-                new UnquotedStringAttribute("ts", "12"), //
-                new UnquotedStringAttribute("rt", "test"), //
+                new UnquotedStringAttribute("us", "12"), //
+                new QuotedStringAttribute("sq", "test"), //
+                new ResourceTypeAttribute("oma.lwm2m"), //
+                new ContentFormatAttribute(ContentFormat.CBOR, ContentFormat.JSON), //
                 new ValuelessAttribute("hb"));
         objs[0] = new Link("/0/1024/2", attrs);
         objs[1] = new Link("/0/2");
@@ -65,8 +70,10 @@ public class RegistrationSerDesTest {
     public void ser_and_des_are_equals_with_app_data() {
         Link[] objs = new Link[2];
         AttributeSet attrs = new AttributeSet( //
-                new UnquotedStringAttribute("ts", "12"), //
-                new UnquotedStringAttribute("rt", "test"), //
+                new UnquotedStringAttribute("us", "12"), //
+                new QuotedStringAttribute("qt", "test"), //
+                new ResourceTypeAttribute("oma.lwm2m"), //
+                new ContentFormatAttribute(ContentFormat.CBOR, ContentFormat.JSON), //
                 new ValuelessAttribute("hb"));
         objs[0] = new Link("/0/1024/2", attrs);
         objs[1] = new Link("/0/2");

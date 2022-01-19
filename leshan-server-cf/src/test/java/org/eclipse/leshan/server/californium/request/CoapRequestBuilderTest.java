@@ -29,7 +29,7 @@ import org.eclipse.leshan.core.attributes.LwM2mAttribute;
 import org.eclipse.leshan.core.attributes.LwM2mAttributeModel;
 import org.eclipse.leshan.core.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.link.Link;
-import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
+import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.StaticModel;
@@ -79,7 +79,7 @@ public class CoapRequestBuilderTest {
                 Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354));
         b.extractDataFromObjectLink(true);
         if (rootpath != null) {
-            b.objectLinks(new Link[] { new Link(rootpath, new QuotedStringAttribute("rt", "oma.lwm2m")) });
+            b.objectLinks(new Link[] { new Link(rootpath, new ResourceTypeAttribute("oma.lwm2m")) });
         }
         return b.build();
     }

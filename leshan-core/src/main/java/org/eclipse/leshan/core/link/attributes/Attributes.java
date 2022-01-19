@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute.ContentFormatAttributeModel;
+import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute.ResourceTypeAttributeModel;
 
 /**
  * Some constant about {@link Attribute}
@@ -31,7 +32,12 @@ public interface Attributes {
     ContentFormatAttributeModel CT = ContentFormatAttribute.MODEL;
 
     /**
+     * Resource Type attribute 'rt='.
+     */
+    ResourceTypeAttributeModel RT = ResourceTypeAttribute.MODEL;
+
+    /**
      * All known attributes by Leshan.
      */
-    Collection<AttributeModel<?>> ALL = Arrays.asList(CT);
+    Collection<AttributeModel<?>> ALL = Arrays.asList(CT, RT);
 }
