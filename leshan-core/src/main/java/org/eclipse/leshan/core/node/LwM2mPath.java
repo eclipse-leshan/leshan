@@ -422,11 +422,11 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
      * @return A valid {@link LwM2mPath} or null it does not start by lwm2mRootPath
      * 
      * @exception NumberFormatException if path contains not Numeric value
-     * @exception LwM2mNodeException if path is invalid (e.g. too big number in path)
+     * @exception InvalidLwM2mPathException if path is invalid (e.g. too big number in path)
      * @exception IllegalArgumentException if path length is invalid
      */
     public static LwM2mPath parse(String fullpath, String lwm2mRootpath)
-            throws NumberFormatException, LwM2mNodeException, IllegalArgumentException {
+            throws NumberFormatException, InvalidLwM2mPathException, IllegalArgumentException {
         if (lwm2mRootpath == null) {
             return new LwM2mPath(fullpath);
         }
