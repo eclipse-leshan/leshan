@@ -33,8 +33,10 @@ import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
 import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
 import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
 import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
+import org.eclipse.leshan.core.link.lwm2m.MixedLwM2mLink;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.util.StringUtils;
 
@@ -51,11 +53,7 @@ public final class LinkFormatHelper {
             List<ContentFormat> supportedContentFormats) {
         List<Link> links = new ArrayList<>();
 
-        // clean root path
-        String root = rootPath == null ? "" : rootPath;
-
-        // create links for "object"
-        String rootURL = getPath("/", root);
+        // create links for root
         List<Attribute> attributes = new ArrayList<>();
         attributes.add(new ResourceTypeAttribute("oma.lwm2m"));
         // serialize contentFormat;
@@ -63,9 +61,9 @@ public final class LinkFormatHelper {
             attributes.add(new ContentFormatAttribute(supportedContentFormats));
         }
 
-        links.add(new Link(rootURL, attributes));
+        links.add(new MixedLwM2mLink(rootPath, LwM2mPath.ROOTPATH, attributes));
 
-        // sort resources
+        // sort object
         List<LwM2mObjectEnabler> objEnablerList = new ArrayList<>(objectEnablers);
         Collections.sort(objEnablerList, new Comparator<LwM2mObjectEnabler>() {
             @Override
@@ -82,13 +80,10 @@ public final class LinkFormatHelper {
             // Include an object link if there are no instances or there are object attributes (e.g. "ver")
             List<Attribute> objectAttributes = getObjectAttributes(objectEnabler.getObjectModel());
             if (availableInstance.isEmpty() || (objectAttributes != null)) {
-                String objectInstanceUrl = getPath("/", root, Integer.toString(objectEnabler.getId()));
-                links.add(new Link(objectInstanceUrl, objectAttributes));
+                links.add(new MixedLwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId()), objectAttributes));
             }
             for (Integer instanceId : objectEnabler.getAvailableInstanceIds()) {
-                String objectInstanceUrl = getPath("/", root, Integer.toString(objectEnabler.getId()),
-                        instanceId.toString());
-                links.add(new Link(objectInstanceUrl));
+                links.add(new MixedLwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId(), instanceId)));
             }
         }
 
@@ -97,7 +92,8 @@ public final class LinkFormatHelper {
 
     public static Link[] getBootstrapClientDescription(Collection<LwM2mObjectEnabler> objectEnablers) {
         List<Link> links = new ArrayList<>();
-        links.add(new Link("/", new UnquotedStringAttribute("lwm2m", ObjectModel.DEFAULT_VERSION)));
+        links.add(new MixedLwM2mLink("/", LwM2mPath.ROOTPATH,
+                new UnquotedStringAttribute("lwm2m", ObjectModel.DEFAULT_VERSION)));
 
         for (LwM2mObjectEnabler objectEnabler : objectEnablers) {
             links.addAll(getBootstrapObjectDescriptionWithoutRoot(objectEnabler));
@@ -105,16 +101,12 @@ public final class LinkFormatHelper {
         return links.toArray(new Link[] {});
     }
 
-    public static Link[] getObjectDescription(LwM2mObjectEnabler objectEnabler, String root) {
+    public static Link[] getObjectDescription(LwM2mObjectEnabler objectEnabler, String rootPath) {
         List<Link> links = new ArrayList<>();
-
-        // clean root path
-        String rootPath = root == null ? "" : root;
 
         // create link for "object"
         List<Attribute> objectAttributes = getObjectAttributes(objectEnabler.getObjectModel());
-        String objectURL = getPath("/", rootPath, Integer.toString(objectEnabler.getId()));
-        links.add(new Link(objectURL, objectAttributes));
+        links.add(new MixedLwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId()), objectAttributes));
 
         // create links for each available instance
         for (Integer instanceId : objectEnabler.getAvailableInstanceIds()) {
@@ -126,7 +118,8 @@ public final class LinkFormatHelper {
 
     public static Link[] getBootstrapObjectDescription(LwM2mObjectEnabler objectEnabler) {
         List<Link> links = new ArrayList<>();
-        links.add(new Link("/", new UnquotedStringAttribute("lwm2m", ObjectModel.DEFAULT_VERSION)));
+        links.add(new MixedLwM2mLink("/", LwM2mPath.ROOTPATH,
+                new UnquotedStringAttribute("lwm2m", ObjectModel.DEFAULT_VERSION)));
 
         links.addAll(getBootstrapObjectDescriptionWithoutRoot(objectEnabler));
 
@@ -138,12 +131,12 @@ public final class LinkFormatHelper {
 
         // create link for "object"
         Link objectLink;
-        String objectURL = getPath("/", Integer.toString(objectEnabler.getId()));
         String version = getVersion(objectEnabler.getObjectModel());
         if (version != null) {
-            objectLink = new Link(objectURL, new UnquotedStringAttribute(LwM2mAttributeModel.OBJECT_VERSION, version));
+            objectLink = new MixedLwM2mLink("/", new LwM2mPath(objectEnabler.getId()),
+                    new UnquotedStringAttribute(LwM2mAttributeModel.OBJECT_VERSION, version));
         } else {
-            objectLink = new Link(objectURL);
+            objectLink = new MixedLwM2mLink("/", new LwM2mPath(objectEnabler.getId()));
         }
 
         // add object link if needed
@@ -154,7 +147,6 @@ public final class LinkFormatHelper {
 
         // add instance link
         for (Integer instanceId : objectEnabler.getAvailableInstanceIds()) {
-            String instanceURL = getPath("/", Integer.toString(objectEnabler.getId()), Integer.toString(instanceId));
             List<Attribute> objectAttributes = new ArrayList<>();
 
             // get short id
@@ -177,25 +169,16 @@ public final class LinkFormatHelper {
             }
 
             // create link
-            if (!objectAttributes.isEmpty()) {
-                links.add(new Link(instanceURL, objectAttributes));
-            } else {
-                links.add(new Link(instanceURL));
-            }
+            links.add(new MixedLwM2mLink("/", new LwM2mPath(objectEnabler.getId(), instanceId), objectAttributes));
         }
         return links;
     }
 
-    public static Link[] getInstanceDescription(LwM2mObjectEnabler objectEnabler, int instanceId, String root) {
+    public static Link[] getInstanceDescription(LwM2mObjectEnabler objectEnabler, int instanceId, String rootPath) {
         List<Link> links = new ArrayList<>();
 
-        // clean root path
-        String rootPath = root == null ? "" : root;
-
         // create link for "instance"
-        String objectURL = getPath("/", rootPath, Integer.toString(objectEnabler.getId()),
-                Integer.toString(instanceId));
-        links.add(new Link(objectURL));
+        links.add(new MixedLwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId(), instanceId)));
 
         // create links for each available resource
         for (Integer resourceId : objectEnabler.getAvailableResourceIds(instanceId)) {
@@ -205,76 +188,9 @@ public final class LinkFormatHelper {
     }
 
     public static Link getResourceDescription(LwM2mObjectEnabler objectEnabler, int instanceId, int resourceId,
-            String root) {
-        // clean root path
-        String rootPath = root == null ? "" : root;
-
+            String rootPath) {
         // create link for "resource"
-        String objectURL = getPath("/", rootPath, Integer.toString(objectEnabler.getId()), Integer.toString(instanceId),
-                Integer.toString(resourceId));
-        return new Link(objectURL);
-    }
-
-    private static final String getPath(String first, String... more) {
-        String path;
-        if (more.length == 0) {
-            path = first;
-        } else {
-            StringBuilder sb = new StringBuilder();
-            sb.append(first);
-            for (String segment : more) {
-                if (segment.length() > 0) {
-                    if (sb.length() > 0)
-                        sb.append('/');
-                    sb.append(segment);
-                }
-            }
-            path = sb.toString();
-        }
-        return normalizeAndCheck(path);
-    }
-
-    private static String normalizeAndCheck(String input) {
-        int n = input.length();
-        char prevChar = 0;
-        for (int i = 0; i < n; i++) {
-            char c = input.charAt(i);
-            if ((c == '/') && (prevChar == '/'))
-                return normalize(input, n, i - 1);
-            checkNotNul(c);
-            prevChar = c;
-        }
-        if (prevChar == '/')
-            return normalize(input, n, n - 1);
-        return input;
-    }
-
-    private static void checkNotNul(char c) {
-        if (c == '\u0000')
-            throw new IllegalArgumentException("Nul character not allowed in path");
-    }
-
-    private static String normalize(String input, int len, int off) {
-        if (len == 0)
-            return input;
-        int n = len;
-        while ((n > 0) && (input.charAt(n - 1) == '/'))
-            n--;
-        if (n == 0)
-            return "/";
-        StringBuilder sb = new StringBuilder(input.length());
-        if (off > 0)
-            sb.append(input.substring(0, off));
-        char prevChar = 0;
-        for (int i = off; i < n; i++) {
-            char c = input.charAt(i);
-            if ((c == '/') && (prevChar == '/'))
-                continue;
-            checkNotNul(c);
-            sb.append(c);
-            prevChar = c;
-        }
-        return sb.toString();
+        return new MixedLwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId(), instanceId, resourceId));
     }
 
     private static List<Attribute> getObjectAttributes(ObjectModel objectModel) {

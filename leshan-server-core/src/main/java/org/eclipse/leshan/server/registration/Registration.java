@@ -37,6 +37,7 @@ import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.link.attributes.Attributes;
 import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
 import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
+import org.eclipse.leshan.core.link.lwm2m.MixedLwM2mLink;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -614,21 +615,39 @@ public class Registration {
 
         private void extractDataFromObjectLinks() {
             if (objectLinks != null) {
-                // Define default RootPath;
-                rootPath = "/";
 
-                // Parse object link to extract root path
+                // Search LWM2M root link
+                Link root = null;
                 for (Link link : objectLinks) {
-                    ResourceTypeAttribute rt = null;
                     if (link != null) {
-                        rt = link.getAttributes().get(Attributes.RT);
-                    }
-                    if (rt != null && rt.getValue().contains("oma.lwm2m")) {
-                        rootPath = link.getUriReference();
-                        if (!rootPath.endsWith("/")) {
-                            rootPath = rootPath + "/";
+                        ResourceTypeAttribute rt = link.getAttributes().get(Attributes.RT);
+                        if (rt != null && rt.getValue().contains("oma.lwm2m")) {
+                            // this link has the ResourceType oma.lwm2m this is the LWM2M root for sure.
+                            root = link;
+                            break;
+                        } else if (link.getUriReference().equals("/")) {
+                            // this link refer to "/", so could be the LWM2M root link unless another one has the
+                            // ResourceType oma.lwm2m, so we continue to search.
+                            root = link;
                         }
-                        break;
+                    }
+                }
+
+                // extract root path
+                if (root != null) {
+                    rootPath = root.getUriReference();
+                    if (!rootPath.endsWith("/")) {
+                        rootPath = rootPath + "/";
+                    }
+                } else {
+                    rootPath = "/";
+                }
+
+                // extract supported Content format in root link
+                if (root != null) {
+                    ContentFormatAttribute ctValue = root.getAttributes().get(Attributes.CT);
+                    if (ctValue != null) {
+                        supportedContentFormats = extractContentFormat(ctValue);
                     }
                 }
 
@@ -636,24 +655,14 @@ public class Registration {
                 supportedObjects = new HashMap<>();
                 availableInstances = new HashSet<>();
                 for (Link link : objectLinks) {
-                    if (link != null) {
-                        // search supported Content format in root link
-                        if (rootPath.equals(link.getUriReference())) {
-                            ContentFormatAttribute ctValue = link.getAttributes().get(Attributes.CT);
-                            if (ctValue != null) {
-                                supportedContentFormats = extractContentFormat(ctValue);
-                            }
-                        } else {
-                            LwM2mPath path = LwM2mPath.parse(link.getUriReference(), rootPath);
-                            if (path != null) {
-                                // add supported objects
-                                if (path.isObject()) {
-                                    addSupportedObject(link, path);
-                                } else if (path.isObjectInstance()) {
-                                    addSupportedObject(link, path);
-                                    availableInstances.add(path);
-                                }
-                            }
+                    if (link instanceof MixedLwM2mLink) {
+                        LwM2mPath path = ((MixedLwM2mLink) link).getPath();
+                        // add supported objects
+                        if (path.isObject()) {
+                            addSupportedObject(link, path);
+                        } else if (path.isObjectInstance()) {
+                            addSupportedObject(link, path);
+                            availableInstances.add(path);
                         }
                     }
                 }

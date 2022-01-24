@@ -45,6 +45,7 @@ import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.link.DefaultLinkParser;
 import org.eclipse.leshan.core.link.LinkParser;
+import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
@@ -458,7 +459,7 @@ public class LeshanBootstrapServerBuilder {
         if (decoder == null)
             decoder = new DefaultLwM2mDecoder();
         if (linkParser == null)
-            linkParser = new DefaultLinkParser();
+            linkParser = new DefaultLwM2mLinkParser();
 
         // handle dtlsConfig
         DtlsConnectorConfig dtlsConfig = null;

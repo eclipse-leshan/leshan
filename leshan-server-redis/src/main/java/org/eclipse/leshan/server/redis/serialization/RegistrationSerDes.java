@@ -27,11 +27,13 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
+import org.eclipse.leshan.core.attributes.MixedLwM2mAttributeSet;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.link.attributes.AttributeParser;
 import org.eclipse.leshan.core.link.attributes.DefaultAttributeParser;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
+import org.eclipse.leshan.core.link.lwm2m.MixedLwM2mLink;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -157,7 +159,8 @@ public class RegistrationSerDes {
             b.smsNumber(jObj.get("sms").asText(""));
         }
 
-        b.rootPath(jObj.get("root").asText("/"));
+        String rootPath = jObj.get("root").asText("/");
+        b.rootPath(rootPath);
 
         ArrayNode links = (ArrayNode) jObj.get("objLink");
         Link[] linkObjs = new Link[links.size()];
@@ -188,7 +191,15 @@ public class RegistrationSerDes {
                                     jObj.get("regId").asText(), jObj.get("ep").asText()));
                 }
             }
-            Link o = new Link(ol.get("url").asText(), atts);
+            // handle lwm2m path
+            String path = ol.get("url").asText();
+            Link o;
+            if (path.startsWith(rootPath)) {
+                LwM2mPath lwm2mPath = LwM2mPath.parse(path, rootPath);
+                o = new MixedLwM2mLink(rootPath, lwm2mPath, new MixedLwM2mAttributeSet(atts));
+            } else {
+                o = new Link(path, atts);
+            }
             linkObjs[i] = o;
         }
         b.objectLinks(linkObjs);

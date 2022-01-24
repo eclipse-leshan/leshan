@@ -34,12 +34,12 @@ import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
-import org.eclipse.leshan.core.link.DefaultLinkParser;
 import org.eclipse.leshan.core.link.DefaultLinkSerializer;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.link.LinkSerializer;
+import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -47,7 +47,7 @@ import org.junit.Test;
 
 public class LinkFormatHelperTest {
 
-    private final LinkParser parser = new DefaultLinkParser();
+    private final LinkParser parser = new DefaultLwM2mLinkParser();
     private final LinkSerializer serializer = new DefaultLinkSerializer();
 
     @Test
@@ -64,7 +64,7 @@ public class LinkFormatHelperTest {
     public void encode_objectModel_to_linkObject_with_simple_root_path() {
         ObjectModel locationModel = getObjectModel(6);
 
-        Link[] links = LinkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "rp");
+        Link[] links = LinkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "/rp");
         String strLinks = serializer.serialize(links);
 
         assertEquals(
@@ -106,7 +106,7 @@ public class LinkFormatHelperTest {
     public void encode_objectModel_to_linkObject_with_explicit_complex_root_path() {
         ObjectModel locationModel = getObjectModel(6);
 
-        Link[] links = LinkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "/r/t/");
+        Link[] links = LinkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "/r/t");
         String strLinks = serializer.serialize(links);
 
         assertEquals(

@@ -15,11 +15,14 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.lwm2m;
 
+import java.util.Collection;
+
 import org.eclipse.leshan.core.attributes.LwM2mAttribute;
 import org.eclipse.leshan.core.attributes.MixedLwM2mAttributeSet;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.util.Validate;
 
 /**
  * a LWM2M Link which can contain {@link LwM2mAttribute} but also tolerate not LWM2M {@link Attribute} but can also have
@@ -28,19 +31,36 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 public class MixedLwM2mLink extends Link {
 
     private LwM2mPath path;
-    private Link rootResource;
+    private String rootPath;
 
-    public MixedLwM2mLink(Link rootResource, LwM2mPath path, MixedLwM2mAttributeSet attributes) {
-        super(path.toString(), attributes);
+    public MixedLwM2mLink(String rootPath, LwM2mPath path, Attribute... attributes) {
+        this(rootPath, path, new MixedLwM2mAttributeSet(attributes));
+    }
+
+    public MixedLwM2mLink(String rootPath, LwM2mPath path, Collection<? extends Attribute> attributes) {
+        this(rootPath, path, new MixedLwM2mAttributeSet(attributes));
+    }
+
+    public MixedLwM2mLink(String rootPath, LwM2mPath path, MixedLwM2mAttributeSet attributes) {
+        super(rootPath == null || rootPath.equals("/") ? path.toString() : rootPath + path.toString(), attributes);
+
+        Validate.notNull(path);
+        Validate.notNull(attributes);
+
         this.path = path;
-        this.rootResource = rootResource;
+        this.rootPath = rootPath;
     }
 
     public LwM2mPath getPath() {
         return path;
     }
 
-    public Link getRootResource() {
-        return rootResource;
+    public String getRootPath() {
+        return rootPath;
+    }
+
+    @Override
+    public MixedLwM2mAttributeSet getAttributes() {
+        return (MixedLwM2mAttributeSet) super.getAttributes();
     }
 }

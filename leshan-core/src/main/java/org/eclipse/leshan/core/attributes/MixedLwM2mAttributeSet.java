@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.link.attributes.AttributeSet;
+import org.eclipse.leshan.core.node.LwM2mPath;
 
 /**
  * An {@link AttributeSet} containing {@link LwM2mAttribute} but also tolerate not LWM2M {@link Attribute}.
@@ -88,6 +89,19 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
                 };
             }
         };
+    }
+
+    public void validate(LwM2mPath path) {
+        AssignationLevel assignationLevel = null;
+        if (path.isObject()) {
+            assignationLevel = AssignationLevel.OBJECT;
+        } else if (path.isObjectInstance()) {
+            assignationLevel = AssignationLevel.INSTANCE;
+        } else if (path.isResource()) {
+            assignationLevel = AssignationLevel.RESOURCE;
+        }
+        // TODO add RESOURCE INSTANCE and ROOT level ?
+        validate(assignationLevel);
     }
 
     public void validate(AssignationLevel assignationLevel) {
