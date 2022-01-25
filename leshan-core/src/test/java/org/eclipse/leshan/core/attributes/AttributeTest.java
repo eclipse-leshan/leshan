@@ -10,7 +10,7 @@ public class AttributeTest {
     public void should_pick_correct_model() {
         LwM2mAttribute<String> verAttribute = new LwM2mAttribute<String>(LwM2mAttributeModel.OBJECT_VERSION_ATTR,
                 "1.0");
-        assertEquals("ver", verAttribute.getCoRELinkParam());
+        assertEquals("ver", verAttribute.getName());
         assertEquals("1.0", verAttribute.getValue());
         assertTrue(verAttribute.canBeAssignedTo(AssignationLevel.OBJECT));
         assertFalse(verAttribute.isWritable());

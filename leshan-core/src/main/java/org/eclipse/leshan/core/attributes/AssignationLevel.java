@@ -17,12 +17,9 @@
 package org.eclipse.leshan.core.attributes;
 
 /**
- * The assignation level of an {@link LwM2mAttribute}. An attribute can only be applied on one level,
- * but it can be assigned on many levels and then be inherited down to its application
- * level.
+ * The assignation level of an {@link LwM2mAttribute}. An attribute can only be applied on one level, but it can be
+ * assigned on many levels and then be inherited down to its application level.
  */
 public enum AssignationLevel {
-    OBJECT,
-    INSTANCE, 
-    RESOURCE
+    ROOT, OBJECT, INSTANCE, RESOURCE
 }

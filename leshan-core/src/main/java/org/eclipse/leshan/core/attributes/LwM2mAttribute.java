@@ -81,19 +81,14 @@ public class LwM2mAttribute<T> implements Attribute {
             }
         } else if (!this.model.valueClass.equals(value.getClass())) {
             throw new IllegalArgumentException(String.format("Attribute '%s' must have a value of type %s",
-                    model.coRELinkParam, model.valueClass.getSimpleName()));
+                    model.getName(), model.valueClass.getSimpleName()));
         }
         return value;
     }
 
-    // TODO should be removed
-    public String getCoRELinkParam() {
-        return getName();
-    }
-
     @Override
     public String getName() {
-        return model.coRELinkParam;
+        return model.getName();
     }
 
     @Override

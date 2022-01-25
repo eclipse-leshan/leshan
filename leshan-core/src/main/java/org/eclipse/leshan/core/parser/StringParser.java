@@ -178,6 +178,23 @@ public abstract class StringParser<T extends Throwable> {
     }
 
     /**
+     * Consume next char if it is an DIGIT character, if not raise an exception.
+     * 
+     * @see #nextCharIsDIGIT()
+     */
+    public void consumeDIGIT() throws T {
+        if (!hasMoreChar()) {
+            raiseException("Unable to parse [%s] : unexpected EOF, expected 'DIGIT' character after %s", strToParse,
+                    getAlreadyParsedString());
+        }
+        if (!nextCharIsDIGIT()) {
+            raiseException("Unable to parse [%s] : unexpected character '%s', expected 'DIGIT' after %s", strToParse,
+                    getNextChar(), getAlreadyParsedString());
+        }
+        consumeNextChar();
+    }
+
+    /**
      * Consume next char if it is LOALPHA argument if not raise an exception.
      * 
      * @see #nextCharIsLOALPHA()

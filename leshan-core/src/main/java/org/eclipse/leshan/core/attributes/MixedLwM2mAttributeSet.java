@@ -109,21 +109,21 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
         for (LwM2mAttribute<?> attr : getLwM2mAttributes()) {
             if (!attr.canBeAssignedTo(assignationLevel)) {
                 throw new IllegalArgumentException(String.format("Attribute '%s' cannot be assigned to level %s",
-                        attr.getCoRELinkParam(), assignationLevel.name()));
+                        attr.getName(), assignationLevel.name()));
             }
         }
         LwM2mAttribute<?> pmin = getLwM2mAttribute(LwM2mAttributeModel.MINIMUM_PERIOD);
         LwM2mAttribute<?> pmax = getLwM2mAttribute(LwM2mAttributeModel.MAXIMUM_PERIOD);
         if ((pmin != null) && (pmax != null) && (Long) pmin.getValue() > (Long) pmax.getValue()) {
-            throw new IllegalArgumentException(String.format("Cannot write attributes where '%s' > '%s'",
-                    pmin.getCoRELinkParam(), pmax.getCoRELinkParam()));
+            throw new IllegalArgumentException(
+                    String.format("Cannot write attributes where '%s' > '%s'", pmin.getName(), pmax.getName()));
         }
 
         LwM2mAttribute<?> epmin = getLwM2mAttribute(LwM2mAttributeModel.EVALUATE_MINIMUM_PERIOD);
         LwM2mAttribute<?> epmax = getLwM2mAttribute(LwM2mAttributeModel.EVALUATE_MAXIMUM_PERIOD);
         if ((epmin != null) && (epmax != null) && (Long) epmin.getValue() > (Long) epmax.getValue()) {
-            throw new IllegalArgumentException(String.format("Cannot write attributes where '%s' > '%s'",
-                    epmin.getCoRELinkParam(), epmax.getCoRELinkParam()));
+            throw new IllegalArgumentException(
+                    String.format("Cannot write attributes where '%s' > '%s'", epmin.getName(), epmax.getName()));
         }
     }
 
@@ -154,11 +154,11 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
     public LwM2mAttributeSet merge(LwM2mAttributeSet attributes) {
         Map<String, LwM2mAttribute<?>> merged = new LinkedHashMap<>();
         for (LwM2mAttribute<?> attr : getLwM2mAttributes()) {
-            merged.put(attr.getCoRELinkParam(), attr);
+            merged.put(attr.getName(), attr);
         }
         if (attributes != null) {
             for (LwM2mAttribute<?> attr : attributes.getLwM2mAttributes()) {
-                merged.put(attr.getCoRELinkParam(), attr);
+                merged.put(attr.getName(), attr);
             }
         }
         return new LwM2mAttributeSet(merged.values());
@@ -191,7 +191,7 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
 
     @SuppressWarnings("unchecked")
     public <T> LwM2mAttribute<T> getLwM2mAttribute(LwM2mAttributeModel<T> model) {
-        Attribute attribute = getAttribute(model.coRELinkParam);
+        Attribute attribute = getAttribute(model.getName());
         if (attribute instanceof LwM2mAttribute) {
             if (((LwM2mAttribute<?>) attribute).getModel().equals(model)) {
                 return (LwM2mAttribute<T>) attribute;

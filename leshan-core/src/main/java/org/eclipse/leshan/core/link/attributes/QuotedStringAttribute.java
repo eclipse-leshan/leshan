@@ -68,8 +68,7 @@ public class QuotedStringAttribute extends BaseAttribute {
      * }
      * </pre>
      */
-    public static <T extends Throwable> Attribute consumeQuotedString(String parmName, StringParser<T> parser)
-            throws T {
+    public static <T extends Throwable> String consumeQuotedString(StringParser<T> parser) throws T {
         parser.consumeChar('\"');
         int start = parser.getPosition();
         while (!parser.nextCharIs('\"')) {
@@ -92,7 +91,16 @@ public class QuotedStringAttribute extends BaseAttribute {
 
         String unquotedValue = parser.substring(start, end);
         String valueUnescaped = unquotedValue.replace("\\\"", "\"");
-        return new QuotedStringAttribute(parmName, valueUnescaped);
+        return valueUnescaped;
+    }
+
+    /**
+     * @see QuotedStringAttribute#consumeQuotedString(StringParser)
+     */
+    public static <T extends Throwable> QuotedStringAttribute consumeQuotedString(String parmName,
+            StringParser<T> parser) throws T {
+        String value = consumeQuotedString(parser);
+        return new QuotedStringAttribute(parmName, value);
     }
 
 }
