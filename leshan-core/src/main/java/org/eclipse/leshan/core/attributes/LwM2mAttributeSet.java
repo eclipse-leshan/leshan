@@ -25,11 +25,11 @@ import java.util.Collection;
  */
 public class LwM2mAttributeSet extends MixedLwM2mAttributeSet {
 
-    public LwM2mAttributeSet(LwM2mAttribute... attributes) {
+    public LwM2mAttributeSet(LwM2mAttribute<?>... attributes) {
         super(attributes);
     }
 
-    public LwM2mAttributeSet(Collection<LwM2mAttribute> attributes) {
+    public LwM2mAttributeSet(Collection<LwM2mAttribute<?>> attributes) {
         super(attributes);
     }
 
@@ -70,14 +70,14 @@ public class LwM2mAttributeSet extends MixedLwM2mAttributeSet {
      */
     // TODO Must probably be moved somewhere else
     public static LwM2mAttributeSet parse(Collection<String> queryParams) {
-        ArrayList<LwM2mAttribute> attributes = new ArrayList<>();
+        ArrayList<LwM2mAttribute<?>> attributes = new ArrayList<>();
 
         for (String param : queryParams) {
             String[] keyAndValue = param.split("=");
             if (keyAndValue.length == 1) {
-                attributes.add(new LwM2mAttribute(keyAndValue[0]));
+                attributes.add(new LwM2mAttribute<String>(keyAndValue[0]));
             } else if (keyAndValue.length == 2) {
-                attributes.add(new LwM2mAttribute(keyAndValue[0], keyAndValue[1]));
+                attributes.add(new LwM2mAttribute<String>(keyAndValue[0], keyAndValue[1]));
             } else {
                 throw new IllegalArgumentException(String.format("Cannot parse query param '%s'", param));
             }

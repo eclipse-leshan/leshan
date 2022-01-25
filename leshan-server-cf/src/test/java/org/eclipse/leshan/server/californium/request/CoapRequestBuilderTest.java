@@ -198,8 +198,8 @@ public class CoapRequestBuilderTest {
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
                 reg.getEndpoint(), model, encoder, false, null);
         LwM2mAttributeSet attributes = new LwM2mAttributeSet(
-                new LwM2mAttribute(LwM2mAttributeModel.MINIMUM_PERIOD, 10L),
-                new LwM2mAttribute(LwM2mAttributeModel.MAXIMUM_PERIOD, 100L));
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MINIMUM_PERIOD_ATTR, 10L),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MAXIMUM_PERIOD_ATTR, 100L));
         WriteAttributesRequest request = new WriteAttributesRequest(3, 0, 14, attributes);
         builder.visit(request);
 
@@ -218,8 +218,9 @@ public class CoapRequestBuilderTest {
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getIdentity(), reg.getRootPath(), reg.getId(),
                 reg.getEndpoint(), model, encoder, false, null);
-        LwM2mAttributeSet attributes = new LwM2mAttributeSet(new LwM2mAttribute(LwM2mAttributeModel.MINIMUM_PERIOD),
-                new LwM2mAttribute(LwM2mAttributeModel.MAXIMUM_PERIOD));
+        LwM2mAttributeSet attributes = new LwM2mAttributeSet(
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MINIMUM_PERIOD_ATTR),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MAXIMUM_PERIOD_ATTR));
         WriteAttributesRequest request = new WriteAttributesRequest(3, 0, 14, attributes);
         builder.visit(request);
 

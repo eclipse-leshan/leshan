@@ -25,25 +25,41 @@ import org.eclipse.leshan.core.util.Validate;
  * The {@link Attachment} level of the attribute indicates where it can be applied, e.g. the 'pmin' attribute is only
  * applicable to resources, but it can be assigned on all levels and then inherited by underlying resources.
  */
-public class LwM2mAttribute implements Attribute {
-    private final LwM2mAttributeModel<?> model;
+public class LwM2mAttribute<T> implements Attribute {
+    private final LwM2mAttributeModel<T> model;
     private final Object value;
 
+    // TODO remove it (replaced by LwM2mAttribute(LwM2mAttributeModel<T> model, T value)
+    @SuppressWarnings("unchecked")
     public LwM2mAttribute(String coRELinkParam) {
         Validate.notEmpty(coRELinkParam);
-        this.model = LwM2mAttributeModel.modelMap.get(coRELinkParam);
+        this.model = (LwM2mAttributeModel<T>) LwM2mAttributeModel.modelMap.get(coRELinkParam);
         if (model == null) {
             throw new IllegalArgumentException(String.format("Unsupported attribute '%s'", coRELinkParam));
         }
         this.value = null;
     }
 
+    // TODO remove it (replaced by LwM2mAttribute(LwM2mAttributeModel<T> model, T value)
+    @SuppressWarnings("unchecked")
     public LwM2mAttribute(String coRELinkParam, Object value) {
         Validate.notEmpty(coRELinkParam);
-        this.model = LwM2mAttributeModel.modelMap.get(coRELinkParam);
+        this.model = (LwM2mAttributeModel<T>) LwM2mAttributeModel.modelMap.get(coRELinkParam);
         if (model == null) {
             throw new IllegalArgumentException(String.format("Unsupported attribute '%s'", coRELinkParam));
         }
+        this.value = ensureMatchingValue(model, value);
+    }
+
+    public LwM2mAttribute(LwM2mAttributeModel<T> model) {
+        Validate.notNull(model);
+        this.model = model;
+        this.value = null;
+    }
+
+    public LwM2mAttribute(LwM2mAttributeModel<T> model, T value) {
+        Validate.notNull(model);
+        this.model = model;
         this.value = ensureMatchingValue(model, value);
     }
 
@@ -85,9 +101,14 @@ public class LwM2mAttribute implements Attribute {
         return value != null;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Object getValue() {
-        return value;
+    public T getValue() {
+        return (T) value;
+    }
+
+    public LwM2mAttributeModel<T> getModel() {
+        return model;
     }
 
     @Override
@@ -134,7 +155,7 @@ public class LwM2mAttribute implements Attribute {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        LwM2mAttribute other = (LwM2mAttribute) obj;
+        LwM2mAttribute<?> other = (LwM2mAttribute<?>) obj;
         if (model == null) {
             if (other.model != null)
                 return false;

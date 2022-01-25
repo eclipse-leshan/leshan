@@ -28,11 +28,12 @@ public class AttributeSetTest {
 
     @Test
     public void should_provide_query_params() {
-        LwM2mAttributeSet sut = new LwM2mAttributeSet(new LwM2mAttribute(LwM2mAttributeModel.OBJECT_VERSION, "1.1"),
-                new LwM2mAttribute(LwM2mAttributeModel.MINIMUM_PERIOD, 5L),
-                new LwM2mAttribute(LwM2mAttributeModel.MAXIMUM_PERIOD, 60L),
-                new LwM2mAttribute(LwM2mAttributeModel.EVALUATE_MINIMUM_PERIOD, 30L),
-                new LwM2mAttribute(LwM2mAttributeModel.EVALUATE_MAXIMUM_PERIOD, 45L));
+        LwM2mAttributeSet sut = new LwM2mAttributeSet(
+                new LwM2mAttribute<String>(LwM2mAttributeModel.OBJECT_VERSION_ATTR, "1.1"),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MINIMUM_PERIOD_ATTR, 5L),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MAXIMUM_PERIOD_ATTR, 60L),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.EVALUATE_MINIMUM_PERIOD_ATTR, 30L),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.EVALUATE_MAXIMUM_PERIOD_ATTR, 45L));
         assertEquals("ver=1.1&pmin=5&pmax=60&epmin=30&epmax=45", sut.toString());
 
         LwM2mAttributeSet res = LwM2mAttributeSet.parse(sut.toString());
@@ -41,10 +42,10 @@ public class AttributeSetTest {
 
     @Test
     public void no_value_to_unset() {
-        LwM2mAttributeSet sut = new LwM2mAttributeSet(new LwM2mAttribute(LwM2mAttributeModel.MINIMUM_PERIOD),
-                new LwM2mAttribute(LwM2mAttributeModel.MAXIMUM_PERIOD),
-                new LwM2mAttribute(LwM2mAttributeModel.EVALUATE_MINIMUM_PERIOD),
-                new LwM2mAttribute(LwM2mAttributeModel.EVALUATE_MAXIMUM_PERIOD));
+        LwM2mAttributeSet sut = new LwM2mAttributeSet(new LwM2mAttribute<Long>(LwM2mAttributeModel.MINIMUM_PERIOD_ATTR),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MAXIMUM_PERIOD_ATTR),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.EVALUATE_MINIMUM_PERIOD_ATTR),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.EVALUATE_MAXIMUM_PERIOD_ATTR));
         assertEquals("pmin&pmax&epmin&epmax", sut.toString());
 
         LwM2mAttributeSet res = LwM2mAttributeSet.parse(sut.toString());
@@ -53,11 +54,12 @@ public class AttributeSetTest {
 
     @Test
     public void should_get_map() {
-        LwM2mAttributeSet sut = new LwM2mAttributeSet(new LwM2mAttribute(LwM2mAttributeModel.OBJECT_VERSION, "1.1"),
-                new LwM2mAttribute(LwM2mAttributeModel.MINIMUM_PERIOD, 5L),
-                new LwM2mAttribute(LwM2mAttributeModel.MAXIMUM_PERIOD, 60L),
-                new LwM2mAttribute(LwM2mAttributeModel.EVALUATE_MINIMUM_PERIOD, 30L),
-                new LwM2mAttribute(LwM2mAttributeModel.EVALUATE_MAXIMUM_PERIOD, 45L));
+        LwM2mAttributeSet sut = new LwM2mAttributeSet(
+                new LwM2mAttribute<String>(LwM2mAttributeModel.OBJECT_VERSION_ATTR, "1.1"),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MINIMUM_PERIOD_ATTR, 5L),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MAXIMUM_PERIOD_ATTR, 60L),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.EVALUATE_MINIMUM_PERIOD_ATTR, 30L),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.EVALUATE_MAXIMUM_PERIOD_ATTR, 45L));
         Map<String, Object> map = sut.getMap();
         assertEquals("1.1", map.get("ver"));
         assertEquals(5L, map.get("pmin"));
@@ -68,11 +70,13 @@ public class AttributeSetTest {
 
     @Test
     public void should_merge() {
-        LwM2mAttributeSet sut = new LwM2mAttributeSet(new LwM2mAttribute(LwM2mAttributeModel.OBJECT_VERSION, "1.1"),
-                new LwM2mAttribute(LwM2mAttributeModel.MINIMUM_PERIOD, 5L),
-                new LwM2mAttribute(LwM2mAttributeModel.MAXIMUM_PERIOD, 60L));
-        LwM2mAttributeSet set2 = new LwM2mAttributeSet(new LwM2mAttribute(LwM2mAttributeModel.MINIMUM_PERIOD, 10L),
-                new LwM2mAttribute(LwM2mAttributeModel.MAXIMUM_PERIOD, 120L));
+        LwM2mAttributeSet sut = new LwM2mAttributeSet(
+                new LwM2mAttribute<String>(LwM2mAttributeModel.OBJECT_VERSION_ATTR, "1.1"),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MINIMUM_PERIOD_ATTR, 5L),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MAXIMUM_PERIOD_ATTR, 60L));
+        LwM2mAttributeSet set2 = new LwM2mAttributeSet(
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MINIMUM_PERIOD_ATTR, 10L),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MAXIMUM_PERIOD_ATTR, 120L));
 
         LwM2mAttributeSet merged = sut.merge(set2);
 
@@ -90,26 +94,28 @@ public class AttributeSetTest {
 
     @Test
     public void should_to_string() {
-        LwM2mAttributeSet sut = new LwM2mAttributeSet(new LwM2mAttribute(LwM2mAttributeModel.OBJECT_VERSION, "1.1"),
-                new LwM2mAttribute(LwM2mAttributeModel.MINIMUM_PERIOD, 5L),
-                new LwM2mAttribute(LwM2mAttributeModel.MAXIMUM_PERIOD, 60L),
-                new LwM2mAttribute(LwM2mAttributeModel.EVALUATE_MINIMUM_PERIOD, 30L),
-                new LwM2mAttribute(LwM2mAttributeModel.EVALUATE_MAXIMUM_PERIOD, 45L));
+        LwM2mAttributeSet sut = new LwM2mAttributeSet(
+                new LwM2mAttribute<String>(LwM2mAttributeModel.OBJECT_VERSION_ATTR, "1.1"),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MINIMUM_PERIOD_ATTR, 5L),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MAXIMUM_PERIOD_ATTR, 60L),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.EVALUATE_MINIMUM_PERIOD_ATTR, 30L),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.EVALUATE_MAXIMUM_PERIOD_ATTR, 45L));
 
         assertEquals("ver=1.1&pmin=5&pmax=60&epmin=30&epmax=45", sut.toString());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void should_throw_on_duplicates() {
-        new LwM2mAttributeSet(new LwM2mAttribute(LwM2mAttributeModel.OBJECT_VERSION, "1.1"),
-                new LwM2mAttribute(LwM2mAttributeModel.MINIMUM_PERIOD, 5L),
-                new LwM2mAttribute(LwM2mAttributeModel.MINIMUM_PERIOD, 60L));
+        new LwM2mAttributeSet(new LwM2mAttribute<String>(LwM2mAttributeModel.OBJECT_VERSION_ATTR, "1.1"),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MINIMUM_PERIOD_ATTR, 5L),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MINIMUM_PERIOD_ATTR, 60L));
     }
 
     @Test
     public void should_validate_assignation() {
-        LwM2mAttributeSet sut = new LwM2mAttributeSet(new LwM2mAttribute(LwM2mAttributeModel.MINIMUM_PERIOD, 5L),
-                new LwM2mAttribute(LwM2mAttributeModel.MAXIMUM_PERIOD, 60L));
+        LwM2mAttributeSet sut = new LwM2mAttributeSet(
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MINIMUM_PERIOD_ATTR, 5L),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MAXIMUM_PERIOD_ATTR, 60L));
         Collection<Attribute> attributes = sut.getAttributes();
         assertEquals(2, attributes.size());
         sut.validate(AssignationLevel.RESOURCE);
@@ -117,9 +123,10 @@ public class AttributeSetTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void should_throw_on_invalid_assignation_level() {
-        LwM2mAttributeSet sut = new LwM2mAttributeSet(new LwM2mAttribute(LwM2mAttributeModel.OBJECT_VERSION, "1.1"),
-                new LwM2mAttribute(LwM2mAttributeModel.MINIMUM_PERIOD, 5L),
-                new LwM2mAttribute(LwM2mAttributeModel.MAXIMUM_PERIOD, 60L));
+        LwM2mAttributeSet sut = new LwM2mAttributeSet(
+                new LwM2mAttribute<String>(LwM2mAttributeModel.OBJECT_VERSION_ATTR, "1.1"),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MINIMUM_PERIOD_ATTR, 5L),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MAXIMUM_PERIOD_ATTR, 60L));
 
         // OBJECT_VERSION cannot be assigned on resource level
         sut.validate(AssignationLevel.RESOURCE);
@@ -127,8 +134,9 @@ public class AttributeSetTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void should_throw_on_invalid_pmin_pmax() {
-        LwM2mAttributeSet sut = new LwM2mAttributeSet(new LwM2mAttribute(LwM2mAttributeModel.MINIMUM_PERIOD, 50L),
-                new LwM2mAttribute(LwM2mAttributeModel.MAXIMUM_PERIOD, 49L));
+        LwM2mAttributeSet sut = new LwM2mAttributeSet(
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MINIMUM_PERIOD_ATTR, 50L),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.MAXIMUM_PERIOD_ATTR, 49L));
 
         // pmin cannot be greater then pmax
         sut.validate(AssignationLevel.RESOURCE);
@@ -137,8 +145,8 @@ public class AttributeSetTest {
     @Test(expected = IllegalArgumentException.class)
     public void should_throw_on_invalid_epmin_epmax() {
         LwM2mAttributeSet sut = new LwM2mAttributeSet(
-                new LwM2mAttribute(LwM2mAttributeModel.EVALUATE_MINIMUM_PERIOD, 50L),
-                new LwM2mAttribute(LwM2mAttributeModel.EVALUATE_MAXIMUM_PERIOD, 49L));
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.EVALUATE_MINIMUM_PERIOD_ATTR, 50L),
+                new LwM2mAttribute<Long>(LwM2mAttributeModel.EVALUATE_MAXIMUM_PERIOD_ATTR, 49L));
 
         // pmin cannot be greater then pmax
         sut.validate(AssignationLevel.RESOURCE);
