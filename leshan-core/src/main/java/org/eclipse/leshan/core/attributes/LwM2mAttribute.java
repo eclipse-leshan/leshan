@@ -108,17 +108,21 @@ public class LwM2mAttribute<T> implements Attribute {
 
     @Override
     public String getStringValue() {
-        throw new UnsupportedOperationException("not implemented");
+        return getCoreLinkValue();
     }
 
     @Override
     public String getCoreLinkValue() {
-        throw new UnsupportedOperationException("not implemented");
+        return model.toCoreLinkValue(this);
     }
 
     @Override
     public String toCoreLinkFormat() {
-        throw new UnsupportedOperationException("not implemented");
+        if (hasValue()) {
+            return getName() + "=" + getCoreLinkValue();
+        } else {
+            return getName();
+        }
     }
 
     public Attachment getAttachment() {

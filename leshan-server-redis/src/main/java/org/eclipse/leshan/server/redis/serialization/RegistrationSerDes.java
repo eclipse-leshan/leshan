@@ -17,6 +17,7 @@
 package org.eclipse.leshan.server.redis.serialization;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,10 +28,13 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
+import org.eclipse.leshan.core.attributes.LwM2mAttributeModel;
 import org.eclipse.leshan.core.attributes.MixedLwM2mAttributeSet;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.Attribute;
+import org.eclipse.leshan.core.link.attributes.AttributeModel;
 import org.eclipse.leshan.core.link.attributes.AttributeParser;
+import org.eclipse.leshan.core.link.attributes.Attributes;
 import org.eclipse.leshan.core.link.attributes.DefaultAttributeParser;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.eclipse.leshan.core.link.lwm2m.MixedLwM2mLink;
@@ -54,7 +58,13 @@ public class RegistrationSerDes {
     private AttributeParser attributeParser;
 
     public RegistrationSerDes() {
-        this(new DefaultAttributeParser());
+        // Define all supported Attributes
+        Collection<AttributeModel<?>> suppportedAttributes = new ArrayList<AttributeModel<?>>();
+        suppportedAttributes.addAll(Attributes.ALL);
+        suppportedAttributes.addAll(LwM2mAttributeModel.modelMap.values());
+
+        // Create default link Parser
+        this.attributeParser = new DefaultAttributeParser(suppportedAttributes);
     }
 
     public RegistrationSerDes(AttributeParser attributeParser) {

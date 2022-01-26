@@ -215,7 +215,7 @@ public class RegistrationTest {
     @Test
     public void test_object_links_with_text_in_not_lwm2m_path() throws LinkParseException {
         Registration reg = given_a_registration_with_object_link_like(
-                "</root>;rt=\"oma.lwm2m\",</text>,</1/text/0/in/path>,</2/O/test/in/path>,</root/3/0>;ver=\"1.1\",</root/4/0/0/>");
+                "</root>;rt=\"oma.lwm2m\",</text>,</1/text/0/in/path>,</2/O/test/in/path>,</root/3>;ver=1.1,</root/3/0>,</root/4/0/0/>");
 
         // check root path
         assertEquals("/root/", reg.getRootPath());

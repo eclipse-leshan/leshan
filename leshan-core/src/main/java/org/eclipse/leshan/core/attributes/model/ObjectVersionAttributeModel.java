@@ -47,6 +47,17 @@ public class ObjectVersionAttributeModel extends LwM2mAttributeModel<String> {
      */
     @Override
     public <E extends Throwable> LwM2mAttribute<String> consumeAttribute(StringParser<E> parser) throws E {
+
+        // handle opening quote
+        // we tolerate quote because the spec v1.0 seems not clear about it (see
+        // https://github.com/eclipse/leshan/issues/732)
+        // TODO we should probably not tolerate it by default
+        boolean quotedVersion = false;
+        if (parser.nextCharIs('"')) {
+            parser.consumeNextChar();
+            quotedVersion = true;
+        }
+
         // parse Major
         int start = parser.getPosition();
         parser.consumeDIGIT();
@@ -59,6 +70,11 @@ public class ObjectVersionAttributeModel extends LwM2mAttributeModel<String> {
             parser.consumeNextChar();
         }
         int end = parser.getPosition();
+
+        // handle ending quote
+        if (quotedVersion) {
+            parser.consumeChar('"');
+        }
 
         // create attribute
         String strValue = parser.substring(start, end);

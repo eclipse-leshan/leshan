@@ -16,13 +16,18 @@
 package org.eclipse.leshan.core.link.lwm2m;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
 
+import org.eclipse.leshan.core.attributes.LwM2mAttributeModel;
 import org.eclipse.leshan.core.attributes.MixedLwM2mAttributeSet;
 import org.eclipse.leshan.core.link.DefaultLinkParser;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.LinkParser;
+import org.eclipse.leshan.core.link.attributes.AttributeModel;
 import org.eclipse.leshan.core.link.attributes.Attributes;
+import org.eclipse.leshan.core.link.attributes.DefaultAttributeParser;
 import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
 import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -32,7 +37,13 @@ public class DefaultLwM2mLinkParser implements LinkParser {
     private LinkParser parser;
 
     public DefaultLwM2mLinkParser() {
-        this.parser = new DefaultLinkParser();
+        // Define all supported Attributes
+        Collection<AttributeModel<?>> suppportedAttributes = new ArrayList<AttributeModel<?>>();
+        suppportedAttributes.addAll(Attributes.ALL);
+        suppportedAttributes.addAll(LwM2mAttributeModel.modelMap.values());
+
+        // Create default link Parser
+        this.parser = new DefaultLinkParser(new DefaultAttributeParser(suppportedAttributes));
     }
 
     @Override

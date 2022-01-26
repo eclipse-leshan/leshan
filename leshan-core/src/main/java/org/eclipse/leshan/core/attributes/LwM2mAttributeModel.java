@@ -125,6 +125,10 @@ public abstract class LwM2mAttributeModel<T> extends AttributeModel<LwM2mAttribu
         this.valueClass = valueClass;
     }
 
+    public String toCoreLinkValue(LwM2mAttribute<T> attr) {
+        return attr.getValue().toString();
+    }
+
     public static Map<String, LwM2mAttributeModel<?>> modelMap;
 
     static {
