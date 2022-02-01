@@ -2,6 +2,9 @@ package org.eclipse.leshan.core.attributes;
 
 import static org.junit.Assert.*;
 
+import org.eclipse.leshan.core.link.lwm2m.attributes.AssignationLevel;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.junit.Test;
 
 public class AttributeTest {

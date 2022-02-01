@@ -33,10 +33,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.leshan.core.attributes.DefaultLwM2mAttributeParser;
-import org.eclipse.leshan.core.attributes.LwM2mAttributeParser;
-import org.eclipse.leshan.core.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
+import org.eclipse.leshan.core.link.lwm2m.attributes.DefaultLwM2mAttributeParser;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;

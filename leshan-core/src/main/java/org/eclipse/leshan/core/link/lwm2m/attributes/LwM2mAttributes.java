@@ -13,18 +13,12 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.attributes;
+package org.eclipse.leshan.core.link.lwm2m.attributes;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
-
-import org.eclipse.leshan.core.attributes.model.DoubleAttributeModel;
-import org.eclipse.leshan.core.attributes.model.LongAttributeModel;
-import org.eclipse.leshan.core.attributes.model.LwM2mVersionAttributeModel;
-import org.eclipse.leshan.core.attributes.model.ObjectVersionAttributeModel;
-import org.eclipse.leshan.core.attributes.model.StringAttributeModel;
 
 public final class LwM2mAttributes {
 

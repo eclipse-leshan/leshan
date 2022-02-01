@@ -23,6 +23,12 @@ import java.util.Map;
 
 import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
+import org.eclipse.leshan.core.link.lwm2m.attributes.AssignationLevel;
+import org.eclipse.leshan.core.link.lwm2m.attributes.DefaultLwM2mAttributeParser;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.junit.Test;
 
 public class AttributeSetTest {

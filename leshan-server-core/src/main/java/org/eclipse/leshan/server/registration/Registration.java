@@ -31,13 +31,13 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
-import org.eclipse.leshan.core.attributes.LwM2mAttribute;
-import org.eclipse.leshan.core.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.Attributes;
 import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
 import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
 import org.eclipse.leshan.core.link.lwm2m.MixedLwM2mLink;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;

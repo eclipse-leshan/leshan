@@ -15,9 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.lwm2m;
 
-import org.eclipse.leshan.core.attributes.LwM2mAttribute;
-import org.eclipse.leshan.core.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.node.LwM2mPath;
 
 /**

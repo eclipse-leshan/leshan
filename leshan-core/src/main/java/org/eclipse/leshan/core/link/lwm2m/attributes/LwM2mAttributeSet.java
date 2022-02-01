@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Daniel Persson (Husqvarna Group) - Attribute support
  *******************************************************************************/
-package org.eclipse.leshan.core.attributes;
+package org.eclipse.leshan.core.link.lwm2m.attributes;
 
 import java.util.Collection;
 

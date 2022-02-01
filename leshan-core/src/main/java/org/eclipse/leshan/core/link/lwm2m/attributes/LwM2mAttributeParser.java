@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.attributes;
+package org.eclipse.leshan.core.link.lwm2m.attributes;
 
 import java.util.Collection;
 

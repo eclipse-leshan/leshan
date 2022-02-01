@@ -17,10 +17,10 @@ package org.eclipse.leshan.core.link.lwm2m;
 
 import java.util.Collection;
 
-import org.eclipse.leshan.core.attributes.LwM2mAttribute;
-import org.eclipse.leshan.core.attributes.MixedLwM2mAttributeSet;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.Attribute;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
+import org.eclipse.leshan.core.link.lwm2m.attributes.MixedLwM2mAttributeSet;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.util.Validate;
 
