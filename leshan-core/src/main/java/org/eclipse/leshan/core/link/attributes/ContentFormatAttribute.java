@@ -90,7 +90,7 @@ public class ContentFormatAttribute extends BaseAttribute {
          * </pre>
          */
         @Override
-        public <T extends Throwable> ContentFormatAttribute consumeAttribute(StringParser<T> parser) throws T {
+        public <T extends Throwable> ContentFormatAttribute consumeAttributeValue(StringParser<T> parser) throws T {
             // cardinal
             if (!parser.nextCharIs('\"')) {
                 String cardinal = parser.consumeCardinal();

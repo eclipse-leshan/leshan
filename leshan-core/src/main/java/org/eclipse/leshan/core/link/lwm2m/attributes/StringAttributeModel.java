@@ -50,7 +50,7 @@ public class StringAttributeModel extends LwM2mAttributeModel<String> {
      * </pre>
      */
     @Override
-    public <E extends Throwable> LwM2mAttribute<String> consumeAttribute(StringParser<E> parser) throws E {
+    public <E extends Throwable> LwM2mAttribute<String> consumeAttributeValue(StringParser<E> parser) throws E {
         String strValue = QuotedStringAttribute.consumeQuotedString(parser);
         return new LwM2mAttribute<String>(this, strValue);
     }

@@ -36,7 +36,7 @@ public class LongAttributeModel extends LwM2mAttributeModel<Long> {
      * </pre>
      */
     @Override
-    public <E extends Throwable> LwM2mAttribute<Long> consumeAttribute(StringParser<E> parser) throws E {
+    public <E extends Throwable> LwM2mAttribute<Long> consumeAttributeValue(StringParser<E> parser) throws E {
         // parse Value
         int start = parser.getPosition();
         parser.consumeDIGIT();

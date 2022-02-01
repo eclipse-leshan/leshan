@@ -82,7 +82,7 @@ public class ResourceTypeAttribute extends BaseAttribute {
          * </pre>
          */
         @Override
-        public <T extends Throwable> ResourceTypeAttribute consumeAttribute(StringParser<T> parser) throws T {
+        public <T extends Throwable> ResourceTypeAttribute consumeAttributeValue(StringParser<T> parser) throws T {
             // relation-type
             if (!parser.nextCharIs('\"')) {
                 String relationType = consumeRelationType(parser);

@@ -42,7 +42,7 @@ public class ObjectVersionAttributeModel extends LwM2mAttributeModel<String> {
      * </pre>
      */
     @Override
-    public <E extends Throwable> LwM2mAttribute<String> consumeAttribute(StringParser<E> parser) throws E {
+    public <E extends Throwable> LwM2mAttribute<String> consumeAttributeValue(StringParser<E> parser) throws E {
 
         // handle opening quote
         // we tolerate quote because the spec v1.0 seems not clear about it (see

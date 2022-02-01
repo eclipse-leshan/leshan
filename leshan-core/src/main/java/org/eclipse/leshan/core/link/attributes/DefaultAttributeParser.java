@@ -98,7 +98,7 @@ public class DefaultAttributeParser implements AttributeParser {
         // search in known attribute
         AttributeModel<?> model = knownAttributes.get(parmName);
         if (model != null) {
-            return model.consumeAttribute(parser);
+            return model.consumeAttributeValue(parser);
         }
         // ELSE fall-back on quoted-string or ptoken
         //

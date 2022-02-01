@@ -34,7 +34,7 @@ public class LwM2mVersionAttributeModel extends LwM2mAttributeModel<LwM2mVersion
      * </pre>
      */
     @Override
-    public <E extends Throwable> LwM2mAttribute<LwM2mVersion> consumeAttribute(StringParser<E> parser) throws E {
+    public <E extends Throwable> LwM2mAttribute<LwM2mVersion> consumeAttributeValue(StringParser<E> parser) throws E {
         // parse Major
         int start = parser.getPosition();
         parser.consumeDIGIT();
