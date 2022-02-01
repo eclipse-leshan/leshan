@@ -97,5 +97,4 @@ public class QuotedStringAttribute extends BaseAttribute {
         String value = consumeQuotedString(parser);
         return new QuotedStringAttribute(parmName, value);
     }
-
 }

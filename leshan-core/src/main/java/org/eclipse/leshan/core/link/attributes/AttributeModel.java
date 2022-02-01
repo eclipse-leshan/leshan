@@ -36,12 +36,13 @@ public abstract class AttributeModel<T extends Attribute> {
     }
 
     /**
-     * Parse an attribute value in a CoRE Link Format.
+     * Consume an attribute value in a CoRE Link Format for this model.
      */
     public abstract <E extends Throwable> T consumeAttributeValue(StringParser<E> parser) throws E;
 
     /**
-     * Create an Empty Attribute for this Model
+     * Create an Empty Attribute for this Model. It could raise an {@link InvalidAttributeException} if this attribute
+     * must have a value.
      */
     public abstract T createEmptyAttribute() throws InvalidAttributeException;
 }

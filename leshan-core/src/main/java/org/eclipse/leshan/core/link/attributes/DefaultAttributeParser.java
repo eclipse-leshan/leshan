@@ -47,10 +47,10 @@ public class DefaultAttributeParser implements AttributeParser {
     }
 
     @Override
-    public Attribute parse(String name, String attributeValue) throws InvalidAttributeException {
+    public Attribute parseCoreLinkValue(String name, String attributeValue) throws InvalidAttributeException {
         // handle attribute without value
         if (attributeValue == null) {
-            return createValuelessAttribute(name);
+            return createEmptyAttribute(name);
         }
 
         // handle attribute with value
@@ -72,7 +72,7 @@ public class DefaultAttributeParser implements AttributeParser {
     }
 
     @Override
-    public Attribute createValuelessAttribute(String name) throws InvalidAttributeException {
+    public Attribute createEmptyAttribute(String name) throws InvalidAttributeException {
         // search in known attribute
         AttributeModel<?> model = knownAttributes.get(name);
         if (model != null) {

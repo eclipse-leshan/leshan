@@ -19,12 +19,23 @@ import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.parser.StringParser;
 
 /**
- * Parse {@link Attribute} of {@link Link} i
+ * Parse {@link Attribute} of {@link Link}.
  */
 public interface AttributeParser {
-    Attribute parse(String name, String attributeValue) throws InvalidAttributeException;
 
-    <T extends Throwable> Attribute consumeAttributeValue(String name, StringParser<T> attributeValue) throws T;
+    /**
+     * Parse the value of an {@link Attribute} in a CoRE link Format.
+     */
+    Attribute parseCoreLinkValue(String attributeName, String attributeValue) throws InvalidAttributeException;
 
-    Attribute createValuelessAttribute(String name) throws InvalidAttributeException;
+    /**
+     * Consume an attribute value in a CoRE Link Format.
+     */
+    <T extends Throwable> Attribute consumeAttributeValue(String attributeName, StringParser<T> parser) throws T;
+
+    /**
+     * Create an Empty Attribute. It could raise an {@link InvalidAttributeException} if this attribute must have a
+     * value.
+     */
+    Attribute createEmptyAttribute(String attributeName) throws InvalidAttributeException;
 }

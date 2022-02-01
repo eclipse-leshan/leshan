@@ -208,7 +208,7 @@ public class DefaultLinkParser implements LinkParser {
         String parmName = consumeParmName(parser);
         if (!parser.nextCharIs('=')) {
             try {
-                return attributeParser.createValuelessAttribute(parmName);
+                return attributeParser.createEmptyAttribute(parmName);
             } catch (InvalidAttributeException e) {
                 parser.raiseException(e, "Invalid Link %s :", parser.getStringToParse());
                 return null;

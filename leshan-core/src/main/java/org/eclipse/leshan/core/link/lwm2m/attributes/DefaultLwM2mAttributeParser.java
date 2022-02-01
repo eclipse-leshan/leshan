@@ -57,9 +57,9 @@ public class DefaultLwM2mAttributeParser extends DefaultAttributeParser implemen
             String[] keyAndValue = param.split("=");
             Attribute attr;
             if (keyAndValue.length == 1) {
-                attr = parse(keyAndValue[0], null);
+                attr = parseCoreLinkValue(keyAndValue[0], null);
             } else if (keyAndValue.length == 2) {
-                attr = parse(keyAndValue[0], keyAndValue[1]);
+                attr = parseCoreLinkValue(keyAndValue[0], keyAndValue[1]);
             } else {
                 throw new InvalidAttributeException("Cannot parse query param '%s'", param);
             }

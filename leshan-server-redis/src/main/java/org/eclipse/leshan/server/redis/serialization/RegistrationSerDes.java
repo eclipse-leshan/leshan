@@ -194,7 +194,7 @@ public class RegistrationSerDes {
                     }
                 }
                 try {
-                    atts.add(attributeParser.parse(k, attValue));
+                    atts.add(attributeParser.parseCoreLinkValue(k, attValue));
                 } catch (InvalidAttributeException e) {
                     throw new IllegalStateException(
                             String.format("Unable to deserialize attribute value from links of registraiton %s/%s",
