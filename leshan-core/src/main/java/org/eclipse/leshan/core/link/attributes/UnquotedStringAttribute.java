@@ -44,11 +44,6 @@ public class UnquotedStringAttribute extends BaseAttribute {
     }
 
     @Override
-    public String getStringValue() {
-        return getValue();
-    }
-
-    @Override
     public String getCoreLinkValue() {
         return getValue();
     }

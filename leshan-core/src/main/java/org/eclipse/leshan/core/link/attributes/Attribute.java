@@ -38,18 +38,14 @@ public interface Attribute {
     Object getValue();
 
     /**
-     * @return the value as a String
-     */
-    String getStringValue();
-
-    /**
      * @return the value as it should be serialized for the CoreLink Format.
      */
     String getCoreLinkValue();
 
     /**
-     * @return a attribute String as it should be serialized for the coreLink Format. It should looks like :
-     *         <code>"getName()=getCorelinkValue()"</code>
+     * @return a attribute String as it should be serialized for the coreLink Format.
+     *         <p>
+     *         It should looks like : <code>"getName()=getCorelinkValue()"</code>
      */
     String toCoreLinkFormat();
 }

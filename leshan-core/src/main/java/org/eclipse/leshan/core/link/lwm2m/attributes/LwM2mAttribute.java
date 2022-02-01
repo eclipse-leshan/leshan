@@ -85,11 +85,6 @@ public class LwM2mAttribute<T> implements Attribute {
     }
 
     @Override
-    public String getStringValue() {
-        return getCoreLinkValue();
-    }
-
-    @Override
     public String getCoreLinkValue() {
         return model.toCoreLinkValue(this);
     }

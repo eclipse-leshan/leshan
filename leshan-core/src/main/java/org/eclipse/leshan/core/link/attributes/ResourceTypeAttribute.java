@@ -63,11 +63,6 @@ public class ResourceTypeAttribute extends BaseAttribute {
         return b.toString();
     }
 
-    @Override
-    public String getStringValue() {
-        return getCoreLinkValue();
-    }
-
     public static class ResourceTypeAttributeModel extends AttributeModel<ResourceTypeAttribute> {
 
         public ResourceTypeAttributeModel() {

@@ -50,11 +50,6 @@ public class ContentFormatAttribute extends BaseAttribute {
     }
 
     @Override
-    public String getStringValue() {
-        return getCoreLinkValue();
-    }
-
-    @Override
     public String getCoreLinkValue() {
         Collection<ContentFormat> cts = getValue();
         if (cts.size() == 1) {

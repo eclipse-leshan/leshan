@@ -45,11 +45,6 @@ public class ValuelessAttribute implements Attribute {
     }
 
     @Override
-    public String getStringValue() {
-        return null;
-    }
-
-    @Override
     public boolean hasValue() {
         return false;
     }

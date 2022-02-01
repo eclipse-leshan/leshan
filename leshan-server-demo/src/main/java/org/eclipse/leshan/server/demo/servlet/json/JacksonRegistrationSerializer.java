@@ -114,7 +114,7 @@ public class JacksonRegistrationSerializer extends StdSerializer<Registration> {
             // add attributes
             Map<String, String> attributes = new HashMap<>();
             for (Attribute attr : link.getAttributes()) {
-                attributes.put(attr.getName(), attr.getStringValue());
+                attributes.put(attr.getName(), attr.getCoreLinkValue());
             }
             jlink.put("attributes", attributes);
             jlinks.add(jlink);

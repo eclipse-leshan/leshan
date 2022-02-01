@@ -46,11 +46,6 @@ public class QuotedStringAttribute extends BaseAttribute {
     }
 
     @Override
-    public String getStringValue() {
-        return getValue();
-    }
-
-    @Override
     public String getCoreLinkValue() {
         String valueEscaped = getValue().replace("\"", "\\\"");
         return "\"" + valueEscaped + "\"";
