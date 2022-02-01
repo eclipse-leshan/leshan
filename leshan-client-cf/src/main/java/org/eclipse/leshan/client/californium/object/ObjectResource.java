@@ -124,7 +124,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                     exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                 } else {
                     exchange.respond(toCoapResponseCode(response.getCode()),
-                            linkSerializer.serialize(response.getObjectLinks()),
+                            linkSerializer.serializeCoreLinkFormat(response.getObjectLinks()),
                             MediaTypeRegistry.APPLICATION_LINK_FORMAT);
                 }
                 return;
@@ -135,7 +135,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                     exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                 } else {
                     exchange.respond(toCoapResponseCode(response.getCode()),
-                            linkSerializer.serialize(response.getObjectLinks()),
+                            linkSerializer.serializeCoreLinkFormat(response.getObjectLinks()),
                             MediaTypeRegistry.APPLICATION_LINK_FORMAT);
                 }
                 return;

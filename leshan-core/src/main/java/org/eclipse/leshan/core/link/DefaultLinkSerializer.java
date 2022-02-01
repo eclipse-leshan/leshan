@@ -31,7 +31,7 @@ public class DefaultLinkSerializer implements LinkSerializer {
      *         empty return an empty {@code String};
      */
     @Override
-    public String serialize(Link... linkObjects) {
+    public String serializeCoreLinkFormat(Link... linkObjects) {
         StringBuilder builder = new StringBuilder();
         if (linkObjects.length != 0) {
             builder.append(linkObjects[0].toCoreLinkFormat());

@@ -66,7 +66,7 @@ public class DiscoverTest {
 
         Link[] payload = response.getObjectLinks();
         assertEquals("</3>;ver=1.1,</3/0>,</3/0/0>,</3/0/1>,</3/0/2>,</3/0/11>,</3/0/14>,</3/0/15>,</3/0/16>",
-                linkSerializer.serialize(payload));
+                linkSerializer.serializeCoreLinkFormat(payload));
     }
 
     @Test
@@ -92,7 +92,7 @@ public class DiscoverTest {
 
         Link[] payload = response.getObjectLinks();
         assertEquals("</3/0>,</3/0/0>,</3/0/1>,</3/0/2>,</3/0/11>,</3/0/14>,</3/0/15>,</3/0/16>",
-                linkSerializer.serialize(payload));
+                linkSerializer.serializeCoreLinkFormat(payload));
     }
 
     @Test
@@ -117,7 +117,7 @@ public class DiscoverTest {
         assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         Link[] payload = response.getObjectLinks();
-        assertEquals("</3/0/0>", linkSerializer.serialize(payload));
+        assertEquals("</3/0/0>", linkSerializer.serializeCoreLinkFormat(payload));
     }
 
     @Test

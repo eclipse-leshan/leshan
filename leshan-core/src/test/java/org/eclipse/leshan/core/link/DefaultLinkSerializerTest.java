@@ -38,7 +38,7 @@ public class DefaultLinkSerializerTest {
         Link obj2 = new Link("/2/1");
         Link obj3 = new Link("/3");
 
-        String res = serializer.serialize(obj1, obj2, obj3);
+        String res = serializer.serializeCoreLinkFormat(obj1, obj2, obj3);
 
         Assert.assertEquals("</1/0/1>,</2/1>,</3>", res);
 
@@ -50,7 +50,7 @@ public class DefaultLinkSerializerTest {
         Link obj2 = new Link("/2/1", new QuotedStringAttribute("string", "stringval"));
         Link obj3 = new Link("/3", new ValuelessAttribute("empty"));
 
-        String res = serializer.serialize(obj1, obj2, obj3);
+        String res = serializer.serializeCoreLinkFormat(obj1, obj2, obj3);
 
         Assert.assertEquals("</1/0/1>;number=12,</2/1>;string=\"stringval\",</3>;empty", res);
     }
@@ -59,7 +59,7 @@ public class DefaultLinkSerializerTest {
     public void serialise_with_root_url() {
         Link obj1 = new Link("/", new UnquotedStringAttribute("number", "12"));
 
-        String res = serializer.serialize(obj1);
+        String res = serializer.serializeCoreLinkFormat(obj1);
 
         Assert.assertEquals("</>;number=12", res);
     }
@@ -74,7 +74,7 @@ public class DefaultLinkSerializerTest {
         Link obj2 = new Link("/2", new UnquotedStringAttribute("number3", "3"));
         Link[] input = new Link[] { obj1, obj2 };
 
-        String strObjs = serializer.serialize(input);
+        String strObjs = serializer.serializeCoreLinkFormat(input);
         Link[] output = parser.parseCoreLinkFormat(strObjs.getBytes());
 
         Assert.assertArrayEquals(input, output);
@@ -84,7 +84,7 @@ public class DefaultLinkSerializerTest {
     public void parse_then_serialise_with_rt_attribute() throws LinkParseException {
         String input = "</lwm2m>;rt=\"oma.lwm2m\",</lwm2m/1/101>,</lwm2m/1/102>,</lwm2m/2/0>";
         Link[] objs = parser.parseCoreLinkFormat(input.getBytes());
-        String output = serializer.serialize(objs);
+        String output = serializer.serializeCoreLinkFormat(objs);
         Assert.assertEquals(input, output);
 
     }
@@ -94,6 +94,6 @@ public class DefaultLinkSerializerTest {
         Map<String, String> att = new HashMap<>();
         att.put("ver", "2.2");
         Link link = new Link("/1", new UnquotedStringAttribute("ver", "2.2"));
-        assertEquals("</1>;ver=2.2", serializer.serialize(link));
+        assertEquals("</1>;ver=2.2", serializer.serializeCoreLinkFormat(link));
     }
 }

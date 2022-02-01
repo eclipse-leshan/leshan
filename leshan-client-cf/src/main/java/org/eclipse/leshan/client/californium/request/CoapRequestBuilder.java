@@ -118,7 +118,7 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
 
         Link[] objectLinks = request.getObjectLinks();
         if (objectLinks != null)
-            coapRequest.setPayload(linkSerializer.serialize(objectLinks));
+            coapRequest.setPayload(linkSerializer.serializeCoreLinkFormat(objectLinks));
 
     }
 
@@ -143,7 +143,7 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
         Link[] linkObjects = request.getObjectLinks();
         if (linkObjects != null) {
             coapRequest.getOptions().setContentFormat(ContentFormat.LINK.getCode());
-            coapRequest.setPayload(linkSerializer.serialize(linkObjects));
+            coapRequest.setPayload(linkSerializer.serializeCoreLinkFormat(linkObjects));
         }
     }
 
