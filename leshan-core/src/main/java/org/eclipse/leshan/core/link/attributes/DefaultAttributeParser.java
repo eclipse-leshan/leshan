@@ -30,7 +30,7 @@ public class DefaultAttributeParser implements AttributeParser {
         this(Attributes.ALL);
     }
 
-    public DefaultAttributeParser(Collection<AttributeModel<?>> knownAttributes) {
+    public DefaultAttributeParser(Collection<? extends AttributeModel<?>> knownAttributes) {
         Validate.notNull(knownAttributes);
         this.knownAttributes = new HashMap<>();
         for (AttributeModel<?> attributeModel : knownAttributes) {
@@ -42,12 +42,18 @@ public class DefaultAttributeParser implements AttributeParser {
         }
     }
 
+    public Map<String, AttributeModel<?>> getKnownAttributes() {
+        return knownAttributes;
+    }
+
     @Override
     public Attribute parse(String name, String attributeValue) throws InvalidAttributeException {
+        // handle attribute without value
         if (attributeValue == null) {
-            return new ValuelessAttribute(name);
+            return createValuelessAttribute(name);
         }
 
+        // handle attribute with value
         StringParser<InvalidAttributeException> parser = new StringParser<InvalidAttributeException>(attributeValue) {
             @Override
             public void raiseException(String message, Exception cause) throws InvalidAttributeException {
@@ -59,10 +65,23 @@ public class DefaultAttributeParser implements AttributeParser {
 
         if (parser.hasMoreChar()) {
             parser.raiseException("Invalid attributeValue [%s] for [%s]: unexpected characters after [%s]",
-                    attributeValue, name, "prout");
+                    attributeValue, name, parser.getAlreadyParsedString());
         }
 
         return attribute;
+    }
+
+    @Override
+    public Attribute createValuelessAttribute(String name) throws InvalidAttributeException {
+        // search in known attribute
+        AttributeModel<?> model = knownAttributes.get(name);
+        if (model != null) {
+            return model.createEmptyAttribute();
+        }
+        // ELSE fall-back on ValueLessAttribute
+        else {
+            return new ValuelessAttribute(name);
+        }
     }
 
     /**
@@ -81,7 +100,7 @@ public class DefaultAttributeParser implements AttributeParser {
         if (model != null) {
             return model.consumeAttribute(parser);
         }
-        // ELSE back up on quoted-string or ptoken
+        // ELSE fall-back on quoted-string or ptoken
         //
         // quoted-String
         else if (parser.nextCharIs('\"')) {

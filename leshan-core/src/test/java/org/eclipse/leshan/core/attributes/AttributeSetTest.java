@@ -22,12 +22,14 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.eclipse.leshan.core.link.attributes.Attribute;
+import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.junit.Test;
 
 public class AttributeSetTest {
+    private static LwM2mAttributeParser parser = new DefaultLwM2mAttributeParser();
 
     @Test
-    public void should_provide_query_params() {
+    public void should_provide_query_params() throws InvalidAttributeException {
         LwM2mAttributeSet sut = new LwM2mAttributeSet(
                 new LwM2mAttribute<String>(LwM2mAttributeModel.OBJECT_VERSION_ATTR, "1.1"),
                 new LwM2mAttribute<Long>(LwM2mAttributeModel.MINIMUM_PERIOD_ATTR, 5L),
@@ -36,19 +38,19 @@ public class AttributeSetTest {
                 new LwM2mAttribute<Long>(LwM2mAttributeModel.EVALUATE_MAXIMUM_PERIOD_ATTR, 45L));
         assertEquals("ver=1.1&pmin=5&pmax=60&epmin=30&epmax=45", sut.toString());
 
-        LwM2mAttributeSet res = LwM2mAttributeSet.parse(sut.toString());
+        LwM2mAttributeSet res = new LwM2mAttributeSet(parser.parseUriQueries(sut.toString()));
         assertEquals(sut, res);
     }
 
     @Test
-    public void no_value_to_unset() {
+    public void no_value_to_unset() throws InvalidAttributeException {
         LwM2mAttributeSet sut = new LwM2mAttributeSet(new LwM2mAttribute<Long>(LwM2mAttributeModel.MINIMUM_PERIOD_ATTR),
                 new LwM2mAttribute<Long>(LwM2mAttributeModel.MAXIMUM_PERIOD_ATTR),
                 new LwM2mAttribute<Long>(LwM2mAttributeModel.EVALUATE_MINIMUM_PERIOD_ATTR),
                 new LwM2mAttribute<Long>(LwM2mAttributeModel.EVALUATE_MAXIMUM_PERIOD_ATTR));
         assertEquals("pmin&pmax&epmin&epmax", sut.toString());
 
-        LwM2mAttributeSet res = LwM2mAttributeSet.parse(sut.toString());
+        LwM2mAttributeSet res = new LwM2mAttributeSet(parser.parseUriQueries(sut.toString()));
         assertEquals(sut, res);
     }
 

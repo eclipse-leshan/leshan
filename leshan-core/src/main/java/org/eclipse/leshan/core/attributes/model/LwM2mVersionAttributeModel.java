@@ -23,6 +23,7 @@ import org.eclipse.leshan.core.attributes.AccessMode;
 import org.eclipse.leshan.core.attributes.Attachment;
 import org.eclipse.leshan.core.attributes.LwM2mAttribute;
 import org.eclipse.leshan.core.attributes.LwM2mAttributeModel;
+import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.eclipse.leshan.core.parser.StringParser;
 
 public class LwM2mVersionAttributeModel extends LwM2mAttributeModel<LwM2mVersion> {
@@ -63,4 +64,8 @@ public class LwM2mVersionAttributeModel extends LwM2mAttributeModel<LwM2mVersion
         return new LwM2mAttribute<LwM2mVersion>(this, LwM2mVersion.get(strValue));
     }
 
+    @Override
+    public LwM2mAttribute<LwM2mVersion> createEmptyAttribute() throws InvalidAttributeException {
+        throw new InvalidAttributeException("Attribute %s must have a value", getName());
+    }
 }

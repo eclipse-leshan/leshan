@@ -25,4 +25,6 @@ public interface AttributeParser {
     Attribute parse(String name, String attributeValue) throws InvalidAttributeException;
 
     <T extends Throwable> Attribute consumeAttributeValue(String name, StringParser<T> attributeValue) throws T;
+
+    Attribute createValuelessAttribute(String name) throws InvalidAttributeException;
 }

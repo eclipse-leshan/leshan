@@ -17,7 +17,9 @@
 package org.eclipse.leshan.core.attributes;
 
 public enum AccessMode {
-    R,
-    W,
-    RW
+    R, W, RW;
+
+    public boolean isWritable() {
+        return this == W || this == RW;
+    }
 }

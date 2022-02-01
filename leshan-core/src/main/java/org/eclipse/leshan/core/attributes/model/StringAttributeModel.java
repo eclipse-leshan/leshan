@@ -22,6 +22,7 @@ import org.eclipse.leshan.core.attributes.AssignationLevel;
 import org.eclipse.leshan.core.attributes.Attachment;
 import org.eclipse.leshan.core.attributes.LwM2mAttribute;
 import org.eclipse.leshan.core.attributes.LwM2mAttributeModel;
+import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
 import org.eclipse.leshan.core.parser.StringParser;
 
@@ -51,5 +52,11 @@ public class StringAttributeModel extends LwM2mAttributeModel<String> {
     public <E extends Throwable> LwM2mAttribute<String> consumeAttribute(StringParser<E> parser) throws E {
         String strValue = QuotedStringAttribute.consumeQuotedString(parser);
         return new LwM2mAttribute<String>(this, strValue);
+    }
+
+    @Override
+    public LwM2mAttribute<String> createEmptyAttribute() throws InvalidAttributeException {
+        canBeValueless();
+        return new LwM2mAttribute<String>(this);
     }
 }

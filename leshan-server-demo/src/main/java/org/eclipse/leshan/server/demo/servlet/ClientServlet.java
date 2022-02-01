@@ -33,7 +33,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.leshan.core.attributes.DefaultLwM2mAttributeParser;
+import org.eclipse.leshan.core.attributes.LwM2mAttributeParser;
 import org.eclipse.leshan.core.attributes.LwM2mAttributeSet;
+import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -105,8 +108,8 @@ public class ClientServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     private final LeshanServer server;
-
     private final ObjectMapper mapper;
+    private final LwM2mAttributeParser attributeParser;
 
     public ClientServlet(LeshanServer server) {
         this.server = server;
@@ -119,6 +122,7 @@ public class ClientServlet extends HttpServlet {
         module.addSerializer(LwM2mNode.class, new JacksonLwM2mNodeSerializer());
         module.addDeserializer(LwM2mNode.class, new JacksonLwM2mNodeDeserializer());
         mapper.registerModule(module);
+        attributeParser = new DefaultLwM2mAttributeParser();
     }
 
     /**
@@ -322,7 +326,8 @@ public class ClientServlet extends HttpServlet {
                 if (path.length >= 3 && "attributes".equals(path[path.length - 1])) {
                     // create & process request WriteAttributes request
                     target = StringUtils.removeEnd(target, path[path.length - 1]);
-                    LwM2mAttributeSet attributes = LwM2mAttributeSet.parse(req.getQueryString());
+                    LwM2mAttributeSet attributes = new LwM2mAttributeSet(
+                            attributeParser.parseQueryParams(req.getQueryString()));
                     WriteAttributesRequest request = new WriteAttributesRequest(target, attributes);
                     WriteAttributesResponse cResponse = server.send(registration, request, extractTimeout(req));
                     processDeviceResponse(req, resp, cResponse);
@@ -350,7 +355,7 @@ public class ClientServlet extends HttpServlet {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().format("No registered client with id '%s'", clientEndpoint).flush();
             }
-        } catch (RuntimeException | InterruptedException e) {
+        } catch (RuntimeException | InterruptedException | InvalidAttributeException e) {
             handleException(e, resp);
         }
     }

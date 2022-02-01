@@ -23,7 +23,7 @@ import java.util.List;
 import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.link.attributes.AttributeParser;
 import org.eclipse.leshan.core.link.attributes.DefaultAttributeParser;
-import org.eclipse.leshan.core.link.attributes.ValuelessAttribute;
+import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.eclipse.leshan.core.parser.StringParser;
 
 /**
@@ -207,7 +207,12 @@ public class DefaultLinkParser implements LinkParser {
 
         String parmName = consumeParmName(parser);
         if (!parser.nextCharIs('=')) {
-            return new ValuelessAttribute(parmName);
+            try {
+                return attributeParser.createValuelessAttribute(parmName);
+            } catch (InvalidAttributeException e) {
+                parser.raiseException(e, "Invalid Link %s :", parser.getStringToParse());
+                return null;
+            }
         } else {
             // consume '='
             parser.consumeNextChar();

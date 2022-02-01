@@ -36,15 +36,18 @@ import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.core.attributes.DefaultLwM2mAttributeParser;
+import org.eclipse.leshan.core.attributes.LwM2mAttributeParser;
 import org.eclipse.leshan.core.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.link.LinkSerializer;
+import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.StaticModel;
+import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
@@ -87,6 +90,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
     protected final LwM2mEncoder encoder;
     protected final LwM2mDecoder decoder;
     protected final LinkSerializer linkSerializer;
+    protected final LwM2mAttributeParser attributeParser;
 
     public ObjectResource(LwM2mObjectEnabler nodeEnabler, RegistrationEngine registrationEngine,
             CaliforniumEndpointsManager endpointsManager, LwM2mEncoder encoder, LwM2mDecoder decoder,
@@ -97,6 +101,8 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
         this.nodeEnabler.addListener(this);
         this.encoder = encoder;
         this.decoder = decoder;
+        // TODO make it configurable
+        this.attributeParser = new DefaultLwM2mAttributeParser();
         setObservable(true);
     }
 
@@ -224,7 +230,11 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
         LwM2mAttributeSet attributes = null;
         if (coapRequest.getOptions().getURIQueryCount() != 0) {
             List<String> uriQueries = coapRequest.getOptions().getUriQuery();
-            attributes = LwM2mAttributeSet.parse(uriQueries);
+            try {
+                attributes = new LwM2mAttributeSet(attributeParser.parseQueryParams(uriQueries));
+            } catch (InvalidAttributeException e) {
+                handleInvalidRequest(coapExchange.advanced(), "Unable to parse Attributes", e);
+            }
         }
 
         // Manage Write Attributes Request

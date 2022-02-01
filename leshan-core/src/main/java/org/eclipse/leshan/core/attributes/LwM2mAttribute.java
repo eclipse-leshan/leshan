@@ -29,28 +29,6 @@ public class LwM2mAttribute<T> implements Attribute {
     private final LwM2mAttributeModel<T> model;
     private final Object value;
 
-    // TODO remove it (replaced by LwM2mAttribute(LwM2mAttributeModel<T> model, T value)
-    @SuppressWarnings("unchecked")
-    public LwM2mAttribute(String coRELinkParam) {
-        Validate.notEmpty(coRELinkParam);
-        this.model = (LwM2mAttributeModel<T>) LwM2mAttributeModel.modelMap.get(coRELinkParam);
-        if (model == null) {
-            throw new IllegalArgumentException(String.format("Unsupported attribute '%s'", coRELinkParam));
-        }
-        this.value = null;
-    }
-
-    // TODO remove it (replaced by LwM2mAttribute(LwM2mAttributeModel<T> model, T value)
-    @SuppressWarnings("unchecked")
-    public LwM2mAttribute(String coRELinkParam, Object value) {
-        Validate.notEmpty(coRELinkParam);
-        this.model = (LwM2mAttributeModel<T>) LwM2mAttributeModel.modelMap.get(coRELinkParam);
-        if (model == null) {
-            throw new IllegalArgumentException(String.format("Unsupported attribute '%s'", coRELinkParam));
-        }
-        this.value = ensureMatchingValue(model, value);
-    }
-
     public LwM2mAttribute(LwM2mAttributeModel<T> model) {
         Validate.notNull(model);
         this.model = model;

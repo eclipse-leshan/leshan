@@ -22,6 +22,7 @@ import org.eclipse.leshan.core.attributes.AssignationLevel;
 import org.eclipse.leshan.core.attributes.Attachment;
 import org.eclipse.leshan.core.attributes.LwM2mAttribute;
 import org.eclipse.leshan.core.attributes.LwM2mAttributeModel;
+import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.eclipse.leshan.core.parser.StringParser;
 
 /**
@@ -58,5 +59,11 @@ public class LongAttributeModel extends LwM2mAttributeModel<Long> {
                     parser.getStringToParse());
             return null;
         }
+    }
+
+    @Override
+    public LwM2mAttribute<Long> createEmptyAttribute() throws InvalidAttributeException {
+        canBeValueless();
+        return new LwM2mAttribute<Long>(this);
     }
 }

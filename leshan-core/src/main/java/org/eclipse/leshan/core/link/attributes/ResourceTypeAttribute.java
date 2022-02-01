@@ -143,5 +143,10 @@ public class ResourceTypeAttribute extends BaseAttribute {
             String relationType = parser.substring(start, end);
             return relationType;
         }
+
+        @Override
+        public ResourceTypeAttribute createEmptyAttribute() throws InvalidAttributeException {
+            throw new InvalidAttributeException("Attribute %s must have a value", getName());
+        }
     }
 }

@@ -26,6 +26,7 @@ import org.eclipse.leshan.core.attributes.model.LwM2mVersionAttributeModel;
 import org.eclipse.leshan.core.attributes.model.ObjectVersionAttributeModel;
 import org.eclipse.leshan.core.attributes.model.StringAttributeModel;
 import org.eclipse.leshan.core.link.attributes.AttributeModel;
+import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 
 /**
  * Metadata container for LwM2m attributes
@@ -127,6 +128,25 @@ public abstract class LwM2mAttributeModel<T> extends AttributeModel<LwM2mAttribu
 
     public String toCoreLinkValue(LwM2mAttribute<T> attr) {
         return attr.getValue().toString();
+    }
+
+    public AccessMode getAccessMode() {
+        return accessMode;
+    }
+
+    public Set<AssignationLevel> getAssignationLevels() {
+        return assignationLevels;
+    }
+
+    public Attachment getAttachment() {
+        return attachment;
+    }
+
+    protected void canBeValueless() throws InvalidAttributeException {
+        if (!accessMode.isWritable()) {
+            // AFAIK, only writable value can be null. (mainly to remove write attributes)
+            throw new InvalidAttributeException("Attribute %s must have a value", getName());
+        }
     }
 
     public static Map<String, LwM2mAttributeModel<?>> modelMap;
