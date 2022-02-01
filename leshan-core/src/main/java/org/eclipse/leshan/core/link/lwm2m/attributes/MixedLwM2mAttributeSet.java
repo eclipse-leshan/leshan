@@ -49,7 +49,7 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
 
             @Override
             public Iterator<LwM2mAttribute<?>> iterator() {
-                final Iterator<? extends Attribute> it = getAttributes().iterator();
+                final Iterator<? extends Attribute> it = asCollection().iterator();
 
                 return new Iterator<LwM2mAttribute<?>>() {
                     private LwM2mAttribute<?> lastAttribute;
@@ -109,7 +109,6 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
     public void validate(AssignationLevel assignationLevel) {
         // Can all attributes be assigned to this level?
         for (LwM2mAttribute<?> attr : getLwM2mAttributes()) {
-            System.out.println(attr.toCoreLinkFormat());
             if (!attr.canBeAssignedTo(assignationLevel)) {
                 throw new IllegalArgumentException(String.format("Attribute '%s' cannot be assigned to level %s",
                         attr.getName(), assignationLevel.name()));
@@ -174,7 +173,7 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
      */
     public Map<String, Object> getMap() {
         Map<String, Object> result = new LinkedHashMap<>();
-        for (Attribute attr : getAttributes()) {
+        for (Attribute attr : asCollection()) {
             result.put(attr.getName(), attr.getValue());
         }
         return Collections.unmodifiableMap(result);
@@ -185,7 +184,7 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
     }
 
     public LwM2mAttribute<?> getLwM2mAttribute(String attrName) {
-        Attribute attribute = getAttribute(attrName);
+        Attribute attribute = get(attrName);
         if (attribute instanceof LwM2mAttribute) {
             return (LwM2mAttribute<?>) attribute;
         }
@@ -194,7 +193,7 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
 
     @SuppressWarnings("unchecked")
     public <T> LwM2mAttribute<T> getLwM2mAttribute(LwM2mAttributeModel<T> model) {
-        Attribute attribute = getAttribute(model.getName());
+        Attribute attribute = get(model.getName());
         if (attribute instanceof LwM2mAttribute) {
             if (((LwM2mAttribute<?>) attribute).getModel().equals(model)) {
                 return (LwM2mAttribute<T>) attribute;
@@ -205,7 +204,7 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
 
     public String[] toQueryParams() {
         List<String> queries = new LinkedList<>();
-        for (Attribute attr : getAttributes()) {
+        for (Attribute attr : asCollection()) {
             if (attr.getValue() != null) {
                 queries.add(String.format("%s=%s", attr.getName(), attr.getValue()));
             } else {

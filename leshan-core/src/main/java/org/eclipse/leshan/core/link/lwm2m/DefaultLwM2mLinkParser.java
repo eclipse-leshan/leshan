@@ -77,7 +77,7 @@ public class DefaultLwM2mLinkParser implements LinkParser {
                 // create attributes
                 MixedLwM2mAttributeSet attributes;
                 try {
-                    attributes = new MixedLwM2mAttributeSet(links[i].getAttributes().getAttributes());
+                    attributes = new MixedLwM2mAttributeSet(links[i].getAttributes().asCollection());
 
                     // validate Attribute for this path
                     attributes.validate(lwm2mPath);
@@ -88,7 +88,7 @@ public class DefaultLwM2mLinkParser implements LinkParser {
 
                 // create link and replace it
                 links[i] = new MixedLwM2mLink(rootPath, LwM2mPath.parse(path, rootPath),
-                        new MixedLwM2mAttributeSet(links[i].getAttributes().getAttributes()));
+                        new MixedLwM2mAttributeSet(links[i].getAttributes().asCollection()));
             }
         }
         return links;

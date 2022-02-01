@@ -118,7 +118,7 @@ public class AttributeSetTest {
     public void should_validate_assignation() {
         LwM2mAttributeSet sut = new LwM2mAttributeSet(new LwM2mAttribute<Long>(LwM2mAttributes.MINIMUM_PERIOD, 5L),
                 new LwM2mAttribute<Long>(LwM2mAttributes.MAXIMUM_PERIOD, 60L));
-        Collection<Attribute> attributes = sut.getAttributes();
+        Collection<Attribute> attributes = sut.asCollection();
         assertEquals(2, attributes.size());
         sut.validate(AssignationLevel.RESOURCE);
     }

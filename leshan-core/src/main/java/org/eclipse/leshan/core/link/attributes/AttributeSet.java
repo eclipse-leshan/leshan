@@ -34,7 +34,6 @@ public class AttributeSet implements Iterable<Attribute> {
 
     public AttributeSet(Collection<? extends Attribute> attributes) {
         if (attributes != null && !attributes.isEmpty()) {
-
             for (Attribute attr : attributes) {
                 // Check for duplicates
                 if (this.attributes.containsKey(attr.getName())) {
@@ -46,14 +45,13 @@ public class AttributeSet implements Iterable<Attribute> {
         }
     }
 
-    // TODO rename to get
-    public Attribute getAttribute(String attrName) {
+    public Attribute get(String attrName) {
         return attributes.get(attrName);
     }
 
     @SuppressWarnings("unchecked")
     public <T extends Attribute> T get(AttributeModel<T> attrName) {
-        // TODO in case where cast is unsuccessful should we raise an exception or return null ?
+        // In case where cast is unsuccessful should we raise an exception or return null ?
         return (T) attributes.get(attrName.getName());
     }
 
@@ -61,8 +59,7 @@ public class AttributeSet implements Iterable<Attribute> {
         return attributes.containsKey(attrName);
     }
 
-    // TODO rename to asCollection
-    public Collection<Attribute> getAttributes() {
+    public Collection<Attribute> asCollection() {
         return attributes.values();
     }
 

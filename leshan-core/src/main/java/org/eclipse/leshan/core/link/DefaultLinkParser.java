@@ -107,7 +107,7 @@ public class DefaultLinkParser implements LinkParser {
         String uriReference = consumeUriReference(parser);
         parser.consumeChar('>');
 
-        // consime Attribute
+        // consume Attribute
         List<Attribute> attrs = new ArrayList<>();
         while (parser.nextCharIs(';')) {
             parser.consumeNextChar();
@@ -115,7 +115,11 @@ public class DefaultLinkParser implements LinkParser {
             attrs.add(attr);
         }
 
-        return new Link(uriReference, attrs);
+        try {
+            return new Link(uriReference, attrs);
+        } catch (IllegalArgumentException e) {
+            throw new LinkParseException(e, "Unable to parse %s", parser.getStringToParse());
+        }
     }
 
     /**

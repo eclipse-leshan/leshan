@@ -58,11 +58,11 @@ public class DefaultLinkParserTest {
         Link[] parsed = parser.parseCoreLinkFormat("</foo>;param=<,</bar>;param2=>".getBytes());
         Assert.assertEquals("/foo", parsed[0].getUriReference());
         Assert.assertTrue(parsed[0].getAttributes().contains("param"));
-        Assert.assertEquals("<", parsed[0].getAttributes().getAttribute("param").getValue());
+        Assert.assertEquals("<", parsed[0].getAttributes().get("param").getValue());
 
         Assert.assertEquals("/bar", parsed[1].getUriReference());
         Assert.assertTrue(parsed[1].getAttributes().contains("param2"));
-        Assert.assertEquals(">", parsed[1].getAttributes().getAttribute("param2").getValue());
+        Assert.assertEquals(">", parsed[1].getAttributes().get("param2").getValue());
     }
 
     @Test
@@ -71,7 +71,7 @@ public class DefaultLinkParserTest {
 
         Assert.assertEquals("/foo", parsed[0].getUriReference());
         Assert.assertTrue(parsed[0].getAttributes().contains("param"));
-        Assert.assertEquals("/", parsed[0].getAttributes().getAttribute("param").getValue());
+        Assert.assertEquals("/", parsed[0].getAttributes().get("param").getValue());
     }
 
     @Test
@@ -221,20 +221,20 @@ public class DefaultLinkParserTest {
         Assert.assertTrue(!parse[3].hasAttribute());
 
         Assert.assertEquals("/2/1", parse[4].getUriReference());
-        Assert.assertTrue(!parse[4].getAttributes().getAttribute("empty").hasValue());
+        Assert.assertTrue(!parse[4].getAttributes().get("empty").hasValue());
     }
 
     @Test
     public void parse_quoted_ver_attributes() throws LinkParseException {
         String input = "</1>;ver=\"2.2\"";
         Link[] objs = parser.parseCoreLinkFormat(input.getBytes());
-        assertEquals(objs[0].getAttributes().getAttribute("ver"), new QuotedStringAttribute("ver", "2.2"));
+        assertEquals(objs[0].getAttributes().get("ver"), new QuotedStringAttribute("ver", "2.2"));
     }
 
     @Test
     public void parse_unquoted_ver_attributes() throws LinkParseException {
         String input = "</1>;ver=2.2";
         Link[] objs = parser.parseCoreLinkFormat(input.getBytes());
-        assertEquals(objs[0].getAttributes().getAttribute("ver"), new UnquotedStringAttribute("ver", "2.2"));
+        assertEquals(objs[0].getAttributes().get("ver"), new UnquotedStringAttribute("ver", "2.2"));
     }
 }
