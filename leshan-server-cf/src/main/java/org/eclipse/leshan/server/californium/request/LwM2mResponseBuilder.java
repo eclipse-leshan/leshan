@@ -142,7 +142,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                         clientEndpoint, coapResponse.getOptions().getContentFormat(), request);
             } else {
                 try {
-                    links = linkParser.parse(coapResponse.getPayload());
+                    links = linkParser.parseCoreLinkFormat(coapResponse.getPayload());
                 } catch (LinkParseException e) {
                     throw new InvalidResponseException(e,
                             "Unable to decode response payload of request [%s] from client [%s]", request,
@@ -366,7 +366,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                         clientEndpoint, coapResponse.getOptions().getContentFormat(), request);
             } else {
                 try {
-                    links = linkParser.parse(coapResponse.getPayload());
+                    links = linkParser.parseCoreLinkFormat(coapResponse.getPayload());
                 } catch (LinkParseException e) {
                     throw new InvalidResponseException(e,
                             "Unable to decode response payload of request [%s] from client [%s]", request,

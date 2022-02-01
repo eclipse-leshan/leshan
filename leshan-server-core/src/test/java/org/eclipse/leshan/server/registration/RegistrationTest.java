@@ -241,7 +241,7 @@ public class RegistrationTest {
         Builder builder = new Registration.Builder("id", "endpoint",
                 Identity.unsecure(InetSocketAddress.createUnresolved("localhost", 0)));
         builder.extractDataFromObjectLink(true);
-        builder.objectLinks(linkParser.parse(objectLinks.getBytes()));
+        builder.objectLinks(linkParser.parseCoreLinkFormat(objectLinks.getBytes()));
         return builder.build();
     }
 }

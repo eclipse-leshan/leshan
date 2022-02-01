@@ -56,7 +56,7 @@ public class DefaultLinkParser implements LinkParser {
      * @return an array of {@code Link}
      */
     @Override
-    public Link[] parse(byte[] bytes) throws LinkParseException {
+    public Link[] parseCoreLinkFormat(byte[] bytes) throws LinkParseException {
         // manage null/empty case
         if (bytes == null || bytes.length == 0) {
             return new Link[] {};

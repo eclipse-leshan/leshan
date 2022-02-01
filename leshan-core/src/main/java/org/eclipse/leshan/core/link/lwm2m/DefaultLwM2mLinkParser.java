@@ -47,8 +47,8 @@ public class DefaultLwM2mLinkParser implements LinkParser {
     }
 
     @Override
-    public Link[] parse(byte[] bytes) throws LinkParseException {
-        Link[] links = parser.parse(bytes);
+    public Link[] parseCoreLinkFormat(byte[] bytes) throws LinkParseException {
+        Link[] links = parser.parseCoreLinkFormat(bytes);
 
         // search root resource
         String rootPath = "/";

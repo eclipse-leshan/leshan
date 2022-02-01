@@ -75,7 +75,7 @@ public class DefaultLinkSerializerTest {
         Link[] input = new Link[] { obj1, obj2 };
 
         String strObjs = serializer.serialize(input);
-        Link[] output = parser.parse(strObjs.getBytes());
+        Link[] output = parser.parseCoreLinkFormat(strObjs.getBytes());
 
         Assert.assertArrayEquals(input, output);
     }
@@ -83,7 +83,7 @@ public class DefaultLinkSerializerTest {
     @Test
     public void parse_then_serialise_with_rt_attribute() throws LinkParseException {
         String input = "</lwm2m>;rt=\"oma.lwm2m\",</lwm2m/1/101>,</lwm2m/1/102>,</lwm2m/2/0>";
-        Link[] objs = parser.parse(input.getBytes());
+        Link[] objs = parser.parseCoreLinkFormat(input.getBytes());
         String output = serializer.serialize(objs);
         Assert.assertEquals(input, output);
 

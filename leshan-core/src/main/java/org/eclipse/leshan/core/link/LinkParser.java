@@ -27,5 +27,5 @@ public interface LinkParser {
      *
      * @param bytes content to parse as array of bytes.
      */
-    Link[] parse(byte[] bytes) throws LinkParseException;
+    Link[] parseCoreLinkFormat(byte[] bytes) throws LinkParseException;
 }
