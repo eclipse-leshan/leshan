@@ -26,7 +26,6 @@ import java.util.List;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.core.LwM2mId;
-import org.eclipse.leshan.core.attributes.LwM2mAttributeModel;
 import org.eclipse.leshan.core.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.Attribute;
@@ -135,7 +134,7 @@ public final class LinkFormatHelper {
         String version = getVersion(objectEnabler.getObjectModel());
         if (version != null) {
             objectLink = new MixedLwM2mLink("/", new LwM2mPath(objectEnabler.getId()),
-                    LwM2mAttributes.create(LwM2mAttributeModel.OBJECT_VERSION_ATTR, version));
+                    LwM2mAttributes.create(LwM2mAttributes.OBJECT_VERSION, version));
         } else {
             objectLink = new MixedLwM2mLink("/", new LwM2mPath(objectEnabler.getId()));
         }
@@ -201,7 +200,7 @@ public final class LinkFormatHelper {
         }
 
         List<Attribute> attributes = new ArrayList<>();
-        attributes.add(LwM2mAttributes.create(LwM2mAttributeModel.OBJECT_VERSION_ATTR, version));
+        attributes.add(LwM2mAttributes.create(LwM2mAttributes.OBJECT_VERSION, version));
         return attributes;
     }
 

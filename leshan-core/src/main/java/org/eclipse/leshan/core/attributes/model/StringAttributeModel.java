@@ -36,6 +36,12 @@ public class StringAttributeModel extends LwM2mAttributeModel<String> {
         super(coRELinkParam, attachment, assignationLevels, accessMode, String.class);
     }
 
+    @Override
+    public String toCoreLinkValue(LwM2mAttribute<String> attr) {
+        String valueEscaped = attr.getValue().replace("\"", "\\\"");
+        return "\"" + valueEscaped + "\"";
+    }
+
     /**
      * 
      * Validate a quoted-string from https://datatracker.ietf.org/doc/html/rfc2616#section-2.2:

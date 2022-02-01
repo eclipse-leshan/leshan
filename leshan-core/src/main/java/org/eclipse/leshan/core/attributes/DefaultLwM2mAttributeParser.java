@@ -27,7 +27,7 @@ import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 public class DefaultLwM2mAttributeParser extends DefaultAttributeParser implements LwM2mAttributeParser {
 
     public DefaultLwM2mAttributeParser() {
-        super(LwM2mAttributeModel.modelMap.values());
+        super(LwM2mAttributes.ALL);
     }
 
     public DefaultLwM2mAttributeParser(Collection<? extends AttributeModel<?>> knownAttributes) {

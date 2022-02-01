@@ -15,11 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.attributes.model;
 
-import java.util.Collections;
+import java.util.EnumSet;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.attributes.AccessMode;
+import org.eclipse.leshan.core.attributes.AssignationLevel;
 import org.eclipse.leshan.core.attributes.Attachment;
 import org.eclipse.leshan.core.attributes.LwM2mAttribute;
 import org.eclipse.leshan.core.attributes.LwM2mAttributeModel;
@@ -29,7 +30,7 @@ import org.eclipse.leshan.core.parser.StringParser;
 public class LwM2mVersionAttributeModel extends LwM2mAttributeModel<LwM2mVersion> {
 
     public LwM2mVersionAttributeModel() {
-        super(ENABLER_VERSION, Attachment.ROOT, Collections.emptySet(), AccessMode.R, LwM2mVersion.class);
+        super("lwm2m", Attachment.ROOT, EnumSet.of(AssignationLevel.ROOT), AccessMode.R, LwM2mVersion.class);
     }
 
     /**

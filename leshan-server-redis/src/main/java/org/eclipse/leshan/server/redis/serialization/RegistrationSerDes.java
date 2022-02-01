@@ -28,7 +28,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
-import org.eclipse.leshan.core.attributes.LwM2mAttributeModel;
+import org.eclipse.leshan.core.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.attributes.MixedLwM2mAttributeSet;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.Attribute;
@@ -61,7 +61,7 @@ public class RegistrationSerDes {
         // Define all supported Attributes
         Collection<AttributeModel<?>> suppportedAttributes = new ArrayList<AttributeModel<?>>();
         suppportedAttributes.addAll(Attributes.ALL);
-        suppportedAttributes.addAll(LwM2mAttributeModel.modelMap.values());
+        suppportedAttributes.addAll(LwM2mAttributes.ALL);
 
         // Create default link Parser
         this.attributeParser = new DefaultAttributeParser(suppportedAttributes);

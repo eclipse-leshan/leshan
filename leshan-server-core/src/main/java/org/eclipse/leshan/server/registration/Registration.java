@@ -31,9 +31,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
-import org.eclipse.leshan.core.attributes.LwM2mAttributeModel;
+import org.eclipse.leshan.core.attributes.LwM2mAttribute;
+import org.eclipse.leshan.core.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.link.Link;
-import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.link.attributes.Attributes;
 import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
 import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
@@ -687,13 +687,11 @@ public class Registration {
         private void addSupportedObject(Link link, LwM2mPath path) {
             // extract object id and version
             int objectId = path.getObjectId();
-            Attribute versionParamValue = link.getAttributes().getAttribute(LwM2mAttributeModel.OBJECT_VERSION);
+            LwM2mAttribute<String> versionParamValue = link.getAttributes().get(LwM2mAttributes.OBJECT_VERSION);
 
             if (versionParamValue != null) {
                 // if there is a version attribute then use it as version for this object
-
-                // un-quote version (see https://github.com/eclipse/leshan/issues/732)
-                supportedObjects.put(objectId, (String) versionParamValue.getValue());
+                supportedObjects.put(objectId, versionParamValue.getValue());
             } else {
                 // there is no version attribute attached.
                 // In this case we use the DEFAULT_VERSION only if this object stored as supported object.

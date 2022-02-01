@@ -93,7 +93,9 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
 
     public void validate(LwM2mPath path) {
         AssignationLevel assignationLevel = null;
-        if (path.isObject()) {
+        if (path.isRoot()) {
+            assignationLevel = AssignationLevel.ROOT;
+        } else if (path.isObject()) {
             assignationLevel = AssignationLevel.OBJECT;
         } else if (path.isObjectInstance()) {
             assignationLevel = AssignationLevel.INSTANCE;
@@ -107,21 +109,22 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
     public void validate(AssignationLevel assignationLevel) {
         // Can all attributes be assigned to this level?
         for (LwM2mAttribute<?> attr : getLwM2mAttributes()) {
+            System.out.println(attr.toCoreLinkFormat());
             if (!attr.canBeAssignedTo(assignationLevel)) {
                 throw new IllegalArgumentException(String.format("Attribute '%s' cannot be assigned to level %s",
                         attr.getName(), assignationLevel.name()));
             }
         }
-        LwM2mAttribute<?> pmin = getLwM2mAttribute(LwM2mAttributeModel.MINIMUM_PERIOD);
-        LwM2mAttribute<?> pmax = getLwM2mAttribute(LwM2mAttributeModel.MAXIMUM_PERIOD);
-        if ((pmin != null) && (pmax != null) && (Long) pmin.getValue() > (Long) pmax.getValue()) {
+        LwM2mAttribute<Long> pmin = getLwM2mAttribute(LwM2mAttributes.MINIMUM_PERIOD);
+        LwM2mAttribute<Long> pmax = getLwM2mAttribute(LwM2mAttributes.MAXIMUM_PERIOD);
+        if ((pmin != null) && (pmax != null) && pmin.getValue() > pmax.getValue()) {
             throw new IllegalArgumentException(
                     String.format("Cannot write attributes where '%s' > '%s'", pmin.getName(), pmax.getName()));
         }
 
-        LwM2mAttribute<?> epmin = getLwM2mAttribute(LwM2mAttributeModel.EVALUATE_MINIMUM_PERIOD);
-        LwM2mAttribute<?> epmax = getLwM2mAttribute(LwM2mAttributeModel.EVALUATE_MAXIMUM_PERIOD);
-        if ((epmin != null) && (epmax != null) && (Long) epmin.getValue() > (Long) epmax.getValue()) {
+        LwM2mAttribute<Long> epmin = getLwM2mAttribute(LwM2mAttributes.EVALUATE_MINIMUM_PERIOD);
+        LwM2mAttribute<Long> epmax = getLwM2mAttribute(LwM2mAttributes.EVALUATE_MAXIMUM_PERIOD);
+        if ((epmin != null) && (epmax != null) && epmin.getValue() > epmax.getValue()) {
             throw new IllegalArgumentException(
                     String.format("Cannot write attributes where '%s' > '%s'", epmin.getName(), epmax.getName()));
         }
