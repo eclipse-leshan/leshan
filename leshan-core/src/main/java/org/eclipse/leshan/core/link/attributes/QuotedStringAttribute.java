@@ -36,8 +36,17 @@ import org.eclipse.leshan.core.util.Validate;
 public class QuotedStringAttribute extends BaseAttribute {
 
     public QuotedStringAttribute(String name, String value) {
-        super(name, value);
-        Validate.notEmpty(value);
+        super(name, value, true);
+    }
+
+    public QuotedStringAttribute(String name, String value, boolean validate) {
+        super(name, value, validate);
+    }
+
+    @Override
+    protected void validate() {
+        super.validate();
+        Validate.notEmpty(getValue());
     }
 
     @Override
@@ -95,6 +104,6 @@ public class QuotedStringAttribute extends BaseAttribute {
     public static <T extends Throwable> QuotedStringAttribute consumeQuotedString(String parmName,
             StringParser<T> parser) throws T {
         String value = consumeQuotedString(parser);
-        return new QuotedStringAttribute(parmName, value);
+        return new QuotedStringAttribute(parmName, value, false);
     }
 }

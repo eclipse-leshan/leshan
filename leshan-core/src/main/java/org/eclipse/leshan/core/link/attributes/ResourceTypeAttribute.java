@@ -33,13 +33,19 @@ public class ResourceTypeAttribute extends BaseAttribute {
     public static ResourceTypeAttributeModel MODEL = new ResourceTypeAttributeModel();
 
     public ResourceTypeAttribute(String... resourceTypes) {
-        super(MODEL.getName(), Collections.unmodifiableList(Arrays.asList(resourceTypes)));
+        super(MODEL.getName(), Collections.unmodifiableList(Arrays.asList(resourceTypes)), true);
         Validate.notEmpty(resourceTypes);
     }
 
     public ResourceTypeAttribute(Collection<String> resourceTypes) {
-        super(MODEL.getName(), Collections.unmodifiableList(new ArrayList<>(resourceTypes)));
-        Validate.notEmpty(resourceTypes);
+        super(MODEL.getName(), Collections.unmodifiableList(new ArrayList<>(resourceTypes)), true);
+    }
+
+    @Override
+    protected void validate() {
+        // We don't call super.validate() because we don't need to validate name.
+        // super.validate();
+        Validate.notEmpty(getValue());
     }
 
     @SuppressWarnings("unchecked")

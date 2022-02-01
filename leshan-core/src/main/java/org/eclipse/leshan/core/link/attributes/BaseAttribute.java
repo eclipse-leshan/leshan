@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.attributes;
 
+import java.util.regex.Pattern;
+
 import org.eclipse.leshan.core.util.Validate;
 
 /**
@@ -22,14 +24,25 @@ import org.eclipse.leshan.core.util.Validate;
  */
 public abstract class BaseAttribute implements Attribute {
 
+    private static final Pattern parnamePattern = Pattern.compile("[!#$&+\\-.^_`|~a-zA-Z0-9]+");
+
     private String name;
     private Object value;
 
-    public BaseAttribute(String name, Object value) {
-        Validate.notEmpty(name);
-        Validate.notNull(name);
+    public BaseAttribute(String name, Object value, boolean validate) {
         this.name = name;
         this.value = value;
+        if (validate) {
+            validate();
+        }
+    }
+
+    protected void validate() {
+        Validate.notEmpty(name);
+        // see org.eclipse.leshan.core.link.DefaultLinkParser#consumeParmName(StringParser<LinkParseException>)
+        if (!parnamePattern.matcher(name).matches()) {
+            throw new IllegalArgumentException(String.format("%s is not a valid name for Attribute", name));
+        }
     }
 
     @Override

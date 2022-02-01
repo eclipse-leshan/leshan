@@ -34,13 +34,18 @@ public class ContentFormatAttribute extends BaseAttribute {
     public static ContentFormatAttributeModel MODEL = new ContentFormatAttributeModel();
 
     public ContentFormatAttribute(ContentFormat... contentFormats) {
-        super(MODEL.getName(), Collections.unmodifiableList(Arrays.asList(contentFormats)));
-        Validate.notEmpty(contentFormats);
+        super(MODEL.getName(), Collections.unmodifiableList(Arrays.asList(contentFormats)), true);
     }
 
     public ContentFormatAttribute(Collection<ContentFormat> contentFormats) {
-        super(MODEL.getName(), Collections.unmodifiableList(new ArrayList<>(contentFormats)));
-        Validate.notEmpty(contentFormats);
+        super(MODEL.getName(), Collections.unmodifiableList(new ArrayList<>(contentFormats)), true);
+    }
+
+    @Override
+    protected void validate() {
+        // We don't call super.validate() because we don't need to validate name.
+        // super.validate();
+        Validate.notEmpty(getValue());
     }
 
     @SuppressWarnings("unchecked")

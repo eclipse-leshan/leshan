@@ -15,7 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.attributes;
 
+import java.util.regex.Pattern;
+
 import org.eclipse.leshan.core.parser.StringParser;
+import org.eclipse.leshan.core.util.Validate;
 
 /**
  * A String Attribute described as ptoken in RFC6690.
@@ -32,10 +35,25 @@ import org.eclipse.leshan.core.parser.StringParser;
  * </pre>
  */
 public class UnquotedStringAttribute extends BaseAttribute {
+    private static final Pattern ptokenPattern = Pattern.compile("[/!#$%&'()*+\\-.:<=>?@\\[\\]^_`{|}~a-zA-Z0-9]+");
 
     public UnquotedStringAttribute(String name, String value) {
-        super(name, value);
-        // TODO add validation
+        super(name, value, true);
+    }
+
+    public UnquotedStringAttribute(String name, String value, boolean validate) {
+        super(name, value, validate);
+    }
+
+    @Override
+    protected void validate() {
+        super.validate();
+        // see org.eclipse.leshan.core.link.DefaultLinkParser#consumeParmName(StringParser<LinkParseException>)
+        Validate.notEmpty(getValue());
+        if (!ptokenPattern.matcher(getValue()).matches()) {
+            throw new IllegalArgumentException(
+                    String.format("%s is not a valid value for Unquoted String Attribute", getValue()));
+        }
     }
 
     @Override
@@ -77,6 +95,6 @@ public class UnquotedStringAttribute extends BaseAttribute {
             parser.raiseException("Unable to parse [%s] : ptoken should not be empty after %s",
                     parser.getStringToParse(), parser.getAlreadyParsedString());
         }
-        return new UnquotedStringAttribute(parmName, ptoken);
+        return new UnquotedStringAttribute(parmName, ptoken, false);
     }
 }
