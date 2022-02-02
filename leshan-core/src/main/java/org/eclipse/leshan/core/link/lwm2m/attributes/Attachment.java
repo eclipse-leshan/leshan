@@ -24,5 +24,5 @@ package org.eclipse.leshan.core.link.lwm2m.attributes;
  * to the object or instance level are then inherited by all resources that don't have their own 'pmin' attribute.
  */
 public enum Attachment {
-    ROOT, OBJECT, INSTANCE, RESOURCE
+    ROOT, OBJECT, OBJECT_INSTANCE, RESOURCE,
 }

@@ -31,13 +31,13 @@ public final class LwM2mAttributes {
     // ssid
     public static final LongAttributeModel SHORT_SERVER_ID = new LongAttributeModel(//
             "ssid", //
-            Attachment.INSTANCE, //
+            Attachment.OBJECT_INSTANCE, //
             EnumSet.of(AssignationLevel.OBJECT_INSTANCE), //
             AccessMode.R);
     // uri
     public static final StringAttributeModel SERVER_URI = new StringAttributeModel(//
             "uri", //
-            Attachment.INSTANCE, //
+            Attachment.OBJECT_INSTANCE, //
             EnumSet.of(AssignationLevel.OBJECT_INSTANCE), //
             AccessMode.R);
     // ver
