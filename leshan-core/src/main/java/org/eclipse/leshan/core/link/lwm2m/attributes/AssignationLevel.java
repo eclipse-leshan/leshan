@@ -23,5 +23,5 @@ package org.eclipse.leshan.core.link.lwm2m.attributes;
  * its application level.
  */
 public enum AssignationLevel {
-    ROOT, OBJECT, OBJECT_INSTANCE, RESOURCE
+    ROOT, OBJECT, OBJECT_INSTANCE, RESOURCE, RESOURCE_INTANCE,
 }

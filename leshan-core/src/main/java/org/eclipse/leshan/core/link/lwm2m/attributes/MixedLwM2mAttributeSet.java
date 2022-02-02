@@ -101,8 +101,9 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
             assignationLevel = AssignationLevel.OBJECT_INSTANCE;
         } else if (path.isResource()) {
             assignationLevel = AssignationLevel.RESOURCE;
+        } else if (path.isResourceInstance()) {
+            assignationLevel = AssignationLevel.RESOURCE_INTANCE;
         }
-        // TODO add RESOURCE INSTANCE and ROOT level ?
         validate(assignationLevel);
     }
 
