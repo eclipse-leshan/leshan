@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
+import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.Attribute;
@@ -92,8 +93,9 @@ public final class LinkFormatHelper {
 
     public static Link[] getBootstrapClientDescription(Collection<LwM2mObjectEnabler> objectEnablers) {
         List<Link> links = new ArrayList<>();
+        // TODO should be version 1.1 ?
         links.add(new MixedLwM2mLink("/", LwM2mPath.ROOTPATH,
-                new UnquotedStringAttribute("lwm2m", ObjectModel.DEFAULT_VERSION)));
+                LwM2mAttributes.create(LwM2mAttributes.ENABLER_VERSION, LwM2mVersion.V1_0)));
 
         for (LwM2mObjectEnabler objectEnabler : objectEnablers) {
             links.addAll(getBootstrapObjectDescriptionWithoutRoot(objectEnabler));
@@ -119,7 +121,8 @@ public final class LinkFormatHelper {
     public static Link[] getBootstrapObjectDescription(LwM2mObjectEnabler objectEnabler) {
         List<Link> links = new ArrayList<>();
         links.add(new MixedLwM2mLink("/", LwM2mPath.ROOTPATH,
-                new UnquotedStringAttribute("lwm2m", ObjectModel.DEFAULT_VERSION)));
+                // TODO should be version 1.1 ?
+                LwM2mAttributes.create(LwM2mAttributes.ENABLER_VERSION, LwM2mVersion.V1_0)));
 
         links.addAll(getBootstrapObjectDescriptionWithoutRoot(objectEnabler));
 
