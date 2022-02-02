@@ -32,13 +32,13 @@ public final class LwM2mAttributes {
     public static final LongAttributeModel SHORT_SERVER_ID = new LongAttributeModel(//
             "ssid", //
             Attachment.INSTANCE, //
-            EnumSet.of(AssignationLevel.INSTANCE), //
+            EnumSet.of(AssignationLevel.OBJECT_INSTANCE), //
             AccessMode.R);
     // uri
     public static final StringAttributeModel SERVER_URI = new StringAttributeModel(//
             "uri", //
             Attachment.INSTANCE, //
-            EnumSet.of(AssignationLevel.INSTANCE), //
+            EnumSet.of(AssignationLevel.OBJECT_INSTANCE), //
             AccessMode.R);
     // ver
     public static final ObjectVersionAttributeModel OBJECT_VERSION = new ObjectVersionAttributeModel();
@@ -48,13 +48,13 @@ public final class LwM2mAttributes {
     public static final LwM2mAttributeModel<Long> MINIMUM_PERIOD = new LongAttributeModel(//
             "pmin", //
             Attachment.RESOURCE, //
-            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE), //
+            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.OBJECT_INSTANCE, AssignationLevel.RESOURCE), //
             AccessMode.RW);
     // pmax
     public static final LongAttributeModel MAXIMUM_PERIOD = new LongAttributeModel( //
             "pmax", //
             Attachment.RESOURCE, //
-            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE), //
+            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.OBJECT_INSTANCE, AssignationLevel.RESOURCE), //
             AccessMode.RW);
     // gt
     public static final LwM2mAttributeModel<Double> GREATER_THAN = new DoubleAttributeModel(//
@@ -78,13 +78,13 @@ public final class LwM2mAttributes {
     public static final LwM2mAttributeModel<Long> EVALUATE_MINIMUM_PERIOD = new LongAttributeModel(//
             "epmin", //
             Attachment.RESOURCE, //
-            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE), //
+            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.OBJECT_INSTANCE, AssignationLevel.RESOURCE), //
             AccessMode.RW);
     // epmax
     public static final LwM2mAttributeModel<Long> EVALUATE_MAXIMUM_PERIOD = new LongAttributeModel( //
             "epmax", //
             Attachment.RESOURCE,
-            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.INSTANCE, AssignationLevel.RESOURCE), //
+            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.OBJECT_INSTANCE, AssignationLevel.RESOURCE), //
             AccessMode.RW);
     public static Map<String, LwM2mAttributeModel<?>> modelMap;
 
