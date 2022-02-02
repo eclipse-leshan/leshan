@@ -16,8 +16,22 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.lwm2m.attributes;
 
+/**
+ * operation allowed on a {@link LwM2mAttribute} by the LwM2M Server
+ */
 public enum AccessMode {
-    R, W, RW;
+    /**
+     * READ
+     */
+    R,
+    /**
+     * WRITE
+     */
+    W,
+    /**
+     * READ/WRITE
+     */
+    RW;
 
     public boolean isWritable() {
         return this == W || this == RW;

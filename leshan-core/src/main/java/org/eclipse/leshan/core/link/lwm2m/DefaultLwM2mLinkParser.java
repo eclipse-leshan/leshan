@@ -32,6 +32,9 @@ import org.eclipse.leshan.core.link.lwm2m.attributes.MixedLwM2mAttributeSet;
 import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mPath;
 
+/**
+ * A Default Link Parser which is able to create more LWM2M flavored link.
+ */
 public class DefaultLwM2mLinkParser implements LinkParser {
 
     private LinkParser parser;
@@ -64,6 +67,7 @@ public class DefaultLwM2mLinkParser implements LinkParser {
         for (int i = 0; i < links.length; i++) {
             String path = links[i].getUriReference();
             if (path.startsWith(rootPath)) {
+                // if it starts by rootPath this should be a LwM2mLink :
 
                 // create lwm2m path
                 LwM2mPath lwm2mPath;
@@ -81,14 +85,13 @@ public class DefaultLwM2mLinkParser implements LinkParser {
 
                     // validate Attribute for this path
                     attributes.validate(lwm2mPath);
-                } catch (IllegalStateException e) {
+
+                    // create link and replace it
+                    links[i] = new MixedLwM2mLink(rootPath, LwM2mPath.parse(path, rootPath), attributes);
+                } catch (IllegalArgumentException e) {
                     String strLink = new String(bytes, StandardCharsets.UTF_8);
                     throw new LinkParseException(e, "Unable to parse link %s in %s", links[i], strLink);
                 }
-
-                // create link and replace it
-                links[i] = new MixedLwM2mLink(rootPath, LwM2mPath.parse(path, rootPath),
-                        new MixedLwM2mAttributeSet(links[i].getAttributes().asCollection()));
             }
         }
         return links;

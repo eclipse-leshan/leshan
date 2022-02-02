@@ -25,8 +25,9 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.util.Validate;
 
 /**
- * a LWM2M Link which can contain {@link LwM2mAttribute} but also tolerate not LWM2M {@link Attribute} but can also have
- * a rootpath.
+ * a LWM2M Link which can contain {@link LwM2mAttribute} but also tolerate not LWM2M {@link Attribute}.
+ * <p>
+ * It can also have a rootpath.
  */
 public class MixedLwM2mLink extends Link {
 

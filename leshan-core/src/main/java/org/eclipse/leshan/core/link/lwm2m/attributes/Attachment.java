@@ -18,7 +18,7 @@ package org.eclipse.leshan.core.link.lwm2m.attributes;
 
 /**
  * The attachment level of an LwM2m attribute.
- * 
+ * <p>
  * This indicates the level (object, instance or resource) where an attribute can be applied. E.g. the 'pmin' attribute
  * can only be applied on the Resource level, but it can be assigned on all levels. 'pmin' attributes that are assigned
  * to the object or instance level are then inherited by all resources that don't have their own 'pmin' attribute.
