@@ -21,22 +21,20 @@ import org.eclipse.leshan.core.link.attributes.AttributeModel;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 
 /**
- * Metadata container for LwM2m attributes
+ * An {@link AttributeModel} for a {@link LwM2mAttribute}.
  */
 public abstract class LwM2mAttributeModel<T> extends AttributeModel<LwM2mAttribute<T>> {
 
-    final Attachment attachment;
-    final Set<AssignationLevel> assignationLevels;
-    final AccessMode accessMode;
-    final Class<?> valueClass;
+    private final Attachment attachment;
+    private final Set<AssignationLevel> assignationLevels;
+    private final AccessMode accessMode;
 
     protected LwM2mAttributeModel(String coRELinkParam, Attachment attachment, Set<AssignationLevel> assignationLevels,
-            AccessMode accessMode, Class<T> valueClass) {
+            AccessMode accessMode) {
         super(coRELinkParam);
         this.attachment = attachment;
         this.assignationLevels = assignationLevels;
         this.accessMode = accessMode;
-        this.valueClass = valueClass;
     }
 
     public String toCoreLinkValue(LwM2mAttribute<T> attr) {

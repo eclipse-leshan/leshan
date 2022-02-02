@@ -17,10 +17,4 @@ public class AttributeTest {
         assertTrue(verAttribute.canBeAssignedTo(AssignationLevel.OBJECT));
         assertFalse(verAttribute.isWritable());
     }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    @Test(expected = IllegalArgumentException.class)
-    public void should_throw_on_invalid_value_type() {
-        new LwM2mAttribute(LwM2mAttributes.OBJECT_VERSION, 123);
-    }
 }

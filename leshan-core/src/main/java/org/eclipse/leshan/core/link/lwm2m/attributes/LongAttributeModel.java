@@ -27,7 +27,7 @@ public class LongAttributeModel extends LwM2mAttributeModel<Long> {
 
     public LongAttributeModel(String coRELinkParam, Attachment attachment, Set<AssignationLevel> assignationLevels,
             AccessMode accessMode) {
-        super(coRELinkParam, attachment, assignationLevels, accessMode, Long.class);
+        super(coRELinkParam, attachment, assignationLevels, accessMode);
     }
 
     /**

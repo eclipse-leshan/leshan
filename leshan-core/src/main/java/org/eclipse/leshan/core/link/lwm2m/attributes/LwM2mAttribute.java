@@ -20,7 +20,7 @@ import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.util.Validate;
 
 /**
- * Represents an LwM2m attribute that can be attached to an object, instance or resource.
+ * Represents an LwM2m Attribute that can be attached to an object, instance or resource.
  * 
  * The {@link Attachment} level of the attribute indicates where it can be applied, e.g. the 'pmin' attribute is only
  * applicable to resources, but it can be assigned on all levels and then inherited by underlying resources.
@@ -38,30 +38,7 @@ public class LwM2mAttribute<T> implements Attribute {
     public LwM2mAttribute(LwM2mAttributeModel<T> model, T value) {
         Validate.notNull(model);
         this.model = model;
-        this.value = ensureMatchingValue(model, value);
-    }
-
-    /**
-     * Ensures that a provided attribute value matches the attribute value type, including trying to perform a correct
-     * conversion if the value is a string, e.g.
-     * 
-     * @return the converted or original value
-     */
-    private Object ensureMatchingValue(LwM2mAttributeModel<?> model, Object value) {
-        // Ensure that the attribute value has the correct type
-        // If the value is a string, we make an attempt to convert it
-        Class<?> expectedClass = model.valueClass;
-        if (!expectedClass.equals(value.getClass()) && value instanceof String) {
-            if (expectedClass.equals(Long.class)) {
-                return Long.parseLong(value.toString());
-            } else if (expectedClass.equals(Double.class)) {
-                return Double.parseDouble(value.toString());
-            }
-        } else if (!this.model.valueClass.equals(value.getClass())) {
-            throw new IllegalArgumentException(String.format("Attribute '%s' must have a value of type %s",
-                    model.getName(), model.valueClass.getSimpleName()));
-        }
-        return value;
+        this.value = value;
     }
 
     @Override
@@ -99,15 +76,15 @@ public class LwM2mAttribute<T> implements Attribute {
     }
 
     public Attachment getAttachment() {
-        return model.attachment;
+        return model.getAttachment();
     }
 
     public boolean isWritable() {
-        return model.accessMode == AccessMode.W || model.accessMode == AccessMode.RW;
+        return model.getAccessMode() == AccessMode.W || model.getAccessMode() == AccessMode.RW;
     }
 
     public boolean canBeAssignedTo(AssignationLevel assignationLevel) {
-        return model.assignationLevels.contains(assignationLevel);
+        return model.getAssignationLevels().contains(assignationLevel);
     }
 
     @Override

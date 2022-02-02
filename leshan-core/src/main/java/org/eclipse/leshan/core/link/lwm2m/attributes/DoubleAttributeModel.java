@@ -27,7 +27,7 @@ public class DoubleAttributeModel extends LwM2mAttributeModel<Double> {
 
     public DoubleAttributeModel(String coRELinkParam, Attachment attachment, Set<AssignationLevel> assignationLevels,
             AccessMode accessMode) {
-        super(coRELinkParam, attachment, assignationLevels, accessMode, Double.class);
+        super(coRELinkParam, attachment, assignationLevels, accessMode);
     }
 
     /**

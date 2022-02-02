@@ -89,7 +89,7 @@ public final class LwM2mAttributes {
     public static Map<String, LwM2mAttributeModel<?>> modelMap;
 
     /**
-     * All known attributes by Leshan.
+     * All LWM2M attributes known by Leshan.
      */
     public static final Collection<LwM2mAttributeModel<?>> ALL = Arrays.asList(DIMENSION, SHORT_SERVER_ID, SERVER_URI,
             OBJECT_VERSION, ENABLER_VERSION, MINIMUM_PERIOD, MAXIMUM_PERIOD, GREATER_THAN, LESSER_THAN, STEP,

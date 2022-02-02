@@ -25,7 +25,7 @@ import org.eclipse.leshan.core.parser.StringParser;
 public class LwM2mVersionAttributeModel extends LwM2mAttributeModel<LwM2mVersion> {
 
     public LwM2mVersionAttributeModel() {
-        super("lwm2m", Attachment.ROOT, EnumSet.of(AssignationLevel.ROOT), AccessMode.R, LwM2mVersion.class);
+        super("lwm2m", Attachment.ROOT, EnumSet.of(AssignationLevel.ROOT), AccessMode.R);
     }
 
     /**

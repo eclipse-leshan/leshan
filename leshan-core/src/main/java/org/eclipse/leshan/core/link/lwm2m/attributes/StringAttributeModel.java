@@ -28,7 +28,7 @@ public class StringAttributeModel extends LwM2mAttributeModel<String> {
 
     public StringAttributeModel(String coRELinkParam, Attachment attachment, Set<AssignationLevel> assignationLevels,
             AccessMode accessMode) {
-        super(coRELinkParam, attachment, assignationLevels, accessMode, String.class);
+        super(coRELinkParam, attachment, assignationLevels, accessMode);
     }
 
     @Override
