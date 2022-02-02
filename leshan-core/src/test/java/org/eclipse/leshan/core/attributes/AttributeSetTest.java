@@ -43,7 +43,7 @@ public class AttributeSetTest {
                 new LwM2mAttribute<Long>(LwM2mAttributes.EVALUATE_MAXIMUM_PERIOD, 45L));
         assertEquals("ver=1.1&pmin=5&pmax=60&epmin=30&epmax=45", sut.toString());
 
-        LwM2mAttributeSet res = new LwM2mAttributeSet(parser.parseUriQueries(sut.toString()));
+        LwM2mAttributeSet res = new LwM2mAttributeSet(parser.parseUriQuery(sut.toString()));
         assertEquals(sut, res);
     }
 
@@ -55,7 +55,7 @@ public class AttributeSetTest {
                 new LwM2mAttribute<Long>(LwM2mAttributes.EVALUATE_MAXIMUM_PERIOD));
         assertEquals("pmin&pmax&epmin&epmax", sut.toString());
 
-        LwM2mAttributeSet res = new LwM2mAttributeSet(parser.parseUriQueries(sut.toString()));
+        LwM2mAttributeSet res = new LwM2mAttributeSet(parser.parseUriQuery(sut.toString()));
         assertEquals(sut, res);
     }
 

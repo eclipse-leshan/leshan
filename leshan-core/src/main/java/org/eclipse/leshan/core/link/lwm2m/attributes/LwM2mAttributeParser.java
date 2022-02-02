@@ -20,6 +20,11 @@ import java.util.Collection;
 import org.eclipse.leshan.core.link.attributes.AttributeParser;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 
+/**
+ * an {@link AttributeParser} with some LWM2M flavor.
+ * <p>
+ * It can parse {@link LwM2mAttribute} from CoRE link format but also from URI query.
+ */
 public interface LwM2mAttributeParser extends AttributeParser {
 
     /**
@@ -27,7 +32,7 @@ public interface LwM2mAttributeParser extends AttributeParser {
      * 
      * @param uriQueries the URI queries to parse. e.g. {@literal pmin=10&pmax=60}
      */
-    Collection<LwM2mAttribute<?>> parseUriQueries(String uriQueries) throws InvalidAttributeException;
+    Collection<LwM2mAttribute<?>> parseUriQuery(String uriQueries) throws InvalidAttributeException;
 
     /**
      * Create an AttributeSet from an array of string. Each elements is an attribute with its value.

@@ -24,6 +24,9 @@ import org.eclipse.leshan.core.link.attributes.AttributeModel;
 import org.eclipse.leshan.core.link.attributes.DefaultAttributeParser;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 
+/**
+ * A default implementation of {@link LwM2mAttributeParser}
+ */
 public class DefaultLwM2mAttributeParser extends DefaultAttributeParser implements LwM2mAttributeParser {
 
     public DefaultLwM2mAttributeParser() {
@@ -35,7 +38,7 @@ public class DefaultLwM2mAttributeParser extends DefaultAttributeParser implemen
     }
 
     @Override
-    public Collection<LwM2mAttribute<?>> parseUriQueries(String uriQueries) throws InvalidAttributeException {
+    public Collection<LwM2mAttribute<?>> parseUriQuery(String uriQueries) throws InvalidAttributeException {
         if (uriQueries == null)
             return null;
 
@@ -56,6 +59,8 @@ public class DefaultLwM2mAttributeParser extends DefaultAttributeParser implemen
         for (String param : queryParams) {
             String[] keyAndValue = param.split("=");
             Attribute attr;
+            // There nothing clear in specification about format which should be used in Query
+            // So we reuse the CoRE link format (hopping it's OK)
             if (keyAndValue.length == 1) {
                 attr = parseCoreLinkValue(keyAndValue[0], null);
             } else if (keyAndValue.length == 2) {
@@ -70,7 +75,6 @@ public class DefaultLwM2mAttributeParser extends DefaultAttributeParser implemen
                 throw new InvalidAttributeException("Cannot parse query param '%s', param %s is not a LWM2M attribute",
                         param, keyAndValue[0]);
             }
-
         }
         return attributes;
     }
