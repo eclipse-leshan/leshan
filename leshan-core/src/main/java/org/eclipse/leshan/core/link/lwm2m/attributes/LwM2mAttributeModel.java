@@ -22,6 +22,10 @@ import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 
 /**
  * An {@link AttributeModel} for a {@link LwM2mAttribute}.
+ * <p>
+ * Constants models are available at {@link LwM2mAttributes}
+ * 
+ * @see LwM2mAttributes
  */
 public abstract class LwM2mAttributeModel<T> extends AttributeModel<LwM2mAttribute<T>> {
 

@@ -29,12 +29,25 @@ public class LwM2mAttribute<T> implements Attribute {
     private final LwM2mAttributeModel<T> model;
     private final Object value;
 
+    /**
+     * Some constants about model are available at {@link LwM2mAttributes}
+     * 
+     * @see LwM2mAttributes
+     */
     public LwM2mAttribute(LwM2mAttributeModel<T> model) {
         Validate.notNull(model);
         this.model = model;
         this.value = null;
     }
 
+    /**
+     * Some constants about model are available at {@link LwM2mAttributes}
+     * <p>
+     * {@link LwM2mAttributes#create(LwM2mAttributeModel, Object)} is more convenient way to create LwM2mAttribute
+     * 
+     * @see LwM2mAttributes
+     * @see LwM2mAttributes#create(LwM2mAttributeModel, Object)
+     */
     public LwM2mAttribute(LwM2mAttributeModel<T> model, T value) {
         Validate.notNull(model);
         this.model = model;
