@@ -43,9 +43,8 @@ import org.eclipse.californium.scandium.dtls.x509.StaticNewAdvancedCertificateVe
 import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
-import org.eclipse.leshan.core.link.DefaultLinkParser;
-import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
+import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
@@ -102,7 +101,7 @@ public class LeshanBootstrapServerBuilder {
     private boolean noSecuredEndpoint;
     private boolean noUnsecuredEndpoint;
 
-    private LinkParser linkParser;
+    private LwM2mLinkParser linkParser;
 
     /**
      * Set the address/port for unsecured CoAP communication (<code>coap://</code>).
@@ -370,11 +369,11 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
-     * Set the CoRE Link parser {@link LinkParser}
+     * Set the CoRE Link parser {@link LwM2mLinkParser}
      * <p>
-     * By default the {@link DefaultLinkParser} is used.
+     * By default the {@link DefaultLwM2mLinkParser} is used.
      */
-    public void setLinkParser(LinkParser linkParser) {
+    public void setLinkParser(LwM2mLinkParser linkParser) {
         this.linkParser = linkParser;
     }
 
@@ -587,12 +586,12 @@ public class LeshanBootstrapServerBuilder {
      * @param coapConfig the CoAP configuration.
      * @param decoder decoder used to decode response payload.
      * @param encoder encode used to encode request payload.
-     * @param linkParser a parser {@link LinkParser} used to parse a CoRE Link.
+     * @param linkParser a parser {@link LwM2mLinkParser} used to parse a CoRE Link.
      * @return the LWM2M Bootstrap server.
      */
     protected LeshanBootstrapServer createBootstrapServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
             BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory,
-            Configuration coapConfig, LwM2mEncoder encoder, LwM2mDecoder decoder, LinkParser linkParser) {
+            Configuration coapConfig, LwM2mEncoder encoder, LwM2mDecoder decoder, LwM2mLinkParser linkParser) {
         return new LeshanBootstrapServer(unsecuredEndpoint, securedEndpoint, bsSessionManager, bsHandlerFactory,
                 coapConfig, encoder, decoder, linkParser);
     }

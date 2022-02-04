@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2018 Sierra Wireless and others.
+ * Copyright (c) 2022 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -12,22 +12,16 @@
  * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
- *     Daniel Persson (Husqvarna Group) - Attribute support
  *******************************************************************************/
-package org.eclipse.leshan.core.link.lwm2m.attributes;
+package org.eclipse.leshan.core.link.lwm2m;
 
-import java.util.Collection;
+import org.eclipse.leshan.core.link.LinkParseException;
+import org.eclipse.leshan.core.link.LinkParser;
 
 /**
- * An {@link MixedLwM2mAttributeSet} but which allow only {@link LwM2mAttribute}
+ * A {@link LinkParser} with some LWM2M flavor.
  */
-public class LwM2mAttributeSet extends MixedLwM2mAttributeSet {
+public interface LwM2mLinkParser extends LinkParser {
 
-    public LwM2mAttributeSet(LwM2mAttribute<?>... attributes) {
-        super(attributes);
-    }
-
-    public LwM2mAttributeSet(Collection<? extends LwM2mAttribute<?>> attributes) {
-        super(attributes);
-    }
+    LwM2mLink[] parseLwM2mLinkFromCoreLinkFormat(byte[] bytes, String rootPath) throws LinkParseException;
 }

@@ -37,7 +37,7 @@ import org.eclipse.leshan.core.californium.CoapResponseCallback;
 import org.eclipse.leshan.core.californium.CoapSyncRequestObserver;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.californium.SyncRequestObserver;
-import org.eclipse.leshan.core.link.LinkParser;
+import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
@@ -76,7 +76,7 @@ public class RequestSender implements Destroyable {
     private final Endpoint secureEndpoint;
     private final LwM2mDecoder decoder;
     private final LwM2mEncoder encoder;
-    private final LinkParser linkParser;
+    private final LwM2mLinkParser linkParser;
 
     // A map which contains all ongoing CoAP requests
     // This is used to be able to cancel request
@@ -87,10 +87,10 @@ public class RequestSender implements Destroyable {
      * @param nonSecureEndpoint The endpoint used to send coap request.
      * @param encoder The {@link LwM2mEncoder} used to encode {@link LwM2mNode}.
      * @param decoder The {@link LwM2mDecoder} used to encode {@link LwM2mNode}.
-     * @param linkParser a parser {@link LinkParser} used to parse a CoRE Link.
+     * @param linkParser a parser {@link LwM2mLinkParser} used to parse a CoRE Link.
      */
     public RequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint, LwM2mEncoder encoder,
-            LwM2mDecoder decoder, LinkParser linkParser) {
+            LwM2mDecoder decoder, LwM2mLinkParser linkParser) {
         this.secureEndpoint = secureEndpoint;
         this.nonSecureEndpoint = nonSecureEndpoint;
         this.encoder = encoder;

@@ -15,7 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.lwm2m;
 
-import org.eclipse.leshan.core.link.Link;
+import java.util.Collection;
+
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -23,39 +24,22 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 /**
  * a pure LwM2mLink which use only {@link LwM2mAttribute}
  */
-public class LwM2mLink extends Link {
-    private LwM2mPath path;
+public class LwM2mLink extends MixedLwM2mLink {
 
-    public LwM2mLink(LwM2mPath path, LwM2mAttributeSet attributes) {
-        super(path.toString(), attributes);
+    public LwM2mLink(String rootPath, LwM2mPath path, LwM2mAttribute<?>... attributes) {
+        this(rootPath, path, new LwM2mAttributeSet(attributes));
     }
 
-    public LwM2mPath getPath() {
-        return path;
+    public LwM2mLink(String rootPath, LwM2mPath path, Collection<? extends LwM2mAttribute<?>> attributes) {
+        this(rootPath, path, new LwM2mAttributeSet(attributes));
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((path == null) ? 0 : path.hashCode());
-        return result;
+    public LwM2mLink(String rootPath, LwM2mPath path, LwM2mAttributeSet attributes) {
+        super(rootPath, path, attributes);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        LwM2mLink other = (LwM2mLink) obj;
-        if (path == null) {
-            if (other.path != null)
-                return false;
-        } else if (!path.equals(other.path))
-            return false;
-        return true;
+    public LwM2mAttributeSet getAttributes() {
+        return (LwM2mAttributeSet) super.getAttributes();
     }
 }

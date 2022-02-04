@@ -49,7 +49,7 @@ public class MixedLwM2mLink extends Link {
         Validate.notNull(attributes);
 
         this.path = path;
-        this.rootPath = rootPath;
+        this.rootPath = rootPath == null ? "/" : rootPath;
     }
 
     public LwM2mPath getPath() {
@@ -63,5 +63,36 @@ public class MixedLwM2mLink extends Link {
     @Override
     public MixedLwM2mAttributeSet getAttributes() {
         return (MixedLwM2mAttributeSet) super.getAttributes();
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((path == null) ? 0 : path.hashCode());
+        result = prime * result + ((rootPath == null) ? 0 : rootPath.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        MixedLwM2mLink other = (MixedLwM2mLink) obj;
+        if (path == null) {
+            if (other.path != null)
+                return false;
+        } else if (!path.equals(other.path))
+            return false;
+        if (rootPath == null) {
+            if (other.rootPath != null)
+                return false;
+        } else if (!rootPath.equals(other.rootPath))
+            return false;
+        return true;
     }
 }

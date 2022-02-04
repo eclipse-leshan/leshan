@@ -22,7 +22,7 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.californium.CoapResponseCallback;
-import org.eclipse.leshan.core.link.LinkParser;
+import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
@@ -65,11 +65,11 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
      *        {@link LwM2mNode}.
      * @param encoder The {@link LwM2mEncoder} used to encode {@link LwM2mNode}.
      * @param decoder The {@link LwM2mDecoder} used to encode {@link LwM2mNode}.
-     * @param linkParser a parser {@link LinkParser} used to parse a CoRE Link.
+     * @param linkParser a parser {@link LwM2mLinkParser} used to parse a CoRE Link.
      */
     public CaliforniumLwM2mRequestSender(Endpoint secureEndpoint, Endpoint nonSecureEndpoint,
             ObservationServiceImpl observationService, LwM2mModelProvider modelProvider, LwM2mEncoder encoder,
-            LwM2mDecoder decoder, LinkParser linkParser) {
+            LwM2mDecoder decoder, LwM2mLinkParser linkParser) {
         Validate.notNull(observationService);
         Validate.notNull(modelProvider);
         this.observationService = observationService;

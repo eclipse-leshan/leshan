@@ -23,10 +23,13 @@ import org.eclipse.leshan.core.link.DefaultLinkParser;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.LinkParser;
+import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.link.attributes.AttributeModel;
 import org.eclipse.leshan.core.link.attributes.Attributes;
 import org.eclipse.leshan.core.link.attributes.DefaultAttributeParser;
 import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.link.lwm2m.attributes.MixedLwM2mAttributeSet;
 import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
@@ -35,7 +38,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 /**
  * A Default Link Parser which is able to create more LWM2M flavored link.
  */
-public class DefaultLwM2mLinkParser implements LinkParser {
+public class DefaultLwM2mLinkParser implements LwM2mLinkParser {
 
     private LinkParser parser;
 
@@ -47,6 +50,56 @@ public class DefaultLwM2mLinkParser implements LinkParser {
 
         // Create default link Parser
         this.parser = new DefaultLinkParser(new DefaultAttributeParser(suppportedAttributes));
+    }
+
+    @Override
+    public LwM2mLink[] parseLwM2mLinkFromCoreLinkFormat(byte[] bytes, String rootpath) throws LinkParseException {
+        Link[] links = parser.parseCoreLinkFormat(bytes);
+        LwM2mLink[] lwm2mLinks = new LwM2mLink[links.length];
+
+        // define default lwm2m root path
+        if (rootpath == null) {
+            rootpath = "/";
+        }
+
+        // convert link to LwM2mLink
+        for (int i = 0; i < links.length; i++) {
+            String path = links[i].getUriReference();
+
+            // create lwm2m path
+            LwM2mPath lwm2mPath;
+            try {
+                lwm2mPath = LwM2mPath.parse(path, rootpath);
+            } catch (InvalidLwM2mPathException e) {
+                String strLink = new String(bytes, StandardCharsets.UTF_8);
+                throw new LinkParseException(e, "Unable to parse link %s in %", links[i], strLink);
+            }
+
+            try {
+                // create attributes
+                Collection<Attribute> attributes = links[i].getAttributes().asCollection();
+                Collection<LwM2mAttribute<?>> lwm2mAttributes = new ArrayList<>(attributes.size());
+                for (Attribute attribute : attributes) {
+                    if (!(attribute instanceof LwM2mAttribute)) {
+                        String strLink = new String(bytes, StandardCharsets.UTF_8);
+                        throw new LinkParseException("Attribute %s is not a known LWM2M Attribute in %",
+                                attribute.getName(), strLink);
+                    }
+                    lwm2mAttributes.add((LwM2mAttribute<?>) attribute);
+                }
+
+                // validate Attribute for this path
+                LwM2mAttributeSet lwm2mAttrSet = new LwM2mAttributeSet(lwm2mAttributes);
+                lwm2mAttrSet.validate(lwm2mPath);
+
+                // create link and replace it
+                lwm2mLinks[i] = new LwM2mLink(rootpath, new LwM2mPath(path), lwm2mAttrSet);
+            } catch (IllegalArgumentException e) {
+                String strLink = new String(bytes, StandardCharsets.UTF_8);
+                throw new LinkParseException(e, "Unable to parse link %s in %s", links[i], strLink);
+            }
+        }
+        return lwm2mLinks;
     }
 
     @Override
@@ -78,10 +131,10 @@ public class DefaultLwM2mLinkParser implements LinkParser {
                     throw new LinkParseException(e, "Unable to parse link %s in %", links[i], strLink);
                 }
 
-                // create attributes
-                MixedLwM2mAttributeSet attributes;
                 try {
-                    attributes = new MixedLwM2mAttributeSet(links[i].getAttributes().asCollection());
+                    // create attributes
+                    MixedLwM2mAttributeSet attributes = new MixedLwM2mAttributeSet(
+                            links[i].getAttributes().asCollection());
 
                     // validate Attribute for this path
                     attributes.validate(lwm2mPath);

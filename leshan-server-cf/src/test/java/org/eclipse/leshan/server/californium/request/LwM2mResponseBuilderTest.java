@@ -27,8 +27,8 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.coap.Token;
 import org.eclipse.leshan.core.californium.ObserveUtil;
-import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
+import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.SingleObservation;
@@ -42,7 +42,7 @@ import org.junit.Test;
 public class LwM2mResponseBuilderTest {
 
     private final DummyDecoder decoder = new DummyDecoder();
-    private final LinkParser linkParser = new DefaultLwM2mLinkParser();
+    private final LwM2mLinkParser linkParser = new DefaultLwM2mLinkParser();
 
     @Test
     public void visit_observe_request() {

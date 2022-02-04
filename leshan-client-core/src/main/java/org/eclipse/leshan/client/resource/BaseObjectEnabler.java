@@ -34,6 +34,7 @@ import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -394,7 +395,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         LwM2mPath path = request.getPath();
         if (path.isObject()) {
             // Manage discover on object
-            Link[] ObjectLinks = LinkFormatHelper.getObjectDescription(this, null);
+            LwM2mLink[] ObjectLinks = LinkFormatHelper.getObjectDescription(this, null);
             return DiscoverResponse.success(ObjectLinks);
 
         } else if (path.isObjectInstance()) {
@@ -402,7 +403,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             if (!getAvailableInstanceIds().contains(path.getObjectInstanceId()))
                 return DiscoverResponse.notFound();
 
-            Link[] instanceLink = LinkFormatHelper.getInstanceDescription(this, path.getObjectInstanceId(), null);
+            LwM2mLink[] instanceLink = LinkFormatHelper.getInstanceDescription(this, path.getObjectInstanceId(), null);
             return DiscoverResponse.success(instanceLink);
 
         } else if (path.isResource()) {
@@ -417,9 +418,9 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             if (!getAvailableResourceIds(path.getObjectInstanceId()).contains(path.getResourceId()))
                 return DiscoverResponse.notFound();
 
-            Link resourceLink = LinkFormatHelper.getResourceDescription(this, path.getObjectInstanceId(),
+            LwM2mLink resourceLink = LinkFormatHelper.getResourceDescription(this, path.getObjectInstanceId(),
                     path.getResourceId(), null);
-            return DiscoverResponse.success(new Link[] { resourceLink });
+            return DiscoverResponse.success(new LwM2mLink[] { resourceLink });
         }
         return DiscoverResponse.badRequest(null);
     }

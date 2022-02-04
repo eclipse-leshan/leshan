@@ -33,7 +33,9 @@ import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
 import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
 import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
 import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
+import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
 import org.eclipse.leshan.core.link.lwm2m.MixedLwM2mLink;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -79,7 +81,7 @@ public final class LinkFormatHelper {
 
             List<Integer> availableInstance = objectEnabler.getAvailableInstanceIds();
             // Include an object link if there are no instances or there are object attributes (e.g. "ver")
-            List<Attribute> objectAttributes = getObjectAttributes(objectEnabler.getObjectModel());
+            List<LwM2mAttribute<?>> objectAttributes = getObjectAttributes(objectEnabler.getObjectModel());
             if (availableInstance.isEmpty() || (objectAttributes != null)) {
                 links.add(new MixedLwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId()), objectAttributes));
             }
@@ -103,19 +105,19 @@ public final class LinkFormatHelper {
         return links.toArray(new Link[] {});
     }
 
-    public static Link[] getObjectDescription(LwM2mObjectEnabler objectEnabler, String rootPath) {
-        List<Link> links = new ArrayList<>();
+    public static LwM2mLink[] getObjectDescription(LwM2mObjectEnabler objectEnabler, String rootPath) {
+        List<LwM2mLink> links = new ArrayList<>();
 
         // create link for "object"
-        List<Attribute> objectAttributes = getObjectAttributes(objectEnabler.getObjectModel());
-        links.add(new MixedLwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId()), objectAttributes));
+        List<LwM2mAttribute<?>> objectAttributes = getObjectAttributes(objectEnabler.getObjectModel());
+        links.add(new LwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId()), objectAttributes));
 
         // create links for each available instance
         for (Integer instanceId : objectEnabler.getAvailableInstanceIds()) {
             links.addAll(Arrays.asList(getInstanceDescription(objectEnabler, instanceId, rootPath)));
         }
 
-        return links.toArray(new Link[] {});
+        return links.toArray(new LwM2mLink[links.size()]);
     }
 
     public static Link[] getBootstrapObjectDescription(LwM2mObjectEnabler objectEnabler) {
@@ -177,32 +179,33 @@ public final class LinkFormatHelper {
         return links;
     }
 
-    public static Link[] getInstanceDescription(LwM2mObjectEnabler objectEnabler, int instanceId, String rootPath) {
-        List<Link> links = new ArrayList<>();
+    public static LwM2mLink[] getInstanceDescription(LwM2mObjectEnabler objectEnabler, int instanceId,
+            String rootPath) {
+        List<LwM2mLink> links = new ArrayList<>();
 
         // create link for "instance"
-        links.add(new MixedLwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId(), instanceId)));
+        links.add(new LwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId(), instanceId)));
 
         // create links for each available resource
         for (Integer resourceId : objectEnabler.getAvailableResourceIds(instanceId)) {
             links.add(getResourceDescription(objectEnabler, instanceId, resourceId, rootPath));
         }
-        return links.toArray(new Link[] {});
+        return links.toArray(new LwM2mLink[links.size()]);
     }
 
-    public static Link getResourceDescription(LwM2mObjectEnabler objectEnabler, int instanceId, int resourceId,
+    public static LwM2mLink getResourceDescription(LwM2mObjectEnabler objectEnabler, int instanceId, int resourceId,
             String rootPath) {
         // create link for "resource"
-        return new MixedLwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId(), instanceId, resourceId));
+        return new LwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId(), instanceId, resourceId));
     }
 
-    private static List<Attribute> getObjectAttributes(ObjectModel objectModel) {
+    private static List<LwM2mAttribute<?>> getObjectAttributes(ObjectModel objectModel) {
         String version = getVersion(objectModel);
         if (version == null) {
             return null;
         }
 
-        List<Attribute> attributes = new ArrayList<>();
+        List<LwM2mAttribute<?>> attributes = new ArrayList<>();
         attributes.add(LwM2mAttributes.create(LwM2mAttributes.OBJECT_VERSION, version));
         return attributes;
     }
