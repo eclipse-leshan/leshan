@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
 
+import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
+
 public final class LwM2mAttributes {
 
     // dim
@@ -97,5 +99,9 @@ public final class LwM2mAttributes {
 
     public static <T> LwM2mAttribute<T> create(LwM2mAttributeModel<T> model, T value) {
         return new LwM2mAttribute<>(model, value);
+    }
+
+    public static <T> LwM2mAttribute<T> create(LwM2mAttributeModel<T> model) throws InvalidAttributeException {
+        return model.createEmptyAttribute();
     }
 }
