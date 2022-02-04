@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
+import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.link.attributes.AttributeModel;
@@ -121,8 +122,8 @@ public class RegistrationSerDes {
 
         // handle supported object
         ObjectNode so = JsonNodeFactory.instance.objectNode();
-        for (Entry<Integer, String> supportedObject : r.getSupportedObject().entrySet()) {
-            so.put(supportedObject.getKey().toString(), supportedObject.getValue());
+        for (Entry<Integer, Version> supportedObject : r.getSupportedObject().entrySet()) {
+            so.put(supportedObject.getKey().toString(), supportedObject.getValue().toString());
         }
         o.set("suppObjs", so);
 
@@ -241,10 +242,10 @@ public class RegistrationSerDes {
             // Backward compatibility : if suppObjs doesn't exist we extract supported object from object link
             b.extractDataFromObjectLink(true);
         } else {
-            Map<Integer, String> supportedObject = new HashMap<>();
+            Map<Integer, Version> supportedObject = new HashMap<>();
             for (Iterator<String> it = so.fieldNames(); it.hasNext();) {
                 String key = it.next();
-                supportedObject.put(Integer.parseInt(key), so.get(key).asText());
+                supportedObject.put(Integer.parseInt(key), new Version(so.get(key).asText()));
             }
             b.supportedObjects(supportedObject);
         }

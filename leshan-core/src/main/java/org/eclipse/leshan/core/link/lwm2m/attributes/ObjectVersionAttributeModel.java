@@ -25,7 +25,7 @@ import org.eclipse.leshan.core.parser.StringParser;
  * Object Version Attribute model as defined at
  * http://www.openmobilealliance.org/release/LightweightM2M/V1_1_1-20190617-A/HTML-Version/OMA-TS-LightweightM2M_Core-V1_1_1-20190617-A.html#Table-512-1-lessPROPERTIESgreater-Class-Attributes
  */
-public class ObjectVersionAttributeModel extends LwM2mAttributeModel<String> {
+public class ObjectVersionAttributeModel extends LwM2mAttributeModel<Version> {
 
     public ObjectVersionAttributeModel() {
         super(//
@@ -41,7 +41,7 @@ public class ObjectVersionAttributeModel extends LwM2mAttributeModel<String> {
      * </pre>
      */
     @Override
-    public <E extends Throwable> LwM2mAttribute<String> consumeAttributeValue(StringParser<E> parser) throws E {
+    public <E extends Throwable> LwM2mAttribute<Version> consumeAttributeValue(StringParser<E> parser) throws E {
 
         // handle opening quote
         // we tolerate quote because the spec v1.0 seems not clear about it (see
@@ -73,18 +73,15 @@ public class ObjectVersionAttributeModel extends LwM2mAttributeModel<String> {
 
         // create attribute
         String strValue = parser.substring(start, end);
-
-        // TODO we should make this attribute a LwM2mAttribute<Version> ?
         String err = Version.validate(strValue);
         if (err != null) {
             parser.raiseException("Invalid version %s in %s", strValue, parser.getStringToParse());
         }
-
-        return new LwM2mAttribute<String>(this, strValue);
+        return new LwM2mAttribute<Version>(this, new Version(strValue));
     }
 
     @Override
-    public LwM2mAttribute<String> createEmptyAttribute() throws InvalidAttributeException {
+    public LwM2mAttribute<Version> createEmptyAttribute() throws InvalidAttributeException {
         throw new InvalidAttributeException("Attribute %s must have a value", getName());
     }
 }

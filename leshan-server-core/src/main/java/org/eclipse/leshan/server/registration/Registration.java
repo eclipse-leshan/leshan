@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
+import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.Attributes;
 import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
@@ -84,7 +85,7 @@ public class Registration {
     private final Set<ContentFormat> supportedContentFormats;
 
     // All supported object (object id => version)
-    private final Map<Integer, String> supportedObjects;
+    private final Map<Integer, Version> supportedObjects;
 
     // All available instances
     private final Set<LwM2mPath> availableInstances;
@@ -327,14 +328,14 @@ public class Registration {
      * @return the supported version of the object with the id {@code objectid}. If the object is not supported return
      *         {@code null}
      */
-    public String getSupportedVersion(Integer objectid) {
+    public Version getSupportedVersion(Integer objectid) {
         return getSupportedObject().get(objectid);
     }
 
     /**
      * @return a map from {@code objectId} {@literal =>} {@code supportedVersion} for each supported objects. supported.
      */
-    public Map<Integer, String> getSupportedObject() {
+    public Map<Integer, Version> getSupportedObject() {
         return supportedObjects;
     }
 
@@ -485,7 +486,7 @@ public class Registration {
         private Link[] objectLinks;
         private String rootPath;
         private Set<ContentFormat> supportedContentFormats;
-        private Map<Integer, String> supportedObjects;
+        private Map<Integer, Version> supportedObjects;
         private Set<LwM2mPath> availableInstances;
         private Map<String, String> additionalRegistrationAttributes;
         private Map<String, String> applicationData;
@@ -593,7 +594,7 @@ public class Registration {
             return this;
         }
 
-        public Builder supportedObjects(Map<Integer, String> supportedObjects) {
+        public Builder supportedObjects(Map<Integer, Version> supportedObjects) {
             this.supportedObjects = supportedObjects;
             return this;
         }
@@ -687,7 +688,7 @@ public class Registration {
         private void addSupportedObject(Link link, LwM2mPath path) {
             // extract object id and version
             int objectId = path.getObjectId();
-            LwM2mAttribute<String> versionParamValue = link.getAttributes().get(LwM2mAttributes.OBJECT_VERSION);
+            LwM2mAttribute<Version> versionParamValue = link.getAttributes().get(LwM2mAttributes.OBJECT_VERSION);
 
             if (versionParamValue != null) {
                 // if there is a version attribute then use it as version for this object
@@ -695,9 +696,9 @@ public class Registration {
             } else {
                 // there is no version attribute attached.
                 // In this case we use the DEFAULT_VERSION only if this object stored as supported object.
-                String currentVersion = supportedObjects.get(objectId);
+                Version currentVersion = supportedObjects.get(objectId);
                 if (currentVersion == null) {
-                    supportedObjects.put(objectId, ObjectModel.DEFAULT_VERSION);
+                    supportedObjects.put(objectId, new Version(ObjectModel.DEFAULT_VERSION));
                 }
             }
         }

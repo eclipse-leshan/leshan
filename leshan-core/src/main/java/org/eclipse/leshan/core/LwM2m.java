@@ -91,6 +91,7 @@ public interface LwM2m {
      */
     public class Version implements Comparable<Version> {
 
+        public static Version V1_0 = new Version("1.0");
         public static final Version MAX = new Version(Short.MAX_VALUE, Short.MIN_VALUE);
 
         protected final Short major;
@@ -119,6 +120,10 @@ public interface LwM2m {
         @Override
         public String toString() {
             return String.format("%d.%d", major, minor);
+        }
+
+        public static Version getDefault() {
+            return V1_0;
         }
 
         public static String validate(String version) {

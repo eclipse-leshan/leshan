@@ -23,10 +23,10 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
-import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
@@ -45,10 +45,10 @@ public class RegistrationTest {
         assertEquals("/", reg.getRootPath());
 
         // Ensure supported objects are correct
-        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        Map<Integer, Version> supportedObject = reg.getSupportedObject();
         assertEquals(2, supportedObject.size());
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(3));
+        assertEquals(Version.getDefault(), supportedObject.get(1));
+        assertEquals(Version.getDefault(), supportedObject.get(3));
 
         // ensure available instances are correct
         Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
@@ -64,10 +64,10 @@ public class RegistrationTest {
         assertEquals("/", reg.getRootPath());
 
         // Ensure supported objects are correct
-        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        Map<Integer, Version> supportedObject = reg.getSupportedObject();
         assertEquals(2, supportedObject.size());
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(3));
+        assertEquals(Version.getDefault(), supportedObject.get(1));
+        assertEquals(Version.getDefault(), supportedObject.get(3));
 
         // Check Supported Content format
         Set<ContentFormat> supportedContentFormats = reg.getSupportedContentFormats();
@@ -89,10 +89,10 @@ public class RegistrationTest {
         assertEquals("/", reg.getRootPath());
 
         // Ensure supported objects are correct
-        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        Map<Integer, Version> supportedObject = reg.getSupportedObject();
         assertEquals(2, supportedObject.size());
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(3));
+        assertEquals(Version.getDefault(), supportedObject.get(1));
+        assertEquals(Version.getDefault(), supportedObject.get(3));
 
         // Check Supported Content format
         Set<ContentFormat> supportedContentFormats = reg.getSupportedContentFormats();
@@ -113,10 +113,10 @@ public class RegistrationTest {
         assertEquals("/", reg.getRootPath());
 
         // Ensure supported objects are correct
-        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        Map<Integer, Version> supportedObject = reg.getSupportedObject();
         assertEquals(2, supportedObject.size());
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(3));
+        assertEquals(Version.getDefault(), supportedObject.get(1));
+        assertEquals(Version.getDefault(), supportedObject.get(3));
 
         // Check Supported Content format
         Set<ContentFormat> supportedContentFormats = reg.getSupportedContentFormats();
@@ -138,10 +138,10 @@ public class RegistrationTest {
         assertEquals("/", reg.getRootPath());
 
         // Ensure supported objects are correct
-        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        Map<Integer, Version> supportedObject = reg.getSupportedObject();
         assertEquals(2, supportedObject.size());
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(3));
+        assertEquals(Version.getDefault(), supportedObject.get(1));
+        assertEquals(Version.getDefault(), supportedObject.get(3));
 
         // Check Supported Content format
         Set<ContentFormat> supportedContentFormats = reg.getSupportedContentFormats();
@@ -163,9 +163,9 @@ public class RegistrationTest {
         assertEquals("/root/", reg.getRootPath());
 
         // Ensure supported objects are correct
-        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        Map<Integer, Version> supportedObject = reg.getSupportedObject();
         assertEquals(1, supportedObject.size());
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
+        assertEquals(Version.getDefault(), supportedObject.get(1));
         assertNull(supportedObject.get(3));
 
         // ensure available instances are correct
@@ -182,9 +182,9 @@ public class RegistrationTest {
         assertEquals("/root/", reg.getRootPath());
 
         // Ensure supported objects are correct
-        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        Map<Integer, Version> supportedObject = reg.getSupportedObject();
         assertEquals(1, supportedObject.size());
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
+        assertEquals(Version.getDefault(), supportedObject.get(1));
         assertNull(supportedObject.get(3));
 
         // ensure available instances are correct
@@ -201,10 +201,10 @@ public class RegistrationTest {
         assertEquals("/", reg.getRootPath());
 
         // Ensure supported objects are correct
-        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        Map<Integer, Version> supportedObject = reg.getSupportedObject();
         assertEquals(2, supportedObject.size());
-        assertEquals(ObjectModel.DEFAULT_VERSION, supportedObject.get(1));
-        assertEquals("1.1", supportedObject.get(3));
+        assertEquals(Version.getDefault(), supportedObject.get(1));
+        assertEquals(new Version("1.1"), supportedObject.get(3));
 
         // ensure available instances are correct
         Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
@@ -221,9 +221,9 @@ public class RegistrationTest {
         assertEquals("/root/", reg.getRootPath());
 
         // Ensure supported objects are correct
-        Map<Integer, String> supportedObject = reg.getSupportedObject();
+        Map<Integer, Version> supportedObject = reg.getSupportedObject();
         assertEquals(1, supportedObject.size());
-        assertEquals("1.1", supportedObject.get(3));
+        assertEquals(new Version("1.1"), supportedObject.get(3));
 
         // ensure available instances are correct
         Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
