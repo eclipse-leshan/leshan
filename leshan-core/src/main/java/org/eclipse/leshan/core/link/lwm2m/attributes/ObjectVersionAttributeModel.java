@@ -32,7 +32,8 @@ public class ObjectVersionAttributeModel extends LwM2mAttributeModel<Version> {
                 "ver", //
                 Attachment.OBJECT, //
                 EnumSet.of(AssignationLevel.OBJECT), //
-                AccessMode.R);
+                AccessMode.R, //
+                AttributeClass.PROPERTIES);
     }
 
     /**

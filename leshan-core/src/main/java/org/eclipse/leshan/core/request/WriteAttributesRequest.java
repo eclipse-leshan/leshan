@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import org.eclipse.leshan.core.link.lwm2m.attributes.AttributeClass;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
@@ -60,6 +62,23 @@ public class WriteAttributesRequest extends AbstractSimpleDownlinkRequest<WriteA
         if (attributes == null)
             throw new InvalidRequestException("attributes are mandatory for %s", path);
         this.attributes = attributes;
+
+        // validate attribute
+        for (LwM2mAttribute<?> attribute : attributes.getLwM2mAttributes()) {
+            if (attribute.getModel().getAttributeClass() != AttributeClass.NOTIFICATION) {
+                throw new InvalidRequestException(
+                        "Attribute %s is of class %s but only NOTIFICATION attribute can be used in WRITE ATTRIBUTE request.",
+                        attribute.getName(), attribute.getModel().getAttributeClass());
+            } else if (!attribute.isWritable()) {
+                throw new InvalidRequestException("Attribute %s is not writable (access mode %s).", attribute.getName(),
+                        attribute.getModel().getAccessMode());
+            }
+        }
+        try {
+            attributes.validate(path);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidRequestException(e, "Some attributes are not valid for the path %s.", path);
+        }
     }
 
     @Override

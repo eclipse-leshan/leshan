@@ -27,8 +27,8 @@ import org.eclipse.leshan.core.parser.StringParser;
 public class StringAttributeModel extends LwM2mAttributeModel<String> {
 
     public StringAttributeModel(String coRELinkParam, Attachment attachment, Set<AssignationLevel> assignationLevels,
-            AccessMode accessMode) {
-        super(coRELinkParam, attachment, assignationLevels, accessMode);
+            AccessMode accessMode, AttributeClass attributeClass) {
+        super(coRELinkParam, attachment, assignationLevels, accessMode, attributeClass);
     }
 
     @Override

@@ -32,13 +32,15 @@ public abstract class LwM2mAttributeModel<T> extends AttributeModel<LwM2mAttribu
     private final Attachment attachment;
     private final Set<AssignationLevel> assignationLevels;
     private final AccessMode accessMode;
+    private final AttributeClass attributeClass;
 
     protected LwM2mAttributeModel(String coRELinkParam, Attachment attachment, Set<AssignationLevel> assignationLevels,
-            AccessMode accessMode) {
+            AccessMode accessMode, AttributeClass attributeClass) {
         super(coRELinkParam);
         this.attachment = attachment;
         this.assignationLevels = assignationLevels;
         this.accessMode = accessMode;
+        this.attributeClass = attributeClass;
     }
 
     public String toCoreLinkValue(LwM2mAttribute<T> attr) {
@@ -57,8 +59,12 @@ public abstract class LwM2mAttributeModel<T> extends AttributeModel<LwM2mAttribu
         return attachment;
     }
 
+    public AttributeClass getAttributeClass() {
+        return attributeClass;
+    }
+
     protected void canBeValueless() throws InvalidAttributeException {
-        if (!accessMode.isWritable()) {
+        if (!accessMode.isWritable() && attributeClass == AttributeClass.NOTIFICATION) {
             // AFAIK, only writable value can be null. (mainly to remove write attributes)
             throw new InvalidAttributeException("Attribute %s must have a value", getName());
         }
