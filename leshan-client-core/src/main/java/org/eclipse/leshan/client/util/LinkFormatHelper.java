@@ -30,9 +30,7 @@ import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
-import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
 import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
-import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
 import org.eclipse.leshan.core.link.lwm2m.MixedLwM2mLink;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
@@ -93,16 +91,16 @@ public final class LinkFormatHelper {
         return links.toArray(new Link[] {});
     }
 
-    public static Link[] getBootstrapClientDescription(Collection<LwM2mObjectEnabler> objectEnablers) {
+    public static LwM2mLink[] getBootstrapClientDescription(Collection<LwM2mObjectEnabler> objectEnablers) {
         List<Link> links = new ArrayList<>();
         // TODO should be version 1.1 ?
-        links.add(new MixedLwM2mLink("/", LwM2mPath.ROOTPATH,
+        links.add(new LwM2mLink("/", LwM2mPath.ROOTPATH,
                 LwM2mAttributes.create(LwM2mAttributes.ENABLER_VERSION, LwM2mVersion.V1_0)));
 
         for (LwM2mObjectEnabler objectEnabler : objectEnablers) {
             links.addAll(getBootstrapObjectDescriptionWithoutRoot(objectEnabler));
         }
-        return links.toArray(new Link[] {});
+        return links.toArray(new LwM2mLink[] {});
     }
 
     public static LwM2mLink[] getObjectDescription(LwM2mObjectEnabler objectEnabler, String rootPath) {
@@ -120,28 +118,28 @@ public final class LinkFormatHelper {
         return links.toArray(new LwM2mLink[links.size()]);
     }
 
-    public static Link[] getBootstrapObjectDescription(LwM2mObjectEnabler objectEnabler) {
-        List<Link> links = new ArrayList<>();
-        links.add(new MixedLwM2mLink("/", LwM2mPath.ROOTPATH,
+    public static LwM2mLink[] getBootstrapObjectDescription(LwM2mObjectEnabler objectEnabler) {
+        List<LwM2mLink> links = new ArrayList<>();
+        links.add(new LwM2mLink("/", LwM2mPath.ROOTPATH,
                 // TODO should be version 1.1 ?
                 LwM2mAttributes.create(LwM2mAttributes.ENABLER_VERSION, LwM2mVersion.V1_0)));
 
         links.addAll(getBootstrapObjectDescriptionWithoutRoot(objectEnabler));
 
-        return links.toArray(new Link[] {});
+        return links.toArray(new LwM2mLink[] {});
     }
 
-    private static List<Link> getBootstrapObjectDescriptionWithoutRoot(LwM2mObjectEnabler objectEnabler) {
-        List<Link> links = new ArrayList<>();
+    private static List<LwM2mLink> getBootstrapObjectDescriptionWithoutRoot(LwM2mObjectEnabler objectEnabler) {
+        List<LwM2mLink> links = new ArrayList<>();
 
         // create link for "object"
-        Link objectLink;
+        LwM2mLink objectLink;
         String version = getVersion(objectEnabler.getObjectModel());
         if (version != null) {
-            objectLink = new MixedLwM2mLink("/", new LwM2mPath(objectEnabler.getId()),
+            objectLink = new LwM2mLink("/", new LwM2mPath(objectEnabler.getId()),
                     LwM2mAttributes.create(LwM2mAttributes.OBJECT_VERSION, version));
         } else {
-            objectLink = new MixedLwM2mLink("/", new LwM2mPath(objectEnabler.getId()));
+            objectLink = new LwM2mLink("/", new LwM2mPath(objectEnabler.getId()));
         }
 
         // add object link if needed
@@ -152,7 +150,7 @@ public final class LinkFormatHelper {
 
         // add instance link
         for (Integer instanceId : objectEnabler.getAvailableInstanceIds()) {
-            List<Attribute> objectAttributes = new ArrayList<>();
+            List<LwM2mAttribute<?>> objectAttributes = new ArrayList<>();
 
             // get short id
             if (objectEnabler.getId() == LwM2mId.SECURITY || objectEnabler.getId() == LwM2mId.SERVER) {
@@ -161,7 +159,7 @@ public final class LinkFormatHelper {
                 if (isBootstrapServer != null && !isBootstrapServer) {
                     Long shortServerId = ServersInfoExtractor.getServerId(objectEnabler, instanceId);
                     if (shortServerId != null)
-                        objectAttributes.add(new UnquotedStringAttribute("ssid", shortServerId.toString()));
+                        objectAttributes.add(LwM2mAttributes.create(LwM2mAttributes.SHORT_SERVER_ID, shortServerId));
                 }
 
             }
@@ -170,11 +168,11 @@ public final class LinkFormatHelper {
             if (objectEnabler.getId() == LwM2mId.SECURITY) {
                 String uri = ServersInfoExtractor.getServerURI(objectEnabler, instanceId);
                 if (uri != null)
-                    objectAttributes.add(new QuotedStringAttribute("uri", uri));
+                    objectAttributes.add(LwM2mAttributes.create(LwM2mAttributes.SERVER_URI, uri));
             }
 
             // create link
-            links.add(new MixedLwM2mLink("/", new LwM2mPath(objectEnabler.getId(), instanceId), objectAttributes));
+            links.add(new LwM2mLink("/", new LwM2mPath(objectEnabler.getId(), instanceId), objectAttributes));
         }
         return links;
     }

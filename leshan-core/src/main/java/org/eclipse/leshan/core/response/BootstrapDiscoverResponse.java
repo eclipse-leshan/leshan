@@ -19,7 +19,7 @@ package org.eclipse.leshan.core.response;
 import java.util.Arrays;
 
 import org.eclipse.leshan.core.ResponseCode;
-import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 
 /**
@@ -27,13 +27,13 @@ import org.eclipse.leshan.core.request.exception.InvalidResponseException;
  */
 public class BootstrapDiscoverResponse extends AbstractLwM2mResponse {
 
-    private final Link[] links;
+    private final LwM2mLink[] links;
 
-    public BootstrapDiscoverResponse(ResponseCode code, Link[] links, String errorMessage) {
+    public BootstrapDiscoverResponse(ResponseCode code, LwM2mLink[] links, String errorMessage) {
         this(code, links, errorMessage, null);
     }
 
-    public BootstrapDiscoverResponse(ResponseCode code, Link[] links, String errorMessage, Object coapResponse) {
+    public BootstrapDiscoverResponse(ResponseCode code, LwM2mLink[] links, String errorMessage, Object coapResponse) {
         super(code, errorMessage, coapResponse);
         if (ResponseCode.CONTENT.equals(code)) {
             if (links == null)
@@ -45,12 +45,12 @@ public class BootstrapDiscoverResponse extends AbstractLwM2mResponse {
     }
 
     /**
-     * Get the list of {@link Link} returned as response payload.
+     * Get the list of {@link LwM2mLink} returned as response payload.
      *
      * @return the object links or <code>null</code> if the client returned an error response.
      */
-    public Link[] getObjectLinks() {
-        return links != null ? links.clone() : null;
+    public LwM2mLink[] getObjectLinks() {
+        return links != null ? Arrays.copyOf(links, links.length) : null;
     }
 
     @Override
@@ -81,7 +81,7 @@ public class BootstrapDiscoverResponse extends AbstractLwM2mResponse {
 
     // Syntactic sugar static constructors :
 
-    public static BootstrapDiscoverResponse success(Link[] links) {
+    public static BootstrapDiscoverResponse success(LwM2mLink[] links) {
         return new BootstrapDiscoverResponse(ResponseCode.CONTENT, links, null);
     }
 

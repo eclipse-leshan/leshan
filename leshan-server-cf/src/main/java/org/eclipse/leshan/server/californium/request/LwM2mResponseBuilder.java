@@ -28,7 +28,6 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.californium.ObserveUtil;
-import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
@@ -364,13 +363,13 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     coapResponse.getPayloadString(), coapResponse);
         } else if (isResponseCodeContent()) {
             // handle success response:
-            Link[] links;
+            LwM2mLink[] links;
             if (MediaTypeRegistry.APPLICATION_LINK_FORMAT != coapResponse.getOptions().getContentFormat()) {
                 throw new InvalidResponseException("Client [%s] returned unexpected content format [%s] for [%s]",
                         clientEndpoint, coapResponse.getOptions().getContentFormat(), request);
             } else {
                 try {
-                    links = linkParser.parseCoreLinkFormat(coapResponse.getPayload());
+                    links = linkParser.parseLwM2mLinkFromCoreLinkFormat(coapResponse.getPayload(), null);
                 } catch (LinkParseException e) {
                     throw new InvalidResponseException(e,
                             "Unable to decode response payload of request [%s] from client [%s]", request,

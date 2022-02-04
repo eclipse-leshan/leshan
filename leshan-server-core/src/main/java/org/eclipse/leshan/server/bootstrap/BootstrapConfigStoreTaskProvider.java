@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.eclipse.leshan.core.link.Link;
-import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -101,19 +101,13 @@ public class BootstrapConfigStoreTaskProvider implements BootstrapTaskProvider {
         return config.autoIdForSecurityObject;
     }
 
-    protected Integer findBootstrapServerInstanceId(Link[] objectLinks) {
-        for (Link link : objectLinks) {
-            if (link.getUriReference().startsWith("/0/")) {
-                try {
-                    LwM2mPath path = new LwM2mPath(link.getUriReference());
-                    if (path.isObjectInstance()) {
-                        if (!link.getAttributes().contains("ssid"))
-                            return path.getObjectInstanceId();
-                    }
-                } catch (Exception e) {
-                    // ignore if this is not a LWM2M path
-                    LOG.warn("Invalid LwM2MPath starting by \"/0/\"");
-                }
+    protected Integer findBootstrapServerInstanceId(LwM2mLink[] objectLinks) {
+        for (LwM2mLink link : objectLinks) {
+            if (link.getPath().isObjectInstance() //
+                    && link.getPath().getObjectId() == 0 //
+                    && !link.getAttributes().contains(LwM2mAttributes.SHORT_SERVER_ID)) {
+                // the instance without ssid associated is the bootstrap server one.
+                return link.getPath().getObjectInstanceId();
             }
         }
         return null;

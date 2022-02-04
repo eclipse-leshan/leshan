@@ -30,4 +30,8 @@ public class LwM2mAttributeSet extends MixedLwM2mAttributeSet {
     public LwM2mAttributeSet(Collection<? extends LwM2mAttribute<?>> attributes) {
         super(attributes);
     }
+
+    public boolean contains(LwM2mAttributeModel<?> model) {
+        return super.contains(model.getName());
+    }
 }

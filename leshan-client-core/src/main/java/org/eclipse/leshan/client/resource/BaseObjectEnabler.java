@@ -33,7 +33,6 @@ import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.LwM2mId;
-import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
@@ -440,7 +439,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         LwM2mPath path = request.getPath();
         if (path.isObject()) {
             // Manage discover on object
-            Link[] ObjectLinks = LinkFormatHelper.getBootstrapObjectDescription(this);
+            LwM2mLink[] ObjectLinks = LinkFormatHelper.getBootstrapObjectDescription(this);
             return BootstrapDiscoverResponse.success(ObjectLinks);
         }
         return BootstrapDiscoverResponse.badRequest("invalid path");
