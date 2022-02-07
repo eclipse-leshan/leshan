@@ -69,4 +69,12 @@ public abstract class LwM2mAttributeModel<T> extends AttributeModel<LwM2mAttribu
             throw new InvalidAttributeException("Attribute %s must have a value", getName());
         }
     }
+
+    /**
+     * @return null is the value is valid, else an error message about the cause
+     */
+    public String getInvalidValueCause(T value) {
+        // do nothing by default
+        return null;
+    }
 }

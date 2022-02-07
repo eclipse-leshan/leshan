@@ -59,6 +59,10 @@ public class DoubleAttributeModel extends LwM2mAttributeModel<Double> {
             parser.raiseException(e, "%s value '%s' is not a valid Double in %s", getName(), strValue,
                     parser.getStringToParse());
             return null;
+        } catch (IllegalArgumentException e) {
+            parser.raiseException(e, "%s value '%s' is not a valid in %s", getName(), strValue,
+                    parser.getStringToParse());
+            return null;
         }
     }
 

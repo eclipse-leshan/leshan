@@ -30,14 +30,30 @@ public final class LwM2mAttributes {
             Attachment.RESOURCE, //
             EnumSet.of(AssignationLevel.RESOURCE), //
             AccessMode.R, //
-            AttributeClass.PROPERTIES);
+            AttributeClass.PROPERTIES) {
+        @Override
+        public String getInvalidValueCause(Long value) {
+            if (value < 0 || value > 255) {
+                return "Dimension attribute value must be between [0-255]";
+            }
+            return null;
+        };
+    };
     // ssid
     public static final LongAttributeModel SHORT_SERVER_ID = new LongAttributeModel(//
             "ssid", //
             Attachment.OBJECT_INSTANCE, //
             EnumSet.of(AssignationLevel.OBJECT_INSTANCE), //
             AccessMode.R, //
-            AttributeClass.PROPERTIES);
+            AttributeClass.PROPERTIES) {
+        @Override
+        public String getInvalidValueCause(Long value) {
+            if (value < 1 || value > 65534) {
+                return "Short Server ID attribute value must be between [1-65534]";
+            }
+            return null;
+        };
+    };
     // uri
     public static final StringAttributeModel SERVER_URI = new StringAttributeModel(//
             "uri", //

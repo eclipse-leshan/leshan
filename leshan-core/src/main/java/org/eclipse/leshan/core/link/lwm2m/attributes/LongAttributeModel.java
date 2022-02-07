@@ -53,6 +53,10 @@ public class LongAttributeModel extends LwM2mAttributeModel<Long> {
             parser.raiseException(e, "%s value '%s' is not a valid long in %s", getName(), strValue,
                     parser.getStringToParse());
             return null;
+        } catch (IllegalArgumentException e) {
+            parser.raiseException(e, "%s value '%s' is not a valid in %s", getName(), strValue,
+                    parser.getStringToParse());
+            return null;
         }
     }
 

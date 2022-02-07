@@ -52,7 +52,13 @@ public class StringAttributeModel extends LwM2mAttributeModel<String> {
     @Override
     public <E extends Throwable> LwM2mAttribute<String> consumeAttributeValue(StringParser<E> parser) throws E {
         String strValue = QuotedStringAttribute.consumeQuotedString(parser);
-        return new LwM2mAttribute<String>(this, strValue);
+        try {
+            return new LwM2mAttribute<String>(this, strValue);
+        } catch (IllegalArgumentException e) {
+            parser.raiseException(e, "%s value '%s' is not a valid in %s", getName(), strValue,
+                    parser.getStringToParse());
+            return null;
+        }
     }
 
     @Override

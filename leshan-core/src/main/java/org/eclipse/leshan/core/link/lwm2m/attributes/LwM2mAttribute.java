@@ -52,6 +52,10 @@ public class LwM2mAttribute<T> implements Attribute {
         Validate.notNull(model);
         this.model = model;
         this.value = value;
+        String errorMessage = model.getInvalidValueCause(value);
+        if (errorMessage != null) {
+            throw new IllegalArgumentException(errorMessage);
+        }
     }
 
     @Override
