@@ -18,6 +18,7 @@ package org.eclipse.leshan.core.request;
 import org.eclipse.leshan.core.link.lwm2m.attributes.AttributeClass;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
@@ -76,9 +77,28 @@ public class WriteAttributesRequest extends AbstractSimpleDownlinkRequest<WriteA
         }
         try {
             attributes.validate(path);
+
         } catch (IllegalArgumentException e) {
             throw new InvalidRequestException(e, "Some attributes are not valid for the path %s.", path);
         }
+
+        // check some consistency about attribute set
+        LwM2mAttribute<Long> pmin = attributes.getLwM2mAttribute(LwM2mAttributes.MINIMUM_PERIOD);
+        LwM2mAttribute<Long> pmax = attributes.getLwM2mAttribute(LwM2mAttributes.MAXIMUM_PERIOD);
+        if ((pmin != null) && (pmax != null) && pmin.hasValue() && pmax.hasValue()
+                && pmin.getValue() > pmax.getValue()) {
+            throw new InvalidRequestException("Cannot write attributes where '%s' > '%s'", pmin.getName(),
+                    pmax.getName());
+        }
+
+        LwM2mAttribute<Long> epmin = attributes.getLwM2mAttribute(LwM2mAttributes.EVALUATE_MINIMUM_PERIOD);
+        LwM2mAttribute<Long> epmax = attributes.getLwM2mAttribute(LwM2mAttributes.EVALUATE_MAXIMUM_PERIOD);
+        if ((epmin != null) && (epmax != null) && epmin.hasValue() && epmax.hasValue()
+                && epmin.getValue() > epmax.getValue()) {
+            throw new InvalidRequestException("Cannot write attributes where '%s' > '%s'", epmin.getName(),
+                    epmax.getName());
+        }
+
     }
 
     @Override

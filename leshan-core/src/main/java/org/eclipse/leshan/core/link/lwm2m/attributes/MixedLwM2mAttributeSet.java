@@ -99,7 +99,6 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
                 throw new IllegalArgumentException(errorMessage);
             }
         }
-        validate();
     }
 
     // TODO not sure we still need this function
@@ -110,26 +109,6 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
                 throw new IllegalArgumentException(String.format("Attribute '%s' cannot be assigned to level %s",
                         attr.getName(), assignationLevel.name()));
             }
-        }
-        validate();
-    }
-
-    protected void validate() {
-        // TODO this validation is only for write attribute requests.
-        LwM2mAttribute<Long> pmin = getLwM2mAttribute(LwM2mAttributes.MINIMUM_PERIOD);
-        LwM2mAttribute<Long> pmax = getLwM2mAttribute(LwM2mAttributes.MAXIMUM_PERIOD);
-        if ((pmin != null) && (pmax != null) && pmin.hasValue() && pmax.hasValue()
-                && pmin.getValue() > pmax.getValue()) {
-            throw new IllegalArgumentException(
-                    String.format("Cannot write attributes where '%s' > '%s'", pmin.getName(), pmax.getName()));
-        }
-
-        LwM2mAttribute<Long> epmin = getLwM2mAttribute(LwM2mAttributes.EVALUATE_MINIMUM_PERIOD);
-        LwM2mAttribute<Long> epmax = getLwM2mAttribute(LwM2mAttributes.EVALUATE_MAXIMUM_PERIOD);
-        if ((epmin != null) && (epmax != null) && epmin.hasValue() && epmax.hasValue()
-                && epmin.getValue() > epmax.getValue()) {
-            throw new IllegalArgumentException(
-                    String.format("Cannot write attributes where '%s' > '%s'", epmin.getName(), epmax.getName()));
         }
     }
 

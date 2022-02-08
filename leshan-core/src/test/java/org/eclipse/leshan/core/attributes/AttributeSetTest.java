@@ -137,23 +137,4 @@ public class AttributeSetTest {
         // OBJECT_VERSION cannot be assigned on resource level
         sut.validate(AssignationLevel.RESOURCE);
     }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void should_throw_on_invalid_pmin_pmax() {
-        LwM2mAttributeSet sut = new LwM2mAttributeSet(LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 50L),
-                LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, 49L));
-
-        // pmin cannot be greater then pmax
-        sut.validate(AssignationLevel.RESOURCE);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void should_throw_on_invalid_epmin_epmax() {
-        LwM2mAttributeSet sut = new LwM2mAttributeSet(
-                LwM2mAttributes.create(LwM2mAttributes.EVALUATE_MINIMUM_PERIOD, 50L),
-                LwM2mAttributes.create(LwM2mAttributes.EVALUATE_MAXIMUM_PERIOD, 49L));
-
-        // pmin cannot be greater then pmax
-        sut.validate(AssignationLevel.RESOURCE);
-    }
 }
