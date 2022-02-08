@@ -19,6 +19,8 @@ import java.util.Set;
 
 import org.eclipse.leshan.core.link.attributes.AttributeModel;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
+import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.node.LwM2mPath;
 
 /**
  * An {@link AttributeModel} for a {@link LwM2mAttribute}.
@@ -75,6 +77,26 @@ public abstract class LwM2mAttributeModel<T> extends AttributeModel<LwM2mAttribu
      */
     public String getInvalidValueCause(T value) {
         // do nothing by default
+        return null;
+    }
+
+    /**
+     * return true if the attribute can be assigned to the given assignation level.
+     */
+    public boolean canBeAssignedTo(AssignationLevel assignation) {
+        return getAssignationLevels().contains(assignation);
+    }
+
+    /**
+     * @param path the LWM2M path to which this attribute is applied
+     * @param model the LWM2M model used, if this model is null checks which need model will be ignored.
+     * @return null is the attribute can be applied to the LWM2M node identified by the given path.
+     */
+    public String getApplicabilityError(LwM2mPath path, LwM2mModel model) {
+        if (!canBeAssignedTo(AssignationLevel.fromPath(path))) {
+            return String.format("%s attribute is only applicable to %s, and so can not be assigned to %", getName(),
+                    getAssignationLevels(), path);
+        }
         return null;
     }
 }

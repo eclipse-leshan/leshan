@@ -92,21 +92,17 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
     }
 
     public void validate(LwM2mPath path) {
-        AssignationLevel assignationLevel = null;
-        if (path.isRoot()) {
-            assignationLevel = AssignationLevel.ROOT;
-        } else if (path.isObject()) {
-            assignationLevel = AssignationLevel.OBJECT;
-        } else if (path.isObjectInstance()) {
-            assignationLevel = AssignationLevel.OBJECT_INSTANCE;
-        } else if (path.isResource()) {
-            assignationLevel = AssignationLevel.RESOURCE;
-        } else if (path.isResourceInstance()) {
-            assignationLevel = AssignationLevel.RESOURCE_INTANCE;
+        // Can all attributes be assigned to this path
+        for (LwM2mAttribute<?> attr : getLwM2mAttributes()) {
+            String errorMessage = attr.getModel().getApplicabilityError(path, null);
+            if (errorMessage != null) {
+                throw new IllegalArgumentException(errorMessage);
+            }
         }
-        validate(assignationLevel);
+        validate();
     }
 
+    // TODO not sure we still need this function
     public void validate(AssignationLevel assignationLevel) {
         // Can all attributes be assigned to this level?
         for (LwM2mAttribute<?> attr : getLwM2mAttributes()) {
@@ -115,6 +111,11 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
                         attr.getName(), assignationLevel.name()));
             }
         }
+        validate();
+    }
+
+    protected void validate() {
+        // TODO this validation is only for write attribute requests.
         LwM2mAttribute<Long> pmin = getLwM2mAttribute(LwM2mAttributes.MINIMUM_PERIOD);
         LwM2mAttribute<Long> pmax = getLwM2mAttribute(LwM2mAttributes.MAXIMUM_PERIOD);
         if ((pmin != null) && (pmax != null) && pmin.hasValue() && pmax.hasValue()

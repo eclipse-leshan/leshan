@@ -16,6 +16,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.lwm2m.attributes;
 
+import org.eclipse.leshan.core.node.LwM2mPath;
+
 /**
  * The assignation level of an {@link LwM2mAttribute}.
  * <p>
@@ -23,5 +25,21 @@ package org.eclipse.leshan.core.link.lwm2m.attributes;
  * its application level.
  */
 public enum AssignationLevel {
-    ROOT, OBJECT, OBJECT_INSTANCE, RESOURCE, RESOURCE_INTANCE,
+    ROOT, OBJECT, OBJECT_INSTANCE, RESOURCE, RESOURCE_INTANCE;
+
+    public static AssignationLevel fromPath(LwM2mPath path) {
+        AssignationLevel assignationLevel = null;
+        if (path.isRoot()) {
+            assignationLevel = AssignationLevel.ROOT;
+        } else if (path.isObject()) {
+            assignationLevel = AssignationLevel.OBJECT;
+        } else if (path.isObjectInstance()) {
+            assignationLevel = AssignationLevel.OBJECT_INSTANCE;
+        } else if (path.isResource()) {
+            assignationLevel = AssignationLevel.RESOURCE;
+        } else if (path.isResourceInstance()) {
+            assignationLevel = AssignationLevel.RESOURCE_INTANCE;
+        }
+        return assignationLevel;
+    }
 }

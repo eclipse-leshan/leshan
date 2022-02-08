@@ -101,7 +101,7 @@ public class LwM2mAttribute<T> implements Attribute {
     }
 
     public boolean canBeAssignedTo(AssignationLevel assignationLevel) {
-        return model.getAssignationLevels().contains(assignationLevel);
+        return model.canBeAssignedTo(assignationLevel);
     }
 
     @Override
