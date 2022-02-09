@@ -51,6 +51,9 @@ import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.link.DefaultLinkSerializer;
 import org.eclipse.leshan.core.link.LinkSerializer;
+import org.eclipse.leshan.core.link.lwm2m.attributes.DefaultLwM2mAttributeParser;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
@@ -58,6 +61,7 @@ import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.BootstrapRequest;
+import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.util.Validate;
 
 /**
@@ -76,6 +80,8 @@ public class LeshanClientBuilder {
 
     private LwM2mEncoder encoder;
     private LwM2mDecoder decoder;
+    private LinkSerializer linkSerializer;
+    private LwM2mAttributeParser attributeParser;
 
     private EndpointFactory endpointFactory;
     private RegistrationEngineFactory engineFactory;
@@ -85,8 +91,6 @@ public class LeshanClientBuilder {
     private BootstrapConsistencyChecker bootstrapConsistencyChecker;
 
     private ScheduledExecutorService executor;
-
-    private LinkSerializer linkSerializer;
 
     /**
      * Creates a new instance for setting the configuration options for a {@link LeshanClient} instance.
@@ -159,8 +163,19 @@ public class LeshanClientBuilder {
      * <p>
      * By default the {@link DefaultLinkSerializer} is used.
      */
-    public void setLinkSerializer(LinkSerializer linkSerializer) {
+    public LeshanClientBuilder setLinkSerializer(LinkSerializer linkSerializer) {
         this.linkSerializer = linkSerializer;
+        return this;
+    }
+
+    /**
+     * Set the {@link LwM2mAttributeParser} used to parse {@link LwM2mAttribute} from {@link WriteAttributesRequest}.
+     * <p>
+     * By default the {@link DefaultLwM2mAttributeParser} is used.
+     */
+    public LeshanClientBuilder setAttributeParser(LwM2mAttributeParser attributeParser) {
+        this.attributeParser = attributeParser;
+        return this;
     }
 
     /**
@@ -311,6 +326,8 @@ public class LeshanClientBuilder {
             decoder = new DefaultLwM2mDecoder();
         if (linkSerializer == null)
             linkSerializer = new DefaultLinkSerializer();
+        if (attributeParser == null)
+            attributeParser = new DefaultLwM2mAttributeParser();
         if (coapConfig == null) {
             coapConfig = createDefaultCoapConfiguration();
         }
@@ -353,7 +370,7 @@ public class LeshanClientBuilder {
 
         return createLeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder,
                 this.trustStore, endpointFactory, engineFactory, bootstrapConsistencyChecker, additionalAttributes,
-                bsAdditionalAttributes, encoder, decoder, executor, linkSerializer);
+                bsAdditionalAttributes, encoder, decoder, executor, linkSerializer, attributeParser);
     }
 
     /**
@@ -380,6 +397,8 @@ public class LeshanClientBuilder {
      * @param decoder used to decode response payload.
      * @param sharedExecutor an optional shared executor.
      * @param linkSerializer a serializer {@link LinkSerializer} used to serialize a CoRE Link.
+     * @param attributeParser a {@link LwM2mAttributeParser} used to parse {@link LwM2mAttribute} from
+     *        {@link WriteAttributesRequest}.
      * 
      * @return the new {@link LeshanClient}
      */
@@ -388,9 +407,10 @@ public class LeshanClientBuilder {
             List<Certificate> trustStore, EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
             BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer) {
+            ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer,
+            LwM2mAttributeParser attributeParser) {
         return new LeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, trustStore,
                 endpointFactory, engineFactory, checker, additionalAttributes, bsAdditionalAttributes, encoder, decoder,
-                sharedExecutor, linkSerializer);
+                sharedExecutor, linkSerializer, attributeParser);
     }
 }

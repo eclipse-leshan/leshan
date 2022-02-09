@@ -38,7 +38,6 @@ import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
-import org.eclipse.leshan.core.link.lwm2m.attributes.DefaultLwM2mAttributeParser;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -94,15 +93,14 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
 
     public ObjectResource(LwM2mObjectEnabler nodeEnabler, RegistrationEngine registrationEngine,
             CaliforniumEndpointsManager endpointsManager, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            LinkSerializer linkSerializer) {
+            LinkSerializer linkSerializer, LwM2mAttributeParser attributeParser) {
         super(Integer.toString(nodeEnabler.getId()), registrationEngine, endpointsManager);
         this.nodeEnabler = nodeEnabler;
         this.linkSerializer = linkSerializer;
         this.nodeEnabler.addListener(this);
         this.encoder = encoder;
         this.decoder = decoder;
-        // TODO make it configurable
-        this.attributeParser = new DefaultLwM2mAttributeParser();
+        this.attributeParser = attributeParser;
         setObservable(true);
     }
 
