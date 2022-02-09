@@ -52,6 +52,15 @@ public class DefaultLwM2mLinkParser implements LwM2mLinkParser {
         this.parser = new DefaultLinkParser(new DefaultAttributeParser(suppportedAttributes));
     }
 
+    public DefaultLwM2mLinkParser(Collection<? extends AttributeModel<?>> suppportedAttributes) {
+        // Create default link Parser
+        this.parser = new DefaultLinkParser(new DefaultAttributeParser(suppportedAttributes));
+    }
+
+    public DefaultLwM2mLinkParser(LinkParser internalLinkParser) {
+        this.parser = internalLinkParser;
+    }
+
     @Override
     public LwM2mLink[] parseLwM2mLinkFromCoreLinkFormat(byte[] bytes, String rootpath) throws LinkParseException {
         Link[] links = parser.parseCoreLinkFormat(bytes);
