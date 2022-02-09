@@ -39,6 +39,16 @@ public class LwM2mVersionAttributeModel extends LwM2mAttributeModel<LwM2mVersion
      */
     @Override
     public <E extends Throwable> LwM2mAttribute<LwM2mVersion> consumeAttributeValue(StringParser<E> parser) throws E {
+        // We handle opening quote for v1.0 because of specification ambiguity.
+        // The format is not explicitly defined in v1.0 but all example are using quote
+        // https://github.com/eclipse/leshan/issues/732)
+        // Since v1.1 the format is clearly defined and no quote MUST be used.
+        boolean quotedVersion = false;
+        if (parser.nextCharIs('"')) {
+            parser.consumeNextChar();
+            quotedVersion = true;
+        }
+
         // parse Major
         int start = parser.getPosition();
         parser.consumeDIGIT();
@@ -52,16 +62,31 @@ public class LwM2mVersionAttributeModel extends LwM2mAttributeModel<LwM2mVersion
         }
         int end = parser.getPosition();
 
-        // create attribute
-        String strValue = parser.substring(start, end);
+        // handle ending quote
+        if (quotedVersion) {
+            parser.consumeChar('"');
+        }
 
         // validate version
+        String strValue = parser.substring(start, end);
         String err = Version.validate(strValue);
         if (err != null) {
             parser.raiseException("Invalid lwm2m version %s in %s", strValue, parser.getStringToParse());
         }
 
-        return new LwM2mAttribute<LwM2mVersion>(this, LwM2mVersion.get(strValue));
+        // handle quote (see comment above)
+        LwM2mVersion lwM2mVersion = LwM2mVersion.get(strValue);
+        if (quotedVersion && !tolerateQuote(lwM2mVersion)) {
+            parser.raiseException("Invalid lwm2m version \"%s\" in %s : version should not be quoted", strValue,
+                    parser.getStringToParse());
+        }
+
+        // create attribute
+        return new LwM2mAttribute<LwM2mVersion>(this, lwM2mVersion);
+    }
+
+    protected boolean tolerateQuote(LwM2mVersion attributeValue) {
+        return attributeValue.equals(LwM2mVersion.V1_0);
     }
 
     @Override

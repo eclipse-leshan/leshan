@@ -195,7 +195,7 @@ public class RegistrationTest {
 
     @Test
     public void test_object_links_with_version() throws LinkParseException {
-        Registration reg = given_a_registration_with_object_link_like("</1/0>,</3>;ver=\"1.1\",</3/0>");
+        Registration reg = given_a_registration_with_object_link_like("</1/0>,</3>;ver=1.1,</3/0>");
 
         // check root path
         assertEquals("/", reg.getRootPath());
@@ -234,7 +234,7 @@ public class RegistrationTest {
     @Test(expected = LinkParseException.class)
     public void test_object_links_with_text_in_lwm2m_path() throws LinkParseException {
         given_a_registration_with_object_link_like(
-                "<text>,</1/text/0/in/path>,empty,</2/O/test/in/path>,</3/0>;ver=\"1.1\",</4/0/0/>");
+                "<text>,</1/text/0/in/path>,empty,</2/O/test/in/path>,</3/0>;ver=1.1,</4/0/0/>");
     }
 
     private Registration given_a_registration_with_object_link_like(String objectLinks) throws LinkParseException {

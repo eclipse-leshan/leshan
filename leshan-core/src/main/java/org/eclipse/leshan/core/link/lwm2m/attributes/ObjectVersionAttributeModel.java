@@ -44,10 +44,13 @@ public class ObjectVersionAttributeModel extends LwM2mAttributeModel<Version> {
     @Override
     public <E extends Throwable> LwM2mAttribute<Version> consumeAttributeValue(StringParser<E> parser) throws E {
 
-        // handle opening quote
-        // we tolerate quote because the spec v1.0 seems not clear about it (see
+        // We don't handle quoted version by default for ver attribute
+        // The format is not explicitly defined in v1.0 but
+        // you can find some example with and without quote.
+        // So we consider this is a spec bug and so we refer to specification v1.1 to know the real format.
         // https://github.com/eclipse/leshan/issues/732)
-        // TODO we should probably not tolerate it by default
+        //
+        // if someone need to support quote then just extends this class overriding tolerateQuote()
         boolean quotedVersion = false;
         if (parser.nextCharIs('"')) {
             parser.consumeNextChar();
@@ -72,13 +75,24 @@ public class ObjectVersionAttributeModel extends LwM2mAttributeModel<Version> {
             parser.consumeChar('"');
         }
 
-        // create attribute
+        // validate version
         String strValue = parser.substring(start, end);
         String err = Version.validate(strValue);
         if (err != null) {
             parser.raiseException("Invalid version %s in %s", strValue, parser.getStringToParse());
         }
+
+        // handle quote (see comment above)
+        if (quotedVersion && !tolerateQuote()) {
+            parser.raiseException("Invalid lwm2m version \"%s\" in %s : version should not be quoted", strValue,
+                    parser.getStringToParse());
+        }
+        // create attribute
         return new LwM2mAttribute<Version>(this, new Version(strValue));
+    }
+
+    protected boolean tolerateQuote() {
+        return false;
     }
 
     @Override
