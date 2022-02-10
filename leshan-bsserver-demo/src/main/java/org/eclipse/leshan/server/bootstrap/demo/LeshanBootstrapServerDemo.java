@@ -31,6 +31,7 @@ import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.leshan.core.californium.PrincipalMdcConnectionListener;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -138,6 +139,10 @@ public class LeshanBootstrapServerDemo {
         dtlsConfig.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, !cli.dtls.supportDeprecatedCiphers);
         if (cli.dtls.cid != null) {
             dtlsConfig.set(DtlsConfig.DTLS_CONNECTION_ID_LENGTH, cli.dtls.cid);
+        }
+        // Add MDC for connection logs
+        if (cli.helpsOptions.getVerboseLevel() > 0) {
+            dtlsConfig.setConnectionListener(new PrincipalMdcConnectionListener());
         }
 
         if (cli.identity.isx509()) {

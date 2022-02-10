@@ -45,7 +45,7 @@ import picocli.CommandLine.Spec;
 public class LeshanBsServerDemoCLI implements Runnable {
 
     @Mixin
-    private StandardHelpOptions helpsOptions;
+    public StandardHelpOptions helpsOptions;
 
     /* ********************************** General Section ******************************** */
     @ArgGroup(validate = false, heading = "%n")

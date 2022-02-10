@@ -48,7 +48,7 @@ import redis.clients.jedis.JedisPool;
 public class LeshanServerDemoCLI implements Runnable {
 
     @Mixin
-    private StandardHelpOptions helpsOptions;
+    public StandardHelpOptions helpsOptions;
 
     /* ********************************** General Section ******************************** */
     @ArgGroup(validate = false, heading = "%n")

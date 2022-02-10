@@ -59,6 +59,7 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.send.ManualDataSender;
+import org.eclipse.leshan.core.californium.PrincipalMdcConnectionListener;
 import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.core.demo.cli.interactive.InteractiveCLI;
@@ -255,6 +256,11 @@ public class LeshanClientDemo {
         engineFactory.setReconnectOnUpdate(cli.dtls.reconnectOnUpdate);
         engineFactory.setResumeOnConnect(!cli.dtls.forceFullhandshake);
         engineFactory.setQueueMode(cli.main.queueMode);
+
+        // Add MDC for connection logs
+        if (cli.helpsOptions.getVerboseLevel() > 0) {
+            dtlsConfig.setConnectionListener(new PrincipalMdcConnectionListener());
+        }
 
         // Log Session lifecycle
         dtlsConfig.setSessionListener(new SessionAdapter() {

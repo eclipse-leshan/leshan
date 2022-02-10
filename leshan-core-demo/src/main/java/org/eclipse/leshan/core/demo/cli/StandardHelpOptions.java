@@ -33,6 +33,8 @@ public class StandardHelpOptions {
     @Option(names = { "-V", "--version" }, description = "Print version information and exit.", versionHelp = true)
     private boolean versionRequested;
 
+    private int verboseLevel = 0;
+
     @Option(names = { "-v", "--verbose" },
             description = { "Specify multiple -v options to increase verbosity.", //
                     "For example, `-v -v -v` or `-vvv`", //
@@ -41,6 +43,8 @@ public class StandardHelpOptions {
                             " see 'How to activate more log ?' in FAQ:", //
                     "  https://github.com/eclipse/leshan/wiki/F.A.Q./" })
     public void setVerbose(boolean[] verbose) {
+        verboseLevel = verbose.length;
+
         // set CLI verbosity. (See ShortErrorMessageHandler)
         if (verbose.length > 0) {
             System.setProperty("leshan.cli", "DEBUG");
@@ -75,5 +79,9 @@ public class StandardHelpOptions {
         Logger logger = loggerContext.getLogger(loggerName);
         if (logger != null)
             logger.setLevel(level);
+    }
+
+    public int getVerboseLevel() {
+        return verboseLevel;
     }
 }

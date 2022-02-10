@@ -18,7 +18,7 @@ Contributors:
 	<appender name="TERMINAL" class="org.eclipse.leshan.core.demo.cli.interactive.TerminalAppender">
 		<encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
 			<layout class="org.eclipse.leshan.core.demo.logback.ColorAwarePatternLayout">
-				<pattern>%gray(%d) %gray(%-20logger{0}) [%highlight(%p)] %m%n</pattern>
+				<pattern>%gray(%d) %gray(%-20logger{0}) [%highlight(%p)] %m %yellow(%X) %n</pattern>
 			</layout>
 		</encoder>
 	</appender>
