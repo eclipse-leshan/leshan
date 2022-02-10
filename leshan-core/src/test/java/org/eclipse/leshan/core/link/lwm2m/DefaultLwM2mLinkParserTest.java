@@ -13,14 +13,12 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.link;
+package org.eclipse.leshan.core.link.lwm2m;
 
 import static org.junit.Assert.assertThrows;
 
+import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.attributes.AttributeSet;
-import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
-import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
-import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.node.LwM2mPath;

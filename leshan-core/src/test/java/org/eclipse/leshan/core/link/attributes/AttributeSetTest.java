@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Daniel Persson (Husqvarna Group) - Attribute support
  *******************************************************************************/
-package org.eclipse.leshan.core.attributes;
+package org.eclipse.leshan.core.link.attributes;
 
 import static org.junit.Assert.assertEquals;
 

@@ -1,4 +1,4 @@
-package org.eclipse.leshan.core.attributes;
+package org.eclipse.leshan.core.link.attributes;
 
 import static org.junit.Assert.*;
 
