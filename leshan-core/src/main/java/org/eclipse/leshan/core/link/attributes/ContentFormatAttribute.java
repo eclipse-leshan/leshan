@@ -118,10 +118,5 @@ public class ContentFormatAttribute extends BaseAttribute {
                 return new ContentFormatAttribute(cts);
             }
         }
-
-        @Override
-        public ContentFormatAttribute createEmptyAttribute() throws InvalidAttributeException {
-            throw new InvalidAttributeException("Attribute %s must have a value", getName());
-        }
     }
 }

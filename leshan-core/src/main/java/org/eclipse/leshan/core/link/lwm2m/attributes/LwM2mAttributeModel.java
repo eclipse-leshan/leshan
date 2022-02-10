@@ -65,11 +65,12 @@ public abstract class LwM2mAttributeModel<T> extends AttributeModel<LwM2mAttribu
         return attributeClass;
     }
 
-    protected void canBeValueless() throws InvalidAttributeException {
-        if (!accessMode.isWritable() && attributeClass == AttributeClass.NOTIFICATION) {
-            // AFAIK, only writable value can be null. (mainly to remove write attributes)
-            throw new InvalidAttributeException("Attribute %s must have a value", getName());
-        }
+    /**
+     * @return <code>true</code> if the Attribute can be used without value in a query param Format.
+     */
+    public boolean queryParamCanBeValueless() throws InvalidAttributeException {
+        // AFAIK, only writable value can be null. (mainly to remove write attributes)
+        return accessMode.isWritable() && attributeClass == AttributeClass.NOTIFICATION;
     }
 
     /**

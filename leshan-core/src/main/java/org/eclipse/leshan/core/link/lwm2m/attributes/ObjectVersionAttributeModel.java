@@ -18,7 +18,6 @@ package org.eclipse.leshan.core.link.lwm2m.attributes;
 import java.util.EnumSet;
 
 import org.eclipse.leshan.core.LwM2m.Version;
-import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.eclipse.leshan.core.parser.StringParser;
 
 /**
@@ -93,10 +92,5 @@ public class ObjectVersionAttributeModel extends LwM2mAttributeModel<Version> {
 
     protected boolean tolerateQuote() {
         return false;
-    }
-
-    @Override
-    public LwM2mAttribute<Version> createEmptyAttribute() throws InvalidAttributeException {
-        throw new InvalidAttributeException("Attribute %s must have a value", getName());
     }
 }

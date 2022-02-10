@@ -41,8 +41,18 @@ public abstract class AttributeModel<T extends Attribute> {
     public abstract <E extends Throwable> T consumeAttributeValue(StringParser<E> parser) throws E;
 
     /**
-     * Create an Empty Attribute for this Model. It could raise an {@link InvalidAttributeException} if this attribute
-     * must have a value.
+     * Create an Empty Attribute for this Model.
+     * 
+     * @throws UnsupportedOperationException if this attribute can not be created without value.
      */
-    public abstract T createEmptyAttribute() throws InvalidAttributeException;
+    public T createEmptyAttribute() throws UnsupportedOperationException {
+        throw new UnsupportedOperationException(String.format("Attribute %s must have a value", getName()));
+    }
+
+    /**
+     * @return <code>true</code> if the Attribute can be used without value in a CoRE Link Format.
+     */
+    public boolean linkAttributeCanBeValueless() {
+        return false;
+    }
 }

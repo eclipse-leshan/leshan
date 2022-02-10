@@ -17,6 +17,7 @@ package org.eclipse.leshan.core.link.lwm2m.attributes;
 
 import java.util.Collection;
 
+import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.link.attributes.AttributeParser;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 
@@ -28,29 +29,35 @@ import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 public interface LwM2mAttributeParser extends AttributeParser {
 
     /**
-     * Create an AttributeSet from a uri queries string.
+     * Create a collection of {@link LwM2mAttribute} from a uri query string.
      * 
      * @param uriQueries the URI queries to parse. e.g. {@literal pmin=10&pmax=60}
      */
     Collection<LwM2mAttribute<?>> parseUriQuery(String uriQueries) throws InvalidAttributeException;
 
     /**
-     * Create an AttributeSet from an array of string. Each elements is an attribute with its value.
+     * Create a list of {@link LwM2mAttribute} from an array of string. Each elements is an attribute with its value.
      * 
      * <pre>
      * queryParams[0] = "pmin=10";
      * queryParams[1] = "pmax=10";
      * </pre>
      */
-    Collection<LwM2mAttribute<?>> parseQueryParams(String... queryParams) throws InvalidAttributeException;;
+    Collection<LwM2mAttribute<?>> parseQueryParams(String... queryParams) throws InvalidAttributeException;
 
     /**
-     * Create an AttributeSet from a collection of string. Each elements is an attribute with its value.
+     * Create a collection of {@link LwM2mAttribute} from a collection of string. Each elements is an attribute with its
+     * value.
      * 
      * <pre>
      * queryParams.get(0) = "pmin=10";
      * queryParams.get(1) = "pmax=10";
      * </pre>
      */
-    Collection<LwM2mAttribute<?>> parseQueryParams(Collection<String> queryParams) throws InvalidAttributeException;;
+    Collection<LwM2mAttribute<?>> parseQueryParams(Collection<String> queryParams) throws InvalidAttributeException;
+
+    /**
+     * Parse the value of an {@link LwM2mAttribute} in a query param format.
+     */
+    Attribute parseQueryParamValue(String attributeName, String attributeValue) throws InvalidAttributeException;
 }

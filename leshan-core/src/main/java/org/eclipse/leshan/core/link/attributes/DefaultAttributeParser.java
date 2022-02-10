@@ -76,7 +76,12 @@ public class DefaultAttributeParser implements AttributeParser {
         // search in known attribute
         AttributeModel<?> model = knownAttributes.get(name);
         if (model != null) {
-            return model.createEmptyAttribute();
+            if (model.linkAttributeCanBeValueless()) {
+                return model.createEmptyAttribute();
+            } else {
+                throw new InvalidAttributeException("Attribute %s must have a value in CoRE Link Format.",
+                        model.getName());
+            }
         }
         // ELSE fall-back on ValueLessAttribute
         else {

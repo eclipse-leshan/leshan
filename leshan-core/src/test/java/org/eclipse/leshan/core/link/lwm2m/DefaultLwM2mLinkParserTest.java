@@ -55,4 +55,19 @@ public class DefaultLwM2mLinkParserTest {
             parser.parseLwM2mLinkFromCoreLinkFormat("</0/1>;ssid=0".getBytes(), null);
         });
     }
+
+    @Test
+    public void check_attribute_with_no_value_failed() throws LinkParseException {
+        // first check it's OK with value
+        LwM2mLink[] parsed = parser.parseLwM2mLinkFromCoreLinkFormat("</3/0/11>;pmin=200".getBytes(), null);
+        Assert.assertEquals(new LwM2mPath(3, 0, 11), parsed[0].getPath());
+        AttributeSet attResult = new LwM2mAttributeSet(LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 200l));
+        Assert.assertEquals(attResult, parsed[0].getAttributes());
+
+        // then check an invalid one
+        assertThrows(LinkParseException.class, () -> {
+            // dim should be between 0-255
+            parser.parseLwM2mLinkFromCoreLinkFormat("</3/0/11>;pmin".getBytes(), null);
+        });
+    }
 }

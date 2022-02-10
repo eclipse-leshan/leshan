@@ -17,7 +17,6 @@ package org.eclipse.leshan.core.link.lwm2m.attributes;
 
 import java.util.Set;
 
-import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.eclipse.leshan.core.parser.StringParser;
 
 /**
@@ -67,8 +66,7 @@ public class DoubleAttributeModel extends LwM2mAttributeModel<Double> {
     }
 
     @Override
-    public LwM2mAttribute<Double> createEmptyAttribute() throws InvalidAttributeException {
-        canBeValueless();
+    public LwM2mAttribute<Double> createEmptyAttribute() {
         return new LwM2mAttribute<Double>(this);
     }
 }

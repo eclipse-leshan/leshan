@@ -59,12 +59,10 @@ public class DefaultLwM2mAttributeParser extends DefaultAttributeParser implemen
         for (String param : queryParams) {
             String[] keyAndValue = param.split("=");
             Attribute attr;
-            // There nothing clear in specification about format which should be used in Query
-            // So we reuse the CoRE link format (hopping it's OK)
             if (keyAndValue.length == 1) {
-                attr = parseCoreLinkValue(keyAndValue[0], null);
+                attr = parseQueryParamValue(keyAndValue[0], null);
             } else if (keyAndValue.length == 2) {
-                attr = parseCoreLinkValue(keyAndValue[0], keyAndValue[1]);
+                attr = parseQueryParamValue(keyAndValue[0], keyAndValue[1]);
             } else {
                 throw new InvalidAttributeException("Cannot parse query param '%s'", param);
             }
@@ -77,5 +75,31 @@ public class DefaultLwM2mAttributeParser extends DefaultAttributeParser implemen
             }
         }
         return attributes;
+    }
+
+    @Override
+    public Attribute parseQueryParamValue(String attributeName, String attributeValue)
+            throws InvalidAttributeException {
+
+        // search model
+        AttributeModel<?> model = getKnownAttributes().get(attributeName);
+        if (model == null || !(model instanceof LwM2mAttributeModel<?>)) {
+            throw new InvalidAttributeException("%s attribute is unknown or not a LWM2M attribute", attributeName);
+        }
+        LwM2mAttributeModel<?> lwm2mModel = (LwM2mAttributeModel<?>) model;
+
+        if (attributeValue == null) {
+            // handle value less attribute.
+            if (lwm2mModel.queryParamCanBeValueless()) {
+                return model.createEmptyAttribute();
+            } else {
+                throw new InvalidAttributeException("%s attribute must have a value when used as query param",
+                        attributeName);
+            }
+        } else {
+            // There nothing clear in specification about format which should be used in Query
+            // So we reuse the CoRE link format (hopping it's OK)
+            return parseCoreLinkValue(attributeName, attributeValue);
+        }
     }
 }
