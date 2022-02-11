@@ -40,6 +40,7 @@ import org.eclipse.leshan.client.demo.cli.LeshanClientDemoCLI;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.LwM2mTestObject;
+import org.eclipse.leshan.client.object.Oscore;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
@@ -139,44 +140,69 @@ public class LeshanClientDemo {
 
         // Initialize object list
         final ObjectsInitializer initializer = new ObjectsInitializer(repository.getLwM2mModel());
+        // handle OSCORE
+        Integer oscoreObjectInstanceId;
+        if (cli.oscore != null) {
+            oscoreObjectInstanceId = 12345;
+            Oscore oscoreObject = new Oscore(oscoreObjectInstanceId, cli.oscore.getOscoreSetting());
+            initializer.setInstancesForObject(OSCORE, oscoreObject);
+        } else {
+            oscoreObjectInstanceId = null;
+            initializer.setClassForObject(OSCORE, Oscore.class);
+        }
         if (cli.main.bootstrap) {
             if (cli.identity.isPSK()) {
+                // TODO OSCORE support OSCORE with DTLS/PSK
                 initializer.setInstancesForObject(SECURITY, pskBootstrap(cli.main.url,
                         cli.identity.getPsk().identity.getBytes(), cli.identity.getPsk().sharekey.getBytes()));
                 initializer.setClassForObject(SERVER, Server.class);
             } else if (cli.identity.isRPK()) {
+                // TODO OSCORE support OSCORE with DTLS/RPK
                 initializer.setInstancesForObject(SECURITY,
                         rpkBootstrap(cli.main.url, cli.identity.getRPK().cpubk.getEncoded(),
                                 cli.identity.getRPK().cprik.getEncoded(), cli.identity.getRPK().spubk.getEncoded()));
                 initializer.setClassForObject(SERVER, Server.class);
             } else if (cli.identity.isx509()) {
+                // TODO OSCORE support OSCORE with DTLS/X509
                 initializer.setInstancesForObject(SECURITY,
                         x509Bootstrap(cli.main.url, cli.identity.getX509().ccert.getEncoded(),
                                 cli.identity.getX509().cprik.getEncoded(), cli.identity.getX509().scert.getEncoded(),
                                 cli.identity.getX509().certUsage.code));
                 initializer.setClassForObject(SERVER, Server.class);
             } else {
-                initializer.setInstancesForObject(SECURITY, noSecBootstap(cli.main.url));
+                if (oscoreObjectInstanceId != null) {
+                    initializer.setInstancesForObject(SECURITY,
+                            oscoreOnlyBootstrap(cli.main.url, oscoreObjectInstanceId));
+                } else {
+                    initializer.setInstancesForObject(SECURITY, noSecBootstap(cli.main.url));
+                }
                 initializer.setClassForObject(SERVER, Server.class);
             }
         } else {
             if (cli.identity.isPSK()) {
+                // TODO OSCORE support OSCORE with DTLS/PSK
                 initializer.setInstancesForObject(SECURITY, psk(cli.main.url, 123,
                         cli.identity.getPsk().identity.getBytes(), cli.identity.getPsk().sharekey.getBytes()));
                 initializer.setInstancesForObject(SERVER, new Server(123, cli.main.lifetimeInSec));
             } else if (cli.identity.isRPK()) {
+                // TODO OSCORE support OSCORE with DTLS/RPK
                 initializer.setInstancesForObject(SECURITY,
                         rpk(cli.main.url, 123, cli.identity.getRPK().cpubk.getEncoded(),
                                 cli.identity.getRPK().cprik.getEncoded(), cli.identity.getRPK().spubk.getEncoded()));
                 initializer.setInstancesForObject(SERVER, new Server(123, cli.main.lifetimeInSec));
             } else if (cli.identity.isx509()) {
+                // TODO OSCORE support OSCORE with DTLS/X509
                 initializer.setInstancesForObject(SECURITY,
                         x509(cli.main.url, 123, cli.identity.getX509().ccert.getEncoded(),
                                 cli.identity.getX509().cprik.getEncoded(), cli.identity.getX509().scert.getEncoded(),
                                 cli.identity.getX509().certUsage.code));
                 initializer.setInstancesForObject(SERVER, new Server(123, cli.main.lifetimeInSec));
             } else {
-                initializer.setInstancesForObject(SECURITY, noSec(cli.main.url, 123));
+                if (oscoreObjectInstanceId != null) {
+                    initializer.setInstancesForObject(SECURITY, oscoreOnly(cli.main.url, 123, oscoreObjectInstanceId));
+                } else {
+                    initializer.setInstancesForObject(SECURITY, noSec(cli.main.url, 123));
+                }
                 initializer.setInstancesForObject(SERVER, new Server(123, cli.main.lifetimeInSec));
             }
         }
