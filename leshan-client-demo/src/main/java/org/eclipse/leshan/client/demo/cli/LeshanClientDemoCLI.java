@@ -265,6 +265,16 @@ public class LeshanClientDemoCLI implements Runnable {
     @ArgGroup(exclusive = true)
     public IdentitySection identity = new IdentitySection();
 
+    /* ********************************** OSCORE Section ******************************** */
+    @ArgGroup(exclusive = false,
+              heading = "%n@|bold,underline OSCORE Options|@ %n%n"//
+                      + "@|italic " //
+                      + "By default Leshan demo does not use OSCORE.%n"//
+                      + "|@" + "@|red, OSCORE implementation in Leshan is in an experimental state.|@%n" //
+                      + "%n")
+
+    public OscoreSection oscore;
+
     @Spec
     CommandSpec spec;
 
@@ -281,6 +291,11 @@ public class LeshanClientDemoCLI implements Runnable {
                         "You need to set a truststore when you are using \"service certificate constraint\" usage",
                         "-cu", "-ts");
             }
+        }
+
+        // check OSCORE
+        if (oscore != null) {
+            oscore.validateOscoreSetting(spec.commandLine());
         }
 
         normalizedServerUrl();
