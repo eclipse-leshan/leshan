@@ -118,10 +118,6 @@
 import { configsFromRestToUI, configFromUIToRest } from "../js/bsconfigutil.js";
 import { fromHex, fromAscii } from "@leshan-server-core-demo/js/byteutils.js";
 import SecurityInfoChip from "@leshan-server-core-demo/components/security/SecurityInfoChip.vue";
-import {
-  adaptToUI,
-  adaptToAPI,
-} from "@leshan-server-core-demo/js/securityutils.js";
 import ClientConfigDialog from "../components/wizard/ClientConfigDialog.vue";
 import { getModeIcon } from "@leshan-server-core-demo/js/securityutils.js";
 
@@ -164,11 +160,11 @@ export default {
                 (c) => c.endpoint === sec.endpoint
               );
               if (existingConfig) {
-                existingConfig.security = adaptToUI(sec);
+                existingConfig.security = sec;
               } else {
                 newConfigs.push({
                   endpoint: sec.endpoint,
-                  security: adaptToUI(sec),
+                  security: sec,
                 });
               }
             })
@@ -215,14 +211,9 @@ export default {
     onAdd(config) {
       if (config.security) {
         // if we have security we try to add security first
-        this.axios
-          .put(
-            "api/security/clients/",
-            adaptToAPI(config.security, config.endpoint)
-          )
-          .then(() => {
-            this.addConfig(config);
-          });
+        this.axios.put("api/security/clients/", config.security).then(() => {
+          this.addConfig(config);
+        });
       } else {
         // if we don't have security, we remove existing one first
         this.axios

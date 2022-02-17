@@ -18,18 +18,14 @@ package org.eclipse.leshan.server.core.demo.json;
 
 import java.io.IOException;
 import java.security.PublicKey;
-import java.security.interfaces.ECPublicKey;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
-import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.security.SecurityInfo;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 public class JacksonSecuritySerializer extends StdSerializer<SecurityInfo> {
@@ -45,53 +41,38 @@ public class JacksonSecuritySerializer extends StdSerializer<SecurityInfo> {
     }
 
     @Override
-    public void serialize(SecurityInfo src, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        Map<String, Object> element = new HashMap<>();
+    public void serialize(SecurityInfo securityInfo, JsonGenerator gen, SerializerProvider provider)
+            throws IOException {
+        ObjectNode oSecInfo = JsonNodeFactory.instance.objectNode();
+        oSecInfo.put("endpoint", securityInfo.getEndpoint());
 
-        element.put("endpoint", src.getEndpoint());
+        if (securityInfo.useSecureTransportLayer()) {
+            // handle (D)TLS case :
+            ObjectNode oTls = JsonNodeFactory.instance.objectNode();
+            oSecInfo.set("tls", oTls);
 
-        if (src.getPskIdentity() != null) {
-            Map<String, Object> psk = new HashMap<>();
-            psk.put("identity", src.getPskIdentity());
-            psk.put("key", Hex.encodeHexString(src.getPreSharedKey()));
-            element.put("psk", psk);
-        }
+            if (securityInfo.usePSK()) {
+                // set detail for PSK
+                ObjectNode oPsk = JsonNodeFactory.instance.objectNode();
+                oPsk.put("identity", securityInfo.getPskIdentity());
+                oPsk.put("key", Hex.encodeHexString(securityInfo.getPreSharedKey()));
 
-        if (src.getRawPublicKey() != null) {
-            Map<String, Object> rpk = new HashMap<>();
-            PublicKey rawPublicKey = src.getRawPublicKey();
-            if (rawPublicKey instanceof ECPublicKey) {
-                rpk.put("key", Hex.encodeHexString(rawPublicKey.getEncoded()));
+                // set PSK field
+                oTls.put("mode", "psk");
+                oTls.set("details", oPsk);
+            } else if (securityInfo.useRPK()) {
+                // set details
+                ObjectNode oRpk = JsonNodeFactory.instance.objectNode();
+                PublicKey rawPublicKey = securityInfo.getRawPublicKey();
+                oRpk.put("key", Hex.encodeHexString(rawPublicKey.getEncoded()));
 
-                // TODO all the fields above is no more used should be removed it ?
-                ECPublicKey ecPublicKey = (ECPublicKey) rawPublicKey;
-                // Get x coordinate
-                byte[] x = ecPublicKey.getW().getAffineX().toByteArray();
-                if (x[0] == 0)
-                    x = Arrays.copyOfRange(x, 1, x.length);
-                rpk.put("x", Hex.encodeHexString(x));
-
-                // Get Y coordinate
-                byte[] y = ecPublicKey.getW().getAffineY().toByteArray();
-                if (y[0] == 0)
-                    y = Arrays.copyOfRange(y, 1, y.length);
-                rpk.put("y", Hex.encodeHexString(y));
-
-                // Get Curves params
-                rpk.put("params", ecPublicKey.getParams().toString());
-
-                // Get raw public key in format PKCS8 (DER encoding)
-                rpk.put("pkcs8", Base64.encodeBase64String(ecPublicKey.getEncoded()));
-            } else {
-                throw new JsonGenerationException("Unsupported Public Key Format (only ECPublicKey supported).", gen);
+                // set RPK field
+                oTls.put("mode", "rpk");
+                oTls.set("details", oRpk);
+            } else if (securityInfo.useX509Cert()) {
+                oTls.put("mode", "x509");
             }
-            element.put("rpk", rpk);
         }
-
-        if (src.useX509Cert()) {
-            element.put("x509", true);
-        }
-
-        gen.writeObject(element);
+        gen.writeTree(oSecInfo);
     }
 }
