@@ -17,16 +17,6 @@ import {
   mdiHelpRhombusOutline,
 } from "@mdi/js";
 
-function adaptToUI(sec) {
-  // TODO this is a bit tricky, probably better to adapt the REST API
-  // But do not want to change it while we have 2 demo UI (old & new)
-  let s = {};
-  s.endpoint = sec.endpoint;
-  s.mode = getMode(sec);
-  if (s.mode != "unsupported" && s.mode != "x509") s.details = sec[s.mode];
-  return s;
-}
-
 function getMode(sec) {
   if (sec.x509) return "x509";
   else if (sec.psk) return "psk";
@@ -47,17 +37,4 @@ function getModeIcon(mode) {
   }
 }
 
-function adaptToAPI(sec, endpoint) {
-  // TODO this is a bit tricky, probably better to adapt the REST API
-  // But do not want to change it while we have 2 demo UI (old & new)
-  let s = {};
-  s.endpoint = endpoint;
-  if (sec.mode == "x509") {
-    s[sec.mode] = true;
-  } else if (sec.mode != "unsupported") {
-    s[sec.mode] = sec.details;
-  }
-  return s;
-}
-
-export { adaptToUI, getMode, getModeIcon, adaptToAPI };
+export { getMode, getModeIcon };

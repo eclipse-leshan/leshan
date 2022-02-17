@@ -249,6 +249,9 @@ export default {
         }
       }
 
+      // apply endpoint to security
+      res.security.endpoint = res.endpoint
+
       return res;
     },
     close() {
