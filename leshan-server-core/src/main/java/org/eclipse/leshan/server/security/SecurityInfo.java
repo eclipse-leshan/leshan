@@ -182,6 +182,13 @@ public class SecurityInfo implements Serializable {
     }
 
     /**
+     * @return <code>true</code> if this client should use a secureTransportLayer (DTLS or TLS)
+     */
+    public boolean useSecureTransportLayer() {
+        return usePSK() || useRPK() || useX509Cert();
+    }
+
+    /**
      * @return <code>true</code> if this client should use OSCORE.
      */
     public boolean useOSCORE() {

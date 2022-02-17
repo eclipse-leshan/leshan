@@ -37,8 +37,9 @@
             :disabled="editMode"
           ></v-text-field>
           <security-info-input
-            :mode.sync="securityInfo.mode"
-            :details.sync="securityInfo.details"
+            v-if="securityInfo.tls"
+            :mode.sync="securityInfo.tls.mode"
+            :details.sync="securityInfo.tls.details"
           />
         </v-form>
       </v-card-text>
@@ -94,7 +95,7 @@ export default {
           this.editMode = true;
         } else {
           // default value for creation
-          this.securityInfo = { mode: "psk", details: {} };
+          this.securityInfo = { tls:{mode: "psk", details: {} }};
           this.editMode = false;
         }
       }

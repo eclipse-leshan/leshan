@@ -11,12 +11,12 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
   ----------------------------------------------------------------------------->
 <template>
-  <div v-if="securityInfo">
+  <div v-if="securityInfo && securityInfo.tls">
     <v-chip small>
       <v-icon left small>
         {{ modeIcon }}
       </v-icon>
-      {{ securityInfo.mode }}
+      {{ securityInfo.tls.mode }}
     </v-chip>
   </div>
   <div v-else>
@@ -33,7 +33,7 @@ export default {
   props: { securityInfo: Object /*securityInfo to display*/ },
   computed: {
     modeIcon() {
-      return getModeIcon(this.securityInfo.mode);
+      return getModeIcon(this.securityInfo.tls.mode);
     },
   },
 };

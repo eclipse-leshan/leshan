@@ -63,23 +63,35 @@
     </template>
     <!--custom display for "details" column-->
     <template v-slot:item.details="{ item }">
-      <div v-if="item.mode == 'psk'" style="word-break: break-all" class="pa-1">
-        <strong>Identity:</strong> <code>{{ item.details.identity }}</code>
-        <br />
-        <strong>Key:</strong
-        ><code class="text-uppercase">{{ item.details.key }}</code>
-      </div>
-      <div v-if="item.mode == 'rpk'" style="word-break: break-all" class="pa-1">
-        <strong>Public Key:</strong>
-        <code class="text-uppercase">{{ item.details.key }}</code>
-      </div>
-      <div
-        v-if="item.mode == 'x509'"
-        style="word-break: break-all"
-        class="pa-1"
-      >
-        <strong>X509 certificate with CN equals :</strong>
-        <code>{{ item.endpoint }}</code>
+      <!-- handle (D)TLS case -->
+      <div v-if="item.tls">
+        <div
+          v-if="item.tls.mode == 'psk'"
+          style="word-break:break-all;"
+          class="pa-1"
+        >
+          <strong>Identity:</strong>
+          <code>{{ item.tls.details.identity }}</code>
+          <br />
+          <strong>Key:</strong
+          ><code class="text-uppercase">{{ item.tls.details.key }}</code>
+        </div>
+        <div
+          v-if="item.tls.mode == 'rpk'"
+          style="word-break:break-all;"
+          class="pa-1"
+        >
+          <strong>Public Key:</strong>
+          <code class="text-uppercase">{{ item.tls.details.key }}</code>
+        </div>
+        <div
+          v-if="item.tls.mode == 'x509'"
+          style="word-break:break-all;"
+          class="pa-1"
+        >
+          <strong>X509 certificate with CN equals :</strong>
+          <code>{{ item.endpoint }}</code>
+        </div>
       </div>
     </template>
     <!--custom display for "actions" column-->
@@ -101,10 +113,6 @@
 <script>
 import SecurityInfoDialog from "@leshan-server-core-demo/components/security/SecurityInfoDialog.vue";
 import SecurityInfoChip from "@leshan-server-core-demo/components/security/SecurityInfoChip.vue";
-import {
-  adaptToUI,
-  adaptToAPI,
-} from "@leshan-server-core-demo/js/securityutils.js";
 
 export default {
   components: { SecurityInfoDialog, SecurityInfoChip },
@@ -122,12 +130,9 @@ export default {
   }),
 
   beforeMount() {
-    this.axios.get("api/security/clients").then(
-      (response) =>
-        (this.securityInfos = response.data.map((c) => {
-          return adaptToUI(c);
-        }))
-    );
+    this.axios
+      .get("api/security/clients")
+      .then((response) => (this.securityInfos = response.data));
   },
 
   methods: {
@@ -137,19 +142,17 @@ export default {
     },
 
     newSec(cred) {
-      this.axios
-        .put("api/security/clients/", adaptToAPI(cred, cred.endpoint))
-        .then(() => {
-          let index = this.securityInfos.findIndex(
-            (s) => s.endpoint == cred.endpoint
-          );
-          if (index != -1) {
-            this.$set(this.securityInfos, index, cred);
-          } else {
-            this.securityInfos.push(cred);
-          }
-          this.dialogOpened = false;
-        });
+      this.axios.put("api/security/clients/", cred).then(() => {
+        let index = this.securityInfos.findIndex(
+          (s) => s.endpoint == cred.endpoint
+        );
+        if (index != -1) {
+          this.$set(this.securityInfos, index, cred);
+        } else {
+          this.securityInfos.push(cred);
+        }
+        this.dialogOpened = false;
+      });
     },
 
     openEditSec(sec) {
@@ -158,14 +161,12 @@ export default {
     },
 
     editSec(sec) {
-      this.axios
-        .put("api/security/clients/", adaptToAPI(sec, sec.endpoint))
-        .then(() => {
-          this.securityInfos = this.securityInfos.map((s) =>
-            s.endpoint == sec.endpoint ? sec : s
-          );
-          this.dialogOpened = false;
-        });
+      this.axios.put("api/security/clients/", sec).then(() => {
+        this.securityInfos = this.securityInfos.map((s) =>
+          s.endpoint == sec.endpoint ? sec : s
+        );
+        this.dialogOpened = false;
+      });
     },
 
     deleteSec(sec) {

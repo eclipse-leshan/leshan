@@ -22,16 +22,21 @@
         a demo.
       </p>
     </v-card-text>
-    <v-form ref="form" :value="valid" @input="$emit('update:valid', !useDTLS || $event)">
-      <v-switch class="pl-5"
+    <v-form
+      ref="form"
+      :value="valid"
+      @input="$emit('update:valid', !useDTLS || $event)"
+    >
+      <v-switch
+        class="pl-5"
         v-model="useDTLS"
         @change="updateUseDTLS($event)"
         label="Using (D)TLS"
       ></v-switch>
       <security-info-input
         v-show="useDTLS"
-        :mode="internalSecurityInfo.mode"
-        :details="internalSecurityInfo.details"
+        :mode="internalSecurityInfo.tls.mode"
+        :details="internalSecurityInfo.tls.details"
         @update:mode="updateMode($event)"
         @update:details="updateDetails($event)"
       />
@@ -49,14 +54,14 @@ export default {
   data() {
     return {
       useDTLS: false,
-      internalSecurityInfo: { mode: "psk", details: {} },
+      internalSecurityInfo: { tls: { mode: "psk", details: {} } },
     };
   },
   watch: {
     value(v) {
       if (!v) {
         this.useDTLS = false;
-        this.internalSecurityInfo = { mode: "psk", details: {} };
+        this.internalSecurityInfo = { tls: { mode: "psk", details: {} } };
       } else {
         this.useDTLS = true;
         this.internalSecurityInfo = v;
@@ -68,18 +73,18 @@ export default {
       if (useDTLS) {
         this.$emit("input", this.internalSecurityInfo);
         this.resetValidation();
-        this.$emit('update:valid', false);
+        this.$emit("update:valid", false);
       } else {
         this.$emit("input", null);
-        this.$emit('update:valid', true);
+        this.$emit("update:valid", true);
       }
     },
     updateMode(mode) {
-      this.internalSecurityInfo.mode = mode;
+      this.internalSecurityInfo.tls.mode = mode;
       this.$emit("input", this.internalSecurityInfo);
     },
-    updateDetails(mode) {
-      this.internalSecurityInfo.details = mode;
+    updateDetails(details) {
+      this.internalSecurityInfo.tls.details = details;
       this.$emit("input", this.internalSecurityInfo);
     },
     resetValidation() {
