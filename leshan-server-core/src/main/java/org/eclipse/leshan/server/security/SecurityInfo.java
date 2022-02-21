@@ -20,11 +20,18 @@ import java.io.Serializable;
 import java.security.PublicKey;
 import java.util.Arrays;
 
+import org.eclipse.californium.cose.AlgorithmID;
+import org.eclipse.californium.cose.CoseException;
+// TODO OSCORE leshan-server-core must not depends of Californium project
 import org.eclipse.californium.oscore.HashMapCtxDB;
 import org.eclipse.californium.oscore.OSCoreCtx;
+import org.eclipse.californium.oscore.OSException;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.OscoreServerHandler;
+import org.eclipse.leshan.server.security.oscore.OscoreSetting;
+
+import com.upokecenter.cbor.CBORObject;
 
 /**
  * The security info for a client.
@@ -57,17 +64,17 @@ public class SecurityInfo implements Serializable {
     private final boolean useX509Cert;
 
     // TODO OSCORE : Save content properly information here. Must be serializable.
-    private final String oscoreIdentity;
+    private final OscoreSetting oscoreSetting;
 
     private SecurityInfo(String endpoint, String identity, byte[] preSharedKey, PublicKey rawPublicKey,
-            boolean useX509Cert, OSCoreCtx oscoreCtx) {
+            boolean useX509Cert, OscoreSetting oscoreSetting) {
         Validate.notEmpty(endpoint);
         this.endpoint = endpoint;
         this.identity = identity;
         this.preSharedKey = preSharedKey;
         this.rawPublicKey = rawPublicKey;
         this.useX509Cert = useX509Cert;
-        this.oscoreIdentity = generateOscoreIdentity(oscoreCtx);
+        this.oscoreSetting = oscoreSetting;
     }
 
     /**
@@ -114,26 +121,42 @@ public class SecurityInfo implements Serializable {
     /**
      * Construct a {@link SecurityInfo} when using OSCORE.
      */
-    public static SecurityInfo newOSCoreInfo(String endpoint, OSCoreCtx oscoreCtx) {
-        Validate.notNull(oscoreCtx);
+    // TODO OSCORE rename in newOscoreInfo
+    public static SecurityInfo newOSCoreInfo(String endpoint, OscoreSetting oscoreSetting) {
+        Validate.notNull(oscoreSetting);
 
+        // TODO OSCORE remove access to context here.
         // Add the OSCORE Context to the context database
         HashMapCtxDB db = OscoreServerHandler.getContextDB();
-        db.addContext(oscoreCtx);
+        db.addContext(getContext(oscoreSetting));
 
-        return new SecurityInfo(endpoint, null, null, null, false, oscoreCtx);
+        return new SecurityInfo(endpoint, null, null, null, false, oscoreSetting);
+    }
+
+    private static OSCoreCtx getContext(OscoreSetting oscoreSetting) {
+        try {
+            OSCoreCtx osCoreCtx = new OSCoreCtx(oscoreSetting.getMasterSecret(), true,
+                    AlgorithmID.FromCBOR(CBORObject.FromObject(oscoreSetting.getAeadAlgorithm())),
+                    oscoreSetting.getSenderId(), oscoreSetting.getRecipientId(),
+                    AlgorithmID.FromCBOR(CBORObject.FromObject(oscoreSetting.getHmacAlgorithm())), 32,
+                    oscoreSetting.getMasterSalt(), null, 1000);
+            osCoreCtx.setContextRederivationEnabled(true);
+            return osCoreCtx;
+        } catch (OSException | CoseException e) {
+            throw new IllegalStateException("Unable to create OSCoreContext", e);
+        }
     }
 
     /**
      * Generates an OSCORE identity from an OSCORE context
      */
-    private static String generateOscoreIdentity(OSCoreCtx oscoreCtx) {
-        if (oscoreCtx == null) {
+    private static String generateOscoreIdentity(OscoreSetting oscoreSetting) {
+        if (oscoreSetting == null) {
             return null;
         }
 
-        String oscoreIdentity = "sid=" + Hex.encodeHexString(oscoreCtx.getSenderId()) + ",rid="
-                + Hex.encodeHexString(oscoreCtx.getRecipientId());
+        String oscoreIdentity = "sid=" + Hex.encodeHexString(oscoreSetting.getSenderId()) + ",rid="
+                + Hex.encodeHexString(oscoreSetting.getRecipientId());
         return oscoreIdentity;
     }
 
@@ -158,6 +181,13 @@ public class SecurityInfo implements Serializable {
      */
     public byte[] getPreSharedKey() {
         return preSharedKey;
+    }
+
+    /**
+     * @return the {@link OscoreSetting} or <code>null</code> if {@link #useOSCORE()} return <code>false</code>.
+     */
+    public OscoreSetting getOscoreSetting() {
+        return oscoreSetting;
     }
 
     /**
@@ -192,14 +222,16 @@ public class SecurityInfo implements Serializable {
      * @return The OSCORE identity
      */
     public String getOscoreIdentity() {
-        return oscoreIdentity;
+        // TODO OSCORE maybe we should use a dedicated class like :
+        // https://github.com/eclipse/leshan/pull/1175/commits/a892ea34226fcf94bfe7956e4a392718ad5f768c#diff-fcd2ffa6ba28fbde0db07a2a8cfe5759ca5374ee732d9b3470eb98bae79b7ada
+        return generateOscoreIdentity(oscoreSetting);
     }
 
     /**
      * @return <code>true</code> if this client should use OSCORE.
      */
     public boolean useOSCORE() {
-        return oscoreIdentity != null;
+        return oscoreSetting != null;
     }
 
     @Override
@@ -211,7 +243,7 @@ public class SecurityInfo implements Serializable {
         result = prime * result + Arrays.hashCode(preSharedKey);
         result = prime * result + ((rawPublicKey == null) ? 0 : rawPublicKey.hashCode());
         result = prime * result + (useX509Cert ? 1231 : 1237);
-        result = prime * result + ((oscoreIdentity == null) ? 0 : oscoreIdentity.hashCode());
+        result = prime * result + ((oscoreSetting == null) ? 0 : oscoreSetting.hashCode());
         return result;
     }
 
@@ -243,10 +275,10 @@ public class SecurityInfo implements Serializable {
             return false;
         if (useX509Cert != other.useX509Cert)
             return false;
-        if (oscoreIdentity == null) {
-            if (other.oscoreIdentity != null)
+        if (oscoreSetting == null) {
+            if (other.oscoreSetting != null)
                 return false;
-        } else if (!oscoreIdentity.equals(other.oscoreIdentity))
+        } else if (!oscoreSetting.equals(other.oscoreSetting))
             return false;
 
         return true;
@@ -257,7 +289,7 @@ public class SecurityInfo implements Serializable {
         // Note : preSharedKey is explicitly excluded from display for security purposes
         return String.format(
                 "SecurityInfo [endpoint=%s, identity=%s, rawPublicKey=%s, useX509Cert=%s, oscoreIdentity=%s]", endpoint,
-                identity, rawPublicKey, useX509Cert, oscoreIdentity);
+                identity, rawPublicKey, useX509Cert, getOscoreIdentity());
     }
 
 }

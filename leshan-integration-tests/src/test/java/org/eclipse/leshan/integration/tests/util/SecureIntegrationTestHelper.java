@@ -50,11 +50,9 @@ import javax.security.auth.x500.X500Principal;
 
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.observe.ObservationStore;
-import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.cose.AlgorithmID;
+import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.oscore.HashMapCtxDB;
-import org.eclipse.californium.oscore.OSCoreCtx;
-import org.eclipse.californium.oscore.OSException;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
@@ -85,6 +83,7 @@ import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.InMemorySecurityStore;
 import org.eclipse.leshan.server.security.SecurityChecker;
 import org.eclipse.leshan.server.security.SecurityStore;
+import org.eclipse.leshan.server.security.oscore.OscoreSetting;
 
 public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
@@ -262,8 +261,8 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         builder.setRegistrationEngineFactory(new DefaultRegistrationEngineFactory().setQueueMode(queueMode));
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
         builder.setObjects(objects);
-        builder.setDtlsConfig(DtlsConnectorConfig.builder(configuration)
-                .setAsList(DtlsConfig.DTLS_CIPHER_SUITES, CipherSuite.TLS_PSK_WITH_AES_128_CCM_8));
+        builder.setDtlsConfig(DtlsConnectorConfig.builder(configuration).setAsList(DtlsConfig.DTLS_CIPHER_SUITES,
+                CipherSuite.TLS_PSK_WITH_AES_128_CCM_8));
 
         // set an editable PSK store for tests
         builder.setEndpointFactory(new EndpointFactory() {
@@ -483,8 +482,8 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
     public void createOscoreClient() {
         ObjectsInitializer initializer = new TestObjectsInitializer();
 
-        String serverUri =
-                "coap://" + server.getUnsecuredAddress().getHostString() + ":" + server.getUnsecuredAddress().getPort();
+        String serverUri = "coap://" + server.getUnsecuredAddress().getHostString() + ":"
+                + server.getUnsecuredAddress().getPort();
 
         Oscore oscoreObject = getOscoreClientObject();
         initializer.setInstancesForObject(SECURITY, oscoreOnly(serverUri, 12345, oscoreObject.getId()));
@@ -503,15 +502,9 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         setupClientMonitoring();
     }
 
-    public static OSCoreCtx getOscoreCtx() {
-        try {
-            OSCoreCtx osCoreCtx = new OSCoreCtx(OSCORE_MASTER_SECRET, true, OSCORE_ALGORITHM, OSCORE_RECIPIENT_ID,
-                    OSCORE_SENDER_ID, OSCORE_KDF_ALGORITHM, 32, OSCORE_MASTER_SALT, null, 1000);
-            osCoreCtx.setContextRederivationEnabled(true);
-            return osCoreCtx;
-        } catch (OSException ignored) {
-            return null;
-        }
+    public static OscoreSetting getOscoreSetting() {
+        return new OscoreSetting(OSCORE_RECIPIENT_ID, OSCORE_SENDER_ID, OSCORE_MASTER_SECRET,
+                OSCORE_ALGORITHM.AsCBOR().AsInt32(), OSCORE_KDF_ALGORITHM.AsCBOR().AsInt32(), OSCORE_MASTER_SALT);
     }
 
     protected static Oscore getOscoreClientObject() {
