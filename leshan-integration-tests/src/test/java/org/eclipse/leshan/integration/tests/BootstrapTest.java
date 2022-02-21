@@ -54,7 +54,6 @@ import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class BootstrapTest {
@@ -233,7 +232,8 @@ public class BootstrapTest {
         BootstrapDiscoverResponse lastDiscoverAnswer = (BootstrapDiscoverResponse) helper.lastCustomResponse;
         assertEquals(ResponseCode.CONTENT, lastDiscoverAnswer.getCode());
         assertEquals(
-                String.format("</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</3>;ver=1.1,</3/0>,</21>",
+                String.format(
+                        "</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</3>;ver=1.1,</3/0>,</21>",
                         helper.bootstrapServer.getUnsecuredAddress().getHostString(),
                         helper.bootstrapServer.getUnsecuredAddress().getPort()),
                 linkSerializer.serializeCoreLinkFormat(lastDiscoverAnswer.getObjectLinks()));
@@ -264,7 +264,8 @@ public class BootstrapTest {
         BootstrapDiscoverResponse lastDiscoverAnswer = (BootstrapDiscoverResponse) helper.lastCustomResponse;
         assertEquals(ResponseCode.CONTENT, lastDiscoverAnswer.getCode());
         assertEquals(
-                String.format("</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</3>;ver=1.1,</3/0>,</21>",
+                String.format(
+                        "</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</3>;ver=1.1,</3/0>,</21>",
                         helper.bootstrapServer.getUnsecuredAddress().getHostString(),
                         helper.bootstrapServer.getUnsecuredAddress().getPort()),
                 linkSerializer.serializeCoreLinkFormat(lastDiscoverAnswer.getObjectLinks()));
@@ -666,7 +667,7 @@ public class BootstrapTest {
         helper.createClient();
         helper.assertClientNotRegisterered();
 
-        helper.getSecurityStore().add(SecurityInfo.newOSCoreInfo(helper.getCurrentEndpoint(), getOscoreCtx()));
+        helper.getSecurityStore().add(SecurityInfo.newOSCoreInfo(helper.getCurrentEndpoint(), getOscoreSetting()));
 
         // Start it and wait for registration
         helper.client.start();
@@ -682,15 +683,15 @@ public class BootstrapTest {
         helper.createServer();
         helper.server.start();
 
-
-        helper.createBootstrapServer(helper.bsSecurityStore(SecurityMode.NO_SEC), helper.oscoreBootstrapStoreWithOscoreServer());
+        helper.createBootstrapServer(helper.bsSecurityStore(SecurityMode.NO_SEC),
+                helper.oscoreBootstrapStoreWithOscoreServer());
         helper.bootstrapServer.start();
 
         // Check client is not registered
         helper.createOscoreOnlyBootstrapClient();
         helper.assertClientNotRegisterered();
 
-        helper.getSecurityStore().add(SecurityInfo.newOSCoreInfo(helper.getCurrentEndpoint(), getOscoreCtx()));
+        helper.getSecurityStore().add(SecurityInfo.newOSCoreInfo(helper.getCurrentEndpoint(), getOscoreSetting()));
 
         // Start it and wait for registration
         helper.client.start();
@@ -706,7 +707,8 @@ public class BootstrapTest {
         helper.createServer();
         helper.server.start();
 
-        helper.createBootstrapServer(helper.bsSecurityStore(SecurityMode.NO_SEC), helper.oscoreBootstrapStoreWithUnsecuredServer());
+        helper.createBootstrapServer(helper.bsSecurityStore(SecurityMode.NO_SEC),
+                helper.oscoreBootstrapStoreWithUnsecuredServer());
         helper.bootstrapServer.start();
 
         // Check client is not registered
