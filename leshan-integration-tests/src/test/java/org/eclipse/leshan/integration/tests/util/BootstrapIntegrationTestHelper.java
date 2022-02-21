@@ -16,8 +16,8 @@
 
 package org.eclipse.leshan.integration.tests.util;
 
-import static org.eclipse.leshan.client.object.Security.*;
-import static org.eclipse.leshan.core.LwM2mId.*;
+import static org.eclipse.leshan.client.object.Security.oscoreOnlyBootstrap;
+import static org.eclipse.leshan.core.LwM2mId.OSCORE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
@@ -46,7 +46,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.oscore.HashMapCtxDB;
 import org.eclipse.californium.oscore.OSCoreCtx;
 import org.eclipse.californium.oscore.OSException;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
@@ -208,7 +207,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         BootstrapConfigStoreTaskProvider taskProvider = new BootstrapConfigStoreTaskProvider(bootstrapStore) {
             @Override
             public Tasks getTasks(BootstrapSession session, List<LwM2mResponse> previousResponses) {
-               if (previousResponses == null) {
+                if (previousResponses == null) {
                     Tasks tasks = new Tasks();
                     tasks.requestsToSend = new ArrayList<>(1);
                     tasks.requestsToSend.add(firstCustomRequest);
@@ -368,14 +367,9 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                     } else if (mode == SecurityMode.RPK) {
                         info = rpkSecurityInfo();
                         return Arrays.asList(info).iterator();
-                    } else  if (mode == SecurityMode.NO_SEC) {
-                        byte[] rid = OSCORE_BOOTSTRAP_SENDER_ID;
-
-                        HashMapCtxDB db = OscoreBootstrapHandler.getContextDB();
-                        OSCoreCtx ctx = db.getContext(rid);
-
+                    } else if (mode == SecurityMode.NO_SEC) {
                         // Create the security info (will re-add the context to the db)
-                        info = SecurityInfo.newOSCoreInfo(endpoint, ctx);
+                        info = SecurityInfo.newOSCoreInfo(endpoint, getOscoreSetting());
                         return Arrays.asList(info).iterator();
                     }
                 }
@@ -748,32 +742,34 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     }
 
     protected static Oscore getOscoreBootstrapClientObject() {
-        return new Oscore(12345,
-                new String(Hex.encodeHex(OSCORE_BOOTSTRAP_MASTER_SECRET)),
+        return new Oscore(12345, new String(Hex.encodeHex(OSCORE_BOOTSTRAP_MASTER_SECRET)),
                 new String(Hex.encodeHex(OSCORE_BOOTSTRAP_SENDER_ID)),
-                new String(Hex.encodeHex(OSCORE_BOOTSTRAP_RECIPIENT_ID)),
-                OSCORE_ALGORITHM.AsCBOR().AsInt32(),
-                OSCORE_KDF_ALGORITHM.AsCBOR().AsInt32(),
-                new String(Hex.encodeHex(OSCORE_BOOTSTRAP_MASTER_SALT)));
+                new String(Hex.encodeHex(OSCORE_BOOTSTRAP_RECIPIENT_ID)), OSCORE_ALGORITHM.AsCBOR().AsInt32(),
+                OSCORE_KDF_ALGORITHM.AsCBOR().AsInt32(), new String(Hex.encodeHex(OSCORE_BOOTSTRAP_MASTER_SALT)));
     }
 
     protected static BootstrapConfig.OscoreObject getOscoreBootstrapObject(boolean bootstrap) {
         BootstrapConfig.OscoreObject oscoreObject = new BootstrapConfig.OscoreObject();
 
-        oscoreObject.oscoreMasterSecret = new String(Hex.encodeHex(bootstrap ? OSCORE_BOOTSTRAP_MASTER_SECRET : OSCORE_MASTER_SECRET));
-        oscoreObject.oscoreSenderId = new String(Hex.encodeHex(bootstrap ? OSCORE_BOOTSTRAP_SENDER_ID : OSCORE_SENDER_ID));
-        oscoreObject.oscoreRecipientId = new String(Hex.encodeHex(bootstrap ? OSCORE_BOOTSTRAP_RECIPIENT_ID : OSCORE_RECIPIENT_ID));
+        oscoreObject.oscoreMasterSecret = new String(
+                Hex.encodeHex(bootstrap ? OSCORE_BOOTSTRAP_MASTER_SECRET : OSCORE_MASTER_SECRET));
+        oscoreObject.oscoreSenderId = new String(
+                Hex.encodeHex(bootstrap ? OSCORE_BOOTSTRAP_SENDER_ID : OSCORE_SENDER_ID));
+        oscoreObject.oscoreRecipientId = new String(
+                Hex.encodeHex(bootstrap ? OSCORE_BOOTSTRAP_RECIPIENT_ID : OSCORE_RECIPIENT_ID));
         oscoreObject.oscoreAeadAlgorithm = OSCORE_ALGORITHM.AsCBOR().AsInt32();
         oscoreObject.oscoreHmacAlgorithm = OSCORE_KDF_ALGORITHM.AsCBOR().AsInt32();
-        oscoreObject.oscoreMasterSalt = new String(Hex.encodeHex(bootstrap ? OSCORE_BOOTSTRAP_MASTER_SALT : OSCORE_MASTER_SALT));
+        oscoreObject.oscoreMasterSalt = new String(
+                Hex.encodeHex(bootstrap ? OSCORE_BOOTSTRAP_MASTER_SALT : OSCORE_MASTER_SALT));
 
         return oscoreObject;
     }
 
     public static OSCoreCtx getOsCoreBootstrapCtx() {
         try {
-            OSCoreCtx osCoreCtx = new OSCoreCtx(OSCORE_BOOTSTRAP_MASTER_SECRET, true, OSCORE_ALGORITHM, OSCORE_BOOTSTRAP_RECIPIENT_ID,
-                    OSCORE_BOOTSTRAP_SENDER_ID, OSCORE_KDF_ALGORITHM, 32, OSCORE_BOOTSTRAP_MASTER_SALT, null, 1000);
+            OSCoreCtx osCoreCtx = new OSCoreCtx(OSCORE_BOOTSTRAP_MASTER_SECRET, true, OSCORE_ALGORITHM,
+                    OSCORE_BOOTSTRAP_RECIPIENT_ID, OSCORE_BOOTSTRAP_SENDER_ID, OSCORE_KDF_ALGORITHM, 32,
+                    OSCORE_BOOTSTRAP_MASTER_SALT, null, 1000);
             osCoreCtx.setContextRederivationEnabled(true);
             return osCoreCtx;
         } catch (OSException ignored) {
