@@ -12,87 +12,102 @@
   ----------------------------------------------------------------------------->
 <template>
   <div>
-    <v-select
-      :items="modes"
-      label="Security Mode"
-      v-model="internalMode"
-      @input="modeChanged()"
-    ></v-select>
-    <psk-input
-      v-if="internalMode == 'psk'"
-      v-model="pskValue"
-      @input="$emit('update:details', pskValue)"
+    <!-- (D)TLS security info -->
+    <v-switch
+      v-model="useDTLS"
+      @change="useDTLSChanged($event)"
+      label="Using (D)TLS"
+    ></v-switch>
+
+    <tls-input
+      v-if="useDTLS && tlsInfo"
+      :mode.sync="tlsInfo.mode"
+      :details.sync="tlsInfo.details"
+      @update:details="$emit('update:tls', tlsInfo)"
+      @update:mode="$emit('update:tls', tlsInfo)"
     />
-    <rpk-input
-      v-if="internalMode == 'rpk'"
-      v-model="rpkValue"
-      @input="$emit('update:details', rpkValue)"
-    />
-    <x-509-input v-if="internalMode == 'x509'" />
+    <!-- OSCORE security info -->
+    <v-switch
+      v-model="useOSCORE"
+      @change="useOSCOREChanged($event)"
+      label="Using OSCORE (Experimental - for now can not be used with DTLS)"
+    ></v-switch>
+    <oscore-input
+      v-if="useOSCORE && oscoreInfo"
+      v-model="oscoreInfo"
+      @input="$emit('update:oscore', oscoreInfo)"
+    >
+    </oscore-input>
   </div>
 </template>
 <script>
-import PskInput from "./PskInput.vue";
-import RpkInput from "./RpkInput.vue";
-import X509Input from "./X509Input.vue";
+import OscoreInput from "./OscoreInput.vue";
+import TlsInput from "./TlsInput.vue";
 
 export default {
-  components: { PskInput, RpkInput, X509Input },
-  props: { mode: String, details: Object },
+  components: { TlsInput, OscoreInput },
+  props: { tls: Object, oscore: Object },
   data() {
     return {
-      modes: ["psk", "rpk", "x509"],
-      internalMode: "psk",
-      pskValue: {},
-      rpkValue: {},
+      useDTLS: true, // true if (D)TLS is used
+      useOSCORE: false, // true if OSCORE is used
+      tlsInfo: null, // internal tls state
+      oscoreInfo: null, // internal oscore state
     };
   },
   beforeMount() {
-    this.initMode();
-    this.initDetails();
+    this.initOscore(this.oscore);
+    this.initTls(this.tls);
   },
   watch: {
-    mode() {
-      this.initMode();
+    oscore(value) {
+      this.initOscore(value);
     },
-    details() {
-      this.initDetails();
+    tls(value) {
+      this.initTls(value);
     },
   },
   methods: {
-    initMode() {
-      // init internal state from "mode" propertie
-      this.internalMode = this.mode;
-    },
-    initDetails() {
-      // init internal state from "details" propertie
-      switch (this.mode) {
-        case "psk":
-          this.pskValue = this.details;
-          this.rpkValue = {};
-          break;
-        case "rpk":
-          this.pskValue = {};
-          this.rpkValue = this.details;
-          break;
-        case "x509":
-          this.rpkValue = {};
-          this.pskValue = {};
-          break;
+    initOscore(oscore) {
+      // do a deep copy
+      // we should maybe rather use cloneDeep from lodash
+      if (oscore) {
+        this.useOSCORE = true;
+        this.oscoreInfo = JSON.parse(JSON.stringify(oscore));
+      } else {
+        this.useOSCORE = false;
+        this.oscoreInfo = undefined;
       }
     },
-    modeChanged() {
-      this.$emit("update:mode", this.internalMode);
-      switch (this.internalMode) {
-        case "psk":
-          this.$emit("update:details", this.pskValue);
-          break;
-        case "rpk":
-          this.$emit("update:details", this.rpkValue);
-          break;
-        case "x509":
-          this.$emit("update:details", {});
-          break;
+    initTls(tls) {
+      // do a deep copy
+      // we should maybe rather use cloneDeep from lodash
+      if (tls) {
+        this.useDTLS = true;
+        this.tlsInfo = JSON.parse(JSON.stringify(tls));
+      } else {
+        this.useDTLS = false;
+        this.tlsInfo = undefined;
+      }
+    },
+    useDTLSChanged(useDTLS) {
+      if (useDTLS) this.useOSCORE = !useDTLS; // temporary code while we don't support OSCORE over DTLS
+      this.exclusifTlsOrOSCORE();
+    },
+    useOSCOREChanged(useOSCORE) {
+      if (useOSCORE) this.useDTLS = !useOSCORE; // temporary code while we don't support OSCORE over DTLS
+      this.exclusifTlsOrOSCORE();
+    },
+    exclusifTlsOrOSCORE() {
+      if (this.useDTLS) {
+        this.$emit("update:tls", { mode: "psk", details: {} });
+        this.$emit("update:oscore", undefined);
+      } else if (this.useOSCORE) {
+        this.$emit("update:tls", undefined);
+        this.$emit("update:oscore", {});
+      } else {
+        this.$emit("update:tls", undefined);
+        this.$emit("update:oscore", undefined);
       }
     },
   },

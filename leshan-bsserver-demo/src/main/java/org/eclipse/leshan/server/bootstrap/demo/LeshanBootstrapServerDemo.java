@@ -167,6 +167,11 @@ public class LeshanBootstrapServerDemo {
         builder.setConfigStore(bsConfigStore);
         builder.setSecurityStore(new BootstrapSecurityStoreAdapter(securityStore));
 
+        // TODO OSCORE Temporary cli option to deactivate OSCORE
+        if (!cli.main.disableOscore) {
+            builder.setEnableOscore(true);
+        }
+
         return builder.build();
     }
 

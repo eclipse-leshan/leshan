@@ -59,6 +59,11 @@ public class LeshanBsServerDemoCLI implements Runnable {
                         "Set the filename for the configuration.", //
                         "Default: ${DEFAULT-VALUE}" })
         public String configFilename;
+
+        @Option(names = { "-no", "--disable-oscore" },
+                description = { //
+                        "Disable experimental OSCORE feature." })
+        public Boolean disableOscore = false;
     }
 
     /* ********************************** DTLS Section ******************************** */
