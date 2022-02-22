@@ -77,6 +77,11 @@ public class LeshanServerDemoCLI implements Runnable {
                 description = { //
                         "Publish leshan's services to DNS Service discovery." })
         public Boolean mdns;
+
+        @Option(names = { "-no", "--disable-oscore" },
+                description = { //
+                        "Disable experimental OSCORE feature." })
+        public Boolean disableOscore = false;
     }
 
     /* ********************************** DTLS Section ******************************** */

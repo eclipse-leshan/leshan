@@ -73,6 +73,20 @@ public class JacksonSecuritySerializer extends StdSerializer<SecurityInfo> {
                 oTls.put("mode", "x509");
             }
         }
+        if (securityInfo.useOSCORE()) {
+            // handle OSCORE case :
+            ObjectNode oOscore = JsonNodeFactory.instance.objectNode();
+            oSecInfo.set("oscore", oOscore);
+            oOscore.put("rid", Hex.encodeHexString(securityInfo.getOscoreSetting().getRecipientId()));
+            oOscore.put("sid", Hex.encodeHexString(securityInfo.getOscoreSetting().getSenderId()));
+            oOscore.put("msec", Hex.encodeHexString(securityInfo.getOscoreSetting().getMasterSecret()));
+            // TODO OSCORE it should be possible to use an empty byte array for Master salf. (currently it failed)
+            if (securityInfo.getOscoreSetting().getMasterSalt() != null) {
+                oOscore.put("msalt", Hex.encodeHexString(securityInfo.getOscoreSetting().getMasterSalt()));
+            }
+            oOscore.put("aead", securityInfo.getOscoreSetting().getAeadAlgorithm().getValue());
+            oOscore.put("hkdf", securityInfo.getOscoreSetting().getHkdfAlgorithm().getValue());
+        }
         gen.writeTree(oSecInfo);
     }
 }

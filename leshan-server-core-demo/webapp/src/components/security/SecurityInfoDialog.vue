@@ -37,26 +37,22 @@
             :disabled="editMode"
           ></v-text-field>
           <security-info-input
-            v-if="securityInfo.tls"
-            :mode.sync="securityInfo.tls.mode"
-            :details.sync="securityInfo.tls.details"
+            :tls.sync="securityInfo.tls"
+            :oscore.sync="securityInfo.oscore"
           />
         </v-form>
       </v-card-text>
-
       <!-- Buttons -->
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn
           text
           @click="$emit(editMode ? 'edit' : 'new', securityInfo)"
-          :disabled="!valid"
+          :disabled="!isValid"
         >
           {{ editMode ? "Save" : "Add" }}
         </v-btn>
-        <v-btn text @click="show = false">
-          Cancel
-        </v-btn>
+        <v-btn text @click="show = false"> Cancel </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -82,6 +78,15 @@ export default {
         this.$emit("input", value);
       },
     },
+    isValid: {
+      get() {
+        return (
+          this.securityInfo &&
+          (this.securityInfo.tls || this.securityInfo.oscore) &&
+          this.valid
+        );
+      },
+    },
   },
   watch: {
     value(v) {
@@ -95,7 +100,10 @@ export default {
           this.editMode = true;
         } else {
           // default value for creation
-          this.securityInfo = { tls:{mode: "psk", details: {} }};
+          this.securityInfo = {
+            endpoint: "",
+            tls: { mode: "psk", details: {} },
+          };
           this.editMode = false;
         }
       }

@@ -250,7 +250,9 @@ export default {
       }
 
       // apply endpoint to security
-      res.security.endpoint = res.endpoint
+      if (res.security) {
+        res.security.endpoint = res.endpoint;
+      }
 
       return res;
     },

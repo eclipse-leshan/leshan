@@ -22,23 +22,12 @@
         a demo.
       </p>
     </v-card-text>
-    <v-form
-      ref="form"
-      :value="valid"
-      @input="$emit('update:valid', !useDTLS || $event)"
-    >
-      <v-switch
-        class="pl-5"
-        v-model="useDTLS"
-        @change="updateUseDTLS($event)"
-        label="Using (D)TLS"
-      ></v-switch>
+    <v-form ref="form" :value="valid" @input="$emit('update:valid', $event)">
       <security-info-input
-        v-show="useDTLS"
-        :mode="internalSecurityInfo.tls.mode"
-        :details="internalSecurityInfo.tls.details"
-        @update:mode="updateMode($event)"
-        @update:details="updateDetails($event)"
+        :tls.sync="internalSecurityInfo.tls"
+        :oscore.sync="internalSecurityInfo.oscore"
+        @update:tls="$emit('input', internalSecurityInfo)"
+        @update:oscore="$emit('input', internalSecurityInfo)"
       />
     </v-form>
   </v-card>
@@ -53,40 +42,19 @@ export default {
   },
   data() {
     return {
-      useDTLS: false,
-      internalSecurityInfo: { tls: { mode: "psk", details: {} } },
+      internalSecurityInfo: {},
     };
   },
   watch: {
     value(v) {
       if (!v) {
-        this.useDTLS = false;
-        this.internalSecurityInfo = { tls: { mode: "psk", details: {} } };
+        this.internalSecurityInfo = {};
       } else {
-        this.useDTLS = true;
         this.internalSecurityInfo = v;
       }
     },
   },
   methods: {
-    updateUseDTLS(useDTLS) {
-      if (useDTLS) {
-        this.$emit("input", this.internalSecurityInfo);
-        this.resetValidation();
-        this.$emit("update:valid", false);
-      } else {
-        this.$emit("input", null);
-        this.$emit("update:valid", true);
-      }
-    },
-    updateMode(mode) {
-      this.internalSecurityInfo.tls.mode = mode;
-      this.$emit("input", this.internalSecurityInfo);
-    },
-    updateDetails(details) {
-      this.internalSecurityInfo.tls.details = details;
-      this.$emit("input", this.internalSecurityInfo);
-    },
     resetValidation() {
       this.$refs.form.resetValidation();
     },
