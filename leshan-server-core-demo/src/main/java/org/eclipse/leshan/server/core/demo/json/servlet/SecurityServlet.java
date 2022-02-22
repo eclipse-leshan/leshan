@@ -115,7 +115,11 @@ public class SecurityServlet extends HttpServlet {
         } catch (JsonParseException e) {
             LOG.warn("Could not parse request body", e);
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            resp.getWriter().append("Invalid request body").flush();
+            resp.getWriter().append("Invalid request body");
+            if (e.getMessage() != null) {
+                resp.getWriter().append(": ").append(e.getMessage());
+            }
+            resp.getWriter().flush();
         } catch (RuntimeException e) {
             LOG.warn("unexpected error for request " + req.getPathInfo(), e);
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -176,8 +180,7 @@ public class SecurityServlet extends HttpServlet {
             resp.setStatus(HttpServletResponse.SC_OK);
         } else {
             resp.setContentType("application/json");
-            resp.getOutputStream()
-                    .write("{\"message\":\"not_found\"}".getBytes(StandardCharsets.UTF_8));
+            resp.getOutputStream().write("{\"message\":\"not_found\"}".getBytes(StandardCharsets.UTF_8));
             resp.setStatus(HttpServletResponse.SC_OK);
         }
     }

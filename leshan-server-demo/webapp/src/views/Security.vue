@@ -93,6 +93,16 @@
           <code>{{ item.endpoint }}</code>
         </div>
       </div>
+      <div v-if="item.oscore">
+        <strong>Sender ID:</strong>
+        <code class="text-uppercase">{{ item.oscore.sid }}</code>
+        <br />
+        <strong>Master Secret:</strong
+        ><code class="text-uppercase">{{ item.oscore.msec }}</code>
+        <br />
+        <strong>Recipient ID:</strong>
+        <code class="text-uppercase">{{ item.oscore.rid }}</code>
+      </div>
     </template>
     <!--custom display for "actions" column-->
     <template v-slot:item.actions="{ item }">

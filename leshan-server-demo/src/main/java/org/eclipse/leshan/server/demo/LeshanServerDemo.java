@@ -216,6 +216,11 @@ public class LeshanServerDemo {
         }
         builder.setSecurityStore(securityStore);
 
+        // TODO OSCORE Temporary cli option to deactivate OSCORE
+        if (!cli.main.disableOscore) {
+            builder.setEnableOscore(true);
+        }
+
         // Create LWM2M server
         return builder.build();
     }

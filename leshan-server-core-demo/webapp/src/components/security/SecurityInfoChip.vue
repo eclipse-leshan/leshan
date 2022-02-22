@@ -11,12 +11,16 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
   ----------------------------------------------------------------------------->
 <template>
-  <div v-if="securityInfo && securityInfo.tls">
-    <v-chip small>
+  <div v-if="securityInfo && (securityInfo.tls || securityInfo.oscore)">
+    <v-chip small v-if="securityInfo.tls">
       <v-icon left small>
         {{ modeIcon }}
       </v-icon>
       {{ securityInfo.tls.mode }}
+    </v-chip>
+    <v-chip small v-if="securityInfo.oscore">
+      <v-icon left small> {{$icons.mdiLockOutline}} </v-icon>
+      oscore
     </v-chip>
   </div>
   <div v-else>

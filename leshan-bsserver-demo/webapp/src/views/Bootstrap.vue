@@ -209,7 +209,7 @@ export default {
     },
 
     onAdd(config) {
-      if (config.security) {
+      if (config.security && (config.security.tls || config.security.oscore)) {
         // if we have security we try to add security first
         this.axios.put("api/security/clients/", config.security).then(() => {
           this.addConfig(config);
