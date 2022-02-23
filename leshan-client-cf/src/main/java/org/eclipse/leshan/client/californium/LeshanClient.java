@@ -279,8 +279,6 @@ public class LeshanClient implements LwM2mClient {
         requestSender.destroy();
         objectTree.destroy();
 
-        OscoreClientHandler.purge();
-
         LOG.info("Leshan client destroyed.");
     }
 

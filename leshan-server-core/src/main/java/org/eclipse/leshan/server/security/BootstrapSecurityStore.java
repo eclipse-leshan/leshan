@@ -17,6 +17,8 @@ package org.eclipse.leshan.server.security;
 
 import java.util.Iterator;
 
+import org.eclipse.leshan.core.oscore.OscoreIdentity;
+
 /**
  * A store containing data needed to authenticate clients.
  */
@@ -40,4 +42,13 @@ public interface BootstrapSecurityStore {
      * @return the security information of <code>null</code> if not found.
      */
     SecurityInfo getByIdentity(String pskIdentity);
+
+    /**
+     * Returns the security information for an OSCORE identity.
+     * 
+     * @param oscoreIdentity the OSCORE identity of the client
+     * @return the security information of <code>null</code> if not found.
+     */
+    SecurityInfo getByOscoreIdentity(OscoreIdentity oscoreIdentity);
+
 }

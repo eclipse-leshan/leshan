@@ -35,7 +35,9 @@ import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.auth.X509CertPath;
 import org.eclipse.californium.oscore.OSCoreEndpointContextInfo;
+import org.eclipse.leshan.core.oscore.OscoreIdentity;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.util.Hex;
 
 /**
  * Utility class used to handle Californium {@link EndpointContext} in Leshan.
@@ -70,10 +72,9 @@ public class EndpointContextUtil {
                             senderIdentity.getClass(), senderIdentity.toString()));
         } else {
             // Build identity for OSCORE if it is used
-            if (context.get(OSCoreEndpointContextInfo.OSCORE_SENDER_ID) != null) {
-                String oscoreIdentity = "sid=" + context.get(OSCoreEndpointContextInfo.OSCORE_SENDER_ID) + ",rid="
-                        + context.get(OSCoreEndpointContextInfo.OSCORE_RECIPIENT_ID);
-                return Identity.oscoreOnly(peerAddress, oscoreIdentity.toLowerCase());
+            if (context.get(OSCoreEndpointContextInfo.OSCORE_RECIPIENT_ID) != null) {
+                String recipient = context.get(OSCoreEndpointContextInfo.OSCORE_RECIPIENT_ID);
+                return Identity.oscoreOnly(peerAddress, new OscoreIdentity(Hex.decodeHex(recipient.toCharArray())));
             }
         }
         return Identity.unsecure(peerAddress);

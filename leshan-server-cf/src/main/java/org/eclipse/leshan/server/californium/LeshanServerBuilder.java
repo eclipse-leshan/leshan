@@ -35,7 +35,7 @@ import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
-import org.eclipse.californium.oscore.HashMapCtxDB;
+import org.eclipse.californium.oscore.OSCoreCtxDB;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
@@ -48,6 +48,7 @@ import org.eclipse.californium.scandium.dtls.x509.StaticNewAdvancedCertificateVe
 import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
+import org.eclipse.leshan.core.californium.oscore.cf.InMemoryOscoreContextDB;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -424,13 +425,6 @@ public class LeshanServerBuilder {
         return networkConfig;
     }
 
-    HashMapCtxDB oscoreCtxDB;
-
-    public LeshanServerBuilder setOscoreCtxDB(HashMapCtxDB oscoreCtxDB) {
-        this.oscoreCtxDB = oscoreCtxDB;
-        return this;
-    }
-
     /**
      * Create the {@link LeshanServer}.
      * <p>
@@ -557,6 +551,11 @@ public class LeshanServerBuilder {
             } catch (IllegalStateException e) {
                 LOG.warn("Unable to create DTLS config and so secured endpoint.", e);
             }
+        }
+        // TODO OSCORE handle OSCORE
+        OSCoreCtxDB oscoreCtxDB = null;
+        if (securityStore != null) {
+            oscoreCtxDB = new InMemoryOscoreContextDB(new LwM2mOscoreStore(securityStore, registrationStore));
         }
 
         // create endpoints

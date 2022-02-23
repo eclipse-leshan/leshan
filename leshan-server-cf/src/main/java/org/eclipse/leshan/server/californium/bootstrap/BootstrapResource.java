@@ -25,16 +25,12 @@ import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.CoapExchange;
-import org.eclipse.californium.oscore.HashMapCtxDB;
-import org.eclipse.californium.oscore.OSCoreCtx;
-import org.eclipse.californium.oscore.OSException;
 import org.eclipse.leshan.core.californium.LwM2mCoapResource;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.BootstrapResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
-import org.eclipse.leshan.server.OscoreBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,24 +55,6 @@ public class BootstrapResource extends LwM2mCoapResource {
     public void handlePOST(CoapExchange exchange) {
         Request request = exchange.advanced().getRequest();
         LOG.trace("POST received : {}", request);
-
-        // TODO OSCORE : should we really need to do this ?
-        // Check if this incoming request is using OSCORE
-        if (exchange.advanced().getRequest().getOptions().getOscore() != null) {
-            LOG.trace("Client bootstrapped using OSCORE");
-
-            // Update the URI of the associated OSCORE Context with the client's URI
-            // So the server can send requests to the client
-            HashMapCtxDB db = OscoreBootstrapHandler.getContextDB();
-            OSCoreCtx clientCtx = db.getContext(exchange.advanced().getCryptographicContextID());
-
-            try {
-                db.addContext(request.getScheme() + "://"
-                        + request.getSourceContext().getPeerAddress().getHostString().toString(), clientCtx);
-            } catch (OSException e) {
-                LOG.error("Failed to update OSCORE Context for registering client.", request, e);
-            }
-        }
 
         // The LW M2M spec (section 8.2) mandates the usage of Confirmable
         // messages

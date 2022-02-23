@@ -31,7 +31,7 @@ import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
-import org.eclipse.californium.oscore.HashMapCtxDB;
+import org.eclipse.californium.oscore.OSCoreCtxDB;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
@@ -44,6 +44,7 @@ import org.eclipse.californium.scandium.dtls.x509.StaticNewAdvancedCertificateVe
 import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
+import org.eclipse.leshan.core.californium.oscore.cf.InMemoryOscoreContextDB;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -414,13 +415,6 @@ public class LeshanBootstrapServerBuilder {
         return networkConfig;
     }
 
-    HashMapCtxDB oscoreCtxDB;
-
-    public LeshanBootstrapServerBuilder setOscoreCtxDB(HashMapCtxDB oscoreCtxDB) {
-        this.oscoreCtxDB = oscoreCtxDB;
-        return this;
-    }
-
     /**
      * Create the {@link LeshanBootstrapServer}.
      * <p>
@@ -554,6 +548,14 @@ public class LeshanBootstrapServerBuilder {
             }
         }
 
+        // TODO OSCORE handle OSCORE
+        OSCoreCtxDB oscoreCtxDB = null;
+        OscoreBootstrapListener sessionHolder = null;
+        if (securityStore != null) {
+            sessionHolder = new OscoreBootstrapListener();
+            oscoreCtxDB = new InMemoryOscoreContextDB(new LwM2mBootstrapOscoreStore(securityStore, sessionHolder));
+        }
+
         CoapEndpoint unsecuredEndpoint = null;
         if (!noUnsecuredEndpoint) {
             unsecuredEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, oscoreCtxDB);
@@ -569,8 +571,19 @@ public class LeshanBootstrapServerBuilder {
                     "All CoAP enpoints are deactivated, at least one endpoint should be activated");
         }
 
-        return createBootstrapServer(unsecuredEndpoint, securedEndpoint, sessionManager, bootstrapHandlerFactory,
-                coapConfig, encoder, decoder, linkParser);
+        // TODO OSCORE
+        // <temporary code>
+        LeshanBootstrapServer bootstrapServer = createBootstrapServer(unsecuredEndpoint, securedEndpoint,
+                sessionManager, bootstrapHandlerFactory, coapConfig, encoder, decoder, linkParser);
+
+        if (sessionHolder != null)
+            bootstrapServer.addListener(sessionHolder);
+        return bootstrapServer;
+        // </temporay code>
+        // replacing ===>
+        // return createBootstrapServer(unsecuredEndpoint, securedEndpoint,
+        // sessionManager, bootstrapHandlerFactory, coapConfig, encoder, decoder, linkParser);
+
     }
 
     /**
