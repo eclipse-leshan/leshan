@@ -50,7 +50,6 @@ import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.util.Validate;
-import org.eclipse.leshan.server.OscoreServerHandler;
 import org.eclipse.leshan.server.californium.observation.ObservationServiceImpl;
 import org.eclipse.leshan.server.californium.registration.CaliforniumRegistrationStore;
 import org.eclipse.leshan.server.californium.registration.RegisterResource;
@@ -432,8 +431,6 @@ public class LeshanServer {
         }
 
         presenceService.destroy();
-
-        OscoreServerHandler.purge();
 
         LOG.info("LWM2M server destroyed.");
     }

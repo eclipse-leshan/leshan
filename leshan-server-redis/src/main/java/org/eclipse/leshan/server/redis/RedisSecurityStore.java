@@ -18,6 +18,7 @@ package org.eclipse.leshan.server.redis;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import org.eclipse.leshan.core.oscore.OscoreIdentity;
 import org.eclipse.leshan.server.redis.serialization.SecurityInfoSerDes;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
@@ -75,6 +76,12 @@ public class RedisSecurityStore implements EditableSecurityStore {
                 }
             }
         }
+    }
+
+    @Override
+    public SecurityInfo getByOscoreIdentity(OscoreIdentity pskIdentity) {
+        // TODO OSCORE to be implemented
+        return null;
     }
 
     @Override

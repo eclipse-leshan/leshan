@@ -23,6 +23,7 @@ package org.eclipse.leshan.server.californium.request;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.elements.EndpointContext;
+import org.eclipse.californium.elements.util.Bytes;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.californium.ObserveUtil;
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -95,14 +96,16 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         coapRequest = Request.newGet();
         if (request.getContentFormat() != null)
             coapRequest.getOptions().setAccept(request.getContentFormat().getCode());
-        setTarget(coapRequest, request.getPath());
+        setURI(coapRequest, request.getPath());
+        setSecurityContext(coapRequest);
         applyLowerLayerConfig(coapRequest);
     }
 
     @Override
     public void visit(DiscoverRequest request) {
         coapRequest = Request.newGet();
-        setTarget(coapRequest, request.getPath());
+        setURI(coapRequest, request.getPath());
+        setSecurityContext(coapRequest);
         coapRequest.getOptions().setAccept(MediaTypeRegistry.APPLICATION_LINK_FORMAT);
         applyLowerLayerConfig(coapRequest);
     }
@@ -113,14 +116,16 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         ContentFormat format = request.getContentFormat();
         coapRequest.getOptions().setContentFormat(format.getCode());
         coapRequest.setPayload(encoder.encode(request.getNode(), format, request.getPath(), model));
-        setTarget(coapRequest, request.getPath());
+        setURI(coapRequest, request.getPath());
+        setSecurityContext(coapRequest);
         applyLowerLayerConfig(coapRequest);
     }
 
     @Override
     public void visit(WriteAttributesRequest request) {
         coapRequest = Request.newPut();
-        setTarget(coapRequest, request.getPath());
+        setURI(coapRequest, request.getPath());
+        setSecurityContext(coapRequest);
         for (String query : request.getAttributes().toQueryParams()) {
             coapRequest.getOptions().addUriQuery(query);
         }
@@ -130,7 +135,8 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     @Override
     public void visit(ExecuteRequest request) {
         coapRequest = Request.newPost();
-        setTarget(coapRequest, request.getPath());
+        setURI(coapRequest, request.getPath());
+        setSecurityContext(coapRequest);
         String payload = request.getArguments().serialize();
         if (payload != null) {
             coapRequest.setPayload(payload);
@@ -151,14 +157,16 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
             node = new LwM2mObject(request.getPath().getObjectId(), request.getObjectInstances());
         }
         coapRequest.setPayload(encoder.encode(node, request.getContentFormat(), request.getPath(), model));
-        setTarget(coapRequest, request.getPath());
+        setURI(coapRequest, request.getPath());
+        setSecurityContext(coapRequest);
         applyLowerLayerConfig(coapRequest);
     }
 
     @Override
     public void visit(DeleteRequest request) {
         coapRequest = Request.newDelete();
-        setTarget(coapRequest, request.getPath());
+        setURI(coapRequest, request.getPath());
+        setSecurityContext(coapRequest);
         applyLowerLayerConfig(coapRequest);
     }
 
@@ -168,7 +176,8 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         if (request.getContentFormat() != null)
             coapRequest.getOptions().setAccept(request.getContentFormat().getCode());
         coapRequest.setObserve();
-        setTarget(coapRequest, request.getPath());
+        setURI(coapRequest, request.getPath());
+        setSecurityContext(coapRequest);
 
         // add context info to the observe request
         coapRequest.setUserContext(ObserveUtil.createCoapObserveRequestContext(endpoint, registrationId, request));
@@ -182,7 +191,8 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         coapRequest.setToken(request.getObservation().getId());
         if (request.getContentFormat() != null)
             coapRequest.getOptions().setAccept(request.getContentFormat().getCode());
-        setTarget(coapRequest, request.getPath());
+        setURI(coapRequest, request.getPath());
+        setSecurityContext(coapRequest);
         applyLowerLayerConfig(coapRequest);
     }
 
@@ -193,7 +203,8 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         coapRequest.setPayload(encoder.encodePaths(request.getPaths(), request.getRequestContentFormat()));
         if (request.getResponseContentFormat() != null)
             coapRequest.getOptions().setAccept(request.getResponseContentFormat().getCode());
-        setTarget(coapRequest, LwM2mPath.ROOTPATH);
+        setURI(coapRequest, LwM2mPath.ROOTPATH);
+        setSecurityContext(coapRequest);
         applyLowerLayerConfig(coapRequest);
     }
 
@@ -210,7 +221,8 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         }
 
         coapRequest.setObserve();
-        setTarget(coapRequest, LwM2mPath.ROOTPATH);
+        setURI(coapRequest, LwM2mPath.ROOTPATH);
+        setSecurityContext(coapRequest);
 
         coapRequest.setUserContext(
                 ObserveUtil.createCoapObserveCompositeRequestContext(endpoint, registrationId, request));
@@ -229,8 +241,8 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
             coapRequest.getOptions().setAccept(request.getResponseContentFormat().getCode());
         }
 
-        setTarget(coapRequest, LwM2mPath.ROOTPATH);
-
+        setURI(coapRequest, LwM2mPath.ROOTPATH);
+        setSecurityContext(coapRequest);
         applyLowerLayerConfig(coapRequest);
     }
 
@@ -239,7 +251,8 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         coapRequest = Request.newIPatch();
         coapRequest.getOptions().setContentFormat(request.getContentFormat().getCode());
         coapRequest.setPayload(encoder.encodeNodes(request.getNodes(), request.getContentFormat(), model));
-        setTarget(coapRequest, LwM2mPath.ROOTPATH);
+        setURI(coapRequest, LwM2mPath.ROOTPATH);
+        setSecurityContext(coapRequest);
         applyLowerLayerConfig(coapRequest);
     }
 
@@ -250,7 +263,8 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         ContentFormat format = request.getContentFormat();
         coapRequest.getOptions().setContentFormat(format.getCode());
         coapRequest.setPayload(encoder.encode(request.getNode(), format, request.getPath(), model));
-        setTarget(coapRequest, request.getPath());
+        setURI(coapRequest, request.getPath());
+        setSecurityContext(coapRequest);
         applyLowerLayerConfig(coapRequest);
     }
 
@@ -259,14 +273,16 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         coapRequest = Request.newGet();
         if (request.getContentFormat() != null)
             coapRequest.getOptions().setAccept(request.getContentFormat().getCode());
-        setTarget(coapRequest, request.getPath());
+        setURI(coapRequest, request.getPath());
+        setSecurityContext(coapRequest);
         applyLowerLayerConfig(coapRequest);
     }
 
     @Override
     public void visit(BootstrapDiscoverRequest request) {
         coapRequest = Request.newGet();
-        setTarget(coapRequest, request.getPath());
+        setURI(coapRequest, request.getPath());
+        setSecurityContext(coapRequest);
         coapRequest.getOptions().setAccept(MediaTypeRegistry.APPLICATION_LINK_FORMAT);
         applyLowerLayerConfig(coapRequest);
     }
@@ -275,9 +291,8 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     public void visit(BootstrapDeleteRequest request) {
         coapRequest = Request.newDelete();
         coapRequest.setConfirmable(true);
-        EndpointContext context = EndpointContextUtil.extractContext(destination, allowConnectionInitiation);
-        coapRequest.setDestinationContext(context);
-        setTarget(coapRequest, request.getPath());
+        setSecurityContext(coapRequest);
+        setURI(coapRequest, request.getPath());
         applyLowerLayerConfig(coapRequest);
     }
 
@@ -285,8 +300,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     public void visit(BootstrapFinishRequest request) {
         coapRequest = Request.newPost();
         coapRequest.setConfirmable(true);
-        EndpointContext context = EndpointContextUtil.extractContext(destination, allowConnectionInitiation);
-        coapRequest.setDestinationContext(context);
+        setSecurityContext(coapRequest);
 
         // root path
         if (rootPath != null) {
@@ -301,10 +315,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         applyLowerLayerConfig(coapRequest);
     }
 
-    protected void setTarget(Request coapRequest, LwM2mPath path) {
-        EndpointContext context = EndpointContextUtil.extractContext(destination, allowConnectionInitiation);
-        coapRequest.setDestinationContext(context);
-
+    protected void setURI(Request coapRequest, LwM2mPath path) {
         // root path
         if (rootPath != null) {
             for (String rootPathPart : rootPath.split("/")) {
@@ -336,6 +347,15 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         // resourceInstanceId
         if (path.getResourceInstanceId() != null) {
             coapRequest.getOptions().addUriPath(Integer.toString(path.getResourceInstanceId()));
+        }
+    }
+
+    protected void setSecurityContext(Request coapRequest) {
+        EndpointContext context = EndpointContextUtil.extractContext(destination, allowConnectionInitiation);
+        coapRequest.setDestinationContext(context);
+
+        if (destination.isOSCORE()) {
+            coapRequest.getOptions().setOscore(Bytes.EMPTY);
         }
     }
 

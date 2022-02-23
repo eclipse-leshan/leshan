@@ -18,6 +18,8 @@ package org.eclipse.leshan.server.security;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import org.eclipse.leshan.core.oscore.OscoreIdentity;
+
 public class BootstrapSecurityStoreAdapter implements BootstrapSecurityStore {
 
     private SecurityStore store;
@@ -39,4 +41,8 @@ public class BootstrapSecurityStoreAdapter implements BootstrapSecurityStore {
         return store.getByIdentity(pskIdentity);
     }
 
+    @Override
+    public SecurityInfo getByOscoreIdentity(OscoreIdentity oscoreIdentity) {
+        return store.getByOscoreIdentity(oscoreIdentity);
+    }
 }

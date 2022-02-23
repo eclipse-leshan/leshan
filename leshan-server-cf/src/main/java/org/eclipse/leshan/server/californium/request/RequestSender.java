@@ -31,9 +31,6 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.elements.EndpointContext;
-import org.eclipse.californium.elements.util.Bytes;
-import org.eclipse.californium.oscore.HashMapCtxDB;
-import org.eclipse.californium.oscore.OSException;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.californium.AsyncRequestObserver;
 import org.eclipse.leshan.core.californium.CoapAsyncRequestObserver;
@@ -60,7 +57,6 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.eclipse.leshan.core.util.Validate;
-import org.eclipse.leshan.server.OscoreServerHandler;
 import org.eclipse.leshan.server.request.LowerLayerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -144,18 +140,6 @@ public class RequestSender implements Destroyable {
         request.accept(coapClientRequestBuilder);
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 
-        // Toggle OSCORE use in the request if the target URI of the request has an OSCORE context registered
-        // TODO OSCORE : this should be added in CoapRequestBuilder
-        HashMapCtxDB db = OscoreServerHandler.getContextDB();
-        try {
-            if (db.getContext(coapRequest.getURI()) != null) {
-                coapRequest.getOptions().setOscore(Bytes.EMPTY);
-            }
-        } catch (OSException e) {
-            System.err.println("Failed to retrieve OSCORE Context for request");
-            e.printStackTrace();
-        }
-
         // Send CoAP request synchronously
         SyncRequestObserver<T> syncMessageObserver = new SyncRequestObserver<T>(coapRequest, timeoutInMs) {
             @Override
@@ -231,18 +215,6 @@ public class RequestSender implements Destroyable {
                 endpointName, model, encoder, allowConnectionInitiation, lowerLayerConfig);
         request.accept(coapClientRequestBuilder);
         final Request coapRequest = coapClientRequestBuilder.getRequest();
-
-        // Toggle OSCORE use in the request if the target URI of the request has an OSCORE context registered
-        // TODO OSCORE : this should be added in CoapRequestBuilder
-        HashMapCtxDB db = OscoreServerHandler.getContextDB();
-        try {
-            if (db.getContext(coapRequest.getURI()) != null) {
-                coapRequest.getOptions().setOscore(Bytes.EMPTY);
-            }
-        } catch (OSException e) {
-            System.err.println("Failed to retrieve OSCORE Context for request");
-            e.printStackTrace();
-        }
 
         // Add CoAP request callback
         MessageObserver obs = new AsyncRequestObserver<T>(coapRequest, responseCallback, errorCallback, timeoutInMs,
