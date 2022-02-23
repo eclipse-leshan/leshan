@@ -22,6 +22,7 @@ import java.util.Map.Entry;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.elements.EndpointContext;
+import org.eclipse.californium.elements.util.Bytes;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkSerializer;
@@ -172,5 +173,9 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
     protected void buildRequestSettings() {
         EndpointContext context = EndpointContextUtil.extractContext(server, true);
         coapRequest.setDestinationContext(context);
+
+        if (server.isOSCORE()) {
+            coapRequest.getOptions().setOscore(Bytes.EMPTY);
+        }
     }
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022    Sierra Wireless and others.
+ * Copyright (c) 2022 Sierra Wireless and others.
  * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -13,26 +13,29 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.security.oscore;
+package org.eclipse.leshan.core.californium.oscore.cf;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
-import org.eclipse.leshan.core.oscore.OscoreIdentity;
+import org.eclipse.californium.cose.AlgorithmID;
 import org.eclipse.leshan.core.util.Hex;
 
-public class OscoreSetting implements Serializable {
-    private static final long serialVersionUID = 1L;
+/**
+ * OSCORE Parameters.
+ * <p>
+ * See : https://datatracker.ietf.org/doc/html/rfc8613#section-3.2
+ */
+public class OscoreParameters {
 
     private final byte[] senderId;
     private final byte[] recipientId;
     private final byte[] masterSecret;
-    private final Integer aeadAlgorithm;
-    private final Integer hmacAlgorithm;
+    private final AlgorithmID aeadAlgorithm;
+    private final AlgorithmID hmacAlgorithm;
     private final byte[] masterSalt;
 
-    public OscoreSetting(byte[] senderId, byte[] recipientId, byte[] masterSecret, Integer aeadAlgorithm,
-            Integer hmacAlgorithm, byte[] masterSalt) {
+    public OscoreParameters(byte[] senderId, byte[] recipientId, byte[] masterSecret, AlgorithmID aeadAlgorithm,
+            AlgorithmID hmacAlgorithm, byte[] masterSalt) {
         this.senderId = senderId;
         this.recipientId = recipientId;
         this.masterSecret = masterSecret;
@@ -53,20 +56,16 @@ public class OscoreSetting implements Serializable {
         return masterSecret;
     }
 
-    public Integer getAeadAlgorithm() {
+    public AlgorithmID getAeadAlgorithm() {
         return aeadAlgorithm;
     }
 
-    public Integer getHmacAlgorithm() {
+    public AlgorithmID getHmacAlgorithm() {
         return hmacAlgorithm;
     }
 
     public byte[] getMasterSalt() {
         return masterSalt;
-    }
-
-    public OscoreIdentity getOscoreIdentity() {
-        return new OscoreIdentity(recipientId);
     }
 
     @Override
@@ -98,7 +97,7 @@ public class OscoreSetting implements Serializable {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        OscoreSetting other = (OscoreSetting) obj;
+        OscoreParameters other = (OscoreParameters) obj;
         if (aeadAlgorithm == null) {
             if (other.aeadAlgorithm != null)
                 return false;

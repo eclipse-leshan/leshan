@@ -20,9 +20,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import org.eclipse.leshan.core.oscore.OscoreIdentity;
 
 /**
  * A {@link SecurityStore} which store {@link SecurityInfo} in memory.
@@ -69,6 +72,22 @@ public class InMemorySecurityStore implements EditableSecurityStore {
         } finally {
             readLock.unlock();
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SecurityInfo getByOscoreIdentity(OscoreIdentity oscoreIdentity) {
+        // TODO oscore add an index
+        for (Entry<String, SecurityInfo> securityEntry : securityByEp.entrySet()) {
+            if (securityEntry.getValue().useOSCORE()) {
+                if (securityEntry.getValue().getOscoreSetting().getOscoreIdentity().equals(oscoreIdentity)) {
+                    return securityEntry.getValue();
+                }
+            }
+        }
+        return null;
     }
 
     @Override
