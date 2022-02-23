@@ -46,8 +46,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.oscore.OSCoreCtx;
-import org.eclipse.californium.oscore.OSException;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.Device;
@@ -59,13 +57,13 @@ import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
+import org.eclipse.leshan.core.oscore.OscoreIdentity;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.util.Hex;
-import org.eclipse.leshan.server.OscoreBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ACLConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
@@ -84,6 +82,7 @@ import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.SecurityChecker;
 import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.server.security.oscore.OscoreSetting;
 
 /**
  * Helper for running a server and executing a client against it.
@@ -173,9 +172,6 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 super.end(bsSession);
             }
         });
-
-        builder.setOscoreCtxDB(OscoreBootstrapHandler.getContextDB());
-
         return builder;
     }
 
@@ -375,6 +371,14 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 }
                 return null;
             }
+
+            @Override
+            public SecurityInfo getByOscoreIdentity(OscoreIdentity oscoreIdentity) {
+                if (oscoreIdentity.equals(getBootstrapOscoreSetting().getOscoreIdentity())) {
+                    return oscoreSecurityInfo();
+                }
+                return null;
+            }
         };
     }
 
@@ -389,6 +393,11 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         return info;
     }
 
+    public SecurityInfo oscoreSecurityInfo() {
+        SecurityInfo info = SecurityInfo.newOSCoreInfo(getCurrentEndpoint(), getBootstrapOscoreSetting());
+        return info;
+    }
+
     private BootstrapSecurityStore dummyBsSecurityStore() {
         return new BootstrapSecurityStore() {
 
@@ -399,6 +408,11 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
             @Override
             public Iterator<SecurityInfo> getAllByEndpoint(String endpoint) {
+                return null;
+            }
+
+            @Override
+            public SecurityInfo getByOscoreIdentity(OscoreIdentity oscoreIdentity) {
                 return null;
             }
         };
@@ -664,7 +678,6 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     }
 
     public BootstrapConfigStore oscoreBootstrapStoreWithOscoreServer() {
-        OscoreBootstrapHandler.getContextDB().addContext(getOsCoreBootstrapCtx());
 
         return new BootstrapConfigStore() {
 
@@ -704,7 +717,6 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     }
 
     public BootstrapConfigStore oscoreBootstrapStoreWithUnsecuredServer() {
-        OscoreBootstrapHandler.getContextDB().addContext(BootstrapIntegrationTestHelper.getOsCoreBootstrapCtx());
 
         return new BootstrapConfigStore() {
 
@@ -741,6 +753,12 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         };
     }
 
+    public static OscoreSetting getBootstrapOscoreSetting() {
+        return new OscoreSetting(OSCORE_BOOTSTRAP_RECIPIENT_ID, OSCORE_BOOTSTRAP_SENDER_ID,
+                OSCORE_BOOTSTRAP_MASTER_SECRET, OSCORE_ALGORITHM.AsCBOR().AsInt32(),
+                OSCORE_KDF_ALGORITHM.AsCBOR().AsInt32(), OSCORE_BOOTSTRAP_MASTER_SALT);
+    }
+
     protected static Oscore getOscoreBootstrapClientObject() {
         return new Oscore(12345, new String(Hex.encodeHex(OSCORE_BOOTSTRAP_MASTER_SECRET)),
                 new String(Hex.encodeHex(OSCORE_BOOTSTRAP_SENDER_ID)),
@@ -763,18 +781,6 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 Hex.encodeHex(bootstrap ? OSCORE_BOOTSTRAP_MASTER_SALT : OSCORE_MASTER_SALT));
 
         return oscoreObject;
-    }
-
-    public static OSCoreCtx getOsCoreBootstrapCtx() {
-        try {
-            OSCoreCtx osCoreCtx = new OSCoreCtx(OSCORE_BOOTSTRAP_MASTER_SECRET, true, OSCORE_ALGORITHM,
-                    OSCORE_BOOTSTRAP_RECIPIENT_ID, OSCORE_BOOTSTRAP_SENDER_ID, OSCORE_KDF_ALGORITHM, 32,
-                    OSCORE_BOOTSTRAP_MASTER_SALT, null, 1000);
-            osCoreCtx.setContextRederivationEnabled(true);
-            return osCoreCtx;
-        } catch (OSException ignored) {
-            return null;
-        }
     }
 
     @Override

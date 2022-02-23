@@ -21,7 +21,7 @@ import java.net.InetSocketAddress;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.observe.ObservationStore;
 import org.eclipse.californium.elements.config.Configuration;
-import org.eclipse.californium.oscore.HashMapCtxDB;
+import org.eclipse.californium.oscore.OSCoreCtxDB;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 
 /**
@@ -32,8 +32,8 @@ import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 public interface EndpointFactory {
 
     CoapEndpoint createUnsecuredEndpoint(InetSocketAddress address, Configuration coapConfig, ObservationStore store,
-            HashMapCtxDB db);
+            OSCoreCtxDB db);
 
     CoapEndpoint createSecuredEndpoint(DtlsConnectorConfig dtlsConfig, Configuration coapConfig, ObservationStore store,
-            HashMapCtxDB db);
+            OSCoreCtxDB db);
 }

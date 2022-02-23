@@ -21,6 +21,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.PublicKey;
 
+import org.eclipse.leshan.core.oscore.OscoreIdentity;
 import org.eclipse.leshan.core.util.Validate;
 
 /**
@@ -33,10 +34,10 @@ public class Identity {
     private final String pskIdentity;
     private final PublicKey rawPublicKey;
     private final String x509CommonName;
-    private final String oscoreIdentity;
+    private final OscoreIdentity oscoreIdentity;
 
     private Identity(InetSocketAddress peerAddress, String pskIdentity, PublicKey rawPublicKey, String x509CommonName,
-            String oscoreIdentity) {
+            OscoreIdentity oscoreIdentity) {
         Validate.notNull(peerAddress);
         this.peerAddress = peerAddress;
         this.pskIdentity = pskIdentity;
@@ -69,7 +70,7 @@ public class Identity {
         return x509CommonName;
     }
 
-    public String getOscoreIdentity() {
+    public OscoreIdentity getOscoreIdentity() {
         return oscoreIdentity;
     }
 
@@ -86,7 +87,7 @@ public class Identity {
     }
 
     public boolean isOSCORE() {
-        return oscoreIdentity != null && !oscoreIdentity.isEmpty();
+        return oscoreIdentity != null;
     }
 
     public boolean isSecure() {
@@ -125,11 +126,11 @@ public class Identity {
         return new Identity(new InetSocketAddress(address, port), null, null, commonName, null);
     }
 
-    public static Identity oscoreOnly(InetSocketAddress peerAddress, String oscoreIdentity) {
+    public static Identity oscoreOnly(InetSocketAddress peerAddress, OscoreIdentity oscoreIdentity) {
         return new Identity(peerAddress, null, null, null, oscoreIdentity);
     }
 
-    public static Identity oscoreOnly(InetAddress address, int port, String oscoreIdentity) {
+    public static Identity oscoreOnly(InetAddress address, int port, OscoreIdentity oscoreIdentity) {
         return new Identity(new InetSocketAddress(address, port), null, null, null, oscoreIdentity);
     }
 
