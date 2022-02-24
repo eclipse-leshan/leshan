@@ -74,8 +74,8 @@
             <br />
           </span>
           <span v-if="item.autoIdForSecurityObject"
-            >Use Auto ID For Security Object<br /></span
-          >
+            >Use Auto ID For Security Object<br
+          /></span>
           <!-- LWM2M Server to add -->
           <span v-for="server in item.dm" :key="server.shortid">
             Add Server: <code>{{ server.security.uri }}</code>
@@ -307,7 +307,7 @@ export default {
             (c) => c.endpoint == config.endpoint
           );
           if (index != -1) {
-            this.clientConfigs[index] = c;
+            this.$set(this.clientConfigs, index, c);
           } else {
             this.clientConfigs.push(c);
           }
