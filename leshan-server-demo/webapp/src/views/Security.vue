@@ -140,7 +140,14 @@ export default {
       this.axios
         .put("api/security/clients/", adaptToAPI(cred, cred.endpoint))
         .then(() => {
-          this.securityInfos.push(cred);
+          let index = this.securityInfos.findIndex(
+            (s) => s.endpoint == cred.endpoint
+          );
+          if (index != -1) {
+            this.$set(this.securityInfos, index, cred);
+          } else {
+            this.securityInfos.push(cred);
+          }
           this.dialogOpened = false;
         });
     },
