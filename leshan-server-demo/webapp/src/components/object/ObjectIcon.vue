@@ -45,6 +45,10 @@ export default {
           return "mdi-signal";
         case 11: // LWM2M APN Connection Profile
           return "mdi-sim";
+        case 12: // WLAN connectivity
+          return "mdi-cellphone-wireless";
+        case 13: // LWM2M Bearer Selection
+          return "mdi-sim-outline";
         case 14: // LWM2M Software Component
           return "mdi-puzzle-outline";
         case 15: // DevCapMgmt
@@ -69,6 +73,8 @@ export default {
           return "mdi-palette-outline";
         case 3338: // Buzzer
           return "mdi-bell-ring";
+        case 3340: // Timer
+          return "mdi-timer-outline";
         case 3341: // Addressable Text Display
           return "mdi-text-recognition";
         case 3342: // On/Off Switch
@@ -79,6 +85,8 @@ export default {
           return "mdi-list-status";
         case 3442: // LWM2M v1.1 Test Object
           return "mdi-list-status";
+        case 3351: // powerupLog
+          return "mdi-card-text-outline";
         case 10259: // System Log
           return "mdi-text-box-outline";
         case 10260: // RDB (Runtime Database)
