@@ -17,19 +17,13 @@
 package org.eclipse.leshan.server.demo.servlet.json;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.eclipse.leshan.core.link.Link;
-import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.queue.PresenceService;
@@ -72,7 +66,7 @@ public class JacksonRegistrationSerializer extends StdSerializer<Registration> {
         map.put("bindingMode", BindingMode.toString(src.getBindingMode()));
 
         map.put("rootPath", src.getRootPath());
-        map.put("objectLinks", serializeLinks(src.getSortedObjectLinks()));
+        map.put("objectLinks", src.getObjectLinks());
         map.put("secure", src.getIdentity().isSecure());
         map.put("additionalRegistrationAttributes", src.getAdditionalRegistrationAttributes());
         map.put("queuemode", src.usesQueueMode());
@@ -81,7 +75,6 @@ public class JacksonRegistrationSerializer extends StdSerializer<Registration> {
         if (src.usesQueueMode()) {
             map.put("sleeping", !presenceService.isClientAwake(src));
         }
-
         gen.writeObject(map);
     }
 
@@ -98,27 +91,5 @@ public class JacksonRegistrationSerializer extends StdSerializer<Registration> {
             instancesList.add(path.getObjectInstanceId());
         }
         return result;
-    }
-
-    private List<Map<String, Object>> serializeLinks(Link[] links) {
-        if (links == null)
-            return Collections.emptyList();
-
-        List<Map<String, Object>> jlinks = new ArrayList<>(links.length);
-        for (Link link : links) {
-            Map<String, Object> jlink = new HashMap<>();
-
-            // add url
-            jlink.put("url", link.getUriReference());
-
-            // add attributes
-            Map<String, String> attributes = new HashMap<>();
-            for (Attribute attr : link.getAttributes()) {
-                attributes.put(attr.getName(), attr.getCoreLinkValue());
-            }
-            jlink.put("attributes", attributes);
-            jlinks.add(jlink);
-        }
-        return jlinks;
     }
 }

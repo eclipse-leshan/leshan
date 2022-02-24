@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.eclipse.leshan.core.link.lwm2m.attributes.DefaultLwM2mAttributeParser;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
@@ -73,6 +74,7 @@ import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteCompositeResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.server.californium.LeshanServer;
+import org.eclipse.leshan.server.demo.servlet.json.JacksonLinkSerializer;
 import org.eclipse.leshan.server.demo.servlet.json.JacksonLwM2mNodeDeserializer;
 import org.eclipse.leshan.server.demo.servlet.json.JacksonLwM2mNodeSerializer;
 import org.eclipse.leshan.server.demo.servlet.json.JacksonRegistrationSerializer;
@@ -117,6 +119,7 @@ public class ClientServlet extends HttpServlet {
         mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         SimpleModule module = new SimpleModule();
+        module.addSerializer(Link.class, new JacksonLinkSerializer());
         module.addSerializer(Registration.class, new JacksonRegistrationSerializer(server.getPresenceService()));
         module.addSerializer(LwM2mResponse.class, new JacksonResponseSerializer());
         module.addSerializer(LwM2mNode.class, new JacksonLwM2mNodeSerializer());
