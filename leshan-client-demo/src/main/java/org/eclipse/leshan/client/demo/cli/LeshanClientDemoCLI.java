@@ -284,6 +284,32 @@ public class LeshanClientDemoCLI implements Runnable {
         }
 
         normalizedServerUrl();
+
+        // validate url.
+        // extract scheme
+        int indexOf = main.url.indexOf("://");
+        String scheme = main.url.substring(0, indexOf);
+        // we support only coap and coaps
+        if (!"coap".equals(scheme) && !"coaps".equals(scheme)) {
+            throw new MultiParameterException(spec.commandLine(),
+                    String.format("Invalid URL %s : unknown scheme '%s', we support only 'coap' or 'coaps' for now",
+                            main.url, scheme),
+                    "-u");
+        }
+        // check scheme matches configuration
+        if (identity.hasIdentity()) {
+            if (!scheme.equals("coaps")) {
+                throw new MultiParameterException(spec.commandLine(), String.format(
+                        "Invalid URL %s : '%s' scheme must be used without PSK, RPK or x509 option. Do you mean 'coaps' ? ",
+                        main.url, scheme), "-u");
+            }
+        } else {
+            if (!scheme.equals("coap")) {
+                throw new MultiParameterException(spec.commandLine(), String.format(
+                        "Invalid URL %s : '%s' scheme must be used with PSK, RPK or x509 option. Do you mean 'coap' ? ",
+                        main.url, scheme), "-u");
+            }
+        }
     }
 
     protected void normalizedServerUrl() {
