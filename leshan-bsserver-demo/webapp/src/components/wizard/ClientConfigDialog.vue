@@ -126,12 +126,18 @@
 import { toHex, base64ToBytes } from "@leshan-server-core-demo/js/byteutils.js";
 import EndpointStep from "./EndpointStep.vue";
 import SecurityStep from "./SecurityStep.vue";
-import DeleteStep from './DeleteStep.vue';
+import DeleteStep from "./DeleteStep.vue";
 import ServerStep from "./ServerStep.vue";
 import BootstrapServerStep from "./BootstrapServerStep.vue";
 
 export default {
-  components: { EndpointStep, SecurityStep, ServerStep, BootstrapServerStep, DeleteStep },
+  components: {
+    EndpointStep,
+    SecurityStep,
+    ServerStep,
+    BootstrapServerStep,
+    DeleteStep,
+  },
   props: { value: Boolean /*open/close dialog*/ },
   data() {
     return {
@@ -190,11 +196,12 @@ export default {
           dm: { mode: "no_sec" },
           bs: null,
           toDelete: ["/0", "/1"],
-          autoIdForSecurityObject:false
+          autoIdForSecurityObject: false,
         };
         this.currentStep = 1;
         for (let i = 1; i <= this.nbSteps; i++) {
-          this.valid[i] = true;
+          // Not so clean but didn't find better way for now than initialize valid value manually
+          this.valid[i] = i == 1 ? false : true;
           if (this.$refs["step" + i]) this.$refs["step" + i].resetValidation();
         }
       }
