@@ -40,9 +40,11 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.tlv.Tlv;
 import org.eclipse.leshan.core.tlv.Tlv.TlvType;
@@ -1258,5 +1260,29 @@ public class LwM2mNodeDecoderTest {
         assertTrue(resource instanceof LwM2mMultipleResource);
         assertEquals(6, resource.getId());
         assertTrue(resource.getInstances().isEmpty());
+    }
+
+    @Test
+    public void senml_multiple_timestamped_nodes() throws CodecException {
+        // given
+        StringBuilder b = new StringBuilder();
+        b.append("[{\"bn\":\"/4/0/\",\"bt\":268600000,\"n\":\"0\",\"v\":1,\"t\":1},");
+        b.append("{\"n\":\"1\",\"v\":2,\"t\":2},");
+        b.append("{\"n\":\"1\",\"v\":3,\"t\":3},");
+        b.append("{\"bn\":\"/3/0/7/\",\"n\":\"0\",\"v\":3800}");
+        b.append("]");
+
+        // when
+        TimestampedLwM2mNodes data = decoder.decodeTimestampedNodes(b.toString().getBytes(), ContentFormat.SENML_JSON,
+                model);
+
+        // then
+        TimestampedLwM2mNodes.Builder expectedResult = new TimestampedLwM2mNodes.Builder()
+                .put(268600000L, new LwM2mPath("/3/0/7/0"), LwM2mResourceInstance.newIntegerInstance(0, 3800))
+                .put(268600001L, new LwM2mPath("/4/0/0"), LwM2mSingleResource.newIntegerResource(0, 1))
+                .put(268600002L, new LwM2mPath("/4/0/1"), LwM2mSingleResource.newIntegerResource(1, 2))
+                .put(268600003L, new LwM2mPath("/4/0/1"), LwM2mSingleResource.newIntegerResource(1, 3));
+
+        assertEquals(expectedResult.build(), data);
     }
 }

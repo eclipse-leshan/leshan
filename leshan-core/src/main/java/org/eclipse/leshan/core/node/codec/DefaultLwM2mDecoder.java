@@ -31,6 +31,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.cbor.LwM2mNodeCborDecoder;
 import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonDecoder;
 import org.eclipse.leshan.core.node.codec.opaque.LwM2mNodeOpaqueDecoder;
@@ -201,6 +202,31 @@ public class DefaultLwM2mDecoder implements LwM2mDecoder {
                     nodeClassFromPath(path));
         } else {
             return toTimestampedNodes(decoder.decode(content, path, model, nodeClassFromPath(path)));
+        }
+    }
+
+    @Override
+    public TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, ContentFormat format, LwM2mModel model)
+            throws CodecException {
+        LOG.trace("Decoding value for format {}: {}", format, content);
+
+        if (format == null) {
+            throw new CodecException("Content format is mandatory.");
+        }
+
+        NodeDecoder decoder = nodeDecoders.get(format);
+        if (decoder == null) {
+            throw new CodecException("Content format %s is not supported", format);
+        }
+
+        if (decoder instanceof TimestampedMultiNodeDecoder) {
+            return ((TimestampedMultiNodeDecoder) decoder).decodeTimestampedNodes(content, model);
+        } else if (decoder instanceof MultiNodeDecoder) {
+            return new TimestampedLwM2mNodes.Builder()
+                    .addNodes(((MultiNodeDecoder) decoder).decodeNodes(content, null, model)).build();
+        } else {
+            throw new CodecException(
+                    "Decoder does not support multiple nodes decoding for this content format %s [%s] ", format);
         }
     }
 

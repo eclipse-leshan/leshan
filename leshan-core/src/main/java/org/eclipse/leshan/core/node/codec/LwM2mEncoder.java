@@ -23,6 +23,7 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.request.ContentFormat;
 
 /**
@@ -72,6 +73,19 @@ public interface LwM2mEncoder {
      */
     byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, ContentFormat format, LwM2mPath path,
             LwM2mModel model) throws CodecException;
+
+    /**
+     * Serializes a multiple time-stamped nodes contained in {@link TimestampedLwM2mNodes} with the given content
+     * format.
+     *
+     * @param data the {@link TimestampedLwM2mNodes} to serialize
+     * @param format the content format
+     * @param model the collection of supported object models
+     * @return the encoded node as a byte array
+     * @throws CodecException if encoding failed.
+     */
+    byte[] encodeTimestampedNodes(TimestampedLwM2mNodes data, ContentFormat format, LwM2mModel model)
+            throws CodecException;
 
     /**
      * Serializes a list of {@link LwM2mPath} with the given content format.

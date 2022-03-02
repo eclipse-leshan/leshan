@@ -25,6 +25,7 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.cbor.LwM2mNodeCborEncoder;
 import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonEncoder;
 import org.eclipse.leshan.core.node.codec.opaque.LwM2mNodeOpaqueEncoder;
@@ -197,6 +198,23 @@ public class DefaultLwM2mEncoder implements LwM2mEncoder {
         LOG.trace("Encoded node timestampedNode: {}", timestampedNodes, encoded);
         return encoded;
 
+    }
+
+    @Override
+    public byte[] encodeTimestampedNodes(TimestampedLwM2mNodes timestampedNodes, ContentFormat format,
+            LwM2mModel model) throws CodecException {
+        Validate.notNull(timestampedNodes);
+
+        if (format == null) {
+            throw new CodecException("Content format is mandatory.");
+        }
+
+        NodeEncoder encoder = nodeEncoders.get(format);
+        if (encoder == null) {
+            throw new CodecException("Content format %s is not supported", format);
+        }
+        // TODO implements timestamped nodes encoding with fall back to "not timestamped" multi node.
+        return encodeNodes(timestampedNodes.getNodes(), format, model);
     }
 
     @Override
