@@ -91,7 +91,7 @@ public class RegistrationTest {
         // Check client is well registered
         helper.assertClientRegisterered();
         assertArrayEquals(linkParser.parseCoreLinkFormat(
-                "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1>;ver=1.1,</1/0>,</2>,</3>;ver=1.1,</3/0>,</2000/0>,</2000/1>"
+                "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1>;ver=1.1,</1/0>,</2>,</3>;ver=1.1,</3/0>,</2000/0>,</2000/1>,</2000/2>"
                         .getBytes()),
                 helper.getCurrentRegistration().getObjectLinks());
 
@@ -117,7 +117,7 @@ public class RegistrationTest {
         // Check client is well registered
         helper.assertClientRegisterered();
         assertArrayEquals(linkParser.parseCoreLinkFormat(
-                "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1>;ver=1.1,</1/0>,</2>,</3>;ver=1.1,</3/0>,</2000/0>,</2000/1>"
+                "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1>;ver=1.1,</1/0>,</2>,</3>;ver=1.1,</3/0>,</2000/0>,</2000/1>,</2000/2>"
                         .getBytes()),
                 helper.getCurrentRegistration().getObjectLinks());
 
@@ -268,7 +268,7 @@ public class RegistrationTest {
         assertNotNull(helper.getLastRegistration());
         assertEquals(additionalAttributes, helper.getLastRegistration().getAdditionalRegistrationAttributes());
         assertArrayEquals(linkParser.parseCoreLinkFormat(
-                "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1>;ver=1.1,</1/0>,</2>,</3>;ver=1.1,</3/0>,</2000/0>,</2000/1>"
+                "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1>;ver=1.1,</1/0>,</2>,</3>;ver=1.1,</3/0>,</2000/0>,</2000/1>,</2000/2>"
                         .getBytes()),
                 helper.getCurrentRegistration().getObjectLinks());
     }

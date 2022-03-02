@@ -18,6 +18,7 @@ package org.eclipse.leshan.server.send;
 import java.util.Map;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.server.registration.Registration;
 
@@ -35,7 +36,7 @@ public interface SendListener {
      * @param data The data received
      * @param request The request received
      */
-    void dataReceived(Registration registration, Map<String, LwM2mNode> data, SendRequest request);
+    void dataReceived(Registration registration, TimestampedLwM2mNodes data, SendRequest request);
 
     /**
      * Called when Send Request can't not be handled by server (because of e.g. unsupported content format or invalid

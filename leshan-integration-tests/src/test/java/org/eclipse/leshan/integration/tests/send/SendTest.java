@@ -95,7 +95,7 @@ public class SendTest {
         // wait for data and check result
         listener.waitForData(1, TimeUnit.SECONDS);
         assertNotNull(listener.getRegistration());
-        Map<String, LwM2mNode> data = listener.getData();
+        Map<String, LwM2mNode> data = listener.getDataAsPathNodesMap();
         LwM2mResource modelnumber = (LwM2mResource) data.get("/3/0/1");
         assertEquals(modelnumber.getId(), 1);
         assertEquals(modelnumber.getValue(), "IT-TEST-123");
@@ -122,7 +122,7 @@ public class SendTest {
         // wait for data and check result
         listener.waitForData(1, TimeUnit.SECONDS);
         assertNotNull(listener.getRegistration());
-        Map<String, LwM2mNode> data = listener.getData();
+        Map<String, LwM2mNode> data = listener.getDataAsPathNodesMap();
         LwM2mResource modelnumber = (LwM2mResource) data.get("/3/0/1");
         assertEquals(modelnumber.getId(), 1);
         assertEquals(modelnumber.getValue(), "IT-TEST-123");

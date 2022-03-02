@@ -18,6 +18,7 @@ package org.eclipse.leshan.core.request;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -38,8 +39,8 @@ import org.eclipse.leshan.core.util.Validate;
 public class SendRequest implements UplinkRequest<SendResponse> {
 
     private final ContentFormat format;
-    private final Map<LwM2mPath, LwM2mNode> nodes;
     private final Object coapRequest;
+    private final TimestampedLwM2mNodes data;
 
     /**
      * @param format {@link ContentFormat} used to encode data. It MUST be {@link ContentFormat#SENML_CBOR} or
@@ -51,7 +52,21 @@ public class SendRequest implements UplinkRequest<SendResponse> {
         this(format, nodes, null);
     }
 
+    public SendRequest(ContentFormat format, TimestampedLwM2mNodes data, Object coapRequest) {
+        this.data = data;
+        // Validate Format
+        if (format == null || !(format.equals(ContentFormat.SENML_CBOR) || format.equals(ContentFormat.SENML_JSON))) {
+            throw new InvalidRequestException("Content format MUST be SenML_CBOR or SenML_JSON but was " + format);
+        }
+        // Validate Nodes
+        validateNodes(data.getPathNodesMap());
+
+        this.format = format;
+        this.coapRequest = coapRequest;
+    }
+
     public SendRequest(ContentFormat format, Map<LwM2mPath, LwM2mNode> nodes, Object coapRequest) {
+        data = new TimestampedLwM2mNodes(nodes);
         // Validate Format
         if (format == null || !(format.equals(ContentFormat.SENML_CBOR) || format.equals(ContentFormat.SENML_JSON))) {
             throw new InvalidRequestException("Content format MUST be SenML_CBOR or SenML_JSON but was " + format);
@@ -60,7 +75,6 @@ public class SendRequest implements UplinkRequest<SendResponse> {
         validateNodes(nodes);
 
         this.format = format;
-        this.nodes = nodes;
         this.coapRequest = coapRequest;
     }
 
@@ -86,13 +100,13 @@ public class SendRequest implements UplinkRequest<SendResponse> {
         }
     }
 
+    public TimestampedLwM2mNodes getData() {
+        return data;
+    }
+
     @Override
     public Object getCoapRequest() {
         return coapRequest;
-    }
-
-    public Map<LwM2mPath, LwM2mNode> getNodes() {
-        return nodes;
     }
 
     public ContentFormat getFormat() {
@@ -106,7 +120,7 @@ public class SendRequest implements UplinkRequest<SendResponse> {
 
     @Override
     public String toString() {
-        return String.format("SendRequest [format=%s, nodes=%s]", format, nodes);
+        return String.format("SendRequest [format=%s, nodes=%s]", format);
     }
 
     @Override
@@ -114,7 +128,6 @@ public class SendRequest implements UplinkRequest<SendResponse> {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((format == null) ? 0 : format.hashCode());
-        result = prime * result + ((nodes == null) ? 0 : nodes.hashCode());
         return result;
     }
 
@@ -131,11 +144,6 @@ public class SendRequest implements UplinkRequest<SendResponse> {
             if (other.format != null)
                 return false;
         } else if (!format.equals(other.format))
-            return false;
-        if (nodes == null) {
-            if (other.nodes != null)
-                return false;
-        } else if (!nodes.equals(other.nodes))
             return false;
         return true;
     }

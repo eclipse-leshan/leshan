@@ -162,7 +162,7 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
 
         ContentFormat format = request.getFormat();
         coapRequest.getOptions().setContentFormat(format.getCode());
-        coapRequest.setPayload(encoder.encodeNodes(request.getNodes(), format, model));
+        coapRequest.setPayload(encoder.encodeMultiTimestampedNodes(request.getData(), format, model));
     }
 
     public Request getRequest() {

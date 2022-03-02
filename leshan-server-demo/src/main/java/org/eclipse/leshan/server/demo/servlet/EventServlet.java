@@ -34,6 +34,7 @@ import org.eclipse.jetty.servlets.EventSourceServlet;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
@@ -238,7 +239,7 @@ public class EventServlet extends EventSourceServlet {
     private final SendListener sendListener = new SendListener() {
 
         @Override
-        public void dataReceived(Registration registration, Map<String, LwM2mNode> data, SendRequest request) {
+        public void dataReceived(Registration registration, TimestampedLwM2mNodes data, SendRequest request) {
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Received Send request from [{}] containing value [{}]", registration, data.toString());

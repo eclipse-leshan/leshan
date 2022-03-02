@@ -15,15 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.send;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.response.SendResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
@@ -52,20 +47,15 @@ public class SendHandler implements SendService {
         SendableResponse<SendResponse> response = new SendableResponse<>(SendResponse.success(), new Runnable() {
             @Override
             public void run() {
-                fireDataReceived(registration, request.getNodes(), request);
+                fireDataReceived(registration, request.getData(), request);
             }
         });
         return response;
     }
 
-    protected void fireDataReceived(Registration registration, Map<LwM2mPath, LwM2mNode> data, SendRequest request) {
-        HashMap<String, LwM2mNode> nodes = new HashMap<>();
-        for (Entry<LwM2mPath, LwM2mNode> entry : data.entrySet()) {
-            nodes.put(entry.getKey().toString(), entry.getValue());
-        }
-
+    protected void fireDataReceived(Registration registration, TimestampedLwM2mNodes data, SendRequest request) {
         for (SendListener listener : listeners) {
-            listener.dataReceived(registration, Collections.unmodifiableMap(nodes), request);
+            listener.dataReceived(registration, data, request);
         }
     }
 

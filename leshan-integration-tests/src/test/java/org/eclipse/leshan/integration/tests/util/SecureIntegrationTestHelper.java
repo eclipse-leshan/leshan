@@ -398,7 +398,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
     }
 
     @Override
-    protected LeshanServerBuilder createServerBuilder() {
+    public LeshanServerBuilder createServerBuilder() {
         return createServerBuilder(null);
     }
 

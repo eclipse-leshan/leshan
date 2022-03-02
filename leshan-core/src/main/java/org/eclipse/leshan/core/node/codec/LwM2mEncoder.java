@@ -23,6 +23,7 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.request.ContentFormat;
 
 /**
@@ -93,4 +94,6 @@ public interface LwM2mEncoder {
      * @return {@link ContentFormat} supported by this Encoder
      */
     Set<ContentFormat> getSupportedContentFormat();
+
+    byte[] encodeMultiTimestampedNodes(TimestampedLwM2mNodes data, ContentFormat format, LwM2mModel model);
 }

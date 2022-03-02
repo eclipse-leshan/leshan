@@ -200,7 +200,9 @@ public class IntegrationTestHelper {
         initializer.setInstancesForObject(LwM2mId.DEVICE, new TestDevice("Eclipse Leshan", MODEL_NUMBER, "12345"));
         initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);
         initializer.setInstancesForObject(TEST_OBJECT_ID, new DummyInstanceEnabler(0),
-                new SimpleInstanceEnabler(1, OPAQUE_RESOURCE_ID, new byte[0]));
+                new SimpleInstanceEnabler(1, OPAQUE_RESOURCE_ID, new byte[0]),
+                new TimestampedInstanceEnabler(2)
+        );
         List<LwM2mObjectEnabler> objects = initializer.createAll();
 
         // Build Client
@@ -219,7 +221,7 @@ public class IntegrationTestHelper {
         setupServerMonitoring();
     }
 
-    protected LeshanServerBuilder createServerBuilder() {
+    public LeshanServerBuilder createServerBuilder() {
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setDecoder(new DefaultLwM2mDecoder(true));
         builder.setEncoder(new DefaultLwM2mEncoder(true));
@@ -243,7 +245,7 @@ public class IntegrationTestHelper {
         return new InMemorySecurityStore();
     }
 
-    protected void setupServerMonitoring() {
+    public void setupServerMonitoring() {
         server.getRegistrationService().addListener(registrationListener);
     }
 

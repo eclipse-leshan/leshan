@@ -25,6 +25,7 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.cbor.LwM2mNodeCborEncoder;
 import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonEncoder;
 import org.eclipse.leshan.core.node.codec.opaque.LwM2mNodeOpaqueEncoder;
@@ -225,5 +226,10 @@ public class DefaultLwM2mEncoder implements LwM2mEncoder {
     @Override
     public Set<ContentFormat> getSupportedContentFormat() {
         return nodeEncoders.keySet();
+    }
+
+    @Override
+    public byte[] encodeMultiTimestampedNodes(TimestampedLwM2mNodes data, ContentFormat format, LwM2mModel model) {
+        return encodeNodes(data.getPathNodesMap(), format, model);
     }
 }
