@@ -40,9 +40,11 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.tlv.Tlv;
 import org.eclipse.leshan.core.tlv.Tlv.TlvType;
@@ -1259,4 +1261,40 @@ public class LwM2mNodeDecoderTest {
         assertEquals(6, resource.getId());
         assertTrue(resource.getInstances().isEmpty());
     }
+
+    @Test
+    public void senml_multiple_timestamped_nodes() throws CodecException {
+        // given
+        StringBuilder b = new StringBuilder();
+        b.append("[{\"bn\":\"/4/0/\",\"bt\":268600000,\"n\":\"0\",\"v\":1,\"t\":1},");
+        b.append("{\"n\":\"1\",\"v\":2,\"t\":2},");
+        b.append("{\"n\":\"1\",\"v\":2,\"t\":3},");
+        b.append("{\"bn\":\"/3/0/7/\",\"n\":\"0\",\"v\":3800}");
+        b.append("]");
+
+        // when
+        TimestampedLwM2mNodes data = decoder.decodeMultiTimestampedNodes(b.toString().getBytes(),
+                ContentFormat.SENML_JSON, model);
+
+        // then
+        Map<Long, Map<LwM2mPath, LwM2mNode>> expectedResult = data.getTimestampedNodes();
+        Map<LwM2mPath, LwM2mNode> first = new HashMap<>();
+        first.put(new LwM2mPath("/3/0/7/0"), LwM2mResourceInstance.newIntegerInstance(0, 3000));
+        expectedResult.put(268600000L, first);
+
+        Map<LwM2mPath, LwM2mNode> second = new HashMap<>();
+        second.put(new LwM2mPath("/4/0/0"), LwM2mResourceInstance.newIntegerInstance(0, 1));
+        expectedResult.put(268600001L, second);
+
+        Map<LwM2mPath, LwM2mNode> third = new HashMap<>();
+        third.put(new LwM2mPath("/4/0/1"), LwM2mResourceInstance.newIntegerInstance(0, 2));
+        expectedResult.put(268600002L, third);
+
+        Map<LwM2mPath, LwM2mNode> fourth = new HashMap<>();
+        fourth.put(new LwM2mPath("/4/0/2"), LwM2mResourceInstance.newIntegerInstance(0, 3));
+        expectedResult.put(268600003L, fourth);
+
+        assertEquals(expectedResult, data.getTimestampedNodes());
+    }
+
 }

@@ -245,8 +245,8 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         builder.setRegistrationEngineFactory(new DefaultRegistrationEngineFactory().setQueueMode(queueMode));
         builder.setLocalAddress(clientAddress.getHostString(), clientAddress.getPort());
         builder.setObjects(objects);
-        builder.setDtlsConfig(DtlsConnectorConfig.builder(configuration)
-                .setAsList(DtlsConfig.DTLS_CIPHER_SUITES, CipherSuite.TLS_PSK_WITH_AES_128_CCM_8));
+        builder.setDtlsConfig(DtlsConnectorConfig.builder(configuration).setAsList(DtlsConfig.DTLS_CIPHER_SUITES,
+                CipherSuite.TLS_PSK_WITH_AES_128_CCM_8));
 
         // set an editable PSK store for tests
         builder.setEndpointFactory(new EndpointFactory() {
