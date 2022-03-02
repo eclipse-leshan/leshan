@@ -120,7 +120,7 @@ public class SendRequest implements UplinkRequest<SendResponse> {
 
     @Override
     public String toString() {
-        return String.format("SendRequest [format=%s, nodes=%s]", format);
+        return String.format("SendRequest [format=%s, data=%s]", format, data);
     }
 
     @Override

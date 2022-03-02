@@ -185,7 +185,13 @@ public class DefaultLwM2mDecoder implements LwM2mDecoder {
     @Override
     public TimestampedLwM2mNodes decodeMultiTimestampedNodes(byte[] content, ContentFormat format, LwM2mModel model)
             throws CodecException {
-        return new TimestampedLwM2mNodes(decodeNodes(content, format, null, model));
+        NodeDecoder decoder = nodeDecoders.get(format);
+
+        if (decoder instanceof TimestampedMultiNodeDecoder) {
+            return ((TimestampedMultiNodeDecoder) decoder).decodeMultiTimestampedNodes(content, model);
+        } else {
+            throw new CodecException("Decoder does not support multi node decoding for this content format %s [%s] ", format);
+        }
     }
 
     @Override

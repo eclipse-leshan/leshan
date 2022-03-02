@@ -41,9 +41,11 @@ import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.MultiNodeDecoder;
+import org.eclipse.leshan.core.node.codec.TimestampedMultiNodeDecoder;
 import org.eclipse.leshan.core.node.codec.TimestampedNodeDecoder;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.datatype.NumberUtil;
@@ -55,7 +57,7 @@ import org.eclipse.leshan.senml.SenMLRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeDecoder {
+public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeDecoder, TimestampedMultiNodeDecoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeSenMLDecoder.class);
 
@@ -270,6 +272,32 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
             throw new IllegalArgumentException("invalid node class: " + nodeClass);
         }
         return node;
+    }
+
+    @Override
+    public TimestampedLwM2mNodes decodeMultiTimestampedNodes(byte[] content, LwM2mModel model) throws CodecException {
+        try {
+            // Decode SenML pack
+            SenMLPack pack = decoder.fromSenML(content);
+
+            TimestampedLwM2mNodes nodes = new TimestampedLwM2mNodes();
+
+                // Paths are not given so we given so we can not regroup by path
+                // let's assume that each path refer to a single resource or single resource instances.
+                LwM2mSenMLResolver resolver = new LwM2mSenMLResolver();
+                for (SenMLRecord record : pack.getRecords()) {
+                    LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(record);
+                    LwM2mPath path = resolvedRecord.getPath();
+                    LwM2mNode node = parseRecords(Arrays.asList(resolvedRecord), path, model,
+                            DefaultLwM2mDecoder.nodeClassFromPath(path));
+                    nodes.add(new TimestampedLwM2mNodes(resolvedRecord.getTimeStamp(), path, node));
+                }
+
+            return nodes;
+        } catch (SenMLException e) {
+            String hexValue = content != null ? Hex.encodeHexString(content) : "";
+            throw new CodecException(e, "Unable to decode nodes : %s", hexValue, e);
+        }
     }
 
     /**

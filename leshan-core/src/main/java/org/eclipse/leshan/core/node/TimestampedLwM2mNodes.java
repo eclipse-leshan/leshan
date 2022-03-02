@@ -6,13 +6,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 public class TimestampedLwM2mNodes {
 
     private final Map<Long, Map<LwM2mPath, LwM2mNode>> timestampedPathNodesMap;
 
     public TimestampedLwM2mNodes() {
-        timestampedPathNodesMap = new HashMap<>();
+        timestampedPathNodesMap = new TreeMap<>();
     }
 
     public TimestampedLwM2mNodes(Map<LwM2mPath, LwM2mNode> pathNodesMap) {
@@ -35,6 +36,15 @@ public class TimestampedLwM2mNodes {
             }
             timestampedPathNodesMap.get(timestamp).put(path, timestampedNode.getNode());
         }
+    }
+
+    public TimestampedLwM2mNodes(Long timestamp, LwM2mPath path, LwM2mNode node) {
+        this();
+
+        if (!timestampedPathNodesMap.containsKey(timestamp)) {
+            timestampedPathNodesMap.put(timestamp, new HashMap<>());
+        }
+        timestampedPathNodesMap.get(timestamp).put(path, node);
     }
 
     public Map<Long, Map<LwM2mPath, LwM2mNode>> getTimestampedPathNodesMap() {
