@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.leshan.core.json.LwM2mJsonException;
 import org.eclipse.leshan.core.model.LwM2mModel;

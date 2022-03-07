@@ -42,6 +42,7 @@ import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodesImpl;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.MultiNodeDecoder;
@@ -280,7 +281,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
             // Decode SenML pack
             SenMLPack pack = decoder.fromSenML(content);
 
-            TimestampedLwM2mNodes nodes = new TimestampedLwM2mNodes();
+            TimestampedLwM2mNodesImpl nodes = new TimestampedLwM2mNodesImpl();
 
                 // Paths are not given so we given so we can not regroup by path
                 // let's assume that each path refer to a single resource or single resource instances.
@@ -290,7 +291,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                     LwM2mPath path = resolvedRecord.getPath();
                     LwM2mNode node = parseRecords(Arrays.asList(resolvedRecord), path, model,
                             DefaultLwM2mDecoder.nodeClassFromPath(path));
-                    nodes.add(new TimestampedLwM2mNodes(resolvedRecord.getTimeStamp(), path, node));
+                    nodes.add(new TimestampedLwM2mNodesImpl(resolvedRecord.getTimeStamp(), path, node));
                 }
 
             return nodes;

@@ -15,9 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.send;
 
-import java.util.Map;
-
-import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.server.registration.Registration;

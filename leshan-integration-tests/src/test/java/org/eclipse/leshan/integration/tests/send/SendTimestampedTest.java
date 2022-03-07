@@ -35,6 +35,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodesImpl;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
@@ -116,7 +117,7 @@ public class SendTimestampedTest {
                     LwM2mModel model) throws CodecException {
                 Map<Long, LwM2mNode> timestampedNodes = getExampleTimestampedNodes();
 
-                TimestampedLwM2mNodes data = new TimestampedLwM2mNodes();
+                TimestampedLwM2mNodesImpl data = new TimestampedLwM2mNodesImpl();
 
                 for (Map.Entry<Long, LwM2mNode> entry : timestampedNodes.entrySet()) {
                     data.put(entry.getKey(), getExamplePath(), entry.getValue());
