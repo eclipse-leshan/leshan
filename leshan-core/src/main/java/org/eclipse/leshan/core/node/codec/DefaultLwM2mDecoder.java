@@ -190,7 +190,9 @@ public class DefaultLwM2mDecoder implements LwM2mDecoder {
         if (decoder instanceof TimestampedMultiNodeDecoder) {
             return ((TimestampedMultiNodeDecoder) decoder).decodeMultiTimestampedNodes(content, model);
         } else {
-            throw new CodecException("Decoder does not support multi node decoding for this content format %s [%s] ", format);
+            throw new CodecException(
+                    "Decoder does not support multiple timestamped nodes decoding for this content format %s [%s] ",
+                    format);
         }
     }
 

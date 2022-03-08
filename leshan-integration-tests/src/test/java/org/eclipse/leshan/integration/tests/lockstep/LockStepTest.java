@@ -49,7 +49,7 @@ public class LockStepTest {
 
     public IntegrationTestHelper helper = new IntegrationTestHelper() {
         @Override
-        public LeshanServerBuilder createServerBuilder() {
+        protected LeshanServerBuilder createServerBuilder() {
             Configuration coapConfig = LeshanServerBuilder.createDefaultCoapConfiguration();
 
             // configure retransmission, with this configuration a request without ACK should timeout in ~200*5ms

@@ -1273,10 +1273,11 @@ public class LwM2mNodeDecoderTest {
         b.append("]");
 
         // when
-        TimestampedLwM2mNodes data = decoder.decodeMultiTimestampedNodes(b.toString().getBytes(), ContentFormat.SENML_JSON, model);
+        TimestampedLwM2mNodes data = decoder.decodeMultiTimestampedNodes(b.toString().getBytes(),
+                ContentFormat.SENML_JSON, model);
 
         // then
-        Map<Long, Map<LwM2mPath, LwM2mNode>> expectedResult = data.getTimestampedPathNodesMap();
+        Map<Long, Map<LwM2mPath, LwM2mNode>> expectedResult = data.getTimestampedNodes();
         Map<LwM2mPath, LwM2mNode> first = new HashMap<>();
         first.put(new LwM2mPath("/3/0/7/0"), LwM2mResourceInstance.newIntegerInstance(0, 3000));
         expectedResult.put(268600000L, first);
@@ -1293,7 +1294,7 @@ public class LwM2mNodeDecoderTest {
         fourth.put(new LwM2mPath("/4/0/2"), LwM2mResourceInstance.newIntegerInstance(0, 3));
         expectedResult.put(268600003L, fourth);
 
-        assertEquals(expectedResult, data.getTimestampedPathNodesMap());
+        assertEquals(expectedResult, data.getTimestampedNodes());
     }
 
 }

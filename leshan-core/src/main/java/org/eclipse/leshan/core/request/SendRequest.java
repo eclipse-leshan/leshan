@@ -41,7 +41,7 @@ public class SendRequest implements UplinkRequest<SendResponse> {
 
     private final ContentFormat format;
     private final Object coapRequest;
-    private final TimestampedLwM2mNodes data;
+    private final TimestampedLwM2mNodes timestampedNodes;
 
     /**
      * @param format {@link ContentFormat} used to encode data. It MUST be {@link ContentFormat#SENML_CBOR} or
@@ -53,21 +53,21 @@ public class SendRequest implements UplinkRequest<SendResponse> {
         this(format, nodes, null);
     }
 
-    public SendRequest(ContentFormat format, TimestampedLwM2mNodes data, Object coapRequest) {
-        this.data = data;
+    public SendRequest(ContentFormat format, TimestampedLwM2mNodes timestampedNodes, Object coapRequest) {
+        this.timestampedNodes = timestampedNodes;
         // Validate Format
         if (format == null || !(format.equals(ContentFormat.SENML_CBOR) || format.equals(ContentFormat.SENML_JSON))) {
             throw new InvalidRequestException("Content format MUST be SenML_CBOR or SenML_JSON but was " + format);
         }
         // Validate Nodes
-        validateNodes(data.getPathNodesMap());
+        validateNodes(timestampedNodes.getNodes());
 
         this.format = format;
         this.coapRequest = coapRequest;
     }
 
     public SendRequest(ContentFormat format, Map<LwM2mPath, LwM2mNode> nodes, Object coapRequest) {
-        data = new TimestampedLwM2mNodesImpl(nodes);
+        timestampedNodes = new TimestampedLwM2mNodesImpl(nodes);
         // Validate Format
         if (format == null || !(format.equals(ContentFormat.SENML_CBOR) || format.equals(ContentFormat.SENML_JSON))) {
             throw new InvalidRequestException("Content format MUST be SenML_CBOR or SenML_JSON but was " + format);
@@ -101,8 +101,8 @@ public class SendRequest implements UplinkRequest<SendResponse> {
         }
     }
 
-    public TimestampedLwM2mNodes getData() {
-        return data;
+    public TimestampedLwM2mNodes getTimestampedNodes() {
+        return timestampedNodes;
     }
 
     @Override
@@ -121,14 +121,16 @@ public class SendRequest implements UplinkRequest<SendResponse> {
 
     @Override
     public String toString() {
-        return String.format("SendRequest [format=%s, data=%s]", format, data);
+        return String.format("SendRequest [format=%s, timestampedNodes=%s]", format, timestampedNodes);
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((coapRequest == null) ? 0 : coapRequest.hashCode());
         result = prime * result + ((format == null) ? 0 : format.hashCode());
+        result = prime * result + ((timestampedNodes == null) ? 0 : timestampedNodes.hashCode());
         return result;
     }
 
@@ -141,11 +143,22 @@ public class SendRequest implements UplinkRequest<SendResponse> {
         if (getClass() != obj.getClass())
             return false;
         SendRequest other = (SendRequest) obj;
+        if (coapRequest == null) {
+            if (other.coapRequest != null)
+                return false;
+        } else if (!coapRequest.equals(other.coapRequest))
+            return false;
         if (format == null) {
             if (other.format != null)
                 return false;
         } else if (!format.equals(other.format))
             return false;
+        if (timestampedNodes == null) {
+            if (other.timestampedNodes != null)
+                return false;
+        } else if (!timestampedNodes.equals(other.timestampedNodes))
+            return false;
         return true;
     }
+
 }

@@ -180,6 +180,30 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
         }
     }
 
+    @Override
+    public TimestampedLwM2mNodes decodeMultiTimestampedNodes(byte[] content, LwM2mModel model) throws CodecException {
+        try {
+            // Decode SenML pack
+            SenMLPack pack = decoder.fromSenML(content);
+
+            TimestampedLwM2mNodesImpl nodes = new TimestampedLwM2mNodesImpl();
+
+            LwM2mSenMLResolver resolver = new LwM2mSenMLResolver();
+            for (SenMLRecord record : pack.getRecords()) {
+                LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(record);
+                LwM2mPath path = resolvedRecord.getPath();
+                LwM2mNode node = parseRecords(Arrays.asList(resolvedRecord), path, model,
+                        DefaultLwM2mDecoder.nodeClassFromPath(path));
+                nodes.add(new TimestampedLwM2mNodesImpl(resolvedRecord.getTimeStamp(), path, node));
+            }
+
+            return nodes;
+        } catch (SenMLException e) {
+            String hexValue = content != null ? Hex.encodeHexString(content) : "";
+            throw new CodecException(e, "Unable to decode nodes : %s", hexValue, e);
+        }
+    }
+
     /**
      * Parse records for a given LWM2M path.
      */
@@ -273,32 +297,6 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
             throw new IllegalArgumentException("invalid node class: " + nodeClass);
         }
         return node;
-    }
-
-    @Override
-    public TimestampedLwM2mNodes decodeMultiTimestampedNodes(byte[] content, LwM2mModel model) throws CodecException {
-        try {
-            // Decode SenML pack
-            SenMLPack pack = decoder.fromSenML(content);
-
-            TimestampedLwM2mNodesImpl nodes = new TimestampedLwM2mNodesImpl();
-
-                // Paths are not given so we given so we can not regroup by path
-                // let's assume that each path refer to a single resource or single resource instances.
-                LwM2mSenMLResolver resolver = new LwM2mSenMLResolver();
-                for (SenMLRecord record : pack.getRecords()) {
-                    LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(record);
-                    LwM2mPath path = resolvedRecord.getPath();
-                    LwM2mNode node = parseRecords(Arrays.asList(resolvedRecord), path, model,
-                            DefaultLwM2mDecoder.nodeClassFromPath(path));
-                    nodes.add(new TimestampedLwM2mNodesImpl(resolvedRecord.getTimeStamp(), path, node));
-                }
-
-            return nodes;
-        } catch (SenMLException e) {
-            String hexValue = content != null ? Hex.encodeHexString(content) : "";
-            throw new CodecException(e, "Unable to decode nodes : %s", hexValue, e);
-        }
     }
 
     /**

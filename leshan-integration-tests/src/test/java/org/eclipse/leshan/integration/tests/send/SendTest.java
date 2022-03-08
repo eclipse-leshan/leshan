@@ -27,6 +27,7 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.response.SendResponse;
@@ -95,12 +96,12 @@ public class SendTest {
         // wait for data and check result
         listener.waitForData(1, TimeUnit.SECONDS);
         assertNotNull(listener.getRegistration());
-        Map<String, LwM2mNode> data = listener.getDataAsPathNodesMap();
-        LwM2mResource modelnumber = (LwM2mResource) data.get("/3/0/1");
+        Map<LwM2mPath, LwM2mNode> data = listener.getNodes();
+        LwM2mResource modelnumber = (LwM2mResource) data.get(new LwM2mPath("/3/0/1"));
         assertEquals(modelnumber.getId(), 1);
         assertEquals(modelnumber.getValue(), "IT-TEST-123");
 
-        LwM2mResource serialnumber = (LwM2mResource) data.get("/3/0/2");
+        LwM2mResource serialnumber = (LwM2mResource) data.get(new LwM2mPath("/3/0/2"));
         assertEquals(serialnumber.getId(), 2);
         assertEquals(serialnumber.getValue(), "12345");
     }
@@ -122,12 +123,12 @@ public class SendTest {
         // wait for data and check result
         listener.waitForData(1, TimeUnit.SECONDS);
         assertNotNull(listener.getRegistration());
-        Map<String, LwM2mNode> data = listener.getDataAsPathNodesMap();
-        LwM2mResource modelnumber = (LwM2mResource) data.get("/3/0/1");
+        Map<LwM2mPath, LwM2mNode> data = listener.getNodes();
+        LwM2mResource modelnumber = (LwM2mResource) data.get(new LwM2mPath("/3/0/1"));
         assertEquals(modelnumber.getId(), 1);
         assertEquals(modelnumber.getValue(), "IT-TEST-123");
 
-        LwM2mResource serialnumber = (LwM2mResource) data.get("/3/0/2");
+        LwM2mResource serialnumber = (LwM2mResource) data.get(new LwM2mPath("/3/0/2"));
         assertEquals(serialnumber.getId(), 2);
         assertEquals(serialnumber.getValue(), "12345");
     }

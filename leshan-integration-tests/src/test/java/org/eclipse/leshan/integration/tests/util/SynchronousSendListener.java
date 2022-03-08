@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.server.registration.Registration;
@@ -49,12 +50,12 @@ public class SynchronousSendListener implements SendListener {
         errorLatch.countDown();
     }
 
-    public Map<String, LwM2mNode> getDataAsPathNodesMap() {
-        return data.getStrPathNodesMap();
-    }
-
     public TimestampedLwM2mNodes getData() {
         return data;
+    }
+
+    public Map<LwM2mPath, LwM2mNode> getNodes() {
+        return data.getNodes();
     }
 
     public Registration getRegistration() {

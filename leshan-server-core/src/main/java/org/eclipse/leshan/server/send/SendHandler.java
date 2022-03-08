@@ -47,7 +47,7 @@ public class SendHandler implements SendService {
         SendableResponse<SendResponse> response = new SendableResponse<>(SendResponse.success(), new Runnable() {
             @Override
             public void run() {
-                fireDataReceived(registration, request.getData(), request);
+                fireDataReceived(registration, request.getTimestampedNodes(), request);
             }
         });
         return response;

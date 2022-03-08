@@ -1,12 +1,28 @@
+/*******************************************************************************
+ * Copyright (c) 2021 Orange.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v2.0
+ * and Eclipse Distribution License v1.0 which accompany this distribution.
+ *
+ * The Eclipse Public License is available at
+ *    http://www.eclipse.org/legal/epl-v20.html
+ * and the Eclipse Distribution License is available at
+ *    http://www.eclipse.org/org/documents/edl-v10.html.
+ *
+ * Contributors:
+ *     Orange - Send with multiple-timestamped values
+ *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+/**
+ * The default implementation of {@link TimestampedLwM2mNodes}
+ */
 public class TimestampedLwM2mNodesImpl implements TimestampedLwM2mNodes {
 
     private final Map<Long, Map<LwM2mPath, LwM2mNode>> timestampedPathNodesMap = new TreeMap<>((o1, o2) -> {
@@ -34,52 +50,27 @@ public class TimestampedLwM2mNodesImpl implements TimestampedLwM2mNodes {
     }
 
     @Override
-    public Map<Long, Map<LwM2mPath, LwM2mNode>> getTimestampedPathNodesMap() {
+    public Map<Long, Map<LwM2mPath, LwM2mNode>> getTimestampedNodes() {
         return timestampedPathNodesMap;
     }
 
     @Override
-    public Map<String, LwM2mNode> getStrPathNodesMap() {
-        Map<String, LwM2mNode> result = new HashMap<>();
-        for (Map.Entry<LwM2mPath, LwM2mNode> entry : getPathNodesMap().entrySet()) {
-            result.put(entry.getKey().toString(), entry.getValue());
+    public Map<LwM2mPath, LwM2mNode> getNodesForTimestamp(Long timestamp) {
+        return timestampedPathNodesMap.get(timestamp);
+    }
+
+    @Override
+    public Map<LwM2mPath, LwM2mNode> getNodes() {
+        Map<LwM2mPath, LwM2mNode> result = new HashMap<>();
+        for (Map.Entry<Long, Map<LwM2mPath, LwM2mNode>> entry : timestampedPathNodesMap.entrySet()) {
+            result.putAll(entry.getValue());
         }
         return result;
     }
 
     @Override
-    public Map<LwM2mPath, LwM2mNode> getPathNodesMap() {
-        Iterator<Map.Entry<Long, Map<LwM2mPath, LwM2mNode>>> iterator = timestampedPathNodesMap.entrySet().iterator();
-        if (iterator.hasNext()) {
-            return iterator.next().getValue();
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    public LwM2mNode getFirstNode() {
-        return getPathNodesMap().entrySet().iterator().next().getValue();
-    }
-
-    @Override
-    public Set<LwM2mPath> getPaths() {
-        Set<LwM2mPath> paths = new HashSet<>();
-        for (Map.Entry<Long, Map<LwM2mPath, LwM2mNode>> tsEntry: timestampedPathNodesMap.entrySet()) {
-            for (Map.Entry<LwM2mPath, LwM2mNode> entry: tsEntry.getValue().entrySet()) {
-                paths.add(entry.getKey());
-            }
-        }
-        return paths;
-    }
-
-    @Override
     public Set<Long> getTimestamps() {
         return timestampedPathNodesMap.keySet();
-    }
-
-    public void put(String path, LwM2mNode node) {
-        put(new LwM2mPath(path), node);
     }
 
     public void put(Long timestamp, LwM2mPath path, LwM2mNode node) {
@@ -93,16 +84,48 @@ public class TimestampedLwM2mNodesImpl implements TimestampedLwM2mNodes {
         put(null, path, node);
     }
 
-    public void add(TimestampedLwM2mNodes parseRecords) {
-        for( Map.Entry<Long, Map<LwM2mPath, LwM2mNode>> timestampEntry : parseRecords.getTimestampedPathNodesMap().entrySet()) {
-            Long timestamp = timestampEntry.getKey();
-            Map<LwM2mPath, LwM2mNode> pathNodeMap = timestampEntry.getValue();
+    public void add(TimestampedLwM2mNodes timestampedNodes) {
+        for (Map.Entry<Long, Map<LwM2mPath, LwM2mNode>> entry : timestampedNodes.getTimestampedNodes().entrySet()) {
+            Long timestamp = entry.getKey();
+            Map<LwM2mPath, LwM2mNode> pathNodeMap = entry.getValue();
 
-            for (Map.Entry<LwM2mPath, LwM2mNode> pathNodeEntry: pathNodeMap.entrySet()) {
+            for (Map.Entry<LwM2mPath, LwM2mNode> pathNodeEntry : pathNodeMap.entrySet()) {
                 LwM2mPath path = pathNodeEntry.getKey();
                 LwM2mNode node = pathNodeEntry.getValue();
                 put(timestamp, path, node);
             }
         }
     }
+
+    @Override
+    public String toString() {
+        return String.format("TimestampedLwM2mNodesImpl [timestampedPathNodesMap=%s, timestampedNodes=%s]",
+                timestampedPathNodesMap);
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((timestampedPathNodesMap == null) ? 0 : timestampedPathNodesMap.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        TimestampedLwM2mNodesImpl other = (TimestampedLwM2mNodesImpl) obj;
+        if (timestampedPathNodesMap == null) {
+            if (other.timestampedPathNodesMap != null)
+                return false;
+        } else if (!timestampedPathNodesMap.equals(other.timestampedPathNodesMap))
+            return false;
+        return true;
+    }
+
 }

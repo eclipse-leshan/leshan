@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021 Sierra Wireless and others.
+ * Copyright (c) 2021 Orange.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -11,14 +11,13 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  *
  * Contributors:
- *     Sierra Wireless - initial API and implementation
+ *     Orange - Send with multiple-timestamped values
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.send;
 
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,37 +45,19 @@ import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(Parameterized.class)
 public class SendTimestampedTest {
-    protected IntegrationTestHelper helper = new IntegrationTestHelper() {
-        @Override
-        protected ObjectsInitializer createObjectsInitializer() {
-            return new ObjectsInitializer(new StaticModel(createObjectModels()));
-        };
-    };
 
-    @Parameters(name = "{0}{1}")
-    public static Collection<?> contentFormats() {
-        return Arrays.asList(new Object[][] { //
-                // {content format}
-                { ContentFormat.SENML_JSON }, //
-                //                                { ContentFormat.SENML_CBOR }
-        });
-    }
-
-    private ContentFormat contentformat;
-
-    public SendTimestampedTest(ContentFormat contentformat) {
-        this.contentformat = contentformat;
-    }
+    protected final IntegrationTestHelper helper = new TestHelperWithFakeDecoder();
 
     @Before
     public void start() {
-
+        helper.initialize();
+        helper.createServer();
+        helper.server.start();
+        helper.createClient();
+        helper.client.start();
+        helper.waitForRegistrationAtServerSide(1);
     }
 
     @After
@@ -88,73 +69,6 @@ public class SendTimestampedTest {
 
     @Test
     public void server_handle_multiple_timestamped_node() throws InterruptedException, TimeoutException {
-        helper.initialize();
-
-        LeshanServerBuilder serverBuilder = helper.createServerBuilder();
-        serverBuilder.setDecoder(new LwM2mDecoder() {
-            private final DefaultLwM2mDecoder decoder = new DefaultLwM2mDecoder(true);
-
-            @Override
-            public LwM2mNode decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model)
-                    throws CodecException {
-                return decoder.decode(content, format, path, model);
-            }
-
-            @Override
-            public <T extends LwM2mNode> T decode(byte[] content, ContentFormat format, LwM2mPath path,
-                    LwM2mModel model, Class<T> nodeClass) throws CodecException {
-                return decoder.decode(content, format, path, model, nodeClass);
-            }
-
-            @Override
-            public Map<LwM2mPath, LwM2mNode> decodeNodes(byte[] content, ContentFormat format, List<LwM2mPath> paths,
-                    LwM2mModel model) throws CodecException {
-                return decoder.decodeNodes(content, format, paths, model);
-            }
-
-            @Override
-            public TimestampedLwM2mNodes decodeMultiTimestampedNodes(byte[] content, ContentFormat format,
-                    LwM2mModel model) throws CodecException {
-                Map<Long, LwM2mNode> timestampedNodes = getExampleTimestampedNodes();
-
-                TimestampedLwM2mNodesImpl data = new TimestampedLwM2mNodesImpl();
-
-                for (Map.Entry<Long, LwM2mNode> entry : timestampedNodes.entrySet()) {
-                    data.put(entry.getKey(), getExamplePath(), entry.getValue());
-                }
-
-                return data;
-            }
-
-            @Override
-            public List<TimestampedLwM2mNode> decodeTimestampedData(byte[] content, ContentFormat format,
-                    LwM2mPath path, LwM2mModel model) throws CodecException {
-                return decoder.decodeTimestampedData(content, format, path, model);
-            }
-
-            @Override
-            public List<LwM2mPath> decodePaths(byte[] content, ContentFormat format) throws CodecException {
-                return decoder.decodePaths(content, format);
-            }
-
-            @Override
-            public boolean isSupported(ContentFormat format) {
-                return decoder.isSupported(format);
-            }
-
-            @Override
-            public Set<ContentFormat> getSupportedContentFormat() {
-                return decoder.getSupportedContentFormat();
-            }
-        });
-        helper.server = serverBuilder.build();
-        helper.setupServerMonitoring();
-
-        helper.server.start();
-        helper.createClient();
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-
         // Define send listener
         SynchronousSendListener listener = new SynchronousSendListener();
         helper.server.getSendService().addListener(listener);
@@ -162,18 +76,18 @@ public class SendTimestampedTest {
         // Send Data
         helper.waitForRegistrationAtClientSide(1);
         ServerIdentity server = helper.client.getRegisteredServers().values().iterator().next();
-        helper.client.sendData(server, contentformat, Arrays.asList(getExamplePath().toString()), 1000);
-
+        helper.client.sendData(server, ContentFormat.SENML_JSON, Arrays.asList(getExamplePath().toString()), 1000);
         listener.waitForData(1, TimeUnit.SECONDS);
+
+        // Verify SendListener data received
         assertNotNull(listener.getRegistration());
         TimestampedLwM2mNodes data = listener.getData();
-        Set<Long> timestamps = data.getTimestamps();
 
         Map<Long, LwM2mNode> exampleNodes = getExampleTimestampedNodes();
-        assertEquals(exampleNodes.keySet(), timestamps);
+        assertEquals(exampleNodes.keySet(), data.getTimestamps());
 
         for (Long ts : exampleNodes.keySet()) {
-            Map<LwM2mPath, LwM2mNode> pathNodeMap = data.getTimestampedPathNodesMap().get(ts);
+            Map<LwM2mPath, LwM2mNode> pathNodeMap = data.getNodesForTimestamp(ts);
             assertTrue(pathNodeMap.containsKey(getExamplePath()));
 
             LwM2mNode node = pathNodeMap.get(getExamplePath());
@@ -183,15 +97,85 @@ public class SendTimestampedTest {
         }
     }
 
-    private LwM2mPath getExamplePath() {
+    private static LwM2mPath getExamplePath() {
         return new LwM2mPath("/2000/2/3");
     }
 
-    private Map<Long, LwM2mNode> getExampleTimestampedNodes() {
+    private static Map<Long, LwM2mNode> getExampleTimestampedNodes() {
         Map<Long, LwM2mNode> timestampedNodes = new HashMap<>();
         timestampedNodes.put(2222L, LwM2mSingleResource.newIntegerResource(3, 12345));
         timestampedNodes.put(4444L, LwM2mSingleResource.newIntegerResource(3, 67890));
         return timestampedNodes;
     }
 
+    private static class TestHelperWithFakeDecoder extends IntegrationTestHelper {
+        @Override
+        protected ObjectsInitializer createObjectsInitializer() {
+            return new ObjectsInitializer(new StaticModel(createObjectModels()));
+        }
+
+        @Override
+        public void createServer() {
+            LeshanServerBuilder serverBuilder = createServerBuilder();
+            serverBuilder.setDecoder(new FakeDecoder());
+            server = serverBuilder.build();
+            setupServerMonitoring();
+        }
+    };
+
+    private static class FakeDecoder implements LwM2mDecoder {
+        private final DefaultLwM2mDecoder decoder = new DefaultLwM2mDecoder(true);
+
+        @Override
+        public LwM2mNode decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model)
+                    throws CodecException {
+            return decoder.decode(content, format, path, model);
+        }
+
+        @Override
+        public <T extends LwM2mNode> T decode(byte[] content, ContentFormat format, LwM2mPath path,
+                LwM2mModel model, Class<T> nodeClass) throws CodecException {
+            return decoder.decode(content, format, path, model, nodeClass);
+        }
+
+        @Override
+        public Map<LwM2mPath, LwM2mNode> decodeNodes(byte[] content, ContentFormat format, List<LwM2mPath> paths,
+                LwM2mModel model) throws CodecException {
+            return decoder.decodeNodes(content, format, paths, model);
+        }
+
+        @Override
+        public TimestampedLwM2mNodes decodeMultiTimestampedNodes(byte[] content, ContentFormat format,
+                LwM2mModel model) throws CodecException {
+            Map<Long, LwM2mNode> timestampedNodes = getExampleTimestampedNodes();
+
+            TimestampedLwM2mNodesImpl data = new TimestampedLwM2mNodesImpl();
+            for (Map.Entry<Long, LwM2mNode> entry : timestampedNodes.entrySet()) {
+                data.put(entry.getKey(), getExamplePath(), entry.getValue());
+            }
+
+            return data;
+        }
+
+        @Override
+        public List<TimestampedLwM2mNode> decodeTimestampedData(byte[] content, ContentFormat format,
+                LwM2mPath path, LwM2mModel model) throws CodecException {
+            return decoder.decodeTimestampedData(content, format, path, model);
+        }
+
+        @Override
+        public List<LwM2mPath> decodePaths(byte[] content, ContentFormat format) throws CodecException {
+            return decoder.decodePaths(content, format);
+        }
+
+        @Override
+        public boolean isSupported(ContentFormat format) {
+            return decoder.isSupported(format);
+        }
+
+        @Override
+        public Set<ContentFormat> getSupportedContentFormat() {
+            return decoder.getSupportedContentFormat();
+        }
+    }
 }

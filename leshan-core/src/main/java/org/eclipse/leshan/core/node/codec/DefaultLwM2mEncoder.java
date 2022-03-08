@@ -229,7 +229,8 @@ public class DefaultLwM2mEncoder implements LwM2mEncoder {
     }
 
     @Override
-    public byte[] encodeMultiTimestampedNodes(TimestampedLwM2mNodes data, ContentFormat format, LwM2mModel model) {
-        return encodeNodes(data.getPathNodesMap(), format, model);
+    public byte[] encodeMultiTimestampedNodes(TimestampedLwM2mNodes data, ContentFormat format, LwM2mModel model)
+            throws CodecException {
+        return encodeNodes(data.getNodes(), format, model);
     }
 }
