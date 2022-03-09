@@ -17,31 +17,35 @@ package org.eclipse.leshan.integration.tests.send;
 
 import static org.junit.Assert.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.leshan.client.californium.LeshanClientBuilder;
+import org.eclipse.leshan.client.object.Security;
+import org.eclipse.leshan.client.object.Server;
+import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
+import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
-import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
-import org.eclipse.leshan.core.node.TimestampedLwM2mNodesImpl;
-import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
-import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
+import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.eclipse.leshan.integration.tests.util.SynchronousSendListener;
-import org.eclipse.leshan.server.californium.LeshanServerBuilder;
+import org.eclipse.leshan.integration.tests.util.TimestampedInstanceEnabler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -103,8 +107,8 @@ public class SendTimestampedTest {
 
     private static Map<Long, LwM2mNode> getExampleTimestampedNodes() {
         Map<Long, LwM2mNode> timestampedNodes = new HashMap<>();
-        timestampedNodes.put(2222L, LwM2mSingleResource.newIntegerResource(3, 12345));
-        timestampedNodes.put(4444L, LwM2mSingleResource.newIntegerResource(3, 67890));
+        timestampedNodes.put(268435456L, LwM2mSingleResource.newFloatResource(3, 12345));
+        timestampedNodes.put(268435457L, LwM2mSingleResource.newFloatResource(3, 67890));
         return timestampedNodes;
     }
 
@@ -114,68 +118,39 @@ public class SendTimestampedTest {
             return new ObjectsInitializer(new StaticModel(createObjectModels()));
         }
 
-        @Override
-        public void createServer() {
-            LeshanServerBuilder serverBuilder = createServerBuilder();
-            serverBuilder.setDecoder(new FakeDecoder());
-            server = serverBuilder.build();
-            setupServerMonitoring();
+        public void createClient(Map<String, String> additionalAttributes) {
+            // Create objects Enabler
+            ObjectsInitializer initializer = createObjectsInitializer();
+            initializer.setInstancesForObject(LwM2mId.SECURITY,
+                    Security.noSec("coap://" + server.getUnsecuredAddress().getHostString() + ":"
+                            + server.getUnsecuredAddress().getPort(), 12345));
+            initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME));
+            initializer.setInstancesForObject(LwM2mId.DEVICE, new TestDevice("Eclipse Leshan", MODEL_NUMBER, "12345"));
+            initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);
+            initializer.setInstancesForObject(TEST_OBJECT_ID, new DummyInstanceEnabler(0),
+                    new SimpleInstanceEnabler(1, OPAQUE_RESOURCE_ID, new byte[0]), new TimestampedInstanceEnabler(2));
+            List<LwM2mObjectEnabler> objects = initializer.createAll();
+
+            // Build Client
+            LeshanClientBuilder builder = new LeshanClientBuilder(currentEndpointIdentifier.get());
+            builder.setDecoder(new DefaultLwM2mDecoder(true));
+            builder.setEncoder(new FakeEncoder());
+            builder.setAdditionalAttributes(additionalAttributes);
+            builder.setObjects(objects);
+            client = builder.build();
+            setupClientMonitoring();
         }
-    };
+    }
 
-    private static class FakeDecoder implements LwM2mDecoder {
-        private final DefaultLwM2mDecoder decoder = new DefaultLwM2mDecoder(true);
-
-        @Override
-        public LwM2mNode decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model)
-                    throws CodecException {
-            return decoder.decode(content, format, path, model);
-        }
-
-        @Override
-        public <T extends LwM2mNode> T decode(byte[] content, ContentFormat format, LwM2mPath path,
-                LwM2mModel model, Class<T> nodeClass) throws CodecException {
-            return decoder.decode(content, format, path, model, nodeClass);
-        }
-
-        @Override
-        public Map<LwM2mPath, LwM2mNode> decodeNodes(byte[] content, ContentFormat format, List<LwM2mPath> paths,
-                LwM2mModel model) throws CodecException {
-            return decoder.decodeNodes(content, format, paths, model);
-        }
-
-        @Override
-        public TimestampedLwM2mNodes decodeMultiTimestampedNodes(byte[] content, ContentFormat format,
-                LwM2mModel model) throws CodecException {
-            Map<Long, LwM2mNode> timestampedNodes = getExampleTimestampedNodes();
-
-            TimestampedLwM2mNodesImpl data = new TimestampedLwM2mNodesImpl();
-            for (Map.Entry<Long, LwM2mNode> entry : timestampedNodes.entrySet()) {
-                data.put(entry.getKey(), getExamplePath(), entry.getValue());
-            }
-
-            return data;
+    private static class FakeEncoder extends DefaultLwM2mEncoder {
+        public FakeEncoder() {
+            super(true);
         }
 
         @Override
-        public List<TimestampedLwM2mNode> decodeTimestampedData(byte[] content, ContentFormat format,
-                LwM2mPath path, LwM2mModel model) throws CodecException {
-            return decoder.decodeTimestampedData(content, format, path, model);
-        }
-
-        @Override
-        public List<LwM2mPath> decodePaths(byte[] content, ContentFormat format) throws CodecException {
-            return decoder.decodePaths(content, format);
-        }
-
-        @Override
-        public boolean isSupported(ContentFormat format) {
-            return decoder.isSupported(format);
-        }
-
-        @Override
-        public Set<ContentFormat> getSupportedContentFormat() {
-            return decoder.getSupportedContentFormat();
+        public byte[] encodeNodes(Map<LwM2mPath, LwM2mNode> nodes, ContentFormat format, LwM2mModel model) {
+            return ("[{\"bn\":\"/2000/2/\",\"n\":\"3\",\"v\":12345,\"t\":268435456},"
+                    + "{\"n\":\"3\",\"v\":67890,\"t\":268435457}]").getBytes(StandardCharsets.UTF_8);
         }
     }
 }
