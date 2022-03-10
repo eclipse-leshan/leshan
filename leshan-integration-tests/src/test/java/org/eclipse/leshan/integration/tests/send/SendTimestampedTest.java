@@ -45,7 +45,6 @@ import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.eclipse.leshan.integration.tests.util.SynchronousSendListener;
-import org.eclipse.leshan.integration.tests.util.TimestampedInstanceEnabler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -102,7 +101,7 @@ public class SendTimestampedTest {
     }
 
     private static LwM2mPath getExamplePath() {
-        return new LwM2mPath("/2000/2/3");
+        return new LwM2mPath("/2000/1/3");
     }
 
     private static Map<Long, LwM2mNode> getExampleTimestampedNodes() {
@@ -129,7 +128,7 @@ public class SendTimestampedTest {
             initializer.setInstancesForObject(LwM2mId.DEVICE, new TestDevice("Eclipse Leshan", MODEL_NUMBER, "12345"));
             initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);
             initializer.setInstancesForObject(TEST_OBJECT_ID, new DummyInstanceEnabler(0),
-                    new SimpleInstanceEnabler(1, OPAQUE_RESOURCE_ID, new byte[0]), new TimestampedInstanceEnabler(2));
+                    new SimpleInstanceEnabler(1, FLOAT_RESOURCE_ID, 12345d));
             List<LwM2mObjectEnabler> objects = initializer.createAll();
 
             // Build Client
@@ -150,7 +149,7 @@ public class SendTimestampedTest {
 
         @Override
         public byte[] encodeNodes(Map<LwM2mPath, LwM2mNode> nodes, ContentFormat format, LwM2mModel model) {
-            return ("[{\"bn\":\"/2000/2/\",\"n\":\"3\",\"v\":12345,\"t\":268435456},"
+            return ("[{\"bn\":\"/2000/1/\",\"n\":\"3\",\"v\":12345,\"t\":268435456},"
                     + "{\"n\":\"3\",\"v\":67890,\"t\":268435457}]").getBytes(StandardCharsets.UTF_8);
         }
     }

@@ -200,7 +200,7 @@ public class IntegrationTestHelper {
         initializer.setInstancesForObject(LwM2mId.DEVICE, new TestDevice("Eclipse Leshan", MODEL_NUMBER, "12345"));
         initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);
         initializer.setInstancesForObject(TEST_OBJECT_ID, new DummyInstanceEnabler(0),
-                new SimpleInstanceEnabler(1, OPAQUE_RESOURCE_ID, new byte[0]), new TimestampedInstanceEnabler(2));
+                new SimpleInstanceEnabler(1, OPAQUE_RESOURCE_ID, new byte[0]));
         List<LwM2mObjectEnabler> objects = initializer.createAll();
 
         // Build Client
