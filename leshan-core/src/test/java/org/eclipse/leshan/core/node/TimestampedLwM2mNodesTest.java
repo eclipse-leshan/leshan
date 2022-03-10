@@ -24,7 +24,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
-public class TimestampedLwM2mNodesImplTest {
+public class TimestampedLwM2mNodesTest {
 
     @Test
     public void should_getPathNodesMapForTimestamp_pick_specific_timestamp_nodes() {
@@ -85,7 +85,7 @@ public class TimestampedLwM2mNodesImplTest {
     @Test
     public void should_getNodes_returns_empty_map_for_empty_TimestampedLwM2mNodes() {
         // given
-        TimestampedLwM2mNodes tsNodes = new TimestampedLwM2mNodesImpl();
+        TimestampedLwM2mNodes tsNodes = TimestampedLwM2mNodes.builder().build();
 
         // when
         Map<LwM2mPath, LwM2mNode> tsNodesMap = tsNodes.getNodes();
@@ -109,9 +109,9 @@ public class TimestampedLwM2mNodesImplTest {
     }
 
     private TimestampedLwM2mNodes getExampleTimestampedLwM2mNodes() {
-        TimestampedLwM2mNodesImpl tsNodes = new TimestampedLwM2mNodesImpl();
+        TimestampedLwM2mNodes.Builder tsNodes = TimestampedLwM2mNodes.builder();
         tsNodes.put(123L, new LwM2mPath("/0/0/1"), LwM2mSingleResource.newIntegerResource(1, 111L));
         tsNodes.put(new LwM2mPath("/0/0/2"), LwM2mSingleResource.newIntegerResource(2, 222L));
-        return tsNodes;
+        return tsNodes.build();
     }
 }

@@ -25,7 +25,6 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
-import org.eclipse.leshan.core.node.TimestampedLwM2mNodesImpl;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.SendResponse;
 import org.eclipse.leshan.core.util.Validate;
@@ -67,7 +66,7 @@ public class SendRequest implements UplinkRequest<SendResponse> {
     }
 
     public SendRequest(ContentFormat format, Map<LwM2mPath, LwM2mNode> nodes, Object coapRequest) {
-        timestampedNodes = new TimestampedLwM2mNodesImpl(nodes);
+        timestampedNodes = TimestampedLwM2mNodes.builder().addNodes(nodes).build();
         // Validate Format
         if (format == null || !(format.equals(ContentFormat.SENML_CBOR) || format.equals(ContentFormat.SENML_JSON))) {
             throw new InvalidRequestException("Content format MUST be SenML_CBOR or SenML_JSON but was " + format);
