@@ -90,7 +90,7 @@ public class SendTimestampedTest {
         assertEquals(exampleNodes.keySet(), data.getTimestamps());
 
         for (Long ts : exampleNodes.keySet()) {
-            Map<LwM2mPath, LwM2mNode> pathNodeMap = data.getNodesForTimestamp(ts);
+            Map<LwM2mPath, LwM2mNode> pathNodeMap = data.getNodesAt(ts);
             assertTrue(pathNodeMap.containsKey(getExamplePath()));
 
             LwM2mNode node = pathNodeMap.get(getExamplePath());

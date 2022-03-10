@@ -46,7 +46,7 @@ public class TimestampedLwM2mNodes {
      *
      * @return map of {@link LwM2mPath}-{@link LwM2mNode} or null if there is no value for asked timestamp.
      */
-    public Map<LwM2mPath, LwM2mNode> getNodesForTimestamp(Long timestamp) {
+    public Map<LwM2mPath, LwM2mNode> getNodesAt(Long timestamp) {
         return timestampedPathNodesMap.get(timestamp);
     }
 
