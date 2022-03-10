@@ -118,6 +118,7 @@ public class SendTimestampedTest {
             return new ObjectsInitializer(new StaticModel(createObjectModels()));
         }
 
+        @Override
         public void createClient(Map<String, String> additionalAttributes) {
             // Create objects Enabler
             ObjectsInitializer initializer = createObjectsInitializer();
