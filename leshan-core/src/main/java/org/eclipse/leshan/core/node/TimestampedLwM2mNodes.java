@@ -152,9 +152,9 @@ public class TimestampedLwM2mNodes {
         private static Comparator<Long> getTimestampComparator() {
             return (o1, o2) -> {
                 if (o1 == null) {
-                    return (o2 == null) ? 0 : -1;
+                    return (o2 == null) ? 0 : 1;
                 } else if (o2 == null) {
-                    return 1;
+                    return -1;
                 } else {
                     return o1.compareTo(o2);
                 }

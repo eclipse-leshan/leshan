@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -43,7 +44,7 @@ public class TimestampedLwM2mNodesTest {
     @Test
     public void should_getPathNodesMapForTimestamp_pick_null_timestamp_nodes() {
         // given
-        TimestampedLwM2mNodes tsNodes = getExampleTimestampedLwM2mNodes();
+        TimestampedLwM2mNodes tsNodes = getExampleMixedTimestampLwM2mNodes();
 
         // when
         Map<LwM2mPath, LwM2mNode> tsNodesMap = tsNodes.getNodesForTimestamp(null);
@@ -83,6 +84,50 @@ public class TimestampedLwM2mNodesTest {
     }
 
     @Test
+    public void should_getNodes_returns_latest_node_if_path_conflict() {
+        // given
+        TimestampedLwM2mNodes tsNodes = getSamePathTimestampedLwM2mNodes();
+
+        // when
+        Map<LwM2mPath, LwM2mNode> tsNodesMap = tsNodes.getNodes();
+
+        // then
+        assertNotNull(tsNodesMap);
+        assertTrue(tsNodesMap.containsKey(new LwM2mPath("/0/0/1")));
+        assertEquals(222L, ((LwM2mSingleResource)tsNodesMap.get(new LwM2mPath("/0/0/1"))).getValue() );
+    }
+
+    @Test
+    public void should_getNodesForTimestamp_returns_ascending_ordered_nodes() {
+        // given
+        TimestampedLwM2mNodes tsNodes = getExampleTimestampedLwM2mNodes();
+
+        // when
+        Map<Long, Map<LwM2mPath, LwM2mNode>> tsNodesMap = tsNodes.getTimestampedNodes();
+
+        // then
+        assertNotNull(tsNodesMap);
+        Iterator<Long> iterator = tsNodesMap.keySet().iterator();
+        assertEquals(123L, iterator.next().longValue());
+        assertEquals(456L, iterator.next().longValue());
+    }
+
+    @Test
+    public void should_null_timestamp_be_considered_as_latest_for_getNodesForTimestamp() {
+        // given
+        TimestampedLwM2mNodes tsNodes = getExampleMixedTimestampLwM2mNodes();
+
+        // when
+        Map<Long, Map<LwM2mPath, LwM2mNode>> tsNodesMap = tsNodes.getTimestampedNodes();
+
+        // then
+        assertNotNull(tsNodesMap);
+        Iterator<Long> iterator = tsNodesMap.keySet().iterator();
+        assertEquals(123L, iterator.next().longValue());
+        assertNull(iterator.next());
+    }
+
+    @Test
     public void should_getNodes_returns_empty_map_for_empty_TimestampedLwM2mNodes() {
         // given
         TimestampedLwM2mNodes tsNodes = TimestampedLwM2mNodes.builder().build();
@@ -105,13 +150,40 @@ public class TimestampedLwM2mNodesTest {
 
         // then
         assertNotNull(timestamps);
-        assertEquals(new HashSet<>(Arrays.asList(null, 123L)), timestamps);
+        assertEquals(new HashSet<>(Arrays.asList(123L, 456L)), timestamps);
+    }
+
+    @Test
+    public void should_null_timestamp_be_considered_as_latest_for_getTimestamps() {
+        // given
+        TimestampedLwM2mNodes tsNodes = getExampleMixedTimestampLwM2mNodes();
+
+        // when
+        Set<Long> timestamps = tsNodes.getTimestamps();
+
+        // then
+        assertNotNull(timestamps);
+        assertEquals(new HashSet<>(Arrays.asList(123L, null)), timestamps);
     }
 
     private TimestampedLwM2mNodes getExampleTimestampedLwM2mNodes() {
         TimestampedLwM2mNodes.Builder tsNodes = TimestampedLwM2mNodes.builder();
+        tsNodes.put(456L, new LwM2mPath("/0/0/2"), LwM2mSingleResource.newIntegerResource(2, 222L));
         tsNodes.put(123L, new LwM2mPath("/0/0/1"), LwM2mSingleResource.newIntegerResource(1, 111L));
+        return tsNodes.build();
+    }
+
+    private TimestampedLwM2mNodes getSamePathTimestampedLwM2mNodes() {
+        TimestampedLwM2mNodes.Builder tsNodes = TimestampedLwM2mNodes.builder();
+        tsNodes.put(456L, new LwM2mPath("/0/0/1"), LwM2mSingleResource.newIntegerResource(1, 222L));
+        tsNodes.put(123L, new LwM2mPath("/0/0/1"), LwM2mSingleResource.newIntegerResource(1, 111L));
+        return tsNodes.build();
+    }
+
+    private TimestampedLwM2mNodes getExampleMixedTimestampLwM2mNodes() {
+        TimestampedLwM2mNodes.Builder tsNodes = TimestampedLwM2mNodes.builder();
         tsNodes.put(new LwM2mPath("/0/0/2"), LwM2mSingleResource.newIntegerResource(2, 222L));
+        tsNodes.put(123L, new LwM2mPath("/0/0/1"), LwM2mSingleResource.newIntegerResource(1, 111L));
         return tsNodes.build();
     }
 }
