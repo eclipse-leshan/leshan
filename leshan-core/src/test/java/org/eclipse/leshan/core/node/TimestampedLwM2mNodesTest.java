@@ -94,7 +94,7 @@ public class TimestampedLwM2mNodesTest {
         // then
         assertNotNull(tsNodesMap);
         assertTrue(tsNodesMap.containsKey(new LwM2mPath("/0/0/1")));
-        assertEquals(222L, ((LwM2mSingleResource)tsNodesMap.get(new LwM2mPath("/0/0/1"))).getValue() );
+        assertEquals(222L, ((LwM2mSingleResource) tsNodesMap.get(new LwM2mPath("/0/0/1"))).getValue());
     }
 
     @Test

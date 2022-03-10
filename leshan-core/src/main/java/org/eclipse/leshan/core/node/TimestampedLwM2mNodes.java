@@ -34,6 +34,7 @@ public class TimestampedLwM2mNodes {
 
     /**
      * Get maps {@link LwM2mPath}-{@link LwM2mNode} grouped by timestamp with ascending order.
+     * <p>
      * Null timestamp keys are allowed, and are considered as most recent one.
      */
     public Map<Long, Map<LwM2mPath, LwM2mNode>> getTimestampedNodes() {
