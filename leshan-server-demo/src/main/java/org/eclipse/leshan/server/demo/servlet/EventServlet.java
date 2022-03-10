@@ -246,7 +246,7 @@ public class EventServlet extends EventSourceServlet {
 
             if (registration != null) {
                 try {
-                    String jsonContent = EventServlet.this.mapper.writeValueAsString(data);
+                    String jsonContent = EventServlet.this.mapper.writeValueAsString(data.getNodes());
 
                     String eventData = new StringBuilder("{\"ep\":\"") //
                             .append(registration.getEndpoint()) //
