@@ -43,7 +43,6 @@ public class TimestampedLwM2mNodes {
     /**
      * Get nodes for specific timestamp. Null timestamp is allowed.
      *
-     * @param timestamp
      * @return map of {@link LwM2mPath}-{@link LwM2mNode} or null if there is no value for asked timestamp.
      */
     public Map<LwM2mPath, LwM2mNode> getNodesForTimestamp(Long timestamp) {
@@ -51,8 +50,8 @@ public class TimestampedLwM2mNodes {
     }
 
     /**
-     * Get all collected nodes as {@link LwM2mPath}-{@link LwM2mNode} map ignoring timestamp information. In case
-     * of the same path conflict the most recent one is taken. Null timestamp is considered as most recent one.
+     * Get all collected nodes as {@link LwM2mPath}-{@link LwM2mNode} map ignoring timestamp information. In case of the
+     * same path conflict the most recent one is taken. Null timestamp is considered as most recent one.
      */
     public Map<LwM2mPath, LwM2mNode> getNodes() {
         Map<LwM2mPath, LwM2mNode> result = new HashMap<>();
