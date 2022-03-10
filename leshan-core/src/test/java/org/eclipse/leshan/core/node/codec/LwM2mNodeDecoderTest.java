@@ -1273,7 +1273,7 @@ public class LwM2mNodeDecoderTest {
         b.append("]");
 
         // when
-        TimestampedLwM2mNodes data = decoder.decodeMultiTimestampedNodes(b.toString().getBytes(),
+        TimestampedLwM2mNodes data = decoder.decodeTimestampedNodes(b.toString().getBytes(),
                 ContentFormat.SENML_JSON, model);
 
         // then

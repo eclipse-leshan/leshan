@@ -180,7 +180,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
     }
 
     @Override
-    public TimestampedLwM2mNodes decodeMultiTimestampedNodes(byte[] content, LwM2mModel model) throws CodecException {
+    public TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, LwM2mModel model) throws CodecException {
         try {
             // Decode SenML pack
             SenMLPack pack = decoder.fromSenML(content);

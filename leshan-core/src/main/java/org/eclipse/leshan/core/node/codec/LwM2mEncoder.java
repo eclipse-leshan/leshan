@@ -75,6 +75,19 @@ public interface LwM2mEncoder {
             LwM2mModel model) throws CodecException;
 
     /**
+     * Serializes a multiple time-stamped nodes contained in {@link TimestampedLwM2mNodes} with the given content
+     * format.
+     *
+     * @param data the {@link TimestampedLwM2mNodes} to serialize
+     * @param format the content format
+     * @param model the collection of supported object models
+     * @return the encoded node as a byte array
+     * @throws CodecException if encoding failed.
+     */
+    byte[] encodeTimestampedNodes(TimestampedLwM2mNodes data, ContentFormat format, LwM2mModel model)
+            throws CodecException;
+
+    /**
      * Serializes a list of {@link LwM2mPath} with the given content format.
      * 
      * @param paths The list of {@link LwM2mPath} to encode
@@ -94,17 +107,4 @@ public interface LwM2mEncoder {
      * @return {@link ContentFormat} supported by this Encoder
      */
     Set<ContentFormat> getSupportedContentFormat();
-
-    /**
-     * Serializes a multiple time-stamped nodes contained in {@link TimestampedLwM2mNodes} with the given content
-     * format.
-     *
-     * @param data the {@link TimestampedLwM2mNodes} to serialize
-     * @param format the content format
-     * @param model the collection of supported object models
-     * @return the encoded node as a byte array
-     * @throws CodecException if encoding failed.
-     */
-    byte[] encodeMultiTimestampedNodes(TimestampedLwM2mNodes data, ContentFormat format, LwM2mModel model)
-            throws CodecException;
 }

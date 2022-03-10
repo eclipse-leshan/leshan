@@ -33,6 +33,6 @@ public interface TimestampedMultiNodeDecoder {
      * @return the decoded timestamped nodes represented by {@link TimestampedLwM2mNodes}
      * @throws CodecException if content is malformed.
      */
-    TimestampedLwM2mNodes decodeMultiTimestampedNodes(byte[] content, LwM2mModel model) throws CodecException;
+    TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, LwM2mModel model) throws CodecException;
 
 }

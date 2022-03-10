@@ -86,19 +86,6 @@ public interface LwM2mDecoder {
             throws CodecException;
 
     /**
-     * Deserializes a binary content into a {@link TimestampedLwM2mNodes}.
-     * <p>
-     *
-     * @param content the content
-     * @param format the content format
-     * @param model the collection of supported object models
-     * @return the decoded timestamped nodes represented by {@link TimestampedLwM2mNodes}
-     * @throws CodecException if content is malformed.
-     */
-    TimestampedLwM2mNodes decodeMultiTimestampedNodes(byte[] content, ContentFormat format, LwM2mModel model)
-            throws CodecException;
-
-    /**
      * Deserializes a binary content into a list of time-stamped {@link LwM2mNode} ordering by time-stamp.
      *
      * @param content the content
@@ -110,6 +97,19 @@ public interface LwM2mDecoder {
      */
     List<TimestampedLwM2mNode> decodeTimestampedData(byte[] content, ContentFormat format, LwM2mPath path,
             LwM2mModel model) throws CodecException;
+
+    /**
+     * Deserializes a binary content into a {@link TimestampedLwM2mNodes}.
+     * <p>
+     *
+     * @param content the content
+     * @param format the content format
+     * @param model the collection of supported object models
+     * @return the decoded timestamped nodes represented by {@link TimestampedLwM2mNodes}
+     * @throws CodecException if content is malformed.
+     */
+    TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, ContentFormat format, LwM2mModel model)
+            throws CodecException;
 
     /**
      * Deserializes a binary content into a list of {@link LwM2mPath}.

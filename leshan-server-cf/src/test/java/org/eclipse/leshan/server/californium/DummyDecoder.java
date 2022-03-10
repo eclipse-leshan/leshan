@@ -56,7 +56,7 @@ public class DummyDecoder implements LwM2mDecoder {
     }
 
     @Override
-    public TimestampedLwM2mNodes decodeMultiTimestampedNodes(byte[] content, ContentFormat format, LwM2mModel model)
+    public TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, ContentFormat format, LwM2mModel model)
             throws CodecException {
         return null;
     }
