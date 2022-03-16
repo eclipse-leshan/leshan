@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,21 +34,16 @@ public class TimestampedLwM2mNodes {
     }
 
     /**
-     * Get maps {@link LwM2mPath}-{@link LwM2mNode} grouped by timestamp with ascending order.
-     * <p>
-     * Null timestamp keys are allowed, and are considered as most recent one.
-     */
-    public Map<Long, Map<LwM2mPath, LwM2mNode>> getTimestampedNodes() {
-        return timestampedPathNodesMap;
-    }
-
-    /**
      * Get nodes for specific timestamp. Null timestamp is allowed.
      *
      * @return map of {@link LwM2mPath}-{@link LwM2mNode} or null if there is no value for asked timestamp.
      */
     public Map<LwM2mPath, LwM2mNode> getNodesAt(Long timestamp) {
-        return timestampedPathNodesMap.get(timestamp);
+        Map<LwM2mPath, LwM2mNode> map = timestampedPathNodesMap.get(timestamp);
+        if (map != null) {
+            return Collections.unmodifiableMap(timestampedPathNodesMap.get(timestamp));
+        }
+        return null;
     }
 
     /**
@@ -59,7 +55,7 @@ public class TimestampedLwM2mNodes {
         for (Map.Entry<Long, Map<LwM2mPath, LwM2mNode>> entry : timestampedPathNodesMap.entrySet()) {
             result.putAll(entry.getValue());
         }
-        return result;
+        return Collections.unmodifiableMap(result);
     }
 
     /**
@@ -67,13 +63,12 @@ public class TimestampedLwM2mNodes {
      * recent one.
      */
     public Set<Long> getTimestamps() {
-        return timestampedPathNodesMap.keySet();
+        return Collections.unmodifiableSet(timestampedPathNodesMap.keySet());
     }
 
     @Override
     public String toString() {
-        return String.format("TimestampedLwM2mNodes [timestampedPathNodesMap=%s, timestampedNodes=%s]",
-                timestampedPathNodesMap);
+        return String.format("TimestampedLwM2mNodes [timestampedNodes=%s]", timestampedPathNodesMap);
     }
 
     @Override
@@ -128,11 +123,9 @@ public class TimestampedLwM2mNodes {
         }
 
         public Builder add(TimestampedLwM2mNodes timestampedNodes) {
-            for (Map.Entry<Long, Map<LwM2mPath, LwM2mNode>> entry : timestampedNodes.getTimestampedNodes().entrySet()) {
-                Long timestamp = entry.getKey();
-                Map<LwM2mPath, LwM2mNode> pathNodeMap = entry.getValue();
-
-                for (Map.Entry<LwM2mPath, LwM2mNode> pathNodeEntry : pathNodeMap.entrySet()) {
+            for (Long timestamp : timestampedNodes.getTimestamps()) {
+                for (Map.Entry<LwM2mPath, LwM2mNode> pathNodeEntry : timestampedNodes.getNodesAt(timestamp)
+                        .entrySet()) {
                     LwM2mPath path = pathNodeEntry.getKey();
                     LwM2mNode node = pathNodeEntry.getValue();
                     put(timestamp, path, node);

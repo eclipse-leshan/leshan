@@ -1277,24 +1277,12 @@ public class LwM2mNodeDecoderTest {
                 model);
 
         // then
-        Map<Long, Map<LwM2mPath, LwM2mNode>> expectedResult = new HashMap<>();
-        Map<LwM2mPath, LwM2mNode> first = new HashMap<>();
-        first.put(new LwM2mPath("/3/0/7/0"), LwM2mResourceInstance.newIntegerInstance(0, 3800));
-        expectedResult.put(268600000L, first);
+        TimestampedLwM2mNodes.Builder expectedResult = new TimestampedLwM2mNodes.Builder();
+        expectedResult.put(268600000L, new LwM2mPath("/3/0/7/0"), LwM2mResourceInstance.newIntegerInstance(0, 3800));
+        expectedResult.put(268600001L, new LwM2mPath("/4/0/0"), LwM2mSingleResource.newIntegerResource(0, 1));
+        expectedResult.put(268600002L, new LwM2mPath("/4/0/1"), LwM2mSingleResource.newIntegerResource(1, 2));
+        expectedResult.put(268600003L, new LwM2mPath("/4/0/2"), LwM2mSingleResource.newIntegerResource(2, 3));
 
-        Map<LwM2mPath, LwM2mNode> second = new HashMap<>();
-        second.put(new LwM2mPath("/4/0/0"), LwM2mSingleResource.newIntegerResource(0, 1));
-        expectedResult.put(268600001L, second);
-
-        Map<LwM2mPath, LwM2mNode> third = new HashMap<>();
-        third.put(new LwM2mPath("/4/0/1"), LwM2mSingleResource.newIntegerResource(1, 2));
-        expectedResult.put(268600002L, third);
-
-        Map<LwM2mPath, LwM2mNode> fourth = new HashMap<>();
-        fourth.put(new LwM2mPath("/4/0/2"), LwM2mSingleResource.newIntegerResource(2, 3));
-        expectedResult.put(268600003L, fourth);
-
-        assertEquals(expectedResult, data.getTimestampedNodes());
+        assertEquals(expectedResult.build(), data);
     }
-
 }

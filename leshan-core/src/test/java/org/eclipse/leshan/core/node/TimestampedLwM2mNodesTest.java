@@ -103,11 +103,11 @@ public class TimestampedLwM2mNodesTest {
         TimestampedLwM2mNodes tsNodes = getExampleTimestampedLwM2mNodes();
 
         // when
-        Map<Long, Map<LwM2mPath, LwM2mNode>> tsNodesMap = tsNodes.getTimestampedNodes();
+        Set<Long> timestamps = tsNodes.getTimestamps();
 
         // then
-        assertNotNull(tsNodesMap);
-        Iterator<Long> iterator = tsNodesMap.keySet().iterator();
+        assertNotNull(timestamps);
+        Iterator<Long> iterator = timestamps.iterator();
         assertEquals(123L, iterator.next().longValue());
         assertEquals(456L, iterator.next().longValue());
     }
@@ -118,11 +118,11 @@ public class TimestampedLwM2mNodesTest {
         TimestampedLwM2mNodes tsNodes = getExampleMixedTimestampLwM2mNodes();
 
         // when
-        Map<Long, Map<LwM2mPath, LwM2mNode>> tsNodesMap = tsNodes.getTimestampedNodes();
+        Set<Long> timestamps = tsNodes.getTimestamps();
 
         // then
-        assertNotNull(tsNodesMap);
-        Iterator<Long> iterator = tsNodesMap.keySet().iterator();
+        assertNotNull(timestamps);
+        Iterator<Long> iterator = timestamps.iterator();
         assertEquals(123L, iterator.next().longValue());
         assertNull(iterator.next());
     }
