@@ -1268,30 +1268,30 @@ public class LwM2mNodeDecoderTest {
         StringBuilder b = new StringBuilder();
         b.append("[{\"bn\":\"/4/0/\",\"bt\":268600000,\"n\":\"0\",\"v\":1,\"t\":1},");
         b.append("{\"n\":\"1\",\"v\":2,\"t\":2},");
-        b.append("{\"n\":\"1\",\"v\":2,\"t\":3},");
+        b.append("{\"n\":\"2\",\"v\":3,\"t\":3},");
         b.append("{\"bn\":\"/3/0/7/\",\"n\":\"0\",\"v\":3800}");
         b.append("]");
 
         // when
-        TimestampedLwM2mNodes data = decoder.decodeTimestampedNodes(b.toString().getBytes(),
-                ContentFormat.SENML_JSON, model);
+        TimestampedLwM2mNodes data = decoder.decodeTimestampedNodes(b.toString().getBytes(), ContentFormat.SENML_JSON,
+                model);
 
         // then
-        Map<Long, Map<LwM2mPath, LwM2mNode>> expectedResult = data.getTimestampedNodes();
+        Map<Long, Map<LwM2mPath, LwM2mNode>> expectedResult = new HashMap<>();
         Map<LwM2mPath, LwM2mNode> first = new HashMap<>();
-        first.put(new LwM2mPath("/3/0/7/0"), LwM2mResourceInstance.newIntegerInstance(0, 3000));
+        first.put(new LwM2mPath("/3/0/7/0"), LwM2mResourceInstance.newIntegerInstance(0, 3800));
         expectedResult.put(268600000L, first);
 
         Map<LwM2mPath, LwM2mNode> second = new HashMap<>();
-        second.put(new LwM2mPath("/4/0/0"), LwM2mResourceInstance.newIntegerInstance(0, 1));
+        second.put(new LwM2mPath("/4/0/0"), LwM2mSingleResource.newIntegerResource(0, 1));
         expectedResult.put(268600001L, second);
 
         Map<LwM2mPath, LwM2mNode> third = new HashMap<>();
-        third.put(new LwM2mPath("/4/0/1"), LwM2mResourceInstance.newIntegerInstance(0, 2));
+        third.put(new LwM2mPath("/4/0/1"), LwM2mSingleResource.newIntegerResource(1, 2));
         expectedResult.put(268600002L, third);
 
         Map<LwM2mPath, LwM2mNode> fourth = new HashMap<>();
-        fourth.put(new LwM2mPath("/4/0/2"), LwM2mResourceInstance.newIntegerInstance(0, 3));
+        fourth.put(new LwM2mPath("/4/0/2"), LwM2mSingleResource.newIntegerResource(2, 3));
         expectedResult.put(268600003L, fourth);
 
         assertEquals(expectedResult, data.getTimestampedNodes());
