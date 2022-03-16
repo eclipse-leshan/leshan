@@ -15,10 +15,13 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -102,44 +105,77 @@ public class TimestampedLwM2mNodes {
 
     public static class Builder {
 
-        private final Map<Long, Map<LwM2mPath, LwM2mNode>> timestampedPathNodesMap = getTimestampedMap();
+        private static class InternalNode {
+            Long timestamp;
+            LwM2mPath path;
+            LwM2mNode node;
+
+            public InternalNode(Long timestamp, LwM2mPath path, LwM2mNode node) {
+                this.timestamp = timestamp;
+                this.path = path;
+                this.node = node;
+            }
+        }
+
+        private final List<InternalNode> nodes = new ArrayList<>();
+        private boolean noDuplicate = true;
+
+        public Builder raiseExceptionOnDuplicate(boolean raiseException) {
+            noDuplicate = raiseException;
+            return this;
+        }
 
         public Builder addNodes(Map<LwM2mPath, LwM2mNode> pathNodesMap) {
-            timestampedPathNodesMap.put(null, pathNodesMap);
+            for (Entry<LwM2mPath, LwM2mNode> node : pathNodesMap.entrySet()) {
+                nodes.add(new InternalNode(null, node.getKey(), node.getValue()));
+            }
             return this;
         }
 
         public Builder put(Long timestamp, LwM2mPath path, LwM2mNode node) {
-            if (!timestampedPathNodesMap.containsKey(timestamp)) {
-                timestampedPathNodesMap.put(timestamp, new HashMap<>());
-            }
-            timestampedPathNodesMap.get(timestamp).put(path, node);
+            nodes.add(new InternalNode(timestamp, path, node));
             return this;
         }
 
         public Builder put(LwM2mPath path, LwM2mNode node) {
-            put(null, path, node);
+            nodes.add(new InternalNode(null, path, node));
             return this;
         }
 
         public Builder add(TimestampedLwM2mNodes timestampedNodes) {
             for (Long timestamp : timestampedNodes.getTimestamps()) {
-                for (Map.Entry<LwM2mPath, LwM2mNode> pathNodeEntry : timestampedNodes.getNodesAt(timestamp)
-                        .entrySet()) {
-                    LwM2mPath path = pathNodeEntry.getKey();
-                    LwM2mNode node = pathNodeEntry.getValue();
-                    put(timestamp, path, node);
+                Map<LwM2mPath, LwM2mNode> pathNodeMap = timestampedNodes.getNodesAt(timestamp);
+                for (Map.Entry<LwM2mPath, LwM2mNode> pathNodeEntry : pathNodeMap.entrySet()) {
+                    nodes.add(new InternalNode(timestamp, pathNodeEntry.getKey(), pathNodeEntry.getValue()));
                 }
             }
             return this;
         }
 
-        public TimestampedLwM2mNodes build() {
-            return new TimestampedLwM2mNodes(timestampedPathNodesMap);
-        }
+        /**
+         * Build the {@link TimestampedLwM2mNodes} and raise {@link IllegalArgumentException} if builder inputs are
+         * invalid.
+         */
+        public TimestampedLwM2mNodes build() throws IllegalArgumentException {
+            Map<Long, Map<LwM2mPath, LwM2mNode>> timestampToPathToNode = new TreeMap<>(getTimestampComparator());
 
-        private static TreeMap<Long, Map<LwM2mPath, LwM2mNode>> getTimestampedMap() {
-            return new TreeMap<>(getTimestampComparator());
+            for (InternalNode internalNode : nodes) {
+                // TODO validate path is consistent with Node ?
+                Map<LwM2mPath, LwM2mNode> pathToNode = timestampToPathToNode.get(internalNode.timestamp);
+                if (pathToNode == null) {
+                    pathToNode = new HashMap<>();
+                    timestampToPathToNode.put(internalNode.timestamp, pathToNode);
+                    pathToNode.put(internalNode.path, internalNode.node);
+                } else {
+                    LwM2mNode previous = pathToNode.put(internalNode.path, internalNode.node);
+                    if (noDuplicate && previous != null) {
+                        throw new IllegalArgumentException(String.format(
+                                "Unable to create TimestampedLwM2mNodes : duplicate value for path %s. (%s, %s)",
+                                internalNode.path, internalNode.node, previous));
+                    }
+                }
+            }
+            return new TimestampedLwM2mNodes(timestampToPathToNode);
         }
 
         private static Comparator<Long> getTimestampComparator() {

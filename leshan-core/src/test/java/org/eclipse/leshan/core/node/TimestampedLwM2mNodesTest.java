@@ -166,6 +166,37 @@ public class TimestampedLwM2mNodesTest {
         assertEquals(new HashSet<>(Arrays.asList(123L, null)), timestamps);
     }
 
+    @Test
+    public void should_raise_exception_for_duplicates() {
+        // given
+        TimestampedLwM2mNodes.Builder builder = TimestampedLwM2mNodes.builder();
+        builder.put(456L, new LwM2mPath("/0/0/2"), LwM2mSingleResource.newIntegerResource(2, 222L));
+        builder.put(123L, new LwM2mPath("/0/0/1"), LwM2mSingleResource.newIntegerResource(1, 111L));
+        builder.put(123L, new LwM2mPath("/0/0/1"), LwM2mSingleResource.newIntegerResource(1, 112L));
+
+        // when
+        assertThrows(IllegalArgumentException.class, () -> builder.build());
+    }
+
+    @Test
+    public void should_not_raise_exception_for_duplicates() {
+        // given
+        TimestampedLwM2mNodes.Builder builder = TimestampedLwM2mNodes.builder().raiseExceptionOnDuplicate(false);
+        builder.put(456L, new LwM2mPath("/0/0/2"), LwM2mSingleResource.newIntegerResource(2, 222L));
+        builder.put(123L, new LwM2mPath("/0/0/1"), LwM2mSingleResource.newIntegerResource(1, 111L));
+        builder.put(123L, new LwM2mPath("/0/0/1"), LwM2mSingleResource.newIntegerResource(1, 112L));
+
+        // when
+        TimestampedLwM2mNodes nodes = builder.build();
+
+        // then
+        assertNotNull(nodes);
+        TimestampedLwM2mNodes.Builder expected = TimestampedLwM2mNodes.builder();
+        expected.put(456L, new LwM2mPath("/0/0/2"), LwM2mSingleResource.newIntegerResource(2, 222L));
+        expected.put(123L, new LwM2mPath("/0/0/1"), LwM2mSingleResource.newIntegerResource(1, 112L));
+        assertEquals(expected.build(), nodes);
+    }
+
     private TimestampedLwM2mNodes getExampleTimestampedLwM2mNodes() {
         TimestampedLwM2mNodes.Builder tsNodes = TimestampedLwM2mNodes.builder();
         tsNodes.put(456L, new LwM2mPath("/0/0/2"), LwM2mSingleResource.newIntegerResource(2, 222L));
