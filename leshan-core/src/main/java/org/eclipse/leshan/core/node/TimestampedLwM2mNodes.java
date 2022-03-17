@@ -71,7 +71,7 @@ public class TimestampedLwM2mNodes {
 
     @Override
     public String toString() {
-        return String.format("TimestampedLwM2mNodes [timestampedNodes=%s]", timestampedPathNodesMap);
+        return String.format("TimestampedLwM2mNodes [%s]", timestampedPathNodesMap);
     }
 
     @Override
