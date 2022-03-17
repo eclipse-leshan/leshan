@@ -166,6 +166,21 @@ public class TimestampedLwM2mNodesTest {
     }
 
     @Test
+    public void should_raise_exception_id_path_does_not_match_node() {
+        TimestampedLwM2mNodes.Builder builder = TimestampedLwM2mNodes.builder().put(456L, new LwM2mPath("/0/0/2"),
+                LwM2mResourceInstance.newIntegerInstance(0, 222L));
+        assertThrows(IllegalArgumentException.class, () -> builder.build());
+
+    }
+
+    @Test
+    public void should_raise_exception_path_does_not_match_id() {
+        TimestampedLwM2mNodes.Builder builder = TimestampedLwM2mNodes.builder().put(456L, new LwM2mPath("/0/0/2"),
+                LwM2mSingleResource.newIntegerResource(1, 222L));
+        assertThrows(IllegalArgumentException.class, () -> builder.build());
+    }
+
+    @Test
     public void should_not_raise_exception_for_duplicates() {
         // given
         TimestampedLwM2mNodes.Builder builder = TimestampedLwM2mNodes.builder().raiseExceptionOnDuplicate(false);

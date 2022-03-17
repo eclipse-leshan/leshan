@@ -160,7 +160,13 @@ public class TimestampedLwM2mNodes {
             Map<Long, Map<LwM2mPath, LwM2mNode>> timestampToPathToNode = new TreeMap<>(getTimestampComparator());
 
             for (InternalNode internalNode : nodes) {
-                // TODO validate path is consistent with Node ?
+                // validate path is consistent with Node
+                String cause = LwM2mNodeUtil.getInvalidPathForNodeCause(internalNode.node, internalNode.path);
+                if (cause != null) {
+                    throw new IllegalArgumentException(cause);
+                }
+
+                // add to the map
                 Map<LwM2mPath, LwM2mNode> pathToNode = timestampToPathToNode.get(internalNode.timestamp);
                 if (pathToNode == null) {
                     pathToNode = new HashMap<>();

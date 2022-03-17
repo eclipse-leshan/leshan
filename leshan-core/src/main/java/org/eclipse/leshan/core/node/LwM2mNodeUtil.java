@@ -266,4 +266,48 @@ public class LwM2mNodeUtil {
         if (err != null)
             throw new InvalidLwM2mPathException(err);
     }
+
+    public static String getInvalidPathForNodeCause(LwM2mNode node, LwM2mPath path) {
+        if (node instanceof LwM2mObject) {
+            if (!path.isObject()) {
+                return String.format("Invalid Path %s : path does not target a LWM2M object for %s", path, node);
+            } else if (node.getId() != path.getObjectId()) {
+                return String.format("Invalid Path %s : path object id (%d) does not match LWM2M object id %d for %s",
+                        path, path.getObjectId(), node.getId(), node);
+            }
+        } else if (node instanceof LwM2mObjectInstance) {
+            if (!path.isObjectInstance()) {
+                return String.format("Invalid Path %s : path does not target a LWM2M object instance for %s", path,
+                        node);
+            } else if (node.getId() != path.getObjectInstanceId()) {
+                return String.format(
+                        "Invalid Path %s : path object instance id (%d) does not match LWM2M object instance id %d for %s",
+                        path, path.getObjectInstanceId(), node.getId(), node);
+            }
+        } else if (node instanceof LwM2mResource) {
+            if (!path.isResource()) {
+                return String.format("Invalid Path %s : path does not target a LWM2M resource for %s", path, node);
+            } else if (node.getId() != path.getResourceId()) {
+                return String.format(
+                        "Invalid Path %s : path resource id (%d) does not match LWM2M resource id %d for %s", path,
+                        path.getResourceId(), node.getId(), node);
+            }
+        } else if (node instanceof LwM2mResourceInstance) {
+            if (!path.isResourceInstance()) {
+                return String.format("Invalid Path %s : path does not target a LWM2M resource instance for %s", path,
+                        node);
+            } else if (node.getId() != path.getResourceInstanceId()) {
+                return String.format(
+                        "Invalid Path %s : path resource instance id (%d) does not match LWM2M resource instance id %d for %s",
+                        path, path.getResourceInstanceId(), node.getId(), node);
+            }
+        }
+        return null;
+    }
+
+    public static void validatePathForNode(LwM2mNode node, LwM2mPath path) throws InvalidLwM2mPathException {
+        String err = getInvalidPathForNodeCause(node, path);
+        if (err != null)
+            throw new InvalidLwM2mPathException(err);
+    }
 }
