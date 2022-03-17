@@ -98,7 +98,7 @@ public class TimestampedLwM2mNodesTest {
     }
 
     @Test
-    public void should_getNodesForTimestamp_returns_ascending_ordered_nodes() {
+    public void should_getTimestamps_returns_ascending_ordered_nodes() {
         // given
         TimestampedLwM2mNodes tsNodes = getExampleTimestampedLwM2mNodes();
 
@@ -113,7 +113,7 @@ public class TimestampedLwM2mNodesTest {
     }
 
     @Test
-    public void should_null_timestamp_be_considered_as_latest_for_getNodesForTimestamp() {
+    public void should_null_timestamp_be_considered_as_latest_for_getTimestamps() {
         // given
         TimestampedLwM2mNodes tsNodes = getExampleMixedTimestampLwM2mNodes();
 
@@ -151,19 +151,6 @@ public class TimestampedLwM2mNodesTest {
         // then
         assertNotNull(timestamps);
         assertEquals(new HashSet<>(Arrays.asList(123L, 456L)), timestamps);
-    }
-
-    @Test
-    public void should_null_timestamp_be_considered_as_latest_for_getTimestamps() {
-        // given
-        TimestampedLwM2mNodes tsNodes = getExampleMixedTimestampLwM2mNodes();
-
-        // when
-        Set<Long> timestamps = tsNodes.getTimestamps();
-
-        // then
-        assertNotNull(timestamps);
-        assertEquals(new HashSet<>(Arrays.asList(123L, null)), timestamps);
     }
 
     @Test
