@@ -15,12 +15,18 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium;
 
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.eclipse.californium.cose.AlgorithmID;
 import org.eclipse.californium.cose.CoseException;
 import org.eclipse.leshan.core.californium.oscore.cf.OscoreParameters;
 import org.eclipse.leshan.core.californium.oscore.cf.OscoreStore;
 import org.eclipse.leshan.core.oscore.OscoreIdentity;
+import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.util.Validate;
+import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityStore;
@@ -65,7 +71,19 @@ public class LwM2mOscoreStore implements OscoreStore {
 
     @Override
     public OscoreParameters getOscoreParameters(String uri) {
-        System.out.println(uri);
+        try {
+            URI foreignPeerUri = new URI(uri);
+            InetSocketAddress foreignPeerAddress = new InetSocketAddress(foreignPeerUri.getHost(),
+                    foreignPeerUri.getPort());
+            Registration registration = registrationStore.getRegistrationByAdress(foreignPeerAddress);
+            Identity identity = registration.getIdentity();
+            if (identity.isOSCORE()) {
+                return getOscoreParameters(identity.getOscoreIdentity().getRecipientId());
+            }
+        } catch (URISyntaxException | SecurityException | IllegalArgumentException e) {
+            // TODO OSCORE we need to think about how to manage this.
+            throw new IllegalStateException(String.format("InetScocketAddress from uri %s", uri), e);
+        }
         return null;
     }
 }

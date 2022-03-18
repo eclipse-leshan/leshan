@@ -69,7 +69,6 @@ public class InMemoryOscoreContextDB extends HashMapCtxDB {
 
     @Override
     public synchronized OSCoreCtx getContext(String uri) throws OSException {
-        System.out.println("=======================" + uri);
 
         OSCoreCtx osCoreCtx = super.getContext(uri);
 
