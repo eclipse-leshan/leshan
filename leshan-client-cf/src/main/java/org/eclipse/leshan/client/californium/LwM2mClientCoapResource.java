@@ -73,6 +73,7 @@ public class LwM2mClientCoapResource extends LwM2mCoapResource {
      * @throws IllegalStateException if we are not able to extract {@link ServerIdentity}.
      */
     protected ServerIdentity extractIdentity(CoapExchange exchange) {
-        return endpointsManager.getServerIdentity(exchange.advanced().getEndpoint(), exchange.getSourceSocketAddress());
+        return endpointsManager.getServerIdentity(exchange.advanced().getEndpoint(), exchange.getSourceSocketAddress(),
+                exchange.advanced().getRequest().getSourceContext());
     }
 }

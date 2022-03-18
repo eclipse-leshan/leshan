@@ -33,6 +33,7 @@ import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.cose.AlgorithmID;
 import org.eclipse.californium.cose.CoseException;
 import org.eclipse.californium.elements.Connector;
+import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.util.CertPathUtil;
@@ -52,6 +53,7 @@ import org.eclipse.leshan.client.servers.ServerIdentity.Role;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.SecurityMode;
+import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.californium.oscore.cf.InMemoryOscoreContextDB;
 import org.eclipse.leshan.core.californium.oscore.cf.OscoreParameters;
@@ -357,7 +359,8 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
         return null;
     }
 
-    public synchronized ServerIdentity getServerIdentity(Endpoint endpoint, InetSocketAddress serverAddress) {
+    public synchronized ServerIdentity getServerIdentity(Endpoint endpoint, InetSocketAddress serverAddress,
+            EndpointContext endpointContext) {
         // TODO support multi server
 
         // knowing used CoAP endpoint we should be able to know the server identity because :
@@ -369,6 +372,19 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             if (currentEndpoint.getConnector().getProtocol() == "UDP"
                     && !currentServer.getIdentity().getPeerAddress().equals(serverAddress)) {
                 return null;
+            }
+            // For OSCORE, be sure OSCORE is used.
+            if (currentServer.getIdentity().isOSCORE()) {
+                Identity foreignPeerIdentity = EndpointContextUtil.extractIdentity(endpointContext);
+                if (!foreignPeerIdentity.isOSCORE() //
+                        // we also check OscoreIdentity but this is probably not useful
+                        // because we are using static OSCOREstore which holds only 1 OscoreParameter,
+                        // so if the request was successfully decrypted and OSCORE is used, this MUST be the right
+                        // server.
+                        || !foreignPeerIdentity.getOscoreIdentity()
+                                .equals(currentServer.getIdentity().getOscoreIdentity())) {
+                    return null;
+                }
             }
             return currentServer;
         }
