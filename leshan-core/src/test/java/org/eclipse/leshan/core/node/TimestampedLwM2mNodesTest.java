@@ -170,7 +170,6 @@ public class TimestampedLwM2mNodesTest {
         TimestampedLwM2mNodes.Builder builder = TimestampedLwM2mNodes.builder().put(456L, new LwM2mPath("/0/0/2"),
                 LwM2mResourceInstance.newIntegerInstance(0, 222L));
         assertThrows(IllegalArgumentException.class, () -> builder.build());
-
     }
 
     @Test
