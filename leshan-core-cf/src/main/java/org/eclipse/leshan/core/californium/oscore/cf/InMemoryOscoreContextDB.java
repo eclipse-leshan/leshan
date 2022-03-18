@@ -46,6 +46,7 @@ public class InMemoryOscoreContextDB extends HashMapCtxDB {
 
         if (osCoreCtx == null) {
             OscoreParameters params = store.getOscoreParameters(rid);
+            // TODO OSCORE we should handle if param is null ?
             osCoreCtx = deriveContext(params);
             super.addContext(osCoreCtx);
         }
@@ -59,6 +60,7 @@ public class InMemoryOscoreContextDB extends HashMapCtxDB {
 
         if (osCoreCtx == null) {
             OscoreParameters params = store.getOscoreParameters(rid);
+            // TODO OSCORE we should handle if param is null ?
             osCoreCtx = deriveContext(params);
             super.addContext(osCoreCtx);
         }
@@ -73,11 +75,13 @@ public class InMemoryOscoreContextDB extends HashMapCtxDB {
         OSCoreCtx osCoreCtx = super.getContext(uri);
 
         if (osCoreCtx == null) {
-            OscoreParameters params = store.getOscoreParameters(uri);
-            osCoreCtx = deriveContext(params);
-            super.addContext(uri, osCoreCtx);
+            byte[] rid = store.getRecipientId(uri);
+            if (rid != null) {
+                osCoreCtx = getContext(rid);
+                // TODO don't know if I should add by uri here ?
+                // super.addContext(uri, osCoreCtx);
+            }
         }
-
         return osCoreCtx;
     }
 

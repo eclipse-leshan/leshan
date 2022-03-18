@@ -70,7 +70,7 @@ public class LwM2mOscoreStore implements OscoreStore {
     }
 
     @Override
-    public OscoreParameters getOscoreParameters(String uri) {
+    public byte[] getRecipientId(String uri) {
         try {
             URI foreignPeerUri = new URI(uri);
             InetSocketAddress foreignPeerAddress = new InetSocketAddress(foreignPeerUri.getHost(),
@@ -78,7 +78,7 @@ public class LwM2mOscoreStore implements OscoreStore {
             Registration registration = registrationStore.getRegistrationByAdress(foreignPeerAddress);
             Identity identity = registration.getIdentity();
             if (identity.isOSCORE()) {
-                return getOscoreParameters(identity.getOscoreIdentity().getRecipientId());
+                return identity.getOscoreIdentity().getRecipientId();
             }
         } catch (URISyntaxException | SecurityException | IllegalArgumentException e) {
             // TODO OSCORE we need to think about how to manage this.

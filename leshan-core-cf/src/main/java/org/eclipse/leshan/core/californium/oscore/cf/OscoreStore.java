@@ -28,5 +28,5 @@ public interface OscoreStore {
 
     OscoreParameters getOscoreParameters(byte[] recipientID);
 
-    OscoreParameters getOscoreParameters(String uri);
+    byte[] getRecipientId(String uri);
 }

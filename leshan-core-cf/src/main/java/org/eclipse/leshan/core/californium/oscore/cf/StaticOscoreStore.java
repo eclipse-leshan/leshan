@@ -37,8 +37,8 @@ public class StaticOscoreStore implements OscoreStore {
     }
 
     @Override
-    public OscoreParameters getOscoreParameters(String uri) {
-        return parameters;
+    public byte[] getRecipientId(String uri) {
+        return parameters.getRecipientId();
     }
 
 }
