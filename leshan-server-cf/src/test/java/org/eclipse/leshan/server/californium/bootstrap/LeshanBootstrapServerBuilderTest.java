@@ -36,6 +36,7 @@ import java.util.Iterator;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
+import org.eclipse.leshan.core.oscore.OscoreIdentity;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
@@ -115,6 +116,11 @@ public class LeshanBootstrapServerBuilderTest {
             public Iterator<SecurityInfo> getAllByEndpoint(String endpoint) {
                 return null;
             }
+
+            @Override
+            public SecurityInfo getByOscoreIdentity(OscoreIdentity oscoreIdentity) {
+                return null;
+            }
         });
         server = builder.build();
 
@@ -132,6 +138,11 @@ public class LeshanBootstrapServerBuilderTest {
 
             @Override
             public Iterator<SecurityInfo> getAllByEndpoint(String endpoint) {
+                return null;
+            }
+
+            @Override
+            public SecurityInfo getByOscoreIdentity(OscoreIdentity oscoreIdentity) {
                 return null;
             }
         });
@@ -152,6 +163,11 @@ public class LeshanBootstrapServerBuilderTest {
 
             @Override
             public Iterator<SecurityInfo> getAllByEndpoint(String endpoint) {
+                return null;
+            }
+
+            @Override
+            public SecurityInfo getByOscoreIdentity(OscoreIdentity oscoreIdentity) {
                 return null;
             }
         });
@@ -177,6 +193,11 @@ public class LeshanBootstrapServerBuilderTest {
 
             @Override
             public Iterator<SecurityInfo> getAllByEndpoint(String endpoint) {
+                return null;
+            }
+
+            @Override
+            public SecurityInfo getByOscoreIdentity(OscoreIdentity oscoreIdentity) {
                 return null;
             }
         });
