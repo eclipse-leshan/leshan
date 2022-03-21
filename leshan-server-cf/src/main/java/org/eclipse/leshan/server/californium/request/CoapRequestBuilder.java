@@ -192,6 +192,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         if (request.getContentFormat() != null)
             coapRequest.getOptions().setAccept(request.getContentFormat().getCode());
         setURI(coapRequest, request.getPath());
+        setSecurityContext(coapRequest);
         applyLowerLayerConfig(coapRequest);
     }
 
