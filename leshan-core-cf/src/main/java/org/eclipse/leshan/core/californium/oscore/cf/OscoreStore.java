@@ -26,7 +26,13 @@ package org.eclipse.leshan.core.californium.oscore.cf;
 // Let's start with a sync API for now.
 public interface OscoreStore {
 
+    /**
+     * @return {@link OscoreParameters} for the given recipientID.
+     */
     OscoreParameters getOscoreParameters(byte[] recipientID);
 
-    byte[] getRecipientId(String uri);
+    /**
+     * @return the recipientID for the given foreign peer URI.
+     */
+    byte[] getRecipientId(String foreignPeerURI);
 }

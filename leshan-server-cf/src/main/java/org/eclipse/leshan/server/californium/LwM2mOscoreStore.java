@@ -30,6 +30,8 @@ import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.upokecenter.cbor.CBORObject;
 
@@ -37,6 +39,8 @@ import com.upokecenter.cbor.CBORObject;
  * An {@link OscoreStore} which search {@link OscoreParameters} in LWM2M {@link SecurityStore}
  */
 public class LwM2mOscoreStore implements OscoreStore {
+
+    private static final Logger LOG = LoggerFactory.getLogger(LwM2mOscoreStore.class);
 
     private final SecurityStore securityStore;
     private final RegistrationStore registrationStore;
@@ -64,8 +68,8 @@ public class LwM2mOscoreStore implements OscoreStore {
                     AlgorithmID.FromCBOR(CBORObject.FromObject(securityInfo.getOscoreSetting().getHmacAlgorithm())), //
                     securityInfo.getOscoreSetting().getMasterSalt());
         } catch (CoseException e) {
-            // TODO OSCORE we need to think about how to manage this.
-            throw new IllegalStateException("Unable to create Oscore Parameters", e);
+            LOG.error("Unable to create OscoreParameters from OoscoreSetting %s", securityInfo.getOscoreSetting(), e);
+            return null;
         }
     }
 
@@ -81,8 +85,8 @@ public class LwM2mOscoreStore implements OscoreStore {
                 return identity.getOscoreIdentity().getRecipientId();
             }
         } catch (URISyntaxException | SecurityException | IllegalArgumentException e) {
-            // TODO OSCORE we need to think about how to manage this.
-            throw new IllegalStateException(String.format("InetScocketAddress from uri %s", uri), e);
+            LOG.error("Unable to extract InetScocketAddress from uri %s", uri, e);
+            return null;
         }
         return null;
     }
