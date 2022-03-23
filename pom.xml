@@ -644,7 +644,7 @@ Contributors:
             <dependency>
                 <groupId>com.upokecenter</groupId>
                 <artifactId>cbor</artifactId>
-                <version>4.5</version>
+                <version>4.5.2</version>
             </dependency>
             
 

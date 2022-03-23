@@ -23,16 +23,71 @@ See : https://github.com/eclipse/californium/security/policy
 
 ## Versions Security State
 
-| Version | Safe          | CVE | cause | | 
-| ------- | ------------- |-----|------|-|
-| 2.0.0-M5 + | :heavy_check_mark: | | | | 
-| 2.0.0-M1 -> 2.0.0-M4   | :x: | [CVE-2021-34433](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-34433)| dependency (californium/scandium) |affecting DTLS with x509 and/or RPK |
-| 1.3.2 +  | :heavy_check_mark: |
-| 1.1.0 -> 1.3.1 | :x: | [CVE-2020-27222](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-27222) [CVE-2021-34433](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-34433)| dependency (californium/scandium) |affecting DTLS with x509 and/or RPK |
-| 1.0.0 -> 1.0.2  | :x: | [CVE-2021-34433](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-34433)| dependency (californium/scandium) |affecting DTLS with x509 and/or RPK |
+<table>
+    <thead>
+        <tr>
+            <th width=200>Version</th>
+            <th></th>
+            <th>CVE/ID</th>
+            <th>cause</th>
+            <th>affect</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td> 2.0.0-M5 -> 2.0.0-M6 </td>
+            <td> :x: </td>
+            <td> <a href="https://github.com/peteroupc/CBOR-Java/security/advisories/GHSA-fj2w-wfgv-mwq6">GHSA-fj2w-wfgv-mwq6</a> </td>
+            <td> dependency (com.upokecenter.cbor) </td>
+            <td> CBOR or SenML-CBOR decoding </td>
+        </tr>
+        <tr>
+            <td rowspan=2> 2.0.0-M2 -> 2.0.0-M4</td>
+            <td rowspan=2> :x: </td>
+                <td> <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-34433">CVE-2021-34433</a> </td>
+                <td> dependency (californium/scandium) </td>
+                <td> DTLS with x509 and/or RPK  </td>
+            <tr>
+                <td> <a href="https://github.com/peteroupc/CBOR-Java/security/advisories/GHSA-fj2w-wfgv-mwq6">GHSA-fj2w-wfgv-mwq6</a> </td>
+                <td> dependency (com.upokecenter.cbor) </td>
+                <td> CBOR or SenML-CBOR decoding </td>
+            </tr>
+        </tr>
+        <tr>
+            <td> 2.0.0-M1 </td>
+            <td> :x: </td>
+            <td> <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-34433">CVE-2021-34433</a> </td>
+            <td> dependency (californium/scandium) </td>
+            <td> DTLS with x509 and/or RPK  </td>
+        </tr>
+         <tr>
+            <td> 1.3.2 +  </td>
+            <td> :heavy_check_mark: </td>
+            <td />
+            <td />
+            <td />
+        </tr>
+        <tr>
+            <td> 1.1.0 -> 1.3.1 </td>
+            <td> :x: </td>
+            <td> <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-27222">CVE-2020-27222</a>
+                 <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-34433">CVE-2021-34433</a>
+            </td>
+            <td> dependency (californium/scandium) </td>
+            <td> DTLS with x509 and/or RPK  </td>
+        </tr>
+        <tr>
+            <td> 1.0.0 -> 1.0.2 </td>
+            <td> :x: </td>
+            <td> <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-34433">CVE-2021-34433</a> </td>
+            <td> dependency (californium/scandium) </td>
+            <td> DTLS with x509 and/or RPK  </td>
+        </tr>
+    </tbody>
+</table>
 
 Note: We strongly encourage you to switch last safe version, but for vulnerability caused by a dependency :
- - if you want to be very conservative
- - and the concerned library is uing [semantic versioning](https://semver.org/)
+ - if there is no leshan release available OR if you want to be very conservative  
+ - AND the concerned library is uing [semantic versioning](https://semver.org/)
  
 then you could try to just update the dependency to a safe compatible version without upgrading Leshan. 
