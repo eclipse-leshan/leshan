@@ -104,7 +104,6 @@ public class DefaultEndpointFactory implements EndpointFactory {
     @Override
     public CoapEndpoint createUnsecuredEndpoint(InetSocketAddress address, Configuration coapConfig,
             ObservationStore store, OSCoreCtxDB db) {
-        // TODO OSCORE : db should maybe be replaced by OscoreEStore
         Builder builder = createUnsecuredEndpointBuilder(address, coapConfig, store);
         if (db != null) {
             builder.setCustomCoapStackArgument(db).setCoapStackFactory(new OSCoreCoapStackFactory());
@@ -157,7 +156,7 @@ public class DefaultEndpointFactory implements EndpointFactory {
     @Override
     public CoapEndpoint createSecuredEndpoint(DtlsConnectorConfig dtlsConfig, Configuration coapConfig,
             ObservationStore store, OSCoreCtxDB db) {
-        // TODO OSCORE : db should maybe be replaced by OscoreEStore
+        // TODO OSCORE : add support of OSCORE to secured (DTLS) endpoint.
         return createSecuredEndpointBuilder(dtlsConfig, coapConfig, store).build();
     }
 

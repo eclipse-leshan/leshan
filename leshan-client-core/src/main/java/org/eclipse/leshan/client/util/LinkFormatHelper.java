@@ -21,9 +21,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
@@ -38,8 +41,12 @@ import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.node.LwM2mObject;
+import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.request.ReadRequest;
+import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.util.StringUtils;
 
 /**
@@ -74,8 +81,8 @@ public final class LinkFormatHelper {
             }
         });
         for (LwM2mObjectEnabler objectEnabler : objEnablerList) {
-            // skip the security Object
-            if (objectEnabler.getId() == LwM2mId.SECURITY)
+            // skip the security and oscore Object
+            if (objectEnabler.getId() == LwM2mId.SECURITY || objectEnabler.getId() == LwM2mId.OSCORE)
                 continue;
 
             List<Integer> availableInstance = objectEnabler.getAvailableInstanceIds();
@@ -98,10 +105,46 @@ public final class LinkFormatHelper {
         links.add(new LwM2mLink("/", LwM2mPath.ROOTPATH,
                 LwM2mAttributes.create(LwM2mAttributes.ENABLER_VERSION, LwM2mVersion.V1_0)));
 
+        // handle attribute for oscore
+        Map<Integer /* oscore instance id */, List<LwM2mAttribute<?>>> oscoreAttributesByInstanceId = extractOscoreAttributes(
+                objectEnablers);
+
         for (LwM2mObjectEnabler objectEnabler : objectEnablers) {
-            links.addAll(getBootstrapObjectDescriptionWithoutRoot(objectEnabler));
+            links.addAll(getBootstrapObjectDescriptionWithoutRoot(objectEnabler, oscoreAttributesByInstanceId));
         }
         return links.toArray(new LwM2mLink[] {});
+    }
+
+    private static Map<Integer, List<LwM2mAttribute<?>>> extractOscoreAttributes(
+            Collection<LwM2mObjectEnabler> objectEnablers) {
+        Map<Integer/* oscore instance id */, List<LwM2mAttribute<?>>> oscoreAttributes = new HashMap<>();
+        for (LwM2mObjectEnabler objectEnabler : objectEnablers) {
+            if (objectEnabler.getId() == LwM2mId.SECURITY) {
+                ReadResponse response = objectEnabler.read(ServerIdentity.SYSTEM, new ReadRequest(LwM2mId.SECURITY));
+                if (response.isSuccess()) {
+                    LwM2mObject object = (LwM2mObject) response.getContent();
+                    for (LwM2mObjectInstance instance : object.getInstances().values()) {
+                        Integer oscoreSecurityMode = ServersInfoExtractor.getOscoreSecurityMode(instance);
+                        if (oscoreSecurityMode != null) {
+                            List<LwM2mAttribute<?>> attributes = new ArrayList<>(2);
+                            // extract ssid
+                            Long shortServerId = ServersInfoExtractor.getServerId(objectEnabler, instance.getId());
+                            if (shortServerId != null)
+                                attributes.add(LwM2mAttributes.create(LwM2mAttributes.SHORT_SERVER_ID, shortServerId));
+                            // extract uri
+                            String uri = ServersInfoExtractor.getServerURI(objectEnabler, instance.getId());
+                            if (uri != null)
+                                attributes.add(LwM2mAttributes.create(LwM2mAttributes.SERVER_URI, uri));
+
+                            oscoreAttributes.put(oscoreSecurityMode, attributes);
+                        }
+                    }
+                }
+                return oscoreAttributes;
+            }
+
+        }
+        return oscoreAttributes;
     }
 
     public static LwM2mLink[] getObjectDescription(LwM2mObjectEnabler objectEnabler, String rootPath) {
@@ -125,12 +168,13 @@ public final class LinkFormatHelper {
                 // TODO should be version 1.1 ?
                 LwM2mAttributes.create(LwM2mAttributes.ENABLER_VERSION, LwM2mVersion.V1_0)));
 
-        links.addAll(getBootstrapObjectDescriptionWithoutRoot(objectEnabler));
+        links.addAll(getBootstrapObjectDescriptionWithoutRoot(objectEnabler, null));
 
         return links.toArray(new LwM2mLink[] {});
     }
 
-    private static List<LwM2mLink> getBootstrapObjectDescriptionWithoutRoot(LwM2mObjectEnabler objectEnabler) {
+    private static List<LwM2mLink> getBootstrapObjectDescriptionWithoutRoot(LwM2mObjectEnabler objectEnabler,
+            Map<Integer, List<LwM2mAttribute<?>>> oscoreAttributesByInstanceId) {
         List<LwM2mLink> links = new ArrayList<>();
 
         // create link for "object"
@@ -153,23 +197,35 @@ public final class LinkFormatHelper {
         for (Integer instanceId : objectEnabler.getAvailableInstanceIds()) {
             List<LwM2mAttribute<?>> objectAttributes = new ArrayList<>();
 
-            // get short id
-            if (objectEnabler.getId() == LwM2mId.SECURITY || objectEnabler.getId() == LwM2mId.SERVER) {
-                Boolean isBootstrapServer = objectEnabler.getId() == LwM2mId.SECURITY
-                        && ServersInfoExtractor.isBootstrapServer(objectEnabler, instanceId);
-                if (isBootstrapServer != null && !isBootstrapServer) {
-                    Long shortServerId = ServersInfoExtractor.getServerId(objectEnabler, instanceId);
-                    if (shortServerId != null)
-                        objectAttributes.add(LwM2mAttributes.create(LwM2mAttributes.SHORT_SERVER_ID, shortServerId));
+            // handle oscore
+            if (objectEnabler.getId() == LwM2mId.OSCORE) {
+                System.out.println(oscoreAttributesByInstanceId);
+                if (oscoreAttributesByInstanceId != null) {
+                    List<LwM2mAttribute<?>> oscoreAttributes = oscoreAttributesByInstanceId.get(instanceId);
+                    if (oscoreAttributes != null && !oscoreAttributes.isEmpty()) {
+                        objectAttributes.addAll(oscoreAttributes);
+                    }
+                }
+            } else {
+                // get short id
+                if (objectEnabler.getId() == LwM2mId.SECURITY || objectEnabler.getId() == LwM2mId.SERVER) {
+                    Boolean isBootstrapServer = objectEnabler.getId() == LwM2mId.SECURITY
+                            && ServersInfoExtractor.isBootstrapServer(objectEnabler, instanceId);
+                    if (isBootstrapServer != null && !isBootstrapServer) {
+                        Long shortServerId = ServersInfoExtractor.getServerId(objectEnabler, instanceId);
+                        if (shortServerId != null)
+                            objectAttributes
+                                    .add(LwM2mAttributes.create(LwM2mAttributes.SHORT_SERVER_ID, shortServerId));
+                    }
+
                 }
 
-            }
-
-            // get uri
-            if (objectEnabler.getId() == LwM2mId.SECURITY) {
-                String uri = ServersInfoExtractor.getServerURI(objectEnabler, instanceId);
-                if (uri != null)
-                    objectAttributes.add(LwM2mAttributes.create(LwM2mAttributes.SERVER_URI, uri));
+                // get uri
+                if (objectEnabler.getId() == LwM2mId.SECURITY) {
+                    String uri = ServersInfoExtractor.getServerURI(objectEnabler, instanceId);
+                    if (uri != null)
+                        objectAttributes.add(LwM2mAttributes.create(LwM2mAttributes.SERVER_URI, uri));
+                }
             }
 
             // create link

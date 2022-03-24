@@ -48,8 +48,8 @@ public class SecurityInfoSerDes {
     public static byte[] serialize(SecurityInfo s) {
         ObjectNode o = JsonNodeFactory.instance.objectNode();
         o.put("ep", s.getEndpoint());
-        if (s.getIdentity() != null) {
-            o.put("id", s.getIdentity());
+        if (s.getPskIdentity() != null) {
+            o.put("id", s.getPskIdentity());
         }
         if (s.getPreSharedKey() != null) {
             o.put("psk", Hex.encodeHexString(s.getPreSharedKey()));

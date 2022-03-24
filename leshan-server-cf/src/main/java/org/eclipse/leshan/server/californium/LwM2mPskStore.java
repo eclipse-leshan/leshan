@@ -81,7 +81,7 @@ public class LwM2mPskStore implements AdvancedPskStore {
         if (registration != null) {
             SecurityInfo securityInfo = securityStore.getByEndpoint(registration.getEndpoint());
             if (securityInfo != null) {
-                return new PskPublicInformation(securityInfo.getIdentity());
+                return new PskPublicInformation(securityInfo.getPskIdentity());
             }
             return null;
         }

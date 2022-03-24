@@ -24,21 +24,26 @@ import org.eclipse.leshan.client.bootstrap.BootstrapConsistencyChecker;
 import org.eclipse.leshan.client.servers.DmServerInfo;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.SecurityMode;
+import org.eclipse.leshan.core.oscore.InvalidOscoreSettingException;
+import org.eclipse.leshan.core.oscore.OscoreValidator;
 
 /**
  * A default implementation of {@link BootstrapConsistencyChecker}
  */
 public class DefaultBootstrapConsistencyChecker extends BaseBootstrapConsistencyChecker {
 
+    private OscoreValidator oscoreValidator = new OscoreValidator();
+
     @Override
-    protected void checkBootstrapServerInfo(ServerInfo BootstrapServerInfo, List<String> errors) {
-        checkCertificateIsValid(BootstrapServerInfo, errors);
+    protected void checkBootstrapServerInfo(ServerInfo bootstrapServerInfo, List<String> errors) {
+        checkCertificateIsValid(bootstrapServerInfo, errors);
+        checkOscoreIsValid(bootstrapServerInfo, errors);
     }
 
     @Override
     protected void checkDeviceMangementServerInfo(DmServerInfo serverInfo, List<String> errors) {
         checkCertificateIsValid(serverInfo, errors);
-
+        checkOscoreIsValid(serverInfo, errors);
     }
 
     private void checkCertificateIsValid(ServerInfo serverInfo, List<String> errors) {
@@ -46,6 +51,16 @@ public class DefaultBootstrapConsistencyChecker extends BaseBootstrapConsistency
             if (!CertPathUtil.canBeUsedForAuthentication((X509Certificate) serverInfo.clientCertificate, true)) {
                 errors.add(String.format("Client certificate for %s server can not be used for authenticate a client",
                         serverInfo.bootstrap ? "bootstrap" : serverInfo.serverId));
+            }
+        }
+    }
+
+    private void checkOscoreIsValid(ServerInfo serverInfo, List<String> errors) {
+        if (serverInfo.useOscore) {
+            try {
+                oscoreValidator.validateOscoreSetting(serverInfo.oscoreSetting);
+            } catch (InvalidOscoreSettingException e) {
+                errors.add(e.getMessage());
             }
         }
     }

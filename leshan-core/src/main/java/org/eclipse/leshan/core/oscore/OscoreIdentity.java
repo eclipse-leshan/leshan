@@ -16,14 +16,13 @@
 package org.eclipse.leshan.core.oscore;
 
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.Validate;
 
 /**
- * An OSCORE identifier for a foreign peer.
+ * An OSCORE Object identifying a foreign peer.
  *
  */
 public class OscoreIdentity implements Serializable {
@@ -39,16 +38,10 @@ public class OscoreIdentity implements Serializable {
         this.recipientId = recipientId;
     }
 
-    // TODO OSCORE not sure we need this constructor
-    public OscoreIdentity(String senderId, String recipientId) {
-        this.recipientId = new Hex().decode(recipientId.getBytes(StandardCharsets.UTF_8));
-    }
-
     public byte[] getRecipientId() {
         return recipientId;
     }
 
-    // TODO OSCORE: Generate toString() in Eclipse.
     @Override
     public String toString() {
         return String.format("OscoreIdentity [%s]", Hex.encodeHexString(recipientId));

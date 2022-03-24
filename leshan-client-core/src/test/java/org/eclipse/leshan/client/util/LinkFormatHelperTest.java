@@ -24,7 +24,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import org.eclipse.leshan.client.object.Oscore;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
@@ -42,7 +44,9 @@ import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.oscore.OscoreSetting;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.util.Hex;
 import org.junit.Test;
 
 public class LinkFormatHelperTest {
@@ -120,7 +124,7 @@ public class LinkFormatHelperTest {
 
         Map<Integer, LwM2mInstanceEnabler> instancesMap = new HashMap<>();
         instancesMap.put(0, new BaseInstanceEnabler());
-        objectEnablers.add(new ObjectEnabler(6, getObjectModel(6), instancesMap, null, ContentFormat.DEFAULT));
+        objectEnablers.add(createObjectEnabler(getObjectModel(6), instancesMap));
 
         Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null, null);
         String strLinks = serializer.serializeCoreLinkFormat(links);
@@ -135,8 +139,7 @@ public class LinkFormatHelperTest {
         Map<Integer, LwM2mInstanceEnabler> instancesMap = new HashMap<>();
         instancesMap.put(0, new BaseInstanceEnabler());
         instancesMap.put(1, new BaseInstanceEnabler());
-        objectEnablers.add(
-                new ObjectEnabler(6, getVersionedObjectModel(6, "2.0"), instancesMap, null, ContentFormat.DEFAULT));
+        objectEnablers.add(createObjectEnabler(getVersionedObjectModel(6, "2.0"), instancesMap));
 
         Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null, null);
         String strLinks = serializer.serializeCoreLinkFormat(links);
@@ -149,8 +152,7 @@ public class LinkFormatHelperTest {
         List<LwM2mObjectEnabler> objectEnablers = new ArrayList<>();
 
         Map<Integer, LwM2mInstanceEnabler> instancesMap = new HashMap<>();
-        objectEnablers.add(
-                new ObjectEnabler(6, getVersionedObjectModel(6, "2.0"), instancesMap, null, ContentFormat.DEFAULT));
+        objectEnablers.add(createObjectEnabler(getVersionedObjectModel(6, "2.0"), instancesMap));
 
         Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null, null);
         String strLinks = serializer.serializeCoreLinkFormat(links);
@@ -162,8 +164,7 @@ public class LinkFormatHelperTest {
     public void encode_1_content_format() throws LinkParseException {
         List<LwM2mObjectEnabler> objectEnablers = new ArrayList<>();
         Map<Integer, LwM2mInstanceEnabler> instancesMap = Collections.emptyMap();
-        objectEnablers.add(
-                new ObjectEnabler(6, getVersionedObjectModel(6, "1.0"), instancesMap, null, ContentFormat.DEFAULT));
+        objectEnablers.add(createObjectEnabler(getVersionedObjectModel(6, "1.0"), instancesMap));
 
         Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null, Arrays.asList(ContentFormat.TLV));
 
@@ -174,21 +175,20 @@ public class LinkFormatHelperTest {
     public void encode_several_content_format() throws LinkParseException {
         List<LwM2mObjectEnabler> objectEnablers = new ArrayList<>();
         Map<Integer, LwM2mInstanceEnabler> instancesMap = Collections.emptyMap();
-        objectEnablers.add(
-                new ObjectEnabler(6, getVersionedObjectModel(6, "1.0"), instancesMap, null, ContentFormat.DEFAULT));
+        objectEnablers.add(createObjectEnabler(getVersionedObjectModel(6, "1.0"), instancesMap));
 
         Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null,
                 Arrays.asList(ContentFormat.TLV, ContentFormat.JSON, ContentFormat.OPAQUE));
 
-        assertArrayEquals(parser.parseCoreLinkFormat("</>;rt=\"oma.lwm2m\";ct=\"11542 11543 42\",</6>".getBytes()), links);
+        assertArrayEquals(parser.parseCoreLinkFormat("</>;rt=\"oma.lwm2m\";ct=\"11542 11543 42\",</6>".getBytes()),
+                links);
     }
 
     @Test
     public void encode_bootstrap_object() {
         Map<Integer, LwM2mInstanceEnabler> instancesMap = new HashMap<>();
         instancesMap.put(0, new BaseInstanceEnabler());
-        ObjectEnabler objectEnabler = new ObjectEnabler(3, getObjectModel(3), instancesMap, null,
-                ContentFormat.DEFAULT);
+        LwM2mObjectEnabler objectEnabler = createObjectEnabler(getObjectModel(3), instancesMap);
 
         Link[] links = LinkFormatHelper.getBootstrapObjectDescription(objectEnabler);
         String strLinks = serializer.serializeCoreLinkFormat(links);
@@ -199,8 +199,7 @@ public class LinkFormatHelperTest {
     @Test
     public void encode_bootstrap_object_with_version_and_no_instance() {
         Map<Integer, LwM2mInstanceEnabler> instancesMap = new HashMap<>();
-        ObjectEnabler objectEnabler = new ObjectEnabler(3, getVersionedObjectModel(3, "2.0"), instancesMap, null,
-                ContentFormat.DEFAULT);
+        LwM2mObjectEnabler objectEnabler = createObjectEnabler(getVersionedObjectModel(3, "2.0"), instancesMap);
 
         Link[] links = LinkFormatHelper.getBootstrapObjectDescription(objectEnabler);
         String strLinks = serializer.serializeCoreLinkFormat(links);
@@ -212,8 +211,7 @@ public class LinkFormatHelperTest {
     public void encode_bootstrap_object_with_version_and_instance() {
         Map<Integer, LwM2mInstanceEnabler> instancesMap = new HashMap<>();
         instancesMap.put(0, new BaseInstanceEnabler());
-        ObjectEnabler objectEnabler = new ObjectEnabler(3, getVersionedObjectModel(3, "2.0"), instancesMap, null,
-                ContentFormat.DEFAULT);
+        LwM2mObjectEnabler objectEnabler = createObjectEnabler(getVersionedObjectModel(3, "2.0"), instancesMap);
 
         Link[] links = LinkFormatHelper.getBootstrapObjectDescription(objectEnabler);
         String strLinks = serializer.serializeCoreLinkFormat(links);
@@ -225,8 +223,7 @@ public class LinkFormatHelperTest {
     public void encode_bootstrap_server_object() {
         Map<Integer, LwM2mInstanceEnabler> instancesMap = new HashMap<>();
         instancesMap.put(0, new Server(333, 120));
-        ObjectEnabler objectEnabler = new ObjectEnabler(1, getObjectModel(1), instancesMap, null,
-                ContentFormat.DEFAULT);
+        LwM2mObjectEnabler objectEnabler = createObjectEnabler(getObjectModel(1), instancesMap);
 
         Link[] links = LinkFormatHelper.getBootstrapObjectDescription(objectEnabler);
         String strLinks = serializer.serializeCoreLinkFormat(links);
@@ -238,8 +235,7 @@ public class LinkFormatHelperTest {
     public void encode_bootstrap_server_object_with_version() {
         Map<Integer, LwM2mInstanceEnabler> instancesMap = new HashMap<>();
         instancesMap.put(0, new Server(333, 120));
-        ObjectEnabler objectEnabler = new ObjectEnabler(1, getVersionedObjectModel(1, "2.0"), instancesMap, null,
-                ContentFormat.DEFAULT);
+        LwM2mObjectEnabler objectEnabler = createObjectEnabler(getVersionedObjectModel(1, "2.0"), instancesMap);
 
         Link[] links = LinkFormatHelper.getBootstrapObjectDescription(objectEnabler);
         String strLinks = serializer.serializeCoreLinkFormat(links);
@@ -254,7 +250,7 @@ public class LinkFormatHelperTest {
         instancesMap.put(1, Security.noSecBootstap("coap://localhost:1"));
         instancesMap.put(2, Security.noSec("coap://localhost:22", 222));
         instancesMap.put(3, Security.noSec("coap://localhost:33", 333));
-        ObjectEnabler objectEnabler = new ObjectEnabler(0, getObjectModel(0), instancesMap, null,
+        LwM2mObjectEnabler objectEnabler = new ObjectEnabler(0, getObjectModel(0), instancesMap, null,
                 ContentFormat.DEFAULT);
 
         Link[] links = LinkFormatHelper.getBootstrapObjectDescription(objectEnabler);
@@ -278,27 +274,25 @@ public class LinkFormatHelperTest {
         securityInstances.put(1, Security.noSecBootstap("coap://localhost:1"));
         securityInstances.put(2, Security.noSec("coap://localhost:22", 222));
         securityInstances.put(3, Security.noSec("coap://localhost:33", 333));
-        ObjectEnabler securityObjectEnabler = new ObjectEnabler(0, getObjectModel(0), securityInstances, null,
-                ContentFormat.DEFAULT);
+        LwM2mObjectEnabler securityObjectEnabler = createObjectEnabler(getObjectModel(0), securityInstances);
         objectEnablers.add(securityObjectEnabler);
 
         // object 1
         Map<Integer, LwM2mInstanceEnabler> serverInstances = new HashMap<>();
         serverInstances.put(0, new Server(333, 120));
-        ObjectEnabler serverObjectEnabler = new ObjectEnabler(1, getVersionedObjectModel(1, "2.0"), serverInstances,
-                null, ContentFormat.DEFAULT);
+        LwM2mObjectEnabler serverObjectEnabler = createObjectEnabler(getVersionedObjectModel(1, "2.0"),
+                serverInstances);
         objectEnablers.add(serverObjectEnabler);
 
         // object 2
-        ObjectEnabler aclObjectEnabler = new ObjectEnabler(2, getVersionedObjectModel(2, "2.0"),
-                new HashMap<Integer, LwM2mInstanceEnabler>(), null, ContentFormat.DEFAULT);
+        LwM2mObjectEnabler aclObjectEnabler = createObjectEnabler(getVersionedObjectModel(2, "2.0"),
+                new HashMap<Integer, LwM2mInstanceEnabler>());
         objectEnablers.add(aclObjectEnabler);
 
         // object 3
         Map<Integer, LwM2mInstanceEnabler> deviceInstances = new HashMap<>();
         deviceInstances.put(0, new BaseInstanceEnabler());
-        ObjectEnabler deviceObjectEnabler = new ObjectEnabler(3, getObjectModel(3), deviceInstances, null,
-                ContentFormat.DEFAULT);
+        LwM2mObjectEnabler deviceObjectEnabler = createObjectEnabler(getObjectModel(3), deviceInstances);
         objectEnablers.add(deviceObjectEnabler);
 
         Link[] links = LinkFormatHelper.getBootstrapClientDescription(objectEnablers);
@@ -310,6 +304,54 @@ public class LinkFormatHelperTest {
                 + "</0/2>;ssid=222;uri=\"coap://localhost:22\"," //
                 + "</0/3>;ssid=333;uri=\"coap://localhost:33\"," //
                 + "</1>;ver=2.0,</1/0>;ssid=333,</2>;ver=2.0,</3/0>", strLinks);
+    }
+
+    @Test
+    public void encode_bootstrap_root_with_oscore() {
+        List<LwM2mObjectEnabler> objectEnablers = new ArrayList<>();
+
+        // object 0
+        Map<Integer, LwM2mInstanceEnabler> securityInstances = new HashMap<>();
+        securityInstances.put(0, Security.oscoreOnly("coap://localhost:11", 111, 10));
+        securityInstances.put(1, Security.oscoreOnlyBootstrap("coap://localhost:1", 11));
+        securityInstances.put(2, Security.noSec("coap://localhost:22", 222));
+        LwM2mObjectEnabler securityObjectEnabler = createObjectEnabler(getObjectModel(0, "1.2"), securityInstances);
+        objectEnablers.add(securityObjectEnabler);
+
+        // object 1
+        Map<Integer, LwM2mInstanceEnabler> serverInstances = new HashMap<>();
+        serverInstances.put(0, new Server(333, 120));
+        LwM2mObjectEnabler serverObjectEnabler = createObjectEnabler(getVersionedObjectModel(1, "2.0"),
+                serverInstances);
+        objectEnablers.add(serverObjectEnabler);
+
+        // object 3
+        Map<Integer, LwM2mInstanceEnabler> deviceInstances = new HashMap<>();
+        deviceInstances.put(0, new BaseInstanceEnabler());
+        LwM2mObjectEnabler deviceObjectEnabler = createObjectEnabler(getObjectModel(3), deviceInstances);
+        objectEnablers.add(deviceObjectEnabler);
+
+        // object 21
+        Map<Integer, LwM2mInstanceEnabler> oscoreInstances = new HashMap<>();
+        oscoreInstances.put(10, new Oscore(10, new OscoreSetting(Hex.decodeHex("AA".toCharArray()),
+                Hex.decodeHex("BB".toCharArray()), Hex.decodeHex("CC".toCharArray()))));
+        oscoreInstances.put(11, new Oscore(11, new OscoreSetting(Hex.decodeHex("11".toCharArray()),
+                Hex.decodeHex("22".toCharArray()), Hex.decodeHex("33".toCharArray()))));
+        LwM2mObjectEnabler oscoreObjectEnabler = createObjectEnabler(getObjectModel(21, "2.0"), oscoreInstances);
+        objectEnablers.add(oscoreObjectEnabler);
+
+        Link[] links = LinkFormatHelper.getBootstrapClientDescription(objectEnablers);
+        String strLinks = serializer.serializeCoreLinkFormat(links);
+
+        // TODO : handle version correctly
+        assertEquals("</>;lwm2m=1.0,</0>;ver=1.2,</0/0>;ssid=111;uri=\"coap://localhost:11\"," //
+                + "</0/1>;uri=\"coap://localhost:1\"," //
+                + "</0/2>;ssid=222;uri=\"coap://localhost:22\"," //
+                + "</1>;ver=2.0,</1/0>;ssid=333,</3/0>," //
+                + "</21>;ver=2.0," //
+                + "</21/10>;ssid=111;uri=\"coap://localhost:11\"," //
+                + "</21/11>;uri=\"coap://localhost:1\"" //
+                , strLinks);
     }
 
     private ObjectModel getObjectModel(int id) {
@@ -332,6 +374,39 @@ public class LinkFormatHelperTest {
                         om.resources.values());
         }
         return null;
+    }
+
+    private ObjectModel getObjectModel(int id, String version) {
+        List<ObjectModel> objectModels = ObjectLoader.loadAllDefault();
+        for (ObjectModel om : objectModels) {
+            if (om.id == id && version.equals(om.version))
+                return om;
+        }
+        return null;
+    }
+
+    /**
+     * create a objectEnabler with 1 instance of the given model
+     */
+    private LwM2mObjectEnabler createObjectEnabler(ObjectModel objectModel,
+            Map<Integer, LwM2mInstanceEnabler> instances) {
+
+        // create factory
+        BaseInstanceEnablerFactory factory = new BaseInstanceEnablerFactory() {
+            @Override
+            public LwM2mInstanceEnabler create() {
+                return new DummyInstanceEnabler();
+            }
+        };
+
+        // set-up instances
+        for (Entry<Integer, LwM2mInstanceEnabler> instanceEntry : instances.entrySet()) {
+            instanceEntry.getValue().setId(instanceEntry.getKey());
+            instanceEntry.getValue().setModel(objectModel);
+        }
+
+        // create enabler;
+        return new ObjectEnabler(objectModel.id, objectModel, instances, factory, ContentFormat.DEFAULT);
     }
 
     /**

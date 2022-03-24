@@ -4,7 +4,7 @@
 FILE INFORMATION
 
 OMA Permanent Document
-   File: OMA-SUP-XML_21-V1_1-20201110-A.xml
+   File: OMA-SUP-XML_21-V2_0-20211123-A.xml
    Path: http://www.openmobilealliance.org/release/ObjLwM2M_OSCORE/
 
 OMNA LwM2M Registry
@@ -13,17 +13,11 @@ OMNA LwM2M Registry
 
 NORMATIVE INFORMATION
 
-  Information about this file can be found in the latest revision of
-
-    OMA-TS-LightweightM2M_Core-V1_2
-
-  This is available at http://www.openmobilealliance.org/release/LightweightM2M/
-
   Send comments to https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues
 
 LEGAL DISCLAIMER
 
-  Copyright 2020 Open Mobile Alliance.
+  Copyright 2021 Open Mobile Alliance.
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -63,9 +57,9 @@ LEGAL DISCLAIMER
 		<Description1><![CDATA[This LwM2M Object provides the keying material and related information of a LwM2M Client appropriate to access a specified LwM2M Server using OSCORE. One Object Instance MAY address a LwM2M Bootstrap-Server. These LwM2M Object Resources MUST only be changed by a LwM2M Bootstrap-Server or Bootstrap from Smartcard and MUST NOT be accessible by any other LwM2M Server.
 Instances of this Object are linked from Instances of Object 0 using the OSCORE Security Mode Resource of Object 0. Instances of this Object MUST NOT be linked from more than one Instance of Object 0.]]></Description1>
 		<ObjectID>21</ObjectID>
-		<ObjectURN>urn:oma:lwm2m:oma:21:1.1</ObjectURN>
+		<ObjectURN>urn:oma:lwm2m:oma:21:2.0</ObjectURN>
 		<LWM2MVersion>1.1</LWM2MVersion>
-		<ObjectVersion>1.1</ObjectVersion>
+		<ObjectVersion>2.0</ObjectVersion>
 		<MultipleInstances>Multiple</MultipleInstances>
 		<Mandatory>Optional</Mandatory>
 		<Resources>
@@ -73,7 +67,7 @@ Instances of this Object are linked from Instances of Object 0 using the OSCORE 
 				<Operations></Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
-				<Type>String</Type>
+				<Type>Opaque</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[This resource MUST be used to store the pre-shared key used in LwM2M Client and LwM2M Server/Bootstrap-Server, called the Master Secret.  ]]></Description>
@@ -82,7 +76,7 @@ Instances of this Object are linked from Instances of Object 0 using the OSCORE 
 				<Operations></Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
-				<Type>String</Type>
+				<Type>Opaque</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[This resource MUST store an OSCORE identifier for the LwM2M Client called the Sender ID. ]]></Description>
@@ -91,7 +85,7 @@ Instances of this Object are linked from Instances of Object 0 using the OSCORE 
 				<Operations></Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Mandatory</Mandatory>
-				<Type>String</Type>
+				<Type>Opaque</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[This resource MUST store an OSCORE identifier for the LwM2M Client called the Recipient ID. ]]></Description>
@@ -119,7 +113,7 @@ Instances of this Object are linked from Instances of Object 0 using the OSCORE 
 				<Operations></Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
-				<Type>String</Type>
+				<Type>Opaque</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[This resource MUST be used to store a non-secret random value called the Master Salt. The Master Salt is used to derive the security context used by OSCORE. ]]></Description>
@@ -128,7 +122,7 @@ Instances of this Object are linked from Instances of Object 0 using the OSCORE 
 				<Operations></Operations>
 				<MultipleInstances>Single</MultipleInstances>
 				<Mandatory>Optional</Mandatory>
-				<Type>String</Type>
+				<Type>Opaque</Type>
 				<RangeEnumeration></RangeEnumeration>
 				<Units></Units>
 				<Description><![CDATA[This resource MUST be used to store an OSCORE identifier called ID Context. This identifier is used to identify the Common Context and derive the security context used by OSCORE.]]></Description>

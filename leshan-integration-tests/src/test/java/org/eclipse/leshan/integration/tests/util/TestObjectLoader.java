@@ -40,7 +40,7 @@ public class TestObjectLoader {
         objectModels.add(repository.getObjectModel(LwM2mId.FIRMWARE, "1.0"));
         objectModels.add(repository.getObjectModel(LwM2mId.LOCATION, "1.0"));
         objectModels.add(repository.getObjectModel(LwM2mId.CONNECTIVITY_STATISTICS, "1.0"));
-        objectModels.add(repository.getObjectModel(LwM2mId.OSCORE, "1.0"));
+        objectModels.add(repository.getObjectModel(LwM2mId.OSCORE, "2.0"));
 
         return objectModels;
     }
