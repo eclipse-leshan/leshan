@@ -760,25 +760,20 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     }
 
     protected static Oscore getOscoreBootstrapClientObject() {
-        return new Oscore(12345, new String(Hex.encodeHex(OSCORE_BOOTSTRAP_MASTER_SECRET)),
-                new String(Hex.encodeHex(OSCORE_BOOTSTRAP_SENDER_ID)),
-                new String(Hex.encodeHex(OSCORE_BOOTSTRAP_RECIPIENT_ID)), OSCORE_ALGORITHM.AsCBOR().AsInt32(),
-                OSCORE_KDF_ALGORITHM.AsCBOR().AsInt32(), new String(Hex.encodeHex(OSCORE_BOOTSTRAP_MASTER_SALT)));
+        return new Oscore(12345, OSCORE_BOOTSTRAP_MASTER_SECRET, OSCORE_BOOTSTRAP_SENDER_ID,
+                OSCORE_BOOTSTRAP_RECIPIENT_ID, OSCORE_ALGORITHM.AsCBOR().AsInt32(),
+                OSCORE_KDF_ALGORITHM.AsCBOR().AsInt32(), OSCORE_BOOTSTRAP_MASTER_SALT);
     }
 
     protected static BootstrapConfig.OscoreObject getOscoreBootstrapObject(boolean bootstrap) {
         BootstrapConfig.OscoreObject oscoreObject = new BootstrapConfig.OscoreObject();
 
-        oscoreObject.oscoreMasterSecret = new String(
-                Hex.encodeHex(bootstrap ? OSCORE_BOOTSTRAP_MASTER_SECRET : OSCORE_MASTER_SECRET));
-        oscoreObject.oscoreSenderId = new String(
-                Hex.encodeHex(bootstrap ? OSCORE_BOOTSTRAP_SENDER_ID : OSCORE_SENDER_ID));
-        oscoreObject.oscoreRecipientId = new String(
-                Hex.encodeHex(bootstrap ? OSCORE_BOOTSTRAP_RECIPIENT_ID : OSCORE_RECIPIENT_ID));
+        oscoreObject.oscoreMasterSecret = bootstrap ? OSCORE_BOOTSTRAP_MASTER_SECRET : OSCORE_MASTER_SECRET;
+        oscoreObject.oscoreSenderId = bootstrap ? OSCORE_BOOTSTRAP_SENDER_ID : OSCORE_SENDER_ID;
+        oscoreObject.oscoreRecipientId = bootstrap ? OSCORE_BOOTSTRAP_RECIPIENT_ID : OSCORE_RECIPIENT_ID;
         oscoreObject.oscoreAeadAlgorithm = OSCORE_ALGORITHM.AsCBOR().AsInt32();
         oscoreObject.oscoreHmacAlgorithm = OSCORE_KDF_ALGORITHM.AsCBOR().AsInt32();
-        oscoreObject.oscoreMasterSalt = new String(
-                Hex.encodeHex(bootstrap ? OSCORE_BOOTSTRAP_MASTER_SALT : OSCORE_MASTER_SALT));
+        oscoreObject.oscoreMasterSalt = bootstrap ? OSCORE_BOOTSTRAP_MASTER_SALT : OSCORE_MASTER_SALT;
 
         return oscoreObject;
     }

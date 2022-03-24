@@ -43,12 +43,12 @@ public class Oscore extends BaseInstanceEnabler {
     private final static List<Integer> supportedResources = Arrays.asList(OSCORE_Master_Secret, OSCORE_Sender_ID,
             OSCORE_Recipient_ID, OSCORE_AEAD_Algorithm, OSCORE_HMAC_Algorithm, OSCORE_Master_Salt);
 
-    private String masterSecret;
-    private String senderId;
-    private String recipientId;
+    private byte[] masterSecret;
+    private byte[] senderId;
+    private byte[] recipientId;
     private int aeadAlgorithm;
     private int hkdfAlgorithm;
-    private String masterSalt;
+    private byte[] masterSalt;
 
     public Oscore() {
 
@@ -57,8 +57,8 @@ public class Oscore extends BaseInstanceEnabler {
     /**
      * Default constructor.
      */
-    public Oscore(int instanceId, String masterSecret, String senderId, String recipientId, int aeadAlgorithm,
-            int hkdfAlgorithm, String masterSalt) {
+    public Oscore(int instanceId, byte[] masterSecret, byte[] senderId, byte[] recipientId, int aeadAlgorithm,
+            int hkdfAlgorithm, byte[] masterSalt) {
         super(instanceId);
         this.masterSecret = masterSecret;
         this.senderId = senderId;
@@ -74,8 +74,8 @@ public class Oscore extends BaseInstanceEnabler {
      * aeadAlgorithm = 10; //AES_CCM_16_64_128m hmacAlgorithm = -10; //HKDF_HMAC_SHA_256, masterSalt = "";
      *
      */
-    public Oscore(int instanceId, String masterSecret, String senderId, String recipientId) {
-        this(instanceId, masterSecret, senderId, recipientId, 10, -10, "");
+    public Oscore(int instanceId, byte[] masterSecret, byte[] senderId, byte[] recipientId) {
+        this(instanceId, masterSecret, senderId, recipientId, 10, -10, new byte[0]);
     }
 
     @Override
@@ -87,45 +87,45 @@ public class Oscore extends BaseInstanceEnabler {
         switch (resourceId) {
 
         case OSCORE_Master_Secret:
-            if (value.getType() != Type.STRING) {
+            if (value.getType() != Type.OPAQUE) {
                 return WriteResponse.badRequest("invalid type");
             }
-            masterSecret = (String) value.getValue();
+            masterSecret = (byte[]) value.getValue();
             return WriteResponse.success();
 
         case OSCORE_Sender_ID:
-            if (value.getType() != Type.STRING) {
+            if (value.getType() != Type.OPAQUE) {
                 return WriteResponse.badRequest("invalid type");
             }
-            senderId = (String) value.getValue();
+            senderId = (byte[]) value.getValue();
             return WriteResponse.success();
 
         case OSCORE_Recipient_ID:
-            if (value.getType() != Type.STRING) {
+            if (value.getType() != Type.OPAQUE) {
                 return WriteResponse.badRequest("invalid type");
             }
-            recipientId = (String) value.getValue();
+            recipientId = (byte[]) value.getValue();
             return WriteResponse.success();
 
         case OSCORE_AEAD_Algorithm:
-            if (value.getType() != Type.INTEGER) {
+            if (value.getType() != Type.OPAQUE) {
                 return WriteResponse.badRequest("invalid type");
             }
             aeadAlgorithm = ((Long) value.getValue()).intValue();
             return WriteResponse.success();
 
         case OSCORE_HMAC_Algorithm:
-            if (value.getType() != Type.INTEGER) {
+            if (value.getType() != Type.OPAQUE) {
                 return WriteResponse.badRequest("invalid type");
             }
             hkdfAlgorithm = ((Long) value.getValue()).intValue();
             return WriteResponse.success();
 
         case OSCORE_Master_Salt:
-            if (value.getType() != Type.STRING) {
+            if (value.getType() != Type.OPAQUE) {
                 return WriteResponse.badRequest("invalid type");
             }
-            masterSalt = (String) value.getValue();
+            masterSalt = (byte[]) value.getValue();
             return WriteResponse.success();
 
         default:

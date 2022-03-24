@@ -508,10 +508,8 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
     }
 
     protected static Oscore getOscoreClientObject() {
-        return new Oscore(12345, new String(Hex.encodeHex(OSCORE_MASTER_SECRET)),
-                new String(Hex.encodeHex(OSCORE_SENDER_ID)), new String(Hex.encodeHex(OSCORE_RECIPIENT_ID)),
-                OSCORE_ALGORITHM.AsCBOR().AsInt32(), OSCORE_KDF_ALGORITHM.AsCBOR().AsInt32(),
-                new String(Hex.encodeHex(OSCORE_MASTER_SALT)));
+        return new Oscore(12345, OSCORE_MASTER_SECRET, OSCORE_SENDER_ID, OSCORE_RECIPIENT_ID,
+                OSCORE_ALGORITHM.AsCBOR().AsInt32(), OSCORE_KDF_ALGORITHM.AsCBOR().AsInt32(), OSCORE_MASTER_SALT);
     }
 
     public PublicKey getServerPublicKey() {

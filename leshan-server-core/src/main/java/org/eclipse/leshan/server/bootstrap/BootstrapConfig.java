@@ -30,6 +30,7 @@ import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.datatype.ULong;
 
 /**
@@ -405,12 +406,12 @@ public class BootstrapConfig {
     public static class OscoreObject implements Serializable {
         private static final long serialVersionUID = 1L;
 
-        public String oscoreMasterSecret = "";
-        public String oscoreSenderId = "";
-        public String oscoreRecipientId = "";
+        public byte[] oscoreMasterSecret = new byte[0];
+        public byte[] oscoreSenderId = new byte[0];
+        public byte[] oscoreRecipientId = new byte[0];
         public Integer oscoreAeadAlgorithm = null;
         public Integer oscoreHmacAlgorithm = null;
-        public String oscoreMasterSalt = "";
+        public byte[] oscoreMasterSalt = new byte[0];
 
         @Override
         public String toString() {
@@ -418,7 +419,8 @@ public class BootstrapConfig {
             // purposes
             return String.format(
                     "OscoreObject [oscoreSenderId=%s, oscoreRecipientId=%s, oscoreAeadAlgorithm=%s, oscoreHmacAlgorithm=%s]",
-                    oscoreSenderId, oscoreRecipientId, oscoreAeadAlgorithm, oscoreHmacAlgorithm);
+                    Hex.encodeHexString(oscoreSenderId), Hex.encodeHexString(oscoreRecipientId), oscoreAeadAlgorithm,
+                    oscoreHmacAlgorithm);
         }
     }
 

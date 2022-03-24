@@ -58,8 +58,10 @@ public class ConfigurationChecker {
             if (sec.bootstrapServer && sec.oscoreSecurityMode != null) {
                 BootstrapConfig.OscoreObject osc = config.oscore.get(sec.oscoreSecurityMode);
                 if (osc != null) {
-                    assertIf(StringUtils.isEmpty(osc.oscoreMasterSecret), "master secret must not be empty");
-                    assertIf(StringUtils.isEmpty(osc.oscoreSenderId) && StringUtils.isEmpty(osc.oscoreRecipientId),
+                    assertIf(osc.oscoreMasterSecret != null && osc.oscoreMasterSecret.length > 0,
+                            "master secret must not be empty");
+                    assertIf(osc.oscoreSenderId != null && osc.oscoreSenderId.length > 0 && //
+                            osc.oscoreRecipientId != null && osc.oscoreRecipientId.length > 0,
                             "either sender ID or recipient ID must be filled");
                 } else {
                     throw new InvalidConfigurationException(
