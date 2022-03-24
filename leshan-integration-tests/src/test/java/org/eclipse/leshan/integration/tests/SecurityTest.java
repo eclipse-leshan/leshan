@@ -108,12 +108,13 @@ public class SecurityTest {
     public void registered_device_with_oscore_to_server_with_oscore()
             throws NonUniqueSecurityInfoException, InterruptedException {
 
-        helper.createServer();
+        helper.createOscoreServer();
         helper.server.start();
 
         helper.createOscoreClient();
 
-        helper.getSecurityStore().add(SecurityInfo.newOSCoreInfo(helper.getCurrentEndpoint(), getOscoreSetting()));
+        helper.getSecurityStore()
+                .add(SecurityInfo.newOscoreInfo(helper.getCurrentEndpoint(), getServerOscoreSetting()));
 
         // Check client is not registered
         helper.assertClientNotRegisterered();

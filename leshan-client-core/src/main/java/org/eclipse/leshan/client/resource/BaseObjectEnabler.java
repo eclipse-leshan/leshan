@@ -113,7 +113,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             beginTransaction(LwM2mPath.OBJECT_DEPTH);
 
             if (!identity.isSystem()) {
-                if (id == LwM2mId.SECURITY) {
+                if (id == LwM2mId.SECURITY || id == LwM2mId.OSCORE) {
                     return CreateResponse.notFound();
                 }
             } else if (identity.isLwm2mBootstrapServer()) {
@@ -155,8 +155,8 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         }
 
         if (!identity.isSystem()) {
-            // read the security object is forbidden
-            if (id == LwM2mId.SECURITY) {
+            // read the security or oscore object is forbidden
+            if (id == LwM2mId.SECURITY || id == LwM2mId.OSCORE) {
                 return ReadResponse.notFound();
             }
 
@@ -218,15 +218,16 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                 return WriteResponse.methodNotAllowed();
             }
 
-            // write the security object is forbidden
-            if (LwM2mId.SECURITY == id && !identity.isSystem()) {
+            // write the security or oscore object is forbidden
+            if (!identity.isSystem() && (id == LwM2mId.SECURITY || id == LwM2mId.OSCORE)) {
                 return WriteResponse.notFound();
             }
 
             if (path.isResource() || path.isResourceInstance()) {
                 // resource write:
                 // check if the resource is writable
-                if (LwM2mId.SECURITY != id) { // security resources are writable by SYSTEM
+                if (id != LwM2mId.SECURITY && id != LwM2mId.OSCORE) {
+                    // security and oscore resources are writable by SYSTEM
                     ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
                     if (resourceModel == null) {
                         return WriteResponse.notFound();
@@ -239,7 +240,8 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             } else if (path.isObjectInstance()) {
                 // instance write:
                 // check if all resources are writable
-                if (LwM2mId.SECURITY != id) { // security resources are writable by SYSTEM
+                if (id != LwM2mId.SECURITY && id != LwM2mId.OSCORE) {
+                    // security and oscore resources are writable by SYSTEM
                     ObjectModel model = getObjectModel();
                     for (Integer writeResourceId : ((LwM2mObjectInstance) request.getNode()).getResources().keySet()) {
                         ResourceModel resourceModel = model.resources.get(writeResourceId);
@@ -292,7 +294,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                 return DeleteResponse.methodNotAllowed();
 
             // delete the security object is forbidden
-            if (id == LwM2mId.SECURITY) {
+            if (id == LwM2mId.SECURITY || id == LwM2mId.OSCORE) {
                 return DeleteResponse.notFound();
             }
 
@@ -337,7 +339,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         }
 
         // execute on security object is forbidden
-        if (id == LwM2mId.SECURITY) {
+        if (id == LwM2mId.SECURITY || id == LwM2mId.OSCORE) {
             return ExecuteResponse.notFound();
         }
 
@@ -382,7 +384,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             return DiscoverResponse.methodNotAllowed();
         }
 
-        if (id == LwM2mId.SECURITY) {
+        if (id == LwM2mId.SECURITY || id == LwM2mId.OSCORE) {
             return DiscoverResponse.notFound();
         }
         return doDiscover(identity, request);
@@ -454,8 +456,8 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             return ObserveResponse.methodNotAllowed();
 
         if (!identity.isSystem()) {
-            // observe or read of the security object is forbidden
-            if (id == LwM2mId.SECURITY)
+            // observe or read of the security and oscore object are forbidden
+            if (id == LwM2mId.SECURITY || id == LwM2mId.OSCORE)
                 return ObserveResponse.notFound();
 
             // check if the resource is readable.
@@ -484,7 +486,8 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         // Collect all mandatory writable resource IDs from the model
         Set<Integer> mandatoryResources = new HashSet<>();
         for (ResourceModel resourceModel : getObjectModel().resources.values()) {
-            if (resourceModel.mandatory && (LwM2mId.SECURITY == id || resourceModel.operations.isWritable()))
+            if (resourceModel.mandatory
+                    && (LwM2mId.SECURITY == id || LwM2mId.OSCORE == id || resourceModel.operations.isWritable()))
                 mandatoryResources.add(resourceModel.id);
         }
         // Afterwards remove the provided resource IDs from that set

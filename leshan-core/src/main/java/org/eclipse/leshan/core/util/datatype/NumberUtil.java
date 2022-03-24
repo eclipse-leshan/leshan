@@ -194,4 +194,17 @@ public class NumberUtil {
         throw new IllegalArgumentException(String.format("Floating-point number expected but was %s (%s)", number,
                 number.getClass().getCanonicalName()));
     }
+
+    /**
+     * Convert the given long to integer without loss.
+     * 
+     * @throws IllegalArgumentException if the long can not be store in an integer.
+     */
+    public static int longToInt(long longValue) {
+        int intValue = (int) longValue;
+        if (intValue != longValue) {
+            throw new IllegalArgumentException(String.format("%d cannot be cast to int.", longValue));
+        }
+        return intValue;
+    }
 }

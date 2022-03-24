@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -41,7 +40,10 @@ public class InMemorySecurityStore implements EditableSecurityStore {
     protected Map<String, SecurityInfo> securityByEp = new HashMap<>();
 
     // by PSK identity
-    protected Map<String, SecurityInfo> securityByIdentity = new HashMap<>();
+    protected Map<String, SecurityInfo> securityByPskIdentity = new HashMap<>();
+
+    // by PSK oscoreIdentity
+    protected Map<OscoreIdentity, SecurityInfo> securityByOscoreIdentity = new HashMap<>();
 
     private SecurityStoreListener listener;
 
@@ -68,7 +70,7 @@ public class InMemorySecurityStore implements EditableSecurityStore {
     public SecurityInfo getByIdentity(String identity) {
         readLock.lock();
         try {
-            return securityByIdentity.get(identity);
+            return securityByPskIdentity.get(identity);
         } finally {
             readLock.unlock();
         }
@@ -79,15 +81,12 @@ public class InMemorySecurityStore implements EditableSecurityStore {
      */
     @Override
     public SecurityInfo getByOscoreIdentity(OscoreIdentity oscoreIdentity) {
-        // TODO oscore add an index
-        for (Entry<String, SecurityInfo> securityEntry : securityByEp.entrySet()) {
-            if (securityEntry.getValue().useOSCORE()) {
-                if (securityEntry.getValue().getOscoreSetting().getOscoreIdentity().equals(oscoreIdentity)) {
-                    return securityEntry.getValue();
-                }
-            }
+        readLock.lock();
+        try {
+            return securityByOscoreIdentity.get(oscoreIdentity);
+        } finally {
+            readLock.unlock();
         }
-        return null;
     }
 
     @Override
@@ -104,20 +103,42 @@ public class InMemorySecurityStore implements EditableSecurityStore {
     public SecurityInfo add(SecurityInfo info) throws NonUniqueSecurityInfoException {
         writeLock.lock();
         try {
-            String identity = info.getIdentity();
-            if (identity != null) {
-                SecurityInfo infoByIdentity = securityByIdentity.get(info.getIdentity());
-                if (infoByIdentity != null && !info.getEndpoint().equals(infoByIdentity.getEndpoint())) {
-                    throw new NonUniqueSecurityInfoException("PSK Identity " + info.getIdentity() + " is already used");
+            // For PSK, check if PSK identity is not already used.
+            String pskIdentity = info.getPskIdentity();
+            if (pskIdentity != null) {
+                SecurityInfo infoByPskIdentity = securityByPskIdentity.get(pskIdentity);
+                if (infoByPskIdentity != null && !info.getEndpoint().equals(infoByPskIdentity.getEndpoint())) {
+                    throw new NonUniqueSecurityInfoException("PSK Identity " + pskIdentity + " is already used");
                 }
-
-                securityByIdentity.put(info.getIdentity(), info);
+                securityByPskIdentity.put(pskIdentity, info);
             }
 
+            // For OSCORE, check if Oscore identity is not already used.
+            OscoreIdentity oscoreIdentity = info.getOscoreSetting() != null
+                    ? info.getOscoreSetting().getOscoreIdentity()
+                    : null;
+            if (oscoreIdentity != null) {
+                SecurityInfo infoByOscoreIdentity = securityByOscoreIdentity.get(oscoreIdentity);
+                if (infoByOscoreIdentity != null && !info.getEndpoint().equals(infoByOscoreIdentity.getEndpoint())) {
+                    throw new NonUniqueSecurityInfoException("Oscore Identity " + oscoreIdentity + " is already used");
+                }
+                securityByOscoreIdentity.put(oscoreIdentity, info);
+            }
+
+            // Add new security info
             SecurityInfo previous = securityByEp.put(info.getEndpoint(), info);
-            String previousIdentity = previous == null ? null : previous.getIdentity();
-            if (previousIdentity != null && !previousIdentity.equals(identity)) {
-                securityByIdentity.remove(previousIdentity);
+
+            // For PSK, remove index by PSK Identity if needed
+            String previousPskIdentity = previous == null ? null : previous.getPskIdentity();
+            if (previousPskIdentity != null && !previousPskIdentity.equals(pskIdentity)) {
+                securityByPskIdentity.remove(previousPskIdentity);
+            }
+
+            // For OSCORE, remove index by OSCORE Identity if needed
+            OscoreIdentity previousOscoreIdentity = previous == null || previous.getOscoreSetting() == null ? null
+                    : previous.getOscoreSetting().getOscoreIdentity();
+            if (previousOscoreIdentity != null && !previousOscoreIdentity.equals(oscoreIdentity)) {
+                securityByOscoreIdentity.remove(previousOscoreIdentity);
             }
 
             return previous;
@@ -132,8 +153,13 @@ public class InMemorySecurityStore implements EditableSecurityStore {
         try {
             SecurityInfo info = securityByEp.get(endpoint);
             if (info != null) {
-                if (info.getIdentity() != null) {
-                    securityByIdentity.remove(info.getIdentity());
+                // For PSK, remove index by PSK Identity if needed
+                if (info.getPskIdentity() != null) {
+                    securityByPskIdentity.remove(info.getPskIdentity());
+                }
+                // For OSCORE, remove index by OSCORE Identity if needed
+                if (info.getOscoreSetting() != null) {
+                    securityByOscoreIdentity.remove(info.getOscoreSetting().getOscoreIdentity());
                 }
                 securityByEp.remove(endpoint);
                 if (listener != null) {

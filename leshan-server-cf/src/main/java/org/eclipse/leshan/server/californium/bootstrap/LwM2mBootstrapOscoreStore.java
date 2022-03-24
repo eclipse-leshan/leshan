@@ -64,9 +64,14 @@ public class LwM2mBootstrapOscoreStore implements OscoreStore {
                     securityInfo.getOscoreSetting().getSenderId(), //
                     securityInfo.getOscoreSetting().getRecipientId(), //
                     securityInfo.getOscoreSetting().getMasterSecret(), //
-                    AlgorithmID.FromCBOR(CBORObject.FromObject(securityInfo.getOscoreSetting().getAeadAlgorithm())), //
-                    AlgorithmID.FromCBOR(CBORObject.FromObject(securityInfo.getOscoreSetting().getHmacAlgorithm())), //
-                    securityInfo.getOscoreSetting().getMasterSalt());
+                    // TODO OSCORE we maybe need an API without the need to create a CBOR Object
+                    AlgorithmID.FromCBOR(
+                            CBORObject.FromObject(securityInfo.getOscoreSetting().getAeadAlgorithm().getValue())), //
+                    AlgorithmID.FromCBOR(
+                            CBORObject.FromObject(securityInfo.getOscoreSetting().getHkdfAlgorithm().getValue())), //
+                    // TODO OSCORE kind of hack because californium doesn't support an empty byte[] array for salt ?
+                    securityInfo.getOscoreSetting().getMasterSalt().length == 0 ? null
+                            : securityInfo.getOscoreSetting().getMasterSalt());
         } catch (CoseException e) {
             LOG.error("Unable to create OscoreParameters from OoscoreSetting %s", securityInfo.getOscoreSetting(), e);
             return null;

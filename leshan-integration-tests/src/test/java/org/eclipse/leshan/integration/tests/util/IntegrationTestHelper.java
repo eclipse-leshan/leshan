@@ -219,6 +219,12 @@ public class IntegrationTestHelper {
         setupServerMonitoring();
     }
 
+    public void createOscoreServer() {
+        server = createServerBuilder().setEnableOscore(true).build();
+        // monitor client registration
+        setupServerMonitoring();
+    }
+
     protected LeshanServerBuilder createServerBuilder() {
         LeshanServerBuilder builder = new LeshanServerBuilder();
         builder.setDecoder(new DefaultLwM2mDecoder(true));

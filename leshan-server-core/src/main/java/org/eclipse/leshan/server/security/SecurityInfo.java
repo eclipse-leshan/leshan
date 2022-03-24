@@ -20,9 +20,10 @@ import java.io.Serializable;
 import java.security.PublicKey;
 import java.util.Arrays;
 
-import org.eclipse.leshan.core.util.Hex;
+import org.eclipse.leshan.core.oscore.InvalidOscoreSettingException;
+import org.eclipse.leshan.core.oscore.OscoreSetting;
+import org.eclipse.leshan.core.oscore.OscoreValidator;
 import org.eclipse.leshan.core.util.Validate;
-import org.eclipse.leshan.server.security.oscore.OscoreSetting;
 
 /**
  * The security info for a client.
@@ -45,7 +46,7 @@ public class SecurityInfo implements Serializable {
     private final String endpoint;
 
     // PSK
-    private final String identity;
+    private final String pskIdentity;
     private final byte[] preSharedKey;
 
     // RPK
@@ -54,14 +55,14 @@ public class SecurityInfo implements Serializable {
     // X.509
     private final boolean useX509Cert;
 
-    // TODO OSCORE : Save content properly information here. Must be serializable.
+    // OSCORE
     private final OscoreSetting oscoreSetting;
 
-    private SecurityInfo(String endpoint, String identity, byte[] preSharedKey, PublicKey rawPublicKey,
+    private SecurityInfo(String endpoint, String pskIdentity, byte[] preSharedKey, PublicKey rawPublicKey,
             boolean useX509Cert, OscoreSetting oscoreSetting) {
         Validate.notEmpty(endpoint);
         this.endpoint = endpoint;
-        this.identity = identity;
+        this.pskIdentity = pskIdentity;
         this.preSharedKey = preSharedKey;
         this.rawPublicKey = rawPublicKey;
         this.useX509Cert = useX509Cert;
@@ -112,23 +113,14 @@ public class SecurityInfo implements Serializable {
     /**
      * Construct a {@link SecurityInfo} when using OSCORE.
      */
-    // TODO OSCORE rename in newOscoreInfo
-    public static SecurityInfo newOSCoreInfo(String endpoint, OscoreSetting oscoreSetting) {
+    public static SecurityInfo newOscoreInfo(String endpoint, OscoreSetting oscoreSetting) {
         Validate.notNull(oscoreSetting);
-        return new SecurityInfo(endpoint, null, null, null, false, oscoreSetting);
-    }
-
-    /**
-     * Generates an OSCORE identity from an OSCORE context
-     */
-    private static String generateOscoreIdentity(OscoreSetting oscoreSetting) {
-        if (oscoreSetting == null) {
-            return null;
+        try {
+            new OscoreValidator().validateOscoreSetting(oscoreSetting);
+        } catch (InvalidOscoreSettingException e) {
+            throw new IllegalArgumentException("Invalid " + oscoreSetting, e);
         }
-
-        String oscoreIdentity = "sid=" + Hex.encodeHexString(oscoreSetting.getSenderId()) + ",rid="
-                + Hex.encodeHexString(oscoreSetting.getRecipientId());
-        return oscoreIdentity;
+        return new SecurityInfo(endpoint, null, null, null, false, oscoreSetting);
     }
 
     /**
@@ -142,13 +134,13 @@ public class SecurityInfo implements Serializable {
      * @return the Pre-Shared-Key identity or <code>null</code> if {@link #usePSK()} return <code>false</code>.
      * @see #getPreSharedKey()
      */
-    public String getIdentity() {
-        return identity;
+    public String getPskIdentity() {
+        return pskIdentity;
     }
 
     /**
      * @return the Pre-Shared-Key or <code>null</code> if {@link #usePSK()} return <code>false</code>.
-     * @see #getIdentity()
+     * @see #getPskIdentity()
      */
     public byte[] getPreSharedKey() {
         return preSharedKey;
@@ -165,7 +157,7 @@ public class SecurityInfo implements Serializable {
      * @return <code>true</code> if this client should use PSK authentication.
      */
     public boolean usePSK() {
-        return identity != null && preSharedKey != null;
+        return pskIdentity != null && preSharedKey != null;
     }
 
     /**
@@ -201,7 +193,7 @@ public class SecurityInfo implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((endpoint == null) ? 0 : endpoint.hashCode());
-        result = prime * result + ((identity == null) ? 0 : identity.hashCode());
+        result = prime * result + ((pskIdentity == null) ? 0 : pskIdentity.hashCode());
         result = prime * result + Arrays.hashCode(preSharedKey);
         result = prime * result + ((rawPublicKey == null) ? 0 : rawPublicKey.hashCode());
         result = prime * result + (useX509Cert ? 1231 : 1237);
@@ -223,10 +215,10 @@ public class SecurityInfo implements Serializable {
                 return false;
         } else if (!endpoint.equals(other.endpoint))
             return false;
-        if (identity == null) {
-            if (other.identity != null)
+        if (pskIdentity == null) {
+            if (other.pskIdentity != null)
                 return false;
-        } else if (!identity.equals(other.identity))
+        } else if (!pskIdentity.equals(other.pskIdentity))
             return false;
         if (!Arrays.equals(preSharedKey, other.preSharedKey))
             return false;
@@ -252,7 +244,7 @@ public class SecurityInfo implements Serializable {
         // Note : preSharedKey is explicitly excluded from display for security purposes
         return String.format(
                 "SecurityInfo [endpoint=%s, identity=%s, rawPublicKey=%s, useX509Cert=%s, oscoreIdentity=%s]", endpoint,
-                identity, rawPublicKey, useX509Cert, useOSCORE() ? getOscoreSetting().getOscoreIdentity() : "");
+                pskIdentity, rawPublicKey, useX509Cert, useOSCORE() ? getOscoreSetting().getOscoreIdentity() : "");
     }
 
 }

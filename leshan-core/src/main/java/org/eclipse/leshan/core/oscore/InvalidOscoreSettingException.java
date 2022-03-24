@@ -13,31 +13,25 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.californium.oscore.cf;
+package org.eclipse.leshan.core.oscore;
 
-import org.eclipse.californium.core.network.CoapEndpoint;
+public class InvalidOscoreSettingException extends Exception {
 
-/**
- * A static store which old only one {@link OscoreParameters}.
- * <p>
- * Can be used when {@link CoapEndpoint} is used with only 1 foreign peer.
- *
- */
-public class StaticOscoreStore implements OscoreStore {
+    private static final long serialVersionUID = 1L;
 
-    private OscoreParameters parameters;
-
-    public StaticOscoreStore(OscoreParameters parameters) {
-        this.parameters = parameters;
+    public InvalidOscoreSettingException(String message) {
+        super(message);
     }
 
-    @Override
-    public OscoreParameters getOscoreParameters(byte[] recipientID) {
-        return parameters;
+    public InvalidOscoreSettingException(String message, Object... args) {
+        super(String.format(message, args));
     }
 
-    @Override
-    public byte[] getRecipientId(String uri) {
-        return parameters.getRecipientId();
+    public InvalidOscoreSettingException(Exception e, String message, Object... args) {
+        super(String.format(message, args), e);
+    }
+
+    public InvalidOscoreSettingException(String message, Exception cause) {
+        super(message, cause);
     }
 }

@@ -161,17 +161,17 @@ public class BootstrapUtil {
         Collection<LwM2mResource> resources = new ArrayList<>();
 
         if (oscoreConfig.oscoreMasterSecret != null)
-            resources.add(LwM2mSingleResource.newStringResource(0, oscoreConfig.oscoreMasterSecret));
+            resources.add(LwM2mSingleResource.newBinaryResource(0, oscoreConfig.oscoreMasterSecret));
         if (oscoreConfig.oscoreSenderId != null)
-            resources.add(LwM2mSingleResource.newStringResource(1, oscoreConfig.oscoreSenderId));
+            resources.add(LwM2mSingleResource.newBinaryResource(1, oscoreConfig.oscoreSenderId));
         if (oscoreConfig.oscoreRecipientId != null)
-            resources.add(LwM2mSingleResource.newStringResource(2, oscoreConfig.oscoreRecipientId));
+            resources.add(LwM2mSingleResource.newBinaryResource(2, oscoreConfig.oscoreRecipientId));
         if (oscoreConfig.oscoreAeadAlgorithm != null)
             resources.add(LwM2mSingleResource.newIntegerResource(3, oscoreConfig.oscoreAeadAlgorithm));
         if (oscoreConfig.oscoreHmacAlgorithm != null)
             resources.add(LwM2mSingleResource.newIntegerResource(4, oscoreConfig.oscoreHmacAlgorithm));
         if (oscoreConfig.oscoreMasterSalt != null)
-            resources.add(LwM2mSingleResource.newStringResource(5, oscoreConfig.oscoreMasterSalt));
+            resources.add(LwM2mSingleResource.newBinaryResource(5, oscoreConfig.oscoreMasterSalt));
 
         return new LwM2mObjectInstance(instanceId, resources);
     }

@@ -30,6 +30,7 @@ import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.datatype.ULong;
 
 /**
@@ -400,17 +401,58 @@ public class BootstrapConfig {
         }
     }
 
-    /** oscore configuration (object 17) */
-    // TODO OSCORE : add some javadoc
+    /**
+     * OSCORE configuration (object 21) as defined in LWM2M 1.1.x TS.
+     * <p>
+     * WARNING BootstrapConfig support OSCORE object since version 2.0 :
+     * https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/521
+     * <p>
+     * This LwM2M Object provides the keying material and related information of a LwM2M Client appropriate to access a
+     * specified LwM2M Server using OSCORE. One Object Instance MAY address a LwM2M Bootstrap-Server. These LwM2M Object
+     * Resources MUST only be changed by a LwM2M Bootstrap-Server or Bootstrap from Smartcard and MUST NOT be accessible
+     * by any other LwM2M Server. Instances of this Object are linked from Instances of Object 0 using the OSCORE
+     * Security Mode Resource of Object 0. Instances of this Object MUST NOT be linked from more than one Instance of
+     * Object 0.
+     */
     public static class OscoreObject implements Serializable {
         private static final long serialVersionUID = 1L;
 
-        public String oscoreMasterSecret = "";
-        public String oscoreSenderId = "";
-        public String oscoreRecipientId = "";
+        /**
+         * This resource MUST be used to store the pre-shared key used in LwM2M Client and LwM2M
+         * Server/Bootstrap-Server, called the Master Secret.
+         */
+        public byte[] oscoreMasterSecret = null;
+        /**
+         * This resource MUST store an OSCORE identifier for the LwM2M Client called the Sender ID.
+         */
+        public byte[] oscoreSenderId = null;
+        /**
+         * This resource MUST store an OSCORE identifier for the LwM2M Client called the Recipient ID.
+         */
+        public byte[] oscoreRecipientId = null;
+        /**
+         * This resource MUST be used to store the encoding of the AEAD Algorithm as defined in Table 10 of RFC 8152.
+         * The AEAD is used by OSCORE for encryption and integrity protection of CoAP message fields.
+         */
         public Integer oscoreAeadAlgorithm = null;
+        /**
+         * This resource MUST be used to store the encoding of the HMAC Algorithm used in the HKDF. The encoding of HMAC
+         * algorithms are defined in Table 7 of RFC 8152. The HKDF is used to derive the security context used by
+         * OSCORE.
+         */
         public Integer oscoreHmacAlgorithm = null;
-        public String oscoreMasterSalt = "";
+        /**
+         * This resource MUST be used to store a non-secret random value called the Master Salt. The Master Salt is used
+         * to derive the security context used by OSCORE.
+         */
+        public byte[] oscoreMasterSalt = null;
+
+        // TODO OSCORE : not yet implemented
+        // /**
+        // * This resource MUST be used to store an OSCORE identifier called ID Context. This identifier is used to
+        // * identify the Common Context and derive the security context used by OSCORE.
+        // */
+        // public byte[] oscoreContextId = null;
 
         @Override
         public String toString() {
@@ -418,14 +460,14 @@ public class BootstrapConfig {
             // purposes
             return String.format(
                     "OscoreObject [oscoreSenderId=%s, oscoreRecipientId=%s, oscoreAeadAlgorithm=%s, oscoreHmacAlgorithm=%s]",
-                    oscoreSenderId, oscoreRecipientId, oscoreAeadAlgorithm, oscoreHmacAlgorithm);
+                    Hex.encodeHexString(oscoreSenderId), Hex.encodeHexString(oscoreRecipientId), oscoreAeadAlgorithm,
+                    oscoreHmacAlgorithm);
         }
     }
 
     @Override
     public String toString() {
-        // TODO OSCORE : should we add OSCORE to toString ? or is it to sensitive data.
-        // this question remain for other config.
-        return String.format("BootstrapConfig [servers=%s, security=%s, acls=%s]", servers, security, acls);
+        return String.format("BootstrapConfig [servers=%s, security=%s, acls=%s, oscore=%s]", servers, security, acls,
+                oscore);
     }
 }

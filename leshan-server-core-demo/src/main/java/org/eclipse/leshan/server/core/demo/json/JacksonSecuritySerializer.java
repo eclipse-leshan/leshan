@@ -50,9 +50,9 @@ public class JacksonSecuritySerializer extends StdSerializer<SecurityInfo> {
 
         element.put("endpoint", src.getEndpoint());
 
-        if (src.getIdentity() != null) {
+        if (src.getPskIdentity() != null) {
             Map<String, Object> psk = new HashMap<>();
-            psk.put("identity", src.getIdentity());
+            psk.put("identity", src.getPskIdentity());
             psk.put("key", Hex.encodeHexString(src.getPreSharedKey()));
             element.put("psk", psk);
         }

@@ -26,6 +26,7 @@ import java.security.cert.Certificate;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.SecurityMode;
+import org.eclipse.leshan.core.oscore.OscoreSetting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,12 +58,7 @@ public class ServerInfo {
 
     // OSCORE parameters
     public boolean useOscore;
-    public byte[] masterSecret;
-    public byte[] senderId;
-    public byte[] recipientId;
-    public long aeadAlgorithm;
-    public long hkdfAlgorithm;
-    public byte[] masterSalt;
+    public OscoreSetting oscoreSetting;
 
     public InetSocketAddress getAddress() {
         return getAddress(serverUri);

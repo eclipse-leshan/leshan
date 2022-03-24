@@ -28,8 +28,12 @@ import java.util.Map;
 
 import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.oscore.InvalidOscoreSettingException;
+import org.eclipse.leshan.core.oscore.OscoreSetting;
+import org.eclipse.leshan.core.oscore.OscoreValidator;
 import org.eclipse.leshan.core.util.SecurityUtil;
 import org.eclipse.leshan.core.util.StringUtils;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfig.OscoreObject;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 
 /**
@@ -37,6 +41,8 @@ import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
  * coherence with each other.
  */
 public class ConfigurationChecker {
+
+    private OscoreValidator oscoreValidator = new OscoreValidator();
 
     /**
      * Verify if the {@link BootstrapConfig} is valid and consistent.
@@ -53,19 +59,6 @@ public class ConfigurationChecker {
         // check security configurations
         for (Map.Entry<Integer, BootstrapConfig.ServerSecurity> e : config.security.entrySet()) {
             BootstrapConfig.ServerSecurity sec = e.getValue();
-
-            // Retrieve the OSCORE object for this bootstrap server security object
-            if (sec.bootstrapServer && sec.oscoreSecurityMode != null) {
-                BootstrapConfig.OscoreObject osc = config.oscore.get(sec.oscoreSecurityMode);
-                if (osc != null) {
-                    assertIf(StringUtils.isEmpty(osc.oscoreMasterSecret), "master secret must not be empty");
-                    assertIf(StringUtils.isEmpty(osc.oscoreSenderId) && StringUtils.isEmpty(osc.oscoreRecipientId),
-                            "either sender ID or recipient ID must be filled");
-                } else {
-                    throw new InvalidConfigurationException(
-                            "Bootstrap server is set to use OSCORE, its OSCORE object must not be empty");
-                }
-            }
 
             // checks security config
             switch (sec.securityMode) {
@@ -86,6 +79,13 @@ public class ConfigurationChecker {
             }
 
             validateMandatoryField(sec);
+
+            validateOscoreObjectExist(sec, config);
+        }
+
+        // check oscore configuration
+        for (OscoreObject oscoreObject : config.oscore.values()) {
+            checkOscore(oscoreObject);
         }
 
         // does each server have a corresponding security entry?
@@ -129,6 +129,26 @@ public class ConfigurationChecker {
         assertIf(isEmpty(sec.serverPublicKey), "x509 mode, server public key must not be empty");
         assertIf(decodeCertificate(sec.serverPublicKey) == null,
                 "x509 mode, server public key must be DER encoded X.509 certificate");
+    }
+
+    protected void checkOscore(OscoreObject oscoreObject) throws InvalidConfigurationException {
+        OscoreSetting oscoreSetting = new OscoreSetting(oscoreObject.oscoreSenderId, oscoreObject.oscoreRecipientId,
+                oscoreObject.oscoreMasterSecret, oscoreObject.oscoreAeadAlgorithm, oscoreObject.oscoreHmacAlgorithm,
+                oscoreObject.oscoreMasterSalt);
+
+        try {
+            oscoreValidator.validateOscoreSetting(oscoreSetting);
+        } catch (InvalidOscoreSettingException e) {
+            throw new InvalidConfigurationException(e, "oscore mode, invalid %s : %s", oscoreSetting, e.getMessage());
+        }
+    }
+
+    protected void validateOscoreObjectExist(ServerSecurity sec, BootstrapConfig config)
+            throws InvalidConfigurationException {
+        if (sec.oscoreSecurityMode != null) {
+            OscoreObject oscoreObject = config.oscore.get(sec.oscoreSecurityMode);
+            assertIf(isNull(oscoreObject), "oscore mode, no oscore Object with instance " + sec.oscoreSecurityMode);
+        }
     }
 
     protected void validatePath(List<String> pathtoDelete) throws InvalidConfigurationException {
@@ -212,6 +232,10 @@ public class ConfigurationChecker {
 
     protected static boolean isEmpty(byte[] array) {
         return array == null || array.length == 0;
+    }
+
+    protected static boolean isNull(Object array) {
+        return array == null;
     }
 
     protected static BootstrapConfig.ServerSecurity getSecurityEntry(BootstrapConfig config, int shortId) {
