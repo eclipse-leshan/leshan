@@ -115,7 +115,7 @@ Contributors:
         <slf4j.api.version>1.7.32</slf4j.api.version>
         <!-- stuck to 9.4.x for java8 compliance -->
         <jetty.version>9.4.44.v20210927 </jetty.version>
-        <jackson.version>2.13.1</jackson.version>
+        <jackson.version>2.13.2.1</jackson.version>
     </properties>
 
     <profiles>
