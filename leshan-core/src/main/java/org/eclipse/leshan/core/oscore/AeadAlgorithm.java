@@ -2,6 +2,8 @@ package org.eclipse.leshan.core.oscore;
 
 import java.io.Serializable;
 
+import org.eclipse.leshan.core.util.datatype.NumberUtil;
+
 /**
  * Some utility method about code AEAD Algoritm as defined at https://datatracker.ietf.org/doc/html/rfc8152#section-10
  */
@@ -40,6 +42,19 @@ public class AeadAlgorithm implements Serializable {
         for (AeadAlgorithm alg : knownAeadAlgorithms) {
             if (alg.value == value)
                 return alg;
+        }
+        return null;
+    }
+
+    /**
+     * @return {@link AeadAlgorithm} with the given value, return null if this {@link AeadAlgorithm} is not known.
+     */
+    public static AeadAlgorithm fromValue(long value) {
+        try {
+            int intValue = NumberUtil.longToInt(value);
+            return fromValue(intValue);
+        } catch (IllegalArgumentException e) {
+            // long is too big ignore it and return null;
         }
         return null;
     }

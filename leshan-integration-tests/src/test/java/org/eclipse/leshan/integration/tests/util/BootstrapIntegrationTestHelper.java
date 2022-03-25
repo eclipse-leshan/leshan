@@ -251,7 +251,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         String bsServerUri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
                 + bootstrapServer.getUnsecuredAddress().getPort();
 
-        Oscore oscoreObject = getOscoreBootstrapClientObject();
+        Oscore oscoreObject = new Oscore(12345, getBootstrapClientOscoreSetting());
         ObjectsInitializer initializer = new TestObjectsInitializer();
         initializer.setInstancesForObject(OSCORE, oscoreObject);
         createClient(oscoreOnlyBootstrap(bsServerUri, null, oscoreObject.getId()), initializer);
@@ -758,10 +758,9 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 OSCORE_BOOTSTRAP_MASTER_SECRET, OSCORE_ALGORITHM, OSCORE_KDF_ALGORITHM, OSCORE_BOOTSTRAP_MASTER_SALT);
     }
 
-    protected static Oscore getOscoreBootstrapClientObject() {
-        return new Oscore(12345, OSCORE_BOOTSTRAP_MASTER_SECRET, OSCORE_BOOTSTRAP_SENDER_ID,
-                OSCORE_BOOTSTRAP_RECIPIENT_ID, OSCORE_ALGORITHM.getValue(), OSCORE_KDF_ALGORITHM.getValue(),
-                OSCORE_BOOTSTRAP_MASTER_SALT);
+    protected static OscoreSetting getBootstrapClientOscoreSetting() {
+        return new OscoreSetting(OSCORE_BOOTSTRAP_SENDER_ID, OSCORE_BOOTSTRAP_RECIPIENT_ID,
+                OSCORE_BOOTSTRAP_MASTER_SECRET, OSCORE_ALGORITHM, OSCORE_KDF_ALGORITHM, OSCORE_BOOTSTRAP_MASTER_SALT);
     }
 
     protected static BootstrapConfig.OscoreObject getOscoreBootstrapObject(boolean bootstrap) {

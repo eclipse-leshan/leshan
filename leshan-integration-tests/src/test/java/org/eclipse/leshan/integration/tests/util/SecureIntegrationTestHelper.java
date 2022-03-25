@@ -486,7 +486,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         String serverUri = "coap://" + server.getUnsecuredAddress().getHostString() + ":"
                 + server.getUnsecuredAddress().getPort();
 
-        Oscore oscoreObject = getOscoreClientObject();
+        Oscore oscoreObject = new Oscore(12345, getClientOscoreSetting());
         initializer.setInstancesForObject(SECURITY, oscoreOnly(serverUri, 12345, oscoreObject.getId()));
         initializer.setInstancesForObject(OSCORE, oscoreObject);
 
@@ -508,9 +508,9 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
                 OSCORE_KDF_ALGORITHM, OSCORE_MASTER_SALT);
     }
 
-    protected static Oscore getOscoreClientObject() {
-        return new Oscore(12345, OSCORE_MASTER_SECRET, OSCORE_SENDER_ID, OSCORE_RECIPIENT_ID,
-                OSCORE_ALGORITHM.getValue(), OSCORE_KDF_ALGORITHM.getValue(), OSCORE_MASTER_SALT);
+    protected static OscoreSetting getClientOscoreSetting() {
+        return new OscoreSetting(OSCORE_SENDER_ID, OSCORE_RECIPIENT_ID, OSCORE_MASTER_SECRET, OSCORE_ALGORITHM,
+                OSCORE_KDF_ALGORITHM, OSCORE_MASTER_SALT);
     }
 
     public PublicKey getServerPublicKey() {

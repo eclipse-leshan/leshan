@@ -212,4 +212,9 @@ public class NumberUtilTest {
     public void bigdecimal_to_big_for_ulong() {
         numberToULong(new BigDecimal("18446744073709551616"));
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void too_long_to_int() {
+        longToInt(2147483648l);
+    }
 }

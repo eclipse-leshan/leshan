@@ -2,6 +2,8 @@ package org.eclipse.leshan.core.oscore;
 
 import java.io.Serializable;
 
+import org.eclipse.leshan.core.util.datatype.NumberUtil;
+
 /**
  * Some utility method about code HKDF Algoritm as defined at https://datatracker.ietf.org/doc/html/rfc8152#section-11.1
  * and https://datatracker.ietf.org/doc/html/rfc8152#section-12.1.2
@@ -26,7 +28,7 @@ public class HkdfAlgorithm implements Serializable {
     }
 
     /**
-     * @return {@link AeadAlgorithm} with the given value, return null if this {@link AeadAlgorithm} is not known.
+     * @return {@link HkdfAlgorithm} with the given value, return null if this {@link HkdfAlgorithm} is not known.
      */
     public static HkdfAlgorithm fromValue(int value) {
         for (HkdfAlgorithm alg : knownHkdfAlgorithms) {
@@ -37,12 +39,25 @@ public class HkdfAlgorithm implements Serializable {
     }
 
     /**
-     * @return {@link AeadAlgorithm} with the given name, return null if this {@link AeadAlgorithm} is not known.
+     * @return {@link HkdfAlgorithm} with the given name, return null if this {@link HkdfAlgorithm} is not known.
      */
     public static HkdfAlgorithm fromName(String name) {
         for (HkdfAlgorithm alg : knownHkdfAlgorithms) {
             if (alg.name.equals(name))
                 return alg;
+        }
+        return null;
+    }
+
+    /**
+     * @return {@link HkdfAlgorithm} with the given value, return null if this {@link HkdfAlgorithm} is not known.
+     */
+    public static HkdfAlgorithm fromValue(long value) {
+        try {
+            int intValue = NumberUtil.longToInt(value);
+            return fromValue(intValue);
+        } catch (IllegalArgumentException e) {
+            // long is too big ignore it and return null;
         }
         return null;
     }
