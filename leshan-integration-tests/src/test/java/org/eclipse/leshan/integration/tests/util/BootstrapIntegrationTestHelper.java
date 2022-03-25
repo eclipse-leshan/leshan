@@ -365,7 +365,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                         return Arrays.asList(info).iterator();
                     } else if (mode == SecurityMode.NO_SEC) {
                         // Create the security info (will re-add the context to the db)
-                        info = SecurityInfo.newOSCoreInfo(endpoint, getOscoreSetting());
+                        info = SecurityInfo.newOscoreInfo(endpoint, getOscoreSetting());
                         return Arrays.asList(info).iterator();
                     }
                 }
@@ -394,7 +394,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     }
 
     public SecurityInfo oscoreSecurityInfo() {
-        SecurityInfo info = SecurityInfo.newOSCoreInfo(getCurrentEndpoint(), getBootstrapOscoreSetting());
+        SecurityInfo info = SecurityInfo.newOscoreInfo(getCurrentEndpoint(), getBootstrapOscoreSetting());
         return info;
     }
 

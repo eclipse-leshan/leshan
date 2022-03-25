@@ -113,7 +113,7 @@ public class SecurityTest {
 
         helper.createOscoreClient();
 
-        helper.getSecurityStore().add(SecurityInfo.newOSCoreInfo(helper.getCurrentEndpoint(), getOscoreSetting()));
+        helper.getSecurityStore().add(SecurityInfo.newOscoreInfo(helper.getCurrentEndpoint(), getOscoreSetting()));
 
         // Check client is not registered
         helper.assertClientNotRegisterered();

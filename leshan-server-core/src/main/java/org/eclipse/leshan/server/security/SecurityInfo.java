@@ -111,8 +111,7 @@ public class SecurityInfo implements Serializable {
     /**
      * Construct a {@link SecurityInfo} when using OSCORE.
      */
-    // TODO OSCORE rename in newOscoreInfo
-    public static SecurityInfo newOSCoreInfo(String endpoint, OscoreSetting oscoreSetting) {
+    public static SecurityInfo newOscoreInfo(String endpoint, OscoreSetting oscoreSetting) {
         Validate.notNull(oscoreSetting);
         return new SecurityInfo(endpoint, null, null, null, false, oscoreSetting);
     }
