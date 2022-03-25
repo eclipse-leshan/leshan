@@ -18,27 +18,43 @@ package org.eclipse.leshan.server.security.oscore;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import org.eclipse.leshan.core.oscore.AeadAlgorithm;
+import org.eclipse.leshan.core.oscore.HkdfAlgorithm;
 import org.eclipse.leshan.core.oscore.OscoreIdentity;
 import org.eclipse.leshan.core.util.Hex;
+import org.eclipse.leshan.core.util.Validate;
 
+/**
+ * OSCORE Settings.
+ * <p>
+ * See : https://datatracker.ietf.org/doc/html/rfc8613#section-3.2
+ */
 public class OscoreSetting implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final byte[] senderId;
     private final byte[] recipientId;
     private final byte[] masterSecret;
-    private final Integer aeadAlgorithm;
-    private final Integer hmacAlgorithm;
+    private final AeadAlgorithm aeadAlgorithm;
+    private final HkdfAlgorithm hkdfAlgorithm;
     private final byte[] masterSalt;
 
-    public OscoreSetting(byte[] senderId, byte[] recipientId, byte[] masterSecret, Integer aeadAlgorithm,
-            Integer hmacAlgorithm, byte[] masterSalt) {
+    public OscoreSetting(byte[] senderId, byte[] recipientId, byte[] masterSecret) {
+        this(senderId, recipientId, masterSecret, null, null, null);
+    }
+
+    public OscoreSetting(byte[] senderId, byte[] recipientId, byte[] masterSecret, AeadAlgorithm aeadAlgorithm,
+            HkdfAlgorithm hkdfAlgorithm, byte[] masterSalt) {
+        Validate.notNull(senderId);
+        Validate.notNull(recipientId);
+        Validate.notNull(masterSecret);
+        // TODO OSCORE add maximum length check
         this.senderId = senderId;
         this.recipientId = recipientId;
         this.masterSecret = masterSecret;
-        this.aeadAlgorithm = aeadAlgorithm;
-        this.hmacAlgorithm = hmacAlgorithm;
-        this.masterSalt = masterSalt;
+        this.aeadAlgorithm = aeadAlgorithm == null ? AeadAlgorithm.AES_CCM_16_64_128 : aeadAlgorithm;
+        this.hkdfAlgorithm = hkdfAlgorithm == null ? HkdfAlgorithm.HKDF_HMAC_SHA_256 : hkdfAlgorithm;
+        this.masterSalt = masterSalt == null ? new byte[0] : masterSalt;
     }
 
     public byte[] getSenderId() {
@@ -53,12 +69,12 @@ public class OscoreSetting implements Serializable {
         return masterSecret;
     }
 
-    public Integer getAeadAlgorithm() {
+    public AeadAlgorithm getAeadAlgorithm() {
         return aeadAlgorithm;
     }
 
-    public Integer getHmacAlgorithm() {
-        return hmacAlgorithm;
+    public HkdfAlgorithm getHkdfAlgorithm() {
+        return hkdfAlgorithm;
     }
 
     public byte[] getMasterSalt() {
@@ -73,8 +89,8 @@ public class OscoreSetting implements Serializable {
     public String toString() {
         // Note : oscoreMasterSecret and oscoreMasterSalt are explicitly excluded from the display for security
         // purposes
-        return String.format("OscoreSetting [senderId=%s, recipientId=%s, aeadAlgorithm=%s, hmacAlgorithm=%s]",
-                Hex.encodeHexString(senderId), Hex.encodeHexString(recipientId), aeadAlgorithm, hmacAlgorithm);
+        return String.format("OscoreSetting [senderId=%s, recipientId=%s, aeadAlgorithm=%s, hkdfsAlgorithm=%s]",
+                Hex.encodeHexString(senderId), Hex.encodeHexString(recipientId), aeadAlgorithm, hkdfAlgorithm);
     }
 
     @Override
@@ -82,7 +98,7 @@ public class OscoreSetting implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((aeadAlgorithm == null) ? 0 : aeadAlgorithm.hashCode());
-        result = prime * result + ((hmacAlgorithm == null) ? 0 : hmacAlgorithm.hashCode());
+        result = prime * result + ((hkdfAlgorithm == null) ? 0 : hkdfAlgorithm.hashCode());
         result = prime * result + Arrays.hashCode(masterSalt);
         result = prime * result + Arrays.hashCode(masterSecret);
         result = prime * result + Arrays.hashCode(recipientId);
@@ -104,10 +120,10 @@ public class OscoreSetting implements Serializable {
                 return false;
         } else if (!aeadAlgorithm.equals(other.aeadAlgorithm))
             return false;
-        if (hmacAlgorithm == null) {
-            if (other.hmacAlgorithm != null)
+        if (hkdfAlgorithm == null) {
+            if (other.hkdfAlgorithm != null)
                 return false;
-        } else if (!hmacAlgorithm.equals(other.hmacAlgorithm))
+        } else if (!hkdfAlgorithm.equals(other.hkdfAlgorithm))
             return false;
         if (!Arrays.equals(masterSalt, other.masterSalt))
             return false;

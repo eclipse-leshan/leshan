@@ -64,8 +64,11 @@ public class LwM2mBootstrapOscoreStore implements OscoreStore {
                     securityInfo.getOscoreSetting().getSenderId(), //
                     securityInfo.getOscoreSetting().getRecipientId(), //
                     securityInfo.getOscoreSetting().getMasterSecret(), //
-                    AlgorithmID.FromCBOR(CBORObject.FromObject(securityInfo.getOscoreSetting().getAeadAlgorithm())), //
-                    AlgorithmID.FromCBOR(CBORObject.FromObject(securityInfo.getOscoreSetting().getHmacAlgorithm())), //
+                    // TODO OSCORE we maybe need an API without the need to create a CBOR Object
+                    AlgorithmID.FromCBOR(
+                            CBORObject.FromObject(securityInfo.getOscoreSetting().getAeadAlgorithm().getValue())), //
+                    AlgorithmID.FromCBOR(
+                            CBORObject.FromObject(securityInfo.getOscoreSetting().getHkdfAlgorithm().getValue())), //
                     securityInfo.getOscoreSetting().getMasterSalt());
         } catch (CoseException e) {
             LOG.error("Unable to create OscoreParameters from OoscoreSetting %s", securityInfo.getOscoreSetting(), e);

@@ -755,14 +755,13 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
     public static OscoreSetting getBootstrapOscoreSetting() {
         return new OscoreSetting(OSCORE_BOOTSTRAP_RECIPIENT_ID, OSCORE_BOOTSTRAP_SENDER_ID,
-                OSCORE_BOOTSTRAP_MASTER_SECRET, OSCORE_ALGORITHM.AsCBOR().AsInt32(),
-                OSCORE_KDF_ALGORITHM.AsCBOR().AsInt32(), OSCORE_BOOTSTRAP_MASTER_SALT);
+                OSCORE_BOOTSTRAP_MASTER_SECRET, OSCORE_ALGORITHM, OSCORE_KDF_ALGORITHM, OSCORE_BOOTSTRAP_MASTER_SALT);
     }
 
     protected static Oscore getOscoreBootstrapClientObject() {
         return new Oscore(12345, OSCORE_BOOTSTRAP_MASTER_SECRET, OSCORE_BOOTSTRAP_SENDER_ID,
-                OSCORE_BOOTSTRAP_RECIPIENT_ID, OSCORE_ALGORITHM.AsCBOR().AsInt32(),
-                OSCORE_KDF_ALGORITHM.AsCBOR().AsInt32(), OSCORE_BOOTSTRAP_MASTER_SALT);
+                OSCORE_BOOTSTRAP_RECIPIENT_ID, OSCORE_ALGORITHM.getValue(), OSCORE_KDF_ALGORITHM.getValue(),
+                OSCORE_BOOTSTRAP_MASTER_SALT);
     }
 
     protected static BootstrapConfig.OscoreObject getOscoreBootstrapObject(boolean bootstrap) {
@@ -771,8 +770,8 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         oscoreObject.oscoreMasterSecret = bootstrap ? OSCORE_BOOTSTRAP_MASTER_SECRET : OSCORE_MASTER_SECRET;
         oscoreObject.oscoreSenderId = bootstrap ? OSCORE_BOOTSTRAP_SENDER_ID : OSCORE_SENDER_ID;
         oscoreObject.oscoreRecipientId = bootstrap ? OSCORE_BOOTSTRAP_RECIPIENT_ID : OSCORE_RECIPIENT_ID;
-        oscoreObject.oscoreAeadAlgorithm = OSCORE_ALGORITHM.AsCBOR().AsInt32();
-        oscoreObject.oscoreHmacAlgorithm = OSCORE_KDF_ALGORITHM.AsCBOR().AsInt32();
+        oscoreObject.oscoreAeadAlgorithm = OSCORE_ALGORITHM.getValue();
+        oscoreObject.oscoreHmacAlgorithm = OSCORE_KDF_ALGORITHM.getValue();
         oscoreObject.oscoreMasterSalt = bootstrap ? OSCORE_BOOTSTRAP_MASTER_SALT : OSCORE_MASTER_SALT;
 
         return oscoreObject;
