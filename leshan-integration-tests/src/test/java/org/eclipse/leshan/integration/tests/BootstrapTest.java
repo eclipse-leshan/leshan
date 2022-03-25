@@ -665,7 +665,7 @@ public class BootstrapTest {
         helper.createClient();
         helper.assertClientNotRegisterered();
 
-        helper.getSecurityStore().add(SecurityInfo.newOscoreInfo(helper.getCurrentEndpoint(), getOscoreSetting()));
+        helper.getSecurityStore().add(SecurityInfo.newOscoreInfo(helper.getCurrentEndpoint(), getServerOscoreSetting()));
 
         // Start it and wait for registration
         helper.client.start();
@@ -689,7 +689,7 @@ public class BootstrapTest {
         helper.createOscoreOnlyBootstrapClient();
         helper.assertClientNotRegisterered();
 
-        helper.getSecurityStore().add(SecurityInfo.newOscoreInfo(helper.getCurrentEndpoint(), getOscoreSetting()));
+        helper.getSecurityStore().add(SecurityInfo.newOscoreInfo(helper.getCurrentEndpoint(), getServerOscoreSetting()));
 
         // Start it and wait for registration
         helper.client.start();

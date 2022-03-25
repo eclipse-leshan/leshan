@@ -365,7 +365,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                         return Arrays.asList(info).iterator();
                     } else if (mode == SecurityMode.NO_SEC) {
                         // Create the security info (will re-add the context to the db)
-                        info = SecurityInfo.newOscoreInfo(endpoint, getOscoreSetting());
+                        info = SecurityInfo.newOscoreInfo(endpoint, getServerOscoreSetting());
                         return Arrays.asList(info).iterator();
                     }
                 }
@@ -374,7 +374,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
             @Override
             public SecurityInfo getByOscoreIdentity(OscoreIdentity oscoreIdentity) {
-                if (oscoreIdentity.equals(getBootstrapOscoreSetting().getOscoreIdentity())) {
+                if (oscoreIdentity.equals(getBootstrapServerOscoreSetting().getOscoreIdentity())) {
                     return oscoreSecurityInfo();
                 }
                 return null;
@@ -394,7 +394,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     }
 
     public SecurityInfo oscoreSecurityInfo() {
-        SecurityInfo info = SecurityInfo.newOscoreInfo(getCurrentEndpoint(), getBootstrapOscoreSetting());
+        SecurityInfo info = SecurityInfo.newOscoreInfo(getCurrentEndpoint(), getBootstrapServerOscoreSetting());
         return info;
     }
 
@@ -753,14 +753,14 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         };
     }
 
-    public static OscoreSetting getBootstrapOscoreSetting() {
+    public static OscoreSetting getBootstrapServerOscoreSetting() {
         return new OscoreSetting(OSCORE_BOOTSTRAP_RECIPIENT_ID, OSCORE_BOOTSTRAP_SENDER_ID,
-                OSCORE_BOOTSTRAP_MASTER_SECRET, OSCORE_ALGORITHM, OSCORE_KDF_ALGORITHM, OSCORE_BOOTSTRAP_MASTER_SALT);
+                OSCORE_BOOTSTRAP_MASTER_SECRET, OSCORE_AEAD_ALGORITHM, OSCORE_HKDF_ALGORITHM, OSCORE_BOOTSTRAP_MASTER_SALT);
     }
 
     protected static OscoreSetting getBootstrapClientOscoreSetting() {
         return new OscoreSetting(OSCORE_BOOTSTRAP_SENDER_ID, OSCORE_BOOTSTRAP_RECIPIENT_ID,
-                OSCORE_BOOTSTRAP_MASTER_SECRET, OSCORE_ALGORITHM, OSCORE_KDF_ALGORITHM, OSCORE_BOOTSTRAP_MASTER_SALT);
+                OSCORE_BOOTSTRAP_MASTER_SECRET, OSCORE_AEAD_ALGORITHM, OSCORE_HKDF_ALGORITHM, OSCORE_BOOTSTRAP_MASTER_SALT);
     }
 
     protected static BootstrapConfig.OscoreObject getOscoreBootstrapObject(boolean bootstrap) {
@@ -769,8 +769,8 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         oscoreObject.oscoreMasterSecret = bootstrap ? OSCORE_BOOTSTRAP_MASTER_SECRET : OSCORE_MASTER_SECRET;
         oscoreObject.oscoreSenderId = bootstrap ? OSCORE_BOOTSTRAP_SENDER_ID : OSCORE_SENDER_ID;
         oscoreObject.oscoreRecipientId = bootstrap ? OSCORE_BOOTSTRAP_RECIPIENT_ID : OSCORE_RECIPIENT_ID;
-        oscoreObject.oscoreAeadAlgorithm = OSCORE_ALGORITHM.getValue();
-        oscoreObject.oscoreHmacAlgorithm = OSCORE_KDF_ALGORITHM.getValue();
+        oscoreObject.oscoreAeadAlgorithm = OSCORE_AEAD_ALGORITHM.getValue();
+        oscoreObject.oscoreHmacAlgorithm = OSCORE_HKDF_ALGORITHM.getValue();
         oscoreObject.oscoreMasterSalt = bootstrap ? OSCORE_BOOTSTRAP_MASTER_SALT : OSCORE_MASTER_SALT;
 
         return oscoreObject;

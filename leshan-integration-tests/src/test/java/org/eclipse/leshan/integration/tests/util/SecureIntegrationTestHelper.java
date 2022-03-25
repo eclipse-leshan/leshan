@@ -100,8 +100,8 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
     public static final byte[] OSCORE_SENDER_ID = Hex.decodeHex("ABCDEF".toCharArray());
     public static final byte[] OSCORE_RECIPIENT_ID = Hex.decodeHex("FEDCBA".toCharArray());
 
-    public static final AeadAlgorithm OSCORE_ALGORITHM = AeadAlgorithm.AES_CCM_16_64_128;
-    public static final HkdfAlgorithm OSCORE_KDF_ALGORITHM = HkdfAlgorithm.HKDF_HMAC_SHA_256;
+    public static final AeadAlgorithm OSCORE_AEAD_ALGORITHM = AeadAlgorithm.AES_CCM_16_64_128;
+    public static final HkdfAlgorithm OSCORE_HKDF_ALGORITHM = HkdfAlgorithm.HKDF_HMAC_SHA_256;
 
     private SinglePSKStore singlePSKStore;
     protected SecurityStore securityStore;
@@ -503,14 +503,14 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
         setupClientMonitoring();
     }
 
-    public static OscoreSetting getOscoreSetting() {
-        return new OscoreSetting(OSCORE_RECIPIENT_ID, OSCORE_SENDER_ID, OSCORE_MASTER_SECRET, OSCORE_ALGORITHM,
-                OSCORE_KDF_ALGORITHM, OSCORE_MASTER_SALT);
+    public static OscoreSetting getServerOscoreSetting() {
+        return new OscoreSetting(OSCORE_RECIPIENT_ID, OSCORE_SENDER_ID, OSCORE_MASTER_SECRET, OSCORE_AEAD_ALGORITHM,
+                OSCORE_HKDF_ALGORITHM, OSCORE_MASTER_SALT);
     }
 
     protected static OscoreSetting getClientOscoreSetting() {
-        return new OscoreSetting(OSCORE_SENDER_ID, OSCORE_RECIPIENT_ID, OSCORE_MASTER_SECRET, OSCORE_ALGORITHM,
-                OSCORE_KDF_ALGORITHM, OSCORE_MASTER_SALT);
+        return new OscoreSetting(OSCORE_SENDER_ID, OSCORE_RECIPIENT_ID, OSCORE_MASTER_SECRET, OSCORE_AEAD_ALGORITHM,
+                OSCORE_HKDF_ALGORITHM, OSCORE_MASTER_SALT);
     }
 
     public PublicKey getServerPublicKey() {
