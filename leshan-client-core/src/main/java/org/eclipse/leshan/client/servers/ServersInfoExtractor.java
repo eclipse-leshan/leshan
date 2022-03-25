@@ -377,11 +377,11 @@ public class ServersInfoExtractor {
     }
 
     public static long getAeadAlgorithm(LwM2mObjectInstance oscoreInstance) {
-        return (long) oscoreInstance.getResource(OSCORE_AEAD_Algorithm).getValue();
+        return (long) oscoreInstance.getResource(OSCORE_AEAD_ALGORITHM).getValue();
     }
 
     public static long getHkdfAlgorithm(LwM2mObjectInstance oscoreInstance) {
-        return (long) oscoreInstance.getResource(OSCORE_HMAC_Algorithm).getValue();
+        return (long) oscoreInstance.getResource(OSCORE_HMAC_ALGORITHM).getValue();
     }
 
     public static byte[] getMasterSalt(LwM2mObjectInstance oscoreInstance) {

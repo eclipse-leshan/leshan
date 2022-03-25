@@ -51,8 +51,8 @@ public interface LwM2mId {
     public static final int OSCORE_MASTER_SECRET = 0;
     public static final int OSCORE_SENDER_ID = 1;
     public static final int OSCORE_RECIPIENT_ID = 2;
-    public static final int OSCORE_AEAD_Algorithm = 3;
-    public static final int OSCORE_HMAC_Algorithm = 4;
+    public static final int OSCORE_AEAD_ALGORITHM = 3;
+    public static final int OSCORE_HMAC_ALGORITHM = 4;
     public static final int OSCORE_MASTER_SALT = 5;
 
     /* SERVER RESOURCES */

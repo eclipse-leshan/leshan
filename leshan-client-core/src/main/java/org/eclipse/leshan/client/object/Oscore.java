@@ -49,7 +49,7 @@ public class Oscore extends BaseInstanceEnabler {
     private static final Logger LOG = LoggerFactory.getLogger(Security.class);
 
     private final static List<Integer> supportedResources = Arrays.asList(OSCORE_MASTER_SECRET, OSCORE_SENDER_ID,
-            OSCORE_RECIPIENT_ID, OSCORE_AEAD_Algorithm, OSCORE_HMAC_Algorithm, OSCORE_MASTER_SALT);
+            OSCORE_RECIPIENT_ID, OSCORE_AEAD_ALGORITHM, OSCORE_HMAC_ALGORITHM, OSCORE_MASTER_SALT);
 
     private byte[] masterSecret;
     private byte[] senderId;
@@ -102,7 +102,7 @@ public class Oscore extends BaseInstanceEnabler {
             recipientId = (byte[]) value.getValue();
             return WriteResponse.success();
 
-        case OSCORE_AEAD_Algorithm: {
+        case OSCORE_AEAD_ALGORITHM: {
             if (value.getType() != Type.INTEGER) {
                 return WriteResponse.badRequest("invalid type");
             }
@@ -114,7 +114,7 @@ public class Oscore extends BaseInstanceEnabler {
                 return WriteResponse.badRequest("unknown algorithm " + longValue);
             }
         }
-        case OSCORE_HMAC_Algorithm: {
+        case OSCORE_HMAC_ALGORITHM: {
             if (value.getType() != Type.INTEGER) {
                 return WriteResponse.badRequest("invalid type");
             }
@@ -155,10 +155,10 @@ public class Oscore extends BaseInstanceEnabler {
         case OSCORE_RECIPIENT_ID:
             return ReadResponse.success(resourceid, recipientId);
 
-        case OSCORE_AEAD_Algorithm:
+        case OSCORE_AEAD_ALGORITHM:
             return ReadResponse.success(resourceid, aeadAlgorithm.getValue());
 
-        case OSCORE_HMAC_Algorithm:
+        case OSCORE_HMAC_ALGORITHM:
             return ReadResponse.success(resourceid, hkdfAlgorithm.getValue());
 
         case OSCORE_MASTER_SALT:
