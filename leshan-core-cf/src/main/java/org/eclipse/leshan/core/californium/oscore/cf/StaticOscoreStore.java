@@ -40,5 +40,4 @@ public class StaticOscoreStore implements OscoreStore {
     public byte[] getRecipientId(String uri) {
         return parameters.getRecipientId();
     }
-
 }

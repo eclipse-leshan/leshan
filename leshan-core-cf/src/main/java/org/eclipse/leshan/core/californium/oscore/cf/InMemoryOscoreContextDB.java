@@ -24,12 +24,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An {@link OSCoreCtxDB} which store context in memory and is able to derive context from data provided in
- * {@link OscoreStore}
+ * An {@link OSCoreCtxDB} which store context in memory and is able to derive context from {@link OscoreParameters}
+ * provided in {@link OscoreStore}
  *
  */
 // TODO OSCORE this should be moved in californium.
-// TODO OSCORE I don't know if we need to extends HashMapCtxDB or implement OSCoreCtxDB
 public class InMemoryOscoreContextDB extends HashMapCtxDB {
 
     private static final Logger LOG = LoggerFactory.getLogger(InMemoryOscoreContextDB.class);
@@ -99,8 +98,9 @@ public class InMemoryOscoreContextDB extends HashMapCtxDB {
 
     private static OSCoreCtx deriveContext(OscoreParameters oscoreParameters) {
         try {
-            OSCoreCtx osCoreCtx = new OSCoreCtx(oscoreParameters.getMasterSecret(), true, oscoreParameters.getAeadAlgorithm(),
-                    oscoreParameters.getSenderId(), oscoreParameters.getRecipientId(), oscoreParameters.getHmacAlgorithm(), 32,
+            OSCoreCtx osCoreCtx = new OSCoreCtx(oscoreParameters.getMasterSecret(), true,
+                    oscoreParameters.getAeadAlgorithm(), oscoreParameters.getSenderId(),
+                    oscoreParameters.getRecipientId(), oscoreParameters.getHmacAlgorithm(), 32,
                     oscoreParameters.getMasterSalt(), null, 1000);
             osCoreCtx.setContextRederivationEnabled(true);
             return osCoreCtx;
