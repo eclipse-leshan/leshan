@@ -365,15 +365,15 @@ public class ServersInfoExtractor {
     // OSCORE related methods below
 
     public static byte[] getMasterSecret(LwM2mObjectInstance oscoreInstance) {
-        return (byte[]) oscoreInstance.getResource(OSCORE_Master_Secret).getValue();
+        return (byte[]) oscoreInstance.getResource(OSCORE_MASTER_SECRET).getValue();
     }
 
     public static byte[] getSenderId(LwM2mObjectInstance oscoreInstance) {
-        return (byte[]) oscoreInstance.getResource(OSCORE_Sender_ID).getValue();
+        return (byte[]) oscoreInstance.getResource(OSCORE_SENDER_ID).getValue();
     }
 
     public static byte[] getRecipientId(LwM2mObjectInstance oscoreInstance) {
-        return (byte[]) oscoreInstance.getResource(OSCORE_Recipient_ID).getValue();
+        return (byte[]) oscoreInstance.getResource(OSCORE_RECIPIENT_ID).getValue();
     }
 
     public static long getAeadAlgorithm(LwM2mObjectInstance oscoreInstance) {
@@ -385,7 +385,7 @@ public class ServersInfoExtractor {
     }
 
     public static byte[] getMasterSalt(LwM2mObjectInstance oscoreInstance) {
-        byte[] value = (byte[]) oscoreInstance.getResource(OSCORE_Master_Salt).getValue();
+        byte[] value = (byte[]) oscoreInstance.getResource(OSCORE_MASTER_SALT).getValue();
 
         if (value.length == 0) {
             return null;

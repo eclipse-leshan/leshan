@@ -40,8 +40,8 @@ public class Oscore extends BaseInstanceEnabler {
 
     private static final Logger LOG = LoggerFactory.getLogger(Security.class);
 
-    private final static List<Integer> supportedResources = Arrays.asList(OSCORE_Master_Secret, OSCORE_Sender_ID,
-            OSCORE_Recipient_ID, OSCORE_AEAD_Algorithm, OSCORE_HMAC_Algorithm, OSCORE_Master_Salt);
+    private final static List<Integer> supportedResources = Arrays.asList(OSCORE_MASTER_SECRET, OSCORE_SENDER_ID,
+            OSCORE_RECIPIENT_ID, OSCORE_AEAD_Algorithm, OSCORE_HMAC_Algorithm, OSCORE_MASTER_SALT);
 
     private byte[] masterSecret;
     private byte[] senderId;
@@ -86,21 +86,21 @@ public class Oscore extends BaseInstanceEnabler {
 
         switch (resourceId) {
 
-        case OSCORE_Master_Secret:
+        case OSCORE_MASTER_SECRET:
             if (value.getType() != Type.OPAQUE) {
                 return WriteResponse.badRequest("invalid type");
             }
             masterSecret = (byte[]) value.getValue();
             return WriteResponse.success();
 
-        case OSCORE_Sender_ID:
+        case OSCORE_SENDER_ID:
             if (value.getType() != Type.OPAQUE) {
                 return WriteResponse.badRequest("invalid type");
             }
             senderId = (byte[]) value.getValue();
             return WriteResponse.success();
 
-        case OSCORE_Recipient_ID:
+        case OSCORE_RECIPIENT_ID:
             if (value.getType() != Type.OPAQUE) {
                 return WriteResponse.badRequest("invalid type");
             }
@@ -121,7 +121,7 @@ public class Oscore extends BaseInstanceEnabler {
             hkdfAlgorithm = ((Long) value.getValue()).intValue();
             return WriteResponse.success();
 
-        case OSCORE_Master_Salt:
+        case OSCORE_MASTER_SALT:
             if (value.getType() != Type.OPAQUE) {
                 return WriteResponse.badRequest("invalid type");
             }
@@ -141,13 +141,13 @@ public class Oscore extends BaseInstanceEnabler {
 
         switch (resourceid) {
 
-        case OSCORE_Master_Secret:
+        case OSCORE_MASTER_SECRET:
             return ReadResponse.success(resourceid, masterSecret);
 
-        case OSCORE_Sender_ID:
+        case OSCORE_SENDER_ID:
             return ReadResponse.success(resourceid, senderId);
 
-        case OSCORE_Recipient_ID:
+        case OSCORE_RECIPIENT_ID:
             return ReadResponse.success(resourceid, recipientId);
 
         case OSCORE_AEAD_Algorithm:
@@ -156,7 +156,7 @@ public class Oscore extends BaseInstanceEnabler {
         case OSCORE_HMAC_Algorithm:
             return ReadResponse.success(resourceid, hkdfAlgorithm);
 
-        case OSCORE_Master_Salt:
+        case OSCORE_MASTER_SALT:
             return ReadResponse.success(resourceid, masterSalt);
 
         default:
