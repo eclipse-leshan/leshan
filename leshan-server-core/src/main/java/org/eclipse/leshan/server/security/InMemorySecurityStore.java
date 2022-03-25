@@ -104,7 +104,7 @@ public class InMemorySecurityStore implements EditableSecurityStore {
         writeLock.lock();
         try {
             // For PSK, check if PSK identity is not already used.
-            String pskIdentity = info.getIdentity();
+            String pskIdentity = info.getPskIdentity();
             if (pskIdentity != null) {
                 SecurityInfo infoByPskIdentity = securityByPskIdentity.get(pskIdentity);
                 if (infoByPskIdentity != null && !info.getEndpoint().equals(infoByPskIdentity.getEndpoint())) {
@@ -121,7 +121,7 @@ public class InMemorySecurityStore implements EditableSecurityStore {
                 SecurityInfo infoByOscoreIdentity = securityByOscoreIdentity.get(oscoreIdentity);
                 if (infoByOscoreIdentity != null && !info.getEndpoint().equals(infoByOscoreIdentity.getEndpoint())) {
                     throw new NonUniqueSecurityInfoException(
-                            "Oscore Identity " + info.getIdentity() + " is already used");
+                            "Oscore Identity " + info.getPskIdentity() + " is already used");
                 }
                 securityByOscoreIdentity.put(oscoreIdentity, info);
             }
@@ -130,7 +130,7 @@ public class InMemorySecurityStore implements EditableSecurityStore {
             SecurityInfo previous = securityByEp.put(info.getEndpoint(), info);
 
             // For PSK, remove index by PSK Identity if needed
-            String previousPskIdentity = previous == null ? null : previous.getIdentity();
+            String previousPskIdentity = previous == null ? null : previous.getPskIdentity();
             if (previousPskIdentity != null && !previousPskIdentity.equals(pskIdentity)) {
                 securityByPskIdentity.remove(previousPskIdentity);
             }
@@ -155,8 +155,8 @@ public class InMemorySecurityStore implements EditableSecurityStore {
             SecurityInfo info = securityByEp.get(endpoint);
             if (info != null) {
                 // For PSK, remove index by PSK Identity if needed
-                if (info.getIdentity() != null) {
-                    securityByPskIdentity.remove(info.getIdentity());
+                if (info.getPskIdentity() != null) {
+                    securityByPskIdentity.remove(info.getPskIdentity());
                 }
                 // For OSCORE, remove index by OSCORE Identity if needed
                 if (info.getOscoreSetting() != null) {

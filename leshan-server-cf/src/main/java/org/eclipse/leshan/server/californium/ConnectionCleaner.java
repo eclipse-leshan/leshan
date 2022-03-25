@@ -49,7 +49,7 @@ public class ConnectionCleaner {
                             // PSK
                             if (info.usePSK() && principal instanceof PreSharedKeyIdentity) {
                                 String identity = ((PreSharedKeyIdentity) principal).getIdentity();
-                                if (info.getIdentity().equals(identity)) {
+                                if (info.getPskIdentity().equals(identity)) {
                                     return true;
                                 }
                             }
