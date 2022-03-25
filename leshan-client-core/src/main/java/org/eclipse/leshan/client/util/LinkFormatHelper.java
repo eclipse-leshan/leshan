@@ -74,8 +74,8 @@ public final class LinkFormatHelper {
             }
         });
         for (LwM2mObjectEnabler objectEnabler : objEnablerList) {
-            // skip the security Object
-            if (objectEnabler.getId() == LwM2mId.SECURITY)
+            // skip the security and oscore Object
+            if (objectEnabler.getId() == LwM2mId.SECURITY || objectEnabler.getId() == LwM2mId.OSCORE)
                 continue;
 
             List<Integer> availableInstance = objectEnabler.getAvailableInstanceIds();
