@@ -13,14 +13,11 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.security.oscore;
+package org.eclipse.leshan.core.oscore;
 
 import java.io.Serializable;
 import java.util.Arrays;
 
-import org.eclipse.leshan.core.oscore.AeadAlgorithm;
-import org.eclipse.leshan.core.oscore.HkdfAlgorithm;
-import org.eclipse.leshan.core.oscore.OscoreIdentity;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.Validate;
 

@@ -76,6 +76,7 @@ import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.oscore.AeadAlgorithm;
 import org.eclipse.leshan.core.oscore.HkdfAlgorithm;
+import org.eclipse.leshan.core.oscore.OscoreSetting;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.X509CertUtil;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
@@ -84,7 +85,6 @@ import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.InMemorySecurityStore;
 import org.eclipse.leshan.server.security.SecurityChecker;
 import org.eclipse.leshan.server.security.SecurityStore;
-import org.eclipse.leshan.server.security.oscore.OscoreSetting;
 
 public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
