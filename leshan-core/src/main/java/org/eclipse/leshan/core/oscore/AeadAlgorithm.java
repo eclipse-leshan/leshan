@@ -10,17 +10,17 @@ import org.eclipse.leshan.core.util.datatype.NumberUtil;
 public class AeadAlgorithm implements Serializable {
     private static final long serialVersionUID = 1L; // TODO not sure we will keep SecurityInfo serializable
 
-    public static final AeadAlgorithm AES_GCM_128 = new AeadAlgorithm("A128GCM", 1); //
-    public static final AeadAlgorithm AES_GCM_192 = new AeadAlgorithm("A192GCM", 2); //
-    public static final AeadAlgorithm AES_GCM_256 = new AeadAlgorithm("A256GCM", 3); //
-    public static final AeadAlgorithm AES_CCM_16_64_128 = new AeadAlgorithm("AES-CCM-16-64-128", 10); //
-    public static final AeadAlgorithm AES_CCM_16_64_256 = new AeadAlgorithm("AES-CCM-16-64-256", 11); //
-    public static final AeadAlgorithm AES_CCM_64_64_128 = new AeadAlgorithm("AES-CCM-64-64-128", 12); //
-    public static final AeadAlgorithm AES_CCM_64_64_256 = new AeadAlgorithm("AES-CCM-64-64-256", 13); //
-    public static final AeadAlgorithm AES_CCM_16_128_128 = new AeadAlgorithm("AES-CCM-16-128-128", 30); //
-    public static final AeadAlgorithm AES_CCM_16_128_256 = new AeadAlgorithm("AES-CCM-16-128-256", 31); //
-    public static final AeadAlgorithm AES_CCM_64_128_128 = new AeadAlgorithm("AES-CCM-64-128-128", 32); //
-    public static final AeadAlgorithm AES_CCM_64_128_256 = new AeadAlgorithm("AES-CCM-64-128-256", 33); //
+    public static final AeadAlgorithm AES_GCM_128 = new AeadAlgorithm("A128GCM", 1, 12); //
+    public static final AeadAlgorithm AES_GCM_192 = new AeadAlgorithm("A192GCM", 2, 12); //
+    public static final AeadAlgorithm AES_GCM_256 = new AeadAlgorithm("A256GCM", 3, 12); //
+    public static final AeadAlgorithm AES_CCM_16_64_128 = new AeadAlgorithm("AES-CCM-16-64-128", 10, 13); //
+    public static final AeadAlgorithm AES_CCM_16_64_256 = new AeadAlgorithm("AES-CCM-16-64-256", 11, 13); //
+    public static final AeadAlgorithm AES_CCM_64_64_128 = new AeadAlgorithm("AES-CCM-64-64-128", 12, 7); //
+    public static final AeadAlgorithm AES_CCM_64_64_256 = new AeadAlgorithm("AES-CCM-64-64-256", 13, 7); //
+    public static final AeadAlgorithm AES_CCM_16_128_128 = new AeadAlgorithm("AES-CCM-16-128-128", 30, 13); //
+    public static final AeadAlgorithm AES_CCM_16_128_256 = new AeadAlgorithm("AES-CCM-16-128-256", 31, 13); //
+    public static final AeadAlgorithm AES_CCM_64_128_128 = new AeadAlgorithm("AES-CCM-64-128-128", 32, 7); //
+    public static final AeadAlgorithm AES_CCM_64_128_256 = new AeadAlgorithm("AES-CCM-64-128-256", 33, 7); //
 
     public static final AeadAlgorithm knownAeadAlgorithms[] = new AeadAlgorithm[] { //
             AES_GCM_128, AES_GCM_192, AES_GCM_256, //
@@ -29,10 +29,12 @@ public class AeadAlgorithm implements Serializable {
 
     private final String name;
     private final int value;
+    private final int nonceSize; // in bytes
 
-    public AeadAlgorithm(String name, int value) {
+    public AeadAlgorithm(String name, int value, int nonceSize) {
         this.name = name;
         this.value = value;
+        this.nonceSize = nonceSize;
     }
 
     /**
@@ -74,6 +76,13 @@ public class AeadAlgorithm implements Serializable {
         return value;
     }
 
+    /**
+     * @return nonce size in bytes.
+     */
+    public int getNonceSize() {
+        return nonceSize;
+    }
+
     @Override
     public String toString() {
         return String.format("%s(%d)", name, value);
@@ -84,6 +93,7 @@ public class AeadAlgorithm implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + nonceSize;
         result = prime * result + value;
         return result;
     }
@@ -101,6 +111,8 @@ public class AeadAlgorithm implements Serializable {
             if (other.name != null)
                 return false;
         } else if (!name.equals(other.name))
+            return false;
+        if (nonceSize != other.nonceSize)
             return false;
         if (value != other.value)
             return false;

@@ -45,13 +45,34 @@ public class OscoreSetting implements Serializable {
         Validate.notNull(senderId);
         Validate.notNull(recipientId);
         Validate.notNull(masterSecret);
-        // TODO OSCORE add maximum length check
+
         this.senderId = senderId;
         this.recipientId = recipientId;
         this.masterSecret = masterSecret;
         this.aeadAlgorithm = aeadAlgorithm == null ? AeadAlgorithm.AES_CCM_16_64_128 : aeadAlgorithm;
         this.hkdfAlgorithm = hkdfAlgorithm == null ? HkdfAlgorithm.HKDF_HMAC_SHA_256 : hkdfAlgorithm;
         this.masterSalt = masterSalt == null ? new byte[0] : masterSalt;
+
+        // Validate senderId and recipient id length
+        // see : https://datatracker.ietf.org/doc/html/rfc8613#section-3.3
+        // The maximum length of Sender ID in bytes equals the length of the AEAD nonce minus 6.
+        // The Sender IDs can be very short (note that the empty string is a legitimate value).
+        int nonceSize = this.aeadAlgorithm.getNonceSize();
+        int maxLength = nonceSize - 6;
+        if (this.senderId.length > maxLength) {
+            throw new IllegalArgumentException(
+                    String.format("Invalid Sender ID (%s) : max length for % algorithm is %s",
+                            Hex.encodeHexString(this.senderId), this.aeadAlgorithm, maxLength));
+        }
+        if (this.recipientId.length > maxLength) {
+            throw new IllegalArgumentException(
+                    String.format("Invalid Recipient ID (%s) : max length for % algorithm is %s",
+                            Hex.encodeHexString(this.recipientId), this.aeadAlgorithm, maxLength));
+        }
+        // Validate master key.
+        if (this.masterSecret.length == 0) {
+            throw new IllegalArgumentException("Invalid Master Secret : can not be an empty String");
+        }
     }
 
     public byte[] getSenderId() {
