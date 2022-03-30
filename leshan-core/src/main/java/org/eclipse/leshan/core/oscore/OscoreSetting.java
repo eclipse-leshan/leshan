@@ -29,6 +29,10 @@ import org.eclipse.leshan.core.util.Validate;
 public class OscoreSetting implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    public static final AeadAlgorithm DEFAULT_AEAD_ALGORITHM = AeadAlgorithm.AES_CCM_16_64_128;
+    public static final HkdfAlgorithm DEFAULT_HKDF_ALGORITHM = HkdfAlgorithm.HKDF_HMAC_SHA_256;
+    public static final byte[] DEFAULT_MASTER_SALT = new byte[0];
+
     private final byte[] senderId;
     private final byte[] recipientId;
     private final byte[] masterSecret;
@@ -49,9 +53,9 @@ public class OscoreSetting implements Serializable {
         this.senderId = senderId;
         this.recipientId = recipientId;
         this.masterSecret = masterSecret;
-        this.aeadAlgorithm = aeadAlgorithm == null ? AeadAlgorithm.AES_CCM_16_64_128 : aeadAlgorithm;
-        this.hkdfAlgorithm = hkdfAlgorithm == null ? HkdfAlgorithm.HKDF_HMAC_SHA_256 : hkdfAlgorithm;
-        this.masterSalt = masterSalt == null ? new byte[0] : masterSalt;
+        this.aeadAlgorithm = aeadAlgorithm == null ? DEFAULT_AEAD_ALGORITHM : aeadAlgorithm;
+        this.hkdfAlgorithm = hkdfAlgorithm == null ? DEFAULT_HKDF_ALGORITHM : hkdfAlgorithm;
+        this.masterSalt = masterSalt == null ? DEFAULT_MASTER_SALT : masterSalt;
     }
 
     public byte[] getSenderId() {
