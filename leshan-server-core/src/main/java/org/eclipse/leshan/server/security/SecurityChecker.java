@@ -64,7 +64,6 @@ public class SecurityChecker {
                 return false;
             } else {
                 // check if one expected security info matches OSCORE client identity
-                LOG.trace("Checking incoming client's OSCORE identity.");
                 do {
                     SecurityInfo securityInfo = securityInfos.next();
                     if (checkSecurityInfo(endpoint, clientIdentity, securityInfo)) {
@@ -115,7 +114,6 @@ public class SecurityChecker {
             }
         } else {
             if (clientIdentity.isOSCORE()) {
-                LOG.trace("Checking incoming client's OSCORE identity.");
                 return checkOscoreIdentity(endpoint, clientIdentity, securityInfo);
             } else if (securityInfo != null) {
                 LOG.debug("Client '{}' must connect using DTLS", endpoint);
