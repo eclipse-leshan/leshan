@@ -20,7 +20,9 @@ import java.io.Serializable;
 import java.security.PublicKey;
 import java.util.Arrays;
 
+import org.eclipse.leshan.core.oscore.InvalidOscoreSettingException;
 import org.eclipse.leshan.core.oscore.OscoreSetting;
+import org.eclipse.leshan.core.oscore.OscoreValidator;
 import org.eclipse.leshan.core.util.Validate;
 
 /**
@@ -113,6 +115,11 @@ public class SecurityInfo implements Serializable {
      */
     public static SecurityInfo newOscoreInfo(String endpoint, OscoreSetting oscoreSetting) {
         Validate.notNull(oscoreSetting);
+        try {
+            new OscoreValidator().validateOscoreSetting(oscoreSetting);
+        } catch (InvalidOscoreSettingException e) {
+            throw new IllegalArgumentException("Invalid " + oscoreSetting, e);
+        }
         return new SecurityInfo(endpoint, null, null, null, false, oscoreSetting);
     }
 
