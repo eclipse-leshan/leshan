@@ -38,27 +38,29 @@ public class AeadAlgorithm implements Serializable {
     }
 
     /**
-     * @return {@link AeadAlgorithm} with the given value, return null if this {@link AeadAlgorithm} is not known.
+     * @return {@link AeadAlgorithm} with the given value.
      */
     public static AeadAlgorithm fromValue(int value) {
         for (AeadAlgorithm alg : knownAeadAlgorithms) {
             if (alg.value == value)
                 return alg;
         }
-        return null;
+        return new AeadAlgorithm("UNKNOWN", value, 0);
     }
 
     /**
-     * @return {@link AeadAlgorithm} with the given value, return null if this {@link AeadAlgorithm} is not known.
+     * @return {@link AeadAlgorithm} with the given value.
      */
     public static AeadAlgorithm fromValue(long value) {
         try {
             int intValue = NumberUtil.longToInt(value);
             return fromValue(intValue);
         } catch (IllegalArgumentException e) {
-            // long is too big ignore it and return null;
+            if (value >= 0)
+                return fromValue(Integer.MAX_VALUE);
+            else
+                return fromValue(Integer.MIN_VALUE);
         }
-        return null;
     }
 
     /**

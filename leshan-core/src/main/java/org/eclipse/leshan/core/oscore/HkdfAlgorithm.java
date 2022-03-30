@@ -28,14 +28,14 @@ public class HkdfAlgorithm implements Serializable {
     }
 
     /**
-     * @return {@link HkdfAlgorithm} with the given value, return null if this {@link HkdfAlgorithm} is not known.
+     * @return {@link HkdfAlgorithm} with the given value.
      */
     public static HkdfAlgorithm fromValue(int value) {
         for (HkdfAlgorithm alg : knownHkdfAlgorithms) {
             if (alg.value == value)
                 return alg;
         }
-        return null;
+        return new HkdfAlgorithm("UNKNOWN", value);
     }
 
     /**
@@ -50,16 +50,18 @@ public class HkdfAlgorithm implements Serializable {
     }
 
     /**
-     * @return {@link HkdfAlgorithm} with the given value, return null if this {@link HkdfAlgorithm} is not known.
+     * @return {@link HkdfAlgorithm} with the given value.
      */
     public static HkdfAlgorithm fromValue(long value) {
         try {
             int intValue = NumberUtil.longToInt(value);
             return fromValue(intValue);
         } catch (IllegalArgumentException e) {
-            // long is too big ignore it and return null;
+            if (value >= 0)
+                return fromValue(Integer.MAX_VALUE);
+            else
+                return fromValue(Integer.MIN_VALUE);
         }
-        return null;
     }
 
     public int getValue() {

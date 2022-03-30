@@ -46,6 +46,9 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.ObjectLink;
+import org.eclipse.leshan.core.oscore.AeadAlgorithm;
+import org.eclipse.leshan.core.oscore.HkdfAlgorithm;
+import org.eclipse.leshan.core.oscore.OscoreSetting;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -156,12 +159,15 @@ public class ServersInfoExtractor {
 
             if (oscoreInstance != null) {
                 info.useOscore = true;
-                info.masterSecret = getMasterSecret(oscoreInstance);
-                info.senderId = getSenderId(oscoreInstance);
-                info.recipientId = getRecipientId(oscoreInstance);
-                info.aeadAlgorithm = getAeadAlgorithm(oscoreInstance);
-                info.hkdfAlgorithm = getHkdfAlgorithm(oscoreInstance);
-                info.masterSalt = getMasterSalt(oscoreInstance);
+
+                byte[] masterSecret = getMasterSecret(oscoreInstance);
+                byte[] senderId = getSenderId(oscoreInstance);
+                byte[] recipientId = getRecipientId(oscoreInstance);
+                AeadAlgorithm aeadAlgorithm = AeadAlgorithm.fromValue(getAeadAlgorithm(oscoreInstance));
+                HkdfAlgorithm hkdfAlgorithm = HkdfAlgorithm.fromValue(getHkdfAlgorithm(oscoreInstance));
+                byte[] masterSalt = getMasterSalt(oscoreInstance);
+                info.oscoreSetting = new OscoreSetting(senderId, recipientId, masterSecret, aeadAlgorithm,
+                        hkdfAlgorithm, masterSalt);
             } else if (info.secureMode == SecurityMode.PSK) {
                 info.pskId = getPskIdentity(security);
                 info.pskKey = getPskKey(security);

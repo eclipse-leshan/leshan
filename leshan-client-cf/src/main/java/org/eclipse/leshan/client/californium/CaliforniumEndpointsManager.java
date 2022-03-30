@@ -58,7 +58,9 @@ import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.californium.oscore.cf.InMemoryOscoreContextDB;
 import org.eclipse.leshan.core.californium.oscore.cf.OscoreParameters;
 import org.eclipse.leshan.core.californium.oscore.cf.StaticOscoreStore;
+import org.eclipse.leshan.core.oscore.InvalidOscoreSettingException;
 import org.eclipse.leshan.core.oscore.OscoreIdentity;
+import org.eclipse.leshan.core.oscore.OscoreValidator;
 import org.eclipse.leshan.core.request.Identity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -244,26 +246,41 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             // oscore only mode
             LOG.info("Adding OSCORE context for " + serverInfo.getFullUri().toASCIIString());
 
+            try {
+                new OscoreValidator().validateOscoreSetting(serverInfo.oscoreSetting);
+            } catch (InvalidOscoreSettingException e) {
+                throw new RuntimeException(String.format("Unable to create endpoint for %s using OSCORE : Invalid %s.",
+                        serverInfo, serverInfo.oscoreSetting), e);
+            }
+
             AlgorithmID hkdfAlg = null;
             try {
-                hkdfAlg = AlgorithmID.FromCBOR(CBORObject.FromObject(serverInfo.hkdfAlgorithm));
+                hkdfAlg = AlgorithmID
+                        .FromCBOR(CBORObject.FromObject(serverInfo.oscoreSetting.getHkdfAlgorithm().getValue()));
             } catch (CoseException e) {
-                LOG.error("Failed to decode OSCORE HMAC algorithm");
+                throw new RuntimeException(String.format(
+                        "Unable to create endpoint for %s using OSCORE : Unable to decode OSCORE HKDF from %s.",
+                        serverInfo, serverInfo.oscoreSetting), e);
             }
             AlgorithmID aeadAlg = null;
             try {
-                aeadAlg = AlgorithmID.FromCBOR(CBORObject.FromObject(serverInfo.aeadAlgorithm));
+                aeadAlg = AlgorithmID
+                        .FromCBOR(CBORObject.FromObject(serverInfo.oscoreSetting.getAeadAlgorithm().getValue()));
             } catch (CoseException e) {
-                LOG.error("Failed to decode OSCORE AEAD algorithm");
+                throw new RuntimeException(String.format(
+                        "Unable to create endpoint for %s using OSCORE : Unable to decode OSCORE AEAD from %s.",
+                        serverInfo, serverInfo.oscoreSetting), e);
             }
-            OscoreParameters oscoreParameters = new OscoreParameters(serverInfo.senderId, serverInfo.recipientId,
-                    serverInfo.masterSecret, aeadAlg, hkdfAlg, serverInfo.masterSalt);
+            OscoreParameters oscoreParameters = new OscoreParameters(serverInfo.oscoreSetting.getSenderId(),
+                    serverInfo.oscoreSetting.getRecipientId(), serverInfo.oscoreSetting.getMasterSecret(), aeadAlg,
+                    hkdfAlg, serverInfo.oscoreSetting.getMasterSalt());
 
             currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null,
                     new InMemoryOscoreContextDB(new StaticOscoreStore(oscoreParameters)));
 
             // Build server identity for OSCORE
-            serverIdentity = Identity.oscoreOnly(serverInfo.getAddress(), new OscoreIdentity(serverInfo.recipientId));
+            serverIdentity = Identity.oscoreOnly(serverInfo.getAddress(),
+                    new OscoreIdentity(serverInfo.oscoreSetting.getRecipientId()));
         } else {
             currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null, null);
             serverIdentity = Identity.unsecure(serverInfo.getAddress());
@@ -283,9 +300,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             try {
                 currentEndpoint.start();
                 LOG.info("New endpoint created for server {} at {}", currentServer.getUri(), currentEndpoint.getUri());
-            } catch (
-
-            IOException e) {
+            } catch (IOException e) {
                 throw new RuntimeException("Unable to start endpoint", e);
             }
         }
