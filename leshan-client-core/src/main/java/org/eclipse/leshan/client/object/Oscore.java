@@ -30,7 +30,9 @@ import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.oscore.AeadAlgorithm;
 import org.eclipse.leshan.core.oscore.HkdfAlgorithm;
+import org.eclipse.leshan.core.oscore.InvalidOscoreSettingException;
 import org.eclipse.leshan.core.oscore.OscoreSetting;
+import org.eclipse.leshan.core.oscore.OscoreValidator;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.slf4j.Logger;
@@ -67,6 +69,11 @@ public class Oscore extends BaseInstanceEnabler {
      */
     public Oscore(int instanceId, OscoreSetting oscoreSetting) {
         super(instanceId);
+        try {
+            new OscoreValidator().validateOscoreSetting(oscoreSetting);
+        } catch (InvalidOscoreSettingException e) {
+            throw new IllegalArgumentException("Invalid " + oscoreSetting, e);
+        }
         this.masterSecret = oscoreSetting.getMasterSecret();
         this.senderId = oscoreSetting.getSenderId();
         this.recipientId = oscoreSetting.getRecipientId();
