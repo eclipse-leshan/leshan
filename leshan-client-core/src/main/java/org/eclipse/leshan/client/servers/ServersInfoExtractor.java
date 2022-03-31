@@ -370,6 +370,13 @@ public class ServersInfoExtractor {
 
     // OSCORE related methods below
 
+    public static Integer getOscoreSecurityMode(LwM2mObjectInstance securityInstance) {
+        LwM2mResource resource = securityInstance.getResource(LwM2mId.SEC_OSCORE_SECURITY_MODE);
+        if (resource != null)
+            return ((ObjectLink) resource.getValue()).getObjectInstanceId();
+        return null;
+    }
+
     public static byte[] getMasterSecret(LwM2mObjectInstance oscoreInstance) {
         return (byte[]) oscoreInstance.getResource(OSCORE_MASTER_SECRET).getValue();
     }

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.leshan.client.object.Oscore;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
@@ -43,7 +44,9 @@ import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.oscore.OscoreSetting;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.util.Hex;
 import org.junit.Test;
 
 public class LinkFormatHelperTest {
@@ -303,6 +306,54 @@ public class LinkFormatHelperTest {
                 + "</1>;ver=2.0,</1/0>;ssid=333,</2>;ver=2.0,</3/0>", strLinks);
     }
 
+    @Test
+    public void encode_bootstrap_root_with_oscore() {
+        List<LwM2mObjectEnabler> objectEnablers = new ArrayList<>();
+
+        // object 0
+        Map<Integer, LwM2mInstanceEnabler> securityInstances = new HashMap<>();
+        securityInstances.put(0, Security.oscoreOnly("coap://localhost:11", 111, 10));
+        securityInstances.put(1, Security.oscoreOnlyBootstrap("coap://localhost:1", 11));
+        securityInstances.put(2, Security.noSec("coap://localhost:22", 222));
+        LwM2mObjectEnabler securityObjectEnabler = createObjectEnabler(getObjectModel(0, "1.2"), securityInstances);
+        objectEnablers.add(securityObjectEnabler);
+
+        // object 1
+        Map<Integer, LwM2mInstanceEnabler> serverInstances = new HashMap<>();
+        serverInstances.put(0, new Server(333, 120));
+        LwM2mObjectEnabler serverObjectEnabler = createObjectEnabler(getVersionedObjectModel(1, "2.0"),
+                serverInstances);
+        objectEnablers.add(serverObjectEnabler);
+
+        // object 3
+        Map<Integer, LwM2mInstanceEnabler> deviceInstances = new HashMap<>();
+        deviceInstances.put(0, new BaseInstanceEnabler());
+        LwM2mObjectEnabler deviceObjectEnabler = createObjectEnabler(getObjectModel(3), deviceInstances);
+        objectEnablers.add(deviceObjectEnabler);
+
+        // object 21
+        Map<Integer, LwM2mInstanceEnabler> oscoreInstances = new HashMap<>();
+        oscoreInstances.put(10, new Oscore(10, new OscoreSetting(Hex.decodeHex("AA".toCharArray()),
+                Hex.decodeHex("BB".toCharArray()), Hex.decodeHex("CC".toCharArray()))));
+        oscoreInstances.put(11, new Oscore(11, new OscoreSetting(Hex.decodeHex("11".toCharArray()),
+                Hex.decodeHex("22".toCharArray()), Hex.decodeHex("33".toCharArray()))));
+        LwM2mObjectEnabler oscoreObjectEnabler = createObjectEnabler(getObjectModel(21, "2.0"), oscoreInstances);
+        objectEnablers.add(oscoreObjectEnabler);
+
+        Link[] links = LinkFormatHelper.getBootstrapClientDescription(objectEnablers);
+        String strLinks = serializer.serializeCoreLinkFormat(links);
+
+        // TODO : handle version correctly
+        assertEquals("</>;lwm2m=1.0,</0>;ver=1.2,</0/0>;ssid=111;uri=\"coap://localhost:11\"," //
+                + "</0/1>;uri=\"coap://localhost:1\"," //
+                + "</0/2>;ssid=222;uri=\"coap://localhost:22\"," //
+                + "</1>;ver=2.0,</1/0>;ssid=333,</3/0>," //
+                + "</21>;ver=2.0," //
+                + "</21/10>;ssid=111;uri=\"coap://localhost:11\"," //
+                + "</21/11>;uri=\"coap://localhost:1\"" //
+                , strLinks);
+    }
+
     private ObjectModel getObjectModel(int id) {
         List<ObjectModel> objectModels = ObjectLoader.loadDefault(LwM2mVersion.V1_0);
         for (ObjectModel objectModel : objectModels) {
@@ -321,6 +372,15 @@ public class LinkFormatHelperTest {
             if (om.id == id)
                 return new ObjectModel(om.id, om.name, om.description, version, om.multiple, om.mandatory,
                         om.resources.values());
+        }
+        return null;
+    }
+
+    private ObjectModel getObjectModel(int id, String version) {
+        List<ObjectModel> objectModels = ObjectLoader.loadAllDefault();
+        for (ObjectModel om : objectModels) {
+            if (om.id == id && version.equals(om.version))
+                return om;
         }
         return null;
     }
