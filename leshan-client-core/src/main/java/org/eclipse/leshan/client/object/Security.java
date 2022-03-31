@@ -29,8 +29,8 @@ import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mResource;
-import org.eclipse.leshan.core.request.argument.Arguments;
 import org.eclipse.leshan.core.node.ObjectLink;
+import org.eclipse.leshan.core.request.argument.Arguments;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
@@ -84,10 +84,9 @@ public class Security extends BaseInstanceEnabler {
     /**
      * Returns a new security instance (OSCORE only) for a bootstrap server.
      */
-    public static Security oscoreOnlyBootstrap(String serverUri, Integer shortServerId, int oscoreObjectInstanceId) {
-        return new Security(serverUri, true, SecurityMode.NO_SEC.code, new byte[0], new byte[0], new byte[0],
-                shortServerId, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code,
-                new ObjectLink(OSCORE, oscoreObjectInstanceId));
+    public static Security oscoreOnlyBootstrap(String serverUri, int oscoreObjectInstanceId) {
+        return new Security(serverUri, true, SecurityMode.NO_SEC.code, new byte[0], new byte[0], new byte[0], null,
+                CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code, new ObjectLink(OSCORE, oscoreObjectInstanceId));
     }
 
     /**

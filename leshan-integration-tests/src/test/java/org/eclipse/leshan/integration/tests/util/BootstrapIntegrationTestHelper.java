@@ -254,7 +254,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         Oscore oscoreObject = new Oscore(12345, getBootstrapClientOscoreSetting());
         ObjectsInitializer initializer = new TestObjectsInitializer();
         initializer.setInstancesForObject(OSCORE, oscoreObject);
-        createClient(oscoreOnlyBootstrap(bsServerUri, null, oscoreObject.getId()), initializer);
+        createClient(oscoreOnlyBootstrap(bsServerUri, oscoreObject.getId()), initializer);
     }
 
     @Override
@@ -755,12 +755,14 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
     public static OscoreSetting getBootstrapServerOscoreSetting() {
         return new OscoreSetting(OSCORE_BOOTSTRAP_RECIPIENT_ID, OSCORE_BOOTSTRAP_SENDER_ID,
-                OSCORE_BOOTSTRAP_MASTER_SECRET, OSCORE_AEAD_ALGORITHM, OSCORE_HKDF_ALGORITHM, OSCORE_BOOTSTRAP_MASTER_SALT);
+                OSCORE_BOOTSTRAP_MASTER_SECRET, OSCORE_AEAD_ALGORITHM, OSCORE_HKDF_ALGORITHM,
+                OSCORE_BOOTSTRAP_MASTER_SALT);
     }
 
     protected static OscoreSetting getBootstrapClientOscoreSetting() {
         return new OscoreSetting(OSCORE_BOOTSTRAP_SENDER_ID, OSCORE_BOOTSTRAP_RECIPIENT_ID,
-                OSCORE_BOOTSTRAP_MASTER_SECRET, OSCORE_AEAD_ALGORITHM, OSCORE_HKDF_ALGORITHM, OSCORE_BOOTSTRAP_MASTER_SALT);
+                OSCORE_BOOTSTRAP_MASTER_SECRET, OSCORE_AEAD_ALGORITHM, OSCORE_HKDF_ALGORITHM,
+                OSCORE_BOOTSTRAP_MASTER_SALT);
     }
 
     protected static BootstrapConfig.OscoreObject getOscoreBootstrapObject(boolean bootstrap) {
