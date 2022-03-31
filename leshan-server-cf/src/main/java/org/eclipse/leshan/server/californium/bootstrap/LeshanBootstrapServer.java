@@ -162,7 +162,6 @@ public class LeshanBootstrapServer {
         } else if (requestSender instanceof Stoppable) {
             ((Stoppable) requestSender).stop();
         }
-
         LOG.info("Bootstrap server destroyed.");
     }
 

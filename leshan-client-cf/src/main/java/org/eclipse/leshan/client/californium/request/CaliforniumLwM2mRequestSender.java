@@ -13,7 +13,6 @@
  * Contributors:
  *     Zebra Technologies - initial API and implementation
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690
- *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
 package org.eclipse.leshan.client.californium.request;
 
