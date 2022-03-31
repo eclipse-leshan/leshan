@@ -18,6 +18,7 @@ package org.eclipse.leshan.client.californium;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.network.Exchange;
+import org.eclipse.californium.core.network.Exchange.Origin;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.servers.ServerIdentity;
@@ -74,6 +75,7 @@ public class LwM2mClientCoapResource extends LwM2mCoapResource {
      */
     protected ServerIdentity extractIdentity(CoapExchange exchange) {
         return endpointsManager.getServerIdentity(exchange.advanced().getEndpoint(), exchange.getSourceSocketAddress(),
-                exchange.advanced().getRequest().getSourceContext());
+                exchange.advanced().getOrigin() == Origin.REMOTE ? exchange.advanced().getRequest().getSourceContext()
+                        : exchange.advanced().getRequest().getDestinationContext());
     }
 }
