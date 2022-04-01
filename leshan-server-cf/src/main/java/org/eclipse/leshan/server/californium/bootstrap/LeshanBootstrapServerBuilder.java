@@ -105,6 +105,8 @@ public class LeshanBootstrapServerBuilder {
 
     private LwM2mLinkParser linkParser;
 
+    private boolean enableOscore = false;
+
     /**
      * Set the address/port for unsecured CoAP communication (<code>coap://</code>).
      * <p>
@@ -400,6 +402,16 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
+     * Enable EXPERIMENTAL OSCORE feature.
+     * <p>
+     * By default OSCORE is not enabled.
+     */
+    public LeshanBootstrapServerBuilder setEnableOscore(boolean enableOscore) {
+        this.enableOscore = enableOscore;
+        return this;
+    }
+
+    /**
      * Create the default CoAP/Californium {@link Configuration} used by the builder.
      * <p>
      * It could be used as a base to create a custom CoAP configuration, then use it with
@@ -548,12 +560,15 @@ public class LeshanBootstrapServerBuilder {
             }
         }
 
-        // TODO OSCORE handle OSCORE
+        // Handle OSCORE support.
         OSCoreCtxDB oscoreCtxDB = null;
         OscoreBootstrapListener sessionHolder = null;
-        if (securityStore != null) {
-            sessionHolder = new OscoreBootstrapListener();
-            oscoreCtxDB = new InMemoryOscoreContextDB(new LwM2mBootstrapOscoreStore(securityStore, sessionHolder));
+        if (enableOscore) {
+            if (securityStore != null) {
+                sessionHolder = new OscoreBootstrapListener();
+                oscoreCtxDB = new InMemoryOscoreContextDB(new LwM2mBootstrapOscoreStore(securityStore, sessionHolder));
+                LOG.warn("Experimental OSCORE feature is enabled.");
+            }
         }
 
         CoapEndpoint unsecuredEndpoint = null;

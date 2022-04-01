@@ -115,6 +115,8 @@ public class LeshanServerBuilder {
     protected boolean updateRegistrationOnNotification;
     private LwM2mLinkParser linkParser;
 
+    private boolean enableOscore = false;
+
     /**
      * <p>
      * Set the address/port for unsecured CoAP Server.
@@ -411,6 +413,16 @@ public class LeshanServerBuilder {
     }
 
     /**
+     * Enable EXPERIMENTAL OSCORE feature.
+     * <p>
+     * By default OSCORE is not enabled.
+     */
+    public LeshanServerBuilder setEnableOscore(boolean enableOscore) {
+        this.enableOscore = enableOscore;
+        return this;
+    }
+
+    /**
      * The default Californium/CoAP {@link Configuration} used by the builder.
      */
     public static Configuration createDefaultCoapConfiguration() {
@@ -552,10 +564,14 @@ public class LeshanServerBuilder {
                 LOG.warn("Unable to create DTLS config and so secured endpoint.", e);
             }
         }
-        // TODO OSCORE handle OSCORE
+
+        // Handle OSCORE support.
         OSCoreCtxDB oscoreCtxDB = null;
-        if (securityStore != null) {
-            oscoreCtxDB = new InMemoryOscoreContextDB(new LwM2mOscoreStore(securityStore, registrationStore));
+        if (enableOscore) {
+            LOG.warn("Experimental OSCORE feature is enabled.");
+            if (securityStore != null) {
+                oscoreCtxDB = new InMemoryOscoreContextDB(new LwM2mOscoreStore(securityStore, registrationStore));
+            }
         }
 
         // create endpoints

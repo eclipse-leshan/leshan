@@ -655,7 +655,7 @@ public class BootstrapTest {
 
     @Test
     public void bootstrapUnsecuredToServerWithOscore() throws NonUniqueSecurityInfoException {
-        helper.createServer();
+        helper.createOscoreServer();
         helper.server.start();
 
         helper.createBootstrapServer(null, helper.unsecuredBootstrapStoreWithOscoreServer());
@@ -665,7 +665,8 @@ public class BootstrapTest {
         helper.createClient();
         helper.assertClientNotRegisterered();
 
-        helper.getSecurityStore().add(SecurityInfo.newOscoreInfo(helper.getCurrentEndpoint(), getServerOscoreSetting()));
+        helper.getSecurityStore()
+                .add(SecurityInfo.newOscoreInfo(helper.getCurrentEndpoint(), getServerOscoreSetting()));
 
         // Start it and wait for registration
         helper.client.start();
@@ -678,10 +679,10 @@ public class BootstrapTest {
 
     @Test
     public void bootstrapViaOscoreToServerWithOscore() throws NonUniqueSecurityInfoException {
-        helper.createServer();
+        helper.createOscoreServer();
         helper.server.start();
 
-        helper.createBootstrapServer(helper.bsSecurityStore(SecurityMode.NO_SEC),
+        helper.createOscoreBootstrapServer(helper.bsOscoreSecurityStore(),
                 helper.oscoreBootstrapStoreWithOscoreServer());
         helper.bootstrapServer.start();
 
@@ -689,7 +690,8 @@ public class BootstrapTest {
         helper.createOscoreOnlyBootstrapClient();
         helper.assertClientNotRegisterered();
 
-        helper.getSecurityStore().add(SecurityInfo.newOscoreInfo(helper.getCurrentEndpoint(), getServerOscoreSetting()));
+        helper.getSecurityStore()
+                .add(SecurityInfo.newOscoreInfo(helper.getCurrentEndpoint(), getServerOscoreSetting()));
 
         // Start it and wait for registration
         helper.client.start();
@@ -705,7 +707,7 @@ public class BootstrapTest {
         helper.createServer();
         helper.server.start();
 
-        helper.createBootstrapServer(helper.bsSecurityStore(SecurityMode.NO_SEC),
+        helper.createOscoreBootstrapServer(helper.bsOscoreSecurityStore(),
                 helper.oscoreBootstrapStoreWithUnsecuredServer());
         helper.bootstrapServer.start();
 

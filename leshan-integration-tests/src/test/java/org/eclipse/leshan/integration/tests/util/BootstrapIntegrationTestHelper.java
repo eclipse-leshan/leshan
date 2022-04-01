@@ -175,6 +175,22 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         return builder;
     }
 
+    public void createOscoreBootstrapServer(BootstrapSecurityStore securityStore, BootstrapConfigStore bootstrapStore) {
+        LeshanBootstrapServerBuilder builder = createBootstrapBuilder(securityStore, bootstrapStore);
+        builder.setEnableOscore(true);
+        if (bootstrapStore == null) {
+            bootstrapStore = unsecuredBootstrapStore();
+        }
+
+        if (securityStore == null) {
+            securityStore = dummyBsSecurityStore();
+        }
+        builder.setSecurityStore(securityStore);
+        builder.setSessionManager(new TestBootstrapSessionManager(securityStore, bootstrapStore));
+        bootstrapServer = builder.build();
+        setupBootstrapServerMonitoring();
+    }
+
     public void createBootstrapServer(BootstrapSecurityStore securityStore, BootstrapConfigStore bootstrapStore) {
         LeshanBootstrapServerBuilder builder = createBootstrapBuilder(securityStore, bootstrapStore);
         if (bootstrapStore == null) {
@@ -340,6 +356,32 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         setupClientMonitoring();
     }
 
+    public BootstrapSecurityStore bsOscoreSecurityStore() {
+        return new BootstrapSecurityStore() {
+
+            @Override
+            public Iterator<SecurityInfo> getAllByEndpoint(String endpoint) {
+                if (getCurrentEndpoint().equals(endpoint)) {
+                    return Arrays.asList(SecurityInfo.newOscoreInfo(endpoint, getServerOscoreSetting())).iterator();
+                }
+                return null;
+            }
+
+            @Override
+            public SecurityInfo getByIdentity(String pskIdentity) {
+                return null;
+            }
+
+            @Override
+            public SecurityInfo getByOscoreIdentity(OscoreIdentity oscoreIdentity) {
+                if (oscoreIdentity.equals(getBootstrapServerOscoreSetting().getOscoreIdentity())) {
+                    return oscoreSecurityInfo();
+                }
+                return null;
+            }
+        };
+    }
+
     public BootstrapSecurityStore bsSecurityStore(final SecurityMode mode) {
 
         return new BootstrapSecurityStore() {
@@ -363,10 +405,6 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                     } else if (mode == SecurityMode.RPK) {
                         info = rpkSecurityInfo();
                         return Arrays.asList(info).iterator();
-                    } else if (mode == SecurityMode.NO_SEC) {
-                        // Create the security info (will re-add the context to the db)
-                        info = SecurityInfo.newOscoreInfo(endpoint, getServerOscoreSetting());
-                        return Arrays.asList(info).iterator();
                     }
                 }
                 return null;
@@ -374,9 +412,6 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
             @Override
             public SecurityInfo getByOscoreIdentity(OscoreIdentity oscoreIdentity) {
-                if (oscoreIdentity.equals(getBootstrapServerOscoreSetting().getOscoreIdentity())) {
-                    return oscoreSecurityInfo();
-                }
                 return null;
             }
         };
