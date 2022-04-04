@@ -23,17 +23,21 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationListener;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
+import org.eclipse.leshan.server.security.EditableSecurityStore;
+import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.server.security.SecurityStoreListener;
 
 /**
  * This class is responsible to remove {@link OSCoreCtx} from {@link OSCoreCtxDB} on some events.
  * <p>
  * {@link OSCoreCtx} is removed when :
  * <ul>
- * <li>a registration is removed.
+ * <li>a {@link Registration} using OSCORE is removed.
+ * <li>an OSCORE {@link SecurityInfo} is removed from {@link EditableSecurityStore}.
  * </ul>
  *
  */
-public class OscoreContextCleaner implements RegistrationListener {
+public class OscoreContextCleaner implements RegistrationListener, SecurityStoreListener {
 
     private final OSCoreCtxDB oscoreCtxDB;
 
@@ -58,10 +62,18 @@ public class OscoreContextCleaner implements RegistrationListener {
         }
     }
 
+    @Override
+    public void securityInfoRemoved(boolean infosAreCompromised, SecurityInfo... infos) {
+        for (SecurityInfo securityInfo : infos) {
+            if (securityInfo.useOSCORE()) {
+                removeContext(securityInfo.getOscoreSetting().getRecipientId());
+            }
+        }
+    }
+
     private void removeContext(byte[] rid) {
         OSCoreCtx context = oscoreCtxDB.getContext(rid);
         if (context != null)
             oscoreCtxDB.removeContext(context);
     }
-
 }

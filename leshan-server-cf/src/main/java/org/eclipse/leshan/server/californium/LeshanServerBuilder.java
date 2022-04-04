@@ -70,6 +70,7 @@ import org.eclipse.leshan.server.registration.RegistrationIdProvider;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.server.security.DefaultAuthorizer;
+import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.InMemorySecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityStore;
@@ -599,6 +600,9 @@ public class LeshanServerBuilder {
 
         if (oscoreCtxCleaner != null) {
             server.getRegistrationService().addListener(oscoreCtxCleaner);
+            if (securityStore instanceof EditableSecurityStore) {
+                ((EditableSecurityStore) securityStore).addListener(oscoreCtxCleaner);
+            }
         }
 
         return server;
