@@ -33,4 +33,22 @@ public class RedisSecurityTest extends SecurityTest {
         // TODO OSCORE : https://github.com/eclipse/leshan/pull/1180#issuecomment-1007587985
         // Redis security store does support oscore for now.
     }
+
+    @Test
+    @Ignore
+    @Override
+    public void registered_device_with_oscore_to_server_with_oscore_then_removed_security_info_then_server_fails_to_send_request()
+            throws NonUniqueSecurityInfoException, InterruptedException {
+        // TODO OSCORE : https://github.com/eclipse/leshan/pull/1180#issuecomment-1007587985
+        // Redis security store does support oscore for now.
+    }
+
+    @Test
+    @Ignore
+    @Override
+    public void registered_device_with_oscore_to_server_with_oscore_then_removed_security_info_then_client_fails_to_update()
+            throws NonUniqueSecurityInfoException, InterruptedException {
+        // TODO OSCORE : https://github.com/eclipse/leshan/pull/1180#issuecomment-1007587985
+        // Redis security store does support oscore for now.
+    }
 }

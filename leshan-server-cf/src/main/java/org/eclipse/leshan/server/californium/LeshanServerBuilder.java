@@ -70,6 +70,7 @@ import org.eclipse.leshan.server.registration.RegistrationIdProvider;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.server.security.DefaultAuthorizer;
+import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.InMemorySecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityStore;
@@ -567,10 +568,12 @@ public class LeshanServerBuilder {
 
         // Handle OSCORE support.
         OSCoreCtxDB oscoreCtxDB = null;
+        OscoreContextCleaner oscoreCtxCleaner = null;
         if (enableOscore) {
             LOG.warn("Experimental OSCORE feature is enabled.");
             if (securityStore != null) {
                 oscoreCtxDB = new InMemoryOscoreContextDB(new LwM2mOscoreStore(securityStore, registrationStore));
+                oscoreCtxCleaner = new OscoreContextCleaner(oscoreCtxDB);
             }
         }
 
@@ -591,9 +594,18 @@ public class LeshanServerBuilder {
                     "All CoAP enpoints are deactivated, at least one endpoint should be activated");
         }
 
-        return createServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer,
-                modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider,
-                linkParser);
+        LeshanServer server = createServer(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore,
+                authorizer, modelProvider, encoder, decoder, coapConfig, noQueueMode, awakeTimeProvider,
+                registrationIdProvider, linkParser);
+
+        if (oscoreCtxCleaner != null) {
+            server.getRegistrationService().addListener(oscoreCtxCleaner);
+            if (securityStore instanceof EditableSecurityStore) {
+                ((EditableSecurityStore) securityStore).addListener(oscoreCtxCleaner);
+            }
+        }
+
+        return server;
     }
 
     /**
