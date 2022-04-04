@@ -19,7 +19,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -45,7 +47,7 @@ public class InMemorySecurityStore implements EditableSecurityStore {
     // by PSK oscoreIdentity
     protected Map<OscoreIdentity, SecurityInfo> securityByOscoreIdentity = new HashMap<>();
 
-    private SecurityStoreListener listener;
+    private final List<SecurityStoreListener> listeners = new CopyOnWriteArrayList<>();
 
     public InMemorySecurityStore() {
     }
@@ -162,7 +164,7 @@ public class InMemorySecurityStore implements EditableSecurityStore {
                     securityByOscoreIdentity.remove(info.getOscoreSetting().getOscoreIdentity());
                 }
                 securityByEp.remove(endpoint);
-                if (listener != null) {
+                for (SecurityStoreListener listener : listeners) {
                     listener.securityInfoRemoved(infosAreCompromised, info);
                 }
             }
@@ -173,7 +175,12 @@ public class InMemorySecurityStore implements EditableSecurityStore {
     }
 
     @Override
-    public void setListener(SecurityStoreListener listener) {
-        this.listener = listener;
+    public void addListener(SecurityStoreListener listener) {
+        listeners.add(listener);
+    }
+
+    @Override
+    public void removeListener(SecurityStoreListener listener) {
+        listeners.remove(listener);
     }
 }

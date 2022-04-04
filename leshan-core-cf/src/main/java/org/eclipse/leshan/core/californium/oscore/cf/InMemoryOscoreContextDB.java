@@ -90,7 +90,9 @@ public class InMemoryOscoreContextDB extends HashMapCtxDB {
                 osCoreCtx = getContext(rid);
                 // TODO OSCORE don't know if I should add by uri here ?
                 // see : https://github.com/eclipse/leshan/pull/1212#discussion_r830937966
-                super.addContext(uri, osCoreCtx);
+                // For now we don't add it because of :
+                // https://github.com/eclipse/leshan/pull/1232#discussion_r841851488
+                // super.addContext(uri, osCoreCtx);
             }
         }
         return osCoreCtx;

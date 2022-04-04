@@ -132,6 +132,75 @@ public class SecurityTest {
     }
 
     @Test
+    public void registered_device_with_oscore_to_server_with_oscore_then_removed_security_info_then_server_fails_to_send_request()
+            throws NonUniqueSecurityInfoException, InterruptedException {
+
+        helper.createOscoreServer();
+        helper.server.start();
+
+        helper.createOscoreClient();
+        helper.getSecurityStore()
+                .add(SecurityInfo.newOscoreInfo(helper.getCurrentEndpoint(), getServerOscoreSetting()));
+
+        // Check client is not registered
+        helper.assertClientNotRegisterered();
+
+        // Start it and wait for registration
+        helper.client.start();
+        helper.waitForRegistrationAtServerSide(1);
+
+        // Check client is well registered
+        helper.assertClientRegisterered();
+
+        // check we can send request to client.
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
+        assertTrue(response.isSuccess());
+
+        // Remove securityInfo
+        helper.getSecurityStore().remove(helper.getCurrentEndpoint(), true);
+
+        // check we can send request to client.
+        response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
+        assertNull(response);
+        // TODO OSCORE we must defined the expected behavior here.
+    }
+
+    // TODO OSCORE should failed but does not because context by URI is not removed.
+    @Test
+    public void registered_device_with_oscore_to_server_with_oscore_then_removed_security_info_then_client_fails_to_update()
+            throws NonUniqueSecurityInfoException, InterruptedException {
+
+        helper.createOscoreServer();
+        helper.server.start();
+
+        helper.createOscoreClient();
+        helper.getSecurityStore()
+                .add(SecurityInfo.newOscoreInfo(helper.getCurrentEndpoint(), getServerOscoreSetting()));
+
+        // Check client is not registered
+        helper.assertClientNotRegisterered();
+
+        // Start it and wait for registration
+        helper.client.start();
+        helper.waitForRegistrationAtServerSide(1);
+
+        // Check client is well registered
+        helper.assertClientRegisterered();
+
+        // check we can send request to client.
+        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
+        assertTrue(response.isSuccess());
+
+        // Remove securityInfo
+        helper.getSecurityStore().remove(helper.getCurrentEndpoint(), true);
+
+        // check that next update will failed.
+        helper.client.triggerRegistrationUpdate();
+        helper.waitForUpdateFailureAtClientSide(500);
+
+    }
+
+    @Test
     public void dont_sent_request_if_identity_change()
             throws NonUniqueSecurityInfoException, InterruptedException, IOException {
         // Create PSK server & start it

@@ -563,10 +563,12 @@ public class LeshanBootstrapServerBuilder {
         // Handle OSCORE support.
         OSCoreCtxDB oscoreCtxDB = null;
         OscoreBootstrapListener sessionHolder = null;
+        BootstrapOscoreContextCleaner oscoreContextCleaner = null;
         if (enableOscore) {
             if (securityStore != null) {
                 sessionHolder = new OscoreBootstrapListener();
                 oscoreCtxDB = new InMemoryOscoreContextDB(new LwM2mBootstrapOscoreStore(securityStore, sessionHolder));
+                oscoreContextCleaner = new BootstrapOscoreContextCleaner(oscoreCtxDB);
                 LOG.warn("Experimental OSCORE feature is enabled.");
             }
         }
@@ -591,8 +593,12 @@ public class LeshanBootstrapServerBuilder {
         LeshanBootstrapServer bootstrapServer = createBootstrapServer(unsecuredEndpoint, securedEndpoint,
                 sessionManager, bootstrapHandlerFactory, coapConfig, encoder, decoder, linkParser);
 
-        if (sessionHolder != null)
+        if (sessionHolder != null) {
             bootstrapServer.addListener(sessionHolder);
+        }
+        if (oscoreContextCleaner != null) {
+            bootstrapServer.addListener(oscoreContextCleaner);
+        }
         return bootstrapServer;
         // </temporay code>
         // replacing ===>

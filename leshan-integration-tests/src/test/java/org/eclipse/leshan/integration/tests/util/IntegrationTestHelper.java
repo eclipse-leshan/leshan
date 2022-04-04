@@ -293,6 +293,14 @@ public class IntegrationTestHelper {
         }
     }
 
+    public void waitForUpdateFailureAtClientSide(long timeInSeconds) {
+        try {
+            assertFalse(clientObserver.waitForUpdate(timeInSeconds, TimeUnit.SECONDS));
+        } catch (InterruptedException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void waitForBootstrapFinishedAtClientSide(long timeInSeconds) {
         try {
             assertTrue(clientObserver.waitForBootstrap(timeInSeconds, TimeUnit.SECONDS));
