@@ -17,6 +17,8 @@ package org.eclipse.leshan.server.redis;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.leshan.core.oscore.OscoreIdentity;
 import org.eclipse.leshan.server.redis.serialization.SecurityInfoSerDes;
@@ -43,7 +45,8 @@ public class RedisSecurityStore implements EditableSecurityStore {
     private static final String PSKID_SEC = "PSKID#SEC";
 
     private final Pool<Jedis> pool;
-    private SecurityStoreListener listener;
+
+    private final List<SecurityStoreListener> listeners = new CopyOnWriteArrayList<>();
 
     public RedisSecurityStore(Pool<Jedis> pool) {
         this.pool = pool;
@@ -110,7 +113,8 @@ public class RedisSecurityStore implements EditableSecurityStore {
                 // populate the secondary index (security info by PSK id)
                 String oldEndpoint = j.hget(PSKID_SEC, info.getPskIdentity());
                 if (oldEndpoint != null && !oldEndpoint.equals(info.getEndpoint())) {
-                    throw new NonUniqueSecurityInfoException("PSK Identity " + info.getPskIdentity() + " is already used");
+                    throw new NonUniqueSecurityInfoException(
+                            "PSK Identity " + info.getPskIdentity() + " is already used");
                 }
                 j.hset(PSKID_SEC.getBytes(), info.getPskIdentity().getBytes(), info.getEndpoint().getBytes());
             }
@@ -137,7 +141,7 @@ public class RedisSecurityStore implements EditableSecurityStore {
                     j.hdel(PSKID_SEC.getBytes(), info.getPskIdentity().getBytes());
                 }
                 j.del((SEC_EP + endpoint).getBytes());
-                if (listener != null) {
+                for (SecurityStoreListener listener : listeners) {
                     listener.securityInfoRemoved(infosAreCompromised, info);
                 }
                 return info;
@@ -155,7 +159,12 @@ public class RedisSecurityStore implements EditableSecurityStore {
     }
 
     @Override
-    public void setListener(SecurityStoreListener listener) {
-        this.listener = listener;
+    public void addListener(SecurityStoreListener listener) {
+        listeners.add(listener);
+    }
+
+    @Override
+    public void removeListener(SecurityStoreListener listener) {
+        listeners.remove(listener);
     }
 }

@@ -344,7 +344,7 @@ public class LeshanServer {
             final ConnectionCleaner connectionCleaner = new ConnectionCleaner(
                     (DTLSConnector) securedEndpoint.getConnector());
 
-            ((EditableSecurityStore) securityStore).setListener(new SecurityStoreListener() {
+            ((EditableSecurityStore) securityStore).addListener(new SecurityStoreListener() {
                 @Override
                 public void securityInfoRemoved(boolean infosAreCompromised, SecurityInfo... infos) {
                     if (infosAreCompromised) {
