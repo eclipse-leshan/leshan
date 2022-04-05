@@ -105,7 +105,7 @@ public class InMemoryOscoreContextDB extends HashMapCtxDB {
             osCoreCtx.setContextRederivationEnabled(true);
             return osCoreCtx;
         } catch (OSException e) {
-            LOG.error("Unable to derive context from OscoreParameters %s", oscoreParameters, e);
+            LOG.error("Unable to derive context from {}", oscoreParameters, e);
             return null;
         }
     }
