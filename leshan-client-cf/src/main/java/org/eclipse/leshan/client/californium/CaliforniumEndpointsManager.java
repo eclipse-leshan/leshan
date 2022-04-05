@@ -271,9 +271,14 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                         "Unable to create endpoint for %s using OSCORE : Unable to decode OSCORE AEAD from %s.",
                         serverInfo, serverInfo.oscoreSetting), e);
             }
+
+            // TODO OSCORE kind of hack because californium doesn't support an empty byte[] array for salt ?
+            byte[] masterSalt = serverInfo.oscoreSetting.getMasterSalt().length == 0 ? null
+                    : serverInfo.oscoreSetting.getMasterSalt();
+
             OscoreParameters oscoreParameters = new OscoreParameters(serverInfo.oscoreSetting.getSenderId(),
                     serverInfo.oscoreSetting.getRecipientId(), serverInfo.oscoreSetting.getMasterSecret(), aeadAlg,
-                    hkdfAlg, serverInfo.oscoreSetting.getMasterSalt());
+                    hkdfAlg, masterSalt);
 
             currentEndpoint = endpointFactory.createUnsecuredEndpoint(localAddress, coapConfig, null,
                     new InMemoryOscoreContextDB(new StaticOscoreStore(oscoreParameters)));
