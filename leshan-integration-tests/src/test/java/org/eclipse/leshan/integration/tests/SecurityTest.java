@@ -56,7 +56,6 @@ import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class SecurityTest {
@@ -132,8 +131,6 @@ public class SecurityTest {
         assertTrue(response.isSuccess());
     }
 
-    // TODO OSCORE should failed but does not because context by URI is not removed.
-    @Ignore
     @Test
     public void registered_device_with_oscore_to_server_with_oscore_then_removed_security_info_then_server_fails_to_send_request()
             throws NonUniqueSecurityInfoException, InterruptedException {
@@ -164,7 +161,7 @@ public class SecurityTest {
 
         // check we can send request to client.
         response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
-        assertTrue(!response.isSuccess());
+        assertNull(response);
         // TODO OSCORE we must defined the expected behavior here.
     }
 
