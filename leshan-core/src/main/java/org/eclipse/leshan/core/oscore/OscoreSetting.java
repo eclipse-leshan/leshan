@@ -46,7 +46,7 @@ public class OscoreSetting implements Serializable {
 
     public OscoreSetting(byte[] senderId, byte[] recipientId, byte[] masterSecret, Integer aeadAlgorithm,
             Integer hkdfAlgorithm, byte[] masterSalt) {
-        this(senderId, recipientId, masterSalt, //
+        this(senderId, recipientId, masterSecret, //
                 aeadAlgorithm == null ? null : AeadAlgorithm.fromValue(aeadAlgorithm), //
                 hkdfAlgorithm == null ? null : HkdfAlgorithm.fromValue(hkdfAlgorithm), //
                 masterSalt);
