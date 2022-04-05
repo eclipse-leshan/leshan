@@ -29,6 +29,16 @@ public class OscoreValidator {
         AeadAlgorithm aeadAlgorithm = oscoreSetting.getAeadAlgorithm();
         HkdfAlgorithm hkdfAlgorithm = oscoreSetting.getHkdfAlgorithm();
 
+        // Validate that Algorithm are known.
+        if (!aeadAlgorithm.isKnown()) {
+            throw new InvalidOscoreSettingException("Unkown AEAD Algorithm (%s) : known AEAD Algorithm are %s",
+                    aeadAlgorithm, Arrays.toString(AeadAlgorithm.knownAeadAlgorithms));
+        }
+        if (!hkdfAlgorithm.isKnown()) {
+            throw new InvalidOscoreSettingException("Unkown HKDF Algorithm (%s) : known HKDF Algorithm are %s",
+                    hkdfAlgorithm, Arrays.toString(HkdfAlgorithm.knownHkdfAlgorithms));
+        }
+
         // Validate senderId and recipient id length
         // see : https://datatracker.ietf.org/doc/html/rfc8613#section-3.3
         // The maximum length of Sender ID in bytes equals the length of the AEAD nonce minus 6.
