@@ -244,7 +244,7 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
             currentEndpoint = endpointFactory.createSecuredEndpoint(newBuilder.build(), coapConfig, null, null);
         } else if (serverInfo.useOscore) {
             // oscore only mode
-            LOG.info("Adding OSCORE context for " + serverInfo.getFullUri().toASCIIString());
+            LOG.warn("Experimental OSCORE support is used for {}", serverInfo.getFullUri().toASCIIString());
 
             try {
                 new OscoreValidator().validateOscoreSetting(serverInfo.oscoreSetting);
