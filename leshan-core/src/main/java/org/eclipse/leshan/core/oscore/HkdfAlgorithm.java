@@ -1,6 +1,7 @@
 package org.eclipse.leshan.core.oscore;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import org.eclipse.leshan.core.util.datatype.NumberUtil;
 
@@ -66,6 +67,13 @@ public class HkdfAlgorithm implements Serializable {
 
     public int getValue() {
         return value;
+    }
+
+    /**
+     * @return <code>true</code> is this is a known {@link HkdfAlgorithm}
+     */
+    public boolean isKnown() {
+        return Arrays.asList(knownHkdfAlgorithms).contains(this);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package org.eclipse.leshan.core.oscore;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import org.eclipse.leshan.core.util.datatype.NumberUtil;
 
@@ -83,6 +84,13 @@ public class AeadAlgorithm implements Serializable {
      */
     public int getNonceSize() {
         return nonceSize;
+    }
+
+    /**
+     * @return <code>true</code> is this is a known {@link AeadAlgorithm}
+     */
+    public boolean isKnown() {
+        return Arrays.asList(knownAeadAlgorithms).contains(this);
     }
 
     @Override
