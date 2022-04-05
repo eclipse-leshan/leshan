@@ -72,7 +72,7 @@ public class OscoreParameters {
     public String toString() {
         // Note : oscoreMasterSecret and oscoreMasterSalt are explicitly excluded from the display for security
         // purposes
-        return String.format("OscoreSetting [senderId=%s, recipientId=%s, aeadAlgorithm=%s, hmacAlgorithm=%s]",
+        return String.format("OscoreParameters [senderId=%s, recipientId=%s, aeadAlgorithm=%s, hmacAlgorithm=%s]",
                 Hex.encodeHexString(senderId), Hex.encodeHexString(recipientId), aeadAlgorithm, hmacAlgorithm);
     }
 
