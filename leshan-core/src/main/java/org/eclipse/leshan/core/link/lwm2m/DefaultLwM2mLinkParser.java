@@ -81,7 +81,7 @@ public class DefaultLwM2mLinkParser implements LwM2mLinkParser {
                 lwm2mPath = LwM2mPath.parse(path, rootpath);
             } catch (InvalidLwM2mPathException e) {
                 String strLink = new String(bytes, StandardCharsets.UTF_8);
-                throw new LinkParseException(e, "Unable to parse link %s in %", links[i], strLink);
+                throw new LinkParseException(e, "Unable to parse link %s in %s", links[i], strLink);
             }
 
             try {
@@ -91,7 +91,7 @@ public class DefaultLwM2mLinkParser implements LwM2mLinkParser {
                 for (Attribute attribute : attributes) {
                     if (!(attribute instanceof LwM2mAttribute)) {
                         String strLink = new String(bytes, StandardCharsets.UTF_8);
-                        throw new LinkParseException("Attribute %s is not a known LWM2M Attribute in %",
+                        throw new LinkParseException("Attribute %s is not a known LWM2M Attribute in %s",
                                 attribute.getName(), strLink);
                     }
                     lwm2mAttributes.add((LwM2mAttribute<?>) attribute);
@@ -137,7 +137,7 @@ public class DefaultLwM2mLinkParser implements LwM2mLinkParser {
                     lwm2mPath = LwM2mPath.parse(path, rootPath);
                 } catch (InvalidLwM2mPathException e) {
                     String strLink = new String(bytes, StandardCharsets.UTF_8);
-                    throw new LinkParseException(e, "Unable to parse link %s in %", links[i], strLink);
+                    throw new LinkParseException(e, "Unable to parse link %s in %s", links[i], strLink);
                 }
 
                 try {
