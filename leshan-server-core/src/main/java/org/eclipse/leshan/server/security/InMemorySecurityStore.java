@@ -120,8 +120,7 @@ public class InMemorySecurityStore implements EditableSecurityStore {
             if (oscoreIdentity != null) {
                 SecurityInfo infoByOscoreIdentity = securityByOscoreIdentity.get(oscoreIdentity);
                 if (infoByOscoreIdentity != null && !info.getEndpoint().equals(infoByOscoreIdentity.getEndpoint())) {
-                    throw new NonUniqueSecurityInfoException(
-                            "Oscore Identity " + info.getPskIdentity() + " is already used");
+                    throw new NonUniqueSecurityInfoException("Oscore Identity " + oscoreIdentity + " is already used");
                 }
                 securityByOscoreIdentity.put(oscoreIdentity, info);
             }
