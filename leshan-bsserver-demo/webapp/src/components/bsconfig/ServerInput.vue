@@ -14,6 +14,7 @@
   <div>
     <v-text-field
       v-model="server.url"
+      @input="$emit('input', server)"
       :label="
         server.mode == 'no_sec'
           ? 'Server URL (default :' + defaultNoSecValue + ')'
@@ -27,7 +28,9 @@
     ></v-text-field>
     <security-input
       :mode.sync="server.mode"
+      @update:mode="$emit('input', server)"
       :details.sync="server.details"
+      @update:details="$emit('input', server)"
       :defaultrpk="defaultrpk"
       :defaultx509="defaultx509"
     />
@@ -55,14 +58,18 @@ export default {
       type: Object,
     },
   },
-  computed: {
-    server: {
-      get() {
-        return this.value;
-      },
-      set(value) {
-        this.$emit("input", value);
-      },
+  data() {
+    return {
+      server: { mode: "no_sec" }, // internal server Config
+    };
+  },
+  watch: {
+    value(v) {
+      if (!v) {
+        this.server = { mode: "no_sec" };
+      } else {
+        this.server = v;
+      }
     },
   },
 };
