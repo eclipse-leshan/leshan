@@ -51,7 +51,7 @@ public abstract class BaseBootstrapConsistencyChecker implements BootstrapConsis
                 return errors;
             }
         } catch (RuntimeException e) {
-            LOG.debug(e.getMessage());
+            LOG.debug(e.getMessage(), e);
             return Arrays.asList(e.getMessage());
         }
         return null;
