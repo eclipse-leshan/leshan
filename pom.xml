@@ -108,7 +108,7 @@ Contributors:
         <test.exclusion.pattern>**/Redis*.java</test.exclusion.pattern>
 
         <!-- dependencies version -->
-        <californium.version>2.7.1</californium.version>
+        <californium.version>2.7.2</californium.version>
         <logback.version>1.2.11</logback.version>
         <slf4j.api.version>1.7.36</slf4j.api.version>
         <jetty.version>9.4.45.v20220203</jetty.version>
