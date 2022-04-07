@@ -22,18 +22,18 @@
     "vuetify-dialog": "^2.0.0"
   },
   "devDependencies": {
-    "@mdi/font": "^6.2.0",
-    "@vue/cli-plugin-babel": "^4.5.0",
-    "@vue/cli-plugin-eslint": "^4.5.0",
-    "@vue/cli-plugin-router": "^4.5.0",
-    "@vue/cli-service": "^4.5.0",
-    "babel-eslint": "^10.1.0",
-    "eslint": "^6.0.0",
-    "eslint-plugin-vue": "^7.19.0",
-    "sass": "~1.32",
-    "sass-loader": "^10",
-    "vue-cli-plugin-vuetify": "^2.2.0",
-    "vue-template-compiler": "^2.6.0",
+    "@babel/core": "^7.12.16",
+    "@babel/eslint-parser": "^7.12.16",
+    "@vue/cli-plugin-babel": "~5.0.0",
+    "@vue/cli-plugin-eslint": "~5.0.0",
+    "@vue/cli-service": "~5.0.0",
+    "webpack":"^5.0.0",
+    "eslint": "^7.32.0",
+    "eslint-plugin-vue": "^8.0.3",
+    "sass": "~1.32.0",
+    "sass-loader": "^10.0.0",
+    "vue-cli-plugin-vuetify": "~2.4.8",
+    "vue-template-compiler": "^2.6.14",
     "vuetify-loader": "^1.7.0"
   },
   "eslintConfig": {
@@ -46,13 +46,24 @@
       "eslint:recommended"
     ],
     "parserOptions": {
-      "parser": "babel-eslint"
+      "parser": "@babel/eslint-parser"
     },
     "rules": {
       "vue/valid-v-slot": [
         "error",
         {
           "allowModifiers": true
+        }
+      ],
+      "vue/multi-word-component-names": [
+        "error",
+        {
+          "ignores": [
+            "About",
+            "Client",
+            "Clients",
+            "Security"
+          ]
         }
       ]
     }

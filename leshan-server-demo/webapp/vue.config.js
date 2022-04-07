@@ -16,11 +16,16 @@ module.exports = {
         changeOrigin: true,
       },
     },
+    // Workarround : https://stackoverflow.com/questions/71783075/sse-doent-work-with-vue-cli-devserver-proxy
+    compress: false,
   },
   configureWebpack: {
     resolve: {
       alias: {
-        "@leshan-server-core-demo": path.join(__dirname, "../../leshan-server-core-demo/webapp/src"),
+        "@leshan-server-core-demo": path.join(
+          __dirname,
+          "../../leshan-server-core-demo/webapp/src"
+        ),
       },
       extensions: [".js", ".vue"],
     },
