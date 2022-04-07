@@ -18,10 +18,7 @@ package org.eclipse.leshan.client.californium;
 
 import java.net.InetSocketAddress;
 import java.security.cert.Certificate;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.californium.core.CoapResource;
@@ -59,6 +56,7 @@ import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -321,7 +319,17 @@ public class LeshanClient implements LwM2mClient {
         Validate.notNull(onError);
 
         Map<LwM2mPath, LwM2mNode> collectedData = collectData(server, paths);
-        requestSender.send(server, new SendRequest(format, collectedData, null), timeoutInMs, onResponse, onError);
+
+        //attach random timestamps to collected data to test if we can receive and process it on the server side
+        TimestampedLwM2mNodes.Builder builder = TimestampedLwM2mNodes.builder();
+        Random random = new Random();
+
+        for (Map.Entry<LwM2mPath, LwM2mNode> entry : collectedData.entrySet()) {
+            Long timestamp = System.currentTimeMillis() + random.nextInt(100000);
+            builder.put(timestamp, entry.getKey(), entry.getValue());
+        }
+        TimestampedLwM2mNodes timestampedLwM2mNodes = builder.build();
+        requestSender.send(server, new SendRequest(format, timestampedLwM2mNodes, null), timeoutInMs, onResponse, onError);
     }
 
     private Map<LwM2mPath, LwM2mNode> collectData(ServerIdentity server, List<String> paths) {

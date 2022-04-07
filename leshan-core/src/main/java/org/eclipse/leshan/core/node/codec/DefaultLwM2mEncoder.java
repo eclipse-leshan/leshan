@@ -16,11 +16,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -39,6 +34,11 @@ import org.eclipse.leshan.senml.cbor.upokecenter.SenMLCborUpokecenterEncoderDeco
 import org.eclipse.leshan.senml.json.jackson.SenMLJsonJacksonEncoderDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A default {@link LwM2mEncoder}.
@@ -213,8 +213,15 @@ public class DefaultLwM2mEncoder implements LwM2mEncoder {
         if (encoder == null) {
             throw new CodecException("Content format %s is not supported", format);
         }
-        // TODO implements timestamped nodes encoding with fall back to "not timestamped" multi node.
-        return encodeNodes(timestampedNodes.getNodes(), format, model);
+
+        if (encoder instanceof TimestampMultiNodeEncoder) {
+            return ((TimestampMultiNodeEncoder) encoder).encodeTimestampedNodes(timestampedNodes, model, converter);
+        } else if (encoder instanceof MultiNodeEncoder) {
+            return ((MultiNodeEncoder) encoder).encodeNodes(timestampedNodes.getNodes(), model, converter);
+        } else {
+            throw new CodecException(
+                    "Encoder does not support multiple nodes encoding for this content format %s [%s] ", format);
+        }
     }
 
     @Override

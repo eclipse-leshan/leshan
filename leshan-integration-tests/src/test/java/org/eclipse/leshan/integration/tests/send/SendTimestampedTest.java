@@ -15,16 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.send;
 
-import static org.junit.Assert.*;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
@@ -48,6 +38,16 @@ import org.eclipse.leshan.integration.tests.util.SynchronousSendListener;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import static org.junit.Assert.*;
 
 public class SendTimestampedTest {
 
@@ -128,7 +128,7 @@ public class SendTimestampedTest {
             initializer.setInstancesForObject(LwM2mId.DEVICE, new TestDevice("Eclipse Leshan", MODEL_NUMBER, "12345"));
             initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);
             initializer.setInstancesForObject(TEST_OBJECT_ID, new DummyInstanceEnabler(0),
-                    new SimpleInstanceEnabler(1, FLOAT_RESOURCE_ID, 12345d));
+                    new SimpleInstanceEnabler(1, FLOAT_RESOURCE_ID, 123456d));
             List<LwM2mObjectEnabler> objects = initializer.createAll();
 
             // Build Client
@@ -148,7 +148,8 @@ public class SendTimestampedTest {
         }
 
         @Override
-        public byte[] encodeNodes(Map<LwM2mPath, LwM2mNode> nodes, ContentFormat format, LwM2mModel model) {
+        public byte[] encodeTimestampedNodes(TimestampedLwM2mNodes timestampedNodes, ContentFormat format,
+                                             LwM2mModel model) {
             return ("[{\"bn\":\"/2000/1/\",\"n\":\"3\",\"v\":12345,\"t\":268435456},"
                     + "{\"n\":\"3\",\"v\":67890,\"t\":268435457}]").getBytes(StandardCharsets.UTF_8);
         }
