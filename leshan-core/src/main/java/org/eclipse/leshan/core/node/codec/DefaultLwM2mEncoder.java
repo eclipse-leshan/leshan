@@ -201,8 +201,8 @@ public class DefaultLwM2mEncoder implements LwM2mEncoder {
     }
 
     @Override
-    public byte[] encodeTimestampedNodes(TimestampedLwM2mNodes timestampedNodes, ContentFormat format,
-            LwM2mModel model) throws CodecException {
+    public byte[] encodeTimestampedNodes(TimestampedLwM2mNodes timestampedNodes, ContentFormat format, LwM2mModel model)
+            throws CodecException {
         Validate.notNull(timestampedNodes);
 
         if (format == null) {
@@ -213,8 +213,15 @@ public class DefaultLwM2mEncoder implements LwM2mEncoder {
         if (encoder == null) {
             throw new CodecException("Content format %s is not supported", format);
         }
-        // TODO implements timestamped nodes encoding with fall back to "not timestamped" multi node.
-        return encodeNodes(timestampedNodes.getNodes(), format, model);
+
+        if (encoder instanceof TimestampedMultiNodeEncoder) {
+            return ((TimestampedMultiNodeEncoder) encoder).encodeTimestampedNodes(timestampedNodes, model, converter);
+        } else if (encoder instanceof MultiNodeEncoder) {
+            return ((MultiNodeEncoder) encoder).encodeNodes(timestampedNodes.getNodes(), model, converter);
+        } else {
+            throw new CodecException("Encoder does not support multiple nodes encoding for this content format: %s",
+                    format);
+        }
     }
 
     @Override

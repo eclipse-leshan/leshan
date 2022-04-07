@@ -2,12 +2,12 @@
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Boya Zhang - initial API and implementation
  *******************************************************************************/
@@ -31,9 +31,11 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
 import org.eclipse.leshan.core.node.codec.MultiNodeEncoder;
+import org.eclipse.leshan.core.node.codec.TimestampedMultiNodeEncoder;
 import org.eclipse.leshan.core.node.codec.TimestampedNodeEncoder;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.senml.SenMLEncoder;
@@ -43,7 +45,7 @@ import org.eclipse.leshan.senml.SenMLRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeEncoder {
+public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeEncoder, TimestampedMultiNodeEncoder {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeSenMLEncoder.class);
 
     private final SenMLEncoder encoder;
@@ -144,6 +146,42 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
             return encoder.toSenML(pack);
         } catch (SenMLException e) {
             throw new CodecException(e, "Unable to encode timestamped node[path:%s] : %s", path, timestampedNodes);
+        }
+    }
+
+    @Override
+    public byte[] encodeTimestampedNodes(TimestampedLwM2mNodes timestampedNodes, LwM2mModel model,
+            LwM2mValueConverter converter) throws CodecException {
+        Validate.notEmpty(timestampedNodes.getTimestamps());
+
+        SenMLPack pack = new SenMLPack();
+        for (Long timestamp : timestampedNodes.getTimestamps()) {
+            Map<LwM2mPath, LwM2mNode> nodesAtTimestamp = timestampedNodes.getNodesAt(timestamp);
+            for (Entry<LwM2mPath, LwM2mNode> entry : nodesAtTimestamp.entrySet()) {
+                LwM2mPath path = entry.getKey();
+                InternalEncoder internalEncoder = new InternalEncoder();
+                internalEncoder.objectId = path.getObjectId();
+                internalEncoder.model = model;
+                internalEncoder.requestPath = path;
+                internalEncoder.converter = converter;
+                internalEncoder.records = new ArrayList<>();
+                LwM2mNode node = entry.getValue();
+                if (node != null) {
+                    node.accept(internalEncoder);
+
+                    List<SenMLRecord> records = internalEncoder.records;
+                    if (!records.isEmpty()) {
+                        records.get(0).setBaseTime(timestamp);
+                        pack.addRecords(records);
+                    }
+                }
+            }
+        }
+
+        try {
+            return encoder.toSenML(pack);
+        } catch (SenMLException e) {
+            throw new CodecException(e, "Unable to encode timestamped nodes: %s", timestampedNodes);
         }
     }
 

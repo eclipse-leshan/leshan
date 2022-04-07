@@ -148,7 +148,8 @@ public class SendTimestampedTest {
         }
 
         @Override
-        public byte[] encodeNodes(Map<LwM2mPath, LwM2mNode> nodes, ContentFormat format, LwM2mModel model) {
+        public byte[] encodeTimestampedNodes(TimestampedLwM2mNodes timestampedNodes, ContentFormat format,
+                LwM2mModel model) {
             return ("[{\"bn\":\"/2000/1/\",\"n\":\"3\",\"v\":12345,\"t\":268435456},"
                     + "{\"n\":\"3\",\"v\":67890,\"t\":268435457}]").getBytes(StandardCharsets.UTF_8);
         }
