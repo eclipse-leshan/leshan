@@ -32,7 +32,7 @@ import org.eclipse.leshan.senml.SenMLRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeEncoder, TimestampMultiNodeEncoder {
+public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeEncoder, TimestampedMultiNodeEncoder {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeSenMLEncoder.class);
 
     private final SenMLEncoder encoder;
@@ -155,7 +155,7 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
                 if (node != null) {
                     node.accept(internalEncoder);
 
-                    internalEncoder.records.get(0).setTime(timestamp);
+                    internalEncoder.records.get(0).setBaseTime(timestamp);
                     pack.addRecords(internalEncoder.records);
                 }
             }

@@ -214,8 +214,8 @@ public class DefaultLwM2mEncoder implements LwM2mEncoder {
             throw new CodecException("Content format %s is not supported", format);
         }
 
-        if (encoder instanceof TimestampMultiNodeEncoder) {
-            return ((TimestampMultiNodeEncoder) encoder).encodeTimestampedNodes(timestampedNodes, model, converter);
+        if (encoder instanceof TimestampedMultiNodeEncoder) {
+            return ((TimestampedMultiNodeEncoder) encoder).encodeTimestampedNodes(timestampedNodes, model, converter);
         } else if (encoder instanceof MultiNodeEncoder) {
             return ((MultiNodeEncoder) encoder).encodeNodes(timestampedNodes.getNodes(), model, converter);
         } else {
