@@ -15,16 +15,14 @@
     <!-- info icon -->
     <v-tooltip :left="tooltipleft" :bottom="tooltipbottom">
       <template v-slot:activator="{ on }">
-        <v-icon v-on="on" class="pr-2" :small="small">
-          mdi-information
-        </v-icon>
+        <v-icon v-on="on" class="pr-2" :small="small"> {{svgPath}}</v-icon>
       </template>
       Lifetime : {{ registration.lifetime }}s
       <br />
-      Binding mode : {{ registration.bindingMode }} 
+      Binding mode : {{ registration.bindingMode }}
       <span v-if="registration.queuemode">
-      <br /> 
-      Using QueueMode 
+        <br />
+        Using QueueMode
       </span>
       <br />
       Protocole version : {{ registration.lwM2mVersion }}
@@ -41,7 +39,12 @@
     <!-- secure icon -->
     <v-tooltip :left="tooltipleft" :bottom="tooltipbottom">
       <template v-slot:activator="{ on }">
-        <v-icon v-on="on" class="pr-2" :small="small" v-visible="registration.secure">
+        <v-icon
+          v-on="on"
+          class="pr-2"
+          :small="small"
+          v-visible="registration.secure"
+        >
           mdi-lock
         </v-icon>
       </template>
@@ -50,7 +53,12 @@
     <!-- secure icon -->
     <v-tooltip :left="tooltipleft" :bottom="tooltipbottom">
       <template v-slot:activator="{ on }">
-        <v-icon v-on="on" class="pr-2" :small="small" v-visible="registration.sleeping">
+        <v-icon
+          v-on="on"
+          class="pr-2"
+          :small="small"
+          v-visible="registration.sleeping"
+        >
           mdi-sleep
         </v-icon>
       </template>
@@ -59,20 +67,25 @@
   </span>
 </template>
 <script>
+import { mdiInformation } from "@mdi/js";
+
 export default {
+  data: () => ({
+    svgPath: mdiInformation,
+  }),
   props: {
     registration: Object,
     small: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    tooltipleft:{
+    tooltipleft: {
       type: Boolean,
-      default: false
+      default: false,
     },
     tooltipbottom: {
       type: Boolean,
-      default: false
+      default: false,
     },
   },
 };
