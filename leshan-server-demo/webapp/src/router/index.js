@@ -13,17 +13,16 @@
 
 import Vue from "vue";
 import VueRouter from "vue-router";
-import Clients from "../views/Clients.vue";
-import Client from "../views/Client.vue";
-import CompositeOperationView from "../views/CompositeOperationView.vue";
-import CompositeObjectView from "../views/CompositeObjectView.vue"
-import ObjectView from "../views/ObjectView.vue";
-
-import Security from "../views/Security.vue";
-import Server from "@leshan-server-core-demo/views/Server.vue";
-import About from "../views/About.vue";
 
 Vue.use(VueRouter);
+
+function lazyLoad(view) {
+  return () => import(`@/views/${view}.vue`);
+}
+
+function lazyLoadFromServerCoreDemo(view) {
+  return () => import(`@leshan-server-core-demo/views/${view}.vue`);
+}
 
 const routes = [
   {
@@ -32,38 +31,38 @@ const routes = [
   },
   {
     path: "/clients/:endpoint",
-    component: Client,
+    component: lazyLoad("Client"),
     children: [
       {
         path: "composite",
-        component: CompositeOperationView,
+        component: lazyLoad("CompositeOperationView"),
         children: [
           {
             path: ":compositeObjectName",
-            component: CompositeObjectView,
+            component: lazyLoad("CompositeObjectView"),
           },
         ],
       },
       {
         path: ":objectid",
-        component: ObjectView,
+        component: lazyLoad("ObjectView"),
       },
     ],
   },
   {
     path: "/clients",
     name: "Clients",
-    component: Clients,
+    component: lazyLoad("Clients"),
   },
   {
     path: "/security",
     name: "Security",
-    component: Security,
+    component: lazyLoad("Security"),
   },
   {
     path: "/server",
     name: "Server",
-    component: Server,
+    component: lazyLoadFromServerCoreDemo("Server"),
     props: {
       pubkeyFileName: "serverPubKey.der",
       certFileName: "serverCertificate.der",
@@ -72,7 +71,7 @@ const routes = [
   {
     path: "/about",
     name: "About",
-    component: About,
+    component: lazyLoad("About"),
   },
 ];
 

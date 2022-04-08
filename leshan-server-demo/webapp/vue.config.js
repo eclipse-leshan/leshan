@@ -30,4 +30,8 @@ module.exports = {
       extensions: [".js", ".vue"],
     },
   },
+  css: {
+    // Workarround : https://github.com/vuetifyjs/vuetify/issues/5271
+    extract: { ignoreOrder: true },
+  },
 };
