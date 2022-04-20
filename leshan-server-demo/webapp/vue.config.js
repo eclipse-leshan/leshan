@@ -29,6 +29,12 @@ module.exports = {
       },
       extensions: [".js", ".vue"],
     },
+    optimization: {
+      splitChunks: {
+        chunks:"all",
+        maxSize: 240000,
+      },
+    },
   },
   css: {
     // Workarround : https://github.com/vuetifyjs/vuetify/issues/5271
