@@ -25,9 +25,9 @@
             :key="index"
             :to="
               '/clients/' +
-                $route.params.endpoint +
-                '/composite/' +
-                compositeObject.name
+              $route.params.endpoint +
+              '/composite/' +
+              compositeObject.name
             "
           >
             <v-list-item-icon>
@@ -45,13 +45,13 @@
                 @click.prevent="openEditCompositeObject(compositeObject)"
               >
                 <v-icon small>
-                  mdi-pencil
+                  {{ $icons.mdiPencil }}
                 </v-icon>
               </v-btn>
             </v-list-item-action>
             <v-list-item-action>
               <v-btn icon @click.prevent="removeCompositeObject(index)">
-                <v-icon>mdi-delete</v-icon>
+                <v-icon>{{ $icons.mdiDelete }}</v-icon>
               </v-btn>
             </v-list-item-action>
           </v-list-item>

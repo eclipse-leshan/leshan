@@ -35,7 +35,7 @@
           ></v-divider>
           <v-text-field
             v-model="search"
-            append-icon="mdi-magnify"
+            :append-icon="$icons.mdiMagnify"
             label="Search"
             single-line
             hide-details
@@ -49,7 +49,7 @@
               $vuetify.breakpoint.smAndDown ? "" : "Add Clients Configuration"
             }}
             <v-icon :right="!$vuetify.breakpoint.smAndDown" dark>
-              mdi-key-plus
+              {{ $icons.mdiKeyPlus }}
             </v-icon>
           </v-btn>
 
@@ -107,7 +107,9 @@
       </template>
       <!--custom display for "actions" column-->
       <template v-slot:item.actions="{ item }">
-        <v-icon small @click.stop="onDelete(item)"> mdi-delete </v-icon>
+        <v-icon small @click.stop="onDelete(item)">
+          {{ $icons.mdiDelete }}
+        </v-icon>
       </template>
     </v-data-table>
   </div>

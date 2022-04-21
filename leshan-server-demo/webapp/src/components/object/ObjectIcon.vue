@@ -14,11 +14,49 @@
   <v-icon>{{ idToIcon(objectId) }}</v-icon>
 </template>
 <script>
+import {
+  mdiAlertCircleOutline,
+  mdiAlphaOCircleOutline,
+  mdiArrowExpandVertical,
+  mdiAxisArrow,
+  mdiBellRing,
+  mdiCardTextOutline,
+  mdiCellphoneArrowDown,
+  mdiCellphoneWireless,
+  mdiDatabase,
+  mdiDatabaseSyncOutline,
+  mdiDevices,
+  mdiDoor,
+  mdiFolderMultipleOutline,
+  mdiGauge,
+  mdiGestureTapButton,
+  mdiLightbulbOnOutline,
+  mdiListStatus,
+  mdiMapMarker,
+  mdiPackageDown,
+  mdiPaletteOutline,
+  mdiPuzzleOutline,
+  mdiServer,
+  mdiShieldCheckOutline,
+  mdiSignal,
+  mdiSignalDistanceVariant,
+  mdiSignalVariant,
+  mdiSim,
+  mdiSimOutline,
+  mdiTextBoxOutline,
+  mdiTextRecognition,
+  mdiThermometer,
+  mdiTimerOutline,
+  mdiToggleSwitch,
+  mdiWaterPercent,
+  mdiWidgetsOutline,
+} from "@mdi/js";
+
 export default {
   props: {
     objectId: Number,
-    unknowObjectIcon: { type: String, default: "mdi-alpha-o-circle-outline" },
-    invalidObjectIcon: { type: String, default: "mdi-alert-circle-outline" },
+    unknowObjectIcon: { type: String, default: mdiAlphaOCircleOutline },
+    invalidObjectIcon: { type: String, default: mdiAlertCircleOutline },
   },
   methods: {
     idToIcon(id) {
@@ -26,73 +64,73 @@ export default {
 
       switch (id) {
         case 1: // server
-          return "mdi-server";
+          return mdiServer;
         case 2: // ACL
-          return "mdi-shield-check-outline";
+          return mdiShieldCheckOutline;
         case 3: // device
-          return "mdi-devices";
+          return mdiDevices;
         case 4: // connectivity monitoring
-          return "mdi-signal-variant";
+          return mdiSignalVariant;
         case 5: // firmware update
-          return "mdi-cellphone-arrow-down";
+          return mdiCellphoneArrowDown;
         case 6: // location
-          return "mdi-map-marker";
+          return mdiMapMarker;
         case 7: // connectivity statistics
-          return "mdi-signal-distance-variant";
+          return mdiSignalDistanceVariant;
         case 9: // LWM2M Software Management
-          return "mdi-package-down";
+          return mdiPackageDown;
         case 10: //  LWM2M Cellular Connectivity
-          return "mdi-signal";
+          return mdiSignal;
         case 11: // LWM2M APN Connection Profile
-          return "mdi-sim";
+          return mdiSim;
         case 12: // WLAN connectivity
-          return "mdi-cellphone-wireless";
+          return mdiCellphoneWireless;
         case 13: // LWM2M Bearer Selection
-          return "mdi-sim-outline";
+          return mdiSimOutline;
         case 14: // LWM2M Software Component
-          return "mdi-puzzle-outline";
+          return mdiPuzzleOutline;
         case 15: // DevCapMgmt
-          return "mdi-widgets-outline";
+          return mdiWidgetsOutline;
         case 16: // Portfolio
-          return "mdi-folder-multiple-outline";
+          return mdiFolderMultipleOutline;
         case 19: // BinaryAppDataContainer
-          return "mdi-database-sync-outline";
+          return mdiDatabaseSyncOutline;
         case 3300: // General Sensor
-          return "mdi-gauge";
+          return mdiGauge;
         case 3303: // Temperature
-          return "mdi-thermometer";
+          return mdiThermometer;
         case 3304: // Humidity
-          return "mdi-water-percent";
+          return mdiWaterPercent;
         case 3311: // Light Control
-          return "mdi-lightbulb-on-outline";
+          return mdiLightbulbOnOutline;
         case 3313: // Accelerometer
-          return "mdi-axis-arrow";
+          return mdiAxisArrow;
         case 3323: // Pressure
-          return "mdi-arrow-expand-vertical";
+          return mdiArrowExpandVertical;
         case 3335: // Colour
-          return "mdi-palette-outline";
+          return mdiPaletteOutline;
         case 3338: // Buzzer
-          return "mdi-bell-ring";
+          return mdiBellRing;
         case 3340: // Timer
-          return "mdi-timer-outline";
+          return mdiTimerOutline;
         case 3341: // Addressable Text Display
-          return "mdi-text-recognition";
+          return mdiTextRecognition;
         case 3342: // On/Off Switch
-          return "mdi-toggle-switch";
+          return mdiToggleSwitch;
         case 3347: // Push Button
-          return "mdi-gesture-tap-button";
+          return mdiGestureTapButton;
         case 3441: // LWM2M v1.0 Test Object
-          return "mdi-list-status";
+          return mdiListStatus;
         case 3442: // LWM2M v1.1 Test Object
-          return "mdi-list-status";
+          return mdiListStatus;
         case 3351: // powerupLog
-          return "mdi-card-text-outline";
+          return mdiCardTextOutline;
         case 10259: // System Log
-          return "mdi-text-box-outline";
+          return mdiTextBoxOutline;
         case 10260: // RDB (Runtime Database)
-          return "mdi-database";
+          return mdiDatabase;
         case 10351: // Door
-          return "mdi-door";
+          return mdiDoor;
         default:
           return this.unknowObjectIcon;
       }

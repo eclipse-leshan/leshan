@@ -18,7 +18,7 @@
         :indeterminate="state !== ''"
         :key="state"
         :indeterminate-icon="icon"
-        off-icon="mdi-close-box-outline"
+        :off-icon="$icons.mdiCloseBoxOutline"
       ></v-checkbox>
     </v-col>
     <v-col>
@@ -91,13 +91,13 @@ export default {
       );
     },
     isNotBoolean() {
-      return typeof(this.booleanValue) !== "boolean";
+      return typeof this.booleanValue !== "boolean";
     },
     icon() {
       if (this.isNotSet) {
-        return "mdi-checkbox-blank-outline";
+        return this.$icons.mdiCheckboxBlankOutline;
       } else if (this.isNotBoolean) {
-        return "mdi-help-box";
+        return this.$icons.mdiHelpBox;
       } else {
         return "";
       }

@@ -11,15 +11,17 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
   ----------------------------------------------------------------------------->
 <template>
-  <v-card elevation="0" >
+  <v-card elevation="0">
     <v-card-text>
-      <v-card-title class="justify-center"> Client "{{ $route.params.endpoint }}" </v-card-title>
+      <v-card-title class="justify-center">
+        Client "{{ $route.params.endpoint }}"
+      </v-card-title>
 
-      <v-card-subtitle class="text-center" >
+      <v-card-subtitle class="text-center">
         Watch your client bootstrap session.
 
         <v-btn icon title="Clear timeline" @click="events = []">
-          <v-icon>mdi-delete-sweep-outline</v-icon>
+          <v-icon>{{ $icons.mdiDeleteSweepOutline }}</v-icon>
         </v-btn>
       </v-card-subtitle>
 
@@ -75,7 +77,7 @@ export default {
         event.icon = this.getIcon(event);
         event.color = this.getColor(event);
         this.events.push(event);
-        this.$nextTick(function() {
+        this.$nextTick(function () {
           this.$vuetify.goTo(this.$refs.end);
         });
       })
@@ -96,18 +98,18 @@ export default {
 
     getIcon(event) {
       let icons = {
-        "new session": "mdi-play",
-        unauthorized: "mdi-account-cancel-outline",
-        "no config": "mdi-database-remove",
-        authorized: "mdi-account-check-outline",
-        "send write": "mdi-lead-pencil",
-        "send delete": "mdi-delete-outline",
-        "send discover": "mdi-magnify",
-        "receive success response": "mdi-check",
-        "receive error response": "mdi-alert-outline",
-        finished: "mdi-check-bold",
-        "request failure": "mdi-close-circle-outline",
-        failed: "mdi-exclamation-thick",
+        "new session": this.$icons.mdiPlay,
+        unauthorized: this.$icons.mdiAccountCancelOutline,
+        "no config": this.$icons.mdiDatabaseRemove,
+        authorized: this.$icons.mdiAccountCheckOutline,
+        "send write": this.$icons.mdiLeadPencil,
+        "send delete": this.$icons.mdiDeleteOutline,
+        "send discover": this.$icons.mdiMagnify,
+        "receive success response": this.$icons.mdiCheck,
+        "receive error response": this.$icons.mdiAlertOutline,
+        finished: this.$icons.mdiCheckBold,
+        "request failure": this.$icons.mdiCloseCircleOutline,
+        failed: this.$icons.mdiExclamationThick,
       };
       return icons[event.name];
     },

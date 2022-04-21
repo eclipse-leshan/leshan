@@ -13,16 +13,14 @@
 <template>
   <v-row class="fill-height" no-gutters>
     <v-col cols="12" v-if="deregister">
-      <div style="height: 100px;"></div>
+      <div style="height: 100px"></div>
       <v-card elevation="0" class="text-center">
         <v-card-text class="fill-height">
-          <v-icon x-large> mdi-exit-run</v-icon>
+          <v-icon x-large> {{ $icons.mdiExitRun }}</v-icon>
           <v-card-title class="justify-center">
             {{ $route.params.endpoint }} is deregistered.
           </v-card-title>
-          <v-card-subtitle>
-            Waiting for new registration ?
-          </v-card-subtitle>
+          <v-card-subtitle> Waiting for new registration ? </v-card-subtitle>
         </v-card-text>
       </v-card>
     </v-col>
@@ -30,7 +28,7 @@
       cols="12"
       md="2"
       v-if="registration"
-      style="background-color:#fafafa"
+      style="background-color: #fafafa"
     >
       <!-- registration info -->
       <v-sheet color="grey lighten-5" class="pa-4" width="100%">
@@ -63,7 +61,7 @@
               :to="'/clients/' + $route.params.endpoint + '/composite'"
             >
               <v-list-item-icon class="me-2">
-                <v-icon>mdi-format-list-checkbox</v-icon>
+                <v-icon>{{ $icons.mdiFormatListCheckbox }}</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
                 <v-list-item-title>Composite Operations</v-list-item-title>
@@ -115,7 +113,7 @@ export default {
     objectdefs: [],
   }),
   methods: {
-    updateModels: function() {
+    updateModels: function () {
       this.axios
         .get(
           "api/objectspecs/" + encodeURIComponent(this.$route.params.endpoint)
@@ -124,14 +122,13 @@ export default {
     },
   },
   computed: {
-    objectdef: function() {
+    objectdef: function () {
       return this.objectdefs.find((o) => o.id == this.$route.params.objectid);
     },
-    instances: function() {
+    instances: function () {
       if (this.registration) {
-        let instances = this.registration.availableInstances[
-          this.$route.params.objectid
-        ];
+        let instances =
+          this.registration.availableInstances[this.$route.params.objectid];
         if (instances) return instances;
       }
       return [];

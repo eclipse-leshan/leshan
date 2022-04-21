@@ -33,7 +33,7 @@
         ></v-divider>
         <v-text-field
           v-model="search"
-          append-icon="mdi-magnify"
+          :append-icon="$icons.mdiMagnify"
           label="Search"
           single-line
           hide-details
@@ -44,7 +44,7 @@
         <v-btn dark class="mb-2" @click.stop="openNewSec()">
           {{ $vuetify.breakpoint.smAndDown ? "" : "Add Security Information" }}
           <v-icon :right="!$vuetify.breakpoint.smAndDown" dark>
-            mdi-key-plus
+            {{ $icons.mdiKeyPlus }}
           </v-icon>
         </v-btn>
 
@@ -63,19 +63,19 @@
     </template>
     <!--custom display for "details" column-->
     <template v-slot:item.details="{ item }">
-      <div v-if="item.mode == 'psk'" style="word-break:break-all;" class="pa-1">
+      <div v-if="item.mode == 'psk'" style="word-break: break-all" class="pa-1">
         <strong>Identity:</strong> <code>{{ item.details.identity }}</code>
         <br />
         <strong>Key:</strong
         ><code class="text-uppercase">{{ item.details.key }}</code>
       </div>
-      <div v-if="item.mode == 'rpk'" style="word-break:break-all;" class="pa-1">
+      <div v-if="item.mode == 'rpk'" style="word-break: break-all" class="pa-1">
         <strong>Public Key:</strong>
         <code class="text-uppercase">{{ item.details.key }}</code>
       </div>
       <div
         v-if="item.mode == 'x509'"
-        style="word-break:break-all;"
+        style="word-break: break-all"
         class="pa-1"
       >
         <strong>X509 certificate with CN equals :</strong>
@@ -90,10 +90,10 @@
         @click.stop="openEditSec(item)"
         :disabled="item.mode == 'unsupported'"
       >
-        mdi-pencil
+        {{ $icons.mdiPencil }}
       </v-icon>
       <v-icon small @click="deleteSec(item)">
-        mdi-delete
+        {{ $icons.mdiDelete }}
       </v-icon>
     </template>
   </v-data-table>

@@ -41,12 +41,24 @@
 
 <script>
 export default {
-  data: function() {
+  data: function () {
     return {
       pages: [
-        { title: "Bootstrap", route: "/bootstrap", icon: "mdi-devices" },
-        { title: "Server", route: "/server", icon: "mdi-server-security" },
-        { title: "About", route: "/about", icon: "mdi-information-outline" },
+        {
+          title: "Bootstrap",
+          route: "/bootstrap",
+          icon: this.$icons.mdiDevices,
+        },
+        {
+          title: "Server",
+          route: "/server",
+          icon: this.$icons.mdiServerSecurity,
+        },
+        {
+          title: "About",
+          route: "/about",
+          icon: this.$icons.mdiInformationOutline,
+        },
       ],
     };
   },

@@ -22,7 +22,7 @@
         item-value="val"
         item-text="txt"
         v-model="timeout"
-        append-outer-icon="mdi-help-circle-outline"
+        :append-outer-icon="$vuetify.icons.values.account"
         @click:append-outer="openTimeoutHelps"
       ></v-select>
     </div>

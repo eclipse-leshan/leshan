@@ -13,13 +13,9 @@
 <template>
   <div class="grey lighten-4 pa-4 mb-1">
     <span class="pa-2">
-      <v-btn small @click="addNewInstance">
-        Add Instance
-      </v-btn>
+      <v-btn small @click="addNewInstance"> Add Instance </v-btn>
     </span>
-    <v-btn small @click="removeAllInstances">
-      Remove All
-    </v-btn>
+    <v-btn small @click="removeAllInstances"> Remove All </v-btn>
     <span v-for="(instance, index) in instances" :key="index">
       <v-row dense align="center">
         <v-col cols="12" md="1">
@@ -44,7 +40,7 @@
         </v-col>
         <v-col cols="1" justify="center">
           <v-btn icon small @click="removeInstance(index)">
-            <v-icon> mdi-delete </v-icon>
+            <v-icon> {{ $icons.mdiDelete }} </v-icon>
           </v-btn>
         </v-col>
       </v-row>

@@ -29,7 +29,7 @@
               small
               color="red"
               :title="`The Object ${object.name} ID:${object.id} MUST NOT be part of Update Objects and Object Instances list in Register Request.`"
-              >mdi-alert-circle</v-icon
+              >{{ $mdiAlertCircle }}</v-icon
             ></v-list-item-title
           >
           <v-list-item-subtitle>

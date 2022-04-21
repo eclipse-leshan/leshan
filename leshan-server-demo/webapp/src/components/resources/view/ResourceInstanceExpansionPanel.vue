@@ -12,12 +12,12 @@
   ----------------------------------------------------------------------------->
 <template>
   <v-expansion-panel>
-    <v-expansion-panel-header style="min-height:32px" class="pa-3">
+    <v-expansion-panel-header style="min-height: 32px" class="pa-3">
       <template v-slot:default="{ open }">
         <!-- min-width is needed for avoid shift about truncated text 
           see : https://stackoverflow.com/a/36247448/5088764
           -->
-        <v-container class="pa-0" style="min-width:0">
+        <v-container class="pa-0" style="min-width: 0">
           <v-row>
             <v-col cols="7" lg="3" align-self="center" class="pa-2"
               >{{ resource.def.name }}
@@ -41,7 +41,7 @@
                 :title="
                   'Resource Instance' + resourceInstancePath + ' observed'
                 "
-                >mdi-eye-outline</v-icon
+                >{{ $icons.mdiEyeOutline }}</v-icon
               ></v-col
             >
 
@@ -93,7 +93,7 @@
 </template>
 <script>
 import ResourceInstanceControl from "../ResourceInstanceControl.vue";
-import ResourceInstanceView from './ResourceInstanceView.vue';
+import ResourceInstanceView from "./ResourceInstanceView.vue";
 import SimpleResourceInstanceView from "./SimpleResourceInstanceView.vue";
 
 export default {
@@ -101,7 +101,7 @@ export default {
     ResourceInstanceControl,
     SimpleResourceInstanceView,
     ResourceInstanceView,
-   },
+  },
   props: {
     endpoint: String, // the endpoint name of the client
     resource: Object, // a resource object {path:String, def:Object} (def is the resourcedef)

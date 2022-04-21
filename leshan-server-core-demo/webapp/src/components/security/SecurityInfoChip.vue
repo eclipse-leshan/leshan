@@ -21,7 +21,7 @@
   </div>
   <div v-else>
     <v-chip small>
-      <v-icon left small> mdi-lock-open-remove </v-icon>
+      <v-icon left small> {{ $icons.mdiLockOpenRemove }} </v-icon>
       Nothing
     </v-chip>
   </div>

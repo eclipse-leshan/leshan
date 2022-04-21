@@ -16,7 +16,7 @@
       v-for="(id, index) in objectIds"
       :key="index"
       :objectId="id"
-      invalidObjectIcon="mdi-select"
+      :invalidObjectIcon="$icons.mdiSelect"
     />
   </span>
 </template>
@@ -40,7 +40,7 @@ export default {
         });
       }
       // return only the first 3 one.
-      objectIds = [... objectIds].slice(0, 3);
+      objectIds = [...objectIds].slice(0, 3);
 
       // fill missing one with
       for (let i = objectIds.length; i < 3; i++) {

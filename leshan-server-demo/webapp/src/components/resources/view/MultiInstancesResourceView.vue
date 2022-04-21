@@ -15,14 +15,10 @@
     <template v-slot:default>
       <thead>
         <tr>
-          <th class="px-2 text-left ">
-            Id
-          </th>
+          <th class="px-2 text-left">Id</th>
           <th></th>
           <th></th>
-          <th class="text-left" style="width:100%">
-            Value
-          </th>
+          <th class="text-left" style="width: 100%">Value</th>
         </tr>
       </thead>
       <tbody>
@@ -32,15 +28,16 @@
           style="background-color: transparent !important"
         >
           <td class="px-2 text--disabled">{{ id }}</td>
-          <td class="px-2"> 
-            <v-icon class="pa-0"
+          <td class="px-2">
+            <v-icon
+              class="pa-0"
               x-small
               v-show="state.observed[instancePath(id)]"
               :title="'Instance ' + instancePath(id) + ' observed'"
-              >mdi-eye-outline</v-icon
+              >{{ $icons.mdiEyeOutline }}</v-icon
             >
           </td>
-          <td class="px-2" style="white-space:nowrap">
+          <td class="px-2" style="white-space: nowrap">
             <resource-instance-control
               :endpoint="endpoint"
               :resourcedef="resourcedef"
@@ -61,14 +58,14 @@ import { valueToString } from "../../../js/valueutils.js";
 import ResourceInstanceControl from "../ResourceInstanceControl.vue";
 
 /**
- * Display the state of a "Multi Instance" Resource. 
- * 
- * List all instances with its value and controls to execute operations on it. 
+ * Display the state of a "Multi Instance" Resource.
+ *
+ * List all instances with its value and controls to execute operations on it.
  */
 export default {
   components: { ResourceInstanceControl },
   props: {
-    endpoint: String, // the endpoint of the client 
+    endpoint: String, // the endpoint of the client
     resourcedef: Object, // the model of the resource
     resource: Object, // the resource data as defined in store.js
     path: String, // the path of the resource (e.g. /3/0/1)

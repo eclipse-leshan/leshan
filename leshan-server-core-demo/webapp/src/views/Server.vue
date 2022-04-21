@@ -14,9 +14,7 @@
   <div class="pa-5">
     <v-card elevation="0">
       <v-card-text>
-        <v-card-title class="justify-center">
-          Server Information
-        </v-card-title>
+        <v-card-title class="justify-center"> Server Information </v-card-title>
 
         <v-card-subtitle class="text-center">
           Here some information about this server.
@@ -28,9 +26,7 @@
         <v-card outlined>
           <v-list-item three-line>
             <v-list-item-content>
-              <div class="text-overline mb-4">
-                CoAP Endpoint
-              </div>
+              <div class="text-overline mb-4">CoAP Endpoint</div>
               <v-list-item-title class="text-h5 mb-1">
                 Server URL
               </v-list-item-title>
@@ -38,7 +34,7 @@
                 >Available endpoints for this server:
               </v-list-item-subtitle>
             </v-list-item-content>
-            <v-icon>mdi-access-point-network</v-icon>
+            <v-icon>{{ $icons.mdiAccessPointNetwork }}</v-icon>
           </v-list-item>
           <v-card-text>
             <ul>
@@ -60,9 +56,7 @@
         <v-card outlined>
           <v-list-item three-line>
             <v-list-item-content>
-              <div class="text-overline mb-4">
-                RPK
-              </div>
+              <div class="text-overline mb-4">RPK</div>
               <v-list-item-title class="text-h5 mb-1">
                 Server Public Key
               </v-list-item-title>
@@ -70,14 +64,14 @@
                 SubjectPublicKeyInfo der encoded
               </v-list-item-subtitle>
             </v-list-item-content>
-            <v-icon>mdi-key</v-icon>
+            <v-icon>{{ $icons.mdiKey }}</v-icon>
             <v-card-actions>
               <v-btn
                 icon
                 title="Download Public Key"
                 @click="saveFile(pubkeyFileName, pubkey.bytesDer)"
               >
-                <v-icon>mdi-download</v-icon>
+                <v-icon>{{ $icons.mdiDownload }}</v-icon>
               </v-btn>
             </v-card-actions>
           </v-list-item>
@@ -119,9 +113,7 @@
         <v-card outlined>
           <v-list-item three-line>
             <v-list-item-content>
-              <div class="text-overline mb-4">
-                x509
-              </div>
+              <div class="text-overline mb-4">x509</div>
               <v-list-item-title class="text-h5 mb-1">
                 Server Certificate
               </v-list-item-title>
@@ -129,16 +121,14 @@
                 x509v3 der encoded
               </v-list-item-subtitle>
             </v-list-item-content>
-            <v-icon>mdi-certificate</v-icon>
+            <v-icon>{{ $icons.mdiCertificate }}</v-icon>
             <v-card-actions>
               <v-btn
                 icon
                 title="Download Certificate"
-                @click="
-                  saveFile(certFileName, certificate.bytesDer)
-                "
+                @click="saveFile(certFileName, certificate.bytesDer)"
               >
-                <v-icon>mdi-download</v-icon>
+                <v-icon>{{ $icons.mdiDownload }}</v-icon>
               </v-btn>
             </v-card-actions>
           </v-list-item>

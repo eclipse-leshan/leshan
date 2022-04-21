@@ -30,7 +30,7 @@
         required
         dense
         @input="updatePath(index, $event)"
-        append-outer-icon="mdi-delete"
+        :append-outer-icon="$icon.mdiDelete"
         @click:append-outer="removePath(index)"
       ></v-text-field>
     </div>

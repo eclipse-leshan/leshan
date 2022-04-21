@@ -23,7 +23,9 @@
       v-if="readable"
       :title="'Passive Cancel Obverse ' + path"
     >
-      <v-icon dense small>mdi-eye-remove-outline</v-icon></request-button
+      <v-icon dense small>{{
+        $icons.mdiEyeRemoveOutline
+      }}</v-icon></request-button
     >
     <request-button @on-click="read" v-if="readable" :title="'Read ' + path"
       >R</request-button

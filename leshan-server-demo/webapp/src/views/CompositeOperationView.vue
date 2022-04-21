@@ -21,7 +21,10 @@
   <div v-else>
     <v-sheet color="grey lighten-5" class="pa-4" width="100%">
       <div>
-        <h3><v-icon>mdi-format-list-checkbox</v-icon> Composite Operations</h3>
+        <h3>
+          <v-icon>{{ $icons.mdiFormatListCheckbox }}</v-icon> Composite
+          Operations
+        </h3>
         <p>
           Create your "Composite Object", then you will be able to sent
           Composite Operation on it like Read-Composite, Write-Composite or

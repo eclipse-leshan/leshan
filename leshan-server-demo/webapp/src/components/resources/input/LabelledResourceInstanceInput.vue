@@ -30,7 +30,7 @@
       <v-tooltip left>
         <template v-slot:activator="{ on }">
           <v-icon v-on="on">
-            mdi-help-circle-outline
+            {{ $icons.mdiHelpCircleOutline }}
           </v-icon>
         </template>
         <p style="white-space: pre-wrap">{{ resourcedef.description }}</p>

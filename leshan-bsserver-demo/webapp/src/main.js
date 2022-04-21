@@ -13,6 +13,7 @@
 
 import Vue from 'vue'
 import './plugins/axios'
+import './plugins/icons'
 import './plugins/dialog'
 import './plugins/moment'
 import './plugins/sse'

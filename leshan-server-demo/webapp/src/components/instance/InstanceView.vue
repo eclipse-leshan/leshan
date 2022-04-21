@@ -25,11 +25,11 @@
         />
 
         <v-icon
-          class="pr-3"
+          class="mr-3"
           small
           v-show="state.observed[instancePath]"
           :title="'Instance ' + instancePath + ' observed'"
-          >mdi-eye-outline</v-icon
+          >{{ $icons.mdiEyeOutline }}</v-icon
         >
       </span>
     </h4>

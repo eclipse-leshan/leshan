@@ -16,7 +16,9 @@
       >Obs</request-button
     >
     <request-button @on-click="stopObserve" title="Passive Cancel Obverse">
-      <v-icon dense small>mdi-eye-remove-outline</v-icon></request-button
+      <v-icon dense small>{{
+        $icons.mdiEyeRemoveOutline
+      }}</v-icon></request-button
     >
     <request-button @on-click="read" title="Composite Read">R</request-button>
     <request-button @on-click="openWriteDialog" ref="W" title="Composite Write"
@@ -40,7 +42,7 @@
           v-on="on"
           title="Composite Operation Settings"
         >
-          <v-icon small> mdi-tune</v-icon>
+          <v-icon small> {{$icons.mdiTune}</v-icon>
         </v-btn>
       </template>
     </composite-operation-setting-menu>

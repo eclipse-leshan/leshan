@@ -10,6 +10,13 @@
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  *******************************************************************************/
+import {
+  mdiCertificate,
+  mdiLock,
+  mdiKeyChange,
+  mdiHelpRhombusOutline,
+} from "@mdi/js";
+
 function adaptToUI(sec) {
   // TODO this is a bit tricky, probably better to adapt the REST API
   // But do not want to change it while we have 2 demo UI (old & new)
@@ -30,13 +37,13 @@ function getMode(sec) {
 function getModeIcon(mode) {
   switch (mode) {
     case "x509":
-      return "mdi-certificate";
+      return mdiCertificate;
     case "psk":
-      return "mdi-lock";
+      return mdiLock;
     case "rpk":
-      return "mdi-key-change";
+      return mdiKeyChange;
     default:
-      return "mdi-help-rhombus-outline";
+      return mdiHelpRhombusOutline;
   }
 }
 
