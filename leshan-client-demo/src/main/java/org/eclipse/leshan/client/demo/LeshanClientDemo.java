@@ -15,25 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.demo;
 
-import static org.eclipse.leshan.client.object.Security.*;
-import static org.eclipse.leshan.core.LwM2mId.*;
-
-import java.io.File;
-import java.io.PrintWriter;
-import java.util.List;
-
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
-import org.eclipse.californium.scandium.dtls.ClientHandshaker;
-import org.eclipse.californium.scandium.dtls.DTLSContext;
-import org.eclipse.californium.scandium.dtls.HandshakeException;
-import org.eclipse.californium.scandium.dtls.Handshaker;
-import org.eclipse.californium.scandium.dtls.ResumingClientHandshaker;
-import org.eclipse.californium.scandium.dtls.ResumingServerHandshaker;
-import org.eclipse.californium.scandium.dtls.ServerHandshaker;
-import org.eclipse.californium.scandium.dtls.SessionAdapter;
-import org.eclipse.californium.scandium.dtls.SessionId;
+import org.eclipse.californium.scandium.dtls.*;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.demo.cli.LeshanClientDemoCLI;
@@ -41,21 +26,31 @@ import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.LwM2mTestObject;
 import org.eclipse.leshan.client.object.Server;
+import org.eclipse.leshan.client.resource.DataCollector;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
+import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.core.demo.cli.interactive.InteractiveCLI;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import picocli.CommandLine;
+
+import java.io.File;
+import java.io.PrintWriter;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static org.eclipse.leshan.client.object.Security.*;
+import static org.eclipse.leshan.core.LwM2mId.*;
 
 public class LeshanClientDemo {
 
@@ -72,6 +67,7 @@ public class LeshanClientDemo {
     private static final int OBJECT_ID_LWM2M_TEST_OBJECT = 3442;
     private static final String CF_CONFIGURATION_FILENAME = "Californium3.client.properties";
     private static final String CF_CONFIGURATION_HEADER = "Leshan Client Demo - " + Configuration.DEFAULT_HEADER;
+    public static DataCollector temperatureDataCollector;
 
     public static void main(String[] args) {
 
@@ -182,10 +178,16 @@ public class LeshanClientDemo {
         }
         initializer.setInstancesForObject(DEVICE, new MyDevice());
         initializer.setInstancesForObject(LOCATION, locationInstance);
-        initializer.setInstancesForObject(OBJECT_ID_TEMPERATURE_SENSOR, new RandomTemperatureSensor());
+        RandomTemperatureSensor randomTemperatureSensor = new RandomTemperatureSensor();
+        initializer.setInstancesForObject(OBJECT_ID_TEMPERATURE_SENSOR, randomTemperatureSensor);
         initializer.setInstancesForObject(OBJECT_ID_LWM2M_TEST_OBJECT, new LwM2mTestObject());
 
         List<LwM2mObjectEnabler> enablers = initializer.createAll();
+
+        //Create Data Collectors
+        temperatureDataCollector = new TemperatureDataCollector(randomTemperatureSensor,
+                ServerIdentity.SYSTEM, new LwM2mPath(3303, 0, 5700));
+        temperatureDataCollector.startPeriodicRead(2, 2, TimeUnit.SECONDS);
 
         // Create CoAP Config
         File configFile = new File(CF_CONFIGURATION_FILENAME);

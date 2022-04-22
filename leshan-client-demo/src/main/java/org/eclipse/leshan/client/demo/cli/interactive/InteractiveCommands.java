@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.client.californium.LeshanClient;
+import org.eclipse.leshan.client.demo.LeshanClientDemo;
 import org.eclipse.leshan.client.demo.MyLocation;
+import org.eclipse.leshan.client.demo.TemperatureDataCollector;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.CreateCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.DeleteCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.MoveCommand;
@@ -213,7 +215,7 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
                     public void onError(Exception e) {
                         LOG.warn("Unable to send data to {}.", server, e);
                     }
-                });
+                }, LeshanClientDemo.temperatureDataCollector);
             }
         }
     }

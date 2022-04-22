@@ -42,10 +42,7 @@ import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverAdapter;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverDispatcher;
-import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
-import org.eclipse.leshan.client.resource.LwM2mObjectTree;
-import org.eclipse.leshan.client.resource.LwM2mRootEnabler;
-import org.eclipse.leshan.client.resource.RootEnabler;
+import org.eclipse.leshan.client.resource.*;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.send.NoDataException;
@@ -320,6 +317,17 @@ public class LeshanClient implements LwM2mClient {
 
         Map<LwM2mPath, LwM2mNode> collectedData = collectData(server, paths);
         requestSender.send(server, new SendRequest(format, collectedData, null), timeoutInMs, onResponse, onError);
+    }
+
+    public void sendData(ServerIdentity server, ContentFormat format, List<String> paths, long timeoutInMs,
+            ResponseCallback<SendResponse> onResponse, ErrorCallback onError, DataCollector collector) {
+        Validate.notNull(server);
+        Validate.notEmpty(paths);
+        Validate.notNull(onResponse);
+        Validate.notNull(onError);
+
+        TimestampedLwM2mNodes timestampedLwM2mNodes = collector.getTimestampedNodes(true);
+        requestSender.send(server, new SendRequest(format, timestampedLwM2mNodes, null), timeoutInMs, onResponse, onError);
     }
 
     private Map<LwM2mPath, LwM2mNode> collectData(ServerIdentity server, List<String> paths) {
