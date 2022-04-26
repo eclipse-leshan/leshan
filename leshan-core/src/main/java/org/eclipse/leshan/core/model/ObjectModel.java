@@ -18,7 +18,7 @@ package org.eclipse.leshan.core.model;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -73,7 +73,7 @@ public class ObjectModel {
         this.lwm2mVersion = lwm2mVersion;
         this.description2 = description2;
 
-        Map<Integer, ResourceModel> resourcesMap = new HashMap<>(resources.size());
+        Map<Integer, ResourceModel> resourcesMap = new LinkedHashMap<>(resources.size());
         for (ResourceModel resource : resources) {
             ResourceModel old = resourcesMap.put(resource.id, resource);
             if (old != null) {

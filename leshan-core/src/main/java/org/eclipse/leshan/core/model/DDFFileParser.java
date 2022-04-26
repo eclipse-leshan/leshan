@@ -20,7 +20,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -158,7 +158,7 @@ public class DDFFileParser {
         String version = ObjectModel.DEFAULT_VERSION;
         Boolean multiple = null;
         Boolean mandatory = null;
-        Map<Integer, ResourceModel> resources = new HashMap<>();
+        Map<Integer, ResourceModel> resources = new LinkedHashMap<>();
         String urn = null;
         String description2 = null;
         String lwm2mVersion = LwM2mVersion.getDefault().toString();

@@ -17,8 +17,6 @@
 package org.eclipse.leshan.server.demo.model;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -48,15 +46,7 @@ public class ObjectModelSerDes extends JacksonJsonSerDes<ObjectModel> {
         o.put("description", m.description);
         o.put("description2", m.description2);
 
-        // sort resources value
         List<ResourceModel> resourceSpecs = new ArrayList<>(m.resources.values());
-        Collections.sort(resourceSpecs, new Comparator<ResourceModel>() {
-            @Override
-            public int compare(ResourceModel r1, ResourceModel r2) {
-                return r1.id - r2.id;
-            }
-        });
-
         ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
         for (ResourceModel rm : resourceSpecs) {
             arrayNode.add(resourceModelSerDes.jSerialize(rm));
