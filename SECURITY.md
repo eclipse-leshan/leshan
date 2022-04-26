@@ -86,8 +86,16 @@ See : https://github.com/eclipse/californium/security/policy
     </tbody>
 </table>
 
-Note: We strongly encourage you to switch last safe version, but for vulnerability caused by a dependency :
- - if there is no leshan release available OR if you want to be very conservative  
- - AND the concerned library is uing [semantic versioning](https://semver.org/)
+Note: We strongly encourage you to switch last safe Leshan version, but for vulnerability caused by a dependency :
+ - if there isn't Leshan release available OR if you want to be very conservative  
+ - AND the concerned library is using [semantic versioning](https://semver.org/)
  
 then you could try to just update the dependency to a safe compatible version without upgrading Leshan. 
+
+## Runtime Security State
+
+This is a not exhaustive list of JVM security issue which could affect common Leshan usages.
+
+| Dependency | Affected Version | Usage | Vulnerability | More Information |
+| ---------- | ---------------- | ----- | ------------- | ---------------- |
+| JDK / JCE | <= 15.0.2? <br/> <= 16.0.2? <br/> < 17.0.3 <br/> < 18.0.1 | Cipher Suite based on ECDSA | ECDSA [CVE-2022-21449](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-21449) | https://github.com/eclipse/leshan/issues/1243 |
