@@ -13,22 +13,27 @@
 
 import Vue from "vue";
 import {
-  mdiAlertOutline,
-  mdiCloseCircleOutline,
+  mdiAccessPointNetwork,
   mdiAccountCancelOutline,
-  mdiDatabaseRemove,
   mdiAccountCheckOutline,
+  mdiAlertOutline,
+  mdiCertificate,
   mdiCheck,
   mdiCheckBold,
+  mdiCloseCircleOutline,
+  mdiDatabaseRemove,
   mdiDelete,
   mdiDeleteOutline,
   mdiDevices,
+  mdiDownload,
   mdiExclamationThick,
   mdiInformationOutline,
+  mdiKey,
   mdiKeyPlus,
   mdiLeadPencil,
-  mdiPlay,
+  mdiLockOpenRemove,
   mdiMagnify,
+  mdiPlay,
   mdiServerSecurity,
 } from "@mdi/js";
 
@@ -42,22 +47,27 @@ import {
 
 // create plugin which make data accessible on all vues
 const _icons = {
-  mdiAlertOutline,
-  mdiCloseCircleOutline,
+  mdiAccessPointNetwork,
   mdiAccountCancelOutline,
-  mdiDatabaseRemove,
   mdiAccountCheckOutline,
+  mdiAlertOutline,
+  mdiCertificate,
   mdiCheck,
   mdiCheckBold,
+  mdiCloseCircleOutline,
+  mdiDatabaseRemove,
   mdiDelete,
   mdiDeleteOutline,
   mdiDevices,
+  mdiDownload,
   mdiExclamationThick,
   mdiInformationOutline,
+  mdiKey,
   mdiKeyPlus,
   mdiLeadPencil,
-  mdiPlay,
+  mdiLockOpenRemove,
   mdiMagnify,
+  mdiPlay,
   mdiServerSecurity,
 };
 
