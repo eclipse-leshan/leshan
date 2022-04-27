@@ -34,5 +34,6 @@ public interface TimestampedMultiNodeEncoder {
      * @return the serialized byte array
      * @throws CodecException if encoding fails
      */
-    byte[] encodeTimestampedNodes(TimestampedLwM2mNodes timestampedNodes, LwM2mModel model, LwM2mValueConverter converter) throws CodecException;
+    byte[] encodeTimestampedNodes(TimestampedLwM2mNodes timestampedNodes, LwM2mModel model,
+            LwM2mValueConverter converter) throws CodecException;
 }

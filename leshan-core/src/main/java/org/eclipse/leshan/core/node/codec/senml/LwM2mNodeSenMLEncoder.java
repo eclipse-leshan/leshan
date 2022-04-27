@@ -150,13 +150,14 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
     }
 
     @Override
-    public byte[] encodeTimestampedNodes(TimestampedLwM2mNodes timestampedNodes, LwM2mModel model, LwM2mValueConverter converter) throws CodecException {
+    public byte[] encodeTimestampedNodes(TimestampedLwM2mNodes timestampedNodes, LwM2mModel model,
+            LwM2mValueConverter converter) throws CodecException {
         Validate.notEmpty(timestampedNodes.getTimestamps());
 
         SenMLPack pack = new SenMLPack();
         for (Long timestamp : timestampedNodes.getTimestamps()) {
             Map<LwM2mPath, LwM2mNode> nodesAtTimestamp = timestampedNodes.getNodesAt(timestamp);
-            for(Entry<LwM2mPath, LwM2mNode> entry : nodesAtTimestamp.entrySet()) {
+            for (Entry<LwM2mPath, LwM2mNode> entry : nodesAtTimestamp.entrySet()) {
                 LwM2mPath path = entry.getKey();
                 InternalEncoder internalEncoder = new InternalEncoder();
                 internalEncoder.objectId = path.getObjectId();
@@ -177,7 +178,8 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
         try {
             return encoder.toSenML(pack);
         } catch (SenMLException e) {
-            throw new CodecException(e, "Unable to encode timestamped nodes[timestamps: %s] : %s", timestampedNodes.getTimestamps(), timestampedNodes.getNodes());
+            throw new CodecException(e, "Unable to encode timestamped nodes[timestamps: %s] : %s",
+                    timestampedNodes.getTimestamps(), timestampedNodes.getNodes());
         }
     }
 

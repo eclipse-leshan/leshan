@@ -201,8 +201,8 @@ public class DefaultLwM2mEncoder implements LwM2mEncoder {
     }
 
     @Override
-    public byte[] encodeTimestampedNodes(TimestampedLwM2mNodes timestampedNodes, ContentFormat format,
-            LwM2mModel model) throws CodecException {
+    public byte[] encodeTimestampedNodes(TimestampedLwM2mNodes timestampedNodes, ContentFormat format, LwM2mModel model)
+            throws CodecException {
         Validate.notNull(timestampedNodes);
 
         if (format == null) {

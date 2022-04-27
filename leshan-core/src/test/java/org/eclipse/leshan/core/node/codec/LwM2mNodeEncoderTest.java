@@ -385,16 +385,14 @@ public class LwM2mNodeEncoderTest {
         TimestampedLwM2mNodes timestampedLwM2mNodes = TimestampedLwM2mNodes.builder()
                 .put(500_000_001L, new LwM2mPath(0, 0, 0), LwM2mSingleResource.newStringResource(0, "TestString"))
                 .put(500_000_002L, new LwM2mPath(0, 0, 1), LwM2mSingleResource.newBooleanResource(1, true))
-                .put(500_000_003L, new LwM2mPath(0, 0, 2), LwM2mSingleResource.newIntegerResource(2, 123))
-                .build();
+                .put(500_000_003L, new LwM2mPath(0, 0, 2), LwM2mSingleResource.newIntegerResource(2, 123)).build();
 
         byte[] encoded = encoder.encodeTimestampedNodes(timestampedLwM2mNodes, ContentFormat.SENML_JSON, model);
 
         String expectedString = new StringBuilder()
                 .append("[{\"bn\":\"/0/0/0\",\"bt\":500000001,\"vs\":\"TestString\"},")
                 .append("{\"bn\":\"/0/0/1\",\"bt\":500000002,\"vb\":true},")
-                .append("{\"bn\":\"/0/0/2\",\"bt\":500000003,\"v\":123}]")
-                .toString();
+                .append("{\"bn\":\"/0/0/2\",\"bt\":500000003,\"v\":123}]").toString();
 
         Assert.assertEquals(expectedString, new String(encoded));
     }
@@ -404,8 +402,7 @@ public class LwM2mNodeEncoderTest {
         TimestampedLwM2mNodes timestampedLwM2mNodes = TimestampedLwM2mNodes.builder()
                 .put(500_000_004L, new LwM2mPath(0, 0, 0), LwM2mSingleResource.newStringResource(0, "SampleString"))
                 .put(500_000_005L, new LwM2mPath(0, 0, 1), LwM2mSingleResource.newBooleanResource(1, false))
-                .put(500_000_006L, new LwM2mPath(0, 0, 2), LwM2mSingleResource.newIntegerResource(2, 456))
-                .build();
+                .put(500_000_006L, new LwM2mPath(0, 0, 2), LwM2mSingleResource.newIntegerResource(2, 456)).build();
 
         byte[] encoded = encoder.encodeTimestampedNodes(timestampedLwM2mNodes, ContentFormat.SENML_CBOR, model);
 
@@ -414,7 +411,8 @@ public class LwM2mNodeEncoderTest {
         Assert.assertEquals(expectedString, Hex.encodeHexString(encoded));
     }
 
-    @Test public void senml_json_encode_resources() {
+    @Test
+    public void senml_json_encode_resources() {
         // Nodes to encode
         Map<LwM2mPath, LwM2mNode> nodes = new LinkedHashMap<>();
         nodes.put(new LwM2mPath("3/0/0"), LwM2mSingleResource.newStringResource(0, "Open Mobile Alliance"));
