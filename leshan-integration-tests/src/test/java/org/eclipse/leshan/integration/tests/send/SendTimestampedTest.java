@@ -15,6 +15,16 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.send;
 
+import static org.junit.Assert.*;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
@@ -38,16 +48,6 @@ import org.eclipse.leshan.integration.tests.util.SynchronousSendListener;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import static org.junit.Assert.*;
 
 public class SendTimestampedTest {
 
