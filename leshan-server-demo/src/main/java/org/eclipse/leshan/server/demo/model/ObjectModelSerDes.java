@@ -17,8 +17,6 @@
 package org.eclipse.leshan.server.demo.model;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.leshan.core.model.ObjectModel;
