@@ -108,6 +108,8 @@ Contributors:
                     <workingDirectory>webapp</workingDirectory>
                     <nodeVersion>v12.22.5</nodeVersion>
                     <yarnVersion>v1.22.10</yarnVersion>
+                    <!-- See why we use a mirror : https://gitlab.eclipse.org/eclipsefdn/helpdesk/-/issues/1032 -->
+                    <yarnDownloadRoot>https://sourceforge.net/projects/yarn.mirror/files/</yarnDownloadRoot>
                 </configuration>
             </plugin>
             <plugin>
