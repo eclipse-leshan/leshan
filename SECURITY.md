@@ -35,6 +35,13 @@ See : https://github.com/eclipse/californium/security/policy
     </thead>
     <tbody>
         <tr>
+            <td> 2.0.0-M7 + </td>
+            <td> :heavy_check_mark: </td>
+            <td />
+            <td />
+            <td />
+        </tr>
+        <tr>
             <td> 2.0.0-M5 -> 2.0.0-M6 </td>
             <td> :x: </td>
             <td> <a href="https://github.com/peteroupc/CBOR-Java/security/advisories/GHSA-fj2w-wfgv-mwq6">GHSA-fj2w-wfgv-mwq6</a> </td>
