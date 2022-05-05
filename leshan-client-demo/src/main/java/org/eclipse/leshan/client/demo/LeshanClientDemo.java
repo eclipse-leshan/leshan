@@ -27,6 +27,7 @@ import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.LwM2mTestObject;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.DataCollector;
+import org.eclipse.leshan.client.resource.DefaultDataCollector;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
@@ -179,19 +180,17 @@ public class LeshanClientDemo {
         }
         initializer.setInstancesForObject(DEVICE, new MyDevice());
         initializer.setInstancesForObject(LOCATION, locationInstance);
-        RandomTemperatureSensor randomTemperatureSensor = new RandomTemperatureSensor();
-        initializer.setInstancesForObject(OBJECT_ID_TEMPERATURE_SENSOR, randomTemperatureSensor);
+        initializer.setInstancesForObject(OBJECT_ID_TEMPERATURE_SENSOR, new RandomTemperatureSensor());
         initializer.setInstancesForObject(OBJECT_ID_LWM2M_TEST_OBJECT, new LwM2mTestObject());
 
         List<LwM2mObjectEnabler> enablers = initializer.createAll();
 
         //Create Data Collectors
         Map<LwM2mPath, DataCollector> dataCollectors = new HashMap<>();
-        LwM2mPath resourcePath = new LwM2mPath(3303, 0, 5700);
-        DataCollector temperatureDataCollector = new TemperatureDataCollector(randomTemperatureSensor,
-                ServerIdentity.SYSTEM, resourcePath);
-        temperatureDataCollector.startPeriodicRead(2, 2, TimeUnit.SECONDS);
-        dataCollectors.put(resourcePath, temperatureDataCollector);
+        LwM2mPath temperatureDataCollectorPath = new LwM2mPath(OBJECT_ID_TEMPERATURE_SENSOR);
+        DataCollector temperatureDataCollector = new DefaultDataCollector(ServerIdentity.SYSTEM,
+                temperatureDataCollectorPath, "Temperature Data Collector");
+        dataCollectors.put(temperatureDataCollectorPath, temperatureDataCollector);
 
         // Create CoAP Config
         File configFile = new File(CF_CONFIGURATION_FILENAME);
@@ -316,6 +315,10 @@ public class LeshanClientDemo {
                 LOG.info("Object {} v{} enabled.", object.getId(), object.getObjectModel().version);
             }
         });
+
+        //Temporary solution, Data Collectors should probably be started via CLI
+        dataCollectors.values().forEach(dataCollector -> dataCollector
+                .startPeriodicRead(2, 2, TimeUnit.SECONDS));
 
         return client;
     }

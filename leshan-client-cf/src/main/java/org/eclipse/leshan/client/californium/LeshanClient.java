@@ -16,11 +16,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.californium;
 
-import java.net.InetSocketAddress;
-import java.security.cert.Certificate;
-import java.util.*;
-import java.util.concurrent.ScheduledExecutorService;
-
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.config.CoapConfig;
@@ -67,6 +62,14 @@ import org.eclipse.leshan.core.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
+import java.security.cert.Certificate;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.ScheduledExecutorService;
+
 /**
  * A Lightweight M2M client based on Californium (CoAP implementation) and Scandium (DTLS implementation) which supports
  * only 1 LWM2M server.
@@ -104,7 +107,8 @@ public class LeshanClient implements LwM2mClient {
 
         objectTree = createObjectTree(objectEnablers);
         rootEnabler = createRootEnabler(objectTree);
-        dataCollectorManager = new DataCollectorManager(dataCollectors);
+        dataCollectorManager = createDataCollectorManager(dataCollectors, rootEnabler);
+
         this.decoder = decoder;
         this.encoder = encoder;
         this.linkSerializer = linkSerializer;
@@ -137,11 +141,17 @@ public class LeshanClient implements LwM2mClient {
         return new LwM2mObjectTree(this, objectEnablers);
     }
 
+    protected DataCollectorManager createDataCollectorManager(Map<LwM2mPath, DataCollector> dataCollectors,
+            LwM2mRootEnabler rootEnabler) {
+        DataCollectorManager dataCollectorManager = new DataCollectorManager(dataCollectors, rootEnabler);
+        dataCollectors.values().forEach(dataCollector -> dataCollector.setDataCollectorManager(dataCollectorManager));
+        return dataCollectorManager;
+    }
+
     protected LwM2mClientObserverDispatcher createClientObserverDispatcher() {
         LwM2mClientObserverDispatcher observer = new LwM2mClientObserverDispatcher();
         observer.addObserver(new LwM2mClientObserverAdapter() {
-            @Override
-            public void onUnexpectedError(Throwable unexpectedError) {
+            @Override public void onUnexpectedError(Throwable unexpectedError) {
                 LeshanClient.this.destroy(false);
             }
         });
