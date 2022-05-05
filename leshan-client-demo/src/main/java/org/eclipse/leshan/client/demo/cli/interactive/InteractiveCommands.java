@@ -7,16 +7,12 @@ import java.util.Map;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.demo.LeshanClientDemo;
 import org.eclipse.leshan.client.demo.MyLocation;
-import org.eclipse.leshan.client.demo.TemperatureDataCollector;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.CreateCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.DeleteCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.MoveCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.SendCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.UpdateCommand;
-import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
-import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
-import org.eclipse.leshan.client.resource.ObjectEnabler;
-import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.client.resource.*;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.LwM2mId;
@@ -27,6 +23,7 @@ import org.eclipse.leshan.core.demo.cli.interactive.JLineInteractiveCommands;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.StaticModel;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -183,6 +180,23 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
                 converter = SendContentFormatConverver.class)
         ContentFormat contentFormat;
 
+        @Option(names = { "-dc", "--data-collector" },
+                defaultValue = "false",
+                description = {
+                        "Whether or not to read data from data collector assigned to node specified by path.",
+                        "Default: false" }
+        )
+        Boolean readFromDataCollector;
+
+        @Option(names = {"-kv", "--keep-values"},
+                defaultValue = "false",
+                description = {
+                        "Whether or not to keep collected data after reading it from collector. Use only when also using --data-collector option",
+                        "Default: false"
+                }
+        )
+        Boolean keepExistingCollectorValues;
+
         public static class SendContentFormatConverver extends ContentFormatConverter {
             public SendContentFormatConverver() {
                 super(ContentFormat.SENML_CBOR, ContentFormat.SENML_JSON);
@@ -196,26 +210,26 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
         public void run() {
             Map<String, ServerIdentity> registeredServers = parent.client.getRegisteredServers();
             if (registeredServers.isEmpty()) {
-                parent.out.printf("There is no registered server to send to.");
+                parent.out.printf("There is no registered server to send to.\n");
                 parent.out.flush();
             }
+
             for (final ServerIdentity server : registeredServers.values()) {
                 LOG.info("Sending Data to {} using {}.", server, contentFormat);
-                parent.client.sendData(server, contentFormat, paths, 2000, new ResponseCallback<SendResponse>() {
-                    @Override
-                    public void onResponse(SendResponse response) {
-                        if (response.isSuccess())
-                            LOG.info("Data sent successfully to {} [{}].", server, response.getCode());
-                        else
-                            LOG.info("Send data to {} failed [{}] : {}.", server, response.getCode(),
-                                    response.getErrorMessage() == null ? "" : response.getErrorMessage());
-                    }
-                }, new ErrorCallback() {
-                    @Override
-                    public void onError(Exception e) {
-                        LOG.warn("Unable to send data to {}.", server, e);
-                    }
-                }, LeshanClientDemo.temperatureDataCollector);
+                int timeoutInMs = 2000;
+                ResponseCallback<SendResponse> responseCallback = (response) -> {
+                    if (response.isSuccess())
+                        LOG.info("Data sent successfully to {} [{}].", server, response.getCode());
+                    else
+                        LOG.info("Send data to {} failed [{}] : {}.", server, response.getCode(),
+                                response.getErrorMessage() == null ? "" : response.getErrorMessage());
+                };
+                ErrorCallback errorCallback = (e) -> LOG.warn("Unable to send data to {}.", server, e);
+                if(readFromDataCollector) {
+                    parent.client.sendData(server, contentFormat, paths, timeoutInMs, responseCallback, errorCallback, !keepExistingCollectorValues);
+                } else {
+                    parent.client.sendData(server, contentFormat, paths, timeoutInMs, responseCallback, errorCallback);
+                }
             }
         }
     }

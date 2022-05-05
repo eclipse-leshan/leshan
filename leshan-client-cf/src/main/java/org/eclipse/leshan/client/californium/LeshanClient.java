@@ -88,9 +88,10 @@ public class LeshanClient implements LwM2mClient {
     private final RegistrationEngine engine;
     private final LwM2mClientObserverDispatcher observers;
     private final LinkSerializer linkSerializer;
+    private final DataCollectorManager dataCollectorManager;
 
     public LeshanClient(String endpoint, InetSocketAddress localAddress,
-            List<? extends LwM2mObjectEnabler> objectEnablers, Configuration coapConfig, Builder dtlsConfigBuilder,
+            List<? extends LwM2mObjectEnabler> objectEnablers, Map<LwM2mPath, DataCollector> dataCollectors, Configuration coapConfig, Builder dtlsConfigBuilder,
             List<Certificate> trustStore, EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
             BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
@@ -103,6 +104,7 @@ public class LeshanClient implements LwM2mClient {
 
         objectTree = createObjectTree(objectEnablers);
         rootEnabler = createRootEnabler(objectTree);
+        dataCollectorManager = new DataCollectorManager(dataCollectors);
         this.decoder = decoder;
         this.encoder = encoder;
         this.linkSerializer = linkSerializer;
@@ -320,13 +322,13 @@ public class LeshanClient implements LwM2mClient {
     }
 
     public void sendData(ServerIdentity server, ContentFormat format, List<String> paths, long timeoutInMs,
-            ResponseCallback<SendResponse> onResponse, ErrorCallback onError, DataCollector collector) {
+            ResponseCallback<SendResponse> onResponse, ErrorCallback onError, boolean clearExistingNodes) {
         Validate.notNull(server);
         Validate.notEmpty(paths);
         Validate.notNull(onResponse);
         Validate.notNull(onError);
 
-        TimestampedLwM2mNodes timestampedLwM2mNodes = collector.getTimestampedNodes(true);
+        TimestampedLwM2mNodes timestampedLwM2mNodes = dataCollectorManager.readFromDataCollectors(paths, clearExistingNodes);
         requestSender.send(server, new SendRequest(format, timestampedLwM2mNodes, null), timeoutInMs, onResponse, onError);
     }
 

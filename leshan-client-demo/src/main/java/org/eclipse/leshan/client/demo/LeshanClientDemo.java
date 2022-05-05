@@ -46,7 +46,9 @@ import picocli.CommandLine;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.eclipse.leshan.client.object.Security.*;
@@ -67,7 +69,6 @@ public class LeshanClientDemo {
     private static final int OBJECT_ID_LWM2M_TEST_OBJECT = 3442;
     private static final String CF_CONFIGURATION_FILENAME = "Californium3.client.properties";
     private static final String CF_CONFIGURATION_HEADER = "Leshan Client Demo - " + Configuration.DEFAULT_HEADER;
-    public static DataCollector temperatureDataCollector;
 
     public static void main(String[] args) {
 
@@ -185,9 +186,12 @@ public class LeshanClientDemo {
         List<LwM2mObjectEnabler> enablers = initializer.createAll();
 
         //Create Data Collectors
-        temperatureDataCollector = new TemperatureDataCollector(randomTemperatureSensor,
-                ServerIdentity.SYSTEM, new LwM2mPath(3303, 0, 5700));
+        Map<LwM2mPath, DataCollector> dataCollectors = new HashMap<>();
+        LwM2mPath resourcePath = new LwM2mPath(3303, 0, 5700);
+        DataCollector temperatureDataCollector = new TemperatureDataCollector(randomTemperatureSensor,
+                ServerIdentity.SYSTEM, resourcePath);
         temperatureDataCollector.startPeriodicRead(2, 2, TimeUnit.SECONDS);
+        dataCollectors.put(resourcePath, temperatureDataCollector);
 
         // Create CoAP Config
         File configFile = new File(CF_CONFIGURATION_FILENAME);
@@ -286,6 +290,7 @@ public class LeshanClientDemo {
         LeshanClientBuilder builder = new LeshanClientBuilder(cli.main.endpoint);
         builder.setLocalAddress(cli.main.localAddress, cli.main.localPort);
         builder.setObjects(enablers);
+        builder.setDataCollectors(dataCollectors);
         builder.setCoapConfig(coapConfig);
         if (cli.identity.isx509())
             builder.setTrustStore(cli.identity.getX509().trustStore);
