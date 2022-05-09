@@ -17,6 +17,9 @@ package org.eclipse.leshan.core.node.codec.cbor;
 
 import java.util.Date;
 
+import org.eclipse.leshan.core.link.LinkParseException;
+import org.eclipse.leshan.core.link.LinkParser;
+import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -38,6 +41,22 @@ import com.upokecenter.cbor.CBORType;
 
 public class LwM2mNodeCborDecoder implements NodeDecoder {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeCborDecoder.class);
+
+    // parser used for core link data type
+    private final LinkParser linkParser;
+
+    public LwM2mNodeCborDecoder() {
+        this(new DefaultLwM2mLinkParser());
+    }
+
+    /**
+     * Create a new LwM2mNodeCborDecoder with a custom {@link LinkParser}.
+     *
+     * @param linkParser the link parser for core link format resources.
+     */
+    public LwM2mNodeCborDecoder(LinkParser linkParser) {
+        this.linkParser = linkParser;
+    }
 
     @Override
     @SuppressWarnings("unchecked")
@@ -155,6 +174,10 @@ public class LwM2mNodeCborDecoder implements NodeDecoder {
                 if (cborObject.getType() == CBORType.TextString) {
                     return ObjectLink.decodeFromString(cborObject.AsString());
                 }
+            case CORELINK:
+                if (cborObject.getType() == CBORType.TextString) {
+                    return linkParser.parseCoreLinkFormat(cborObject.AsString().getBytes());
+                }
             case OPAQUE:
                 if (cborObject.getType() == CBORType.ByteString) {
                     return cborObject.GetByteString();
@@ -163,7 +186,7 @@ public class LwM2mNodeCborDecoder implements NodeDecoder {
             default:
                 throw new CodecException("Unsupported type %s for resource %s", type, path);
             }
-        } catch (IllegalStateException | ArithmeticException | NumberFormatException e) {
+        } catch (IllegalStateException | ArithmeticException | NumberFormatException | LinkParseException e) {
             throw new CodecException(e, "Unable to convert CBOR value %s of type %s in type %s for resource %s",
                     cborObject.toString(), cborObject.getType(), type, path);
         }

@@ -25,6 +25,9 @@ import org.eclipse.leshan.core.json.JsonRootObject;
 import org.eclipse.leshan.core.json.LwM2mJsonEncoder;
 import org.eclipse.leshan.core.json.LwM2mJsonException;
 import org.eclipse.leshan.core.json.jackson.LwM2mJsonJacksonEncoderDecoder;
+import org.eclipse.leshan.core.link.DefaultLinkSerializer;
+import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -50,13 +53,15 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeJsonEncoder.class);
 
     private final LwM2mJsonEncoder encoder;
+    private final LinkSerializer linkSerializer;
 
     public LwM2mNodeJsonEncoder() {
-        this.encoder = new LwM2mJsonJacksonEncoderDecoder();
+        this(new LwM2mJsonJacksonEncoderDecoder(), new DefaultLinkSerializer());
     }
 
-    public LwM2mNodeJsonEncoder(LwM2mJsonEncoder jsonEncoder) {
+    public LwM2mNodeJsonEncoder(LwM2mJsonEncoder jsonEncoder, LinkSerializer linkSerializer) {
         this.encoder = jsonEncoder;
+        this.linkSerializer = linkSerializer;
     }
 
     @Override
@@ -122,7 +127,7 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
 
     }
 
-    private static class InternalEncoder implements LwM2mNodeVisitor {
+    private class InternalEncoder implements LwM2mNodeVisitor {
         // visitor inputs
         private int objectId;
         private LwM2mModel model;
@@ -291,6 +296,9 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
                     throw new CodecException(e, "Invalid value [%s] for objectLink resource [%s] ", value,
                             resourcePath);
                 }
+                break;
+            case CORELINK:
+                jsonResource.setStringValue(linkSerializer.serializeCoreLinkFormat((Link[]) value));
                 break;
             default:
                 throw new CodecException("Invalid value type %s for %s", type, resourcePath);

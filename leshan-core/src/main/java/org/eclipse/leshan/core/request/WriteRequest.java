@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -261,6 +262,24 @@ public class WriteRequest extends AbstractSimpleDownlinkRequest<WriteResponse> {
             ObjectLink value) throws InvalidRequestException {
         this(Mode.REPLACE, contentFormat, newPath(objectId, objectInstanceId, resourceId),
                 LwM2mSingleResource.newObjectLinkResource(resourceId, value), null);
+    }
+
+    /**
+     * Request to write a <b> CoreLnk Single-Instance Resource</b> using the TLV content format.
+     */
+    public WriteRequest(int objectId, int objectInstanceId, int resourceId, Link[] value) {
+        this(ContentFormat.TLV, objectId, objectInstanceId, resourceId, value);
+    }
+
+    /**
+     * Request to write a <b> CoreLnk Single-Instance Resource</b> using the given content format (TLV, JSON, TEXT).
+     * 
+     * @exception InvalidRequestException if bad @{link ContentFormat} format was used.
+     */
+    public WriteRequest(ContentFormat contentFormat, int objectId, int objectInstanceId, int resourceId, Link[] value)
+            throws InvalidRequestException {
+        this(Mode.REPLACE, contentFormat, newPath(objectId, objectInstanceId, resourceId),
+                LwM2mSingleResource.newCoreLinkResource(resourceId, value), null);
     }
 
     // ***************** write multi instance resource ****************** //

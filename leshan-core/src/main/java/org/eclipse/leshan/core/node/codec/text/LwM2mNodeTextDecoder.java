@@ -18,6 +18,9 @@ package org.eclipse.leshan.core.node.codec.text;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
+import org.eclipse.leshan.core.link.LinkParseException;
+import org.eclipse.leshan.core.link.LinkParser;
+import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -35,6 +38,22 @@ import org.slf4j.LoggerFactory;
 
 public class LwM2mNodeTextDecoder implements NodeDecoder {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeTextDecoder.class);
+
+    // parser used for core link data type
+    private final LinkParser linkParser;
+
+    public LwM2mNodeTextDecoder() {
+        this(new DefaultLwM2mLinkParser());
+    }
+
+    /**
+     * Create a new LwM2mNodeTextDecoder with a custom {@link LinkParser}
+     *
+     * @param linkParser the link parser for core link format resources.
+     */
+    public LwM2mNodeTextDecoder(LinkParser linkParser) {
+        this.linkParser = linkParser;
+    }
 
     @Override
     @SuppressWarnings("unchecked")
@@ -109,7 +128,13 @@ public class LwM2mNodeTextDecoder implements NodeDecoder {
             try {
                 return ObjectLink.decodeFromString(value);
             } catch (IllegalArgumentException e) {
-                throw new CodecException(e, "Invalid value [%s] for objectLink resource [%s] ", value, path);
+                throw new CodecException(e, "Invalid value [%s] for objectLink resource [%s]", value, path);
+            }
+        case CORELINK:
+            try {
+                return linkParser.parseCoreLinkFormat(value.getBytes(StandardCharsets.UTF_8));
+            } catch (LinkParseException e) {
+                throw new CodecException(e, "Invalid value [%s] for CoreLink resource [%s]", value, path);
             }
         case OPAQUE:
             if (!Base64.isBase64(value)) {

@@ -28,6 +28,8 @@ import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.eclipse.leshan.core.link.LinkParser;
+import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -63,10 +65,17 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
 
     private final SenMLDecoder decoder;
     private boolean permissiveNumberConversion;
+    // parser used for core link data type
+    private final LinkParser linkParser;
 
     public LwM2mNodeSenMLDecoder(SenMLDecoder decoder, boolean permissiveNumberConversion) {
+        this(decoder, new DefaultLwM2mLinkParser(), permissiveNumberConversion);
+    }
+
+    public LwM2mNodeSenMLDecoder(SenMLDecoder decoder, LinkParser linkParser, boolean permissiveNumberConversion) {
         this.decoder = decoder;
         this.permissiveNumberConversion = permissiveNumberConversion;
+        this.linkParser = linkParser;
     }
 
     @SuppressWarnings("unchecked")
@@ -527,6 +536,8 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                 return value;
             case OBJLNK:
                 return ObjectLink.decodeFromString((String) value);
+            case CORELINK:
+                return linkParser.parseCoreLinkFormat(((String) value).getBytes());
             default:
                 throw new CodecException("Unsupported type %s for path %s", expectedType, path);
             }

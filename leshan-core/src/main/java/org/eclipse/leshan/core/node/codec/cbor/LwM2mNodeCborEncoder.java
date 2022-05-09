@@ -17,6 +17,9 @@ package org.eclipse.leshan.core.node.codec.cbor;
 
 import java.util.Date;
 
+import org.eclipse.leshan.core.link.DefaultLinkSerializer;
+import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -43,6 +46,16 @@ public class LwM2mNodeCborEncoder implements NodeEncoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeCborEncoder.class);
 
+    private final LinkSerializer linkSerializer;
+
+    public LwM2mNodeCborEncoder() {
+        this(new DefaultLinkSerializer());
+    }
+
+    public LwM2mNodeCborEncoder(LinkSerializer linkSerializer) {
+        this.linkSerializer = linkSerializer;
+    }
+
     @Override
     public byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter)
             throws CodecException {
@@ -58,7 +71,7 @@ public class LwM2mNodeCborEncoder implements NodeEncoder {
         return internalEncoder.encoded;
     }
 
-    private static class InternalEncoder implements LwM2mNodeVisitor {
+    private class InternalEncoder implements LwM2mNodeVisitor {
         // visitor inputs
         private LwM2mPath path;
         private LwM2mModel model;
@@ -152,6 +165,10 @@ public class LwM2mNodeCborEncoder implements NodeEncoder {
             case OBJLNK:
                 ObjectLink objlnk = (ObjectLink) val;
                 cbor = CBORObject.FromObject(objlnk.encodeToString());
+                break;
+            case CORELINK:
+                Link[] links = (Link[]) val;
+                cbor = CBORObject.FromObject(linkSerializer.serializeCoreLinkFormat(links));
                 break;
             case OPAQUE:
                 cbor = CBORObject.FromObject((byte[]) val);

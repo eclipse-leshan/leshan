@@ -19,10 +19,14 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.leshan.core.link.LinkParseException;
+import org.eclipse.leshan.core.link.LinkParser;
+import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mIncompletePath;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -30,7 +34,6 @@ import org.eclipse.leshan.core.node.LwM2mNodeException;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
@@ -48,6 +51,22 @@ import org.slf4j.LoggerFactory;
 public class LwM2mNodeTlvDecoder implements NodeDecoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeTlvDecoder.class);
+
+    // parser used for core link data type
+    private final LinkParser linkParser;
+
+    public LwM2mNodeTlvDecoder() {
+        this(new DefaultLwM2mLinkParser());
+    }
+
+    /**
+     * Create a new LwM2mNodeTlvDecoder with a custom {@link LinkParser}.
+     *
+     * @param linkParser the link parser for core link format resources.
+     */
+    public LwM2mNodeTlvDecoder(LinkParser linkParser) {
+        this.linkParser = linkParser;
+    }
 
     @Override
     public <T extends LwM2mNode> T decode(byte[] content, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
@@ -136,7 +155,8 @@ public class LwM2mNodeTlvDecoder implements NodeDecoder {
 
         // Resource
         else if (nodeClass == LwM2mResource.class) {
-            // The object instance level should not be here, but if it is provided and consistent we tolerate it
+            // The object instance level should not be here, but if it is provided and
+            // consistent we tolerate it
             if (tlvs.length == 1 && tlvs[0].getType() == TlvType.OBJECT_INSTANCE) {
                 if (tlvs[0].getIdentifier() != path.getObjectInstanceId()) {
                     throw new CodecException("Id conflict between path [%s] and instance TLV [object instance id=%d]",
@@ -147,7 +167,8 @@ public class LwM2mNodeTlvDecoder implements NodeDecoder {
 
             ResourceModel resourceModel = model.getResourceModel(path.getObjectId(), path.getResourceId());
             if (tlvs.length == 0 && resourceModel != null && !resourceModel.multiple) {
-                // If there is no TlV value and we know that this resource is a single resource we raise an exception
+                // If there is no TlV value and we know that this resource is a single resource
+                // we raise an exception
                 // else we consider this is a multi-instance resource
                 throw new CodecException("TLV payload is mandatory for single resource %s", path);
             } else if (tlvs.length == 1 && tlvs[0].getType() != TlvType.RESOURCE_INSTANCE) {
@@ -284,10 +305,12 @@ public class LwM2mNodeTlvDecoder implements NodeDecoder {
                 return value;
             case OBJLNK:
                 return TlvDecoder.decodeObjlnk(value);
+            case CORELINK:
+                return linkParser.parseCoreLinkFormat(value);
             default:
                 throw new CodecException("Unsupported type %s for path %s", expectedType, path);
             }
-        } catch (TlvException e) {
+        } catch (TlvException | LinkParseException e) {
             throw new CodecException(e, "Invalid content [%s] for type %s for path %s", Hex.encodeHexString(value),
                     expectedType, path);
         }

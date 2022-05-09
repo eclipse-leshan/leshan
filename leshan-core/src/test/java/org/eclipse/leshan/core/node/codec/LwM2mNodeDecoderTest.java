@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.core.json.LwM2mJsonException;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
@@ -49,6 +50,7 @@ import org.eclipse.leshan.core.tlv.Tlv;
 import org.eclipse.leshan.core.tlv.Tlv.TlvType;
 import org.eclipse.leshan.core.tlv.TlvEncoder;
 import org.eclipse.leshan.core.util.Hex;
+import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.core.util.TestObjectLoader;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.junit.Assert;
@@ -118,6 +120,11 @@ public class LwM2mNodeDecoderTest {
     // Example from LWM2M spec §4.3.3 2)
     private final static byte[] ENCODED_OBJ66 = Hex.decodeHex(
             "080026C8000B6D79536572766963652031C8010F496E7465726E65742E31352E323334C40200430000080126C8000B6D79536572766963652032C8010F496E7465726E65742E31352E323335C402FFFFFFFF"
+                    .toCharArray());
+
+    // tlv content for object 3442 instance (contain core link value)
+    private final static byte[] ENCODED_OBJ3442 = Hex.decodeHex(
+            "080072c8b46f3c2f3e3b72743d226f6d612e6c776d326d223b63743d223630203131302031313220313534322031353433203131353432203131353433222c3c2f313e3b7665723d312e312c3c2f312f303e2c3c2f323e2c3c2f333e3b7665723d312e312c3c2f332f303e2c3c2f333434322f303e"
                     .toCharArray());
 
     private void assertDeviceInstance(LwM2mObjectInstance oInstance) {
@@ -204,6 +211,38 @@ public class LwM2mNodeDecoderTest {
         // instance 2
         LwM2mObjectInstance oInstance2 = oObject.getInstance(1);
         assertEquals("myService 2", oInstance2.getResource(0).getValue());
+    }
+
+    private void assertObj3442Instance(LwM2mObjectInstance instance) {
+        assertEquals(0, instance.getId());
+
+        // instance 0
+        assertEquals(1, instance.getResources().size());
+
+        Link[] links = (Link[]) instance.getResource(TestLwM2mId.CORELNK_VALUE).getValue();
+
+        assertEquals(7, links.length);
+
+        assertEquals("/", links[0].getUriReference());
+        assertEquals(2, links[0].getAttributes().asCollection().size());
+
+        assertEquals("/1", links[1].getUriReference());
+        assertEquals(1, links[1].getAttributes().asCollection().size());
+
+        assertEquals("/1/0", links[2].getUriReference());
+        assertEquals(0, links[2].getAttributes().asCollection().size());
+
+        assertEquals("/2", links[3].getUriReference());
+        assertEquals(0, links[3].getAttributes().asCollection().size());
+
+        assertEquals("/3", links[4].getUriReference());
+        assertEquals(1, links[4].getAttributes().asCollection().size());
+
+        assertEquals("/3/0", links[5].getUriReference());
+        assertEquals(0, links[5].getAttributes().asCollection().size());
+
+        assertEquals("/3442/0", links[6].getUriReference());
+        assertEquals(0, links[6].getAttributes().asCollection().size());
     }
 
     @Test
@@ -465,6 +504,13 @@ public class LwM2mNodeDecoderTest {
         byte[] content = TlvEncoder.encode(new Tlv[] { multiResource }).array();
 
         decoder.decode(content, ContentFormat.TLV, new LwM2mPath(3, 0, 22), model);
+    }
+
+    @Test
+    public void tlv_instance_with_core_link_value() {
+        LwM2mObjectInstance instance = (LwM2mObjectInstance) decoder.decode(ENCODED_OBJ3442, ContentFormat.TLV,
+                new LwM2mPath(3442, 0), model);
+        assertObj3442Instance(instance);
     }
 
     @Test
@@ -1285,4 +1331,5 @@ public class LwM2mNodeDecoderTest {
 
         assertEquals(expectedResult.build(), data);
     }
+
 }

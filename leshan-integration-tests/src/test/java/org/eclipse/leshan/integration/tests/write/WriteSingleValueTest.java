@@ -26,8 +26,15 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.ResponseCode;
+import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
+import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
+import org.eclipse.leshan.core.link.lwm2m.MixedLwM2mLink;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
@@ -211,6 +218,31 @@ public class WriteSingleValueTest {
                 new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.TIME_VALUE), 100000000);
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
         assertEquals(expectedvalue, resource.getValue());
+    }
+
+    @Test
+    public void write_corelnk_resource() throws InterruptedException {
+        // write resource
+        Link[] expectedvalue = new Link[3];
+        expectedvalue[0] = new MixedLwM2mLink(null, new LwM2mPath(3),
+                LwM2mAttributes.create(LwM2mAttributes.OBJECT_VERSION, new LwM2m.Version("1.2")));
+        expectedvalue[1] = new MixedLwM2mLink(null, new LwM2mPath(3, 1));
+        expectedvalue[2] = new MixedLwM2mLink(null, new LwM2mPath(3, 1, 0),
+                new QuotedStringAttribute("attr1", "attr1Value"), new UnquotedStringAttribute("attr2", "attr2Value"));
+
+        WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.CORELNK_VALUE, expectedvalue));
+
+        // verify result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+
+        // read resource to check the value changed
+        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
+                new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.CORELNK_VALUE), 100000000);
+        LwM2mResource resource = (LwM2mResource) readResponse.getContent();
+        assertArrayEquals(expectedvalue, (Link[]) resource.getValue());
     }
 
     @Test

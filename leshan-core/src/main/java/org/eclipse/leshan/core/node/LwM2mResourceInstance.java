@@ -18,6 +18,7 @@ package org.eclipse.leshan.core.node;
 import java.util.Arrays;
 import java.util.Date;
 
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.util.datatype.ULong;
 
@@ -63,6 +64,9 @@ public class LwM2mResourceInstance implements LwM2mNode {
         if (value instanceof ObjectLink) {
             return new LwM2mResourceInstance(id, value, Type.OBJLNK);
         }
+        if (value instanceof Link[]) {
+            return new LwM2mResourceInstance(id, value, Type.CORELINK);
+        }
         if (value instanceof ULong) {
             return new LwM2mResourceInstance(id, value, Type.UNSIGNED_INTEGER);
         }
@@ -101,6 +105,10 @@ public class LwM2mResourceInstance implements LwM2mNode {
             if (!(value instanceof ObjectLink))
                 throw new LwM2mNodeException(doesNotMatchMessage);
             break;
+        case CORELINK:
+            if (!(value instanceof Link[]))
+                throw new LwM2mNodeException(doesNotMatchMessage);
+            break;
         case UNSIGNED_INTEGER:
             if (!(value instanceof ULong))
                 throw new LwM2mNodeException(doesNotMatchMessage);
@@ -121,6 +129,10 @@ public class LwM2mResourceInstance implements LwM2mNode {
 
     public static LwM2mResourceInstance newObjectLinkInstance(int id, ObjectLink objlink) {
         return new LwM2mResourceInstance(id, objlink, Type.OBJLNK);
+    }
+
+    public static LwM2mResourceInstance newCoreLinkInstance(int id, Link[] coreLink) {
+        return new LwM2mResourceInstance(id, coreLink, Type.CORELINK);
     }
 
     public static LwM2mResourceInstance newBooleanInstance(int id, boolean value) {
