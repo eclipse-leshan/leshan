@@ -18,6 +18,9 @@ package org.eclipse.leshan.core.node.codec.text;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
+import org.eclipse.leshan.core.link.DefaultLinkSerializer;
+import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -57,6 +60,9 @@ public class LwM2mNodeTextEncoder implements NodeEncoder {
     }
 
     private static class InternalEncoder implements LwM2mNodeVisitor {
+    
+        private LinkSerializer linkSerializer = new DefaultLinkSerializer();
+
         // visitor inputs
         private LwM2mPath path;
         private LwM2mModel model;
@@ -133,6 +139,10 @@ public class LwM2mNodeTextEncoder implements NodeEncoder {
             case OBJLNK:
                 ObjectLink objlnk = (ObjectLink) val;
                 strValue = objlnk.encodeToString();
+                break;
+            case CORELINK:
+                Link[] links = (Link[]) val;
+                strValue = linkSerializer.serializeCoreLinkFormat(links);
                 break;
             case OPAQUE:
                 byte[] binaryValue = (byte[]) val;

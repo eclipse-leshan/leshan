@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -19,10 +19,14 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.leshan.core.link.LinkParseException;
+import org.eclipse.leshan.core.link.LinkParser;
+import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mIncompletePath;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -30,7 +34,6 @@ import org.eclipse.leshan.core.node.LwM2mNodeException;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
@@ -48,6 +51,22 @@ import org.slf4j.LoggerFactory;
 public class LwM2mNodeTlvDecoder implements NodeDecoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeTlvDecoder.class);
+
+    // parser used for core link data type
+    private final LinkParser linkParser;
+
+    public LwM2mNodeTlvDecoder() {
+        this(new DefaultLwM2mLinkParser());
+    }
+
+    /**
+     * Create a new LwM2mNodeTlvDecoder with a custom {@link LinkParser}.
+     *
+     * @param linkParser the link parser for core link format resources.
+     */
+    public LwM2mNodeTlvDecoder(LinkParser linkParser) {
+        this.linkParser = linkParser;
+    }
 
     @Override
     public <T extends LwM2mNode> T decode(byte[] content, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
@@ -136,7 +155,8 @@ public class LwM2mNodeTlvDecoder implements NodeDecoder {
 
         // Resource
         else if (nodeClass == LwM2mResource.class) {
-            // The object instance level should not be here, but if it is provided and consistent we tolerate it
+            // The object instance level should not be here, but if it is provided and
+            // consistent we tolerate it
             if (tlvs.length == 1 && tlvs[0].getType() == TlvType.OBJECT_INSTANCE) {
                 if (tlvs[0].getIdentifier() != path.getObjectInstanceId()) {
                     throw new CodecException("Id conflict between path [%s] and instance TLV [object instance id=%d]",
@@ -147,7 +167,8 @@ public class LwM2mNodeTlvDecoder implements NodeDecoder {
 
             ResourceModel resourceModel = model.getResourceModel(path.getObjectId(), path.getResourceId());
             if (tlvs.length == 0 && resourceModel != null && !resourceModel.multiple) {
-                // If there is no TlV value and we know that this resource is a single resource we raise an exception
+                // If there is no TlV value and we know that this resource is a single resource
+                // we raise an exception
                 // else we consider this is a multi-instance resource
                 throw new CodecException("TLV payload is mandatory for single resource %s", path);
             } else if (tlvs.length == 1 && tlvs[0].getType() != TlvType.RESOURCE_INSTANCE) {
@@ -222,13 +243,13 @@ public class LwM2mNodeTlvDecoder implements NodeDecoder {
         Type expectedType = getResourceType(resourcePath, model);
         Integer resourceId = tlv.getIdentifier();
         switch (tlv.getType()) {
-        case MULTIPLE_RESOURCE:
-            return parseResourceInstancesTlv(tlv.getChildren(), resourcePath, expectedType);
-        case RESOURCE_VALUE:
-            return LwM2mSingleResource.newResource(resourceId,
-                    parseTlvValue(tlv.getValue(), expectedType, resourcePath), expectedType);
-        default:
-            throw new CodecException("Invalid TLV type %s for resource %s", tlv.getType(), resourcePath);
+            case MULTIPLE_RESOURCE:
+                return parseResourceInstancesTlv(tlv.getChildren(), resourcePath, expectedType);
+            case RESOURCE_VALUE:
+                return LwM2mSingleResource.newResource(resourceId,
+                        parseTlvValue(tlv.getValue(), expectedType, resourcePath), expectedType);
+            default:
+                throw new CodecException("Invalid TLV type %s for resource %s", tlv.getType(), resourcePath);
         }
     }
 
@@ -268,26 +289,28 @@ public class LwM2mNodeTlvDecoder implements NodeDecoder {
         try {
             LOG.trace("TLV value for path {} and expected type {}: {}", path, expectedType, value);
             switch (expectedType) {
-            case STRING:
-                return TlvDecoder.decodeString(value);
-            case INTEGER:
-                return TlvDecoder.decodeInteger(value).longValue();
-            case UNSIGNED_INTEGER:
-                return ULong.valueOf(TlvDecoder.decodeInteger(value).longValue());
-            case FLOAT:
-                return TlvDecoder.decodeFloat(value).doubleValue();
-            case BOOLEAN:
-                return TlvDecoder.decodeBoolean(value);
-            case TIME:
-                return TlvDecoder.decodeDate(value);
-            case OPAQUE:
-                return value;
-            case OBJLNK:
-                return TlvDecoder.decodeObjlnk(value);
-            default:
-                throw new CodecException("Unsupported type %s for path %s", expectedType, path);
+                case STRING:
+                    return TlvDecoder.decodeString(value);
+                case INTEGER:
+                    return TlvDecoder.decodeInteger(value).longValue();
+                case UNSIGNED_INTEGER:
+                    return ULong.valueOf(TlvDecoder.decodeInteger(value).longValue());
+                case FLOAT:
+                    return TlvDecoder.decodeFloat(value).doubleValue();
+                case BOOLEAN:
+                    return TlvDecoder.decodeBoolean(value);
+                case TIME:
+                    return TlvDecoder.decodeDate(value);
+                case OPAQUE:
+                    return value;
+                case OBJLNK:
+                    return TlvDecoder.decodeObjlnk(value);
+                case CORELINK:
+                    return linkParser.parseCoreLinkFormat(value);
+                default:
+                    throw new CodecException("Unsupported type %s for path %s", expectedType, path);
             }
-        } catch (TlvException e) {
+        } catch (TlvException | LinkParseException e) {
             throw new CodecException(e, "Invalid content [%s] for type %s for path %s", Hex.encodeHexString(value),
                     expectedType, path);
         }

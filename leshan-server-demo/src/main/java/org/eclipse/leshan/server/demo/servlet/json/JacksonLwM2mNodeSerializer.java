@@ -21,6 +21,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+
+import org.eclipse.leshan.core.link.DefaultLinkSerializer;
+import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
@@ -29,13 +36,11 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.util.Hex;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-
 public class JacksonLwM2mNodeSerializer extends StdSerializer<LwM2mNode> {
 
     private static final long serialVersionUID = 1L;
+
+    private LinkSerializer linkSerializer = new DefaultLinkSerializer();
 
     protected JacksonLwM2mNodeSerializer(Class<LwM2mNode> t) {
         super(t);
@@ -97,6 +102,8 @@ public class JacksonLwM2mNodeSerializer extends StdSerializer<LwM2mNode> {
             // We use String to be consistent with INTEGER but to be sure to not get any restriction from javascript
             // world.
             return value.toString();
+        case CORELINK:
+            return linkSerializer.serializeCoreLinkFormat((Link[]) value);
         default:
             return value;
         }

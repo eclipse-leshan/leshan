@@ -25,6 +25,7 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
 
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.core.util.datatype.ULong;
@@ -103,6 +104,9 @@ public class LwM2mMultipleResource implements LwM2mResource {
         case OBJLNK:
             LwM2mNodeUtil.allElementsOfType(values.values(), ObjectLink.class);
             break;
+        case CORELINK:
+            LwM2mNodeUtil.allElementsOfType(values.values(), (new Link[]{}).getClass());
+            break;
         case UNSIGNED_INTEGER:
             LwM2mNodeUtil.allElementsOfType(values.values(), ULong.class);
             break;
@@ -140,6 +144,11 @@ public class LwM2mMultipleResource implements LwM2mResource {
     public static LwM2mMultipleResource newObjectLinkResource(int id, Map<Integer, ObjectLink> values) {
         LwM2mNodeUtil.noNullElements(values.values());
         return new LwM2mMultipleResource(id, values, Type.OBJLNK);
+    }
+
+    public static LwM2mMultipleResource newCoreLinkResource(int id, Map<Integer, Link[]> values) {
+        LwM2mNodeUtil.noNullElements(values.values());
+        return new LwM2mMultipleResource(id, values, Type.CORELINK);
     }
 
     public static LwM2mMultipleResource newBinaryResource(int id, Map<Integer, byte[]> values) {

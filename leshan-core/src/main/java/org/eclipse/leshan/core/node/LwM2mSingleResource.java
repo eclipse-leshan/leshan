@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.util.datatype.ULong;
 
@@ -116,6 +117,11 @@ public class LwM2mSingleResource implements LwM2mResource {
                 throw new LwM2mNodeException(
                         String.format(doesNotMatchMessage, value.getClass().getSimpleName(), type));
             break;
+        case CORELINK:
+            if (!(value instanceof Link[]))
+                throw new LwM2mNodeException(
+                        String.format(doesNotMatchMessage, value.getClass().getSimpleName(), type));
+            break;
         case UNSIGNED_INTEGER:
             if (!(value instanceof ULong)) {
                 throw new LwM2mNodeException(
@@ -138,6 +144,10 @@ public class LwM2mSingleResource implements LwM2mResource {
 
     public static LwM2mSingleResource newObjectLinkResource(int id, ObjectLink objlink) {
         return new LwM2mSingleResource(id, objlink, Type.OBJLNK);
+    }
+
+    public static LwM2mSingleResource newObjectLinkResource(int id, Link[] coreLinks) {
+        return new LwM2mSingleResource(id, coreLinks, Type.CORELINK);
     }
 
     public static LwM2mSingleResource newBooleanResource(int id, boolean value) {
