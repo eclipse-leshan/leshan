@@ -58,14 +58,14 @@ export default {
   data() {
     return {
       addServer: true,
-      internalServer: { mode: "no_sec" }, // internal server Config
+      internalServer: { security: { mode: "no_sec" } }, // internal server Config
     };
   },
   watch: {
     value(v) {
       if (!v) {
         this.addServer = false;
-        this.internalServer = { mode: "no_sec" };
+        this.internalServer = { security: { mode: "no_sec" } };
       } else {
         this.addServer = true;
         this.internalServer = v;

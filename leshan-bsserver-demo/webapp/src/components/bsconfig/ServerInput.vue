@@ -27,9 +27,9 @@
       class="examplePatch"
     ></v-text-field>
     <security-input
-      :mode.sync="server.mode"
+      :mode.sync="server.security.mode"
       @update:mode="$emit('input', server)"
-      :details.sync="server.details"
+      :details.sync="server.security.details"
       @update:details="$emit('input', server)"
       :defaultrpk="defaultrpk"
       :defaultx509="defaultx509"
@@ -46,13 +46,13 @@ export default {
     defaultNoSecValue: String,
     defaultSecureValue: String,
     defaultrpk: {
-      default: function() {
+      default: function () {
         return {};
       },
       type: Object,
     },
     defaultx509: {
-      default: function() {
+      default: function () {
         return {};
       },
       type: Object,
@@ -60,13 +60,13 @@ export default {
   },
   data() {
     return {
-      server: { mode: "no_sec" }, // internal server Config
+      server: { security: { mode: "no_sec" } }, // internal server Config
     };
   },
   watch: {
     value(v) {
       if (!v) {
-        this.server = { mode: "no_sec" };
+        this.server = { security: { mode: "no_sec" } };
       } else {
         this.server = v;
       }

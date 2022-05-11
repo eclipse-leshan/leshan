@@ -186,23 +186,23 @@ export default {
 
     formatData(c) {
       let s = {};
-      s.securityMode = c.mode.toUpperCase();
+      s.securityMode = c.security.mode.toUpperCase();
       s.uri = c.url;
-      switch (c.mode) {
+      switch (c.security.mode) {
         case "psk":
-          s.publicKeyOrId = fromAscii(c.details.identity);
-          s.secretKey = fromHex(c.details.key);
+          s.publicKeyOrId = fromAscii(c.security.details.identity);
+          s.secretKey = fromHex(c.security.details.key);
           break;
         case "rpk":
-          s.publicKeyOrId = fromHex(c.details.client_pub_key);
-          s.secretKey = fromHex(c.details.client_pri_key);
-          s.serverPublicKey = fromHex(c.details.server_pub_key);
+          s.publicKeyOrId = fromHex(c.security.details.client_pub_key);
+          s.secretKey = fromHex(c.security.details.client_pri_key);
+          s.serverPublicKey = fromHex(c.security.details.server_pub_key);
           break;
         case "x509":
-          s.publicKeyOrId = fromHex(c.details.client_certificate);
-          s.secretKey = fromHex(c.details.client_pri_key);
-          s.serverPublicKey = fromHex(c.details.server_certificate);
-          s.certificateUsage = c.details.certificate_usage;
+          s.publicKeyOrId = fromHex(c.security.details.client_certificate);
+          s.secretKey = fromHex(c.security.details.client_pri_key);
+          s.serverPublicKey = fromHex(c.security.details.server_certificate);
+          s.certificateUsage = c.security.details.certificate_usage;
           break;
       }
       return s;
