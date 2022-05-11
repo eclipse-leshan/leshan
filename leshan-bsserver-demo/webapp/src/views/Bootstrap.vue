@@ -206,7 +206,7 @@ export default {
           s.publicKeyOrId = fromHex(c.details.client_certificate);
           s.secretKey = fromHex(c.details.client_pri_key);
           s.serverPublicKey = fromHex(c.details.server_certificate);
-          s.certificateUsage = c.certificate_usage;
+          s.certificateUsage = c.details.certificate_usage;
           break;
       }
       return s;
