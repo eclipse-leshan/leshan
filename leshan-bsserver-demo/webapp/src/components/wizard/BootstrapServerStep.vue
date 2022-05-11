@@ -15,12 +15,10 @@
     <v-card-text class="pb-0">
       <p>
         This information will be used to add a
-        <strong>LWM2M Bootstrap Server</strong> to your LWM2M Client during the bootstrap
-        Session by writing 1 instance for object <code>/0</code>.
+        <strong>LWM2M Bootstrap Server</strong> to your LWM2M Client during the
+        bootstrap Session by writing 1 instance for object <code>/0</code>.
       </p>
-      <p>
-        By default no LWM2M Bootstrap server is added.
-      </p>
+      <p>By default no LWM2M Bootstrap server is added.</p>
     </v-card-text>
     <v-form
       ref="form"
@@ -60,14 +58,14 @@ export default {
   data() {
     return {
       addServer: false,
-      internalServer: { mode: "no_sec" }, // internal Bootstrap server Config
+      internalServer: { security: { mode: "no_sec" } }, // internal Bootstrap server Config
     };
   },
   watch: {
     value(v) {
       if (!v) {
         this.addServer = false;
-        this.internalServer = { mode: "no_sec" };
+        this.internalServer = { security: { mode: "no_sec" } };
       } else {
         this.addServer = true;
         this.internalServer = v;

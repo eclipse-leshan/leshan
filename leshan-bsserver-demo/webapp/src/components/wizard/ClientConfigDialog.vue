@@ -115,9 +115,7 @@
         >
           Previous
         </v-btn>
-        <v-btn text @click="close">
-          Cancel
-        </v-btn>
+        <v-btn text @click="close"> Cancel </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -193,7 +191,7 @@ export default {
         this.config = {
           endpoint: null,
           security: null,
-          dm: { mode: "no_sec" },
+          dm: { security: { mode: "no_sec" } },
           bs: null,
           toDelete: ["/0", "/1"],
           autoIdForSecurityObject: false,
@@ -217,7 +215,7 @@ export default {
       if (res.dm) {
         if (!res.dm.url) {
           res.dm.url =
-            res.dm.mode == "no_sec"
+            res.dm.security.mode == "no_sec"
               ? this.defval.dm.url.nosec
               : this.defval.dm.url.sec;
         }
@@ -226,24 +224,24 @@ export default {
       if (res.bs) {
         if (!res.bs.url) {
           res.bs.url =
-            res.bs.mode == "no_sec"
+            res.bs.security.mode == "no_sec"
               ? this.defval.bs.url.nosec
               : this.defval.bs.url.sec;
         }
 
         // apply default rpk value for bs server
-        if (res.bs.mode == "rpk") {
+        if (res.bs.security.mode == "rpk") {
           for (const key in this.defaultrpk) {
-            if (!res.bs.details[key]) {
-              res.bs.details[key] = this.defaultrpk[key];
+            if (!res.bs.security.details[key]) {
+              res.bs.security.details[key] = this.defaultrpk[key];
             }
           }
         }
         // apply default x509 value for bs server
-        if (res.bs.mode == "x509") {
+        if (res.bs.security.mode == "x509") {
           for (const key in this.defaultx509) {
-            if (!res.bs.details[key]) {
-              res.bs.details[key] = this.defaultx509[key];
+            if (!res.bs.security.details[key]) {
+              res.bs.security.details[key] = this.defaultx509[key];
             }
           }
         }
