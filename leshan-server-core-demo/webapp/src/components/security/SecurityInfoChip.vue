@@ -19,25 +19,35 @@
       {{ securityInfo.tls.mode }}
     </v-chip>
     <v-chip small v-if="securityInfo.oscore">
-      <v-icon left small> {{$icons.mdiLockOutline}} </v-icon>
+      <v-icon left small> {{ oscoreIcon }} </v-icon>
       oscore
     </v-chip>
   </div>
   <div v-else>
     <v-chip small>
-      <v-icon left small> {{ $icons.mdiLockOpenRemove }} </v-icon>
+      <v-icon left small> {{ noSecIcon }} </v-icon>
       Nothing
     </v-chip>
   </div>
 </template>
 <script>
-import { getModeIcon } from "../../js/securityutils.js";
+import {
+  getModeIcon,
+  getOscoreIcon,
+  getNoSecIcon,
+} from "../../js/securityutils.js";
 
 export default {
   props: { securityInfo: Object /*securityInfo to display*/ },
   computed: {
     modeIcon() {
       return getModeIcon(this.securityInfo.tls.mode);
+    },
+    oscoreIcon() {
+      return getOscoreIcon();
+    },
+    noSecIcon() {
+      return getNoSecIcon();
     },
   },
 };

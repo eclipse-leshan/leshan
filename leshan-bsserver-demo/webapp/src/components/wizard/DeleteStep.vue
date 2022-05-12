@@ -18,7 +18,7 @@
         existing configuration on the <strong>LWM2M client</strong>.
       </p>
       <p>
-        By default, objects <code>/0</code> and <code>/1</code> are deleted,
+        By default, objects <code>/0</code>, <code>/1</code> and <code>/21</code> are deleted,
         then you will be able to define LWM2M Server and LWM2M Bootstrap Server
         to add.
       </p>

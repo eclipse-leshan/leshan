@@ -27,6 +27,7 @@
       class="examplePatch"
     ></v-text-field>
     <security-input
+      v-if="server"
       :mode.sync="server.security.mode"
       @update:mode="$emit('input', server)"
       :details.sync="server.security.details"
@@ -34,13 +35,26 @@
       :defaultrpk="defaultrpk"
       :defaultx509="defaultx509"
     />
+    <!-- OSCORE Object -->
+    <v-switch
+      v-model="useOSCORE"
+      @change="useOSCOREChanged($event)"
+      label="Using OSCORE (Experimental - for now can not be used with DTLS)"
+    ></v-switch>
+    <oscore-input
+      v-if="useOSCORE"
+      v-model="server.oscore"
+      @input="$emit('input', server)"
+    >
+    </oscore-input>
   </div>
 </template>
 <script>
 import securityInput from "./SecurityInput.vue";
+import OscoreInput from "@leshan-server-core-demo/components/security/OscoreInput.vue";
 
 export default {
-  components: { securityInput },
+  components: { securityInput, OscoreInput },
   props: {
     value: Object,
     defaultNoSecValue: String,
@@ -60,17 +74,48 @@ export default {
   },
   data() {
     return {
-      server: { security: { mode: "no_sec" } }, // internal server Config
+      useOSCORE: false, // true if OSCORE is used
+      server: null, // internal server Config
     };
+  },
+  beforeMount() {
+    this.initValue(this.value);
   },
   watch: {
     value(v) {
-      if (!v) {
+      this.initValue(v);
+    },
+  },
+  methods: {
+    initValue(initialValue) {
+      if (!initialValue) {
         this.server = { security: { mode: "no_sec" } };
+        this.useOSCORE = false;
       } else {
-        this.server = v;
+        this.server = initialValue;
+        this.useOSCORE = initialValue.oscore ? true : false;
       }
     },
+    useOSCOREChanged(useOSCORE) {
+      if (useOSCORE) {
+        this.server.oscore = {};
+      } else {
+        this.server.oscore = undefined;
+      }
+      this.$emit("input", this.server);
+    },
+    /*exclusifTlsOrOSCORE() {
+      if (this.useDTLS) {
+        this.$emit("update:tls", { mode: "psk", details: {} });
+        this.$emit("update:oscore", undefined);
+      } else if (this.useOSCORE) {
+        this.$emit("update:tls", undefined);
+        this.$emit("update:oscore", {});
+      } else {
+        this.$emit("update:tls", undefined);
+        this.$emit("update:oscore", undefined);
+      }
+    },*/
   },
 };
 </script>

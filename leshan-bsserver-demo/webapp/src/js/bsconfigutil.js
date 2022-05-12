@@ -18,15 +18,32 @@ var configFromRestToUI = function (config) {
   for (var i in config.security) {
     var security = config.security[i];
     if (security.bootstrapServer) {
-      newConfig.bs.push({ security: security });
+      let bs = { security: security };
+
+      // add oscore object (if any) to bs
+      let oscoreObjectInstanceId = security.oscoreSecurityMode;
+      let oscore = config.oscore[oscoreObjectInstanceId];
+      if (oscore) {
+        bs.oscore = oscore;
+      }
+
+      newConfig.bs.push(bs);
     } else {
       // search for DM information;
+      var server;
       for (var j in config.servers) {
-        var server = config.servers[j];
+        server = config.servers[j];
         if (server.shortId === security.serverId) {
           newConfig.dm.push(server);
           server.security = security;
         }
+      }
+
+      // add oscore object (if any) to dm
+      let oscoreObjectInstanceId = security.oscoreSecurityMode;
+      let oscore = config.oscore[oscoreObjectInstanceId];
+      if (oscore) {
+        server.oscore = oscore;
       }
     }
   }
@@ -49,10 +66,14 @@ var configFromUIToRest = function (c) {
   // do a deep copy
   // we should maybe rather use cloneDeep from lodashz
   let config = JSON.parse(JSON.stringify(c));
-  var newConfig = { servers: {}, security: {} };
+  var newConfig = { servers: {}, security: {}, oscore: {} };
   for (var i = 0; i < config.bs.length; i++) {
     var bs = config.bs[i];
     newConfig.security[i] = bs.security;
+    if (bs.oscore) {
+      newConfig.security[i].oscoreSecurityMode = i;
+      newConfig.oscore[i] = bs.oscore;
+    }
   }
   if (i == 0) {
     // To be sure that we are not using instance ID 0 for a DM server.
@@ -63,6 +84,11 @@ var configFromUIToRest = function (c) {
     var dm = config.dm[j];
     newConfig.security[i + j] = dm.security;
     delete dm.security;
+    if (dm.oscore) {
+      newConfig.security[i + j].oscoreSecurityMode = i + j;
+      newConfig.oscore[i + j] = dm.oscore;
+      delete dm.oscore;
+    }
     newConfig.servers[j] = dm;
   }
   newConfig.toDelete = config.toDelete;

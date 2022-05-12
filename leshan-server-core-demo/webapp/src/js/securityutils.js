@@ -13,6 +13,8 @@
 import {
   mdiCertificate,
   mdiLock,
+  mdiLockOpenRemove,
+  mdiLockOutline,
   mdiKeyChange,
   mdiHelpRhombusOutline,
 } from "@mdi/js";
@@ -37,4 +39,12 @@ function getModeIcon(mode) {
   }
 }
 
-export { getMode, getModeIcon };
+function getOscoreIcon() {
+  return mdiLockOutline;
+}
+
+function getNoSecIcon() {
+  return mdiLockOpenRemove;
+}
+
+export { getMode, getModeIcon, getOscoreIcon, getNoSecIcon };

@@ -193,7 +193,7 @@ export default {
           security: null,
           dm: { security: { mode: "no_sec" } },
           bs: null,
-          toDelete: ["/0", "/1"],
+          toDelete: ["/0", "/1", "/21"],
           autoIdForSecurityObject: false,
         };
         this.currentStep = 1;
