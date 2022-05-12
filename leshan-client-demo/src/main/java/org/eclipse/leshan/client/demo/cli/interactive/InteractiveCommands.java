@@ -181,6 +181,23 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
                 converter = SendContentFormatConverver.class)
         ContentFormat contentFormat;
 
+        @Option(names = { "-dc", "--data-collector" },
+                defaultValue = "false",
+                description = {
+                        "Whether or not to read data from data collector assigned to node specified by path.",
+                        "Default: false" }
+        )
+        Boolean readFromDataCollector;
+
+        @Option(names = {"-kv", "--keep-values"},
+                defaultValue = "false",
+                description = {
+                        "Whether or not to keep collected data after reading it from collector. Use only when also using --data-collector option",
+                        "Default: false"
+                }
+        )
+        Boolean keepExistingCollectorValues;
+
         public static class SendContentFormatConverver extends ContentFormatConverter {
             public SendContentFormatConverver() {
                 super(ContentFormat.SENML_CBOR, ContentFormat.SENML_JSON);
@@ -194,26 +211,26 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
         public void run() {
             Map<String, ServerIdentity> registeredServers = parent.client.getRegisteredServers();
             if (registeredServers.isEmpty()) {
-                parent.out.printf("There is no registered server to send to.");
+                parent.out.printf("There is no registered server to send to.\n");
                 parent.out.flush();
             }
+
             for (final ServerIdentity server : registeredServers.values()) {
                 LOG.info("Sending Data to {} using {}.", server, contentFormat);
-                parent.client.sendData(server, contentFormat, paths, 2000, new ResponseCallback<SendResponse>() {
-                    @Override
-                    public void onResponse(SendResponse response) {
-                        if (response.isSuccess())
-                            LOG.info("Data sent successfully to {} [{}].", server, response.getCode());
-                        else
-                            LOG.info("Send data to {} failed [{}] : {}.", server, response.getCode(),
-                                    response.getErrorMessage() == null ? "" : response.getErrorMessage());
-                    }
-                }, new ErrorCallback() {
-                    @Override
-                    public void onError(Exception e) {
-                        LOG.warn("Unable to send data to {}.", server, e);
-                    }
-                });
+                int timeoutInMs = 2000;
+                ResponseCallback<SendResponse> responseCallback = (response) -> {
+                    if (response.isSuccess())
+                        LOG.info("Data sent successfully to {} [{}].", server, response.getCode());
+                    else
+                        LOG.info("Send data to {} failed [{}] : {}.", server, response.getCode(),
+                                response.getErrorMessage() == null ? "" : response.getErrorMessage());
+                };
+                ErrorCallback errorCallback = (e) -> LOG.warn("Unable to send data to {}.", server, e);
+                if(readFromDataCollector) {
+                    parent.client.sendData(server, contentFormat, paths, timeoutInMs, responseCallback, errorCallback, !keepExistingCollectorValues);
+                } else {
+                    parent.client.sendData(server, contentFormat, paths, timeoutInMs, responseCallback, errorCallback);
+                }
             }
         }
     }
