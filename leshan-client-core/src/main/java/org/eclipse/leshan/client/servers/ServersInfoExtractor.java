@@ -390,16 +390,27 @@ public class ServersInfoExtractor {
     }
 
     public static long getAeadAlgorithm(LwM2mObjectInstance oscoreInstance) {
-        return (long) oscoreInstance.getResource(OSCORE_AEAD_ALGORITHM).getValue();
+        LwM2mResource resource = oscoreInstance.getResource(OSCORE_AEAD_ALGORITHM);
+        if (resource != null)
+            return (long) resource.getValue();
+        // return default one from https://datatracker.ietf.org/doc/html/rfc8613#section-3.2
+        return AeadAlgorithm.AES_CCM_16_64_128.getValue();
     }
 
     public static long getHkdfAlgorithm(LwM2mObjectInstance oscoreInstance) {
-        return (long) oscoreInstance.getResource(OSCORE_HMAC_ALGORITHM).getValue();
+        LwM2mResource resource = oscoreInstance.getResource(OSCORE_HMAC_ALGORITHM);
+        if (resource != null)
+            return (long) resource.getValue();
+        // return default one from https://datatracker.ietf.org/doc/html/rfc8613#section-3.2
+        return HkdfAlgorithm.HKDF_HMAC_SHA_256.getValue();
     }
 
     public static byte[] getMasterSalt(LwM2mObjectInstance oscoreInstance) {
-        byte[] value = (byte[]) oscoreInstance.getResource(OSCORE_MASTER_SALT).getValue();
+        LwM2mResource resource = oscoreInstance.getResource(OSCORE_MASTER_SALT);
+        if (resource == null)
+            return null;
 
+        byte[] value = (byte[]) resource.getValue();
         if (value.length == 0) {
             return null;
         } else {

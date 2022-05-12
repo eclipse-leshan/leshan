@@ -163,12 +163,21 @@ public class Oscore extends BaseInstanceEnabler {
             return ReadResponse.success(resourceid, recipientId);
 
         case OSCORE_AEAD_ALGORITHM:
+            if (aeadAlgorithm == null) {
+                return ReadResponse.notFound();
+            }
             return ReadResponse.success(resourceid, aeadAlgorithm.getValue());
 
         case OSCORE_HMAC_ALGORITHM:
+            if (hkdfAlgorithm == null) {
+                return ReadResponse.notFound();
+            }
             return ReadResponse.success(resourceid, hkdfAlgorithm.getValue());
 
         case OSCORE_MASTER_SALT:
+            if (masterSalt == null) {
+                return ReadResponse.notFound();
+            }
             return ReadResponse.success(resourceid, masterSalt);
 
         default:
