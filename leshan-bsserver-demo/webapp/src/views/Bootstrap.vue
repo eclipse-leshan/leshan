@@ -88,6 +88,15 @@
                 {{ server.security.securityMode.toLowerCase() }}
               </v-chip>
             </span>
+            <span v-if="server.oscore">
+              with
+              <v-chip small>
+                <v-icon left small>
+                  {{ oscoreIcon() }}
+                </v-icon>
+                OSCORE
+              </v-chip>
+            </span>
             <br />
           </span>
           <!-- LWM2M Bootstrap Server to add -->
@@ -100,6 +109,15 @@
                   {{ modeIcon(server.security.securityMode.toLowerCase()) }}
                 </v-icon>
                 {{ server.security.securityMode.toLowerCase() }}
+              </v-chip>
+            </span>
+            <span v-if="server.oscore">
+              with
+              <v-chip small>
+                <v-icon left small>
+                  {{ oscoreIcon() }}
+                </v-icon>
+                OSCORE
               </v-chip>
             </span>
           </span>
@@ -119,7 +137,10 @@ import { configsFromRestToUI, configFromUIToRest } from "../js/bsconfigutil.js";
 import { fromHex, fromAscii } from "@leshan-server-core-demo/js/byteutils.js";
 import SecurityInfoChip from "@leshan-server-core-demo/components/security/SecurityInfoChip.vue";
 import ClientConfigDialog from "../components/wizard/ClientConfigDialog.vue";
-import { getModeIcon } from "@leshan-server-core-demo/js/securityutils.js";
+import {
+  getModeIcon,
+  getOscoreIcon,
+} from "@leshan-server-core-demo/js/securityutils.js";
 
 export default {
   components: { ClientConfigDialog, SecurityInfoChip },
@@ -183,6 +204,9 @@ export default {
     modeIcon(securitymode) {
       return getModeIcon(securitymode);
     },
+    oscoreIcon() {
+      return getOscoreIcon();
+    },
 
     formatData(c) {
       let s = {};
@@ -204,6 +228,12 @@ export default {
           s.serverPublicKey = fromHex(c.security.details.server_certificate);
           s.certificateUsage = c.security.details.certificate_usage;
           break;
+      }
+      if (c.oscore) {
+        s.oscore = {};
+        s.oscore.oscoreSenderId = fromHex(c.oscore.sid);
+        s.oscore.oscoreMasterSecret = fromHex(c.oscore.msec);
+        s.oscore.oscoreRecipientId = fromHex(c.oscore.rid);
       }
       return s;
     },
@@ -257,6 +287,13 @@ export default {
             },
           },
         ];
+        if (dmServer.oscore) {
+          c.dm[0].oscore = {
+            oscoreSenderId: dmServer.oscore.oscoreSenderId,
+            oscoreMasterSecret: dmServer.oscore.oscoreMasterSecret,
+            oscoreRecipientId: dmServer.oscore.oscoreRecipientId,
+          };
+        }
       }
       if (config.bs) {
         let bsServer = this.formatData(config.bs);
@@ -278,6 +315,13 @@ export default {
             },
           },
         ];
+        if (bsServer.oscore) {
+          c.bs[0].oscore = {
+            oscoreSenderId: bsServer.oscore.oscoreSenderId,
+            oscoreMasterSecret: bsServer.oscore.oscoreMasterSecret,
+            oscoreRecipientId: bsServer.oscore.oscoreRecipientId,
+          };
+        }
       }
 
       if (config.security) {
