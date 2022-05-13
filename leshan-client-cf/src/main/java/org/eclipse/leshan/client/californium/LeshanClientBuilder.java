@@ -18,8 +18,8 @@ package org.eclipse.leshan.client.californium;
 
 import java.net.InetSocketAddress;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
@@ -39,13 +39,13 @@ import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.client.bootstrap.BootstrapConsistencyChecker;
 import org.eclipse.leshan.client.californium.bootstrap.DefaultBootstrapConsistencyChecker;
+import org.eclipse.leshan.client.datacollector.DataCollector;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
-import org.eclipse.leshan.client.resource.DataCollector;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.LwM2mId;
@@ -57,7 +57,6 @@ import org.eclipse.leshan.core.link.lwm2m.attributes.DefaultLwM2mAttributeParser
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
 import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
@@ -76,7 +75,7 @@ public class LeshanClientBuilder {
 
     private InetSocketAddress localAddress;
     private List<? extends LwM2mObjectEnabler> objectEnablers;
-    private Map<LwM2mPath, DataCollector> dataCollectors;
+    private List<DataCollector> dataCollectors;
 
     private Configuration coapConfig;
     private Builder dtlsConfigBuilder;
@@ -142,7 +141,7 @@ public class LeshanClientBuilder {
         return this;
     }
 
-    public LeshanClientBuilder setDataCollectors(Map<LwM2mPath, DataCollector> dataCollectors) {
+    public LeshanClientBuilder setDataCollectors(List<DataCollector> dataCollectors) {
         this.dataCollectors = dataCollectors;
         return this;
     }
@@ -329,8 +328,8 @@ public class LeshanClientBuilder {
                     new Device("Eclipse Leshan", "model12345", "12345", EnumSet.of(BindingMode.U)));
             objectEnablers = initializer.createAll();
         }
-        if(dataCollectors == null)
-            dataCollectors = new HashMap<>();
+        if (dataCollectors == null)
+            dataCollectors = new ArrayList<>();
         if (encoder == null)
             encoder = new DefaultLwM2mEncoder();
         if (decoder == null)
@@ -414,14 +413,15 @@ public class LeshanClientBuilder {
      * @return the new {@link LeshanClient}
      */
     protected LeshanClient createLeshanClient(String endpoint, InetSocketAddress localAddress,
-            List<? extends LwM2mObjectEnabler> objectEnablers, Map<LwM2mPath, DataCollector> dataCollectors, Configuration coapConfig, Builder dtlsConfigBuilder,
-            List<Certificate> trustStore, EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
+            List<? extends LwM2mObjectEnabler> objectEnablers, List<DataCollector> dataCollectors,
+            Configuration coapConfig, Builder dtlsConfigBuilder, List<Certificate> trustStore,
+            EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
             BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
             ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer,
             LwM2mAttributeParser attributeParser) {
-        return new LeshanClient(endpoint, localAddress, objectEnablers, dataCollectors, coapConfig, dtlsConfigBuilder, trustStore,
-                endpointFactory, engineFactory, checker, additionalAttributes, bsAdditionalAttributes, encoder, decoder,
-                sharedExecutor, linkSerializer, attributeParser);
+        return new LeshanClient(endpoint, localAddress, objectEnablers, dataCollectors, coapConfig, dtlsConfigBuilder,
+                trustStore, endpointFactory, engineFactory, checker, additionalAttributes, bsAdditionalAttributes,
+                encoder, decoder, sharedExecutor, linkSerializer, attributeParser);
     }
 }

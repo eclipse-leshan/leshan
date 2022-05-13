@@ -1,4 +1,12 @@
-package org.eclipse.leshan.client.resource;
+package org.eclipse.leshan.client.datacollector;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -9,14 +17,6 @@ import org.eclipse.leshan.core.response.ReadCompositeResponse;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 public class DefaultDataCollector implements DataCollector {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultDataCollector.class);
@@ -35,7 +35,8 @@ public class DefaultDataCollector implements DataCollector {
         scheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory(name));
     }
 
-    @Override public void startPeriodicRead(int initialDelay, int period, TimeUnit timeUnit) {
+    @Override
+    public void startPeriodicRead(int initialDelay, int period, TimeUnit timeUnit) {
         if (isCollectorReading) {
             LOG.error("Cannot start periodic read, as it has already started");
             return;
@@ -49,7 +50,8 @@ public class DefaultDataCollector implements DataCollector {
         isCollectorReading = true;
     }
 
-    @Override public void stopPeriodicRead() {
+    @Override
+    public void stopPeriodicRead() {
         if (!isCollectorReading) {
             LOG.error("Cannot stop periodic read, as it has not yet started");
             return;
@@ -59,7 +61,8 @@ public class DefaultDataCollector implements DataCollector {
         isCollectorReading = false;
     }
 
-    @Override public Map<LwM2mPath, LwM2mNode> readFromEnabler() {
+    @Override
+    public Map<LwM2mPath, LwM2mNode> readFromEnabler() {
         ContentFormat format = ContentFormat.SENML_CBOR;
         ReadCompositeRequest request = new ReadCompositeRequest(format, format,
                 Collections.singletonList(path.toString()));
@@ -72,7 +75,8 @@ public class DefaultDataCollector implements DataCollector {
         return content;
     }
 
-    @Override public Map<Long, Map<LwM2mPath, LwM2mNode>> getTimestampedNodes(boolean clearExistingNodes) {
+    @Override
+    public Map<Long, Map<LwM2mPath, LwM2mNode>> getTimestampedNodes(boolean clearExistingNodes) {
         Map<Long, Map<LwM2mPath, LwM2mNode>> dataToReturn = new HashMap<>(collectedTimestampedNodes);
         if (clearExistingNodes) {
             collectedTimestampedNodes.clear();
@@ -81,7 +85,8 @@ public class DefaultDataCollector implements DataCollector {
         return dataToReturn;
     }
 
-    @Override public void setDataCollectorManager(DataCollectorManager dataCollectorManager) {
+    @Override
+    public void setDataCollectorManager(DataCollectorManager dataCollectorManager) {
         this.dataCollectorManager = dataCollectorManager;
     }
 

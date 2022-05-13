@@ -40,12 +40,17 @@ import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.californium.bootstrap.BootstrapResource;
 import org.eclipse.leshan.client.californium.object.ObjectResource;
 import org.eclipse.leshan.client.californium.request.CaliforniumLwM2mRequestSender;
+import org.eclipse.leshan.client.datacollector.DataCollector;
+import org.eclipse.leshan.client.datacollector.DataCollectorManager;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverAdapter;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverDispatcher;
-import org.eclipse.leshan.client.resource.*;
+import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.resource.LwM2mObjectTree;
+import org.eclipse.leshan.client.resource.LwM2mRootEnabler;
+import org.eclipse.leshan.client.resource.RootEnabler;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.send.NoDataException;
@@ -94,8 +99,9 @@ public class LeshanClient implements LwM2mClient {
     private final DataCollectorManager dataCollectorManager;
 
     public LeshanClient(String endpoint, InetSocketAddress localAddress,
-            List<? extends LwM2mObjectEnabler> objectEnablers, Map<LwM2mPath, DataCollector> dataCollectors, Configuration coapConfig, Builder dtlsConfigBuilder,
-            List<Certificate> trustStore, EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
+            List<? extends LwM2mObjectEnabler> objectEnablers, List<DataCollector> dataCollectors,
+            Configuration coapConfig, Builder dtlsConfigBuilder, List<Certificate> trustStore,
+            EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
             BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
             ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer,
@@ -141,10 +147,10 @@ public class LeshanClient implements LwM2mClient {
         return new LwM2mObjectTree(this, objectEnablers);
     }
 
-    protected DataCollectorManager createDataCollectorManager(Map<LwM2mPath, DataCollector> dataCollectors,
+    protected DataCollectorManager createDataCollectorManager(List<DataCollector> dataCollectors,
             LwM2mRootEnabler rootEnabler) {
         DataCollectorManager dataCollectorManager = new DataCollectorManager(dataCollectors, rootEnabler);
-        dataCollectors.values().forEach(dataCollector -> dataCollector.setDataCollectorManager(dataCollectorManager));
+        dataCollectors.forEach(dataCollector -> dataCollector.setDataCollectorManager(dataCollectorManager));
         return dataCollectorManager;
     }
 
@@ -332,15 +338,27 @@ public class LeshanClient implements LwM2mClient {
         requestSender.send(server, new SendRequest(format, collectedData, null), timeoutInMs, onResponse, onError);
     }
 
-    public void sendData(ServerIdentity server, ContentFormat format, List<String> paths, long timeoutInMs,
+    public void sendCollectedData(ServerIdentity server, ContentFormat format, long timeoutInMs,
             ResponseCallback<SendResponse> onResponse, ErrorCallback onError, boolean clearExistingNodes) {
         Validate.notNull(server);
-        Validate.notEmpty(paths);
         Validate.notNull(onResponse);
         Validate.notNull(onError);
 
-        TimestampedLwM2mNodes timestampedLwM2mNodes = dataCollectorManager.readFromDataCollectors(paths, clearExistingNodes);
-        requestSender.send(server, new SendRequest(format, timestampedLwM2mNodes, null), timeoutInMs, onResponse, onError);
+        // dataCollectorManager.beginTransaction(); (//see onResponse comment to better understand the idea)
+        TimestampedLwM2mNodes timestampedLwM2mNodes = dataCollectorManager.getCollectedData();
+        requestSender.send(server, new SendRequest(format, timestampedLwM2mNodes, null), timeoutInMs,
+                new ResponseCallback<SendResponse>() {
+                    @Override
+                    public void onResponse(SendResponse response) {
+                        // TODO we should flush data from dataCollector on success to be sure we don't lost data
+                        // with several dataCollector this could be complicated ?
+                        // (I didn't think about this too much
+                        // dataCollectorManager.flush()
+                        // OR
+                        // dataCollectorManager.endTransaction();
+                        onResponse.onResponse(response);
+                    }
+                }, onError);
     }
 
     private Map<LwM2mPath, LwM2mNode> collectData(ServerIdentity server, List<String> paths) {
