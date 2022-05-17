@@ -11,10 +11,8 @@ import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.Delete
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.MoveCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.SendCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.UpdateCommand;
-import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
-import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
-import org.eclipse.leshan.client.resource.ObjectEnabler;
-import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.ListCommand;
+import org.eclipse.leshan.client.resource.*;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.LwM2mId;
@@ -24,6 +22,7 @@ import org.eclipse.leshan.core.demo.cli.converters.VersionConverter;
 import org.eclipse.leshan.core.demo.cli.interactive.JLineInteractiveCommands;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.response.ErrorCallback;
@@ -46,7 +45,7 @@ import picocli.CommandLine.ParentCommand;
 @Command(name = "",
          description = "@|bold,underline Leshan Client Demo Interactive Console :|@%n",
          footer = { "%n@|italic Press Ctl-C to exit.|@%n" },
-         subcommands = { HelpCommand.class, CreateCommand.class, DeleteCommand.class, UpdateCommand.class,
+         subcommands = { HelpCommand.class, ListCommand.class, CreateCommand.class, DeleteCommand.class, UpdateCommand.class,
                  SendCommand.class, MoveCommand.class },
          customSynopsis = { "" },
          synopsisHeading = "")
@@ -74,6 +73,51 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
         out.print(new CommandLine(this).getUsageMessage());
         out.flush();
     }
+
+    /**
+     * A command to list objects.
+     */
+    @Command(name = "list", description = "List Objects", headerHeading = "%n", footer = "")
+    static class ListCommand implements Runnable {
+
+        @Parameters(description = "Id of the LWM2M object to enable", index = "0", defaultValue = "-1")
+        private Integer id;
+
+        @ParentCommand
+        InteractiveCommands parent;
+
+        @Override
+        public void run() {
+            LwM2mObjectTree objectTree = parent.client.getObjectTree();
+            if (objectTree == null) {
+                parent.out.printf("no object.%n");
+                parent.out.flush();
+                return;
+            }
+            objectTree.getObjectEnablers().forEach(
+                    (objectId, objectValue) -> {
+                        if (id != -1 && !id.equals(objectId) ) {
+                            return;
+                        }
+                        ObjectModel objectModel = objectValue.getObjectModel();
+                        objectValue.getAvailableInstanceIds().forEach(
+                                instance -> {
+                                    parent.out.printf("/%d/%d : %s%n", objectId, instance, objectModel.name);
+                                    List<Integer> availableResources = objectValue.getAvailableResourceIds(instance);
+                                    availableResources.forEach(
+                                            resourceId -> {
+                                                ResourceModel resourceModel = objectModel.resources.get(resourceId);
+                                                parent.out.printf("  * %d : %s%n", resourceId, resourceModel.name);
+                                            }
+                                    );
+                                }
+                        );
+                    }
+            );
+            parent.out.flush();
+        }
+    }
+
 
     /**
      * A command to create object enabler.
