@@ -20,10 +20,8 @@ import static org.eclipse.leshan.core.LwM2mId.*;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.config.DtlsConfig;
@@ -39,8 +37,8 @@ import org.eclipse.californium.scandium.dtls.SessionAdapter;
 import org.eclipse.californium.scandium.dtls.SessionId;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
-import org.eclipse.leshan.client.datacollector.DataCollector;
-import org.eclipse.leshan.client.datacollector.DefaultDataCollector;
+import org.eclipse.leshan.client.datacollector.DataSender;
+import org.eclipse.leshan.client.datacollector.ManualDataSender;
 import org.eclipse.leshan.client.demo.cli.LeshanClientDemoCLI;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
@@ -49,14 +47,12 @@ import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
-import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.core.demo.cli.interactive.InteractiveCLI;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
-import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.slf4j.Logger;
@@ -94,12 +90,14 @@ public class LeshanClientDemo {
             System.exit(0);
 
         try {
+            // Create Data Senders
+            ManualDataSender manualDataSender = new ManualDataSender();
             // Create Client
             LwM2mModelRepository repository = createModel(cli);
-            final LeshanClient client = createClient(cli, repository);
+            final LeshanClient client = createClient(cli, repository, Arrays.asList(manualDataSender));
 
             // Print commands help
-            InteractiveCLI console = new InteractiveCLI(new InteractiveCommands(client, repository));
+            InteractiveCLI console = new InteractiveCLI(new InteractiveCommands(client, repository, manualDataSender));
             console.showHelp();
 
             // Start the client
@@ -139,7 +137,8 @@ public class LeshanClientDemo {
         return new LwM2mModelRepository(models);
     }
 
-    public static LeshanClient createClient(LeshanClientDemoCLI cli, LwM2mModelRepository repository) throws Exception {
+    public static LeshanClient createClient(LeshanClientDemoCLI cli, LwM2mModelRepository repository,
+            List<DataSender> dataSenders) throws Exception {
         // create Leshan client from command line option
         final MyLocation locationInstance = new MyLocation(cli.location.position.latitude,
                 cli.location.position.longitude, cli.location.scaleFactor);
@@ -193,13 +192,6 @@ public class LeshanClientDemo {
         initializer.setInstancesForObject(OBJECT_ID_LWM2M_TEST_OBJECT, new LwM2mTestObject());
 
         List<LwM2mObjectEnabler> enablers = initializer.createAll();
-
-        //Create Data Collectors
-        Map<LwM2mPath, DataCollector> dataCollectors = new HashMap<>();
-        LwM2mPath temperatureDataCollectorPath = new LwM2mPath(OBJECT_ID_TEMPERATURE_SENSOR);
-        DataCollector temperatureDataCollector = new DefaultDataCollector(ServerIdentity.SYSTEM,
-                temperatureDataCollectorPath, "Temperature Data Collector");
-        dataCollectors.put(temperatureDataCollectorPath, temperatureDataCollector);
 
         // Create CoAP Config
         File configFile = new File(CF_CONFIGURATION_FILENAME);
@@ -298,7 +290,7 @@ public class LeshanClientDemo {
         LeshanClientBuilder builder = new LeshanClientBuilder(cli.main.endpoint);
         builder.setLocalAddress(cli.main.localAddress, cli.main.localPort);
         builder.setObjects(enablers);
-        builder.setDataCollectors(dataCollectors);
+        builder.setDataSenders(dataSenders);
         builder.setCoapConfig(coapConfig);
         if (cli.identity.isx509())
             builder.setTrustStore(cli.identity.getX509().trustStore);
@@ -324,10 +316,6 @@ public class LeshanClientDemo {
                 LOG.info("Object {} v{} enabled.", object.getId(), object.getObjectModel().version);
             }
         });
-
-        //Temporary solution, Data Collectors should probably be started via CLI
-        dataCollectors.values().forEach(dataCollector -> dataCollector
-                .startPeriodicRead(2, 2, TimeUnit.SECONDS));
 
         return client;
     }

@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.client.californium.LeshanClient;
+import org.eclipse.leshan.client.datacollector.ManualDataSender;
 import org.eclipse.leshan.client.demo.MyLocation;
+import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.CollectCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.CreateCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.DeleteCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.MoveCommand;
@@ -25,6 +27,7 @@ import org.eclipse.leshan.core.demo.cli.interactive.JLineInteractiveCommands;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.StaticModel;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -47,7 +50,7 @@ import picocli.CommandLine.ParentCommand;
          description = "@|bold,underline Leshan Client Demo Interactive Console :|@%n",
          footer = { "%n@|italic Press Ctl-C to exit.|@%n" },
          subcommands = { HelpCommand.class, CreateCommand.class, DeleteCommand.class, UpdateCommand.class,
-                 SendCommand.class, MoveCommand.class },
+                 SendCommand.class, CollectCommand.class, MoveCommand.class },
          customSynopsis = { "" },
          synopsisHeading = "")
 public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
@@ -58,10 +61,13 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
 
     private LeshanClient client;
     private LwM2mModelRepository repository;
+    private ManualDataSender manualDataSender;
 
-    public InteractiveCommands(LeshanClient client, LwM2mModelRepository repository) {
+    public InteractiveCommands(LeshanClient client, LwM2mModelRepository repository,
+            ManualDataSender manualDataSender) {
         this.client = client;
         this.repository = repository;
+        this.manualDataSender = manualDataSender;
     }
 
     @Override
@@ -181,22 +187,10 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
                 converter = SendContentFormatConverver.class)
         ContentFormat contentFormat;
 
-        @Option(names = { "-dc", "--data-collector" },
+        @Option(names = { "-cd", "--collected-data" },
                 defaultValue = "false",
-                description = {
-                        "Whether or not to read data from data collector assigned to node specified by path.",
-                        "Default: false" }
-        )
-        Boolean readFromDataCollector;
-
-        @Option(names = {"-kv", "--keep-values"},
-                defaultValue = "false",
-                description = {
-                        "Whether or not to keep collected data after reading it from collector. Use only when also using --data-collector option",
-                        "Default: false"
-                }
-        )
-        Boolean keepExistingCollectorValues;
+                description = { "to send data collected with 'collect' command.", "Default: false" })
+        Boolean sendCollectedData;
 
         public static class SendContentFormatConverver extends ContentFormatConverter {
             public SendContentFormatConverver() {
@@ -226,12 +220,33 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
                                 response.getErrorMessage() == null ? "" : response.getErrorMessage());
                 };
                 ErrorCallback errorCallback = (e) -> LOG.warn("Unable to send data to {}.", server, e);
-                if(readFromDataCollector) {
-                    parent.client.sendData(server, contentFormat, paths, timeoutInMs, responseCallback, errorCallback, !keepExistingCollectorValues);
+                if (sendCollectedData) {
+                    parent.manualDataSender.sendCollectedData(server, contentFormat, timeoutInMs);
                 } else {
                     parent.client.sendData(server, contentFormat, paths, timeoutInMs, responseCallback, errorCallback);
                 }
             }
+        }
+    }
+
+    /**
+     * A command to sebd data.
+     */
+    @Command(name = "collect",
+             description = "Collect data to send it later with 'send' command",
+             headerHeading = "%n",
+             footer = "")
+    static class CollectCommand implements Runnable {
+
+        @Parameters(description = "paths of data to collect.", converter = StringLwM2mPathConverter.class)
+        private List<String> paths; // TODO we should use LWM2M path
+
+        @ParentCommand
+        InteractiveCommands parent;
+
+        @Override
+        public void run() {
+            parent.manualDataSender.collectData(LwM2mPath.getLwM2mPathList(paths).toArray(new LwM2mPath[paths.size()]));
         }
     }
 

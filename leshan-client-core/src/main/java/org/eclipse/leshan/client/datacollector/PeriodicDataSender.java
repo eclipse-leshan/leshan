@@ -16,9 +16,13 @@
 package org.eclipse.leshan.client.datacollector;
 
 /**
- * A configurable data collector which can collect data periodically ..
- *
+ * A configurable data Sender which can collect and send data periodically following given configuration.
  */
-public class PeriodicDataCollector {
+public class PeriodicDataSender implements DataSender {
 
+    @Override
+    public void setDataCollectorManager(DataSenderManager dataCollectorManager) {
+        // TODO Auto-generated method stub
+
+    }
 }

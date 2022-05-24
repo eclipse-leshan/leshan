@@ -1,15 +1,11 @@
 package org.eclipse.leshan.client.datacollector;
 
-import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
-
 /**
  * A class responsible to collect data.
  */
-public interface DataCollector {
+public interface DataSender {
 
-    TimestampedLwM2mNodes getTimestampedNodes();
-
-    void setDataCollectorManager(DataCollectorManager dataCollectorManager);
+    void setDataCollectorManager(DataSenderManager dataCollectorManager);
 
     // Maybe a data collector could need to start / stop / flushData on registration lifecyle event ?
     // see LwM2mClientObserver

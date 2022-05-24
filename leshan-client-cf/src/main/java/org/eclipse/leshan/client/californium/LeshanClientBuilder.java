@@ -39,7 +39,7 @@ import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.client.bootstrap.BootstrapConsistencyChecker;
 import org.eclipse.leshan.client.californium.bootstrap.DefaultBootstrapConsistencyChecker;
-import org.eclipse.leshan.client.datacollector.DataCollector;
+import org.eclipse.leshan.client.datacollector.DataSender;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
@@ -75,7 +75,7 @@ public class LeshanClientBuilder {
 
     private InetSocketAddress localAddress;
     private List<? extends LwM2mObjectEnabler> objectEnablers;
-    private List<DataCollector> dataCollectors;
+    private List<DataSender> dataCollectors;
 
     private Configuration coapConfig;
     private Builder dtlsConfigBuilder;
@@ -141,7 +141,7 @@ public class LeshanClientBuilder {
         return this;
     }
 
-    public LeshanClientBuilder setDataCollectors(List<DataCollector> dataCollectors) {
+    public LeshanClientBuilder setDataSenders(List<DataSender> dataCollectors) {
         this.dataCollectors = dataCollectors;
         return this;
     }
@@ -413,7 +413,7 @@ public class LeshanClientBuilder {
      * @return the new {@link LeshanClient}
      */
     protected LeshanClient createLeshanClient(String endpoint, InetSocketAddress localAddress,
-            List<? extends LwM2mObjectEnabler> objectEnablers, List<DataCollector> dataCollectors,
+            List<? extends LwM2mObjectEnabler> objectEnablers, List<DataSender> dataCollectors,
             Configuration coapConfig, Builder dtlsConfigBuilder, List<Certificate> trustStore,
             EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
             BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
