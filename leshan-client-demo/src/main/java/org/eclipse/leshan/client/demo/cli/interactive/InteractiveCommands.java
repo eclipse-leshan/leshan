@@ -94,30 +94,23 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
                 parent.out.flush();
                 return;
             }
-            objectTree.getObjectEnablers().forEach(
-                    (objectId, objectValue) -> {
-                        if (id != -1 && !id.equals(objectId) ) {
-                            return;
-                        }
-                        ObjectModel objectModel = objectValue.getObjectModel();
-                        objectValue.getAvailableInstanceIds().forEach(
-                                instance -> {
-                                    parent.out.printf("/%d/%d : %s%n", objectId, instance, objectModel.name);
-                                    List<Integer> availableResources = objectValue.getAvailableResourceIds(instance);
-                                    availableResources.forEach(
-                                            resourceId -> {
-                                                ResourceModel resourceModel = objectModel.resources.get(resourceId);
-                                                parent.out.printf("  * %d : %s%n", resourceId, resourceModel.name);
-                                            }
-                                    );
-                                }
-                        );
-                    }
-            );
+            objectTree.getObjectEnablers().forEach((objectId, objectValue) -> {
+                if (id != -1 && !id.equals(objectId)) {
+                    return;
+                }
+                ObjectModel objectModel = objectValue.getObjectModel();
+                objectValue.getAvailableInstanceIds().forEach(instance -> {
+                    parent.out.printf("/%d/%d : %s%n", objectId, instance, objectModel.name);
+                    List<Integer> availableResources = objectValue.getAvailableResourceIds(instance);
+                    availableResources.forEach(resourceId -> {
+                        ResourceModel resourceModel = objectModel.resources.get(resourceId);
+                        parent.out.printf("  * %d : %s%n", resourceId, resourceModel.name);
+                    });
+                });
+            });
             parent.out.flush();
         }
     }
-
 
     /**
      * A command to create object enabler.
