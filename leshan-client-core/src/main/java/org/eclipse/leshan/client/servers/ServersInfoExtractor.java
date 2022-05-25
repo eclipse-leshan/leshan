@@ -214,6 +214,19 @@ public class ServersInfoExtractor {
         return info.deviceManagements.get(shortID);
     }
 
+    public static LwM2mObjectInstance getBootstrapSecurityInstance(LwM2mObjectEnabler securityEnabler) {
+        LwM2mObject securities = (LwM2mObject) securityEnabler.read(SYSTEM, new ReadRequest(SECURITY)).getContent();
+        if (securities != null) {
+            for (LwM2mObjectInstance instance : securities.getInstances().values()) {
+                if (isBootstrapServer(instance)) {
+                    return instance;
+                }
+            }
+        }
+
+        return null;
+    }
+
     public static ServerInfo getBootstrapServerInfo(Map<Integer, LwM2mObjectEnabler> objectEnablers) {
         ServersInfo info = getInfo(objectEnablers);
         if (info == null)
@@ -366,6 +379,14 @@ public class ServersInfoExtractor {
 
         LwM2mResource isBootstrap = (LwM2mResource) response.getContent();
         return (Boolean) isBootstrap.getValue();
+    }
+
+    public static boolean isBootstrapServer(LwM2mObjectInstance instance) {
+        LwM2mResource resource = instance.getResource(SEC_BOOTSTRAP);
+        if (resource == null) {
+            return false;
+        }
+        return (Boolean) resource.getValue();
     }
 
     // OSCORE related methods below

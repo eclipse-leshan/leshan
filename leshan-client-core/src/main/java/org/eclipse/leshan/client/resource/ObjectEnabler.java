@@ -366,6 +366,8 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
         if (request.getPath().isRoot() || request.getPath().isObject()) {
             if (id == LwM2mId.SECURITY) {
                 // For security object, we clean everything except bootstrap Server account.
+
+                // Get bootstrap account and store removed instances ids
                 Entry<Integer, LwM2mInstanceEnabler> bootstrapServerAccount = null;
                 int[] instanceIds = new int[instances.size()];
                 int i = 0;
@@ -373,36 +375,95 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
                     if (ServersInfoExtractor.isBootstrapServer(instance.getValue())) {
                         bootstrapServerAccount = instance;
                     } else {
-                        // store instance ids
+                        // Store instance ids
                         instanceIds[i] = instance.getKey();
                         i++;
                     }
                 }
+                // Clear everything
                 instances.clear();
+
+                // Put bootstrap account again
                 if (bootstrapServerAccount != null) {
                     instances.put(bootstrapServerAccount.getKey(), bootstrapServerAccount.getValue());
                 }
-                fireInstancesRemoved(instanceIds);
-                return BootstrapDeleteResponse.success();
-            } else {
-                instances.clear();
-                // fired instances removed
-                int[] instanceIds = new int[instances.size()];
-                int i = 0;
-                for (Entry<Integer, LwM2mInstanceEnabler> instance : instances.entrySet()) {
-                    instanceIds[i] = instance.getKey();
-                    i++;
-                }
-                fireInstancesRemoved(instanceIds);
 
+                fireInstancesRemoved(instanceIds);
                 return BootstrapDeleteResponse.success();
+            } else if (id == LwM2mId.OSCORE) {
+                // For OSCORE object, we clean everything except OSCORE object link to bootstrap Server account.
+
+                // Get bootstrap account
+                LwM2mObjectInstance bootstrapInstance = ServersInfoExtractor.getBootstrapSecurityInstance(
+                        getLwm2mClient().getObjectTree().getObjectEnabler(LwM2mId.SECURITY));
+                // Get OSCORE instance ID associated to it
+                Integer bootstrapOscoreInstanceId = bootstrapInstance != null
+                        ? ServersInfoExtractor.getOscoreSecurityMode(bootstrapInstance)
+                        : null;
+
+                // if bootstrap server use OSCORE,
+                // search the OSCORE instance for this ID and store removed instances ids
+                if (bootstrapOscoreInstanceId != null) {
+                    Entry<Integer, LwM2mInstanceEnabler> bootstrapServerOscore = null;
+                    int[] instanceIds = new int[instances.size()];
+                    int i = 0;
+                    for (Entry<Integer, LwM2mInstanceEnabler> instance : instances.entrySet()) {
+                        if (bootstrapOscoreInstanceId.equals(instance.getKey())) {
+                            bootstrapServerOscore = instance;
+                        } else {
+                            // Store instance ids
+                            instanceIds[i] = instance.getKey();
+                            i++;
+                        }
+                    }
+
+                    // Clear everything
+                    instances.clear();
+
+                    // Put bootstrap OSCORE instance again
+                    if (bootstrapServerOscore != null) {
+                        instances.put(bootstrapServerOscore.getKey(), bootstrapServerOscore.getValue());
+                    }
+                    fireInstancesRemoved(instanceIds);
+                    return BootstrapDeleteResponse.success();
+                }
+                // else delete everything.
             }
+
+            // In all other cases, just delete everything
+            instances.clear();
+            // fired instances removed
+            int[] instanceIds = new int[instances.size()];
+            int i = 0;
+            for (Entry<Integer, LwM2mInstanceEnabler> instance : instances.entrySet()) {
+                instanceIds[i] = instance.getKey();
+                i++;
+            }
+            fireInstancesRemoved(instanceIds);
+
+            return BootstrapDeleteResponse.success();
         } else if (request.getPath().isObjectInstance()) {
             if (id == LwM2mId.SECURITY) {
                 // For security object, deleting bootstrap Server account is not allowed
                 LwM2mInstanceEnabler instance = instances.get(request.getPath().getObjectInstanceId());
                 if (ServersInfoExtractor.isBootstrapServer(instance)) {
                     return BootstrapDeleteResponse.badRequest("bootstrap server can not be deleted");
+                }
+            } else if (id == LwM2mId.OSCORE) {
+                // For OSCORE object, deleting instance linked to Bootstrap account is not allowed
+
+                // Get bootstrap instance
+                LwM2mObjectInstance bootstrapInstance = ServersInfoExtractor.getBootstrapSecurityInstance(
+                        getLwm2mClient().getObjectTree().getObjectEnabler(LwM2mId.SECURITY));
+                // Get OSCORE instance ID associated to it
+                Integer bootstrapOscoreInstanceId = bootstrapInstance != null
+                        ? ServersInfoExtractor.getOscoreSecurityMode(bootstrapInstance)
+                        : null;
+
+                if (bootstrapOscoreInstanceId != null
+                        && bootstrapOscoreInstanceId.equals(request.getPath().getObjectInstanceId())) {
+                    return BootstrapDeleteResponse
+                            .badRequest("OSCORE instance linked to bootstrap server can not be deleted");
                 }
             }
             if (null != instances.remove(request.getPath().getObjectInstanceId())) {
