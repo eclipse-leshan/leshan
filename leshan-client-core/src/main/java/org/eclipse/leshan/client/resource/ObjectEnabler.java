@@ -401,7 +401,10 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
             if (id == LwM2mId.SECURITY) {
                 // For security object, deleting bootstrap Server account is not allowed
                 LwM2mInstanceEnabler instance = instances.get(request.getPath().getObjectInstanceId());
-                if (ServersInfoExtractor.isBootstrapServer(instance)) {
+                if (instance == null) {
+                    return BootstrapDeleteResponse
+                            .badRequest(String.format("Instance %s not found", request.getPath()));
+                } else if (ServersInfoExtractor.isBootstrapServer(instance)) {
                     return BootstrapDeleteResponse.badRequest("bootstrap server can not be deleted");
                 }
             }
