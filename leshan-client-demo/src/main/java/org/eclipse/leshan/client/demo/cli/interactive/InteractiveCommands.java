@@ -1,6 +1,5 @@
 package org.eclipse.leshan.client.demo.cli.interactive;
 
-import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 
@@ -32,8 +31,6 @@ import org.eclipse.leshan.core.response.SendResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jline.console.ConsoleReader;
-import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
 import picocli.CommandLine.Option;
@@ -50,11 +47,9 @@ import picocli.CommandLine.ParentCommand;
                  SendCommand.class, MoveCommand.class },
          customSynopsis = { "" },
          synopsisHeading = "")
-public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
+public class InteractiveCommands extends JLineInteractiveCommands implements Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(InteractiveCommands.class);
-
-    private PrintWriter out;
 
     private LeshanClient client;
     private LwM2mModelRepository repository;
@@ -65,14 +60,8 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
     }
 
     @Override
-    public void setConsole(ConsoleReader console) {
-        out = new PrintWriter(console.getOutput());
-    }
-
-    @Override
     public void run() {
-        out.print(new CommandLine(this).getUsageMessage());
-        out.flush();
+        printUsageMessage();
     }
 
     /**
@@ -96,8 +85,7 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
         @Override
         public void run() {
             if (parent.client.getObjectTree().getObjectEnabler(objectId) != null) {
-                parent.out.printf("Object %d already enabled.%n", objectId);
-                parent.out.flush();
+                parent.printf("Object %d already enabled.%n", objectId).flush();
             } else {
                 ObjectModel objectModel;
                 if (version != null)
@@ -107,13 +95,12 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
                 }
                 if (objectModel == null) {
                     if (version == null) {
-                        parent.out.printf("Unable to enable Object %d : there no model for this object.%n", objectId);
+                        parent.printf("Unable to enable Object %d : there no model for this object.%n", objectId);
                     } else {
-                        parent.out.printf(
-                                "Unable to enable Object %d : there no model for this object in version %s.%n",
+                        parent.printf("Unable to enable Object %d : there no model for this object in version %s.%n",
                                 objectId, version);
                     }
-                    parent.out.flush();
+                    parent.flush();
                 } else {
                     ObjectsInitializer objectsInitializer = new ObjectsInitializer(new StaticModel(objectModel));
                     objectsInitializer.setDummyInstancesForObject(objectId);
@@ -139,10 +126,9 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
         @Override
         public void run() {
             if (objectId == 0 || objectId == 1 || objectId == 3) {
-                parent.out.printf("Object %d can not be disabled.", objectId);
-                parent.out.flush();
+                parent.printf("Object %d can not be disabled.%n", objectId).flush();
             } else if (parent.client.getObjectTree().getObjectEnabler(objectId) == null) {
-                parent.out.printf("Object %d is not enabled.", objectId);
+                parent.printf("Object %d is not enabled.%n", objectId).flush();
             } else {
                 parent.client.getObjectTree().removeObjectEnabler(objectId);
             }
@@ -194,8 +180,7 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
         public void run() {
             Map<String, ServerIdentity> registeredServers = parent.client.getRegisteredServers();
             if (registeredServers.isEmpty()) {
-                parent.out.printf("There is no registered server to send to.");
-                parent.out.flush();
+                parent.printf("There is no registered server to send to.%n").flush();
             }
             for (final ServerIdentity server : registeredServers.values()) {
                 LOG.info("Sending Data to {} using {}.", server, contentFormat);

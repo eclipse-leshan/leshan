@@ -54,6 +54,8 @@ public class InteractiveCLI {
         // set up the completion
         interactivesCommands.setConsole(console);
         commandLine = new CommandLine(interactivesCommands);
+        interactivesCommands.setCommandLine(commandLine);
+
         console.addCompleter(new PicocliJLineCompleter(commandLine.getCommandSpec()));
 
         // Configure Terminal appender if it is present.
