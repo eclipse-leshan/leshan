@@ -27,7 +27,7 @@
           small
           v-show="state.compositeObserved[compositeObservationKey]"
           :title="compositeObservationKey + ' observed'"
-          >{{ icons.mdiEyeOutline }}</v-icon
+          >{{ $icons.mdiEyeOutline }}</v-icon
         >
       </h3>
       <p>

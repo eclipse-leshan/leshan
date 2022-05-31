@@ -42,7 +42,7 @@
           v-on="on"
           title="Composite Operation Settings"
         >
-          <v-icon small> {{$icons.mdiTune}</v-icon>
+          <v-icon small> {{ $icons.mdiTune }}</v-icon>
         </v-btn>
       </template>
     </composite-operation-setting-menu>
