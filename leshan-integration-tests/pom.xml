@@ -29,6 +29,12 @@ Contributors:
     <dependencies>
         <dependency>
             <groupId>org.eclipse.leshan</groupId>
+            <artifactId>leshan-core</artifactId>
+            <type>test-jar</type>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.leshan</groupId>
             <artifactId>leshan-server-cf</artifactId>
         </dependency>
         <dependency>

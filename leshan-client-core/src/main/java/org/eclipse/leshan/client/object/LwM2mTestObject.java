@@ -49,6 +49,15 @@ import org.slf4j.LoggerFactory;
 public class LwM2mTestObject extends SimpleInstanceEnabler {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mTestObject.class);
 
+    public static final String INITIAL_STRING_VALUE = "initial value";
+    public static final Long INITIAL_INTEGER_VALUE = 64l;
+    public static final ULong INITIAL_UNSIGNED_INTEGER_VALUE = ULong.valueOf("9223372036854775808");
+    public static final Double INITIAL_FLOAT_VALUE = 3.14159d;
+    public static final Boolean INITIAL_BOOLEAN_VALUE = true;
+    public static final byte[] INITIAL_OPAQUE_VALUE = Hex.decodeHex("0123456789ABCDEF".toCharArray());
+    public static final Date INITIAL_TIME_VALUE = new Date(946684800000l);
+    public static final ObjectLink INITIAL_OBJLINK_VALUE = new ObjectLink(3, 0);
+
     private Random random = new Random(System.currentTimeMillis());
 
     public LwM2mTestObject() {
@@ -59,26 +68,24 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
         initialValues.put(6, Collections.EMPTY_MAP);
 
         // single
-        initialValues.put(110, "initial value");
-        initialValues.put(120, 64l);
-        initialValues.put(125, ULong.valueOf("9223372036854775808"));
-        initialValues.put(130, 3.14159d);
-        initialValues.put(140, true);
-        initialValues.put(150, Hex.decodeHex("0123456789ABCDEF".toCharArray()));
-        initialValues.put(160, new Date(946684800000l));
-        initialValues.put(170, new ObjectLink(3, 0));
+        initialValues.put(110, INITIAL_STRING_VALUE);
+        initialValues.put(120, INITIAL_INTEGER_VALUE);
+        initialValues.put(125, INITIAL_UNSIGNED_INTEGER_VALUE);
+        initialValues.put(130, INITIAL_FLOAT_VALUE);
+        initialValues.put(140, INITIAL_BOOLEAN_VALUE);
+        initialValues.put(150, INITIAL_OPAQUE_VALUE);
+        initialValues.put(160, INITIAL_TIME_VALUE);
+        initialValues.put(170, INITIAL_OBJLINK_VALUE);
 
         // multi
-        initialValues.put(1110, LwM2mResourceInstance.newStringInstance(0, "initial value"));
-        initialValues.put(1120, LwM2mResourceInstance.newIntegerInstance(0, 64l));
-        initialValues.put(1125,
-                LwM2mResourceInstance.newUnsignedIntegerInstance(0, ULong.valueOf("9223372036854775808")));
-        initialValues.put(1130, LwM2mResourceInstance.newFloatInstance(0, 3.14159d));
-        initialValues.put(1140, LwM2mResourceInstance.newBooleanInstance(0, true));
-        initialValues.put(1150,
-                LwM2mResourceInstance.newBinaryInstance(0, Hex.decodeHex("0123456789ABCDEF".toCharArray())));
-        initialValues.put(1160, LwM2mResourceInstance.newDateInstance(0, new Date(946684800000l)));
-        initialValues.put(1170, LwM2mResourceInstance.newObjectLinkInstance(0, new ObjectLink(3, 0)));
+        initialValues.put(1110, LwM2mResourceInstance.newStringInstance(0, INITIAL_STRING_VALUE));
+        initialValues.put(1120, LwM2mResourceInstance.newIntegerInstance(0, INITIAL_INTEGER_VALUE));
+        initialValues.put(1125, LwM2mResourceInstance.newUnsignedIntegerInstance(0, INITIAL_UNSIGNED_INTEGER_VALUE));
+        initialValues.put(1130, LwM2mResourceInstance.newFloatInstance(0, INITIAL_FLOAT_VALUE));
+        initialValues.put(1140, LwM2mResourceInstance.newBooleanInstance(0, INITIAL_BOOLEAN_VALUE));
+        initialValues.put(1150, LwM2mResourceInstance.newBinaryInstance(0, INITIAL_OPAQUE_VALUE));
+        initialValues.put(1160, LwM2mResourceInstance.newDateInstance(0, INITIAL_TIME_VALUE));
+        initialValues.put(1170, LwM2mResourceInstance.newObjectLinkInstance(0, INITIAL_OBJLINK_VALUE));
     }
 
     private void clearValues() {

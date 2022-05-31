@@ -29,6 +29,7 @@ import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
 import org.eclipse.leshan.core.response.ReadCompositeResponse;
+import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.junit.After;
 import org.junit.Before;
@@ -44,9 +45,9 @@ public class ReadCompositeTest {
     @Parameters(name = "{0}{1}")
     public static Collection<?> contentFormats() {
         return Arrays.asList(new Object[][] { //
-                                // {request content format, response content format}
-                                { ContentFormat.SENML_JSON, ContentFormat.SENML_JSON }, //
-                                { ContentFormat.SENML_CBOR, ContentFormat.SENML_CBOR } });
+                // {request content format, response content format}
+                { ContentFormat.SENML_JSON, ContentFormat.SENML_JSON }, //
+                { ContentFormat.SENML_CBOR, ContentFormat.SENML_CBOR } });
     }
 
     private ContentFormat requestContentFormat;
@@ -96,16 +97,17 @@ public class ReadCompositeTest {
 
     @Test
     public void can_read_resource_instance() throws InterruptedException {
-        // read device model number
+        // read resource instance
+        String path = "/" + TestLwM2mId.TEST_OBJECT + "/0/" + TestLwM2mId.MULTIPLE_STRING_VALUE + "/0";
         ReadCompositeResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new ReadCompositeRequest(requestContentFormat, responseContentFormat, "/2000/0/65010/1"));
+                new ReadCompositeRequest(requestContentFormat, responseContentFormat, path));
 
         // verify result
         assertEquals(CONTENT, response.getCode());
         assertContentFormat(responseContentFormat, response);
 
-        LwM2mResourceInstance resource = (LwM2mResourceInstance) response.getContent("/2000/0/65010/1");
-        assertEquals(1, resource.getId());
+        LwM2mResourceInstance resource = (LwM2mResourceInstance) response.getContent(path);
+        assertEquals(0, resource.getId());
         assertEquals(Type.STRING, resource.getType());
 
     }

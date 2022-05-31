@@ -28,7 +28,6 @@ import java.util.Map;
 
 import org.eclipse.leshan.core.json.LwM2mJsonException;
 import org.eclipse.leshan.core.model.LwM2mModel;
-import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Operations;
@@ -50,6 +49,7 @@ import org.eclipse.leshan.core.tlv.Tlv;
 import org.eclipse.leshan.core.tlv.Tlv.TlvType;
 import org.eclipse.leshan.core.tlv.TlvEncoder;
 import org.eclipse.leshan.core.util.Hex;
+import org.eclipse.leshan.core.util.TestObjectLoader;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -66,7 +66,7 @@ public class LwM2mNodeDecoderTest {
     @BeforeClass
     public static void loadModel() {
         // load default object
-        List<ObjectModel> objects = ObjectLoader.loadDefault();
+        List<ObjectModel> objects = TestObjectLoader.loadAllDefault();
 
         // add object 65 from the LWM2M v1.0.1 specification (figure 28)
         List<ResourceModel> resForObj65 = new ArrayList<>();

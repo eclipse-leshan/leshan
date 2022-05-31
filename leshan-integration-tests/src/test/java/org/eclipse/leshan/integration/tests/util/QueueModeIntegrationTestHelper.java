@@ -32,6 +32,7 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.integration.tests.PresenceCounter;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.queue.StaticClientAwakeTimeProvider;
@@ -69,7 +70,7 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new TestDevice("Eclipse Leshan", MODEL_NUMBER, "12345"));
         initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);
-        initializer.setDummyInstancesForObject(2000);
+        initializer.setDummyInstancesForObject(TestLwM2mId.TEST_OBJECT);
         List<LwM2mObjectEnabler> objects = initializer.createAll();
 
         // Build Client

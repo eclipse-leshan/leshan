@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
-import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 
 public class TestObjectLoader {
@@ -30,7 +29,8 @@ public class TestObjectLoader {
      */
     public static List<ObjectModel> loadDefaultObject() {
         // load default object from the spec (with fixed version)
-        LwM2mModelRepository repository = new LwM2mModelRepository(ObjectLoader.loadAllDefault());
+        LwM2mModelRepository repository = new LwM2mModelRepository(
+                org.eclipse.leshan.core.util.TestObjectLoader.loadAllDefault());
         List<ObjectModel> objectModels = new ArrayList<ObjectModel>();
         objectModels.add(repository.getObjectModel(LwM2mId.SECURITY, "1.1"));
         objectModels.add(repository.getObjectModel(LwM2mId.SERVER, "1.1"));
@@ -41,6 +41,9 @@ public class TestObjectLoader {
         objectModels.add(repository.getObjectModel(LwM2mId.LOCATION, "1.0"));
         objectModels.add(repository.getObjectModel(LwM2mId.CONNECTIVITY_STATISTICS, "1.0"));
         objectModels.add(repository.getObjectModel(LwM2mId.OSCORE, "1.0"));
+
+        // Test object 3442
+        objectModels.add(repository.getObjectModel(3442, "1.0"));
 
         return objectModels;
     }
