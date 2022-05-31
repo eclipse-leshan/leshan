@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2015 Sierra Wireless and others.
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- *
+ * 
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- *
+ * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -243,13 +243,13 @@ public class LwM2mNodeTlvDecoder implements NodeDecoder {
         Type expectedType = getResourceType(resourcePath, model);
         Integer resourceId = tlv.getIdentifier();
         switch (tlv.getType()) {
-            case MULTIPLE_RESOURCE:
-                return parseResourceInstancesTlv(tlv.getChildren(), resourcePath, expectedType);
-            case RESOURCE_VALUE:
-                return LwM2mSingleResource.newResource(resourceId,
-                        parseTlvValue(tlv.getValue(), expectedType, resourcePath), expectedType);
-            default:
-                throw new CodecException("Invalid TLV type %s for resource %s", tlv.getType(), resourcePath);
+        case MULTIPLE_RESOURCE:
+            return parseResourceInstancesTlv(tlv.getChildren(), resourcePath, expectedType);
+        case RESOURCE_VALUE:
+            return LwM2mSingleResource.newResource(resourceId,
+                    parseTlvValue(tlv.getValue(), expectedType, resourcePath), expectedType);
+        default:
+            throw new CodecException("Invalid TLV type %s for resource %s", tlv.getType(), resourcePath);
         }
     }
 
@@ -289,26 +289,26 @@ public class LwM2mNodeTlvDecoder implements NodeDecoder {
         try {
             LOG.trace("TLV value for path {} and expected type {}: {}", path, expectedType, value);
             switch (expectedType) {
-                case STRING:
-                    return TlvDecoder.decodeString(value);
-                case INTEGER:
-                    return TlvDecoder.decodeInteger(value).longValue();
-                case UNSIGNED_INTEGER:
-                    return ULong.valueOf(TlvDecoder.decodeInteger(value).longValue());
-                case FLOAT:
-                    return TlvDecoder.decodeFloat(value).doubleValue();
-                case BOOLEAN:
-                    return TlvDecoder.decodeBoolean(value);
-                case TIME:
-                    return TlvDecoder.decodeDate(value);
-                case OPAQUE:
-                    return value;
-                case OBJLNK:
-                    return TlvDecoder.decodeObjlnk(value);
-                case CORELINK:
-                    return linkParser.parseCoreLinkFormat(value);
-                default:
-                    throw new CodecException("Unsupported type %s for path %s", expectedType, path);
+            case STRING:
+                return TlvDecoder.decodeString(value);
+            case INTEGER:
+                return TlvDecoder.decodeInteger(value).longValue();
+            case UNSIGNED_INTEGER:
+                return ULong.valueOf(TlvDecoder.decodeInteger(value).longValue());
+            case FLOAT:
+                return TlvDecoder.decodeFloat(value).doubleValue();
+            case BOOLEAN:
+                return TlvDecoder.decodeBoolean(value);
+            case TIME:
+                return TlvDecoder.decodeDate(value);
+            case OPAQUE:
+                return value;
+            case OBJLNK:
+                return TlvDecoder.decodeObjlnk(value);
+            case CORELINK:
+                return linkParser.parseCoreLinkFormat(value);
+            default:
+                throw new CodecException("Unsupported type %s for path %s", expectedType, path);
             }
         } catch (TlvException | LinkParseException e) {
             throw new CodecException(e, "Invalid content [%s] for type %s for path %s", Hex.encodeHexString(value),

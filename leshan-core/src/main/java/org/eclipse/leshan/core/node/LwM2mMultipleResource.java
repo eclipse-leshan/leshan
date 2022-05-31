@@ -105,7 +105,7 @@ public class LwM2mMultipleResource implements LwM2mResource {
             LwM2mNodeUtil.allElementsOfType(values.values(), ObjectLink.class);
             break;
         case CORELINK:
-            LwM2mNodeUtil.allElementsOfType(values.values(), (new Link[]{}).getClass());
+            LwM2mNodeUtil.allElementsOfType(values.values(), (new Link[] {}).getClass());
             break;
         case UNSIGNED_INTEGER:
             LwM2mNodeUtil.allElementsOfType(values.values(), ULong.class);

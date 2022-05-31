@@ -60,7 +60,7 @@ public class LwM2mNodeTextEncoder implements NodeEncoder {
     }
 
     private static class InternalEncoder implements LwM2mNodeVisitor {
-    
+
         private LinkSerializer linkSerializer = new DefaultLinkSerializer();
 
         // visitor inputs

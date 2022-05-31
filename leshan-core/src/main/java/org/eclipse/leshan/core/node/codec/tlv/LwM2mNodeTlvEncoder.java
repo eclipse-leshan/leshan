@@ -63,7 +63,6 @@ public class LwM2mNodeTlvEncoder implements NodeEncoder {
         this.linkSerializer = linkSerializer;
     }
 
-
     @Override
     public byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter)
             throws CodecException {

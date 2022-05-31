@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2015 Sierra Wireless and others.
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- *
+ * 
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- *
+ * 
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -88,61 +88,61 @@ public class LwM2mNodeTextDecoder implements NodeDecoder {
         LOG.trace("TEXT value for path {} and expected type {}: {}", path, type, value);
 
         switch (type) {
-            case STRING:
-                return value;
-            case INTEGER:
-                try {
-                    return Long.valueOf(value);
-                } catch (NumberFormatException e) {
-                    throw new CodecException("Invalid value [%s] for integer resource [%s]", value, path);
-                }
-            case UNSIGNED_INTEGER:
-                try {
-                    return ULong.valueOf(value);
-                } catch (NumberFormatException e) {
-                    throw new CodecException("Invalid value [%s] for unsigned integer resource [%s]", value, path);
-                }
-            case BOOLEAN:
-                switch (value) {
-                    case "0":
-                        return false;
-                    case "1":
-                        return true;
-                    default:
-                        throw new CodecException("Invalid value [%s] for boolean resource [%s]", value, path);
-                }
-            case FLOAT:
-                try {
-                    return Double.valueOf(value);
-                } catch (NumberFormatException e) {
-                    throw new CodecException("Invalid value [%s] for float resource [%s]", value, path);
-                }
-            case TIME:
-                // number of seconds since 1970/1/1
-                try {
-                    return new Date(Long.valueOf(value) * 1000L);
-                } catch (NumberFormatException e) {
-                    throw new CodecException("Invalid value [%s] for date resource [%s]", value, path);
-                }
-            case OBJLNK:
-                try {
-                    return ObjectLink.decodeFromString(value);
-                } catch (IllegalArgumentException e) {
-                    throw new CodecException(e, "Invalid value [%s] for objectLink resource [%s]", value, path);
-                }
-            case CORELINK:
-                try {
-                    return linkParser.parseCoreLinkFormat(value.getBytes(StandardCharsets.UTF_8));
-                } catch (IllegalArgumentException | LinkParseException e) {
-                    throw new CodecException(e, "Invalid value [%s] for CoreLink resource [%s]", value, path);
-                }
-            case OPAQUE:
-                if (!Base64.isBase64(value)) {
-                    throw new CodecException("Invalid value for opaque resource [%s], base64 expected", path);
-                }
-                return Base64.decodeBase64(value);
+        case STRING:
+            return value;
+        case INTEGER:
+            try {
+                return Long.valueOf(value);
+            } catch (NumberFormatException e) {
+                throw new CodecException("Invalid value [%s] for integer resource [%s]", value, path);
+            }
+        case UNSIGNED_INTEGER:
+            try {
+                return ULong.valueOf(value);
+            } catch (NumberFormatException e) {
+                throw new CodecException("Invalid value [%s] for unsigned integer resource [%s]", value, path);
+            }
+        case BOOLEAN:
+            switch (value) {
+            case "0":
+                return false;
+            case "1":
+                return true;
             default:
-                throw new CodecException("Could not handle %s value with TEXT encoder for resource %s", type, path);
+                throw new CodecException("Invalid value [%s] for boolean resource [%s]", value, path);
+            }
+        case FLOAT:
+            try {
+                return Double.valueOf(value);
+            } catch (NumberFormatException e) {
+                throw new CodecException("Invalid value [%s] for float resource [%s]", value, path);
+            }
+        case TIME:
+            // number of seconds since 1970/1/1
+            try {
+                return new Date(Long.valueOf(value) * 1000L);
+            } catch (NumberFormatException e) {
+                throw new CodecException("Invalid value [%s] for date resource [%s]", value, path);
+            }
+        case OBJLNK:
+            try {
+                return ObjectLink.decodeFromString(value);
+            } catch (IllegalArgumentException e) {
+                throw new CodecException(e, "Invalid value [%s] for objectLink resource [%s]", value, path);
+            }
+        case CORELINK:
+            try {
+                return linkParser.parseCoreLinkFormat(value.getBytes(StandardCharsets.UTF_8));
+            } catch (IllegalArgumentException | LinkParseException e) {
+                throw new CodecException(e, "Invalid value [%s] for CoreLink resource [%s]", value, path);
+            }
+        case OPAQUE:
+            if (!Base64.isBase64(value)) {
+                throw new CodecException("Invalid value for opaque resource [%s], base64 expected", path);
+            }
+            return Base64.decodeBase64(value);
+        default:
+            throw new CodecException("Could not handle %s value with TEXT encoder for resource %s", type, path);
         }
     }
 }

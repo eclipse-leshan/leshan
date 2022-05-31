@@ -84,14 +84,14 @@ public class LwM2mNodeDecoderTest {
         resForObj66.add(new ResourceModel(2, "res2", Operations.R, false, false, Type.OBJLNK, null, null, null));
         objects.add(
                 new ObjectModel(66, "object link tests 66", "", ObjectModel.DEFAULT_VERSION, true, false, resForObj66));
-        
+
         // add object 25 from the LWM2M gateway specification
         List<ResourceModel> resForObj25 = new ArrayList<>();
         resForObj25.add(new ResourceModel(0, "Device ID", Operations.R, true, false, Type.STRING, null, null, null));
         resForObj25.add(new ResourceModel(1, "Prefix", Operations.R, false, false, Type.STRING, null, null, null));
-        resForObj25.add(new ResourceModel(3, "IoT Device Objects", Operations.R, false, false, Type.CORELINK, null, null, null));
-        objects.add(
-                new ObjectModel(25, "Gateway", "", ObjectModel.DEFAULT_VERSION, true, false, resForObj25));
+        resForObj25.add(new ResourceModel(3, "IoT Device Objects", Operations.R, false, false, Type.CORELINK, null,
+                null, null));
+        objects.add(new ObjectModel(25, "Gateway", "", ObjectModel.DEFAULT_VERSION, true, false, resForObj25));
 
         model = new StaticModel(objects);
         decoder = new DefaultLwM2mDecoder();
@@ -130,7 +130,9 @@ public class LwM2mNodeDecoderTest {
                     .toCharArray());
 
     // tlv content for object 25 instance (contain core link value)
-    private final static byte[] ENCODED_OBJ25 = Hex.decodeHex("c8000c303132333435363738394142c801082f6e6f646530312fc803743c2f3e3b72743d226f6d612e6c776d326d223b63743d2236302031313020313132203131353432203131353433222c3c2f333e3b7665723d312e312c3c2f332f303e2c3c2f353e2c3c2f352f303e2c3c2f363e3b7665723d312e302c3c2f362f303e2c3c2f333330333e2c3c2f333330332f303e".toCharArray());
+    private final static byte[] ENCODED_OBJ25 = Hex.decodeHex(
+            "c8000c303132333435363738394142c801082f6e6f646530312fc803743c2f3e3b72743d226f6d612e6c776d326d223b63743d2236302031313020313132203131353432203131353433222c3c2f333e3b7665723d312e312c3c2f332f303e2c3c2f353e2c3c2f352f303e2c3c2f363e3b7665723d312e302c3c2f362f303e2c3c2f333330333e2c3c2f333330332f303e"
+                    .toCharArray());
 
     private void assertDeviceInstance(LwM2mObjectInstance oInstance) {
         assertEquals(0, oInstance.getId());
@@ -217,7 +219,7 @@ public class LwM2mNodeDecoderTest {
         LwM2mObjectInstance oInstance2 = oObject.getInstance(1);
         assertEquals("myService 2", oInstance2.getResource(0).getValue());
     }
-    
+
     private void assertObj25Instance(LwM2mObjectInstance instance) {
         assertEquals(0, instance.getId());
 
@@ -227,7 +229,7 @@ public class LwM2mNodeDecoderTest {
         assertEquals("0123456789AB", instance.getResource(0).getValue());
         assertEquals("/node01/", instance.getResource(1).getValue());
 
-        Link[] links = (Link[])instance.getResource(3).getValue();
+        Link[] links = (Link[]) instance.getResource(3).getValue();
 
         assertEquals(9, links.length);
 
@@ -239,13 +241,13 @@ public class LwM2mNodeDecoderTest {
 
         assertEquals("/3/0", links[2].getUriReference());
         assertEquals(0, links[2].getAttributes().asCollection().size());
-        
+
         assertEquals("/5", links[3].getUriReference());
         assertEquals(0, links[3].getAttributes().asCollection().size());
 
         assertEquals("/5/0", links[4].getUriReference());
         assertEquals(0, links[4].getAttributes().asCollection().size());
-        
+
         assertEquals("/6", links[5].getUriReference());
         assertEquals(1, links[5].getAttributes().asCollection().size());
 
@@ -254,7 +256,7 @@ public class LwM2mNodeDecoderTest {
 
         assertEquals("/3303", links[7].getUriReference());
         assertEquals(0, links[7].getAttributes().asCollection().size());
-        
+
         assertEquals("/3303/0", links[8].getUriReference());
         assertEquals(0, links[8].getAttributes().asCollection().size());
     }
@@ -522,7 +524,8 @@ public class LwM2mNodeDecoderTest {
 
     @Test
     public void tlv_instance_with_core_link_value() {
-        LwM2mObjectInstance instance = (LwM2mObjectInstance) decoder.decode(ENCODED_OBJ25, ContentFormat.TLV, new LwM2mPath(25, 0), model);
+        LwM2mObjectInstance instance = (LwM2mObjectInstance) decoder.decode(ENCODED_OBJ25, ContentFormat.TLV,
+                new LwM2mPath(25, 0), model);
         assertObj25Instance(instance);
     }
 
