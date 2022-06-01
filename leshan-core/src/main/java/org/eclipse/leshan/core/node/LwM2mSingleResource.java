@@ -68,6 +68,9 @@ public class LwM2mSingleResource implements LwM2mResource {
         if (value instanceof ObjectLink) {
             return new LwM2mSingleResource(id, value, Type.OBJLNK);
         }
+        if (value instanceof Link[]) {
+            return new LwM2mSingleResource(id, value, Type.CORELINK);
+        }
         if (value instanceof ULong) {
             return new LwM2mSingleResource(id, value, Type.UNSIGNED_INTEGER);
         }
@@ -146,7 +149,7 @@ public class LwM2mSingleResource implements LwM2mResource {
         return new LwM2mSingleResource(id, objlink, Type.OBJLNK);
     }
 
-    public static LwM2mSingleResource newObjectLinkResource(int id, Link[] coreLinks) {
+    public static LwM2mSingleResource newCoreLinkResource(int id, Link[] coreLinks) {
         return new LwM2mSingleResource(id, coreLinks, Type.CORELINK);
     }
 
