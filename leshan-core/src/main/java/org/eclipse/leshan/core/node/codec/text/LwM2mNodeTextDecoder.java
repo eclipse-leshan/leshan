@@ -133,7 +133,7 @@ public class LwM2mNodeTextDecoder implements NodeDecoder {
         case CORELINK:
             try {
                 return linkParser.parseCoreLinkFormat(value.getBytes(StandardCharsets.UTF_8));
-            } catch (IllegalArgumentException | LinkParseException e) {
+            } catch (LinkParseException e) {
                 throw new CodecException(e, "Invalid value [%s] for CoreLink resource [%s]", value, path);
             }
         case OPAQUE:
