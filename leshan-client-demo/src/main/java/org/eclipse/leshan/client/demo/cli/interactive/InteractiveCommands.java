@@ -12,7 +12,11 @@ import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.MoveCo
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.SendCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.UpdateCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.ListCommand;
-import org.eclipse.leshan.client.resource.*;
+import org.eclipse.leshan.client.resource.LwM2mObjectTree;
+import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.resource.ObjectEnabler;
+import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.LwM2mId;
@@ -77,10 +81,10 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
     /**
      * A command to list objects.
      */
-    @Command(name = "list", description = "List Objects", headerHeading = "%n", footer = "")
+    @Command(name = "list", description = "List available Objects, Instances and Resources", headerHeading = "%n", footer = "")
     static class ListCommand implements Runnable {
 
-        @Parameters(description = "Id of the LWM2M object to enable", index = "0", defaultValue = "-1")
+        @Parameters(description = "List of resources for given LwM2M object id", index = "0", arity = "0..1")
         private Integer id;
 
         @ParentCommand
@@ -95,7 +99,7 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
                 return;
             }
             objectTree.getObjectEnablers().forEach((objectId, objectValue) -> {
-                if (id != -1 && !id.equals(objectId)) {
+                if (id != null && !id.equals(objectId)) {
                     return;
                 }
                 ObjectModel objectModel = objectValue.getObjectModel();
@@ -104,7 +108,7 @@ public class InteractiveCommands implements Runnable, JLineInteractiveCommands {
                     List<Integer> availableResources = objectValue.getAvailableResourceIds(instance);
                     availableResources.forEach(resourceId -> {
                         ResourceModel resourceModel = objectModel.resources.get(resourceId);
-                        parent.out.printf("  * %d : %s%n", resourceId, resourceModel.name);
+                        parent.out.printf("  /%d : %s%n", resourceId, resourceModel.name);
                     });
                 });
             });
