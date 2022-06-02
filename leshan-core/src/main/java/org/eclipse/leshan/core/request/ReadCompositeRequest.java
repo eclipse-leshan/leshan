@@ -86,8 +86,16 @@ public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResp
     public ReadCompositeRequest(List<LwM2mPath> paths, ContentFormat requestContentFormat,
             ContentFormat responseContentFormat, Object coapRequest) {
         super(coapRequest);
+
+        validatePaths(paths);
+        this.paths = paths;
+        this.requestContentFormat = requestContentFormat;
+        this.responseContentFormat = responseContentFormat;
+    }
+
+    private void validatePaths(List<LwM2mPath> paths) throws InvalidRequestException {
         if (paths == null || paths.size() == 0)
-            throw new InvalidRequestException("path is mandatory");
+            throw new InvalidRequestException("Path is mandatory");
 
         // Ensure there is no overlapped Path (e.g. "3/0" and "/3/0/1")
         for (int i = 0; i < paths.size(); i++) {
@@ -100,9 +108,6 @@ public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResp
                 }
             }
         }
-        this.paths = paths;
-        this.requestContentFormat = requestContentFormat;
-        this.responseContentFormat = responseContentFormat;
     }
 
     @Override
