@@ -226,8 +226,6 @@ public class WriteSingleValueTest {
         switch (contentFormat.getCode()) {
         case ContentFormat.JSON_CODE:
         case ContentFormat.OLD_JSON_CODE:
-        case ContentFormat.SENML_CBOR_CODE:
-        case ContentFormat.SENML_JSON_CODE:
             return;
         }
 
