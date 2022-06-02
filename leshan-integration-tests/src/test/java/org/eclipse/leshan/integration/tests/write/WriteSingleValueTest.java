@@ -224,7 +224,6 @@ public class WriteSingleValueTest {
     public void write_corelnk_resource() throws InterruptedException {
         // skip unsupported content format for now
         switch (contentFormat.getCode()) {
-        case ContentFormat.CBOR_CODE:
         case ContentFormat.JSON_CODE:
         case ContentFormat.OLD_JSON_CODE:
         case ContentFormat.SENML_CBOR_CODE:
