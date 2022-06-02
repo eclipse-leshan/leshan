@@ -88,29 +88,14 @@ public class ObserveCompositeRequest extends AbstractLwM2mRequest<ObserveComposi
             List<LwM2mPath> paths, Object coapRequest) {
         super(coapRequest);
 
-        validatePaths(paths);
+        LwM2mPath.validateNotEmpty(paths);
+        LwM2mPath.validateNotOverlapping(paths);
+
         this.requestContentFormat = requestContentFormat;
         this.responseContentFormat = responseContentFormat;
         this.paths = paths;
 
         this.context = Collections.emptyMap();
-    }
-
-    private void validatePaths(List<LwM2mPath> paths) throws InvalidRequestException {
-        if (paths == null || paths.size() == 0)
-            throw new InvalidRequestException("Path is mandatory");
-
-        // Ensure there is no overlapped Path (e.g. "3/0" and "/3/0/1")
-        for (int i = 0; i < paths.size(); i++) {
-            LwM2mPath firstPath = paths.get(i);
-            for (int j = i + 1; j < paths.size(); j++) {
-                LwM2mPath secondPath = paths.get(j);
-                if (firstPath.startWith(secondPath) || secondPath.startWith(firstPath)) {
-                    throw new InvalidRequestException("Invalid path list :  %s and %s are overlapped paths", firstPath,
-                            secondPath);
-                }
-            }
-        }
     }
 
     @Override

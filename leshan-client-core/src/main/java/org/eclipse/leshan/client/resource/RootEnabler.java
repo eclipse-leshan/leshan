@@ -213,12 +213,6 @@ public class RootEnabler implements LwM2mRootEnabler {
     public synchronized ObserveCompositeResponse observe(ServerIdentity identity, ObserveCompositeRequest request) {
         List<LwM2mPath> paths = request.getPaths();
 
-        try {
-            validatePathsNotOverlapping(paths);
-        } catch (InvalidRequestException exception) {
-            return ObserveCompositeResponse.badRequest(exception.getMessage());
-        }
-
         // Read Nodes
         Map<LwM2mPath, LwM2mNode> content = new HashMap<>();
         boolean isEmpty = true; // true if don't succeed to read any of requested path
@@ -252,19 +246,6 @@ public class RootEnabler implements LwM2mRootEnabler {
             return ObserveCompositeResponse.notFound();
         } else {
             return ObserveCompositeResponse.success(content);
-        }
-    }
-
-    private void validatePathsNotOverlapping(List<LwM2mPath> paths) throws InvalidRequestException {
-        for (int i = 0; i < paths.size(); i++) {
-            LwM2mPath firstPath = paths.get(i);
-            for (int j = i + 1; j < paths.size(); j++) {
-                LwM2mPath secondPath = paths.get(j);
-                if (firstPath.startWith(secondPath) || secondPath.startWith(firstPath)) {
-                    throw new InvalidRequestException("Invalid path list :  %s and %s are overlapped paths", firstPath,
-                            secondPath);
-                }
-            }
         }
     }
 

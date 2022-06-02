@@ -18,6 +18,7 @@ package org.eclipse.leshan.core.node;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.util.Validate;
 
 /**
@@ -453,5 +454,23 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
             res.add(new LwM2mPath(path));
         }
         return res;
+    }
+
+    public static void validateNotEmpty(List<LwM2mPath> paths) {
+        if (paths == null || paths.size() == 0)
+            throw new InvalidRequestException("Path is mandatory");
+    }
+
+    public static void validateNotOverlapping(List<LwM2mPath> paths) {
+        for (int i = 0; i < paths.size(); i++) {
+            LwM2mPath firstPath = paths.get(i);
+            for (int j = i + 1; j < paths.size(); j++) {
+                LwM2mPath secondPath = paths.get(j);
+                if (firstPath.startWith(secondPath) || secondPath.startWith(firstPath)) {
+                    throw new InvalidRequestException("Invalid path list :  %s and %s are overlapped paths", firstPath,
+                            secondPath);
+                }
+            }
+        }
     }
 }
