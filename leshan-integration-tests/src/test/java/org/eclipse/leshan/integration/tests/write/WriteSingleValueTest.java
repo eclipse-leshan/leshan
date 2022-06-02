@@ -222,13 +222,6 @@ public class WriteSingleValueTest {
 
     @Test
     public void write_corelnk_resource() throws InterruptedException {
-        // skip unsupported content format for now
-        switch (contentFormat.getCode()) {
-        case ContentFormat.JSON_CODE:
-        case ContentFormat.OLD_JSON_CODE:
-            return;
-        }
-
         // write resource
         Link[] expectedvalue = new Link[3];
         expectedvalue[0] = new MixedLwM2mLink(null, new LwM2mPath(3),

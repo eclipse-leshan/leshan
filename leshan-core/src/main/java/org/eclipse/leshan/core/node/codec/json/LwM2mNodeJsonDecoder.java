@@ -32,6 +32,8 @@ import org.eclipse.leshan.core.json.JsonRootObject;
 import org.eclipse.leshan.core.json.LwM2mJsonDecoder;
 import org.eclipse.leshan.core.json.LwM2mJsonException;
 import org.eclipse.leshan.core.json.jackson.LwM2mJsonJacksonEncoderDecoder;
+import org.eclipse.leshan.core.link.LinkParser;
+import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -60,13 +62,15 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeJsonDecoder.class);
 
     private final LwM2mJsonDecoder decoder;
+    private final LinkParser linkParser;
 
     public LwM2mNodeJsonDecoder() {
-        this.decoder = new LwM2mJsonJacksonEncoderDecoder();
+        this(new LwM2mJsonJacksonEncoderDecoder(), new DefaultLwM2mLinkParser());
     }
 
-    public LwM2mNodeJsonDecoder(LwM2mJsonDecoder jsonDecoder) {
+    public LwM2mNodeJsonDecoder(LwM2mJsonDecoder jsonDecoder, LinkParser linkParser) {
         this.decoder = jsonDecoder;
+        this.linkParser = linkParser;
     }
 
     @SuppressWarnings("unchecked")
@@ -455,6 +459,8 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
                 return value;
             case OBJLNK:
                 return ObjectLink.decodeFromString((String) value);
+            case CORELINK:
+                return linkParser.parseCoreLinkFormat(((String) value).getBytes());
             default:
                 throw new CodecException("Unsupported type %s for path %s", expectedType, path);
             }
