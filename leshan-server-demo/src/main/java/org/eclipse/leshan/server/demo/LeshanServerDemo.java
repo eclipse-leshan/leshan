@@ -170,7 +170,7 @@ public class LeshanServerDemo {
 
             X509Certificate serverCertificate = cli.identity.getCertChain()[0];
             // autodetect serverOnly
-            if (dtlsConfig.getIncompleteConfig().getDtlsRole() == DtlsRole.BOTH) {
+            if (dtlsConfig.getIncompleteConfig().get(DtlsConfig.DTLS_ROLE) == DtlsRole.BOTH) {
                 if (serverCertificate != null) {
                     if (CertPathUtil.canBeUsedForAuthentication(serverCertificate, false)) {
                         if (!CertPathUtil.canBeUsedForAuthentication(serverCertificate, true)) {
