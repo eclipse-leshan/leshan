@@ -43,13 +43,25 @@ public class MixedLwM2mLink extends Link {
     }
 
     public MixedLwM2mLink(String rootPath, LwM2mPath path, MixedLwM2mAttributeSet attributes) {
-        super(rootPath == null || rootPath.equals("/") ? path.toString() : rootPath + path.toString(), attributes);
+        super(getUriReference(rootPath, path), attributes);
 
-        Validate.notNull(path);
         Validate.notNull(attributes);
 
         this.path = path;
         this.rootPath = rootPath == null ? "/" : rootPath;
+    }
+
+    private static String getUriReference(String rootPath, LwM2mPath path) {
+        Validate.notNull(path);
+
+        if (rootPath == null || rootPath.equals("/")) {
+            return path.toString();
+        } else if (path.isRoot()) {
+            // rootpath can not be null because we check this before
+            return rootPath;
+        } else {
+            return rootPath + path.toString();
+        }
     }
 
     public LwM2mPath getPath() {
