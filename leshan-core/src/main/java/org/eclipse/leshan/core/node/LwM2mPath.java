@@ -454,4 +454,24 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
         }
         return res;
     }
+
+    /**
+     * Checks if any pair of paths from a list of paths is overlapping i.e. one path contains the other
+     *
+     * @param paths list of paths to be validated
+     *
+     * @exception IllegalArgumentException if there exists any pair of overlapping paths in the list
+     */
+    public static void validateNotOverlapping(List<LwM2mPath> paths) {
+        for (int i = 0; i < paths.size(); i++) {
+            LwM2mPath firstPath = paths.get(i);
+            for (int j = i + 1; j < paths.size(); j++) {
+                LwM2mPath secondPath = paths.get(j);
+                if (firstPath.startWith(secondPath) || secondPath.startWith(firstPath)) {
+                    throw new IllegalArgumentException(String
+                            .format("Invalid path list :  %s and %s are overlapped paths", firstPath, secondPath));
+                }
+            }
+        }
+    }
 }

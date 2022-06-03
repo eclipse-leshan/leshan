@@ -23,6 +23,7 @@ import org.eclipse.leshan.core.node.LwM2mNodeException;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.ReadCompositeResponse;
+import org.eclipse.leshan.core.util.Validate;
 
 /**
  * The "Read-Composite" operation can be used by the LwM2M Server to selectively read any combination of Objects, Object
@@ -86,20 +87,14 @@ public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResp
     public ReadCompositeRequest(List<LwM2mPath> paths, ContentFormat requestContentFormat,
             ContentFormat responseContentFormat, Object coapRequest) {
         super(coapRequest);
-        if (paths == null || paths.size() == 0)
-            throw new InvalidRequestException("path is mandatory");
 
-        // Ensure there is no overlapped Path (e.g. "3/0" and "/3/0/1")
-        for (int i = 0; i < paths.size(); i++) {
-            LwM2mPath firstPath = paths.get(i);
-            for (int j = i + 1; j < paths.size(); j++) {
-                LwM2mPath secondPath = paths.get(j);
-                if (firstPath.startWith(secondPath) || secondPath.startWith(firstPath)) {
-                    throw new InvalidRequestException("Invalid path list :  %s and %s are overlapped paths", firstPath,
-                            secondPath);
-                }
-            }
+        try {
+            Validate.notEmpty(paths, "paths are mandatory");
+            LwM2mPath.validateNotOverlapping(paths);
+        } catch (IllegalArgumentException exception) {
+            throw new InvalidRequestException(exception.getMessage());
         }
+
         this.paths = paths;
         this.requestContentFormat = requestContentFormat;
         this.responseContentFormat = responseContentFormat;
