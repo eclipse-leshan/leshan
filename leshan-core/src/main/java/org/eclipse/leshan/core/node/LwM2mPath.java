@@ -15,11 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
+import org.eclipse.leshan.core.util.Validate;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.eclipse.leshan.core.request.exception.InvalidRequestException;
-import org.eclipse.leshan.core.util.Validate;
 
 /**
  * A path pointing to a LwM2M node (root, object, object instance, resource or resource instance).
@@ -456,19 +455,14 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
         return res;
     }
 
-    public static void validateNotEmpty(List<LwM2mPath> paths) {
-        if (paths == null || paths.size() == 0)
-            throw new InvalidRequestException("Path is mandatory");
-    }
-
     public static void validateNotOverlapping(List<LwM2mPath> paths) {
         for (int i = 0; i < paths.size(); i++) {
             LwM2mPath firstPath = paths.get(i);
             for (int j = i + 1; j < paths.size(); j++) {
                 LwM2mPath secondPath = paths.get(j);
                 if (firstPath.startWith(secondPath) || secondPath.startWith(firstPath)) {
-                    throw new InvalidRequestException("Invalid path list :  %s and %s are overlapped paths", firstPath,
-                            secondPath);
+                    throw new IllegalArgumentException(String
+                            .format("Invalid path list :  %s and %s are overlapped paths", firstPath, secondPath));
                 }
             }
         }

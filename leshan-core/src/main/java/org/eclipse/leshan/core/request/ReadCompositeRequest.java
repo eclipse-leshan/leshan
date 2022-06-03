@@ -23,6 +23,7 @@ import org.eclipse.leshan.core.node.LwM2mNodeException;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.ReadCompositeResponse;
+import org.eclipse.leshan.core.util.Validate;
 
 /**
  * The "Read-Composite" operation can be used by the LwM2M Server to selectively read any combination of Objects, Object
@@ -87,8 +88,12 @@ public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResp
             ContentFormat responseContentFormat, Object coapRequest) {
         super(coapRequest);
 
-        LwM2mPath.validateNotEmpty(paths);
-        LwM2mPath.validateNotOverlapping(paths);
+        try {
+            Validate.notEmpty(paths);
+            LwM2mPath.validateNotOverlapping(paths);
+        } catch (IllegalArgumentException exception) {
+            throw new InvalidRequestException(exception.getMessage());
+        }
 
         this.paths = paths;
         this.requestContentFormat = requestContentFormat;
