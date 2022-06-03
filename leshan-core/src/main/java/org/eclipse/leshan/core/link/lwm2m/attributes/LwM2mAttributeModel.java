@@ -95,7 +95,7 @@ public abstract class LwM2mAttributeModel<T> extends AttributeModel<LwM2mAttribu
      */
     public String getApplicabilityError(LwM2mPath path, LwM2mModel model) {
         if (!canBeAssignedTo(AssignationLevel.fromPath(path))) {
-            return String.format("%s attribute is only applicable to %s, and so can not be assigned to %", getName(),
+            return String.format("%s attribute is only applicable to %s, and so can not be assigned to %s", getName(),
                     getAssignationLevels(), path);
         }
         return null;
