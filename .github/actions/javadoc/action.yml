@@ -1,0 +1,31 @@
+name: "Generate Javadoc"
+description: "Generate Javadoc with Maven"
+
+runs:
+  using: "composite"
+  steps:
+
+  - name: Generate Javadoc
+    id: javadoc
+    shell: bash
+    run: mvn -B package javadoc:javadoc -DskipTests -Dskip.yarn
+
+  - name: Add comment
+    if: failure()
+    uses: marocchino/sticky-pull-request-comment@v2
+    with:
+      header: Javadoc Generation Failed
+      message: |
+        :x: **Javadoc Generation failed !** [(more details)](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+        Ensure you can generate javadoc locally using: 
+        ```
+        mvn clean javadoc:javadoc
+        ```
+
+  - name: Delete comment
+    if: success()
+    uses: marocchino/sticky-pull-request-comment@v2
+    with:
+      header: Javadoc Generation Failed
+      delete: true

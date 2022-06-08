@@ -1,0 +1,32 @@
+name: "Build Code"
+description: "Build repository with Maven"
+
+runs:
+  using: "composite"
+  steps:
+
+  - name: Build
+    id: build
+    shell: bash
+    run: mvn -B package -DskipTests -Dskip.yarn
+
+
+  - name: Add comment
+    if: failure()
+    uses: marocchino/sticky-pull-request-comment@v2
+    with:
+      header: Build Failed
+      message: |
+        :x: **Maven Build failed !** [(more details)](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+        Ensure your code build locally using: 
+        ```
+        mvn clean install
+        ```
+
+  - name: Delete comment
+    if: success()
+    uses: marocchino/sticky-pull-request-comment@v2
+    with:
+      header: Build Failed
+      delete: true

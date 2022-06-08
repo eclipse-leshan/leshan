@@ -1,0 +1,38 @@
+name: "Integration Tests"
+description: "Run Integration Tests with Maven"
+
+runs:
+  using: "composite"
+  steps:
+  - name: Run Integration Tests 
+    shell: bash
+    run: mvn -B test '-Dtest=org.eclipse.leshan.integration.tests.**,!**/Redis*.java' -Dsurefire.rerunFailingTestsCount=10 -DfailIfNoTests=false -Dskip.yarn 
+
+  - name: Add comment
+    if: failure()
+    uses: marocchino/sticky-pull-request-comment@v2
+    with:
+      header: Integration Tests Failed
+      message: |
+        :x: **Integration Tests failed !** [(more details)](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+        Ensure your code build locally using: 
+        ```
+        mvn clean install
+        ```
+        Or just launch all tests : 
+        ```
+        mvn test -Dskip.yarn
+        ```
+        To launch integration tests only : 
+        ```
+        mvn test '-Dtest=org.eclipse.leshan.integration.tests.**,!**/Redis*.java' -Dsurefire.rerunFailingTestsCount=3 -DfailIfNoTests=false -Dskip.yarn
+        ```
+        Currently, some of our integration tests are flaky :unamused: ,so do not hesitate to re-run in case of failure. 
+
+  - name: Delete comment
+    if: success()
+    uses: marocchino/sticky-pull-request-comment@v2
+    with:
+      header: Integration Tests Failed
+      delete: true

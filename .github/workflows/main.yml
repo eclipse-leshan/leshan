@@ -1,0 +1,69 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: Maven
+
+on:
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build: 
+    name : Code Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set up JDK 8
+      uses: actions/setup-java@v3
+      with:
+        java-version: '8'
+        distribution: 'adopt'
+        cache: maven
+
+    - name: Build
+      id: build
+      uses: ./.github/actions/build
+
+    - name: Generate Javadoc
+      if: ${{ steps.build.conclusion == 'success' }}
+      uses: ./.github/actions/javadoc
+      
+    - name: Unit Tests
+      id: unit_tests
+      if: ${{ always() &&  steps.build.conclusion == 'success' }}
+      uses: ./.github/actions/unit-tests
+
+    - name: Integration Tests
+      id: integration_tests
+      if: ${{ always() && steps.build.conclusion == 'success' }}
+      uses: ./.github/actions/integration-tests
+
+    - name: Report Test Failure
+      uses: mikepenz/action-junit-report@v3
+      if: ${{ always() && (steps.unit_tests.conclusion == 'failure' || steps.integration_tests.conclusion == 'failure') }}
+      with:
+          check_name: Automatic Tests Report
+          report_paths: '**/target/surefire-reports/*.xml'
+          fail_on_failure: true
+
+    - name: Add Tips comment
+      if: failure()
+      uses: marocchino/sticky-pull-request-comment@v2
+      with:
+        header: Refine your PR
+        message: |
+          :information_source: Some tips : 
+           - Once you fix your issues locally, **do not create a new PR**, see [how to refine your PR](https://github.com/eclipse/leshan/wiki/How-to-contribute#refine-it).
+           - See [How to contribute](https://github.com/eclipse/leshan/wiki/How-to-contribute) guide and some [Code & design guidelines](https://github.com/eclipse/leshan/wiki/Code-&-design-guidelines). 
+
+          If documentation or those automatic comments are not clear enough, please [create a new issue](https://github.com/eclipse/leshan/issues/new) to discus about how to enhance it. 
+      
+    - name: Delete Tips comment
+      if: success()
+      uses: marocchino/sticky-pull-request-comment@v2
+      with:
+        header: Refine your PR
+        delete: true
