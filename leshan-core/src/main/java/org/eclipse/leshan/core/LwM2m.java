@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core;
 
+
+// Some code modification to test github action
 public interface LwM2m {
 
     /**
