@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2021 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
-*******************************************************************************/
+ *******************************************************************************/
 
 "use strict";
 
@@ -28,14 +28,29 @@ let config = {
   responseType: "text",
 };
 
+// HACK waiting we get a solution for : https://github.com/yariksav/vuetify-dialog/issues/110#issuecomment-1145981361
+// and unfortenately there is not standard way to do that ... : https://stackoverflow.com/questions/40263803/native-javascript-or-es6-way-to-encode-and-decode-html-entities
+const escapeHTML = (str) =>
+  str.replace(
+    /[&<>'"]/g,
+    (tag) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "'": "&#39;",
+        '"': "&quot;",
+      }[tag])
+  );
+
 const _axios = axios.create(config);
 
 _axios.interceptors.request.use(
-  function(config) {
+  function (config) {
     // Do something before request is sent
     return config;
   },
-  function(error) {
+  function (error) {
     // Do something with request error
     return Promise.reject(error);
   }
@@ -43,19 +58,19 @@ _axios.interceptors.request.use(
 
 // Add a response interceptor
 _axios.interceptors.response.use(
-  function(response) {
+  function (response) {
     // show error message if device return a failure code
     if (response.data && response.data.failure) {
       let msg = `Device response : ${response.data.status}`;
       if (response.data.errormessage) msg += ` - ${response.data.errormessage}`;
-      Vue.prototype.$dialog.notify.warning(msg, {
+      Vue.prototype.$dialog.notify.warning(escapeHTML(msg), {
         position: "bottom-right",
         timeout: 5000,
       });
     }
     return response;
   },
-  function(error) {
+  function (error) {
     let message;
     if (error.response) {
       console.log(
@@ -69,7 +84,7 @@ _axios.interceptors.response.use(
       console.log(error.message);
       message = error.message;
     }
-    Vue.prototype.$dialog.notify.error(message, {
+    Vue.prototype.$dialog.notify.error(escapeHTML(message), {
       position: "bottom-right",
       timeout: 5000,
     });
@@ -77,7 +92,7 @@ _axios.interceptors.response.use(
   }
 );
 
-Plugin.install = function(Vue) {
+Plugin.install = function (Vue) {
   Vue.axios = _axios;
   window.axios = _axios;
   Object.defineProperties(Vue.prototype, {

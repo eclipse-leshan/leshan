@@ -25,6 +25,7 @@ import org.eclipse.leshan.core.node.LwM2mNodeException;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
+import org.eclipse.leshan.core.util.Validate;
 
 /**
  * A Lightweight M2M request for observing changes of multiple Resources, Resources within an Object Instance or for all
@@ -87,6 +88,13 @@ public class ObserveCompositeRequest extends AbstractLwM2mRequest<ObserveComposi
     public ObserveCompositeRequest(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
             List<LwM2mPath> paths, Object coapRequest) {
         super(coapRequest);
+
+        try {
+            Validate.notEmpty(paths, "paths are mandatory");
+            LwM2mPath.validateNotOverlapping(paths);
+        } catch (IllegalArgumentException exception) {
+            throw new InvalidRequestException(exception.getMessage());
+        }
 
         this.requestContentFormat = requestContentFormat;
         this.responseContentFormat = responseContentFormat;

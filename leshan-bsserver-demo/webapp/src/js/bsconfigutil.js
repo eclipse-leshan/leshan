@@ -13,14 +13,13 @@
 
 // convert config from rest API format to UI format :
 // we regroup security and server data
-var configFromRestToUI = function(config) {
+var configFromRestToUI = function (config) {
   var newConfig = { dm: [], bs: [] };
   for (var i in config.security) {
     var security = config.security[i];
     if (security.bootstrapServer) {
       newConfig.bs.push({ security: security });
     } else {
-      newConfig.dm = [];
       // search for DM information;
       for (var j in config.servers) {
         var server = config.servers[j];
@@ -29,16 +28,13 @@ var configFromRestToUI = function(config) {
           server.security = security;
         }
       }
-      if (!newConfig.dm) {
-        newConfig.dm.push({ security: security });
-      }
     }
   }
   newConfig.toDelete = config.toDelete;
   newConfig.autoIdForSecurityObject = config.autoIdForSecurityObject;
   return newConfig;
 };
-var configsFromRestToUI = function(configs) {
+var configsFromRestToUI = function (configs) {
   var newConfigs = [];
   for (var endpoint in configs) {
     var config = configFromRestToUI(configs[endpoint]);
@@ -49,7 +45,7 @@ var configsFromRestToUI = function(configs) {
 };
 
 //convert config from UI to rest API format:
-var configFromUIToRest = function(c) {
+var configFromUIToRest = function (c) {
   // do a deep copy
   // we should maybe rather use cloneDeep from lodashz
   let config = JSON.parse(JSON.stringify(c));

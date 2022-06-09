@@ -18,7 +18,6 @@
 
 package org.eclipse.leshan.integration.tests.create;
 
-import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -28,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -54,10 +54,10 @@ public class CreateTest {
     @Parameters(name = "{0}")
     public static Collection<?> contentFormats() {
         return Arrays.asList(new Object[][] { //
-                                { ContentFormat.TLV }, //
-                                { ContentFormat.JSON }, //
-                                { ContentFormat.SENML_JSON }, //
-                                { ContentFormat.SENML_CBOR } });
+                { ContentFormat.TLV }, //
+                { ContentFormat.JSON }, //
+                { ContentFormat.SENML_JSON }, //
+                { ContentFormat.SENML_CBOR } });
     }
 
     private ContentFormat contentFormat;
@@ -163,31 +163,32 @@ public class CreateTest {
     @Test
     public void cannot_create_instance_without_all_required_resources() throws InterruptedException {
         // create ACL instance without any resources
-        CreateResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new CreateRequest(contentFormat, TEST_OBJECT_ID, new LwM2mObjectInstance(0, new LwM2mResource[0])));
+        CreateResponse response = helper.server.send(helper.getCurrentRegistration(), new CreateRequest(contentFormat,
+                LwM2mId.ACCESS_CONTROL, new LwM2mObjectInstance(0, new LwM2mResource[0])));
 
         // verify result
         assertEquals(ResponseCode.BAD_REQUEST, response.getCode());
         assertNotNull(response.getCoapResponse());
         assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
-        // create ACL instance with only 1 mandatory resources (1 missing)
-        CreateResponse response2 = helper.server.send(helper.getCurrentRegistration(), new CreateRequest(contentFormat,
-                TEST_OBJECT_ID,
-                new LwM2mObjectInstance(0, LwM2mSingleResource.newIntegerResource(INTEGER_MANDATORY_RESOURCE_ID, 12))));
+        // create ACL instance with only 1 mandatory resources (2 missing)
+        CreateResponse response2 = helper.server.send(helper.getCurrentRegistration(),
+                new CreateRequest(contentFormat, LwM2mId.ACCESS_CONTROL,
+                        new LwM2mObjectInstance(0, LwM2mSingleResource.newIntegerResource(LwM2mId.ACL_OBJECT_ID, 12))));
 
         // verify result
         assertEquals(ResponseCode.BAD_REQUEST, response2.getCode());
 
-        // create ACL instance
+        // create 2 ACL instances, one with missing mandatory resource and the other with all mandatory resources
         LwM2mObjectInstance instance0 = new LwM2mObjectInstance(0,
-                LwM2mSingleResource.newIntegerResource(INTEGER_MANDATORY_RESOURCE_ID, 22),
-                LwM2mSingleResource.newStringResource(STRING_MANDATORY_RESOURCE_ID, "string"));
+                LwM2mSingleResource.newIntegerResource(LwM2mId.ACL_OBJECT_ID, 22),
+                LwM2mSingleResource.newIntegerResource(LwM2mId.ACL_OBJECT_INSTANCE_ID, 22),
+                LwM2mSingleResource.newIntegerResource(LwM2mId.ACL_ACCESS_CONTROL_OWNER, 11));
         LwM2mObjectInstance instance1 = new LwM2mObjectInstance(1,
-                LwM2mSingleResource.newIntegerResource(INTEGER_MANDATORY_RESOURCE_ID, 22));
+                LwM2mSingleResource.newIntegerResource(LwM2mId.ACL_OBJECT_ID, 22));
 
         CreateResponse response3 = helper.server.send(helper.getCurrentRegistration(),
-                new CreateRequest(contentFormat, TEST_OBJECT_ID, instance0, instance1));
+                new CreateRequest(contentFormat, LwM2mId.ACCESS_CONTROL, instance0, instance1));
 
         // verify result
         assertEquals(ResponseCode.BAD_REQUEST, response3.getCode());

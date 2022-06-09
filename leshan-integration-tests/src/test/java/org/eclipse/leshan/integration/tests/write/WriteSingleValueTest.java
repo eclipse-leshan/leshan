@@ -16,7 +16,6 @@
 package org.eclipse.leshan.integration.tests.write;
 
 import static org.eclipse.leshan.core.ResponseCode.CHANGED;
-import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -27,8 +26,15 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.leshan.core.LwM2m;
 import org.eclipse.leshan.core.ResponseCode;
+import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
+import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
+import org.eclipse.leshan.core.link.lwm2m.MixedLwM2mLink;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
@@ -41,6 +47,7 @@ import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.junit.After;
@@ -57,14 +64,14 @@ public class WriteSingleValueTest {
     @Parameters(name = "{0}")
     public static Collection<?> contentFormats() {
         return Arrays.asList(new Object[][] { //
-                                { ContentFormat.TEXT }, //
-                                { ContentFormat.TLV }, //
-                                { ContentFormat.CBOR }, //
-                                { ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE) }, //
-                                { ContentFormat.JSON }, //
-                                { ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE) }, //
-                                { ContentFormat.SENML_JSON }, //
-                                { ContentFormat.SENML_CBOR } });
+                { ContentFormat.TEXT }, //
+                { ContentFormat.TLV }, //
+                { ContentFormat.CBOR }, //
+                { ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE) }, //
+                { ContentFormat.JSON }, //
+                { ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE) }, //
+                { ContentFormat.SENML_JSON }, //
+                { ContentFormat.SENML_CBOR } });
     }
 
     private ContentFormat contentFormat;
@@ -95,7 +102,7 @@ public class WriteSingleValueTest {
         // write resource
         String expectedvalue = "stringvalue";
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(contentFormat, TEST_OBJECT_ID, 0, STRING_RESOURCE_ID, expectedvalue));
+                new WriteRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.STRING_VALUE, expectedvalue));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -104,7 +111,7 @@ public class WriteSingleValueTest {
 
         // read resource to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
-                new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, STRING_RESOURCE_ID));
+                new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.STRING_VALUE));
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
         assertEquals(expectedvalue, resource.getValue());
     }
@@ -114,7 +121,7 @@ public class WriteSingleValueTest {
         // write resource
         boolean expectedvalue = true;
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(contentFormat, TEST_OBJECT_ID, 0, BOOLEAN_RESOURCE_ID, expectedvalue));
+                new WriteRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.BOOLEAN_VALUE, expectedvalue));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -123,7 +130,7 @@ public class WriteSingleValueTest {
 
         // read resource to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
-                new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, BOOLEAN_RESOURCE_ID));
+                new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.BOOLEAN_VALUE));
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
         assertEquals(expectedvalue, resource.getValue());
     }
@@ -133,7 +140,7 @@ public class WriteSingleValueTest {
         // write resource
         long expectedvalue = -999l;
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(contentFormat, TEST_OBJECT_ID, 0, INTEGER_RESOURCE_ID, expectedvalue));
+                new WriteRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.INTEGER_VALUE, expectedvalue));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -142,7 +149,7 @@ public class WriteSingleValueTest {
 
         // read resource to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
-                new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, INTEGER_RESOURCE_ID));
+                new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.INTEGER_VALUE));
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
         assertEquals(expectedvalue, resource.getValue());
     }
@@ -150,15 +157,15 @@ public class WriteSingleValueTest {
     @Test
     public void can_write_string_resource_instance() throws InterruptedException {
         write_string_resource_instance(contentFormat, 0);
-        write_string_resource_instance(contentFormat, 1);
     }
 
     private void write_string_resource_instance(ContentFormat format, int resourceInstance)
             throws InterruptedException {
         // read device model number
         String valueToWrite = "newValue";
-        WriteResponse response = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(format,
-                TEST_OBJECT_ID, 0, STRING_RESOURCE_INSTANCE_ID, resourceInstance, valueToWrite, Type.STRING));
+        WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(format, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_STRING_VALUE,
+                        resourceInstance, valueToWrite, Type.STRING));
 
         // verify result
         assertEquals(CHANGED, response.getCode());
@@ -166,8 +173,8 @@ public class WriteSingleValueTest {
         assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // read resource to check the value changed
-        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
-                new ReadRequest(format, TEST_OBJECT_ID, 0, STRING_RESOURCE_INSTANCE_ID, resourceInstance));
+        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(format,
+                TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_STRING_VALUE, resourceInstance));
 
         // verify result
         LwM2mResourceInstance resource = (LwM2mResourceInstance) readResponse.getContent();
@@ -179,7 +186,7 @@ public class WriteSingleValueTest {
         // write resource
         double expectedvalue = 999.99;
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(contentFormat, TEST_OBJECT_ID, 0, FLOAT_RESOURCE_ID, expectedvalue));
+                new WriteRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.FLOAT_VALUE, expectedvalue));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -188,7 +195,7 @@ public class WriteSingleValueTest {
 
         // read resource to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
-                new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, FLOAT_RESOURCE_ID));
+                new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.FLOAT_VALUE));
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
         assertEquals(expectedvalue, resource.getValue());
     }
@@ -198,7 +205,7 @@ public class WriteSingleValueTest {
         // write resource
         Date expectedvalue = new Date(946681000l); // second accuracy
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(contentFormat, TEST_OBJECT_ID, 0, TIME_RESOURCE_ID, expectedvalue), 100000000);
+                new WriteRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.TIME_VALUE, expectedvalue));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -207,9 +214,34 @@ public class WriteSingleValueTest {
 
         // read resource to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
-                new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, TIME_RESOURCE_ID), 100000000);
+                new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.TIME_VALUE));
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
         assertEquals(expectedvalue, resource.getValue());
+    }
+
+    @Test
+    public void write_corelnk_resource() throws InterruptedException {
+        // write resource
+        Link[] expectedvalue = new Link[3];
+        expectedvalue[0] = new MixedLwM2mLink(null, new LwM2mPath(3),
+                LwM2mAttributes.create(LwM2mAttributes.OBJECT_VERSION, new LwM2m.Version("1.2")));
+        expectedvalue[1] = new MixedLwM2mLink(null, new LwM2mPath(3, 1));
+        expectedvalue[2] = new MixedLwM2mLink(null, new LwM2mPath(3, 1, 0),
+                new QuotedStringAttribute("attr1", "attr1Value"), new UnquotedStringAttribute("attr2", "attr2Value"));
+
+        WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.CORELNK_VALUE, expectedvalue));
+
+        // verify result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+
+        // read resource to check the value changed
+        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
+                new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.CORELNK_VALUE));
+        LwM2mResource resource = (LwM2mResource) readResponse.getContent();
+        assertArrayEquals(expectedvalue, (Link[]) resource.getValue());
     }
 
     @Test
@@ -217,8 +249,8 @@ public class WriteSingleValueTest {
         // write resource
         ULong expectedvalue = ULong.valueOf("18446744073709551615"); // this unsigned integer can not be stored in a
 
-        WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(contentFormat, TEST_OBJECT_ID, 0, UNSIGNED_INTEGER_RESOURCE_ID, expectedvalue));
+        WriteResponse response = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(contentFormat,
+                TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.UNSIGNED_INTEGER_VALUE, expectedvalue));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -227,7 +259,7 @@ public class WriteSingleValueTest {
 
         // read resource to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
-                new ReadRequest(TEST_OBJECT_ID, 0, UNSIGNED_INTEGER_RESOURCE_ID));
+                new ReadRequest(TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.UNSIGNED_INTEGER_VALUE));
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
         assertEquals(expectedvalue, resource.getValue());
     }
@@ -239,8 +271,7 @@ public class WriteSingleValueTest {
 
         // Write objlnk resource
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(contentFormat, IntegrationTestHelper.TEST_OBJECT_ID, 0,
-                        IntegrationTestHelper.OBJLNK_SINGLE_INSTANCE_RESOURCE_ID, data));
+                new WriteRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_OBJLINK_VALUE, data));
 
         // Verify Write result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -248,8 +279,8 @@ public class WriteSingleValueTest {
         assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // Reading back the written OBJLNK value
-        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(
-                IntegrationTestHelper.TEST_OBJECT_ID, 0, IntegrationTestHelper.OBJLNK_SINGLE_INSTANCE_RESOURCE_ID));
+        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
+                new ReadRequest(TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_OBJLINK_VALUE));
         LwM2mSingleResource resource = (LwM2mSingleResource) readResponse.getContent();
 
         // verify read value

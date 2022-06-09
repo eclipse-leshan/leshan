@@ -16,9 +16,8 @@
 package org.eclipse.leshan.integration.tests.read;
 
 import static org.eclipse.leshan.core.ResponseCode.CONTENT;
-import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.*;
 import static org.eclipse.leshan.integration.tests.util.TestUtil.assertContentFormat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,8 +25,11 @@ import java.util.Collection;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
+import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.junit.After;
 import org.junit.Before;
@@ -43,13 +45,13 @@ public class ReadOpaqueValueTest {
     @Parameters(name = "{0}")
     public static Collection<?> contentFormats() {
         return Arrays.asList(new Object[][] { //
-                                { ContentFormat.OPAQUE }, //
-                                { ContentFormat.TEXT }, //
-                                { ContentFormat.TLV }, //
-                                { ContentFormat.CBOR }, //
-                                { ContentFormat.JSON }, //
-                                { ContentFormat.SENML_JSON }, //
-                                { ContentFormat.SENML_CBOR } });
+                { ContentFormat.OPAQUE }, //
+                { ContentFormat.TEXT }, //
+                { ContentFormat.TLV }, //
+                { ContentFormat.CBOR }, //
+                { ContentFormat.JSON }, //
+                { ContentFormat.SENML_JSON }, //
+                { ContentFormat.SENML_CBOR } });
     }
 
     private ContentFormat contentFormat;
@@ -77,9 +79,14 @@ public class ReadOpaqueValueTest {
 
     @Test
     public void can_read_empty_opaque_resource() throws InterruptedException {
+        // clear value of TEST object
+        ExecuteResponse clearResponse = helper.server.send(helper.getCurrentRegistration(),
+                new ExecuteRequest(TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.CLEAR_VALUES));
+        assertTrue(clearResponse.isSuccess());
+
         // read device model number
         ReadResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new ReadRequest(contentFormat, TEST_OBJECT_ID, 1, OPAQUE_RESOURCE_ID));
+                new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.OPAQUE_VALUE));
 
         // verify result
         assertEquals(CONTENT, response.getCode());

@@ -41,6 +41,7 @@ import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.junit.After;
 import org.junit.Before;
@@ -56,12 +57,12 @@ public class WriteMultiValueTest {
     @Parameters(name = "{0}")
     public static Collection<?> contentFormats() {
         return Arrays.asList(new Object[][] { //
-                                { ContentFormat.TLV }, //
-                                { ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE) }, //
-                                { ContentFormat.JSON }, //
-                                { ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE) }, //
-                                { ContentFormat.SENML_JSON }, //
-                                { ContentFormat.SENML_CBOR } });
+                { ContentFormat.TLV }, //
+                { ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE) }, //
+                { ContentFormat.JSON }, //
+                { ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE) }, //
+                { ContentFormat.SENML_JSON }, //
+                { ContentFormat.SENML_CBOR } });
     }
 
     private ContentFormat contentFormat;
@@ -188,9 +189,8 @@ public class WriteMultiValueTest {
         neighbourCellReport.put(2, new ObjectLink(10244, 3));
 
         // Write objlnk resource in TLV format
-        WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(contentFormat, IntegrationTestHelper.TEST_OBJECT_ID, 0,
-                        IntegrationTestHelper.OBJLNK_MULTI_INSTANCE_RESOURCE_ID, neighbourCellReport, Type.OBJLNK));
+        WriteResponse response = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(contentFormat,
+                TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_OBJLINK_VALUE, neighbourCellReport, Type.OBJLNK));
 
         // Verify Write result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -198,8 +198,8 @@ public class WriteMultiValueTest {
         assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // Reading back the written OBJLNK value
-        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(
-                IntegrationTestHelper.TEST_OBJECT_ID, 0, IntegrationTestHelper.OBJLNK_MULTI_INSTANCE_RESOURCE_ID));
+        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
+                new ReadRequest(TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_OBJLINK_VALUE));
         LwM2mMultipleResource resource = (LwM2mMultipleResource) readResponse.getContent();
 
         // verify read value
@@ -221,9 +221,8 @@ public class WriteMultiValueTest {
         values.put(10, "value10");
         values.put(20, "value20");
 
-        WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(Mode.REPLACE, contentFormat, IntegrationTestHelper.TEST_OBJECT_ID, 0,
-                        IntegrationTestHelper.STRING_RESOURCE_INSTANCE_ID, values, Type.STRING));
+        WriteResponse response = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(Mode.REPLACE,
+                contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_STRING_VALUE, values, Type.STRING));
 
         // Verify Write result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -231,8 +230,8 @@ public class WriteMultiValueTest {
         assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // read multi instance
-        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(contentFormat,
-                IntegrationTestHelper.TEST_OBJECT_ID, 0, IntegrationTestHelper.STRING_RESOURCE_INSTANCE_ID));
+        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
+                new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_STRING_VALUE));
 
         // verify result
         assertEquals(CONTENT, readResponse.getCode());
@@ -248,9 +247,8 @@ public class WriteMultiValueTest {
         Map<Integer, String> newValues = new HashMap<>();
         newValues.put(20, "value200");
         newValues.put(30, "value30");
-        response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(Mode.UPDATE, contentFormat, IntegrationTestHelper.TEST_OBJECT_ID, 0,
-                        IntegrationTestHelper.STRING_RESOURCE_INSTANCE_ID, newValues, Type.STRING));
+        response = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(Mode.UPDATE, contentFormat,
+                TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_STRING_VALUE, newValues, Type.STRING));
 
         // Verify Write result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -258,8 +256,8 @@ public class WriteMultiValueTest {
         assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // read multi instance
-        readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(contentFormat,
-                IntegrationTestHelper.TEST_OBJECT_ID, 0, IntegrationTestHelper.STRING_RESOURCE_INSTANCE_ID));
+        readResponse = helper.server.send(helper.getCurrentRegistration(),
+                new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_STRING_VALUE));
 
         // verify result
         assertEquals(CONTENT, readResponse.getCode());
@@ -275,9 +273,8 @@ public class WriteMultiValueTest {
         // --------------------------------
         newValues = new HashMap<>();
         newValues.put(1, "value1");
-        response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(Mode.REPLACE, contentFormat, IntegrationTestHelper.TEST_OBJECT_ID, 0,
-                        IntegrationTestHelper.STRING_RESOURCE_INSTANCE_ID, newValues, Type.STRING));
+        response = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(Mode.REPLACE, contentFormat,
+                TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_STRING_VALUE, newValues, Type.STRING));
 
         // Verify Write result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -285,8 +282,8 @@ public class WriteMultiValueTest {
         assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
 
         // read multi instance
-        readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(contentFormat,
-                IntegrationTestHelper.TEST_OBJECT_ID, 0, IntegrationTestHelper.STRING_RESOURCE_INSTANCE_ID));
+        readResponse = helper.server.send(helper.getCurrentRegistration(),
+                new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_STRING_VALUE));
 
         // verify result
         assertEquals(CONTENT, readResponse.getCode());

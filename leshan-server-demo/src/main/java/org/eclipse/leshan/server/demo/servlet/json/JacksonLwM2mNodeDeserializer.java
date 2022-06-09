@@ -23,6 +23,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.eclipse.leshan.core.link.LinkParseException;
+import org.eclipse.leshan.core.link.LinkParser;
+import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
@@ -45,6 +48,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 
 public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
+
+    private LinkParser linkparser = new DefaultLwM2mLinkParser();
 
     @Override
     public LwM2mNode deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
@@ -215,6 +220,16 @@ public class JacksonLwM2mNodeDeserializer extends JsonDeserializer<LwM2mNode> {
                             objectInstanceId.canConvertToInt() && objectInstanceId.canConvertToExactIntegral()) {
                         return new ObjectLink(objectId.asInt(), objectInstanceId.asInt());
                     }
+                }
+            }
+            raiseUnexpectedType(val, type, "object{objectId:integer, objectInstanceId:integer}", val.getNodeType());
+            break;
+        case CORELINK:
+            if (val.isTextual()) {
+                try {
+                    return linkparser.parseCoreLinkFormat(val.asText().getBytes());
+                } catch (LinkParseException e) {
+                    throw new IllegalArgumentException("Invalid Links: " + e.getMessage(), e);
                 }
             }
             raiseUnexpectedType(val, type, "object{objectId:integer, objectInstanceId:integer}", val.getNodeType());

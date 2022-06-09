@@ -42,6 +42,7 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteCompositeResponse;
+import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.integration.tests.observe.TestObservationListener;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.junit.After;
@@ -58,8 +59,8 @@ public class WriteCompositeTest {
     @Parameters(name = "{0}")
     public static Collection<?> contentFormats() {
         return Arrays.asList(new Object[][] { //
-                                { ContentFormat.SENML_JSON }, //
-                                { ContentFormat.SENML_CBOR } });
+                { ContentFormat.SENML_JSON }, //
+                { ContentFormat.SENML_CBOR } });
     }
 
     private ContentFormat contentFormat;
@@ -111,8 +112,8 @@ public class WriteCompositeTest {
     public void can_write_resource_and_instance() throws InterruptedException {
         // create value
         LwM2mSingleResource utcOffset = LwM2mSingleResource.newStringResource(14, "+02");
-        LwM2mPath resourceInstancePath = new LwM2mPath(IntegrationTestHelper.TEST_OBJECT_ID, 0,
-                IntegrationTestHelper.STRING_RESOURCE_INSTANCE_ID, 100);
+        LwM2mPath resourceInstancePath = new LwM2mPath(TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_STRING_VALUE,
+                0);
         LwM2mResourceInstance testStringResourceInstance = LwM2mResourceInstance
                 .newStringInstance(resourceInstancePath.getResourceInstanceId(), "test_string_instance");
 
@@ -141,8 +142,8 @@ public class WriteCompositeTest {
     @Test
     public void can_add_resource_instances() throws InterruptedException {
         // Prepare node
-        LwM2mPath resourceInstancePath = new LwM2mPath(IntegrationTestHelper.TEST_OBJECT_ID, 0,
-                IntegrationTestHelper.STRING_RESOURCE_INSTANCE_ID, 100);
+        LwM2mPath resourceInstancePath = new LwM2mPath(TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_STRING_VALUE,
+                1);
         LwM2mResourceInstance testStringResourceInstance = LwM2mResourceInstance
                 .newStringInstance(resourceInstancePath.getResourceInstanceId(), "test_string_instance");
         Map<LwM2mPath, LwM2mNode> nodes = new HashMap<>();
@@ -161,7 +162,7 @@ public class WriteCompositeTest {
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
                 new ReadRequest(contentFormat, resourceInstancePath.toResourcePath(), null));
         LwM2mMultipleResource multiResource = (LwM2mMultipleResource) readResponse.getContent();
-        assertEquals(3, multiResource.getInstances().size());
+        assertEquals(2, multiResource.getInstances().size());
         assertEquals(testStringResourceInstance,
                 multiResource.getInstance(resourceInstancePath.getResourceInstanceId()));
     }

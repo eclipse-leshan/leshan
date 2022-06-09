@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.leshan.core.link.DefaultLinkSerializer;
+import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -49,9 +52,15 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeSenMLEncoder.class);
 
     private final SenMLEncoder encoder;
+    private final LinkSerializer linkSerializer;
 
     public LwM2mNodeSenMLEncoder(SenMLEncoder encoder) {
+        this(encoder, new DefaultLinkSerializer());
+    }
+
+    public LwM2mNodeSenMLEncoder(SenMLEncoder encoder, LinkSerializer linkSerializer) {
         this.encoder = encoder;
+        this.linkSerializer = linkSerializer;
     }
 
     @Override
@@ -185,7 +194,7 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
         }
     }
 
-    private static class InternalEncoder implements LwM2mNodeVisitor {
+    private class InternalEncoder implements LwM2mNodeVisitor {
         // visitor inputs
         private int objectId;
         private LwM2mModel model;
@@ -341,6 +350,10 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
                     throw new CodecException(e, "Invalid value [%s] for objectLink resource [%s] ", value,
                             resourcePath);
                 }
+                break;
+
+            case CORELINK:
+                record.setStringValue(linkSerializer.serializeCoreLinkFormat((Link[]) value));
                 break;
             default:
                 throw new CodecException("Invalid value type %s for %s", type, resourcePath);

@@ -35,12 +35,12 @@ import org.eclipse.californium.elements.Connector;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
 import org.eclipse.leshan.client.object.Device;
+import org.eclipse.leshan.client.object.LwM2mTestObject;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
-import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.link.DefaultLinkSerializer;
@@ -48,9 +48,6 @@ import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.model.ObjectModel;
-import org.eclipse.leshan.core.model.ResourceModel;
-import org.eclipse.leshan.core.model.ResourceModel.Operations;
-import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
@@ -58,6 +55,7 @@ import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.request.argument.Arguments;
 import org.eclipse.leshan.core.response.ExecuteResponse;
+import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.server.californium.LeshanServer;
 import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.model.VersionedModelProvider;
@@ -77,25 +75,8 @@ public class IntegrationTestHelper {
     public static final String MODEL_NUMBER = "IT-TEST-123";
     public static final long LIFETIME = 2;
 
-    public static final int TEST_OBJECT_ID = 2000;
-    public static final int STRING_RESOURCE_ID = 0;
-    public static final int BOOLEAN_RESOURCE_ID = 1;
-    public static final int INTEGER_RESOURCE_ID = 2;
-    public static final int FLOAT_RESOURCE_ID = 3;
-    public static final int TIME_RESOURCE_ID = 4;
-    public static final int OPAQUE_RESOURCE_ID = 5;
-    public static final int OBJLNK_MULTI_INSTANCE_RESOURCE_ID = 6;
-    public static final int OBJLNK_SINGLE_INSTANCE_RESOURCE_ID = 7;
-    public static final int INTEGER_MANDATORY_RESOURCE_ID = 8;
-    public static final int STRING_MANDATORY_RESOURCE_ID = 9;
-    public static final int STRING_RESOURCE_INSTANCE_ID = 65010;
-    public static final int UNSIGNED_INTEGER_RESOURCE_ID = 11;
-    public static final int OPAQUE_MULTI_INSTANCE_RESOURCE_ID = 12;
-
     public static final LinkParser linkParser = new DefaultLwM2mLinkParser();
     public static final LinkSerializer linkSerializer = new DefaultLinkSerializer();
-
-    public static final String MULTI_INSTANCE = "multiinstance";
 
     public LeshanServer server;
     public LeshanClient client;
@@ -112,40 +93,6 @@ public class IntegrationTestHelper {
     public List<ObjectModel> createObjectModels() {
         // load default object from the spec
         List<ObjectModel> objectModels = TestObjectLoader.loadDefaultObject();
-
-        // define custom model for testing purpose
-        ResourceModel stringfield = new ResourceModel(STRING_RESOURCE_ID, "stringres", Operations.RW, false, false,
-                Type.STRING, null, null, null);
-        ResourceModel booleanfield = new ResourceModel(BOOLEAN_RESOURCE_ID, "booleanres", Operations.RW, false, false,
-                Type.BOOLEAN, null, null, null);
-        ResourceModel integerfield = new ResourceModel(INTEGER_RESOURCE_ID, "integerres", Operations.RW, false, false,
-                Type.INTEGER, null, null, null);
-        ResourceModel floatfield = new ResourceModel(FLOAT_RESOURCE_ID, "floatres", Operations.RW, false, false,
-                Type.FLOAT, null, null, null);
-        ResourceModel timefield = new ResourceModel(TIME_RESOURCE_ID, "timeres", Operations.RW, false, false, Type.TIME,
-                null, null, null);
-        ResourceModel opaquefield = new ResourceModel(OPAQUE_RESOURCE_ID, "opaque", Operations.RW, false, false,
-                Type.OPAQUE, null, null, null);
-        ResourceModel objlnkfield = new ResourceModel(OBJLNK_MULTI_INSTANCE_RESOURCE_ID, "objlnk", Operations.RW, true,
-                false, Type.OBJLNK, null, null, null);
-        ResourceModel objlnkSinglefield = new ResourceModel(OBJLNK_SINGLE_INSTANCE_RESOURCE_ID, "objlnk", Operations.RW,
-                false, false, Type.OBJLNK, null, null, null);
-        ResourceModel integermandatoryfield = new ResourceModel(INTEGER_MANDATORY_RESOURCE_ID, "integermandatory",
-                Operations.RW, false, true, Type.INTEGER, null, null, null);
-        ResourceModel stringmandatoryfield = new ResourceModel(STRING_MANDATORY_RESOURCE_ID, "stringmandatory",
-                Operations.RW, false, true, Type.STRING, null, null, null);
-        ResourceModel multiInstance = new ResourceModel(STRING_RESOURCE_INSTANCE_ID, MULTI_INSTANCE, Operations.RW,
-                true, false, Type.STRING, null, null, null);
-        ResourceModel unsignedintegerfield = new ResourceModel(UNSIGNED_INTEGER_RESOURCE_ID, "unsigned", Operations.RW,
-                false, false, Type.UNSIGNED_INTEGER, null, null, null);
-
-        ResourceModel opaqueMultiField = new ResourceModel(OPAQUE_MULTI_INSTANCE_RESOURCE_ID, "opaque_multi",
-                Operations.RW, true, false, Type.OPAQUE, null, null, null);
-
-        objectModels.add(new ObjectModel(TEST_OBJECT_ID, "testobject", null, ObjectModel.DEFAULT_VERSION, true, false,
-                stringfield, booleanfield, integerfield, floatfield, timefield, opaquefield, objlnkfield,
-                objlnkSinglefield, integermandatoryfield, stringmandatoryfield, multiInstance, unsignedintegerfield,
-                opaqueMultiField));
 
         return objectModels;
     }
@@ -199,8 +146,7 @@ public class IntegrationTestHelper {
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new TestDevice("Eclipse Leshan", MODEL_NUMBER, "12345"));
         initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);
-        initializer.setInstancesForObject(TEST_OBJECT_ID, new DummyInstanceEnabler(0),
-                new SimpleInstanceEnabler(1, OPAQUE_RESOURCE_ID, new byte[0]));
+        initializer.setInstancesForObject(TestLwM2mId.TEST_OBJECT, new LwM2mTestObject());
         List<LwM2mObjectEnabler> objects = initializer.createAll();
 
         // Build Client

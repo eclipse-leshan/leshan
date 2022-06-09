@@ -50,6 +50,12 @@ public interface LwM2mId {
     public static final int SRV_LIFETIME = 1;
     public static final int SRV_BINDING = 7;
 
+    /* ACCESS CONTROL RESOURCES */
+    public static final int ACL_OBJECT_ID = 0;
+    public static final int ACL_OBJECT_INSTANCE_ID = 1;
+    public static final int ACL_ACL = 2;
+    public static final int ACL_ACCESS_CONTROL_OWNER = 3;
+
     /* DEVICE RESOURCES */
 
     public static final int DVC_SUPPORTED_BINDING = 16;

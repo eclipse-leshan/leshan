@@ -26,6 +26,13 @@ import java.util.Random;
 
 import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.attributes.Attribute;
+import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
+import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
+import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
+import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
+import org.eclipse.leshan.core.link.lwm2m.MixedLwM2mLink;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
@@ -49,6 +56,16 @@ import org.slf4j.LoggerFactory;
 public class LwM2mTestObject extends SimpleInstanceEnabler {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mTestObject.class);
 
+    public static final String INITIAL_STRING_VALUE = "initial value";
+    public static final Long INITIAL_INTEGER_VALUE = 64l;
+    public static final ULong INITIAL_UNSIGNED_INTEGER_VALUE = ULong.valueOf("9223372036854775808");
+    public static final Double INITIAL_FLOAT_VALUE = 3.14159d;
+    public static final Boolean INITIAL_BOOLEAN_VALUE = true;
+    public static final byte[] INITIAL_OPAQUE_VALUE = Hex.decodeHex("0123456789ABCDEF".toCharArray());
+    public static final Date INITIAL_TIME_VALUE = new Date(946684800000l);
+    public static final ObjectLink INITIAL_OBJLINK_VALUE = new ObjectLink(3, 0);
+    public static final Link[] INITIAL_CORELINK_VALUE = new Link[] { new LwM2mLink(null, new LwM2mPath(3442)) };
+
     private Random random = new Random(System.currentTimeMillis());
 
     public LwM2mTestObject() {
@@ -59,26 +76,26 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
         initialValues.put(6, Collections.EMPTY_MAP);
 
         // single
-        initialValues.put(110, "initial value");
-        initialValues.put(120, 64l);
-        initialValues.put(125, ULong.valueOf("9223372036854775808"));
-        initialValues.put(130, 3.14159d);
-        initialValues.put(140, true);
-        initialValues.put(150, Hex.decodeHex("0123456789ABCDEF".toCharArray()));
-        initialValues.put(160, new Date(946684800000l));
-        initialValues.put(170, new ObjectLink(3, 0));
+        initialValues.put(110, INITIAL_STRING_VALUE);
+        initialValues.put(120, INITIAL_INTEGER_VALUE);
+        initialValues.put(125, INITIAL_UNSIGNED_INTEGER_VALUE);
+        initialValues.put(130, INITIAL_FLOAT_VALUE);
+        initialValues.put(140, INITIAL_BOOLEAN_VALUE);
+        initialValues.put(150, INITIAL_OPAQUE_VALUE);
+        initialValues.put(160, INITIAL_TIME_VALUE);
+        initialValues.put(170, INITIAL_OBJLINK_VALUE);
+        initialValues.put(180, INITIAL_CORELINK_VALUE);
 
         // multi
-        initialValues.put(1110, LwM2mResourceInstance.newStringInstance(0, "initial value"));
-        initialValues.put(1120, LwM2mResourceInstance.newIntegerInstance(0, 64l));
-        initialValues.put(1125,
-                LwM2mResourceInstance.newUnsignedIntegerInstance(0, ULong.valueOf("9223372036854775808")));
-        initialValues.put(1130, LwM2mResourceInstance.newFloatInstance(0, 3.14159d));
-        initialValues.put(1140, LwM2mResourceInstance.newBooleanInstance(0, true));
-        initialValues.put(1150,
-                LwM2mResourceInstance.newBinaryInstance(0, Hex.decodeHex("0123456789ABCDEF".toCharArray())));
-        initialValues.put(1160, LwM2mResourceInstance.newDateInstance(0, new Date(946684800000l)));
-        initialValues.put(1170, LwM2mResourceInstance.newObjectLinkInstance(0, new ObjectLink(3, 0)));
+        initialValues.put(1110, LwM2mResourceInstance.newStringInstance(0, INITIAL_STRING_VALUE));
+        initialValues.put(1120, LwM2mResourceInstance.newIntegerInstance(0, INITIAL_INTEGER_VALUE));
+        initialValues.put(1125, LwM2mResourceInstance.newUnsignedIntegerInstance(0, INITIAL_UNSIGNED_INTEGER_VALUE));
+        initialValues.put(1130, LwM2mResourceInstance.newFloatInstance(0, INITIAL_FLOAT_VALUE));
+        initialValues.put(1140, LwM2mResourceInstance.newBooleanInstance(0, INITIAL_BOOLEAN_VALUE));
+        initialValues.put(1150, LwM2mResourceInstance.newBinaryInstance(0, INITIAL_OPAQUE_VALUE));
+        initialValues.put(1160, LwM2mResourceInstance.newDateInstance(0, INITIAL_TIME_VALUE));
+        initialValues.put(1170, LwM2mResourceInstance.newObjectLinkInstance(0, INITIAL_OBJLINK_VALUE));
+        initialValues.put(1180, LwM2mResourceInstance.newCoreLinkInstance(0, INITIAL_CORELINK_VALUE));
     }
 
     private void clearValues() {
@@ -96,6 +113,7 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
         clearedValues.put(150, new byte[0]);
         clearedValues.put(160, new Date(0l));
         clearedValues.put(170, new ObjectLink());
+        clearedValues.put(180, new Link[0]);
 
         // multi
         clearedValues.put(1110, Collections.EMPTY_MAP);
@@ -106,6 +124,7 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
         clearedValues.put(1150, Collections.EMPTY_MAP);
         clearedValues.put(1160, Collections.EMPTY_MAP);
         clearedValues.put(1170, Collections.EMPTY_MAP);
+        clearedValues.put(1180, Collections.EMPTY_MAP);
 
         fireResourcesChange(applyValues(clearedValues));
     }
@@ -128,6 +147,7 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
         randomValues.put(150, new BytesGenerator().generate());
         randomValues.put(160, new DateGenerator().generate());
         randomValues.put(170, new ObjectLinkGenerator().generate());
+        randomValues.put(180, new CoreLinkGenerator().generate());
 
         // multi
         randomValues.put(1110, generateResourceInstances(new StringGenerator()));
@@ -138,6 +158,7 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
         randomValues.put(1150, generateResourceInstances(new BytesGenerator()));
         randomValues.put(1160, generateResourceInstances(new DateGenerator()));
         randomValues.put(1170, generateResourceInstances(new ObjectLinkGenerator()));
+        randomValues.put(1180, generateResourceInstances(new CoreLinkGenerator()));
 
         fireResourcesChange(applyValues(randomValues));
     }
@@ -314,6 +335,69 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
         @Override
         public ObjectLink generate() {
             return new ObjectLink(random.nextInt(ObjectLink.MAXID - 1), random.nextInt(ObjectLink.MAXID - 1));
+        }
+    }
+
+    class CoreLinkGenerator implements ValueGenerator<Link[]> {
+
+        private LwM2mPath generatePath() {
+            int dice4Value = random.nextInt(4);
+            switch (dice4Value) {
+            case 0:
+                return new LwM2mPath(random.nextInt(ObjectLink.MAXID - 1));
+            case 1:
+                return new LwM2mPath(random.nextInt(ObjectLink.MAXID - 1), random.nextInt(ObjectLink.MAXID - 1));
+            case 2:
+                return new LwM2mPath(random.nextInt(ObjectLink.MAXID - 1), random.nextInt(ObjectLink.MAXID - 1),
+                        random.nextInt(ObjectLink.MAXID - 1));
+            case 3:
+                return new LwM2mPath(random.nextInt(ObjectLink.MAXID - 1), random.nextInt(ObjectLink.MAXID - 1),
+                        random.nextInt(ObjectLink.MAXID - 1), random.nextInt(ObjectLink.MAXID - 1));
+            }
+            return null; // should not happened
+        }
+
+        private Attribute[] generateAttributes() {
+            int nbAttributes = random.nextInt(3);
+            Map<String, Attribute> attributes = new HashMap<>(nbAttributes);
+            for (int i = 0; i < nbAttributes; i++) {
+                int dice2value = random.nextInt(2);
+                Attribute attr = null;
+                switch (dice2value) {
+                case 0:
+                    attr = new QuotedStringAttribute(RandomStringUtils.randomAlphabetic(random.nextInt(5) + 1),
+                            RandomStringUtils.randomAlphanumeric(random.nextInt(5) + 1));
+                    break;
+                case 1:
+                    attr = new UnquotedStringAttribute(RandomStringUtils.randomAlphabetic(random.nextInt(5) + 1),
+                            RandomStringUtils.randomAlphanumeric(random.nextInt(5) + 1));
+                    break;
+                }
+                attributes.put(attr.getName(), attr);
+            }
+            return attributes.values().toArray(new Attribute[attributes.size()]);
+        }
+
+        @Override
+        public Link[] generate() {
+            // define if root path is used or not
+            String rootpath = random.nextInt(4) == 0 ? "/" + RandomStringUtils.randomAlphanumeric(random.nextInt(4) + 1)
+                    : null;
+
+            // define number of link
+            int nbLink = random.nextInt(10);
+            // create links
+            Link[] links = new Link[nbLink];
+            for (int i = 0; i < links.length; i++) {
+                // when there is a rootpath first link has oma attribute
+                if (rootpath != null && i == 0) {
+                    links[i] = new MixedLwM2mLink(rootpath, LwM2mPath.ROOTPATH, new ResourceTypeAttribute("oma.lwm2m"));
+                } else {
+                    // generate random link with random path and attributes
+                    links[i] = new MixedLwM2mLink(rootpath, generatePath(), generateAttributes());
+                }
+            }
+            return links;
         }
     }
 }

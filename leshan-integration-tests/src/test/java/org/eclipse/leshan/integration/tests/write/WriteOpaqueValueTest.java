@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.write;
 
-import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -36,6 +35,7 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.junit.After;
 import org.junit.Before;
@@ -51,15 +51,15 @@ public class WriteOpaqueValueTest {
     @Parameters(name = "{0}")
     public static Collection<?> contentFormats() {
         return Arrays.asList(new Object[][] { //
-                                { ContentFormat.OPAQUE }, //
-                                { ContentFormat.TEXT }, //
-                                { ContentFormat.TLV }, //
-                                { ContentFormat.CBOR }, //
-                                { ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE) }, //
-                                { ContentFormat.JSON }, //
-                                { ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE) }, //
-                                { ContentFormat.SENML_JSON }, //
-                                { ContentFormat.SENML_CBOR } });
+                { ContentFormat.OPAQUE }, //
+                { ContentFormat.TEXT }, //
+                { ContentFormat.TLV }, //
+                { ContentFormat.CBOR }, //
+                { ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE) }, //
+                { ContentFormat.JSON }, //
+                { ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE) }, //
+                { ContentFormat.SENML_JSON }, //
+                { ContentFormat.SENML_CBOR } });
     }
 
     private ContentFormat contentFormat;
@@ -90,7 +90,7 @@ public class WriteOpaqueValueTest {
         // write resource
         byte[] expectedvalue = new byte[] { 1, 2, 3 };
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(contentFormat, TEST_OBJECT_ID, 0, OPAQUE_RESOURCE_ID, expectedvalue));
+                new WriteRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.OPAQUE_VALUE, expectedvalue));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -99,7 +99,7 @@ public class WriteOpaqueValueTest {
 
         // read resource to check the value changed
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
-                new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, OPAQUE_RESOURCE_ID));
+                new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.OPAQUE_VALUE));
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
         assertArrayEquals(expectedvalue, (byte[]) resource.getValue());
     }
@@ -114,7 +114,7 @@ public class WriteOpaqueValueTest {
         values.put(3, secondExpectedvalue);
 
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(ContentFormat.TLV,
-                TEST_OBJECT_ID, 0, OPAQUE_MULTI_INSTANCE_RESOURCE_ID, values, Type.OPAQUE));
+                TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_OPAQUE_VALUE, values, Type.OPAQUE));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -123,20 +123,20 @@ public class WriteOpaqueValueTest {
 
         // read first instance using parameter content format
         ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
-                new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, OPAQUE_MULTI_INSTANCE_RESOURCE_ID, 2));
+                new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_OPAQUE_VALUE, 2));
         LwM2mResourceInstance resource = (LwM2mResourceInstance) readResponse.getContent();
         assertArrayEquals(firstExpectedvalue, (byte[]) resource.getValue());
 
         // read second instance using parameter content format
         readResponse = helper.server.send(helper.getCurrentRegistration(),
-                new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, OPAQUE_MULTI_INSTANCE_RESOURCE_ID, 3));
+                new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_OPAQUE_VALUE, 3));
         resource = (LwM2mResourceInstance) readResponse.getContent();
         assertArrayEquals(secondExpectedvalue, (byte[]) resource.getValue());
 
         // write second resource instance using parameter content format
         byte[] newExpectedvalue = new byte[] { 7, 8, 9, 10 };
-        response = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(contentFormat, TEST_OBJECT_ID,
-                0, OPAQUE_MULTI_INSTANCE_RESOURCE_ID, 3, newExpectedvalue, Type.OPAQUE));
+        response = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(contentFormat,
+                TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_OPAQUE_VALUE, 3, newExpectedvalue, Type.OPAQUE));
 
         // verify result
         assertEquals(ResponseCode.CHANGED, response.getCode());
@@ -145,7 +145,7 @@ public class WriteOpaqueValueTest {
 
         // read second instance using parameter content format
         readResponse = helper.server.send(helper.getCurrentRegistration(),
-                new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, OPAQUE_MULTI_INSTANCE_RESOURCE_ID, 3));
+                new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_OPAQUE_VALUE, 3));
         resource = (LwM2mResourceInstance) readResponse.getContent();
         assertArrayEquals(newExpectedvalue, (byte[]) resource.getValue());
     }

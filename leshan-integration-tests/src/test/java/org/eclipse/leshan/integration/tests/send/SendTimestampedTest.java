@@ -26,12 +26,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
+import org.eclipse.leshan.client.object.LwM2mTestObject;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
-import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -43,6 +43,7 @@ import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.eclipse.leshan.integration.tests.util.SynchronousSendListener;
 import org.junit.After;
@@ -101,13 +102,13 @@ public class SendTimestampedTest {
     }
 
     private static LwM2mPath getExamplePath() {
-        return new LwM2mPath("/2000/1/3");
+        return new LwM2mPath(TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.FLOAT_VALUE);
     }
 
     private static Map<Long, LwM2mNode> getExampleTimestampedNodes() {
         Map<Long, LwM2mNode> timestampedNodes = new HashMap<>();
-        timestampedNodes.put(268435456L, LwM2mSingleResource.newFloatResource(3, 12345));
-        timestampedNodes.put(268435457L, LwM2mSingleResource.newFloatResource(3, 67890));
+        timestampedNodes.put(268435456L, LwM2mSingleResource.newFloatResource(130, 12345));
+        timestampedNodes.put(268435457L, LwM2mSingleResource.newFloatResource(130, 67890));
         return timestampedNodes;
     }
 
@@ -127,8 +128,7 @@ public class SendTimestampedTest {
             initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME));
             initializer.setInstancesForObject(LwM2mId.DEVICE, new TestDevice("Eclipse Leshan", MODEL_NUMBER, "12345"));
             initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);
-            initializer.setInstancesForObject(TEST_OBJECT_ID, new DummyInstanceEnabler(0),
-                    new SimpleInstanceEnabler(1, FLOAT_RESOURCE_ID, 12345d));
+            initializer.setInstancesForObject(TestLwM2mId.TEST_OBJECT, new LwM2mTestObject());
             List<LwM2mObjectEnabler> objects = initializer.createAll();
 
             // Build Client
@@ -150,8 +150,8 @@ public class SendTimestampedTest {
         @Override
         public byte[] encodeTimestampedNodes(TimestampedLwM2mNodes timestampedNodes, ContentFormat format,
                 LwM2mModel model) {
-            return ("[{\"bn\":\"/2000/1/\",\"n\":\"3\",\"v\":12345,\"t\":268435456},"
-                    + "{\"n\":\"3\",\"v\":67890,\"t\":268435457}]").getBytes(StandardCharsets.UTF_8);
+            return ("[{\"bn\":\"/3442/0/\",\"n\":\"130\",\"v\":12345,\"t\":268435456},"
+                    + "{\"n\":\"130\",\"v\":67890,\"t\":268435457}]").getBytes(StandardCharsets.UTF_8);
         }
     }
 }

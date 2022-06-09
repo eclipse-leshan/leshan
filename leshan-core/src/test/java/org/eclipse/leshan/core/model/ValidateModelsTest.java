@@ -17,6 +17,7 @@ package org.eclipse.leshan.core.model;
 
 import java.io.IOException;
 
+import org.eclipse.leshan.core.util.TestObjectLoader;
 import org.junit.Test;
 
 public class ValidateModelsTest {
@@ -24,5 +25,10 @@ public class ValidateModelsTest {
     @Test
     public void validate_embedded_models() throws InvalidModelException, InvalidDDFFileException, IOException {
         ObjectLoader.loadDdfResources("/models/", ObjectLoader.ddfpaths, true);
+    }
+
+    @Test
+    public void validate_test_models() throws InvalidModelException, InvalidDDFFileException, IOException {
+        ObjectLoader.loadDdfResources("/models/", TestObjectLoader.ddfpaths, true);
     }
 }

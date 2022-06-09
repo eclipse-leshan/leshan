@@ -16,18 +16,19 @@
 package org.eclipse.leshan.integration.tests.read;
 
 import static org.eclipse.leshan.core.ResponseCode.*;
-import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.*;
 import static org.eclipse.leshan.integration.tests.util.TestUtil.assertContentFormat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.eclipse.leshan.client.object.LwM2mTestObject;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.junit.After;
 import org.junit.Before;
@@ -43,12 +44,12 @@ public class ReadSingleValueTest {
     @Parameters(name = "{0}")
     public static Collection<?> contentFormats() {
         return Arrays.asList(new Object[][] { //
-                                { ContentFormat.TEXT }, //
-                                { ContentFormat.TLV }, //
-                                { ContentFormat.CBOR }, //
-                                { ContentFormat.JSON }, //
-                                { ContentFormat.SENML_JSON }, //
-                                { ContentFormat.SENML_CBOR } });
+                { ContentFormat.TEXT }, //
+                { ContentFormat.TLV }, //
+                { ContentFormat.CBOR }, //
+                { ContentFormat.JSON }, //
+                { ContentFormat.SENML_JSON }, //
+                { ContentFormat.SENML_CBOR } });
     }
 
     private ContentFormat contentFormat;
@@ -92,9 +93,9 @@ public class ReadSingleValueTest {
 
     @Test
     public void can_read_resource_instance() throws InterruptedException {
-        // read device model number
+        // read resource instance
         ReadResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, STRING_RESOURCE_INSTANCE_ID, 0));
+                new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_STRING_VALUE, 0));
 
         // verify result
         assertEquals(CONTENT, response.getCode());
@@ -102,14 +103,14 @@ public class ReadSingleValueTest {
 
         LwM2mResourceInstance resourceInstance = (LwM2mResourceInstance) response.getContent();
         assertEquals(0, resourceInstance.getId());
-        assertEquals(MULTI_INSTANCE, resourceInstance.getValue());
+        assertEquals(LwM2mTestObject.INITIAL_STRING_VALUE, resourceInstance.getValue());
     }
 
     @Test
     public void cannot_read_non_multiple_resource_instance() throws InterruptedException {
-        // read device model number
+        // read single instance resource
         ReadResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new ReadRequest(contentFormat, TEST_OBJECT_ID, 0, INTEGER_RESOURCE_ID, 0));
+                new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.INTEGER_VALUE, 0));
 
         // verify result
         assertEquals(BAD_REQUEST, response.getCode());

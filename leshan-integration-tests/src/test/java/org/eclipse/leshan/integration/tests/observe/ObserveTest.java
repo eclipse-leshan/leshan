@@ -19,7 +19,6 @@
 
 package org.eclipse.leshan.integration.tests.observe;
 
-import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -49,6 +48,7 @@ import org.eclipse.leshan.core.response.CancelObservationResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.junit.After;
 import org.junit.Before;
@@ -116,7 +116,7 @@ public class ObserveTest {
         helper.server.getObservationService().addListener(listener);
 
         // multi instance string
-        String expectedPath = "/" + TEST_OBJECT_ID + "/0/" + STRING_RESOURCE_INSTANCE_ID + "/0";
+        String expectedPath = "/" + TestLwM2mId.TEST_OBJECT + "/0/" + TestLwM2mId.MULTIPLE_STRING_VALUE + "/0";
         ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(),
                 new ObserveRequest(expectedPath));
         assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
@@ -152,7 +152,7 @@ public class ObserveTest {
         helper.server.getObservationService().addListener(listener);
 
         // multi instance string
-        String expectedPath = "/" + TEST_OBJECT_ID + "/0/" + STRING_RESOURCE_INSTANCE_ID + "/0";
+        String expectedPath = "/" + TestLwM2mId.TEST_OBJECT + "/0/" + TestLwM2mId.MULTIPLE_STRING_VALUE + "/0";
         ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(),
                 new ObserveRequest(expectedPath));
         assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
@@ -202,7 +202,7 @@ public class ObserveTest {
         helper.server.getObservationService().addListener(listener);
 
         // multi instance string
-        String expectedPath = "/" + TEST_OBJECT_ID + "/0/" + STRING_RESOURCE_INSTANCE_ID + "/0";
+        String expectedPath = "/" + TestLwM2mId.TEST_OBJECT + "/0/" + TestLwM2mId.MULTIPLE_STRING_VALUE + "/0";
         ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(),
                 new ObserveRequest(expectedPath));
         assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
