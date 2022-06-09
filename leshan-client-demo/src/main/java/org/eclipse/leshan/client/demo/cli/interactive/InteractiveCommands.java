@@ -44,7 +44,7 @@ import picocli.CommandLine.ParentCommand;
  * Interactive commands for the Leshan Client Demo
  */
 @Command(name = "",
-         description = "@|bold,underline Leshan Client Demo Interactive Console :|@%n",
+         description = "@|bold Leshan Client Demo Interactive Console :|@%n",
          footer = { "%n@|italic Press Ctl-C to exit.|@%n" },
          subcommands = { HelpCommand.class, ListCommand.class, CreateCommand.class, DeleteCommand.class, UpdateCommand.class,
                  SendCommand.class, MoveCommand.class },
@@ -73,7 +73,7 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
     @Command(name = "list", description = "List available Objects, Instances and Resources", headerHeading = "%n", footer = "")
     static class ListCommand implements Runnable {
 
-        @Parameters(description = "List of resources for given LwM2M object id", index = "0", arity = "0..1")
+        @Parameters(description = "Id of the object, if no value is specified all available objects will be listed.", index = "0", arity = "0..1")
         private Integer id;
 
         @ParentCommand
@@ -83,8 +83,8 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
         public void run() {
             LwM2mObjectTree objectTree = parent.client.getObjectTree();
             if (objectTree == null) {
-                parent.out.printf("no object.%n");
-                parent.out.flush();
+                parent.printf("no object.%n");
+                parent.flush();
                 return;
             }
             objectTree.getObjectEnablers().forEach((objectId, objectValue) -> {
@@ -93,15 +93,15 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
                 }
                 ObjectModel objectModel = objectValue.getObjectModel();
                 objectValue.getAvailableInstanceIds().forEach(instance -> {
-                    parent.out.printf("/%d/%d : %s%n", objectId, instance, objectModel.name);
+                    parent.printfAnsi("@|bold,fg(magenta) /%d/%d : |@ @|bold,fg(green) %s |@ %n", objectId, instance, objectModel.name);
                     List<Integer> availableResources = objectValue.getAvailableResourceIds(instance);
                     availableResources.forEach(resourceId -> {
                         ResourceModel resourceModel = objectModel.resources.get(resourceId);
-                        parent.out.printf("  /%d : %s%n", resourceId, resourceModel.name);
+                        parent.printfAnsi("  /%d : @|bold,fg(cyan) %s |@ %n", resourceId, resourceModel.name);
                     });
                 });
             });
-            parent.out.flush();
+            parent.flush();
         }
     }
 

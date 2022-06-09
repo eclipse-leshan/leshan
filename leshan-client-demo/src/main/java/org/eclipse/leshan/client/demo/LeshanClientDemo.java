@@ -52,6 +52,7 @@ import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
+import org.fusesource.jansi.AnsiConsole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,6 +76,10 @@ public class LeshanClientDemo {
 
     public static void main(String[] args) {
 
+        // Enable colors if OS is Windows
+        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+            AnsiConsole.systemInstall();
+        }
         // Parse command line
         LeshanClientDemoCLI cli = new LeshanClientDemoCLI();
         CommandLine command = new CommandLine(cli).setParameterExceptionHandler(new ShortErrorMessageHandler());
