@@ -7,11 +7,13 @@ import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.demo.MyLocation;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.CreateCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.DeleteCommand;
+import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.ListCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.MoveCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.SendCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.UpdateCommand;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.servers.ServerIdentity;
@@ -23,6 +25,7 @@ import org.eclipse.leshan.core.demo.cli.converters.VersionConverter;
 import org.eclipse.leshan.core.demo.cli.interactive.JLineInteractiveCommands;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.response.ErrorCallback;
@@ -43,8 +46,8 @@ import picocli.CommandLine.ParentCommand;
 @Command(name = "",
          description = "@|bold,underline Leshan Client Demo Interactive Console :|@%n",
          footer = { "%n@|italic Press Ctl-C to exit.|@%n" },
-         subcommands = { HelpCommand.class, CreateCommand.class, DeleteCommand.class, UpdateCommand.class,
-                 SendCommand.class, MoveCommand.class },
+         subcommands = { HelpCommand.class, ListCommand.class, CreateCommand.class, DeleteCommand.class,
+                 UpdateCommand.class, SendCommand.class, MoveCommand.class },
          customSynopsis = { "" },
          synopsisHeading = "")
 public class InteractiveCommands extends JLineInteractiveCommands implements Runnable {
@@ -62,6 +65,64 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
     @Override
     public void run() {
         printUsageMessage();
+    }
+
+    /**
+     * A command to list objects.
+     */
+    @Command(name = "list",
+             description = "List available Objects, Instances and Resources",
+             headerHeading = "%n",
+             footer = "")
+    static class ListCommand implements Runnable {
+
+        @Parameters(description = "Id of the object, if no value is specified all available objects will be listed.",
+                    index = "0",
+                    arity = "0..1")
+        private Integer objectId;
+
+        @ParentCommand
+        InteractiveCommands parent;
+
+        @Override
+        public void run() {
+            LwM2mObjectTree objectTree = parent.client.getObjectTree();
+            if (objectTree == null) {
+                parent.printf("no object.%n");
+                parent.flush();
+                return;
+            }
+            if (objectId != null) {
+                // print object with given id
+                LwM2mObjectEnabler objectEnabler = objectTree.getObjectEnablers().get(objectId);
+                if (objectEnabler == null) {
+                    parent.printf("no object available with id %d.%n", objectId);
+                    parent.flush();
+                    return;
+                }
+                printObject(objectEnabler);
+                parent.flush();
+            } else {
+                // print all objects
+                objectTree.getObjectEnablers().forEach((objectId, objectEnabler) -> {
+                    printObject(objectEnabler);
+                });
+                parent.flush();
+            }
+        }
+
+        public void printObject(LwM2mObjectEnabler objectEnabler) {
+            ObjectModel objectModel = objectEnabler.getObjectModel();
+            objectEnabler.getAvailableInstanceIds().forEach(instance -> {
+                parent.printfAnsi("@|bold,fg(magenta) /%d/%d : |@ @|bold,fg(green) %s |@ %n", objectModel.id, instance,
+                        objectModel.name);
+                List<Integer> availableResources = objectEnabler.getAvailableResourceIds(instance);
+                availableResources.forEach(resourceId -> {
+                    ResourceModel resourceModel = objectModel.resources.get(resourceId);
+                    parent.printfAnsi("  /%d : @|bold,fg(cyan) %s |@ %n", resourceId, resourceModel.name);
+                });
+            });
+        }
     }
 
     /**
