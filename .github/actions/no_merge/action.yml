@@ -1,0 +1,25 @@
+name: "Check No Merge commit"
+description: "Check PR does not contains any merge commit"
+
+runs:
+  using: "composite"
+  steps:
+
+  - name: Check For Merge Commit
+    id: no_merge
+    uses: voxie-actions/no-merge-commits@v1.0.0
+
+  - name: Add comment
+    if: failure()
+    uses: marocchino/sticky-pull-request-comment@v2
+    with:
+      header: Merge Commit Detected
+      message: |
+        :x: **PR should not contain "Merge Commit"**, so please use `git rebase` instead.
+
+  - name: Delete comment
+    if: success()
+    uses: marocchino/sticky-pull-request-comment@v2
+    with:
+      header: Merge Commit Detected
+      delete: true
