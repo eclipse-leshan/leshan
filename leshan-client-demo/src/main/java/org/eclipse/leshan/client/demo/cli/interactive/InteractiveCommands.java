@@ -4,8 +4,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.client.californium.LeshanClient;
+import org.eclipse.leshan.client.datacollector.DataSender;
+import org.eclipse.leshan.client.datacollector.DataSenderManager;
+import org.eclipse.leshan.client.datacollector.ManualDataSender;
 import org.eclipse.leshan.client.demo.MyLocation;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.CreateCommand;
+import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.CollectCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.DeleteCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.ListCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.MoveCommand;
@@ -21,12 +25,14 @@ import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.demo.cli.converters.ContentFormatConverter;
 import org.eclipse.leshan.core.demo.cli.converters.StringLwM2mPathConverter;
+import org.eclipse.leshan.core.demo.cli.converters.StringToLwM2mPathConverter;
 import org.eclipse.leshan.core.demo.cli.converters.VersionConverter;
 import org.eclipse.leshan.core.demo.cli.interactive.JLineInteractiveCommands;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.StaticModel;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -47,7 +53,7 @@ import picocli.CommandLine.ParentCommand;
          description = "@|bold,underline Leshan Client Demo Interactive Console :|@%n",
          footer = { "%n@|italic Press Ctl-C to exit.|@%n" },
          subcommands = { HelpCommand.class, ListCommand.class, CreateCommand.class, DeleteCommand.class,
-                 UpdateCommand.class, SendCommand.class, MoveCommand.class },
+                 UpdateCommand.class, SendCommand.class, CollectCommand.class, MoveCommand.class },
          customSynopsis = { "" },
          synopsisHeading = "")
 public class InteractiveCommands extends JLineInteractiveCommands implements Runnable {
@@ -187,7 +193,7 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
         @Override
         public void run() {
             if (objectId == 0 || objectId == 1 || objectId == 3) {
-                parent.printf("Object %d can not be disabled.%n", objectId).flush();
+                parent.printf("Object %d can not be disabled.", objectId).flush();
             } else if (parent.client.getObjectTree().getObjectEnabler(objectId) == null) {
                 parent.printf("Object %d is not enabled.%n", objectId).flush();
             } else {
@@ -217,7 +223,7 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
     @Command(name = "send", description = "Send data to server", headerHeading = "%n", footer = "")
     static class SendCommand implements Runnable {
 
-        @Parameters(description = "paths of data to send.", converter = StringLwM2mPathConverter.class)
+        @Parameters(description = "Paths of data to send.", converter = StringLwM2mPathConverter.class)
         private List<String> paths;
 
         @Option(names = { "-c", "--content-format" },
@@ -227,6 +233,12 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
                         "Default : ${DEFAULT-VALUE}" },
                 converter = SendContentFormatConverver.class)
         ContentFormat contentFormat;
+
+        @Option(names = { "-cv", "--current-value" }, description = "Send current values for given paths")
+        boolean currentValue;
+
+        @Option(names = { "-cd", "--collected-data" }, description = "Send collected data for given paths")
+        boolean collectedData;
 
         public static class SendContentFormatConverver extends ContentFormatConverter {
             public SendContentFormatConverver() {
@@ -245,22 +257,46 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
             }
             for (final ServerIdentity server : registeredServers.values()) {
                 LOG.info("Sending Data to {} using {}.", server, contentFormat);
-                parent.client.sendData(server, contentFormat, paths, 2000, new ResponseCallback<SendResponse>() {
-                    @Override
-                    public void onResponse(SendResponse response) {
-                        if (response.isSuccess())
-                            LOG.info("Data sent successfully to {} [{}].", server, response.getCode());
-                        else
-                            LOG.info("Send data to {} failed [{}] : {}.", server, response.getCode(),
-                                    response.getErrorMessage() == null ? "" : response.getErrorMessage());
-                    }
-                }, new ErrorCallback() {
-                    @Override
-                    public void onError(Exception e) {
-                        LOG.warn("Unable to send data to {}.", server, e);
-                    }
-                });
+                int timeoutInMs = 2000;
+                ResponseCallback<SendResponse> responseCallback = (response) -> {
+                    if (response.isSuccess())
+                        LOG.info("Data sent successfully to {} [{}].", server, response.getCode());
+                    else
+                        LOG.info("Send data to {} failed [{}] : {}.", server, response.getCode(),
+                                response.getErrorMessage() == null ? "" : response.getErrorMessage());
+                };
+                ErrorCallback errorCallback = (e) -> LOG.warn("Unable to send data to {}.", server, e);
+                if (collectedData) {
+                    // for now noFlush is always false, but we can change that
+                    DataSenderManager dataSenderManager = parent.client.getDataSenderManager();
+                    dataSenderManager.getDataSender(DataSender.DEFAULT_NAME, ManualDataSender.class)
+                            .sendCollectedData(server, contentFormat, timeoutInMs, false);
+                } else if (currentValue) {
+                    parent.client.sendData(server, contentFormat, paths, timeoutInMs, responseCallback, errorCallback);
+                }
             }
+        }
+    }
+
+    /**
+     * A command to collect data.
+     */
+    @Command(name = "collect",
+             description = "Collect data to send it later with 'send' command",
+             headerHeading = "%n",
+             footer = "")
+    static class CollectCommand implements Runnable {
+
+        @Parameters(description = "Paths of data to collect.", converter = StringToLwM2mPathConverter.class)
+        private List<LwM2mPath> paths;
+
+        @ParentCommand
+        InteractiveCommands parent;
+
+        @Override
+        public void run() {
+            DataSenderManager dataSenderManager = parent.client.getDataSenderManager();
+            dataSenderManager.getDataSender(DataSender.DEFAULT_NAME, ManualDataSender.class).collectData(paths);
         }
     }
 

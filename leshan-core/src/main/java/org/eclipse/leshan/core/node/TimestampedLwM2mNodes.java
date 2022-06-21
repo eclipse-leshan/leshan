@@ -132,6 +132,13 @@ public class TimestampedLwM2mNodes {
             return this;
         }
 
+        public Builder addNodes(long timestamp, Map<LwM2mPath, LwM2mNode> pathNodesMap) {
+            for (Entry<LwM2mPath, LwM2mNode> node : pathNodesMap.entrySet()) {
+                nodes.add(new InternalNode(timestamp, node.getKey(), node.getValue()));
+            }
+            return this;
+        }
+
         public Builder put(Long timestamp, LwM2mPath path, LwM2mNode node) {
             nodes.add(new InternalNode(timestamp, path, node));
             return this;
