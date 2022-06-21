@@ -21,8 +21,9 @@ Contributors:
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.eclipse.leshan</groupId>
-        <artifactId>leshan</artifactId>
+        <artifactId>lib-build-config</artifactId>
         <version>2.0.0-SNAPSHOT</version>
+        <relativePath>../build-config/lib-build-config/pom.xml</relativePath>
     </parent>
     <artifactId>leshan-client-core</artifactId>
     <packaging>bundle</packaging>
@@ -47,32 +48,4 @@ Contributors:
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <extensions>true</extensions>
-                <configuration>
-                    <instructions>
-                        <_exportcontents>*</_exportcontents>
-                        <Import-Package>*</Import-Package>
-                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-                    </instructions>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>animal-sniffer-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 </project>

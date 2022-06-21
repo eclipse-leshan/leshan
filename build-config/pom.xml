@@ -1,0 +1,289 @@
+<!--
+
+Copyright (c) 2013-2022 Sierra Wireless and others.
+
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the Eclipse Public License v2.0
+and Eclipse Distribution License v1.0 which accompany this distribution.
+
+The Eclipse Public License is available at
+   http://www.eclipse.org/legal/epl-v20.html
+and the Eclipse Distribution License is available at
+   http://www.eclipse.org/org/documents/edl-v10.html.
+
+Contributors:
+    Sierra Wireless - initial API and implementation
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.eclipse.leshan</groupId>
+        <artifactId>leshan</artifactId>
+        <version>2.0.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>leshan-build-config</artifactId>
+    <packaging>pom</packaging>
+
+    <name>leshan - shared build config</name>
+    <description> Shared Maven configuration for all Leshan modules</description>
+
+    <properties>
+        <!-- configure encoding -->
+        <leshan.encoding>UTF-8</leshan.encoding>
+        <project.build.sourceEncoding>${leshan.encoding}</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>${leshan.encoding}</project.reporting.outputEncoding>
+
+        <test.exclusion.pattern>**/Redis*.java</test.exclusion.pattern>
+    </properties>
+
+    <profiles>
+        <profile>
+            <!-- This profile launch all redis integration tests -->
+            <id>redis</id>
+            <properties>
+                <test.exclusion.pattern>nothing</test.exclusion.pattern>
+            </properties>
+        </profile>
+        <profile>
+            <!-- Release nightly/snapshot build on eclipse nexus -->
+            <id>release-nightly</id>
+             <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>eclipse-repo</id>
+                    <name>Eclipse Repository</name>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                    <url>https://repo.eclipse.org/content/repositories/releases/</url>
+                </pluginRepository>
+            </pluginRepositories>
+            <distributionManagement>
+                <repository>
+                    <id>repo.eclipse.org</id>
+                    <name>Leshan Repository - Releases</name>
+                    <url>https://repo.eclipse.org/content/repositories/leshan-releases/</url>
+                </repository>
+                <snapshotRepository>
+                    <id>repo.eclipse.org</id>
+                    <name>Leshan Repository - Snapshots</name>
+                    <url>https://repo.eclipse.org/content/repositories/leshan-snapshots/</url>
+                </snapshotRepository>
+            </distributionManagement>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.eclipse.cbi.maven.plugins</groupId>
+                        <artifactId>eclipse-jarsigner-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-jars</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+        </build>
+        </profile>
+        <profile>
+            <!-- this profile generate all the needed artifact and signatures needed, then release it on maven central -->
+            <id>release</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <distributionManagement>
+                <repository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+                </repository>
+            </distributionManagement>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                            <skipStagingRepositoryClose>true</skipStagingRepositoryClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                        <debug>true</debug>
+                        <optimize>true</optimize>
+                        <showDeprecations>true</showDeprecations>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <systemPropertyVariables>
+                            <logback.configurationFile>logback-leshan-test.xml</logback.configurationFile>
+                        </systemPropertyVariables>
+                        <parallel>classes</parallel>
+                        <threadCount>4</threadCount>
+                        <excludes>
+                            <exclude>**/*$*</exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <configuration>
+                        <archive>
+                            <manifestEntries>
+                                <Implementation-Version>${project.version}</Implementation-Version>
+                            </manifestEntries>
+                        </archive>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <excludePackageNames>org.eclipse.leshan.core.util</excludePackageNames>
+                        <quiet>true</quiet>
+                        <doclint>all,-missing</doclint>
+                        <failOnWarnings>true</failOnWarnings>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <!--  this goal is used to configure eclipse IDE automatically (formatting, organized import ...) -->
+                            <id>configure-eclipse</id>
+                            <goals>
+                                <goal>copy-resources</goal>
+                            </goals>
+                            <configuration>
+                                <outputDirectory>${basedir}/.settings</outputDirectory>
+                                <overwrite>true</overwrite>
+                                <resources>
+                                    <resource>
+                                        <directory>${basedir}/../eclipse/settings</directory>
+                                    </resource>
+                                </resources>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce-maven</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <dependencyConvergence />
+                                <requireMavenVersion>
+                                    <version>3.6.0</version>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <configuration>
+                    <flattenMode>ossrh</flattenMode>
+                    <!--  see https://github.com/mojohaus/flatten-maven-plugin/issues/53#issuecomment-388076343 -->
+                    <outputDirectory>${project.build.directory}</outputDirectory>
+                    <flattenedPomFilename>${project.artifactId}-${project.version}.pom</flattenedPomFilename>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

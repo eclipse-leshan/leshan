@@ -19,8 +19,9 @@ Contributors:
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.eclipse.leshan</groupId>
-        <artifactId>leshan</artifactId>
+        <artifactId>demo-build-config</artifactId>
         <version>2.0.0-SNAPSHOT</version>
+        <relativePath>../build-config/demo-build-config/pom.xml</relativePath>
     </parent>
     <artifactId>leshan-client-demo</artifactId>
     <name>leshan - client demo</name>
@@ -48,7 +49,7 @@ Contributors:
                         </manifest>
                     </archive>
                     <descriptors>
-                        <descriptor>../jar-with-dependencies-with-logback.xml</descriptor>
+                        <descriptor>../build-config/demo-build-config/jar-with-dependencies-with-logback.xml</descriptor>
                     </descriptors>
                 </configuration>
                 <executions>
@@ -60,13 +61,6 @@ Contributors:
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.revapi</groupId>
-                <artifactId>revapi-maven-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
             </plugin>
         </plugins>
     </build>
