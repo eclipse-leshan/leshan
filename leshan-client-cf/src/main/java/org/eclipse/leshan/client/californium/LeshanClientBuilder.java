@@ -19,6 +19,7 @@ package org.eclipse.leshan.client.californium;
 import java.net.InetSocketAddress;
 import java.security.cert.Certificate;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
@@ -38,6 +39,7 @@ import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.client.bootstrap.BootstrapConsistencyChecker;
 import org.eclipse.leshan.client.californium.bootstrap.DefaultBootstrapConsistencyChecker;
+import org.eclipse.leshan.client.datacollector.DataSender;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
@@ -73,6 +75,7 @@ public class LeshanClientBuilder {
 
     private InetSocketAddress localAddress;
     private List<? extends LwM2mObjectEnabler> objectEnablers;
+    private Map<String, DataSender> dataSenders;
 
     private Configuration coapConfig;
     private Builder dtlsConfigBuilder;
@@ -135,6 +138,11 @@ public class LeshanClientBuilder {
      */
     public LeshanClientBuilder setObjects(List<? extends LwM2mObjectEnabler> objectEnablers) {
         this.objectEnablers = objectEnablers;
+        return this;
+    }
+
+    public LeshanClientBuilder setDataSenders(Map<String, DataSender> dataSenders) {
+        this.dataSenders = dataSenders;
         return this;
     }
 
@@ -320,6 +328,8 @@ public class LeshanClientBuilder {
                     new Device("Eclipse Leshan", "model12345", "12345", EnumSet.of(BindingMode.U)));
             objectEnablers = initializer.createAll();
         }
+        if (dataSenders == null)
+            dataSenders = new HashMap<>();
         if (encoder == null)
             encoder = new DefaultLwM2mEncoder();
         if (decoder == null)
@@ -368,7 +378,7 @@ public class LeshanClientBuilder {
                     localAddress, incompleteConfig.getAddress()));
         }
 
-        return createLeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder,
+        return createLeshanClient(endpoint, localAddress, objectEnablers, dataSenders, coapConfig, dtlsConfigBuilder,
                 this.trustStore, endpointFactory, engineFactory, bootstrapConsistencyChecker, additionalAttributes,
                 bsAdditionalAttributes, encoder, decoder, executor, linkSerializer, attributeParser);
     }
@@ -403,14 +413,15 @@ public class LeshanClientBuilder {
      * @return the new {@link LeshanClient}
      */
     protected LeshanClient createLeshanClient(String endpoint, InetSocketAddress localAddress,
-            List<? extends LwM2mObjectEnabler> objectEnablers, Configuration coapConfig, Builder dtlsConfigBuilder,
-            List<Certificate> trustStore, EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
+            List<? extends LwM2mObjectEnabler> objectEnablers, Map<String, DataSender> dataSenders,
+            Configuration coapConfig, Builder dtlsConfigBuilder, List<Certificate> trustStore,
+            EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
             BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
             ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer,
             LwM2mAttributeParser attributeParser) {
-        return new LeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, trustStore,
-                endpointFactory, engineFactory, checker, additionalAttributes, bsAdditionalAttributes, encoder, decoder,
-                sharedExecutor, linkSerializer, attributeParser);
+        return new LeshanClient(endpoint, localAddress, objectEnablers, dataSenders, coapConfig, dtlsConfigBuilder,
+                trustStore, endpointFactory, engineFactory, checker, additionalAttributes, bsAdditionalAttributes,
+                encoder, decoder, sharedExecutor, linkSerializer, attributeParser);
     }
 }

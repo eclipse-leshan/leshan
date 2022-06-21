@@ -40,11 +40,14 @@ import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.californium.bootstrap.BootstrapResource;
 import org.eclipse.leshan.client.californium.object.ObjectResource;
 import org.eclipse.leshan.client.californium.request.CaliforniumLwM2mRequestSender;
+import org.eclipse.leshan.client.datacollector.DataSender;
+import org.eclipse.leshan.client.datacollector.DataSenderManager;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverAdapter;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverDispatcher;
+import org.eclipse.leshan.client.request.LwM2mRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.resource.LwM2mRootEnabler;
@@ -93,10 +96,12 @@ public class LeshanClient implements LwM2mClient {
     private final RegistrationEngine engine;
     private final LwM2mClientObserverDispatcher observers;
     private final LinkSerializer linkSerializer;
+    private final DataSenderManager dataSenderManager;
 
     public LeshanClient(String endpoint, InetSocketAddress localAddress,
-            List<? extends LwM2mObjectEnabler> objectEnablers, Configuration coapConfig, Builder dtlsConfigBuilder,
-            List<Certificate> trustStore, EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
+            List<? extends LwM2mObjectEnabler> objectEnablers, Map<String, DataSender> dataSenders,
+            Configuration coapConfig, Builder dtlsConfigBuilder, List<Certificate> trustStore,
+            EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
             BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
             ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer,
@@ -117,7 +122,7 @@ public class LeshanClient implements LwM2mClient {
                 endpointFactory);
         requestSender = createRequestSender(endpointsManager, sharedExecutor, encoder, objectTree.getModel(),
                 linkSerializer);
-
+        dataSenderManager = createDataSenderManager(dataSenders, rootEnabler, requestSender);
         engine = engineFactory.createRegistratioEngine(endpoint, objectTree, endpointsManager, requestSender,
                 bootstrapHandler, observers, additionalAttributes, bsAdditionalAttributes,
                 getSupportedContentFormat(decoder, encoder), sharedExecutor);
@@ -138,6 +143,11 @@ public class LeshanClient implements LwM2mClient {
 
     protected LwM2mObjectTree createObjectTree(List<? extends LwM2mObjectEnabler> objectEnablers) {
         return new LwM2mObjectTree(this, objectEnablers);
+    }
+
+    protected DataSenderManager createDataSenderManager(Map<String, DataSender> dataSenders,
+            LwM2mRootEnabler rootEnabler, LwM2mRequestSender requestSender) {
+        return new DataSenderManager(dataSenders, rootEnabler, requestSender);
     }
 
     protected LwM2mClientObserverDispatcher createClientObserverDispatcher() {
@@ -247,6 +257,10 @@ public class LeshanClient implements LwM2mClient {
         supportedContentFormat.addAll(decoder.getSupportedContentFormat());
         supportedContentFormat.addAll(encoder.getSupportedContentFormat());
         return supportedContentFormat;
+    }
+
+    public DataSenderManager getDataSenderManager() {
+        return dataSenderManager;
     }
 
     @Override
