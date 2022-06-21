@@ -41,6 +41,7 @@ import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.client.send.ManualDataSender;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.link.DefaultLinkSerializer;
@@ -153,6 +154,7 @@ public class IntegrationTestHelper {
         LeshanClientBuilder builder = new LeshanClientBuilder(currentEndpointIdentifier.get());
         builder.setDecoder(new DefaultLwM2mDecoder(true));
         builder.setEncoder(new DefaultLwM2mEncoder(true));
+        builder.setDataSenders(new ManualDataSender());
         builder.setAdditionalAttributes(additionalAttributes);
         builder.setObjects(objects);
         client = builder.build();

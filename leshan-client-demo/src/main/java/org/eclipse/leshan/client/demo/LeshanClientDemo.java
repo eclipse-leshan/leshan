@@ -44,6 +44,7 @@ import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
+import org.eclipse.leshan.client.send.ManualDataSender;
 import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.core.demo.cli.interactive.InteractiveCLI;
@@ -284,6 +285,7 @@ public class LeshanClientDemo {
         LeshanClientBuilder builder = new LeshanClientBuilder(cli.main.endpoint);
         builder.setLocalAddress(cli.main.localAddress, cli.main.localPort);
         builder.setObjects(enablers);
+        builder.setDataSenders(new ManualDataSender());
         builder.setCoapConfig(coapConfig);
         if (cli.identity.isx509())
             builder.setTrustStore(cli.identity.getX509().trustStore);

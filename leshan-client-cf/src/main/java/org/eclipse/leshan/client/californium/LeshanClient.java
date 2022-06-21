@@ -18,6 +18,7 @@ package org.eclipse.leshan.client.californium;
 
 import java.net.InetSocketAddress;
 import java.security.cert.Certificate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,13 +46,16 @@ import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverAdapter;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverDispatcher;
+import org.eclipse.leshan.client.request.LwM2mRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.resource.LwM2mRootEnabler;
 import org.eclipse.leshan.client.resource.RootEnabler;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
-import org.eclipse.leshan.client.send.NoDataException;
+import org.eclipse.leshan.client.send.DataSender;
+import org.eclipse.leshan.client.send.DataSenderManager;
+import org.eclipse.leshan.client.send.SendService;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.link.LinkSerializer;
@@ -62,10 +66,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.ReadCompositeRequest;
-import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
-import org.eclipse.leshan.core.response.ReadCompositeResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.response.SendResponse;
 import org.eclipse.leshan.core.util.Validate;
@@ -93,13 +94,14 @@ public class LeshanClient implements LwM2mClient {
     private final RegistrationEngine engine;
     private final LwM2mClientObserverDispatcher observers;
     private final LinkSerializer linkSerializer;
+    private final DataSenderManager dataSenderManager;
 
     public LeshanClient(String endpoint, InetSocketAddress localAddress,
-            List<? extends LwM2mObjectEnabler> objectEnablers, Configuration coapConfig, Builder dtlsConfigBuilder,
-            List<Certificate> trustStore, EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
-            BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
-            Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer,
+            List<? extends LwM2mObjectEnabler> objectEnablers, List<DataSender> dataSenders, Configuration coapConfig,
+            Builder dtlsConfigBuilder, List<Certificate> trustStore, EndpointFactory endpointFactory,
+            RegistrationEngineFactory engineFactory, BootstrapConsistencyChecker checker,
+            Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder,
+            LwM2mDecoder decoder, ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer,
             LwM2mAttributeParser attributeParser) {
 
         Validate.notNull(endpoint);
@@ -117,7 +119,7 @@ public class LeshanClient implements LwM2mClient {
                 endpointFactory);
         requestSender = createRequestSender(endpointsManager, sharedExecutor, encoder, objectTree.getModel(),
                 linkSerializer);
-
+        dataSenderManager = createDataSenderManager(dataSenders, rootEnabler, requestSender);
         engine = engineFactory.createRegistratioEngine(endpoint, objectTree, endpointsManager, requestSender,
                 bootstrapHandler, observers, additionalAttributes, bsAdditionalAttributes,
                 getSupportedContentFormat(decoder, encoder), sharedExecutor);
@@ -138,6 +140,15 @@ public class LeshanClient implements LwM2mClient {
 
     protected LwM2mObjectTree createObjectTree(List<? extends LwM2mObjectEnabler> objectEnablers) {
         return new LwM2mObjectTree(this, objectEnablers);
+    }
+
+    protected DataSenderManager createDataSenderManager(List<DataSender> dataSenders, LwM2mRootEnabler rootEnabler,
+            LwM2mRequestSender requestSender) {
+        Map<String, DataSender> dataSenderMap = new HashMap<>();
+        for (DataSender dataSender : dataSenders) {
+            dataSenderMap.put(dataSender.getName(), dataSender);
+        }
+        return new DataSenderManager(dataSenderMap, rootEnabler, requestSender);
     }
 
     protected LwM2mClientObserverDispatcher createClientObserverDispatcher() {
@@ -255,6 +266,7 @@ public class LeshanClient implements LwM2mClient {
         endpointsManager.start();
         engine.start();
         objectTree.start();
+        dataSenderManager.start();
 
         if (LOG.isInfoEnabled()) {
             LOG.info("Leshan client[endpoint:{}] started.", engine.getEndpoint());
@@ -264,6 +276,7 @@ public class LeshanClient implements LwM2mClient {
     @Override
     public void stop(boolean deregister) {
         LOG.info("Stopping Leshan Client ...");
+        dataSenderManager.stop();
         engine.stop(deregister);
         endpointsManager.stop();
         objectTree.stop();
@@ -274,6 +287,7 @@ public class LeshanClient implements LwM2mClient {
     @Override
     public void destroy(boolean deregister) {
         LOG.info("Destroying Leshan client ...");
+        dataSenderManager.destroy();
         engine.destroy(deregister);
         endpointsManager.destroy();
         requestSender.destroy();
@@ -303,36 +317,44 @@ public class LeshanClient implements LwM2mClient {
     }
 
     @Override
-    public SendResponse sendData(ServerIdentity server, ContentFormat format, List<String> paths, long timeoutInMs)
-            throws InterruptedException {
-        Validate.notNull(server);
-        Validate.notEmpty(paths);
+    public SendService getSendService() {
+        return new SendService() {
 
-        Map<LwM2mPath, LwM2mNode> collectedData = collectData(server, paths);
-        return requestSender.send(server, new SendRequest(format, collectedData, null), timeoutInMs);
-    }
+            @Override
+            public SendResponse sendData(ServerIdentity server, ContentFormat format, List<String> paths,
+                    long timeoutInMs) throws InterruptedException {
+                Validate.notNull(server);
+                Validate.notEmpty(paths);
 
-    @Override
-    public void sendData(ServerIdentity server, ContentFormat format, List<String> paths, long timeoutInMs,
-            ResponseCallback<SendResponse> onResponse, ErrorCallback onError) {
-        Validate.notNull(server);
-        Validate.notEmpty(paths);
-        Validate.notNull(onResponse);
-        Validate.notNull(onError);
+                Map<LwM2mPath, LwM2mNode> collectedData = dataSenderManager.getCurrentValues(server,
+                        LwM2mPath.getLwM2mPathList(paths));
+                return dataSenderManager.sendData(server, format, collectedData, timeoutInMs);
+            }
 
-        Map<LwM2mPath, LwM2mNode> collectedData = collectData(server, paths);
-        requestSender.send(server, new SendRequest(format, collectedData, null), timeoutInMs, onResponse, onError);
-    }
+            @Override
+            public void sendData(ServerIdentity server, ContentFormat format, List<String> paths, long timeoutInMs,
+                    ResponseCallback<SendResponse> onResponse, ErrorCallback onError) {
+                Validate.notNull(server);
+                Validate.notEmpty(paths);
+                Validate.notNull(onResponse);
+                Validate.notNull(onError);
 
-    private Map<LwM2mPath, LwM2mNode> collectData(ServerIdentity server, List<String> paths) {
-        // format is not really used as this is an internal call, kind of HACK :/ ...
-        ContentFormat format = ContentFormat.SENML_CBOR;
-        ReadCompositeResponse response = rootEnabler.read(server, new ReadCompositeRequest(format, format, paths));
-        if (response.isSuccess()) {
-            return response.getContent();
-        }
-        throw new NoDataException("Unable to collect data for %s : %s / %s", paths, response.getCode(),
-                response.getErrorMessage());
+                Map<LwM2mPath, LwM2mNode> collectedData = dataSenderManager.getCurrentValues(server,
+                        LwM2mPath.getLwM2mPathList(paths));
+                dataSenderManager.sendData(server, format, collectedData, onResponse, onError, timeoutInMs);
+
+            }
+
+            @Override
+            public DataSender getDataSender(String senderName) {
+                return dataSenderManager.getDataSender(senderName);
+            }
+
+            @Override
+            public <T extends DataSender> T getDataSender(String senderName, Class<T> senderSubType) {
+                return dataSenderManager.getDataSender(senderName, senderSubType);
+            }
+        };
     }
 
     /**

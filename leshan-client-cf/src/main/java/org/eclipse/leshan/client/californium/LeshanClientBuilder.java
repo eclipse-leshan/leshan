@@ -18,6 +18,8 @@ package org.eclipse.leshan.client.californium;
 
 import java.net.InetSocketAddress;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +48,7 @@ import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.client.send.DataSender;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
 import org.eclipse.leshan.core.californium.EndpointFactory;
@@ -73,6 +76,7 @@ public class LeshanClientBuilder {
 
     private InetSocketAddress localAddress;
     private List<? extends LwM2mObjectEnabler> objectEnablers;
+    private List<DataSender> dataSenders;
 
     private Configuration coapConfig;
     private Builder dtlsConfigBuilder;
@@ -135,6 +139,31 @@ public class LeshanClientBuilder {
      */
     public LeshanClientBuilder setObjects(List<? extends LwM2mObjectEnabler> objectEnablers) {
         this.objectEnablers = objectEnablers;
+        return this;
+    }
+
+    /**
+     * Set the list of {@link DataSender} used by the client.
+     * <p>
+     * Note that each sender should have a different name.
+     */
+    public LeshanClientBuilder setDataSenders(DataSender... dataSenders) {
+        this.dataSenders = Arrays.asList(dataSenders);
+
+        // check DataSender has name and this name is not shared by several senders
+        ArrayList<String> usedNames = new ArrayList<>();
+        for (int i = 0; i < dataSenders.length; i++) {
+            DataSender dataSender = dataSenders[i];
+            if (dataSender.getName() == null) {
+                throw new IllegalArgumentException(
+                        String.format("%s at index %d have a null name.", dataSender.getClass().getSimpleName(), i));
+            }
+            if (usedNames.contains(dataSender.getName())) {
+                throw new IllegalArgumentException(String.format("name '%s' of %s at index %d is already used.",
+                        dataSender.getName(), dataSender.getClass().getSimpleName(), i));
+            }
+            usedNames.add(dataSender.getName());
+        }
         return this;
     }
 
@@ -320,6 +349,8 @@ public class LeshanClientBuilder {
                     new Device("Eclipse Leshan", "model12345", "12345", EnumSet.of(BindingMode.U)));
             objectEnablers = initializer.createAll();
         }
+        if (dataSenders == null)
+            dataSenders = new ArrayList<>();
         if (encoder == null)
             encoder = new DefaultLwM2mEncoder();
         if (decoder == null)
@@ -368,7 +399,7 @@ public class LeshanClientBuilder {
                     localAddress, incompleteConfig.getAddress()));
         }
 
-        return createLeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder,
+        return createLeshanClient(endpoint, localAddress, objectEnablers, dataSenders, coapConfig, dtlsConfigBuilder,
                 this.trustStore, endpointFactory, engineFactory, bootstrapConsistencyChecker, additionalAttributes,
                 bsAdditionalAttributes, encoder, decoder, executor, linkSerializer, attributeParser);
     }
@@ -403,14 +434,14 @@ public class LeshanClientBuilder {
      * @return the new {@link LeshanClient}
      */
     protected LeshanClient createLeshanClient(String endpoint, InetSocketAddress localAddress,
-            List<? extends LwM2mObjectEnabler> objectEnablers, Configuration coapConfig, Builder dtlsConfigBuilder,
-            List<Certificate> trustStore, EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
-            BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
-            Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer,
+            List<? extends LwM2mObjectEnabler> objectEnablers, List<DataSender> dataSenders, Configuration coapConfig,
+            Builder dtlsConfigBuilder, List<Certificate> trustStore, EndpointFactory endpointFactory,
+            RegistrationEngineFactory engineFactory, BootstrapConsistencyChecker checker,
+            Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder,
+            LwM2mDecoder decoder, ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer,
             LwM2mAttributeParser attributeParser) {
-        return new LeshanClient(endpoint, localAddress, objectEnablers, coapConfig, dtlsConfigBuilder, trustStore,
-                endpointFactory, engineFactory, checker, additionalAttributes, bsAdditionalAttributes, encoder, decoder,
-                sharedExecutor, linkSerializer, attributeParser);
+        return new LeshanClient(endpoint, localAddress, objectEnablers, dataSenders, coapConfig, dtlsConfigBuilder,
+                trustStore, endpointFactory, engineFactory, checker, additionalAttributes, bsAdditionalAttributes,
+                encoder, decoder, sharedExecutor, linkSerializer, attributeParser);
     }
 }

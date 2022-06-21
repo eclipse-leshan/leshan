@@ -69,6 +69,10 @@ public class TimestampedLwM2mNodes {
         return Collections.unmodifiableSet(timestampedPathNodesMap.keySet());
     }
 
+    public boolean isEmpty() {
+        return timestampedPathNodesMap.isEmpty();
+    }
+
     @Override
     public String toString() {
         return String.format("TimestampedLwM2mNodes [%s]", timestampedPathNodesMap);
@@ -128,6 +132,13 @@ public class TimestampedLwM2mNodes {
         public Builder addNodes(Map<LwM2mPath, LwM2mNode> pathNodesMap) {
             for (Entry<LwM2mPath, LwM2mNode> node : pathNodesMap.entrySet()) {
                 nodes.add(new InternalNode(null, node.getKey(), node.getValue()));
+            }
+            return this;
+        }
+
+        public Builder addNodes(long timestamp, Map<LwM2mPath, LwM2mNode> pathNodesMap) {
+            for (Entry<LwM2mPath, LwM2mNode> node : pathNodesMap.entrySet()) {
+                nodes.add(new InternalNode(timestamp, node.getKey(), node.getValue()));
             }
             return this;
         }

@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.demo.MyLocation;
+import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.CollectCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.CreateCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.DeleteCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.ListCommand;
@@ -16,10 +17,14 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.client.send.ManualDataSender;
+import org.eclipse.leshan.client.send.NoDataException;
+import org.eclipse.leshan.client.send.SendService;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.demo.cli.converters.ContentFormatConverter;
+import org.eclipse.leshan.core.demo.cli.converters.LwM2mPathConverter;
 import org.eclipse.leshan.core.demo.cli.converters.StringLwM2mPathConverter;
 import org.eclipse.leshan.core.demo.cli.converters.VersionConverter;
 import org.eclipse.leshan.core.demo.cli.interactive.JLineInteractiveCommands;
@@ -27,6 +32,7 @@ import org.eclipse.leshan.core.model.LwM2mModelRepository;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.StaticModel;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -36,9 +42,12 @@ import org.slf4j.LoggerFactory;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
+import picocli.CommandLine.Spec;
 
 /**
  * Interactive commands for the Leshan Client Demo
@@ -47,7 +56,7 @@ import picocli.CommandLine.ParentCommand;
          description = "@|bold,underline Leshan Client Demo Interactive Console :|@%n",
          footer = { "%n@|italic Press Ctl-C to exit.|@%n" },
          subcommands = { HelpCommand.class, ListCommand.class, CreateCommand.class, DeleteCommand.class,
-                 UpdateCommand.class, SendCommand.class, MoveCommand.class },
+                 UpdateCommand.class, SendCommand.class, CollectCommand.class, MoveCommand.class },
          customSynopsis = { "" },
          synopsisHeading = "")
 public class InteractiveCommands extends JLineInteractiveCommands implements Runnable {
@@ -214,11 +223,13 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
     /**
      * A command to sebd data.
      */
-    @Command(name = "send", description = "Send data to server", headerHeading = "%n", footer = "")
+    @Command(name = "send",
+             description = "Send data to server",
+             subcommands = { SendCurrentValue.class, SendCollectedValue.class },
+             synopsisSubcommandLabel = "(current-value | collected-value)",
+             headerHeading = "%n",
+             footer = "")
     static class SendCommand implements Runnable {
-
-        @Parameters(description = "paths of data to send.", converter = StringLwM2mPathConverter.class)
-        private List<String> paths;
 
         @Option(names = { "-c", "--content-format" },
                 defaultValue = "SENML_CBOR",
@@ -234,33 +245,100 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
             }
         }
 
+        long timeout = 2000; // ms
+
+        @Spec
+        CommandSpec spec;
+
         @ParentCommand
         InteractiveCommands parent;
 
         @Override
         public void run() {
-            Map<String, ServerIdentity> registeredServers = parent.client.getRegisteredServers();
+            throw new ParameterException(spec.commandLine(), "Missing required subcommand");
+        }
+    }
+
+    @Command(name = "current-value", description = "Send current value", headerHeading = "%n", footer = "")
+    static class SendCurrentValue implements Runnable {
+
+        @Parameters(description = "Paths of data to send.", converter = StringLwM2mPathConverter.class, arity = "1..*")
+        private List<String> paths;
+
+        @ParentCommand
+        SendCommand sendCommand;
+
+        @Override
+        public void run() {
+            Map<String, ServerIdentity> registeredServers = sendCommand.parent.client.getRegisteredServers();
             if (registeredServers.isEmpty()) {
-                parent.printf("There is no registered server to send to.%n").flush();
+                sendCommand.parent.printf("There is no registered server to send to.%n").flush();
             }
             for (final ServerIdentity server : registeredServers.values()) {
-                LOG.info("Sending Data to {} using {}.", server, contentFormat);
-                parent.client.sendData(server, contentFormat, paths, 2000, new ResponseCallback<SendResponse>() {
-                    @Override
-                    public void onResponse(SendResponse response) {
-                        if (response.isSuccess())
-                            LOG.info("Data sent successfully to {} [{}].", server, response.getCode());
-                        else
-                            LOG.info("Send data to {} failed [{}] : {}.", server, response.getCode(),
-                                    response.getErrorMessage() == null ? "" : response.getErrorMessage());
-                    }
-                }, new ErrorCallback() {
-                    @Override
-                    public void onError(Exception e) {
-                        LOG.warn("Unable to send data to {}.", server, e);
-                    }
-                });
+                LOG.info("Sending Data to {} using {}.", server, sendCommand.contentFormat);
+                ResponseCallback<SendResponse> responseCallback = (response) -> {
+                    if (response.isSuccess())
+                        LOG.info("Data sent successfully to {} [{}].", server, response.getCode());
+                    else
+                        LOG.info("Send data to {} failed [{}] : {}.", server, response.getCode(),
+                                response.getErrorMessage() == null ? "" : response.getErrorMessage());
+                };
+                ErrorCallback errorCallback = (e) -> LOG.warn("Unable to send data to {}.", server, e);
+                sendCommand.parent.client.getSendService().sendData(server, sendCommand.contentFormat, paths,
+                        sendCommand.timeout, responseCallback, errorCallback);
             }
+        }
+    }
+
+    @Command(name = "collected-value",
+             description = "Send values collected with 'collect' command",
+             headerHeading = "%n",
+             footer = "")
+    static class SendCollectedValue implements Runnable {
+        @ParentCommand
+        SendCommand sendCommand;
+
+        @Override
+        public void run() {
+            // get registered servers
+            Map<String, ServerIdentity> registeredServers = sendCommand.parent.client.getRegisteredServers();
+            if (registeredServers.isEmpty()) {
+                sendCommand.parent.printf("There is no registered server to send to.%n").flush();
+            }
+            // for each server send data
+            for (final ServerIdentity server : registeredServers.values()) {
+                LOG.info("Sending Collected data to {} using {}.", server, sendCommand.contentFormat);
+                // send collected data
+                SendService sendService = sendCommand.parent.client.getSendService();
+                try {
+                    sendService.getDataSender(ManualDataSender.DEFAULT_NAME, ManualDataSender.class)
+                            .sendCollectedData(server, sendCommand.contentFormat, sendCommand.timeout, false);
+                } catch (NoDataException e) {
+                    sendCommand.parent.printf("No data collected, use `collect` command before.%n").flush();
+                }
+            }
+        }
+    }
+
+    /**
+     * A command to collect data.
+     */
+    @Command(name = "collect",
+             description = "Collect data to send it later with 'send' command",
+             headerHeading = "%n",
+             footer = "")
+    static class CollectCommand implements Runnable {
+
+        @Parameters(description = "Paths of data to collect.", converter = LwM2mPathConverter.class)
+        private List<LwM2mPath> paths;
+
+        @ParentCommand
+        InteractiveCommands parent;
+
+        @Override
+        public void run() {
+            parent.client.getSendService().getDataSender(ManualDataSender.DEFAULT_NAME, ManualDataSender.class)
+                    .collectData(paths);
         }
     }
 

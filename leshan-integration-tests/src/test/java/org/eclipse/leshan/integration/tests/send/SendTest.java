@@ -53,9 +53,9 @@ public class SendTest {
     @Parameters(name = "{0}{1}")
     public static Collection<?> contentFormats() {
         return Arrays.asList(new Object[][] { //
-                                // {content format}
-                                { ContentFormat.SENML_JSON }, //
-                                { ContentFormat.SENML_CBOR } });
+                // {content format}
+                { ContentFormat.SENML_JSON }, //
+                { ContentFormat.SENML_CBOR } });
     }
 
     private ContentFormat contentformat;
@@ -90,7 +90,8 @@ public class SendTest {
         // Send Data
         helper.waitForRegistrationAtClientSide(1);
         ServerIdentity server = helper.client.getRegisteredServers().values().iterator().next();
-        SendResponse response = helper.client.sendData(server, contentformat, Arrays.asList("/3/0/1", "/3/0/2"), 1000);
+        SendResponse response = helper.client.getSendService().sendData(server, contentformat,
+                Arrays.asList("/3/0/1", "/3/0/2"), 1000);
         assertTrue(response.isSuccess());
 
         // wait for data and check result
@@ -116,7 +117,8 @@ public class SendTest {
         helper.waitForRegistrationAtClientSide(1);
         Callback<SendResponse> callback = new Callback<>();
         ServerIdentity server = helper.client.getRegisteredServers().values().iterator().next();
-        helper.client.sendData(server, contentformat, Arrays.asList("/3/0/1", "/3/0/2"), 1000, callback, callback);
+        helper.client.getSendService().sendData(server, contentformat, Arrays.asList("/3/0/1", "/3/0/2"), 1000,
+                callback, callback);
         callback.waitForResponse(1000);
         assertTrue(callback.getResponse().isSuccess());
 
