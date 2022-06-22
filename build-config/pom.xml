@@ -31,7 +31,11 @@ Contributors:
     <description> Shared Maven configuration for all Leshan modules</description>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- configure encoding -->
+        <leshan.encoding>UTF-8</leshan.encoding>
+        <project.build.sourceEncoding>${leshan.encoding}</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>${leshan.encoding}</project.reporting.outputEncoding>
+
         <test.exclusion.pattern>**/Redis*.java</test.exclusion.pattern>
     </properties>
 
@@ -168,7 +172,6 @@ Contributors:
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <configuration>
-                        <encoding>UTF-8</encoding>
                         <source>1.8</source>
                         <target>1.8</target>
                         <debug>true</debug>
