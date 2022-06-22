@@ -31,22 +31,32 @@ Contributors:
     <description> Shared Maven configuration for all Leshan demos</description>
 
     <build>
-        <plugins>
-            <!--  get revision to be able to display build number in about demo -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>buildnumber-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>create</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <getRevisionOnlyOnce>true</getRevisionOnlyOnce>
-                </configuration>
-            </plugin>
-        </plugins>
+        <pluginManagement>
+            <plugins>
+                <!-- We don't ensure Semantic versioning for demos -->
+                <plugin>
+                    <groupId>org.revapi</groupId>
+                    <artifactId>revapi-maven-plugin</artifactId>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+                <!--  get revision to be able to display build number in demo -->
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>buildnumber-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>create</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <getRevisionOnlyOnce>true</getRevisionOnlyOnce>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 </project>

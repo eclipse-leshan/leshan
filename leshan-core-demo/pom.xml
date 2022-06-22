@@ -84,13 +84,6 @@ Contributors:
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
             </plugin>
-            <plugin>
-                <groupId>org.revapi</groupId>
-                <artifactId>revapi-maven-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 </project>
