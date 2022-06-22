@@ -212,37 +212,10 @@ Contributors:
                     </configuration>
                 </plugin>
                 <plugin>
-                    <!-- Deprecated use m2e + mvn resources:copy-resources@configure-eclipse 
-                        to setup preferences -->
-                    <!-- See https://github.com/eclipse/leshan/wiki/Code-&-design-guidelines#eclipse-workspace-setup -->
-                    <artifactId>maven-eclipse-plugin</artifactId>
-                    <configuration>
-                        <downloadSources>true</downloadSources>
-                        <downloadJavadocs>false</downloadJavadocs>
-                        <additionalConfig>
-                            <file>
-                                <name>.settings/org.eclipse.jdt.core.prefs</name>
-                                <location>${basedir}/../eclipse/settings/org.eclipse.jdt.core.prefs</location>
-                            </file>
-                            <file>
-                                <name>.settings/org.eclipse.core.resources.prefs</name>
-                                <location>${basedir}/../eclipse/settings/org.eclipse.core.resources.prefs</location>
-                            </file>
-                            <file>
-                                <name>.settings/org.eclipse.core.runtime.prefs</name>
-                                <location>${basedir}/../eclipse/settings/org.eclipse.core.runtime.prefs</location>
-                            </file>
-                            <file>
-                                <name>.settings/org.eclipse.jdt.ui.prefs</name>
-                                <location>${basedir}/../eclipse/settings/org.eclipse.jdt.ui.prefs</location>
-                            </file>
-                        </additionalConfig>
-                    </configuration>
-                </plugin>
-                <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
                     <executions>
                         <execution>
+                            <!--  this goal is used to configure eclipse IDE automatically (formatting, organized import ...) -->
                             <id>configure-eclipse</id>
                             <goals>
                                 <goal>copy-resources</goal>
