@@ -256,20 +256,6 @@ Contributors:
                         </execution>
                     </executions>
                 </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>buildnumber-maven-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>create</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <getRevisionOnlyOnce>true</getRevisionOnlyOnce>
-                    </configuration>
-                </plugin>
                 <!--This plugin's configuration is used to store Eclipse 
                     m2e settings only. It has no influence on the Maven build itself. -->
                 <plugin>
@@ -331,58 +317,6 @@ Contributors:
                                 </requireMavenVersion>
                             </rules>
                         </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.revapi</groupId>
-                <artifactId>revapi-maven-plugin</artifactId>
-                <configuration>
-                    <oldVersion>1.0.0</oldVersion>
-                    <analysisConfiguration>
-                        <revapi.versions>
-                            <enabled>true</enabled>
-                            <onAllowed>
-                                <criticality>documented</criticality>
-                            </onAllowed>
-                        </revapi.versions>
-                        <revapi.differences>
-                            <ignore>true</ignore>
-                            <differences>
-                                <item>
-                                    <regex>true</regex>
-                                    <code>java.class.externalClassExposedInAPI</code>
-                                    <newArchive>org\.eclipse\.leshan:leshan.*:.*</newArchive>
-                                    <justification>
-                                        Leshan sub-modules
-                                        implement the Leshan API which
-                                        makes them expose
-                                        Leshan-specific classes usually.
-                                    </justification>
-                                </item>
-                            </differences>
-                        </revapi.differences>
-                        <revapi.filter>
-                            <elements>
-                                <exclude>
-                                    <item>
-                                        <!-- Californium is exclude from 
-                                            API check as it does not have clear definition of its API and do not really 
-                                            respect Semantic versioning: https://github.com/eclipse/californium/issues/1159 
-                                            https://github.com/eclipse/californium/issues/1166 -->
-                                        <matcher>java-package</matcher>
-                                        <match>/org\.eclipse\.californium(\..*)?/</match>
-                                    </item>
-                                </exclude>
-                            </elements>
-                        </revapi.filter>
-                    </analysisConfiguration>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
                     </execution>
                 </executions>
             </plugin>

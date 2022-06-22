@@ -33,6 +33,7 @@ Contributors:
     <build>
         <pluginManagement>
             <plugins>
+                <!--  Check that we don't use Java API which is not available for android -->
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>animal-sniffer-maven-plugin</artifactId>
@@ -47,6 +48,59 @@ Contributors:
             </plugins>
         </pluginManagement>
         <plugins>
+        <!-- Check API respects semantic versioning -->
+            <plugin>
+                <groupId>org.revapi</groupId>
+                <artifactId>revapi-maven-plugin</artifactId>
+                <configuration>
+                    <oldVersion>1.0.0</oldVersion>
+                    <analysisConfiguration>
+                        <revapi.versions>
+                            <enabled>true</enabled>
+                            <onAllowed>
+                                <criticality>documented</criticality>
+                            </onAllowed>
+                        </revapi.versions>
+                        <revapi.differences>
+                            <ignore>true</ignore>
+                            <differences>
+                                <item>
+                                    <regex>true</regex>
+                                    <code>java.class.externalClassExposedInAPI</code>
+                                    <newArchive>org\.eclipse\.leshan:leshan.*:.*</newArchive>
+                                    <justification>
+                                        Leshan sub-modules
+                                        implement the Leshan API which
+                                        makes them expose
+                                        Leshan-specific classes usually.
+                                    </justification>
+                                </item>
+                            </differences>
+                        </revapi.differences>
+                        <revapi.filter>
+                            <elements>
+                                <exclude>
+                                    <item>
+                                        <!-- Californium is exclude from 
+                                            API check as it does not have clear definition of its API and do not really 
+                                            respect Semantic versioning: https://github.com/eclipse/californium/issues/1159 
+                                            https://github.com/eclipse/californium/issues/1166 -->
+                                        <matcher>java-package</matcher>
+                                        <match>/org\.eclipse\.californium(\..*)?/</match>
+                                    </item>
+                                </exclude>
+                            </elements>
+                        </revapi.filter>
+                    </analysisConfiguration>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>

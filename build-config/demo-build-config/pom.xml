@@ -32,6 +32,21 @@ Contributors:
 
     <build>
         <plugins>
+            <!--  get revision to be able to display build number in about demo -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <getRevisionOnlyOnce>true</getRevisionOnlyOnce>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
