@@ -232,37 +232,6 @@ Contributors:
                         </execution>
                     </executions>
                 </plugin>
-                <!--This plugin's configuration is used to store Eclipse 
-                    m2e settings only. It has no influence on the Maven build itself. -->
-                <plugin>
-                    <groupId>org.eclipse.m2e</groupId>
-                    <artifactId>lifecycle-mapping</artifactId>
-                    <configuration>
-                        <lifecycleMappingMetadata>
-                            <pluginExecutions>
-                                <pluginExecution>
-                                    <!-- Disable `frontend-maven-plugin` 
-                                        build as it slow down build in eclipse and it is not needed for development 
-                                        workflow -->
-                                    <pluginExecutionFilter>
-                                        <groupId>com.github.eirslett</groupId>
-                                        <artifactId>frontend-maven-plugin</artifactId>
-                                        <versionRange>
-                                            [1.11.2,)
-                                        </versionRange>
-                                        <goals>
-                                            <goal>install-node-and-yarn</goal>
-                                            <goal>yarn</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <ignore />
-                                    </action>
-                                </pluginExecution>
-                            </pluginExecutions>
-                        </lifecycleMappingMetadata>
-                    </configuration>
-                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
