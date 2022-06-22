@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 public class ManualDataSenderTest {
     private ManualDataSender manualDataSender;
+    private FakeDataSenderManager fakeDataSenderManager;
     private Map<LwM2mPath, LwM2mNode> nodesBeforeSend;
     private final List<LwM2mPath> paths = Arrays.asList(new LwM2mPath(1, 2, 3), new LwM2mPath(4, 5, 6),
             new LwM2mPath(7, 8, 9));
@@ -25,7 +26,7 @@ public class ManualDataSenderTest {
     @Before
     public void prepareDataSender() {
         manualDataSender = new ManualDataSender();
-        new FakeDataSenderManager(manualDataSender);
+        fakeDataSenderManager = new FakeDataSenderManager(manualDataSender);
         manualDataSender.collectData(paths);
         nodesBeforeSend = manualDataSender.getBuilder().build().getNodes();
     }
@@ -41,6 +42,7 @@ public class ManualDataSenderTest {
 
     @Test
     public void test_successful_data_send() {
+        fakeDataSenderManager.setSendDataOutcome(FakeDataSenderManager.SendDataOutcome.SUCCESS);
         manualDataSender.sendCollectedData(ServerIdentity.SYSTEM, ContentFormat.SENML_CBOR, 0, false);
         Map<LwM2mPath, LwM2mNode> nodesAfterSend = manualDataSender.getBuilder().build().getNodes();
         Assert.assertEquals(0, nodesAfterSend.size());
@@ -48,30 +50,40 @@ public class ManualDataSenderTest {
 
     @Test
     public void test_unsuccessful_data_send() {
-        manualDataSender.sendCollectedData(ServerIdentity.SYSTEM, ContentFormat.SENML_CBOR, 1, false);
+        fakeDataSenderManager.setSendDataOutcome(FakeDataSenderManager.SendDataOutcome.NOT_FOUND);
+        manualDataSender.sendCollectedData(ServerIdentity.SYSTEM, ContentFormat.SENML_CBOR, 0, false);
         Map<LwM2mPath, LwM2mNode> nodesAfterSend = manualDataSender.getBuilder().build().getNodes();
         Assert.assertEquals(nodesBeforeSend, nodesAfterSend);
     }
 
     @Test
     public void test_error_during_data_send() {
-        manualDataSender.sendCollectedData(ServerIdentity.SYSTEM, ContentFormat.SENML_CBOR, 2, false);
+        fakeDataSenderManager.setSendDataOutcome(FakeDataSenderManager.SendDataOutcome.ERROR);
+        manualDataSender.sendCollectedData(ServerIdentity.SYSTEM, ContentFormat.SENML_CBOR, 0, false);
         Map<LwM2mPath, LwM2mNode> nodesAfterSend = manualDataSender.getBuilder().build().getNodes();
         Assert.assertEquals(nodesBeforeSend, nodesAfterSend);
     }
 
     @Test
     public void test_successful_data_send_without_flush() {
+        fakeDataSenderManager.setSendDataOutcome(FakeDataSenderManager.SendDataOutcome.SUCCESS);
         manualDataSender.sendCollectedData(ServerIdentity.SYSTEM, ContentFormat.SENML_CBOR, 0, true);
         Map<LwM2mPath, LwM2mNode> nodesAfterSend = manualDataSender.getBuilder().build().getNodes();
         Assert.assertEquals(nodesBeforeSend, nodesAfterSend);
     }
 
     private static class FakeDataSenderManager extends DataSenderManager {
+        public enum SendDataOutcome {SUCCESS, NOT_FOUND, ERROR}
+
         private final Random random = new Random();
+        private SendDataOutcome sendDataOutcome;
 
         public FakeDataSenderManager(DataSender dataSender) {
             super(Collections.singletonMap("", dataSender), null, null);
+        }
+
+        public void setSendDataOutcome(SendDataOutcome sendDataOutcome) {
+            this.sendDataOutcome = sendDataOutcome;
         }
 
         @Override
@@ -83,13 +95,16 @@ public class ManualDataSenderTest {
         @Override
         public void sendData(ServerIdentity server, ContentFormat format, TimestampedLwM2mNodes nodes,
                 ResponseCallback<SendResponse> onResponse, ErrorCallback onError, long timeoutInMs) {
-            // hacky way of determining the outcome of a request
-            if (timeoutInMs == 0) {
-                onResponse.onResponse(SendResponse.success());
-            } else if (timeoutInMs == 1) {
-                onResponse.onResponse(SendResponse.notFound());
-            } else if (timeoutInMs == 2) {
-                onError.onError(new Exception());
+            switch (sendDataOutcome) {
+                case SUCCESS:
+                    onResponse.onResponse(SendResponse.success());
+                    break;
+                case NOT_FOUND:
+                    onResponse.onResponse(SendResponse.notFound());
+                    break;
+                case ERROR:
+                    onError.onError(new Exception());
+                    break;
             }
         }
 

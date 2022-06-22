@@ -40,7 +40,7 @@ public class ManualDataSender implements DataSender {
         }
     }
 
-    public synchronized void sendCollectedData(ServerIdentity server, ContentFormat format, long timeoutInMs,
+    public void sendCollectedData(ServerIdentity server, ContentFormat format, long timeoutInMs,
             boolean noFlush) {
         TimestampedLwM2mNodes data;
         synchronized (this) {

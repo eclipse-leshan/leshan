@@ -35,6 +35,14 @@ public class DataSenderManager implements Startable, Stoppable, Destroyable {
         }
     }
 
+    /**
+     * Retrieves the nodes with current values defined by a list of paths to those nodes.
+     *
+     * @param server to which the data will be sent
+     * @param paths from which nodes should the values be retrieved
+     * @throws NoDataException if a read request turns out to be unsuccessful
+     * @return retrieved nodes mapped by their respective paths
+     */
     public Map<LwM2mPath, LwM2mNode> getCurrentValue(ServerIdentity server, List<LwM2mPath> paths)
             throws NoDataException {
         ReadCompositeResponse response = rootEnabler.read(server,
@@ -47,6 +55,12 @@ public class DataSenderManager implements Startable, Stoppable, Destroyable {
         }
     }
 
+    /**
+     * Retrieves a data sender by its name
+     * @param senderName name of the sender
+     * @throws IllegalArgumentException if there is no data sender with specified name
+     * @return a retrieved data sender
+     */
     public DataSender getDataSender(String senderName) {
         DataSender dataSender = dataSenders.get(senderName);
         if (dataSender == null) {
@@ -55,6 +69,14 @@ public class DataSenderManager implements Startable, Stoppable, Destroyable {
         return dataSender;
     }
 
+    /**
+     * Retrieves a data sender by its name, cast to a specified subtype
+     * @param senderName name of the sender
+     * @param senderSubType subtype to which the data sender should be cast
+     * @throws IllegalArgumentException if there is no data sender with specified name or the data sender with specified
+     * name is not of the provided subtype
+     * @return a retrieved data sender
+     */
     public <T extends DataSender> T getDataSender(String senderName, Class<T> senderSubType) {
         DataSender dataSender = getDataSender(senderName);
         T castSender;

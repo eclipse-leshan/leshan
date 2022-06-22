@@ -266,6 +266,7 @@ public class LeshanClient implements LwM2mClient {
     @Override
     public void start() {
         LOG.info("Starting Leshan client ...");
+        dataSenderManager.start();
         endpointsManager.start();
         engine.start();
         objectTree.start();
@@ -278,6 +279,7 @@ public class LeshanClient implements LwM2mClient {
     @Override
     public void stop(boolean deregister) {
         LOG.info("Stopping Leshan Client ...");
+        dataSenderManager.stop();
         engine.stop(deregister);
         endpointsManager.stop();
         objectTree.stop();
@@ -288,6 +290,7 @@ public class LeshanClient implements LwM2mClient {
     @Override
     public void destroy(boolean deregister) {
         LOG.info("Destroying Leshan client ...");
+        dataSenderManager.destroy();
         engine.destroy(deregister);
         endpointsManager.destroy();
         requestSender.destroy();
