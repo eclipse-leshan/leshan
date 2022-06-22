@@ -63,35 +63,12 @@ Contributors:
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <extensions>true</extensions>
-                <configuration>
-                    <instructions>
-                        <_exportcontents>*</_exportcontents>
-                        <Import-Package>*</Import-Package>
-                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-                    </instructions>
-                </configuration>
-            </plugin>
-            <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <!-- We need to launch each tests in its own JVM to be able to check number 
                          of active threads in LeshanBootstrapServerTest and LeshanServerTest -->
                     <reuseForks>false</reuseForks>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>animal-sniffer-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

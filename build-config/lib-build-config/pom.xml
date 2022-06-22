@@ -31,24 +31,27 @@ Contributors:
     <description> Shared Maven configuration for all Leshan library modules</description>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <!--  Check that we don't use Java API which is not available for android -->
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>animal-sniffer-maven-plugin</artifactId>
-                    <configuration>
-                        <signature>
-                            <groupId>net.sf.androidscents.signature</groupId>
-                            <artifactId>android-api-level-19</artifactId>
-                            <version>4.4.2_r4</version>
-                        </signature>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
         <plugins>
-        <!-- Check API respects semantic versioning -->
+            <!--  Check that we don't use Java API which is not available for android -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>animal-sniffer-maven-plugin</artifactId>
+                <configuration>
+                    <signature>
+                        <groupId>net.sf.androidscents.signature</groupId>
+                        <artifactId>android-api-level-19</artifactId>
+                        <version>4.4.2_r4</version>
+                    </signature>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Check API respects semantic versioning -->
             <plugin>
                 <groupId>org.revapi</groupId>
                 <artifactId>revapi-maven-plugin</artifactId>
@@ -100,6 +103,19 @@ Contributors:
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <!--  Create OSGI bundle for Leshan libraries -->
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <_exportcontents>*</_exportcontents>
+                        <Import-Package>*</Import-Package>
+                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+                    </instructions>
+                </configuration>
             </plugin>
         </plugins>
     </build>
