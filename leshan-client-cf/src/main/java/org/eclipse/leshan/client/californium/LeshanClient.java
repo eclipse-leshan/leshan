@@ -18,13 +18,12 @@ package org.eclipse.leshan.client.californium;
 
 import java.net.InetSocketAddress;
 import java.security.cert.Certificate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
@@ -148,8 +147,10 @@ public class LeshanClient implements LwM2mClient {
 
     protected DataSenderManager createDataSenderManager(List<DataSender> dataSenders, LwM2mRootEnabler rootEnabler,
             LwM2mRequestSender requestSender) {
-        Map<String, DataSender> dataSenderMap = dataSenders.stream()
-                .collect(Collectors.toMap(DataSender::getName, Function.identity()));
+        Map<String, DataSender> dataSenderMap = new HashMap<>();
+        for(DataSender dataSender : dataSenders) {
+            dataSenderMap.put(dataSender.getName(), dataSender);
+        }
         return new DataSenderManager(dataSenderMap, rootEnabler, requestSender);
     }
 
