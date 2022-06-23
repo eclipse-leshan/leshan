@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
@@ -99,12 +101,11 @@ public class LeshanClient implements LwM2mClient {
     private final DataSenderManager dataSenderManager;
 
     public LeshanClient(String endpoint, InetSocketAddress localAddress,
-            List<? extends LwM2mObjectEnabler> objectEnablers, Map<String, DataSender> dataSenders,
-            Configuration coapConfig, Builder dtlsConfigBuilder, List<Certificate> trustStore,
-            EndpointFactory endpointFactory, RegistrationEngineFactory engineFactory,
-            BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
-            Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer,
+            List<? extends LwM2mObjectEnabler> objectEnablers, List<DataSender> dataSenders, Configuration coapConfig,
+            Builder dtlsConfigBuilder, List<Certificate> trustStore, EndpointFactory endpointFactory,
+            RegistrationEngineFactory engineFactory, BootstrapConsistencyChecker checker,
+            Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder,
+            LwM2mDecoder decoder, ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer,
             LwM2mAttributeParser attributeParser) {
 
         Validate.notNull(endpoint);
@@ -145,9 +146,11 @@ public class LeshanClient implements LwM2mClient {
         return new LwM2mObjectTree(this, objectEnablers);
     }
 
-    protected DataSenderManager createDataSenderManager(Map<String, DataSender> dataSenders,
-            LwM2mRootEnabler rootEnabler, LwM2mRequestSender requestSender) {
-        return new DataSenderManager(dataSenders, rootEnabler, requestSender);
+    protected DataSenderManager createDataSenderManager(List<DataSender> dataSenders, LwM2mRootEnabler rootEnabler,
+            LwM2mRequestSender requestSender) {
+        Map<String, DataSender> dataSenderMap = dataSenders.stream()
+                .collect(Collectors.toMap(DataSender::getName, Function.identity()));
+        return new DataSenderManager(dataSenderMap, rootEnabler, requestSender);
     }
 
     protected LwM2mClientObserverDispatcher createClientObserverDispatcher() {

@@ -189,11 +189,6 @@ public class LeshanClientDemo {
         initializer.setInstancesForObject(OBJECT_ID_TEMPERATURE_SENSOR, new RandomTemperatureSensor());
         initializer.setInstancesForObject(OBJECT_ID_LWM2M_TEST_OBJECT, new LwM2mTestObject());
 
-        // Create data senders
-        Map<String, DataSender> dataSenders = new HashMap<>();
-        dataSenders.put("sender1", new ManualDataSender());
-        dataSenders.put("sender2", new ManualDataSender());
-
         List<LwM2mObjectEnabler> enablers = initializer.createAll();
 
         // Create CoAP Config
@@ -293,7 +288,7 @@ public class LeshanClientDemo {
         LeshanClientBuilder builder = new LeshanClientBuilder(cli.main.endpoint);
         builder.setLocalAddress(cli.main.localAddress, cli.main.localPort);
         builder.setObjects(enablers);
-        builder.setDataSenders(dataSenders);
+        builder.setDataSenders(new ManualDataSender());
         builder.setCoapConfig(coapConfig);
         if (cli.identity.isx509())
             builder.setTrustStore(cli.identity.getX509().trustStore);

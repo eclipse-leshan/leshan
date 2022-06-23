@@ -31,6 +31,15 @@ public class ManualDataSender implements DataSender {
 
     private TimestampedLwM2mNodes.Builder builder = new TimestampedLwM2mNodes.Builder();
     private DataSenderManager dataSenderManager;
+    private final String name;
+
+    public ManualDataSender() {
+        this.name = DEFAULT_NAME;
+    }
+
+    public ManualDataSender(String name) {
+        this.name = name;
+    }
 
     public synchronized void collectData(List<LwM2mPath> paths) {
         long currentTimestamp = System.currentTimeMillis();
@@ -40,8 +49,7 @@ public class ManualDataSender implements DataSender {
         }
     }
 
-    public void sendCollectedData(ServerIdentity server, ContentFormat format, long timeoutInMs,
-            boolean noFlush) {
+    public void sendCollectedData(ServerIdentity server, ContentFormat format, long timeoutInMs, boolean noFlush) {
         TimestampedLwM2mNodes data;
         synchronized (this) {
             data = builder.build();
@@ -62,6 +70,11 @@ public class ManualDataSender implements DataSender {
     @Override
     public void setDataSenderManager(DataSenderManager dataSenderManager) {
         this.dataSenderManager = dataSenderManager;
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
     private synchronized void restoreData(TimestampedLwM2mNodes data) {

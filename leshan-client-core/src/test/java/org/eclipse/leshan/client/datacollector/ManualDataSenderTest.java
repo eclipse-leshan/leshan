@@ -13,7 +13,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 public class ManualDataSenderTest {
@@ -25,7 +30,7 @@ public class ManualDataSenderTest {
 
     @Before
     public void prepareDataSender() {
-        manualDataSender = new ManualDataSender();
+        manualDataSender = new ManualDataSender("sender");
         fakeDataSenderManager = new FakeDataSenderManager(manualDataSender);
         manualDataSender.collectData(paths);
         nodesBeforeSend = manualDataSender.getBuilder().build().getNodes();
@@ -73,7 +78,9 @@ public class ManualDataSenderTest {
     }
 
     private static class FakeDataSenderManager extends DataSenderManager {
-        public enum SendDataOutcome {SUCCESS, NOT_FOUND, ERROR}
+        public enum SendDataOutcome {
+            SUCCESS, NOT_FOUND, ERROR
+        }
 
         private final Random random = new Random();
         private SendDataOutcome sendDataOutcome;
@@ -96,15 +103,15 @@ public class ManualDataSenderTest {
         public void sendData(ServerIdentity server, ContentFormat format, TimestampedLwM2mNodes nodes,
                 ResponseCallback<SendResponse> onResponse, ErrorCallback onError, long timeoutInMs) {
             switch (sendDataOutcome) {
-                case SUCCESS:
-                    onResponse.onResponse(SendResponse.success());
-                    break;
-                case NOT_FOUND:
-                    onResponse.onResponse(SendResponse.notFound());
-                    break;
-                case ERROR:
-                    onError.onError(new Exception());
-                    break;
+            case SUCCESS:
+                onResponse.onResponse(SendResponse.success());
+                break;
+            case NOT_FOUND:
+                onResponse.onResponse(SendResponse.notFound());
+                break;
+            case ERROR:
+                onError.onError(new Exception());
+                break;
             }
         }
 

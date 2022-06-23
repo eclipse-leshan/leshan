@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.client.californium.LeshanClient;
+import org.eclipse.leshan.client.datacollector.DataSender;
 import org.eclipse.leshan.client.datacollector.DataSenderManager;
 import org.eclipse.leshan.client.datacollector.ManualDataSender;
 import org.eclipse.leshan.client.demo.MyLocation;
@@ -24,6 +25,7 @@ import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.demo.cli.converters.ContentFormatConverter;
 import org.eclipse.leshan.core.demo.cli.converters.StringLwM2mPathConverter;
+import org.eclipse.leshan.core.demo.cli.converters.StringToLwM2mPathConverter;
 import org.eclipse.leshan.core.demo.cli.converters.VersionConverter;
 import org.eclipse.leshan.core.demo.cli.interactive.JLineInteractiveCommands;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
@@ -50,8 +52,8 @@ import picocli.CommandLine.ParentCommand;
 @Command(name = "",
          description = "@|bold,underline Leshan Client Demo Interactive Console :|@%n",
          footer = { "%n@|italic Press Ctl-C to exit.|@%n" },
-         subcommands = { HelpCommand.class, ListCommand.class, CreateCommand.class, DeleteCommand.class, UpdateCommand.class,
-                 SendCommand.class, CollectCommand.class, MoveCommand.class },
+         subcommands = { HelpCommand.class, ListCommand.class, CreateCommand.class, DeleteCommand.class,
+                 UpdateCommand.class, SendCommand.class, CollectCommand.class, MoveCommand.class },
          customSynopsis = { "" },
          synopsisHeading = "")
 public class InteractiveCommands extends JLineInteractiveCommands implements Runnable {
@@ -232,11 +234,11 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
                 converter = SendContentFormatConverver.class)
         ContentFormat contentFormat;
 
-        @Option(names = { "-f", "--from-senders" },
-                arity = "1..*",
-                description = {
-                        "Names of senders from which the data should get sent. If empty, data will be sent normally" })
-        List<String> senderNames;
+        @Option(names = { "-cv", "--current-value" }, description = "Send current values for given paths")
+        boolean currentValue;
+
+        @Option(names = { "-cd", "--collected-data" }, description = "Send collected data for given paths")
+        boolean collectedData;
 
         public static class SendContentFormatConverver extends ContentFormatConverter {
             public SendContentFormatConverver() {
@@ -264,12 +266,12 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
                                 response.getErrorMessage() == null ? "" : response.getErrorMessage());
                 };
                 ErrorCallback errorCallback = (e) -> LOG.warn("Unable to send data to {}.", server, e);
-                if (senderNames != null) {
+                if (collectedData) {
                     // for now noFlush is always false, but we can change that
                     DataSenderManager dataSenderManager = parent.client.getDataSenderManager();
-                    senderNames.stream().map(sender -> dataSenderManager.getDataSender(sender, ManualDataSender.class))
-                            .forEach(sender -> sender.sendCollectedData(server, contentFormat, timeoutInMs, false));
-                } else {
+                    dataSenderManager.getDataSender(DataSender.DEFAULT_NAME, ManualDataSender.class)
+                            .sendCollectedData(server, contentFormat, timeoutInMs, false);
+                } else if (currentValue) {
                     parent.client.sendData(server, contentFormat, paths, timeoutInMs, responseCallback, errorCallback);
                 }
             }
@@ -285,13 +287,8 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
              footer = "")
     static class CollectCommand implements Runnable {
 
-        @Parameters(description = "Paths of data to collect.", converter = StringLwM2mPathConverter.class)
-        private List<String> paths; // TODO we should use LWM2M path
-
-        @Option(names = { "-t", "--to-sender" },
-                required = true,
-                description = { "To which sender the data should be collected" })
-        String senderName;
+        @Parameters(description = "Paths of data to collect.", converter = StringToLwM2mPathConverter.class)
+        private List<LwM2mPath> paths;
 
         @ParentCommand
         InteractiveCommands parent;
@@ -299,8 +296,7 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
         @Override
         public void run() {
             DataSenderManager dataSenderManager = parent.client.getDataSenderManager();
-            dataSenderManager.getDataSender(senderName, ManualDataSender.class)
-                    .collectData(LwM2mPath.getLwM2mPathList(paths));
+            dataSenderManager.getDataSender(DataSender.DEFAULT_NAME, ManualDataSender.class).collectData(paths);
         }
     }
 
