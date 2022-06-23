@@ -121,6 +121,7 @@ Contributors:
                     <environmentVariables>
                         <REDIS_URI>${redis.uri}</REDIS_URI>
                     </environmentVariables>
+                    <rerunFailingTestsCount>10</rerunFailingTestsCount>
                 </configuration>
             </plugin>
             <plugin>
