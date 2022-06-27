@@ -1,5 +1,9 @@
 package org.eclipse.leshan.client.datacollector;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.eclipse.leshan.client.request.LwM2mRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mRootEnabler;
 import org.eclipse.leshan.client.send.NoDataException;
@@ -17,10 +21,6 @@ import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.ReadCompositeResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.response.SendResponse;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class DataSenderManager implements Startable, Stoppable, Destroyable {
     private final Map<String, DataSender> dataSenders;

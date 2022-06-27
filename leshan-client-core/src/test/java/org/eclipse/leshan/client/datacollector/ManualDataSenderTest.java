@@ -1,5 +1,13 @@
 package org.eclipse.leshan.client.datacollector;
 
+import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.stream.Collectors;
+
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -12,14 +20,6 @@ import org.eclipse.leshan.core.response.SendResponse;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.AbstractMap;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.stream.Collectors;
 
 public class ManualDataSenderTest {
     private ManualDataSender manualDataSender;

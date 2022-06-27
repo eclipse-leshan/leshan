@@ -148,7 +148,7 @@ public class LeshanClient implements LwM2mClient {
     protected DataSenderManager createDataSenderManager(List<DataSender> dataSenders, LwM2mRootEnabler rootEnabler,
             LwM2mRequestSender requestSender) {
         Map<String, DataSender> dataSenderMap = new HashMap<>();
-        for(DataSender dataSender : dataSenders) {
+        for (DataSender dataSender : dataSenders) {
             dataSenderMap.put(dataSender.getName(), dataSender);
         }
         return new DataSenderManager(dataSenderMap, rootEnabler, requestSender);

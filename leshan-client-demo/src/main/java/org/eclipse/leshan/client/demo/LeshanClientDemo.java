@@ -20,9 +20,7 @@ import static org.eclipse.leshan.core.LwM2mId.*;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.config.DtlsConfig;
@@ -38,7 +36,6 @@ import org.eclipse.californium.scandium.dtls.SessionAdapter;
 import org.eclipse.californium.scandium.dtls.SessionId;
 import org.eclipse.leshan.client.californium.LeshanClient;
 import org.eclipse.leshan.client.californium.LeshanClientBuilder;
-import org.eclipse.leshan.client.datacollector.DataSender;
 import org.eclipse.leshan.client.datacollector.ManualDataSender;
 import org.eclipse.leshan.client.demo.cli.LeshanClientDemoCLI;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands;
