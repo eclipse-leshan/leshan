@@ -149,6 +149,21 @@ public class LeshanClientBuilder {
      */
     public LeshanClientBuilder setDataSenders(DataSender... dataSenders) {
         this.dataSenders = Arrays.asList(dataSenders);
+
+        // check DataSender has name and this name is not shared by several senders
+        ArrayList<String> usedNames = new ArrayList<>();
+        for (int i = 0; i < dataSenders.length; i++) {
+            DataSender dataSender = dataSenders[i];
+            if (dataSender.getName() == null) {
+                throw new IllegalArgumentException(
+                        String.format("%s at index %d have a null name.", dataSender.getClass().getSimpleName(), i));
+            }
+            if (usedNames.contains(dataSender.getName())) {
+                throw new IllegalArgumentException(String.format("name '%s' of %s at index %d is already used.",
+                        dataSender.getName(), dataSender.getClass().getSimpleName(), i));
+            }
+            usedNames.add(dataSender.getName());
+        }
         return this;
     }
 
