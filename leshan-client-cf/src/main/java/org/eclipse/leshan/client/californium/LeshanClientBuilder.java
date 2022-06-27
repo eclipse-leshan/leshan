@@ -142,6 +142,11 @@ public class LeshanClientBuilder {
         return this;
     }
 
+    /**
+     * Set the list of {@link DataSender} used by the client.
+     * <p>
+     * Note that each sender should have a different name.
+     */
     public LeshanClientBuilder setDataSenders(DataSender... dataSenders) {
         this.dataSenders = Arrays.asList(dataSenders);
         return this;
