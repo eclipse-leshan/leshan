@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.client.californium.LeshanClient;
-import org.eclipse.leshan.client.datacollector.DataSender;
 import org.eclipse.leshan.client.datacollector.DataSenderManager;
 import org.eclipse.leshan.client.datacollector.ManualDataSender;
 import org.eclipse.leshan.client.demo.MyLocation;
@@ -269,7 +268,7 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
                 if (collectedData) {
                     // for now noFlush is always false, but we can change that
                     DataSenderManager dataSenderManager = parent.client.getDataSenderManager();
-                    dataSenderManager.getDataSender(DataSender.DEFAULT_NAME, ManualDataSender.class)
+                    dataSenderManager.getDataSender(ManualDataSender.DEFAULT_NAME, ManualDataSender.class)
                             .sendCollectedData(server, contentFormat, timeoutInMs, false);
                 } else if (currentValue) {
                     parent.client.sendData(server, contentFormat, paths, timeoutInMs, responseCallback, errorCallback);
@@ -296,7 +295,7 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
         @Override
         public void run() {
             DataSenderManager dataSenderManager = parent.client.getDataSenderManager();
-            dataSenderManager.getDataSender(DataSender.DEFAULT_NAME, ManualDataSender.class).collectData(paths);
+            dataSenderManager.getDataSender(ManualDataSender.DEFAULT_NAME, ManualDataSender.class).collectData(paths);
         }
     }
 

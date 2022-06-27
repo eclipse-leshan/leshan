@@ -7,8 +7,6 @@ package org.eclipse.leshan.client.datacollector;
  * {@link DataSenderManager#getDataSender(String)}.
  */
 public interface DataSender {
-    String DEFAULT_NAME = "DEFAULT_DATA_SENDER";
-
     /**
      * Set the {@link DataSenderManager} which holds this {@link DataSender}.
      * <p>

@@ -29,6 +29,8 @@ import org.eclipse.leshan.core.request.ContentFormat;
  */
 public class ManualDataSender implements DataSender {
 
+    public final static String DEFAULT_NAME = "MANUAL_SENDER";
+
     private TimestampedLwM2mNodes.Builder builder = new TimestampedLwM2mNodes.Builder();
     private DataSenderManager dataSenderManager;
     private final String name;
