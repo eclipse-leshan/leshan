@@ -17,9 +17,9 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
-import org.eclipse.leshan.client.send.DataSenderManager;
 import org.eclipse.leshan.client.send.ManualDataSender;
 import org.eclipse.leshan.client.send.NoDataException;
+import org.eclipse.leshan.client.send.SendService;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.LwM2mId;
@@ -284,8 +284,8 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
                                 response.getErrorMessage() == null ? "" : response.getErrorMessage());
                 };
                 ErrorCallback errorCallback = (e) -> LOG.warn("Unable to send data to {}.", server, e);
-                sendCommand.parent.client.sendData(server, sendCommand.contentFormat, paths, sendCommand.timeout,
-                        responseCallback, errorCallback);
+                sendCommand.parent.client.getSendService().sendData(server, sendCommand.contentFormat, paths,
+                        sendCommand.timeout, responseCallback, errorCallback);
             }
         }
     }
@@ -309,9 +309,9 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
             for (final ServerIdentity server : registeredServers.values()) {
                 LOG.info("Sending Collected data to {} using {}.", server, sendCommand.contentFormat);
                 // send collected data
-                DataSenderManager dataSenderManager = sendCommand.parent.client.getDataSenderManager();
+                SendService sendService = sendCommand.parent.client.getSendService();
                 try {
-                    dataSenderManager.getDataSender(ManualDataSender.DEFAULT_NAME, ManualDataSender.class)
+                    sendService.getDataSender(ManualDataSender.DEFAULT_NAME, ManualDataSender.class)
                             .sendCollectedData(server, sendCommand.contentFormat, sendCommand.timeout, false);
                 } catch (NoDataException e) {
                     sendCommand.parent.printf("No data collected, use `collect` command before.%n").flush();
@@ -337,8 +337,8 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
 
         @Override
         public void run() {
-            DataSenderManager dataSenderManager = parent.client.getDataSenderManager();
-            dataSenderManager.getDataSender(ManualDataSender.DEFAULT_NAME, ManualDataSender.class).collectData(paths);
+            parent.client.getSendService().getDataSender(ManualDataSender.DEFAULT_NAME, ManualDataSender.class)
+                    .collectData(paths);
         }
     }
 

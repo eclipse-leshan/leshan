@@ -74,7 +74,7 @@ public class SendTimestampedTest {
         // Send Data
         helper.waitForRegistrationAtClientSide(1);
         ServerIdentity server = helper.client.getRegisteredServers().values().iterator().next();
-        ManualDataSender sender = helper.client.getDataSenderManager().getDataSender(ManualDataSender.DEFAULT_NAME,
+        ManualDataSender sender = helper.client.getSendService().getDataSender(ManualDataSender.DEFAULT_NAME,
                 ManualDataSender.class);
         sender.collectData(Arrays.asList(getExamplePath()));
         Thread.sleep(100);

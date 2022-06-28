@@ -55,6 +55,7 @@ import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.send.DataSender;
 import org.eclipse.leshan.client.send.DataSenderManager;
+import org.eclipse.leshan.client.send.SendService;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.link.LinkSerializer;
@@ -259,10 +260,6 @@ public class LeshanClient implements LwM2mClient {
         return supportedContentFormat;
     }
 
-    public DataSenderManager getDataSenderManager() {
-        return dataSenderManager;
-    }
-
     @Override
     public void start() {
         LOG.info("Starting Leshan client ...");
@@ -320,27 +317,44 @@ public class LeshanClient implements LwM2mClient {
     }
 
     @Override
-    public SendResponse sendData(ServerIdentity server, ContentFormat format, List<String> paths, long timeoutInMs)
-            throws InterruptedException {
-        Validate.notNull(server);
-        Validate.notEmpty(paths);
+    public SendService getSendService() {
+        return new SendService() {
 
-        Map<LwM2mPath, LwM2mNode> collectedData = dataSenderManager.getCurrentValues(server,
-                LwM2mPath.getLwM2mPathList(paths));
-        return dataSenderManager.sendData(server, format, collectedData, timeoutInMs);
-    }
+            @Override
+            public SendResponse sendData(ServerIdentity server, ContentFormat format, List<String> paths,
+                    long timeoutInMs) throws InterruptedException {
+                Validate.notNull(server);
+                Validate.notEmpty(paths);
 
-    @Override
-    public void sendData(ServerIdentity server, ContentFormat format, List<String> paths, long timeoutInMs,
-            ResponseCallback<SendResponse> onResponse, ErrorCallback onError) {
-        Validate.notNull(server);
-        Validate.notEmpty(paths);
-        Validate.notNull(onResponse);
-        Validate.notNull(onError);
+                Map<LwM2mPath, LwM2mNode> collectedData = dataSenderManager.getCurrentValues(server,
+                        LwM2mPath.getLwM2mPathList(paths));
+                return dataSenderManager.sendData(server, format, collectedData, timeoutInMs);
+            }
 
-        Map<LwM2mPath, LwM2mNode> collectedData = dataSenderManager.getCurrentValues(server,
-                LwM2mPath.getLwM2mPathList(paths));
-        dataSenderManager.sendData(server, format, collectedData, onResponse, onError, timeoutInMs);
+            @Override
+            public void sendData(ServerIdentity server, ContentFormat format, List<String> paths, long timeoutInMs,
+                    ResponseCallback<SendResponse> onResponse, ErrorCallback onError) {
+                Validate.notNull(server);
+                Validate.notEmpty(paths);
+                Validate.notNull(onResponse);
+                Validate.notNull(onError);
+
+                Map<LwM2mPath, LwM2mNode> collectedData = dataSenderManager.getCurrentValues(server,
+                        LwM2mPath.getLwM2mPathList(paths));
+                dataSenderManager.sendData(server, format, collectedData, onResponse, onError, timeoutInMs);
+
+            }
+
+            @Override
+            public DataSender getDataSender(String senderName) {
+                return dataSenderManager.getDataSender(senderName);
+            }
+
+            @Override
+            public <T extends DataSender> T getDataSender(String senderName, Class<T> senderSubType) {
+                return dataSenderManager.getDataSender(senderName, senderSubType);
+            }
+        };
     }
 
     /**

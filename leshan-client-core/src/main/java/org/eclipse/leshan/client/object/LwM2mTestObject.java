@@ -216,22 +216,23 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
 
         // send data;
         LOG.info("Try to send data {} using {} to {} (timeout {}ms)...", paths, format, server, timeout);
-        getLwM2mClient().sendData(server, format, paths, timeout, new ResponseCallback<SendResponse>() {
-            @Override
-            public void onResponse(SendResponse response) {
-                if (response.isSuccess()) {
-                    LOG.info("... Send Succeed {}", response.getCode());
-                } else {
-                    LOG.warn("... Send Response : {} {}", response.getCode(), response.getErrorMessage());
-                }
+        getLwM2mClient().getSendService().sendData(server, format, paths, timeout,
+                new ResponseCallback<SendResponse>() {
+                    @Override
+                    public void onResponse(SendResponse response) {
+                        if (response.isSuccess()) {
+                            LOG.info("... Send Succeed {}", response.getCode());
+                        } else {
+                            LOG.warn("... Send Response : {} {}", response.getCode(), response.getErrorMessage());
+                        }
 
-            }
-        }, new ErrorCallback() {
-            @Override
-            public void onError(Exception e) {
-                LOG.error("... Send failed.", e);
-            }
-        });
+                    }
+                }, new ErrorCallback() {
+                    @Override
+                    public void onError(Exception e) {
+                        LOG.error("... Send failed.", e);
+                    }
+                });
         return ExecuteResponse.success();
     }
 
