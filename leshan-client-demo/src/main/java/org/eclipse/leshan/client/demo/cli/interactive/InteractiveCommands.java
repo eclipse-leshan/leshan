@@ -41,9 +41,12 @@ import org.slf4j.LoggerFactory;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
+import picocli.CommandLine.Spec;
 
 /**
  * Interactive commands for the Leshan Client Demo
@@ -219,11 +222,13 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
     /**
      * A command to sebd data.
      */
-    @Command(name = "send", description = "Send data to server", headerHeading = "%n", footer = "")
+    @Command(name = "send",
+             description = "Send data to server",
+             subcommands = { SendCurrentValue.class, SendCollectedValue.class },
+             synopsisSubcommandLabel = "(current-value | collected-value)",
+             headerHeading = "%n",
+             footer = "")
     static class SendCommand implements Runnable {
-
-        @Parameters(description = "Paths of data to send.", converter = StringLwM2mPathConverter.class)
-        private List<String> paths;
 
         @Option(names = { "-c", "--content-format" },
                 defaultValue = "SENML_CBOR",
@@ -233,30 +238,43 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
                 converter = SendContentFormatConverver.class)
         ContentFormat contentFormat;
 
-        @Option(names = { "-cv", "--current-value" }, description = "Send current values for given paths")
-        boolean currentValue;
-
-        @Option(names = { "-cd", "--collected-data" }, description = "Send collected data for given paths")
-        boolean collectedData;
-
         public static class SendContentFormatConverver extends ContentFormatConverter {
             public SendContentFormatConverver() {
                 super(ContentFormat.SENML_CBOR, ContentFormat.SENML_JSON);
             }
         }
 
+        long timeout = 2000; // ms
+
+        @Spec
+        CommandSpec spec;
+
         @ParentCommand
         InteractiveCommands parent;
 
         @Override
         public void run() {
-            Map<String, ServerIdentity> registeredServers = parent.client.getRegisteredServers();
+            throw new ParameterException(spec.commandLine(), "Missing required subcommand");
+        }
+    }
+
+    @Command(name = "current-value", description = "Send current value", headerHeading = "%n", footer = "")
+    static class SendCurrentValue implements Runnable {
+
+        @Parameters(description = "Paths of data to send.", converter = StringLwM2mPathConverter.class)
+        private List<String> paths;
+
+        @ParentCommand
+        SendCommand sendCommand;
+
+        @Override
+        public void run() {
+            Map<String, ServerIdentity> registeredServers = sendCommand.parent.client.getRegisteredServers();
             if (registeredServers.isEmpty()) {
-                parent.printf("There is no registered server to send to.%n").flush();
+                sendCommand.parent.printf("There is no registered server to send to.%n").flush();
             }
             for (final ServerIdentity server : registeredServers.values()) {
-                LOG.info("Sending Data to {} using {}.", server, contentFormat);
-                int timeoutInMs = 2000;
+                LOG.info("Sending Data to {} using {}.", server, sendCommand.contentFormat);
                 ResponseCallback<SendResponse> responseCallback = (response) -> {
                     if (response.isSuccess())
                         LOG.info("Data sent successfully to {} [{}].", server, response.getCode());
@@ -265,14 +283,34 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
                                 response.getErrorMessage() == null ? "" : response.getErrorMessage());
                 };
                 ErrorCallback errorCallback = (e) -> LOG.warn("Unable to send data to {}.", server, e);
-                if (collectedData) {
-                    // for now noFlush is always false, but we can change that
-                    DataSenderManager dataSenderManager = parent.client.getDataSenderManager();
-                    dataSenderManager.getDataSender(ManualDataSender.DEFAULT_NAME, ManualDataSender.class)
-                            .sendCollectedData(server, contentFormat, timeoutInMs, false);
-                } else if (currentValue) {
-                    parent.client.sendData(server, contentFormat, paths, timeoutInMs, responseCallback, errorCallback);
-                }
+                sendCommand.parent.client.sendData(server, sendCommand.contentFormat, paths, sendCommand.timeout,
+                        responseCallback, errorCallback);
+            }
+        }
+    }
+
+    @Command(name = "collected-value",
+             description = "Send values collected with 'collect' command",
+             headerHeading = "%n",
+             footer = "")
+    static class SendCollectedValue implements Runnable {
+        @ParentCommand
+        SendCommand sendCommand;
+
+        @Override
+        public void run() {
+            // get registered servers
+            Map<String, ServerIdentity> registeredServers = sendCommand.parent.client.getRegisteredServers();
+            if (registeredServers.isEmpty()) {
+                sendCommand.parent.printf("There is no registered server to send to.%n").flush();
+            }
+            // for each server send data
+            for (final ServerIdentity server : registeredServers.values()) {
+                LOG.info("Sending Collected data to {} using {}.", server, sendCommand.contentFormat);
+                // send collected data
+                DataSenderManager dataSenderManager = sendCommand.parent.client.getDataSenderManager();
+                dataSenderManager.getDataSender(ManualDataSender.DEFAULT_NAME, ManualDataSender.class)
+                        .sendCollectedData(server, sendCommand.contentFormat, sendCommand.timeout, false);
             }
         }
     }
