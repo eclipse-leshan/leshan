@@ -69,6 +69,10 @@ public class TimestampedLwM2mNodes {
         return Collections.unmodifiableSet(timestampedPathNodesMap.keySet());
     }
 
+    public boolean isEmpty() {
+        return timestampedPathNodesMap.isEmpty();
+    }
+
     @Override
     public String toString() {
         return String.format("TimestampedLwM2mNodes [%s]", timestampedPathNodesMap);

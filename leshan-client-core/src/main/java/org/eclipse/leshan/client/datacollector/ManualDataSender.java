@@ -82,8 +82,4 @@ public class ManualDataSender implements DataSender {
     private synchronized void restoreData(TimestampedLwM2mNodes data) {
         builder.add(data);
     }
-
-    public TimestampedLwM2mNodes.Builder getBuilder() {
-        return builder;
-    }
 }
