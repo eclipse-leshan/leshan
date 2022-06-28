@@ -24,7 +24,7 @@ import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.demo.cli.converters.ContentFormatConverter;
 import org.eclipse.leshan.core.demo.cli.converters.StringLwM2mPathConverter;
-import org.eclipse.leshan.core.demo.cli.converters.StringToLwM2mPathConverter;
+import org.eclipse.leshan.core.demo.cli.converters.LwM2mPathConverter;
 import org.eclipse.leshan.core.demo.cli.converters.VersionConverter;
 import org.eclipse.leshan.core.demo.cli.interactive.JLineInteractiveCommands;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
@@ -286,7 +286,7 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
              footer = "")
     static class CollectCommand implements Runnable {
 
-        @Parameters(description = "Paths of data to collect.", converter = StringToLwM2mPathConverter.class)
+        @Parameters(description = "Paths of data to collect.", converter = LwM2mPathConverter.class)
         private List<LwM2mPath> paths;
 
         @ParentCommand
