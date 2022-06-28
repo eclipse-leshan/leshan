@@ -23,8 +23,8 @@ import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.demo.cli.converters.ContentFormatConverter;
-import org.eclipse.leshan.core.demo.cli.converters.StringLwM2mPathConverter;
 import org.eclipse.leshan.core.demo.cli.converters.LwM2mPathConverter;
+import org.eclipse.leshan.core.demo.cli.converters.StringLwM2mPathConverter;
 import org.eclipse.leshan.core.demo.cli.converters.VersionConverter;
 import org.eclipse.leshan.core.demo.cli.interactive.JLineInteractiveCommands;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
@@ -192,7 +192,7 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
         @Override
         public void run() {
             if (objectId == 0 || objectId == 1 || objectId == 3) {
-                parent.printf("Object %d can not be disabled.", objectId).flush();
+                parent.printf("Object %d can not be disabled.%n", objectId).flush();
             } else if (parent.client.getObjectTree().getObjectEnabler(objectId) == null) {
                 parent.printf("Object %d is not enabled.%n", objectId).flush();
             } else {
