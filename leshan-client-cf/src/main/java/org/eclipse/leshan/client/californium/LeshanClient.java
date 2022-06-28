@@ -55,7 +55,6 @@ import org.eclipse.leshan.client.resource.LwM2mRootEnabler;
 import org.eclipse.leshan.client.resource.RootEnabler;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
-import org.eclipse.leshan.client.send.NoDataException;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.link.LinkSerializer;
@@ -66,10 +65,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.ReadCompositeRequest;
-import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
-import org.eclipse.leshan.core.response.ReadCompositeResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.response.SendResponse;
 import org.eclipse.leshan.core.util.Validate;
@@ -329,8 +325,9 @@ public class LeshanClient implements LwM2mClient {
         Validate.notNull(server);
         Validate.notEmpty(paths);
 
-        Map<LwM2mPath, LwM2mNode> collectedData = collectData(server, paths);
-        return requestSender.send(server, new SendRequest(format, collectedData, null), timeoutInMs);
+        Map<LwM2mPath, LwM2mNode> collectedData = dataSenderManager.getCurrentValues(server,
+                LwM2mPath.getLwM2mPathList(paths));
+        return dataSenderManager.sendData(server, format, collectedData, timeoutInMs);
     }
 
     @Override
@@ -341,19 +338,9 @@ public class LeshanClient implements LwM2mClient {
         Validate.notNull(onResponse);
         Validate.notNull(onError);
 
-        Map<LwM2mPath, LwM2mNode> collectedData = collectData(server, paths);
-        requestSender.send(server, new SendRequest(format, collectedData, null), timeoutInMs, onResponse, onError);
-    }
-
-    private Map<LwM2mPath, LwM2mNode> collectData(ServerIdentity server, List<String> paths) {
-        // format is not really used as this is an internal call, kind of HACK :/ ...
-        ContentFormat format = ContentFormat.SENML_CBOR;
-        ReadCompositeResponse response = rootEnabler.read(server, new ReadCompositeRequest(format, format, paths));
-        if (response.isSuccess()) {
-            return response.getContent();
-        }
-        throw new NoDataException("Unable to collect data for %s : %s / %s", paths, response.getCode(),
-                response.getErrorMessage());
+        Map<LwM2mPath, LwM2mNode> collectedData = dataSenderManager.getCurrentValues(server,
+                LwM2mPath.getLwM2mPathList(paths));
+        dataSenderManager.sendData(server, format, collectedData, onResponse, onError, timeoutInMs);
     }
 
     /**
