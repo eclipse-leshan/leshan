@@ -1,4 +1,4 @@
-package org.eclipse.leshan.client.datacollector;
+package org.eclipse.leshan.client.send;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -10,10 +10,10 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import org.eclipse.leshan.client.datacollector.ManualDataSenderTest.FakeDataSenderManager.SendDataOutcome;
 import org.eclipse.leshan.client.send.DataSender;
 import org.eclipse.leshan.client.send.DataSenderManager;
 import org.eclipse.leshan.client.send.ManualDataSender;
+import org.eclipse.leshan.client.send.ManualDataSenderTest.FakeDataSenderManager.SendDataOutcome;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
