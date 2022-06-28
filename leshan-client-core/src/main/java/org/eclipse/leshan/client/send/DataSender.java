@@ -9,7 +9,6 @@ package org.eclipse.leshan.client.send;
 public interface DataSender {
     /**
      * Set the {@link DataSenderManager} which holds this {@link DataSender}.
-     * <p>
      */
     void setDataSenderManager(DataSenderManager dataSenderManager);
 
