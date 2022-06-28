@@ -18,6 +18,7 @@ package org.eclipse.leshan.client.datacollector;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.leshan.client.send.NoDataException;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -51,10 +52,19 @@ public class ManualDataSender implements DataSender {
         }
     }
 
-    public void sendCollectedData(ServerIdentity server, ContentFormat format, long timeoutInMs, boolean noFlush) {
+    /**
+     * Send collected data.
+     * 
+     * @throws NoDataException if no data was collected before to send
+     */
+    public void sendCollectedData(ServerIdentity server, ContentFormat format, long timeoutInMs, boolean noFlush)
+            throws NoDataException {
         TimestampedLwM2mNodes data;
         synchronized (this) {
             data = builder.build();
+            if (data.isEmpty()) {
+                throw new NoDataException("Unable to send data to %s : no data collected");
+            }
             if (!noFlush) {
                 builder = new TimestampedLwM2mNodes.Builder();
             }

@@ -19,6 +19,7 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.client.send.NoDataException;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.LwM2mId;
@@ -261,7 +262,7 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
     @Command(name = "current-value", description = "Send current value", headerHeading = "%n", footer = "")
     static class SendCurrentValue implements Runnable {
 
-        @Parameters(description = "Paths of data to send.", converter = StringLwM2mPathConverter.class)
+        @Parameters(description = "Paths of data to send.", converter = StringLwM2mPathConverter.class, arity = "1..*")
         private List<String> paths;
 
         @ParentCommand
@@ -309,8 +310,12 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
                 LOG.info("Sending Collected data to {} using {}.", server, sendCommand.contentFormat);
                 // send collected data
                 DataSenderManager dataSenderManager = sendCommand.parent.client.getDataSenderManager();
-                dataSenderManager.getDataSender(ManualDataSender.DEFAULT_NAME, ManualDataSender.class)
-                        .sendCollectedData(server, sendCommand.contentFormat, sendCommand.timeout, false);
+                try {
+                    dataSenderManager.getDataSender(ManualDataSender.DEFAULT_NAME, ManualDataSender.class)
+                            .sendCollectedData(server, sendCommand.contentFormat, sendCommand.timeout, false);
+                } catch (NoDataException e) {
+                    sendCommand.parent.printf("No data collected, use `collect` command before.%n").flush();
+                }
             }
         }
     }

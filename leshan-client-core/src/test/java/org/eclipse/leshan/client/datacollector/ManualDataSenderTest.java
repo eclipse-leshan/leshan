@@ -54,10 +54,14 @@ public class ManualDataSenderTest {
         TimestampedLwM2mNodes lastValuesSent = fakeDataSenderManager.getLastValuesSent();
         Assert.assertEquals(currentValues, lastValuesSent.getNodes());
 
-        // re send to ensure data was flushed (we do not resend same data)
+        // re send to ensure data was flushed (we do not resent same data)
+        Map<LwM2mPath, LwM2mNode> newValue = fakeDataSenderManager.changeCurrentValues(givenServer, givenPaths);
+        manualDataSender.collectData(givenPaths);
         manualDataSender.sendCollectedData(givenServer, ContentFormat.SENML_CBOR, 0, false);
         lastValuesSent = fakeDataSenderManager.getLastValuesSent();
-        Assert.assertTrue(lastValuesSent.isEmpty());
+
+        Assert.assertEquals(1, lastValuesSent.getTimestamps().size());
+        Assert.assertEquals(newValue, lastValuesSent.getNodes());
     }
 
     @Test
