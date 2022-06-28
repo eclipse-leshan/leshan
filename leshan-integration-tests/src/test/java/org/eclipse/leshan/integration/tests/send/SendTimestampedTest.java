@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.eclipse.leshan.client.datacollector.ManualDataSender;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.client.send.ManualDataSender;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.model.StaticModel;

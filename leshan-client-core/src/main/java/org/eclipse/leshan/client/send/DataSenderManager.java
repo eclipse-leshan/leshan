@@ -1,4 +1,4 @@
-package org.eclipse.leshan.client.datacollector;
+package org.eclipse.leshan.client.send;
 
 import java.util.HashMap;
 import java.util.List;
@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.eclipse.leshan.client.request.LwM2mRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mRootEnabler;
-import org.eclipse.leshan.client.send.NoDataException;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;

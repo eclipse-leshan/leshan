@@ -13,12 +13,11 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.datacollector;
+package org.eclipse.leshan.client.send;
 
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.leshan.client.send.NoDataException;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;

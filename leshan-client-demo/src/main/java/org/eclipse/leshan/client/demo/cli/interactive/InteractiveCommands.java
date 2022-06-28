@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.client.californium.LeshanClient;
-import org.eclipse.leshan.client.datacollector.DataSenderManager;
-import org.eclipse.leshan.client.datacollector.ManualDataSender;
 import org.eclipse.leshan.client.demo.MyLocation;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.CollectCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.CreateCommand;
@@ -19,6 +17,8 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
+import org.eclipse.leshan.client.send.DataSenderManager;
+import org.eclipse.leshan.client.send.ManualDataSender;
 import org.eclipse.leshan.client.send.NoDataException;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.LwM2m.Version;

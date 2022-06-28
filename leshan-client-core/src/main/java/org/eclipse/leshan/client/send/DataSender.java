@@ -1,4 +1,4 @@
-package org.eclipse.leshan.client.datacollector;
+package org.eclipse.leshan.client.send;
 
 /**
  * A class responsible for collecting and sending collected data.
