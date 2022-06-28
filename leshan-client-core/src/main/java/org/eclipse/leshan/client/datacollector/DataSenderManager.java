@@ -45,7 +45,7 @@ public class DataSenderManager implements Startable, Stoppable, Destroyable {
      * @throws NoDataException if a read request turns out to be unsuccessful
      * @return retrieved nodes mapped by their respective paths
      */
-    public Map<LwM2mPath, LwM2mNode> getCurrentValue(ServerIdentity server, List<LwM2mPath> paths)
+    public Map<LwM2mPath, LwM2mNode> getCurrentValues(ServerIdentity server, List<LwM2mPath> paths)
             throws NoDataException {
         ReadCompositeResponse response = rootEnabler.read(server,
                 new ReadCompositeRequest(paths, ContentFormat.SENML_CBOR, ContentFormat.SENML_CBOR, null));

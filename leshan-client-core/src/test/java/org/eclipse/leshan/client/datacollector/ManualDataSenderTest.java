@@ -42,7 +42,7 @@ public class ManualDataSenderTest {
     @Test
     public void test_successful_data_send() {
         // store current value
-        Map<LwM2mPath, LwM2mNode> currentValues = fakeDataSenderManager.getCurrentValue(givenServer, givenPaths);
+        Map<LwM2mPath, LwM2mNode> currentValues = fakeDataSenderManager.getCurrentValues(givenServer, givenPaths);
 
         // Test successful collect and send
         fakeDataSenderManager.setSendDataOutcome(SendDataOutcome.SUCCESS);
@@ -66,7 +66,7 @@ public class ManualDataSenderTest {
         fakeDataSenderManager.setSendDataOutcome(SendDataOutcome.SUCCESS);
 
         // collect several timestamped values
-        Map<LwM2mPath, LwM2mNode> firstValue = fakeDataSenderManager.getCurrentValue(givenServer, givenPaths);
+        Map<LwM2mPath, LwM2mNode> firstValue = fakeDataSenderManager.getCurrentValues(givenServer, givenPaths);
         manualDataSender.collectData(givenPaths);
 
         Thread.sleep(100);
@@ -92,7 +92,7 @@ public class ManualDataSenderTest {
     @Test
     public void test_unsuccessful_data_send() {
         // store current value
-        Map<LwM2mPath, LwM2mNode> currentValues = fakeDataSenderManager.getCurrentValue(givenServer, givenPaths);
+        Map<LwM2mPath, LwM2mNode> currentValues = fakeDataSenderManager.getCurrentValues(givenServer, givenPaths);
 
         // Test collect and send with error response
         fakeDataSenderManager.setSendDataOutcome(SendDataOutcome.NOT_FOUND);
@@ -112,7 +112,7 @@ public class ManualDataSenderTest {
     @Test
     public void test_error_during_data_send() {
         // store current value
-        Map<LwM2mPath, LwM2mNode> currentValues = fakeDataSenderManager.getCurrentValue(givenServer, givenPaths);
+        Map<LwM2mPath, LwM2mNode> currentValues = fakeDataSenderManager.getCurrentValues(givenServer, givenPaths);
 
         // Test collect and send failure
         fakeDataSenderManager.setSendDataOutcome(SendDataOutcome.ERROR);
@@ -132,7 +132,7 @@ public class ManualDataSenderTest {
     @Test
     public void test_successful_data_send_without_flush() {
         // store current value
-        Map<LwM2mPath, LwM2mNode> currentValues = fakeDataSenderManager.getCurrentValue(givenServer, givenPaths);
+        Map<LwM2mPath, LwM2mNode> currentValues = fakeDataSenderManager.getCurrentValues(givenServer, givenPaths);
 
         // Test successful collect and send with flush
         boolean noFlush = true;
@@ -171,7 +171,7 @@ public class ManualDataSenderTest {
         }
 
         @Override
-        public Map<LwM2mPath, LwM2mNode> getCurrentValue(ServerIdentity server, List<LwM2mPath> paths) {
+        public Map<LwM2mPath, LwM2mNode> getCurrentValues(ServerIdentity server, List<LwM2mPath> paths) {
             return currentValues;
         }
 
