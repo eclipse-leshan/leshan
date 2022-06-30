@@ -15,7 +15,8 @@ Contributors:
     Sierra Wireless - initial API and implementation
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+    child.project.url.inherit.append.path="false">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.eclipse.leshan</groupId>
@@ -60,7 +61,9 @@ Contributors:
         <module>leshan-bsserver-demo</module>
     </modules>
 
-    <scm>
+    <scm
+        child.scm.developerConnection.inherit.append.path="false"
+        child.scm.url.inherit.append.path="false">
         <developerConnection>scm:git:ssh://git@github.com/eclipse/leshan.git</developerConnection>
         <url>https://github.com/eclipse/leshan.git</url>
         <tag>HEAD</tag>
@@ -217,6 +220,11 @@ Contributors:
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>3.2.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>flatten-maven-plugin</artifactId>
+                    <version>1.2.7</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.felix</groupId>
