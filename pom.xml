@@ -122,6 +122,15 @@ Contributors:
                 <module>build-config/demo-build-config</module>
             </modules>
         </profile>
+        <profile>
+            <!-- By default the build, do lot of thing this profile is used mainly my CI to compile only -->
+            <id>CompileOnly</id>
+            <properties>
+                <skipTests>true</skipTests>
+                <skip.yarn>true</skip.yarn>
+                <maven.javadoc.skip>true</maven.javadoc.skip>
+            </properties>
+        </profile>
     </profiles>
 
     <properties>

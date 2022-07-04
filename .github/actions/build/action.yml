@@ -8,7 +8,7 @@ runs:
   - name: Build
     id: build
     shell: bash
-    run: mvn -B package -DskipTests -Dskip.yarn
+    run: mvn -B package -PCompileOnly
 
 
   - name: Add comment
