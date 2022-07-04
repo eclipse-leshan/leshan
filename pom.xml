@@ -110,6 +110,19 @@ Contributors:
             </roles>
         </developer>
     </developers>
+    
+    <profiles>
+        <profile>
+            <!-- Profile needed when shared config pom must be handled too 
+                e.g. update version, check pom formatting ... -->
+            <id>allPom</id>
+            <modules>
+                <module>build-config</module>
+                <module>build-config/lib-build-config</module>
+                <module>build-config/demo-build-config</module>
+            </modules>
+        </profile>
+    </profiles>
 
     <properties>
         <!-- we use properties for version when there are used more than once -->
