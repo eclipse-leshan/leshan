@@ -1,0 +1,37 @@
+name: "Android Check"
+description: "Check compliance with android API"
+
+runs:
+  using: "composite"
+  steps:
+
+  - name: Check Android API
+    id: android_check
+    shell: bash
+    run: mvn -B animal-sniffer:check
+
+
+  - name: Add comment
+    if: failure()
+    uses: marocchino/sticky-pull-request-comment@v2
+    with:
+      header: Check Android API Failed
+      message: |
+        :x: **Android API Compliance Check failed !** [(more details)](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+        Ensure your code build locally using: 
+        ```
+        mvn clean install
+        ```
+        Or just check Android API Compliance with : 
+        ```
+        mvn animal-sniffer:check
+        ```
+        [More details](https://github.com/eclipse/leshan/wiki/F.A.Q.#can-i-use-leshan-with-android-) about this check
+
+  - name: Delete comment
+    if: success()
+    uses: marocchino/sticky-pull-request-comment@v2
+    with:
+      header: Check Android API Failed
+      delete: true

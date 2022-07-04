@@ -1,0 +1,37 @@
+name: "Semantic Version Check"
+description: "Check API against Semantic versioning rules"
+
+runs:
+  using: "composite"
+  steps:
+
+  - name: Check API break
+    id: apibreak_check
+    shell: bash
+    run: mvn -B revapi:check
+
+
+  - name: Add comment
+    if: failure()
+    uses: marocchino/sticky-pull-request-comment@v2
+    with:
+      header: API break detected
+      message: |
+        :x: **API break detected !** [(more details)](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+        Ensure your code build locally using: 
+        ```
+        mvn clean install
+        ```
+        Or just check Semantic Versioning Compliance with : 
+        ```
+        mvn revapi:check
+        ```
+        We are using revapi to ensure API break respect [Semantic Versioning rules](https://semver.org/). 
+
+  - name: Delete comment
+    if: success()
+    uses: marocchino/sticky-pull-request-comment@v2
+    with:
+      header: API break detected
+      delete: true

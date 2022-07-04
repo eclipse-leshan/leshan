@@ -6,7 +6,7 @@ runs:
   steps:
   - name: Run Integration Tests 
     shell: bash
-    run: mvn -B test '-Dtest=!org.eclipse.leshan.integration.tests.**' -DfailIfNoTests=false -Dskip.yarn
+    run: mvn -B surefire:test '-Dtest=!org.eclipse.leshan.integration.tests.**' -DfailIfNoTests=false -Dskip.yarn
 
   - name: Add comment
     if: failure()
@@ -22,11 +22,11 @@ runs:
         ```
         Or just launch tests : 
         ```
-        mvn test -Dskip.yarn
+        mvn surefire:test
         ```
         To launch unit tests only : 
         ```
-        mvn test '-Dtest=!org.eclipse.leshan.integration.tests.**' -DfailIfNoTests=false -Dskip.yarn
+        mvn surefire:test '-Dtest=!org.eclipse.leshan.integration.tests.**' -DfailIfNoTests=false -Dskip.yarn
         ```
 
   - name: Delete comment

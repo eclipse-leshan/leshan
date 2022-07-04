@@ -8,7 +8,7 @@ runs:
   - name: Generate Javadoc
     id: javadoc
     shell: bash
-    run: mvn -B package javadoc:javadoc -DskipTests -Dskip.yarn
+    run: mvn -B javadoc:javadoc
 
   - name: Add comment
     if: failure()
@@ -20,7 +20,7 @@ runs:
 
         Ensure you can generate javadoc locally using: 
         ```
-        mvn clean javadoc:javadoc
+        mvn javadoc:javadoc
         ```
 
   - name: Delete comment
