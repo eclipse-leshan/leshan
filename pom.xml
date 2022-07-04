@@ -124,8 +124,9 @@ Contributors:
 
     <!-- Bill Of Materials -->
     <!--
-        Just contains list of maven plugin  used. 
-        Configuration is available in ./build-config/pom.xml
+        Just contains list of maven plugin used. 
+        Configuration should rather be placed at ./build-config/pom.xml.
+        (Even if there is some exception which concern aggregator pom too)
     -->
     <build>
         <pluginManagement>
@@ -220,6 +221,21 @@ Contributors:
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>3.2.0</version>
+                    <!-- This goal is used to configure eclipse, but we don't want to execute it on aggregator -->
+                    <executions>
+                        <execution>
+                            <id>configure-eclipse</id>
+                            <goals>
+                                <goal>copy-resources</goal>
+                            </goals>
+                            <inherited>false</inherited>
+                            <configuration>
+                                <skip>true</skip>
+                                <outputDirectory>nothing</outputDirectory>
+                                <resources></resources>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
