@@ -39,6 +39,10 @@ jobs:
       if: ${{ always() && steps.build.conclusion == 'success' }}
       uses: ./.github/actions/android-check
 
+    - name: Check Semantic Versioning Compliance
+      if: ${{ always() && steps.build.conclusion == 'success' }}
+      uses: ./.github/actions/semver-check
+
     - name: Generate Javadoc
       if: ${{ always() && steps.build.conclusion == 'success' }}
       uses: ./.github/actions/javadoc
