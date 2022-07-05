@@ -33,10 +33,10 @@ public interface RegistrationListener {
      * @param registration the new registration
      * @param previousReg the previous registration if the client was already registered (same endpoint).
      *        <code>null</code> for a brand-new registration.
-     * @param previousObsersations all the observations linked to the previous registration which have been passively
+     * @param previousObservations all the observations linked to the previous registration which have been passively
      *        cancelled. <code>null</code> for a brand-new registration.
      */
-    void registered(Registration registration, Registration previousReg, Collection<Observation> previousObsersations);
+    void registered(Registration registration, Registration previousReg, Collection<Observation> previousObservations);
 
     /**
      * Invoked when a client updates its registration.

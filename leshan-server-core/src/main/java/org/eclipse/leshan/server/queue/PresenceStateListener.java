@@ -42,7 +42,7 @@ public class PresenceStateListener implements RegistrationListener, ObservationL
     }
 
     @Override
-    public void registered(Registration reg, Registration previousReg, Collection<Observation> previousObsersations) {
+    public void registered(Registration reg, Registration previousReg, Collection<Observation> previousObservations) {
         if (reg.usesQueueMode()) {
             presenceService.setAwake(reg);
         }

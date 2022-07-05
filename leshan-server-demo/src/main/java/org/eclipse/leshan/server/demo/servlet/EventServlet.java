@@ -99,7 +99,7 @@ public class EventServlet extends EventSourceServlet {
 
         @Override
         public void registered(Registration registration, Registration previousReg,
-                Collection<Observation> previousObsersations) {
+                Collection<Observation> previousObservations) {
             String jReg = null;
             try {
                 jReg = EventServlet.this.mapper.writeValueAsString(registration);

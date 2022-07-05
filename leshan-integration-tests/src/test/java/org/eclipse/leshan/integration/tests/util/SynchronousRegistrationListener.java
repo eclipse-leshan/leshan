@@ -33,7 +33,7 @@ public class SynchronousRegistrationListener implements RegistrationListener {
     private Registration lastRegistration;
 
     @Override
-    public void registered(Registration reg, Registration previousReg, Collection<Observation> previousObsersations) {
+    public void registered(Registration reg, Registration previousReg, Collection<Observation> previousObservations) {
         if (accept(reg)) {
             lastRegistration = reg;
             registerLatch.countDown();

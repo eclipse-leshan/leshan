@@ -330,7 +330,7 @@ public class LeshanServer {
 
             @Override
             public void registered(Registration registration, Registration previousReg,
-                    Collection<Observation> previousObsersations) {
+                    Collection<Observation> previousObservations) {
             }
         });
 

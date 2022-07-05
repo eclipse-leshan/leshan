@@ -69,9 +69,9 @@ public class RegistrationServiceImpl implements RegistrationService, ExpirationL
     }
 
     public void fireRegistered(Registration registration, Registration previousReg,
-            Collection<Observation> previousObsersations) {
+            Collection<Observation> previousObservations) {
         for (RegistrationListener l : listeners) {
-            l.registered(registration, previousReg, previousObsersations);
+            l.registered(registration, previousReg, previousObservations);
         }
     }
 
