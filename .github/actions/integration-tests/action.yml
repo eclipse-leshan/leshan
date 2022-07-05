@@ -6,7 +6,7 @@ runs:
   steps:
   - name: Run Integration Tests 
     shell: bash
-    run: mvn -B test '-Dtest=org.eclipse.leshan.integration.tests.**,!**/Redis*.java' -Dsurefire.rerunFailingTestsCount=10 -DfailIfNoTests=false -Dskip.yarn 
+    run: mvn -B surefire:test '-Dtest=org.eclipse.leshan.integration.tests.**,!**/Redis*.java' -Dsurefire.rerunFailingTestsCount=10 -DfailIfNoTests=false 
 
   - name: Add comment
     if: failure()
@@ -22,11 +22,11 @@ runs:
         ```
         Or just launch all tests : 
         ```
-        mvn test -Dskip.yarn
+        mvn surefire:test
         ```
         To launch integration tests only : 
         ```
-        mvn test '-Dtest=org.eclipse.leshan.integration.tests.**,!**/Redis*.java' -Dsurefire.rerunFailingTestsCount=3 -DfailIfNoTests=false -Dskip.yarn
+        mvn surefire:test '-Dtest=org.eclipse.leshan.integration.tests.**,!**/Redis*.java' -DfailIfNoTests=false
         ```
         Currently, some of our integration tests are flaky :unamused: ,so do not hesitate to re-run in case of failure. 
 

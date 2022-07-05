@@ -8,7 +8,7 @@ runs:
   - name: Build
     id: build
     shell: bash
-    run: mvn -B package -PCompileOnly
+    run: mvn -B install -PCompileOnly
 
 
   - name: Add comment
