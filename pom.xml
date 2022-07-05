@@ -129,6 +129,7 @@ Contributors:
                 <skipTests>true</skipTests>
                 <skip.yarn>true</skip.yarn>
                 <maven.javadoc.skip>true</maven.javadoc.skip>
+                <animal.sniffer.skip>true</animal.sniffer.skip>
             </properties>
         </profile>
     </profiles>
