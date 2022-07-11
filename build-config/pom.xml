@@ -263,6 +263,21 @@ Contributors:
                 </executions>
             </plugin>
             <plugin>
+                <groupId>net.revelc.code.formatter</groupId>
+                <artifactId>formatter-maven-plugin</artifactId>
+                <configuration>
+                    <configFile>${project.basedir}/../eclipse/eclipse-code-style.xml</configFile>
+                    <lineEnding>${leshan.lineEnding}</lineEnding>
+                </configuration>
+                <executions>
+                  <execution>
+                    <goals>
+                      <goal>validate</goal>
+                    </goals>
+                  </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
                 <configuration>

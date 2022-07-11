@@ -140,6 +140,7 @@ Contributors:
         <leshan.encoding>UTF-8</leshan.encoding>
         <project.build.sourceEncoding>${leshan.encoding}</project.build.sourceEncoding>
         <project.reporting.outputEncoding>${leshan.encoding}</project.reporting.outputEncoding>
+        <leshan.lineEnding>LF</leshan.lineEnding>
 
         <!-- we use properties for version when there are used more than once -->
         <!-- dependencies version -->
@@ -270,6 +271,12 @@ Contributors:
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>flatten-maven-plugin</artifactId>
                     <version>1.2.7</version>
+                </plugin>
+                <plugin>
+                    <groupId>net.revelc.code.formatter</groupId>
+                    <artifactId>formatter-maven-plugin</artifactId>
+                    <!--  stuck to 2.16.0 for java8 compatibility -->
+                    <version>2.16.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.felix</groupId>
