@@ -54,20 +54,20 @@ public class CoapMessage {
     public String payload;
 
     public CoapMessage(Request request, boolean incoming) {
-        this(incoming, request.getType(), request.getMID(), request.getTokenString(), request.getOptions(), request
-                .getPayload());
+        this(incoming, request.getType(), request.getMID(), request.getTokenString(), request.getOptions(),
+                request.getPayload());
         this.code = request.getCode().toString();
     }
 
     public CoapMessage(Response request, boolean incoming) {
-        this(incoming, request.getType(), request.getMID(), request.getTokenString(), request.getOptions(), request
-                .getPayload());
+        this(incoming, request.getType(), request.getMID(), request.getTokenString(), request.getOptions(),
+                request.getPayload());
         this.code = request.getCode().toString();
     }
 
     public CoapMessage(EmptyMessage request, boolean incoming) {
-        this(incoming, request.getType(), request.getMID(), request.getTokenString(), request.getOptions(), request
-                .getPayload());
+        this(incoming, request.getType(), request.getMID(), request.getTokenString(), request.getOptions(),
+                request.getPayload());
     }
 
     private CoapMessage(boolean incoming, Type type, int mId, String token, OptionSet options, byte[] payload) {

@@ -23,8 +23,8 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 /**
  * Helper to convert value "magically" from one type to another.
  * <p>
- * This is used by {@link LwM2mEncoder} to fix {@link LwM2mResource} which would used a different {@link Type} than
- * the one defined in the {@link ResourceModel}.
+ * This is used by {@link LwM2mEncoder} to fix {@link LwM2mResource} which would used a different {@link Type} than the
+ * one defined in the {@link ResourceModel}.
  */
 public interface LwM2mValueConverter {
 

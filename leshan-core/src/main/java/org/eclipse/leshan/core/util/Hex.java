@@ -42,13 +42,13 @@ public class Hex {
      * Used to build output as Hex
      */
     private static final char[] DIGITS_LOWER = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',
-                            'e', 'f' };
+            'e', 'f' };
 
     /**
      * Used to build output as Hex
      */
     private static final char[] DIGITS_UPPER = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D',
-                            'E', 'F' };
+            'E', 'F' };
 
     /**
      * Converts an array of characters representing hexadecimal values into an array of bytes of those same values. The

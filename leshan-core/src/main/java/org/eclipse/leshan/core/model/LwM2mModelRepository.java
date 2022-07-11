@@ -158,7 +158,7 @@ public class LwM2mModelRepository {
      */
     public ObjectModel getObjectModel(Integer objectId) {
         LwM2mNodeUtil.validateObjectId(objectId);
-        
+
         Key floorKey = objects.floorKey(getKey(objectId, Version.MAX));
         if (floorKey == null || !floorKey.id.equals(objectId)) {
             return null;

@@ -101,10 +101,8 @@ public class Tlv {
 
     @Override
     public String toString() {
-        return String.format(
-                "Tlv [type=%s, children=%s, value=%s, identifier=%s]",
-                new Object[] { type.name(), Arrays.toString(children), Arrays.toString(value),
-                                        Integer.toString(identifier) });
+        return String.format("Tlv [type=%s, children=%s, value=%s, identifier=%s]", new Object[] { type.name(),
+                Arrays.toString(children), Arrays.toString(value), Integer.toString(identifier) });
     }
 
     @Override

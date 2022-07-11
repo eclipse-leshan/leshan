@@ -49,7 +49,8 @@ public class LwM2mBootstrapPskStore implements AdvancedPskStore {
 
     @Override
     public PskSecretResult requestPskSecretResult(ConnectionId cid, ServerNames serverName,
-            PskPublicInformation identity, String hmacAlgorithm, SecretKey otherSecret, byte[] seed, boolean useExtendedMasterSecret) {
+            PskPublicInformation identity, String hmacAlgorithm, SecretKey otherSecret, byte[] seed,
+            boolean useExtendedMasterSecret) {
         SecurityInfo info = bsSecurityStore.getByIdentity(identity.getPublicInfoAsString());
         if (info == null || info.getPreSharedKey() == null) {
             return new PskSecretResult(cid, identity, null);

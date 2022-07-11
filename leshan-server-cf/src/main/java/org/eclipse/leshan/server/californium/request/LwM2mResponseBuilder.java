@@ -259,8 +259,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                  * from the response that came to the request (since the request actually has a Token when going out the
                  * response will have the same correct Token.
                  *
-                 * TODO OSCORE : This should probably not be done here.
-                 * should we fix this ? should we check if oscore is used ?
+                 * TODO OSCORE : This should probably not be done here. should we fix this ? should we check if oscore
+                 * is used ?
                  */
                 if (coapRequest.getTokenBytes() == null) {
                     coapRequest.setToken(coapResponse.getTokenBytes());

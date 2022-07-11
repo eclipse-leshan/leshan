@@ -18,7 +18,7 @@ package org.eclipse.leshan.server.registration;
 import org.eclipse.leshan.core.request.RegisterRequest;
 
 public interface RegistrationIdProvider {
-    
+
     /**
      * Returns the registrationId using for location-path option values on response of Register operation.
      * 

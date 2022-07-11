@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium;
 
-
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;

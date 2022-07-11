@@ -71,8 +71,8 @@ public class LwM2mClientObserverAdapter implements LwM2mClientObserver {
     }
 
     @Override
-    public void onUpdateFailure(ServerIdentity server, UpdateRequest request, ResponseCode responseCode, String errorMessage,
-            Exception cause) {
+    public void onUpdateFailure(ServerIdentity server, UpdateRequest request, ResponseCode responseCode,
+            String errorMessage, Exception cause) {
     }
 
     @Override

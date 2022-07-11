@@ -98,7 +98,8 @@ public class RootResource extends LwM2mClientCoapResource {
             exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
         } else {
             exchange.respond(toCoapResponseCode(response.getCode()),
-                    linkSerializer.serializeCoreLinkFormat(response.getObjectLinks()), MediaTypeRegistry.APPLICATION_LINK_FORMAT);
+                    linkSerializer.serializeCoreLinkFormat(response.getObjectLinks()),
+                    MediaTypeRegistry.APPLICATION_LINK_FORMAT);
         }
         return;
     }

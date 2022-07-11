@@ -17,47 +17,47 @@ public class X509CertUtil {
     public enum GeneralName {
 
         /**
-         * otherName                       [0]     OtherName
+         * otherName [0] OtherName
          */
         OTHER_NAME(0),
 
         /**
-         * rfc822Name                      [1]     IA5String
+         * rfc822Name [1] IA5String
          */
         RFC822_NAME(1),
 
         /**
-         * dNSName                         [2]     IA5String
+         * dNSName [2] IA5String
          */
         DNS_NAME(2),
 
         /**
-         * x400Address                     [3]     ORAddress
+         * x400Address [3] ORAddress
          */
         X400_ADDRESS(3),
 
         /**
-         * directoryName                   [4]     Name
+         * directoryName [4] Name
          */
         DIRECTORY_NAME(4),
 
         /**
-         * ediPartyName                    [5]     EDIPartyName
+         * ediPartyName [5] EDIPartyName
          */
         EDI_PARTY_NAME(5),
 
         /**
-         * uniformResourceIdentifier       [6]     IA5String
+         * uniformResourceIdentifier [6] IA5String
          */
         UNIFORM_RESOURCE_IDENTIFIER(6),
 
         /**
-         * iPAddress                       [7]     OCTET STRING
+         * iPAddress [7] OCTET STRING
          */
         IP_ADDRESS(7),
 
         /**
-         * registeredID                    [8]     OBJECT IDENTIFIER
+         * registeredID [8] OBJECT IDENTIFIER
          */
         REGISTERED_ID(8);
 
@@ -181,11 +181,11 @@ public class X509CertUtil {
     /**
      * Extracts field from given principal's name.
      * <p>
-     * Notes: Can parse most name strings but HEX encoded DER values are returned back in DER HEX form.
-     * Notes: Only understands X500Principal.
+     * Notes: Can parse most name strings but HEX encoded DER values are returned back in DER HEX form. Notes: Only
+     * understands X500Principal.
      *
      * @param principal Source principal.
-     * @param field     Field key as defined in RFC 2253.
+     * @param field Field key as defined in RFC 2253.
      * @return null or value as string.
      */
     public static String getPrincipalField(Principal principal, String field) {
@@ -217,7 +217,7 @@ public class X509CertUtil {
      * Supports matching with wildcard DNS names.
      *
      * @param matcher Matcher pattern
-     * @param target  Target DNS name to check
+     * @param target Target DNS name to check
      * @return true if matches, false otherwise
      */
     private static boolean dnsNameMatch(String matcher, String target) {
@@ -237,7 +237,7 @@ public class X509CertUtil {
      * Match DNS name against X.509 Certificate's Subjects
      *
      * @param certificate Target X.509 certificate
-     * @param dnsName     DNS name to match
+     * @param dnsName DNS name to match
      * @return True if match, false otherwise
      */
     public static boolean matchSubjectDnsName(X509Certificate certificate, String dnsName) {
@@ -278,7 +278,7 @@ public class X509CertUtil {
      * Match IP address against X.509 Certificate's Subjects
      *
      * @param certificate Target X.509 certificate
-     * @param address     IP address to match
+     * @param address IP address to match
      * @return True if match, false otherwise
      */
     public static boolean matchSubjectInetAddress(X509Certificate certificate, InetAddress address) {

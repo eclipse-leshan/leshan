@@ -32,8 +32,8 @@ public interface LwM2mClientObserver {
 
     void onBootstrapSuccess(ServerIdentity bsserver, BootstrapRequest request);
 
-    void onBootstrapFailure(ServerIdentity bsserver, BootstrapRequest request, ResponseCode responseCode, String errorMessage,
-            Exception cause);
+    void onBootstrapFailure(ServerIdentity bsserver, BootstrapRequest request, ResponseCode responseCode,
+            String errorMessage, Exception cause);
 
     void onBootstrapTimeout(ServerIdentity bsserver, BootstrapRequest request);
 
@@ -43,8 +43,8 @@ public interface LwM2mClientObserver {
 
     void onRegistrationSuccess(ServerIdentity server, RegisterRequest request, String registrationID);
 
-    void onRegistrationFailure(ServerIdentity server, RegisterRequest request, ResponseCode responseCode, String errorMessage,
-            Exception cause);
+    void onRegistrationFailure(ServerIdentity server, RegisterRequest request, ResponseCode responseCode,
+            String errorMessage, Exception cause);
 
     void onRegistrationTimeout(ServerIdentity server, RegisterRequest request);
 

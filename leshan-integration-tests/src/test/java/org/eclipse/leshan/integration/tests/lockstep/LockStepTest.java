@@ -106,7 +106,8 @@ public class LockStepTest {
 
         // register with valid binding for 1.1
         RegisterRequest validRegisterRequest = new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1",
-                EnumSet.of(BindingMode.U), null, null, linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null);
+                EnumSet.of(BindingMode.U), null, null, linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()),
+                null);
         Token token = client.sendLwM2mRequest(validRegisterRequest);
         client.expectResponse().token(token).code(ResponseCode.CREATED).go();
         helper.waitForRegistrationAtServerSide(1);
@@ -138,7 +139,8 @@ public class LockStepTest {
 
         // register with valid binding for 1.0
         RegisterRequest validRegisterRequest = new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.0",
-                EnumSet.of(BindingMode.U), null, null, linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null);
+                EnumSet.of(BindingMode.U), null, null, linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()),
+                null);
         Token token = client.sendLwM2mRequest(validRegisterRequest);
         client.expectResponse().token(token).code(ResponseCode.CREATED).go();
         helper.waitForRegistrationAtServerSide(1);
@@ -168,8 +170,9 @@ public class LockStepTest {
     public void sync_send_without_acknowleged() throws Exception {
         // Register client
         LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
-        Token token = client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1",
-                EnumSet.of(BindingMode.U), null, null, linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null));
+        Token token = client.sendLwM2mRequest(
+                new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1", EnumSet.of(BindingMode.U), null, null,
+                        linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().token(token).go();
         helper.waitForRegistrationAtServerSide(1);
 
@@ -190,8 +193,9 @@ public class LockStepTest {
     public void sync_send_with_acknowleged_request_without_response() throws Exception {
         // Register client
         LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
-        Token token = client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1",
-                EnumSet.of(BindingMode.U), null, null, linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null));
+        Token token = client.sendLwM2mRequest(
+                new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1", EnumSet.of(BindingMode.U), null, null,
+                        linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().token(token).go();
         helper.waitForRegistrationAtServerSide(1);
 
@@ -219,8 +223,9 @@ public class LockStepTest {
     public void async_send_without_acknowleged() throws Exception {
         // register client
         LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
-        Token token = client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1",
-                EnumSet.of(BindingMode.U), null, null, linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null));
+        Token token = client.sendLwM2mRequest(
+                new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1", EnumSet.of(BindingMode.U), null, null,
+                        linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().token(token).go();
         helper.waitForRegistrationAtServerSide(1);
 
@@ -238,8 +243,9 @@ public class LockStepTest {
     public void async_send_with_acknowleged_request_without_response() throws Exception {
         // register client
         LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
-        Token token = client.sendLwM2mRequest(new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1",
-                EnumSet.of(BindingMode.U), null, null, linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null));
+        Token token = client.sendLwM2mRequest(
+                new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1", EnumSet.of(BindingMode.U), null, null,
+                        linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().token(token).go();
         helper.waitForRegistrationAtServerSide(1);
 

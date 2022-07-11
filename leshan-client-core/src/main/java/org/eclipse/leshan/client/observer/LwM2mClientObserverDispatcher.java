@@ -108,8 +108,8 @@ public class LwM2mClientObserverDispatcher implements LwM2mClientObserver {
     }
 
     @Override
-    public void onUpdateFailure(ServerIdentity server, UpdateRequest request, ResponseCode responseCode, String errorMessage,
-            Exception cause) {
+    public void onUpdateFailure(ServerIdentity server, UpdateRequest request, ResponseCode responseCode,
+            String errorMessage, Exception cause) {
         for (LwM2mClientObserver observer : observers) {
             observer.onUpdateFailure(server, request, responseCode, errorMessage, cause);
         }

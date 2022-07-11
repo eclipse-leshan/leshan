@@ -43,8 +43,8 @@ public class X509CertUtilTest {
 
         try {
             CertificateFactory fact = CertificateFactory.getInstance("X.509");
-            FileInputStream is = new FileInputStream (filename);
-            certificate =  (X509Certificate) fact.generateCertificate(is);
+            FileInputStream is = new FileInputStream(filename);
+            certificate = (X509Certificate) fact.generateCertificate(is);
         } catch (CertificateException | FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -135,7 +135,8 @@ public class X509CertUtilTest {
 
         Assert.assertTrue(X509CertUtil.matchSubjectInetAddress(certificate, InetAddress.getByName("192.168.1.42")));
         Assert.assertFalse(X509CertUtil.matchSubjectInetAddress(certificate, InetAddress.getByName("127.0.0.1")));
-        Assert.assertFalse(X509CertUtil.matchSubjectInetAddress(certificate, InetAddress.getByName("2001:0db8:85a3:0000:0000:8a2e:0370:7334")));
+        Assert.assertFalse(X509CertUtil.matchSubjectInetAddress(certificate,
+                InetAddress.getByName("2001:0db8:85a3:0000:0000:8a2e:0370:7334")));
         Assert.assertFalse(X509CertUtil.matchSubjectInetAddress(certificate, InetAddress.getByName("2001:db8:1234::")));
         Assert.assertFalse(X509CertUtil.matchSubjectInetAddress(certificate, InetAddress.getByName("::1")));
     }
@@ -146,7 +147,8 @@ public class X509CertUtilTest {
 
         Assert.assertFalse(X509CertUtil.matchSubjectInetAddress(certificate, InetAddress.getByName("192.168.1.42")));
         Assert.assertFalse(X509CertUtil.matchSubjectInetAddress(certificate, InetAddress.getByName("127.0.0.1")));
-        Assert.assertTrue(X509CertUtil.matchSubjectInetAddress(certificate, InetAddress.getByName("2001:0db8:85a3:0000:0000:8a2e:0370:7334")));
+        Assert.assertTrue(X509CertUtil.matchSubjectInetAddress(certificate,
+                InetAddress.getByName("2001:0db8:85a3:0000:0000:8a2e:0370:7334")));
         Assert.assertFalse(X509CertUtil.matchSubjectInetAddress(certificate, InetAddress.getByName("2001:db8:1234::")));
         Assert.assertFalse(X509CertUtil.matchSubjectInetAddress(certificate, InetAddress.getByName("::1")));
     }
@@ -161,7 +163,8 @@ public class X509CertUtilTest {
 
         Assert.assertFalse(X509CertUtil.matchSubjectInetAddress(certificate, InetAddress.getByName("192.168.1.42")));
         Assert.assertTrue(X509CertUtil.matchSubjectInetAddress(certificate, InetAddress.getByName("127.0.0.1")));
-        Assert.assertFalse(X509CertUtil.matchSubjectInetAddress(certificate, InetAddress.getByName("2001:0db8:85a3:0000:0000:8a2e:0370:7334")));
+        Assert.assertFalse(X509CertUtil.matchSubjectInetAddress(certificate,
+                InetAddress.getByName("2001:0db8:85a3:0000:0000:8a2e:0370:7334")));
         Assert.assertFalse(X509CertUtil.matchSubjectInetAddress(certificate, InetAddress.getByName("2001:db8:1234::")));
         Assert.assertTrue(X509CertUtil.matchSubjectInetAddress(certificate, InetAddress.getByName("::1")));
     }

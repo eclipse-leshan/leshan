@@ -302,8 +302,8 @@ public class StringUtils {
      * @param charset The {@link Charset} to encode the <code>String</code>
      * @return A new <code>String</code> decoded from the specified array of bytes using the given charset, or
      *         <code>null</code> if the input byte array was <code>null</code>.
-     * @throws NullPointerException Thrown if {@link StandardCharsets#UTF_8} is not initialized, which should never happen since
-     *         it is required by the Java platform specification.
+     * @throws NullPointerException Thrown if {@link StandardCharsets#UTF_8} is not initialized, which should never
+     *         happen since it is required by the Java platform specification.
      */
     private static String newString(final byte[] bytes, final Charset charset) {
         return bytes == null ? null : new String(bytes, charset);
@@ -315,8 +315,8 @@ public class StringUtils {
      * @param bytes The bytes to be decoded into characters
      * @return A new <code>String</code> decoded from the specified array of bytes using the UTF-8 charset, or
      *         <code>null</code> if the input byte array was <code>null</code>.
-     * @throws NullPointerException Thrown if {@link StandardCharsets#UTF_8} is not initialized, which should never happen since
-     *         it is required by the Java platform specification.
+     * @throws NullPointerException Thrown if {@link StandardCharsets#UTF_8} is not initialized, which should never
+     *         happen since it is required by the Java platform specification.
      * @since As of 1.7, throws {@link NullPointerException} instead of UnsupportedEncodingException
      */
     public static String newStringUtf8(final byte[] bytes) {
@@ -343,8 +343,8 @@ public class StringUtils {
      *
      * @param string the String to encode, may be <code>null</code>
      * @return encoded bytes, or <code>null</code> if the input string was <code>null</code>
-     * @throws NullPointerException Thrown if {@link StandardCharsets#UTF_8} is not initialized, which should never happen since
-     *         it is required by the Java platform specification.
+     * @throws NullPointerException Thrown if {@link StandardCharsets#UTF_8} is not initialized, which should never
+     *         happen since it is required by the Java platform specification.
      * @since As of 1.7, throws {@link NullPointerException} instead of UnsupportedEncodingException
      * @see <a href="http://download.oracle.com/javase/6/docs/api/java/nio/charset/Charset.html">Standard charsets</a>
      * @see #getBytesUnchecked(String, String)
@@ -354,11 +354,13 @@ public class StringUtils {
     }
 
     /**
-     * <p>Checks if the String contains only unicode digits.
-     * A decimal point is not a unicode digit and returns false.</p>
+     * <p>
+     * Checks if the String contains only unicode digits. A decimal point is not a unicode digit and returns false.
+     * </p>
      *
-     * <p><code>null</code> will return <code>false</code>.
-     * An empty String (length()=0) will return <code>true</code>.</p>
+     * <p>
+     * <code>null</code> will return <code>false</code>. An empty String (length()=0) will return <code>true</code>.
+     * </p>
      *
      * <pre>
      * StringUtils.isNumeric(null)   = false
@@ -371,7 +373,7 @@ public class StringUtils {
      * StringUtils.isNumeric("12.3") = false
      * </pre>
      *
-     * @param str  the String to check, may be null
+     * @param str the String to check, may be null
      * @return <code>true</code> if only contains digits, and is non-null
      */
     public static boolean isNumeric(String str) {

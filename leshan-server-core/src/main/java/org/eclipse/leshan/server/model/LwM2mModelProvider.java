@@ -24,8 +24,8 @@ import org.eclipse.leshan.server.registration.Registration;
  * A <code>LwM2mModelProvider</code> implementation is in charge of returning the description of the LWM2M objects for
  * each registered client.
  * <p>
- * The description of each object is mainly used by the {@link LwM2mEncoder}/{@link LwM2mDecoder} to
- * encode/decode the requests/responses payload.
+ * The description of each object is mainly used by the {@link LwM2mEncoder}/{@link LwM2mDecoder} to encode/decode the
+ * requests/responses payload.
  * </p>
  * <p>
  * A typical use case to implement a custom provider is the need to support several version of the specification.

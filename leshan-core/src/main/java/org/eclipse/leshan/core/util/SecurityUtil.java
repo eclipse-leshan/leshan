@@ -88,13 +88,14 @@ public class SecurityUtil {
                             String.format("%s certificate format is not supported, Only X.509 certificate is supported",
                                     cert.getType()));
                 }
-                x509Certificates.add((X509Certificate)cert);
+                x509Certificates.add((X509Certificate) cert);
             }
 
             // we support only EC algorithm
             if (!"EC".equals(x509Certificates.get(0).getPublicKey().getAlgorithm())) {
-                throw new CertificateException(String.format(
-                        "%s algorithm is not supported, Only EC algorithm is supported", x509Certificates.get(0).getType()));
+                throw new CertificateException(
+                        String.format("%s algorithm is not supported, Only EC algorithm is supported",
+                                x509Certificates.get(0).getType()));
             }
 
             return x509Certificates.toArray(new X509Certificate[0]);

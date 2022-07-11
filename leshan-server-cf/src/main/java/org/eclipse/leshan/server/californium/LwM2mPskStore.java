@@ -54,7 +54,8 @@ public class LwM2mPskStore implements AdvancedPskStore {
 
     @Override
     public PskSecretResult requestPskSecretResult(ConnectionId cid, ServerNames serverName,
-            PskPublicInformation identity, String hmacAlgorithm, SecretKey otherSecret, byte[] seed, boolean useExtendedMasterSecret) {
+            PskPublicInformation identity, String hmacAlgorithm, SecretKey otherSecret, byte[] seed,
+            boolean useExtendedMasterSecret) {
         if (securityStore == null)
             return null;
 

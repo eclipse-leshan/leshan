@@ -42,24 +42,24 @@ public class ArgumentValidationTest {
     @Parameterized.Parameters(name = "{index} : digit: {0}, value: {1}, expected exception: {2}")
     public static Collection<?> linkValueListProvider() {
         return Arrays.asList(new Object[][] { //
-                        { 0, "hello", null }, //
-                        { 9, "hello", null }, //
-                        { -1, "hello", InvalidArgumentException.class }, //
-                        { 10, "hello", InvalidArgumentException.class }, //
-                        { 1, null, null }, //
-                        { 1, "", null }, //
-                        { 1, "!" + new String(new byte[] { 0x23, 0x26, 0x28, 0x5B, 0x5D, 0x7E }, StandardCharsets.UTF_8),
-                                null }, //
-                        { 1, new String(new byte[] { 0x22 }, StandardCharsets.UTF_8), InvalidArgumentException.class },
-                        // " character
-                        { 1, new String(new byte[] { 0x27 }, StandardCharsets.UTF_8), InvalidArgumentException.class },
-                        // ' character
-                        { 1, new String(new byte[] { 0x5C }, StandardCharsets.UTF_8), InvalidArgumentException.class },
-                        // \ character
-                        { 1, new String(new byte[] { 0x7F }, StandardCharsets.UTF_8), InvalidArgumentException.class },
-                        // DEL character
-                        { 1, "`aAzZ190-=~!@#$%^&*()_+[]{}|;:<>/?,.", null } // more visualized character rules above
-                });
+                { 0, "hello", null }, //
+                { 9, "hello", null }, //
+                { -1, "hello", InvalidArgumentException.class }, //
+                { 10, "hello", InvalidArgumentException.class }, //
+                { 1, null, null }, //
+                { 1, "", null }, //
+                { 1, "!" + new String(new byte[] { 0x23, 0x26, 0x28, 0x5B, 0x5D, 0x7E }, StandardCharsets.UTF_8),
+                        null }, //
+                { 1, new String(new byte[] { 0x22 }, StandardCharsets.UTF_8), InvalidArgumentException.class },
+                // " character
+                { 1, new String(new byte[] { 0x27 }, StandardCharsets.UTF_8), InvalidArgumentException.class },
+                // ' character
+                { 1, new String(new byte[] { 0x5C }, StandardCharsets.UTF_8), InvalidArgumentException.class },
+                // \ character
+                { 1, new String(new byte[] { 0x7F }, StandardCharsets.UTF_8), InvalidArgumentException.class },
+                // DEL character
+                { 1, "`aAzZ190-=~!@#$%^&*()_+[]{}|;:<>/?,.", null } // more visualized character rules above
+        });
     }
 
     @Test

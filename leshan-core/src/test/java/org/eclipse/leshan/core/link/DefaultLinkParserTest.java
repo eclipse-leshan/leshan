@@ -183,8 +183,8 @@ public class DefaultLinkParserTest {
 
     @Test
     public void allow_mixed_attributes() throws LinkParseException {
-        Link[] parsed = parser
-                .parseCoreLinkFormat("</foo>;param=!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9;param2=\"foo\";param3,</bar>".getBytes());
+        Link[] parsed = parser.parseCoreLinkFormat(
+                "</foo>;param=!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9;param2=\"foo\";param3,</bar>".getBytes());
 
         Assert.assertEquals("/foo", parsed[0].getUriReference());
         AttributeSet attResult = new AttributeSet( //

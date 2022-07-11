@@ -21,7 +21,6 @@ import org.eclipse.leshan.server.registration.RegistrationStore;
 /**
  * A registration store which is able to store Californium observation.
  */
-public interface CaliforniumRegistrationStore extends RegistrationStore, ObservationStore
-{
+public interface CaliforniumRegistrationStore extends RegistrationStore, ObservationStore {
 
 }
