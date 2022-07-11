@@ -136,6 +136,11 @@ Contributors:
     </profiles>
 
     <properties>
+        <!-- configure encoding -->
+        <leshan.encoding>UTF-8</leshan.encoding>
+        <project.build.sourceEncoding>${leshan.encoding}</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>${leshan.encoding}</project.reporting.outputEncoding>
+
         <!-- we use properties for version when there are used more than once -->
         <!-- dependencies version -->
         <californium.version>3.5.0</californium.version>
