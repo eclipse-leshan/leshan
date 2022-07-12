@@ -30,10 +30,20 @@ jobs:
     - name: Check No Merge Commit
       uses: ./.github/actions/no_merge
 
+    - name: Code Format Check
+      if: always()
+      id: formatter
+      uses: ./.github/actions/formatter
+
     - name: Build
       if: always()
       id: build
       uses: ./.github/actions/build
+
+    - name: Code Style Check
+      if: always()
+      id: checkstyle
+      uses: ./.github/actions/checkstyle
 
     - name: Check Android API Compliance
       if: ${{ always() && steps.build.conclusion == 'success' }}

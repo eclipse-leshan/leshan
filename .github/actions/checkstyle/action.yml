@@ -1,0 +1,36 @@
+name: "CheckSyle Validation"
+description: "Check some code style rules with Maven"
+
+runs:
+  using: "composite"
+  steps:
+
+  - name: Check Code Style
+    id: checkstyle
+    shell: bash
+    run: mvn -B checkstyle:checkstyle
+
+  - name: Add comment
+    if: failure()
+    uses: marocchino/sticky-pull-request-comment@v2
+    with:
+      header: Checkstyle Validation Failed
+      message: |
+        :x: **Checkstyle Validation Failed !** [(more details)](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+        Ensure your code build locally using: 
+        ```
+        mvn clean install
+        ```
+        Or just validate checkstyle rules with : 
+        ```
+        mvn checkstyle:checkstyle
+        ```
+        See also [How configure your IDE](https://github.com/eclipse/leshan/wiki/Code-&-design-guidelines#configure-your-ide).
+
+  - name: Delete comment
+    if: success()
+    uses: marocchino/sticky-pull-request-comment@v2
+    with:
+      header: Checkstyle Validation Failed
+      delete: true

@@ -8,7 +8,7 @@ runs:
   - name: Generate Javadoc
     id: javadoc
     shell: bash
-    run: mvn -B javadoc:javadoc
+    run: mvn -B javadoc:javadoc-no-fork
 
   - name: Add comment
     if: failure()
