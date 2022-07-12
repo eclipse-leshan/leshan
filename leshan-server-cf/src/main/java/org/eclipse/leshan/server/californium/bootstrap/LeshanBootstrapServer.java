@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2013-2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690
@@ -62,7 +62,7 @@ public class LeshanBootstrapServer {
      * /** Initialize a server which will bind to the specified address and port.
      * <p>
      * {@link LeshanBootstrapServerBuilder} is the priviledged way to create a {@link LeshanBootstrapServer}.
-     * 
+     *
      * @param unsecuredEndpoint CoAP endpoint used for <code>coap://</code> communication.
      * @param securedEndpoint CoAP endpoint used for <code>coaps://</code> communication.
      * @param bsSessionManager manages life cycle of a bootstrap process

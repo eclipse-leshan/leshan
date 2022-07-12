@@ -2,12 +2,12 @@
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v10.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Boya Zhang - initial API and implementation
  *******************************************************************************/
@@ -41,7 +41,7 @@ public class SenMLJsonRecordSerDes extends JacksonJsonSerDes<SenMLRecord> {
      * SenML value is defined as mandatory in <a href="https://tools.ietf.org/html/rfc8428#section-4.2">rfc8428</a>, but
      * SenML records used with a Read-Composite operation do not contain any value field, so
      * <code>allowNoValue=true</code> can be used skip this validation.
-     * 
+     *
      * @param allowNoValue <code>True</code> to not check if there is a value for each SenML record.
      */
     public SenMLJsonRecordSerDes(boolean allowNoValue) {

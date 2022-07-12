@@ -24,9 +24,9 @@ public class DefaultLinkSerializer implements LinkSerializer {
 
     /***
      * Serialize severals {@code Link} to {@code String} as defined in http://tools.ietf.org/html/rfc6690.
-     * 
+     *
      * @param linkObjects links to serialize.
-     * 
+     *
      * @return a {@code String} representation like defined in http://tools.ietf.org/html/rfc6690. If LinkObjects is
      *         empty return an empty {@code String};
      */

@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2013-2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -194,7 +194,7 @@ public class ContentFormat implements Comparable<ContentFormat> {
     /**
      * From a list of {@link ContentFormat} of a client, return only the optional ones for a given LWM2M
      * {@link LwM2mVersion}. In other words we remove all {@link ContentFormat} which is considered as Mandatory.
-     * 
+     *
      * @param contentFormat A list of all supported {@link ContentFormat} for a given device.
      * @param lwm2mVersion The LWM2M version targeted
      * @return only optional {@link ContentFormat}

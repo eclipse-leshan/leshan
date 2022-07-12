@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2018 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -28,7 +28,7 @@ import org.eclipse.leshan.core.response.ResponseCallback;
  * <p>
  * A {@link LwM2mResponse} is created from the CoAP Response received. This behavior is not implemented and should be
  * provided by overriding {@link #buildResponse(Response)}.
- * 
+ *
  * @param <T> the type of the {@link LwM2mResponse} to build from the CoAP response
  */
 public abstract class AsyncRequestObserver<T extends LwM2mResponse> extends CoapAsyncRequestObserver {
@@ -40,7 +40,7 @@ public abstract class AsyncRequestObserver<T extends LwM2mResponse> extends Coap
      * The Californium API does not ensure that message callback are exclusive. E.g. In some race condition, you can get
      * a onReponse call and a onCancel one. The CoapAsyncRequestObserver ensure that you will receive only one event.
      * Meaning, you get either 1 response or 1 error.
-     * 
+     *
      * @param coapRequest The CoAP request to observe.
      * @param responseCallback This is called when a response is received. This MUST NOT be null.
      * @param errorCallback This is called when an error happens. This MUST NOT be null.
@@ -70,7 +70,7 @@ public abstract class AsyncRequestObserver<T extends LwM2mResponse> extends Coap
 
     /**
      * Build the {@link LwM2mResponse} from the CoAP {@link Response}.
-     * 
+     *
      * @param coapResponse The CoAP response received.
      * @return the corresponding {@link LwM2mResponse}.
      */

@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2013-2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -21,7 +21,7 @@ import org.eclipse.leshan.core.response.BootstrapReadResponse;
 
 /**
  * A Lightweight M2M request for retrieving the values of resources from a LWM2M Client.
- * 
+ *
  * The "Bootstrap-Read" operation in the Bootstrap Interface is a restricted form of the "Read" operation found in the
  * Device Management and Service Enablement interface, and MUST be limited to target Objects that are strictly necessary
  * to setup a proper configuration in a LwM2M Client.
@@ -33,7 +33,7 @@ public class BootstrapReadRequest extends AbstractSimpleDownlinkRequest<Bootstra
 
     /**
      * Creates a request for reading all instances of a particular object from a client.
-     * 
+     *
      * @param objectId the object ID of the resource
      */
     public BootstrapReadRequest(int objectId) {
@@ -42,7 +42,7 @@ public class BootstrapReadRequest extends AbstractSimpleDownlinkRequest<Bootstra
 
     /**
      * Creates a request for reading all instances of a particular object from a client.
-     * 
+     *
      * @param format the desired format for the response
      * @param objectId the object ID of the resource
      */
@@ -52,7 +52,7 @@ public class BootstrapReadRequest extends AbstractSimpleDownlinkRequest<Bootstra
 
     /**
      * Creates a request for reading a particular object instance from a client.
-     * 
+     *
      * @param objectId the object ID of the resource
      * @param objectInstanceId the object instance ID
      */
@@ -73,7 +73,7 @@ public class BootstrapReadRequest extends AbstractSimpleDownlinkRequest<Bootstra
 
     /**
      * Create a request for reading an object/instance targeted by a specific path.
-     * 
+     *
      * @param path the path to the LWM2M node to read
      * @throws IllegalArgumentException if the target path is not valid
      */
@@ -98,7 +98,7 @@ public class BootstrapReadRequest extends AbstractSimpleDownlinkRequest<Bootstra
      * @param format the desired format for the response
      * @param path the path to the LWM2M node to read
      * @param coapRequest the underlying request
-     * 
+     *
      * @throws IllegalArgumentException if the target path is not valid
      */
     public BootstrapReadRequest(ContentFormat format, String path, Object coapRequest) {
@@ -109,11 +109,11 @@ public class BootstrapReadRequest extends AbstractSimpleDownlinkRequest<Bootstra
      * Create a request for reading an object/instance targeted by a specific path.
      * <p>
      * This constructor is mainly for internal purpose.
-     * 
+     *
      * @param format the desired format for the response
      * @param target the path to the LWM2M node to read
      * @param coapRequest the underlying request
-     * 
+     *
      * @throws IllegalArgumentException if the target path is not valid
      */
     public BootstrapReadRequest(ContentFormat format, LwM2mPath target, Object coapRequest) {

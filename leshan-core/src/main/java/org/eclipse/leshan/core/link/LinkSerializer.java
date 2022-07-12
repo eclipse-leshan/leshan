@@ -25,7 +25,7 @@ public interface LinkSerializer {
 
     /**
      * Serialize links {@link Link} into String in format defined in RFC RFC6690.
-     * 
+     *
      * @param linkObjects array of {@link Link}
      */
     String serializeCoreLinkFormat(Link... linkObjects);

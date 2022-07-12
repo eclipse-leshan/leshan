@@ -32,7 +32,7 @@ import org.eclipse.leshan.core.util.Validate;
  * This class implements Certificate Usage (0) - CA Constraint
  *
  * From RFC 6698:
- * 
+ *
  * <pre>
  * 0 -- Certificate usage 0 is used to specify a CA certificate, or
  *       the public key of such a certificate, that MUST be found in any of
@@ -47,7 +47,7 @@ import org.eclipse.leshan.core.util.Validate;
  *       the certificate might or might not have the basicConstraints
  *       extension present.
  * </pre>
- * 
+ *
  * For details about Certificate Usage please see:
  * <a href="https://tools.ietf.org/html/rfc6698#section-2.1.1">rfc6698#section-2.1.1</a> - The Certificate Usage Field
  * <p>

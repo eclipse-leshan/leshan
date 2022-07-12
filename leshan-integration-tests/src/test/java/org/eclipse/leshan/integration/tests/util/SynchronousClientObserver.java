@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2018 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -125,7 +125,7 @@ public class SynchronousClientObserver extends LwM2mClientObserverAdapter {
 
     /**
      * Wait for registration.
-     * 
+     *
      * @return true if registration succeed, false if it failed
      * @throws TimeoutException if registration timeout
      */
@@ -146,7 +146,7 @@ public class SynchronousClientObserver extends LwM2mClientObserverAdapter {
 
     /**
      * Wait for registration update.
-     * 
+     *
      * @return true if registration update succeed, false if it failed
      * @throws TimeoutException if registration update update timeout
      */
@@ -167,7 +167,7 @@ public class SynchronousClientObserver extends LwM2mClientObserverAdapter {
 
     /**
      * Wait for deregistration.
-     * 
+     *
      * @return true if deregistration succeed, false if it failed
      * @throws TimeoutException if deregistration timeout
      */
@@ -189,7 +189,7 @@ public class SynchronousClientObserver extends LwM2mClientObserverAdapter {
 
     /**
      * Wait for bootstrap.
-     * 
+     *
      * @return true if bootstrap succeed, false if it failed
      * @throws TimeoutException if bootstrap timeout
      */
@@ -210,7 +210,7 @@ public class SynchronousClientObserver extends LwM2mClientObserverAdapter {
 
     /**
      * Wait for Invalid consistency check.
-     * 
+     *
      * @return true if the client state is inconsistent
      * @throws TimeoutException if bootstrap timeout
      */

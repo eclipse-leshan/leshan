@@ -178,7 +178,7 @@ public abstract class BaseNCodec {
     /**
      * Note <code>lineLength</code> is rounded down to the nearest multiple of {@link #encodedBlockSize} If
      * <code>chunkSeparatorLength</code> is zero, then chunking is disabled.
-     * 
+     *
      * @param unencodedBlockSize the size of an unencoded block (e.g. Base64 = 3)
      * @param encodedBlockSize the size of an encoded block (e.g. Base64 = 4)
      * @param lineLength if &gt; 0, use chunking with a length <code>lineLength</code>
@@ -192,7 +192,7 @@ public abstract class BaseNCodec {
     /**
      * Note <code>lineLength</code> is rounded down to the nearest multiple of {@link #encodedBlockSize} If
      * <code>chunkSeparatorLength</code> is zero, then chunking is disabled.
-     * 
+     *
      * @param unencodedBlockSize the size of an unencoded block (e.g. Base64 = 3)
      * @param encodedBlockSize the size of an encoded block (e.g. Base64 = 4)
      * @param lineLength if &gt; 0, use chunking with a length <code>lineLength</code>
@@ -241,7 +241,7 @@ public abstract class BaseNCodec {
 
     /**
      * Increases our buffer by the {@link #DEFAULT_BUFFER_RESIZE_FACTOR}.
-     * 
+     *
      * @param context the context to be used
      */
     private byte[] resizeBuffer(final Context context) {
@@ -298,7 +298,7 @@ public abstract class BaseNCodec {
 
     /**
      * Checks if a byte value is whitespace or not. Whitespace is taken to mean: space, tab, CR, LF
-     * 
+     *
      * @param byteToCheck the byte to check
      * @return true if byte is whitespace, false otherwise
      */

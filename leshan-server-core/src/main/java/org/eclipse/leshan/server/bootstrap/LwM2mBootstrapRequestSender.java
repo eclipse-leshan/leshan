@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2016 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -37,7 +37,7 @@ public interface LwM2mBootstrapRequestSender {
      * <p>
      * The synchronous way could block a thread during a long time so it is more recommended to use the asynchronous
      * way.
-     * 
+     *
      * @param destination The {@link BootstrapSession} associate to the device we want to sent the request.
      * @param request The request to send to the client.
      * @param timeoutInMs The global timeout to wait in milliseconds (see
@@ -45,7 +45,7 @@ public interface LwM2mBootstrapRequestSender {
      * @param <T> The expected type of the response received.
      * @return the LWM2M response. The response can be <code>null</code> if the timeout expires (see
      *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
-     * 
+     *
      * @throws CodecException if request payload can not be encoded.
      * @throws InterruptedException if the thread was interrupted.
      * @throws RequestRejectedException if the request is rejected by foreign peer.
@@ -58,9 +58,9 @@ public interface LwM2mBootstrapRequestSender {
 
     /**
      * Send a Lightweight M2M {@link DownlinkRequest} asynchronously to a LWM2M client.
-     * 
+     *
      * {@link ResponseCallback} and {@link ErrorCallback} are exclusively called.
-     * 
+     *
      * @param destination The {@link BootstrapSession} associate to the device we want to sent the request.
      * @param request The request to send to the client.
      * @param timeoutInMs The global timeout to wait in milliseconds (see
@@ -86,7 +86,7 @@ public interface LwM2mBootstrapRequestSender {
 
     /**
      * Cancel all ongoing requests for a given bootstrap session.
-     * 
+     *
      * @param session the bootstrap session for which we need to cancel requests.
      */
     void cancelOngoingRequests(BootstrapSession session);

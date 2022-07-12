@@ -1,19 +1,19 @@
 /*******************************************************************************
  * Copyright (c) 2016 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - set exception in onSendError
- *     Simon Bernard                                 - use specific exception for onSendError  
+ *     Simon Bernard                                 - use specific exception for onSendError
  *******************************************************************************/
 package org.eclipse.leshan.core.californium;
 
@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
  * Results are available via synchronous {@link #waitForCoapResponse()} method.
  * <p>
  * This class also provides response timeout facility.
- * 
+ *
  * @see <a href="https://github.com/eclipse/leshan/wiki/Request-Timeout">Request Timeout Wiki page</a>
  */
 public class CoapSyncRequestObserver extends AbstractRequestObserver {
@@ -110,10 +110,10 @@ public class CoapSyncRequestObserver extends AbstractRequestObserver {
 
     /**
      * Wait for the CoAP response.
-     * 
+     *
      * @return the CoAP response. The response can be <code>null</code> if the timeout expires (see
      *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
-     * 
+     *
      * @throws InterruptedException if the thread was interrupted.
      * @throws RequestRejectedException if the request is rejected by foreign peer.
      * @throws RequestCanceledException if the request is cancelled.

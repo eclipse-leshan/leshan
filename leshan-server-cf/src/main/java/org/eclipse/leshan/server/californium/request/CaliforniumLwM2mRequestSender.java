@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2013-2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - use Identity as destination
@@ -82,7 +82,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
      * <p>
      * The synchronous way could block a thread during a long time so it is more recommended to use the asynchronous
      * way.
-     * 
+     *
      * @param destination The {@link Registration} associate to the device we want to sent the request.
      * @param request The request to send to the client.
      * @param lowerLayerConfig to tweak lower layer request (e.g. coap request)
@@ -90,7 +90,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
      * @return the LWM2M response. The response can be <code>null</code> if the timeout expires (see
      *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
-     * 
+     *
      * @throws CodecException if request payload can not be encoded.
      * @throws InterruptedException if the thread was interrupted.
      * @throws RequestRejectedException if the request is rejected by foreign peer.
@@ -128,11 +128,11 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
 
     /**
      * Send a Lightweight M2M {@link DownlinkRequest} asynchronously to a LWM2M client.
-     * 
+     *
      * The Californium API does not ensure that message callback are exclusive. E.g. In some race condition, you can get
      * a onReponse call and a onCancel one. This method ensures that you will receive only one event. Meaning, you get
      * either 1 response or 1 error.
-     * 
+     *
      * @param destination The {@link Registration} associate to the device we want to sent the request.
      * @param request The request to send to the client.
      * @param lowerLayerConfig to tweak lower layer request (e.g. coap request)
@@ -181,14 +181,14 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
      * <p>
      * The synchronous way could block a thread during a long time so it is more recommended to use the asynchronous
      * way.
-     * 
+     *
      * @param destination The {@link Registration} associate to the device we want to sent the request. s
      * @param coapRequest The request to send to the client.
      * @param timeoutInMs The response timeout to wait in milliseconds (see
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
      * @return the response or <code>null</code> if the timeout expires (see
      *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
-     * 
+     *
      * @throws InterruptedException if the thread was interrupted.
      * @throws RequestRejectedException if the request is rejected by foreign peer.
      * @throws RequestCanceledException if the request is cancelled.
@@ -204,11 +204,11 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
 
     /**
      * Sends a CoAP {@link Request} asynchronously to a LWM2M client.
-     * 
+     *
      * The Californium API does not ensure that message callback are exclusive. E.g. In some race condition, you can get
      * a onReponse call and a onCancel one. This method ensures that you will receive only one event. Meaning, you get
      * either 1 response or 1 error.
-     * 
+     *
      * @param destination The {@link Registration} associate to the device we want to sent the request.
      * @param coapRequest The request to send to the client.
      * @param timeoutInMs The response timeout to wait in milliseconds (see
@@ -237,7 +237,7 @@ public class CaliforniumLwM2mRequestSender implements LwM2mRequestSender, CoapRe
     /**
      * cancel all ongoing messages for a LWM2M client identified by the registration identifier. In case a client
      * de-registers, the consumer can use this method to cancel all ongoing messages for the given client.
-     * 
+     *
      * @param registration client registration meta data of a LWM2M client.
      */
     @Override

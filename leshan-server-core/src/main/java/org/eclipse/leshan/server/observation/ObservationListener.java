@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2013-2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -32,7 +32,7 @@ public interface ObservationListener {
 
     /**
      * Called when a new observation is created.
-     * 
+     *
      * @param observation the new observation.
      * @param registration the related registration
      */
@@ -40,18 +40,18 @@ public interface ObservationListener {
 
     /**
      * Called when an observation is cancelled.
-     * 
+     *
      * @param observation the cancelled observation.
      */
     void cancelled(Observation observation);
 
     /**
      * Called on new notification.
-     * 
+     *
      * @param observation the observation for which new data are received
      * @param registration the registration concerned by this observation
      * @param response the lwm2m response received (successful or error response)
-     * 
+     *
      */
     void onResponse(SingleObservation observation, Registration registration, ObserveResponse response);
 
@@ -67,7 +67,7 @@ public interface ObservationListener {
 
     /**
      * Called when an error occurs on new notification.
-     * 
+     *
      * @param observation the observation for which new data are received
      * @param registration the registration concerned by this observation
      * @param error the exception raised when we handle the notification. It can be :

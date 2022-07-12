@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2016 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -35,7 +35,7 @@ import redis.clients.jedis.util.Pool;
 
 /**
  * A {@link SecurityStore} implementation based on Redis.
- * 
+ *
  * Security info are stored using the endpoint as primary key and a secondary index is created for psk-identity lookup.
  */
 public class RedisSecurityStore implements EditableSecurityStore {

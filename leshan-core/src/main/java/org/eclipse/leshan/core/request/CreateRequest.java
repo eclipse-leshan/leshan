@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2013-2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -40,7 +40,7 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
     /**
      * Creates a request for creating an instance of a particular object without specifying the id of this new instance.
      * The id will be chosen by the client and accessible in the CreateResponse.
-     * 
+     *
      * @param contentFormat the payload format
      * @param objectId the object id
      * @param resources the resource values for the new instance
@@ -54,7 +54,7 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
     /**
      * Creates a request for creating an instance of a particular object without specifying the id of this new instance
      * and using the TLV content format. The id will be chosen by the client and accessible in the CreateResponse.
-     * 
+     *
      * @param objectId the object id
      * @param resources the resource values for the new instance
      */
@@ -65,7 +65,7 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
     /**
      * Creates a request for creating an instance of a particular object without specifying the id of this new instance.
      * The id will be chosen by the client and accessible in the CreateResponse.
-     * 
+     *
      * @param contentFormat the payload format
      * @param objectId the object id
      * @param resources the resource values for the new instance
@@ -79,7 +79,7 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
     /**
      * Creates a request for creating an instance of a particular object without specifying the id of this new instance
      * and using the TLV content format. The id will be chosen by the client and accessible in the CreateResponse.
-     * 
+     *
      * @param objectId the object id
      * @param resources the resource values for the new instance
      */
@@ -91,7 +91,7 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
 
     /**
      * Creates a request for creating instances of a particular object.
-     * 
+     *
      * @param contentFormat the payload format
      * @param objectId the object id
      * @param instances the object instances to create
@@ -104,7 +104,7 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
 
     /**
      * Creates a request for creating instances of a particular object using the TLV content format.
-     * 
+     *
      * @param objectId the object id
      * @param instances the object instances to create
      */
@@ -118,7 +118,7 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
      * <p>
      * The path MUST BE an object path, the instance id will be chosen by the client and accessible in the
      * CreateResponse.
-     * 
+     *
      * @param path the target object path
      * @param resources the resource values for the new instance
      * @exception InvalidRequestException if the target path is not valid.
@@ -132,7 +132,7 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
      * <p>
      * The path MUST BE an object path, the instance id will be chosen by the client and accessible in the
      * CreateResponse.
-     * 
+     *
      * @param contentFormat the payload format (TLV or JSON)
      * @param path the target object path
      * @param resources the resource values for the new instance
@@ -148,12 +148,12 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
      * <p>
      * The path MUST BE an object path, the instance id will be chosen by the client and accessible in the
      * CreateResponse.
-     * 
+     *
      * @param contentFormat the payload format (TLV or JSON)
      * @param path the target object path
      * @param resources the resource values for the new instance
      * @param coapRequest the underlying request
-     * 
+     *
      * @exception InvalidRequestException if parameters are invalid.
      */
     public CreateRequest(ContentFormat contentFormat, Object coapRequest, String path,
@@ -166,7 +166,7 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
      * <p>
      * The path MUST BE an object path, the instance id will be chosen by the client and accessible in the
      * CreateResponse.
-     * 
+     *
      * @param path the target object path
      * @param resources the resource values for the new instance
      * @exception InvalidRequestException if the target path is not valid.
@@ -180,7 +180,7 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
      * <p>
      * The path MUST BE an object path, the instance id will be chosen by the client and accessible in the
      * CreateResponse.
-     * 
+     *
      * @param contentFormat the payload format (TLV or JSON)
      * @param path the target object path
      * @param resources the resource values for the new instance
@@ -196,12 +196,12 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
      * <p>
      * The path MUST BE an object path, the instance id will be chosen by the client and accessible in the
      * CreateResponse.
-     * 
+     *
      * @param contentFormat the payload format (TLV or JSON)
      * @param coapRequest the underlying request
      * @param path the target object path
      * @param resources the resource values for the new instance
-     * 
+     *
      * @exception InvalidRequestException if parameters are invalid.
      */
     public CreateRequest(ContentFormat contentFormat, Object coapRequest, String path, LwM2mResource... resources)
@@ -211,7 +211,7 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
 
     /**
      * Creates a request for creating instances of a particular object.
-     * 
+     *
      * @param path the target object path
      * @param instances the object instances to create
      * @exception InvalidRequestException if the target path is not valid.
@@ -222,7 +222,7 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
 
     /**
      * Creates a request for creating instances of a particular object.
-     * 
+     *
      * @param contentFormat the payload format (TLV or JSON)
      * @param path the target object path
      * @param instances the object instances to create
@@ -235,12 +235,12 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
 
     /**
      * Creates a request for creating instances of a particular object.
-     * 
+     *
      * @param contentFormat the payload format (TLV or JSON)
      * @param path the target object path
      * @param instances the object instances to create
      * @param coapRequest the underlying request
-     * 
+     *
      * @exception InvalidRequestException if parameters are invalid.
      */
     public CreateRequest(ContentFormat contentFormat, Object coapRequest, String path, LwM2mObjectInstance... instances)

@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,12 +24,12 @@ import java.util.Map;
  * <p>
  * This class assists in validating arguments.
  * </p>
- * 
+ *
  * <p>
  * The class is based along the lines of JUnit. If an argument value is deemed invalid, an IllegalArgumentException is
  * thrown. For example:
  * </p>
- * 
+ *
  * <pre>
  * Validate.isTrue(i &gt; 0, &quot;The value must be greater than zero: &quot;, i);
  * Validate.notNull(surname, &quot;The surname must not be null&quot;);
@@ -70,7 +70,7 @@ public class Validate {
      * For performance reasons, the object value is passed as a separate parameter and appended to the exception message
      * only in the case of an error.
      * </p>
-     * 
+     *
      * @param expression the boolean expression to check
      * @param message the exception message if invalid
      * @param value the value to append to the message when invalid
@@ -97,7 +97,7 @@ public class Validate {
      * For performance reasons, the long value is passed as a separate parameter and appended to the exception message
      * only in the case of an error.
      * </p>
-     * 
+     *
      * @param expression the boolean expression to check
      * @param message the exception message if invalid
      * @param value the value to append to the message when invalid
@@ -124,7 +124,7 @@ public class Validate {
      * For performance reasons, the double value is passed as a separate parameter and appended to the exception message
      * only in the case of an error.
      * </p>
-     * 
+     *
      * @param expression the boolean expression to check
      * @param message the exception message if invalid
      * @param value the value to append to the message when invalid
@@ -173,7 +173,7 @@ public class Validate {
      * <p>
      * The message of the exception is &quot;The validated expression is false&quot;.
      * </p>
-     * 
+     *
      * @param expression the boolean expression to check
      * @throws IllegalArgumentException if expression is <code>false</code>
      */
@@ -197,7 +197,7 @@ public class Validate {
      * <p>
      * The message of the exception is &quot;The validated object is null&quot;.
      * </p>
-     * 
+     *
      * @param object the object to check
      * @throws IllegalArgumentException if the object is <code>null</code>
      */
@@ -213,7 +213,7 @@ public class Validate {
      * <pre>
      * Validate.notNull(myObject, &quot;The object must not be null&quot;);
      * </pre>
-     * 
+     *
      * @param object the object to check
      * @param message the exception message if invalid
      */
@@ -234,7 +234,7 @@ public class Validate {
      * <pre>
      * Validate.notEmpty(myArray, &quot;The array must not be empty&quot;);
      * </pre>
-     * 
+     *
      * @param array the array to check
      * @param message the exception message if invalid
      * @throws IllegalArgumentException if the array is empty
@@ -253,10 +253,10 @@ public class Validate {
      * <pre>
      * Validate.notEmpty(myArray);
      * </pre>
-     * 
+     *
      * <p>
      * The message in the exception is &quot;The validated array is empty&quot;.
-     * 
+     *
      * @param array the array to check
      * @throws IllegalArgumentException if the array is empty
      */
@@ -275,7 +275,7 @@ public class Validate {
      * <pre>
      * Validate.notEmpty(myCollection, &quot;The collection must not be empty&quot;);
      * </pre>
-     * 
+     *
      * @param collection the collection to check
      * @param message the exception message if invalid
      * @throws IllegalArgumentException if the collection is empty
@@ -294,11 +294,11 @@ public class Validate {
      * <pre>
      * Validate.notEmpty(myCollection);
      * </pre>
-     * 
+     *
      * <p>
      * The message in the exception is &quot;The validated collection is empty&quot;.
      * </p>
-     * 
+     *
      * @param collection the collection to check
      * @throws IllegalArgumentException if the collection is empty
      */
@@ -317,7 +317,7 @@ public class Validate {
      * <pre>
      * Validate.notEmpty(myMap, &quot;The map must not be empty&quot;);
      * </pre>
-     * 
+     *
      * @param map the map to check
      * @param message the exception message if invalid
      * @throws IllegalArgumentException if the map is empty
@@ -336,11 +336,11 @@ public class Validate {
      * <pre>
      * Validate.notEmpty(myMap);
      * </pre>
-     * 
+     *
      * <p>
      * The message in the exception is &quot;The validated map is empty&quot;.
      * </p>
-     * 
+     *
      * @param map the map to check
      * @throws IllegalArgumentException if the map is empty
      * @see #notEmpty(Map, String)
@@ -360,7 +360,7 @@ public class Validate {
      * <pre>
      * Validate.notEmpty(myString, &quot;The string must not be empty&quot;);
      * </pre>
-     * 
+     *
      * @param string the string to check
      * @param message the exception message if invalid
      * @throws IllegalArgumentException if the string is empty
@@ -379,11 +379,11 @@ public class Validate {
      * <pre>
      * Validate.notEmpty(myString);
      * </pre>
-     * 
+     *
      * <p>
      * The message in the exception is &quot;The validated string is empty&quot;.
      * </p>
-     * 
+     *
      * @param string the string to check
      * @throws IllegalArgumentException if the string is empty
      */
@@ -402,7 +402,7 @@ public class Validate {
      * <pre>
      * Validate.noNullElements(myArray, &quot;The array contain null at position %d&quot;);
      * </pre>
-     * 
+     *
      * <p>
      * If the array is <code>null</code>, then the message in the exception is &quot;The validated object is null&quot;.
      * </p>
@@ -429,11 +429,11 @@ public class Validate {
      * <pre>
      * Validate.noNullElements(myArray);
      * </pre>
-     * 
+     *
      * <p>
      * If the array is <code>null</code>, then the message in the exception is &quot;The validated object is null&quot;.
      * </p>
-     * 
+     *
      * <p>
      * If the array has a <code>null</code> element, then the message in the exception is &quot;The validated array
      * contains null element at index: &quot followed by the index.
@@ -463,12 +463,12 @@ public class Validate {
      * <pre>
      * Validate.noNullElements(myCollection, &quot;The collection contains null elements&quot;);
      * </pre>
-     * 
+     *
      * <p>
      * If the collection is <code>null</code>, then the message in the exception is &quot;The validated object is
      * null&quot;.
      * </p>
-     * 
+     *
      *
      * @param collection the collection to check
      * @param message the exception message if the collection has
@@ -492,12 +492,12 @@ public class Validate {
      * <pre>
      * Validate.noNullElements(myCollection);
      * </pre>
-     * 
+     *
      * <p>
      * If the collection is <code>null</code>, then the message in the exception is &quot;The validated object is
      * null&quot;.
      * </p>
-     * 
+     *
      * <p>
      * If the collection has a <code>null</code> element, then the message in the exception is &quot;The validated
      * collection contains null element at index: &quot followed by the index.
@@ -547,15 +547,15 @@ public class Validate {
      * Validate an argument, throwing <code>IllegalArgumentException</code> if the argument collection is
      * <code>null</code> or has elements that are not of type <code>clazz</code> or a subclass.
      * </p>
-     * 
+     *
      * <pre>
      * Validate.allElementsOfType(collection, String.class);
      * </pre>
-     * 
+     *
      * <p>
      * The message in the exception is 'The validated collection contains an element not of type clazz at index: '.
      * </p>
-     * 
+     *
      * @param collection the collection to check, not null
      * @param clazz the <code>Class</code> which the collection's elements are expected to be, not null
      * @since 2.1

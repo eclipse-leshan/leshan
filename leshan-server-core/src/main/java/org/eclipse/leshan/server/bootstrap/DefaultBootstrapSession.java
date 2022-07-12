@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2017 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -49,11 +49,11 @@ public class DefaultBootstrapSession implements BootstrapSession {
      * Create a {@link DefaultBootstrapSession} using default client preferred content format (see
      * {@link BootstrapRequest#getPreferredContentFormat()} or {@link ContentFormat#TLV} content format if there is no
      * preferences and using <code>System.currentTimeMillis()</code> to set the creation time.
-     * 
+     *
      * @param request The bootstrap request which initiate the session.
      * @param identity The transport layer identity of the device.
      * @param authorized True if device is authorized to bootstrap.
-     * 
+     *
      * @since 1.1
      */
     public DefaultBootstrapSession(BootstrapRequest request, Identity identity, boolean authorized) {
@@ -62,12 +62,12 @@ public class DefaultBootstrapSession implements BootstrapSession {
 
     /**
      * Create a {@link DefaultBootstrapSession} using <code>System.currentTimeMillis()</code> to set the creation time.
-     * 
+     *
      * @param request The bootstrap request which initiate the session.
      * @param identity The transport layer identity of the device.
      * @param authorized True if device is authorized to bootstrap.
      * @param contentFormat The content format to use to write object.
-     * 
+     *
      * @since 1.1
      */
     public DefaultBootstrapSession(BootstrapRequest request, Identity identity, boolean authorized,
@@ -77,13 +77,13 @@ public class DefaultBootstrapSession implements BootstrapSession {
 
     /**
      * Create a {@link DefaultBootstrapSession}.
-     * 
+     *
      * @param request The bootstrap request which initiate the session.
      * @param identity The transport layer identity of the device.
      * @param authorized True if device is authorized to bootstrap.
      * @param contentFormat The content format to use to write object.
      * @param creationTime The creation time of this session in ms.
-     * 
+     *
      * @since 1.1
      */
     public DefaultBootstrapSession(BootstrapRequest request, Identity identity, boolean authorized,

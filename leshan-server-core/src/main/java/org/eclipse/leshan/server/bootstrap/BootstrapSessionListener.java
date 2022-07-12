@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2021 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -49,7 +49,7 @@ public interface BootstrapSessionListener {
 
     /**
      * Called when we receive a successful response to a request.
-     * 
+     *
      * @param session the bootstrap session concerned.
      * @param request The request for which we get a successful response.
      * @param response The response received.
@@ -59,22 +59,22 @@ public interface BootstrapSessionListener {
 
     /**
      * Called when we receive a error response to a request.
-     * 
+     *
      * @param session the bootstrap session concerned.
      * @param request The request for which we get a error response.
      * @param response The response received.
-     * 
+     *
      */
     public void onResponseError(BootstrapSession session, BootstrapDownlinkRequest<? extends LwM2mResponse> request,
             LwM2mResponse response);
 
     /**
      * Called when a request failed to be sent.
-     * 
+     *
      * @param session the bootstrap session concerned.
      * @param request The request which failed to be sent.
      * @param cause The cause of the failure. Can be null.
-     * 
+     *
      */
     public void onRequestFailure(BootstrapSession session, BootstrapDownlinkRequest<? extends LwM2mResponse> request,
             Throwable cause);

@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2020 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -33,7 +33,7 @@ import redis.clients.jedis.params.SetParams;
  * If you need to lock in an environment with N Redis masters, you should implement the
  * <a href="https://redis.io/topics/distlock#the-redlock-algorithm">RedLock algorithm</a>. If you succeed share the code
  * with us :-)
- * 
+ *
  * @see <a href="http://redis.io/topics/distlock#correct-implementation-with-a-single-instance"> algorithm details</a>
  * @since 1.1
  */
@@ -51,7 +51,7 @@ public class SingleInstanceJedisLock implements JedisLock {
     /**
      * Create a {@link SingleInstanceJedisLock} with {@code expiration} of 500ms, {@code maxTime} of 5000L and
      * {@code iterationTime} of 10ms
-     * 
+     *
      * @see #SingleInstanceJedisLock(int, long, long)
      */
     public SingleInstanceJedisLock() {
@@ -75,7 +75,7 @@ public class SingleInstanceJedisLock implements JedisLock {
     /**
      * Try to acquires a lock for the given key. if it failed after {@code maxTime} raise an
      * {@link IllegalStateException}
-     * 
+     *
      * @param j a Redis connection
      * @param lockKey the key to use as lock
      * @return a lock value that must be used to release the lock.
@@ -100,7 +100,7 @@ public class SingleInstanceJedisLock implements JedisLock {
 
     /**
      * Releases a lock for a given key and value.
-     * 
+     *
      * @param j a Redis connection
      * @param lockKey the locked key
      * @param lockValue the value returned when the lock was acquired

@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2021 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -114,7 +114,7 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
 
     /**
      * Returns a new AttributeSet, containing only the attributes that have a matching Attachment level.
-     * 
+     *
      * @param attachment the Attachment level to filter by
      * @return a new {@link LwM2mAttributeSet} containing the filtered attributes
      */
@@ -130,7 +130,7 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
 
     /**
      * Creates a new AttributeSet by merging another AttributeSet onto this instance.
-     * 
+     *
      * @param attributes the AttributeSet that should be merged onto this instance. Attributes in this set will
      *        overwrite existing attribute values, if present. If this is null, the new attribute set will effectively
      *        be a clone of the existing one
@@ -151,7 +151,7 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
 
     /**
      * Returns the attributes as a map with the CoRELinkParam as key and the attribute value as map value.
-     * 
+     *
      * @return the attributes map
      */
     public Map<String, Object> getMap() {

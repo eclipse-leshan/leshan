@@ -32,7 +32,7 @@ import org.eclipse.leshan.core.util.Validate;
  * This class implements Certificate Usage (1) - Service Certificate Constraint
  *
  * From RFC 6698:
- * 
+ *
  * <pre>
  * 1 -- Certificate usage 1 is used to specify an end entity
  *       certificate, or the public key of such a certificate, that MUST be
@@ -43,7 +43,7 @@ import org.eclipse.leshan.core.util.Validate;
  *       certificate MUST pass PKIX certification path validation and MUST
  *       match the TLSA record.
  * </pre>
- * 
+ *
  * For details about Certificate Usage please see:
  * <a href="https://tools.ietf.org/html/rfc6698#section-2.1.1">rfc6698#section-2.1.1</a> - The Certificate Usage Field
  */

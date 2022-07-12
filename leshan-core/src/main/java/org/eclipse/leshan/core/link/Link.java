@@ -33,7 +33,7 @@ public class Link {
 
     /**
      * Creates a new link and with its attributes.
-     * 
+     *
      * @param uriReference the link URL
      * @param attributes the object link attributes or <code>null</code> if the link has no attributes
      */
@@ -46,7 +46,7 @@ public class Link {
 
     /**
      * Creates a new link and with its attributes.
-     * 
+     *
      * @param uriReference the link URL
      * @param attributes the object link attributes if the link has no attributes
      */
@@ -56,7 +56,7 @@ public class Link {
 
     /**
      * Creates a new link and with its attributes.
-     * 
+     *
      * @param uriReference the link URL
      * @param attributes the object link attributes if the link has no attributes
      */
@@ -75,7 +75,7 @@ public class Link {
 
     /**
      * Gets the link attributes
-     * 
+     *
      * @return an unmodifiable map containing the link attributes
      */
     public AttributeSet getAttributes() {

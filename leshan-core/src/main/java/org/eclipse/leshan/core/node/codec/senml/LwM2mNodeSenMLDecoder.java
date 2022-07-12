@@ -2,12 +2,12 @@
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Boya Zhang - initial API and implementation
  *******************************************************************************/
@@ -352,7 +352,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
 
     /**
      * Resolved record then group it by time-stamp
-     * 
+     *
      * @return a sorted map (timestamp => collection of record) order by descending time-stamp (most recent one at first
      *         place). If null time-stamp (meaning no time information) exists it always at first place.
      */
@@ -407,7 +407,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
 
     /**
      * Group all SenML record by instanceId
-     * 
+     *
      * @return a map (instanceId => collection of SenML Record)
      */
     private Map<Integer, Collection<LwM2mResolvedSenMLRecord>> groupRecordsByInstanceId(

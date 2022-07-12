@@ -58,7 +58,7 @@ public class DataSenderManager implements Startable, Stoppable, Destroyable {
 
     /**
      * Retrieves a data sender by its name
-     * 
+     *
      * @param senderName name of the sender
      * @throws IllegalArgumentException if there is no data sender with specified name
      * @return a retrieved data sender
@@ -73,7 +73,7 @@ public class DataSenderManager implements Startable, Stoppable, Destroyable {
 
     /**
      * Retrieves a data sender by its name, cast to a specified subtype
-     * 
+     *
      * @param senderName name of the sender
      * @param senderSubType subtype to which the data sender should be cast
      * @throws IllegalArgumentException if there is no data sender with specified name or the data sender with specified

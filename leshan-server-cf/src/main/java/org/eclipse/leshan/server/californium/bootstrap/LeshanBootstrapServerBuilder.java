@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2017 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - use CoapEndpointBuilder
@@ -111,7 +111,7 @@ public class LeshanBootstrapServerBuilder {
      * Set the address/port for unsecured CoAP communication (<code>coap://</code>).
      * <p>
      * By default a wildcard address and the default CoAP port(5683) is used.
-     * 
+     *
      * @param hostname The address to bind. If null wildcard address is used.
      * @param port A valid port value is between 0 and 65535. A port number of zero will let the system pick up an
      *        ephemeral port in a bind operation.
@@ -130,7 +130,7 @@ public class LeshanBootstrapServerBuilder {
      * Set the address for unsecured CoAP communication (<code>coap://</code>).
      * <p>
      * By default a wildcard address and the default CoAP port(5683) is used.
-     * 
+     *
      * @param localAddress the socket address for <code>coap://</code>.
      * @return the builder for fluent Bootstrap Server creation.
      */
@@ -143,7 +143,7 @@ public class LeshanBootstrapServerBuilder {
      * Set the address/port for secured CoAP over DTLS communication (<code>coaps://</code>).
      * <p>
      * By default a wildcard address and the default CoAPs port(5684) is used.
-     * 
+     *
      * @param hostname The address to bind. If null wildcard address is used.
      * @param port A valid port value is between 0 and 65535. A port number of zero will let the system pick up an
      *        ephemeral port in a bind operation.
@@ -162,7 +162,7 @@ public class LeshanBootstrapServerBuilder {
      * Set the address for secured CoAP over DTLS communication Server (<code>coaps://</code>).
      * <p>
      * By default a wildcard address and the default CoAP port(5684) is used.
-     * 
+     *
      * @param localSecureAddress the socket address for <code>coaps://</code>.
      * @return the builder for fluent Bootstrap Server creation.
      */
@@ -178,7 +178,7 @@ public class LeshanBootstrapServerBuilder {
      * <p>
      * Setting <code>publicKey</code> and <code>privateKey</code> will enable RawPublicKey DTLS authentication, see also
      * {@link LeshanBootstrapServerBuilder#setPrivateKey(PrivateKey)}.
-     * 
+     *
      * @param publicKey the Raw Public Key of the bootstrap server.
      * @return the builder for fluent Bootstrap Server creation.
      */
@@ -200,7 +200,7 @@ public class LeshanBootstrapServerBuilder {
      * {@link LeshanBootstrapServerBuilder#setDtlsConfig(org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder)}
      * and
      * {@link Builder#setCertificateIdentityProvider(org.eclipse.californium.scandium.dtls.x509.CertificateProvider)}.
-     * 
+     *
      * @param certificateChain the certificate chain of the bootstrap server.
      * @return the builder for fluent Bootstrap Server creation.
      */
@@ -212,7 +212,7 @@ public class LeshanBootstrapServerBuilder {
     /**
      * Set the {@link PrivateKey} of the server which will be used for RawPublicKey(RPK) and/or X.509 DTLS
      * authentication.
-     * 
+     *
      * @param privateKey the Private Key of the bootstrap server.
      * @return the builder for fluent Bootstrap Server creation.
      */
@@ -229,7 +229,7 @@ public class LeshanBootstrapServerBuilder {
      * and
      * {@link Builder#setAdvancedCertificateVerifier(org.eclipse.californium.scandium.dtls.x509.NewAdvancedCertificateVerifier)}
      * instead.
-     * 
+     *
      * @param trustedCertificates certificates trusted by the bootstrap server.
      * @return the builder for fluent Bootstrap Server creation.
      */
@@ -244,7 +244,7 @@ public class LeshanBootstrapServerBuilder {
      * By default an {@link InMemoryBootstrapConfigStore} is used.
      * <p>
      * See {@link BootstrapConfig} to see what is could be done during a bootstrap session.
-     * 
+     *
      * @param configStore the bootstrap configuration store.
      * @return the builder for fluent Bootstrap Server creation.
      *
@@ -261,7 +261,7 @@ public class LeshanBootstrapServerBuilder {
      * environment.
      * <p>
      * There is not default implementation.
-     * 
+     *
      * @param securityStore the security store used to authenticate devices.
      * @return the builder for fluent Bootstrap Server creation.
      */
@@ -274,7 +274,7 @@ public class LeshanBootstrapServerBuilder {
      * Advanced setter used to define {@link BootstrapSessionManager}.
      * <p>
      * See {@link BootstrapSessionManager} and {@link DefaultBootstrapSessionManager} for more details.
-     * 
+     *
      * @param sessionManager the manager responsible to handle bootstrap session.
      * @return the builder for fluent Bootstrap Server creation.
      */
@@ -288,7 +288,7 @@ public class LeshanBootstrapServerBuilder {
      * <p>
      * If default bootstrap server behavior is not flexible enough, you can create your own {@link BootstrapHandler} by
      * inspiring yourself from {@link DefaultBootstrapHandler}.
-     * 
+     *
      * @param bootstrapHandlerFactory the factory used to create {@link BootstrapHandler}.
      * @return the builder for fluent Bootstrap Server creation.
      */
@@ -336,7 +336,7 @@ public class LeshanBootstrapServerBuilder {
      * <p>
      * This is strongly recommended to create the {@link Configuration} with {@link #createDefaultCoapConfiguration()}
      * before to modify it.
-     * 
+     *
      * @param coapConfig the CoAP configuration.
      * @return the builder for fluent Bootstrap Server creation.
      */
@@ -349,7 +349,7 @@ public class LeshanBootstrapServerBuilder {
      * Set the DTLS/Scandium {@link DtlsConnectorConfig}.
      * <p>
      * For advanced DTLS setting.
-     * 
+     *
      * @param dtlsConfig the DTLS configuration builder.
      * @return the builder for fluent Bootstrap Server creation.
      */
@@ -363,7 +363,7 @@ public class LeshanBootstrapServerBuilder {
      * <p>
      * An {@link UDPConnector} is expected for unsecured endpoint and a {@link DTLSConnector} is expected for secured
      * endpoint.
-     * 
+     *
      * @param endpointFactory An {@link EndpointFactory}, you can extends {@link DefaultEndpointFactory}.
      * @return the builder for fluent Bootstrap Server creation.
      */
@@ -383,7 +383,7 @@ public class LeshanBootstrapServerBuilder {
 
     /**
      * Deactivate unsecured CoAP endpoint, meaning that <code>coap://</code> communication will be impossible.
-     * 
+     *
      * @return the builder for fluent Bootstrap Server creation.
      */
     public LeshanBootstrapServerBuilder disableUnsecuredEndpoint() {
@@ -393,7 +393,7 @@ public class LeshanBootstrapServerBuilder {
 
     /**
      * Deactivate secured CoAP endpoint (DTLS), meaning that <code>coaps://</code> communication will be impossible.
-     * 
+     *
      * @return the builder for fluent Bootstrap Server creation.
      */
     public LeshanBootstrapServerBuilder disableSecuredEndpoint() {
@@ -416,7 +416,7 @@ public class LeshanBootstrapServerBuilder {
      * <p>
      * It could be used as a base to create a custom CoAP configuration, then use it with
      * {@link #setCoapConfig(Configuration)}
-     * 
+     *
      * @return the default CoAP config.
      */
     public static Configuration createDefaultCoapConfiguration() {
@@ -431,7 +431,7 @@ public class LeshanBootstrapServerBuilder {
      * Create the {@link LeshanBootstrapServer}.
      * <p>
      * Next step will be to start it : {@link LeshanBootstrapServer#start()}.
-     * 
+     *
      * @return the LWM2M Bootstrap server.
      * @throws IllegalStateException if builder configuration is not consistent.
      */
@@ -620,7 +620,7 @@ public class LeshanBootstrapServerBuilder {
      * <p>
      * You can extend <code>LeshanBootstrapServerBuilder</code> and override this method to create a new builder which
      * will be able to build an extended <code>LeshanBootstrapServer</code>.
-     * 
+     *
      * @param unsecuredEndpoint CoAP endpoint used for <code>coap://</code> communication.
      * @param securedEndpoint CoAP endpoint used for <code>coaps://</code> communication.
      * @param bsSessionManager the manager responsible to handle bootstrap session.

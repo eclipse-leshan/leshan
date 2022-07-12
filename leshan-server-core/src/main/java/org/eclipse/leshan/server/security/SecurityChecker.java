@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2016 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
@@ -34,11 +34,11 @@ public class SecurityChecker {
 
     /**
      * Return true if client authenticated itself with any of the expected way.
-     * 
+     *
      * @param endpoint the client endpoint name.
      * @param clientIdentity the client identity.
      * @param securityInfos the expected ways to authenticate.
-     * 
+     *
      * @return true if client is correctly authenticated.
      * @see SecurityInfo
      */
@@ -80,11 +80,11 @@ public class SecurityChecker {
 
     /**
      * Return true if client authenticated itself with the expected way.
-     * 
+     *
      * @param endpoint the client endpoint name.
      * @param clientIdentity the client identity.
      * @param securityInfo the expected way to authenticate.
-     * 
+     *
      * @return true if client is correctly authenticated.
      * @see SecurityInfo
      */

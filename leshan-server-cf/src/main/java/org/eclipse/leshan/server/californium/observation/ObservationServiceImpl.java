@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2016 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
@@ -66,7 +66,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Implementation of the {@link ObservationService} accessing the persisted observation via the provided
  * {@link CaliforniumRegistrationStore}.
- * 
+ *
  * When a new observation is added or changed or canceled, the registered listeners are notified.
  */
 public class ObservationServiceImpl implements ObservationService, NotificationListener {
@@ -84,7 +84,7 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
 
     /**
      * Creates an instance of {@link ObservationServiceImpl}
-     * 
+     *
      * @param store instance of californium's {@link ObservationStore}
      * @param modelProvider instance of {@link LwM2mModelProvider}
      * @param decoder instance of {@link LwM2mDecoder}
@@ -96,12 +96,12 @@ public class ObservationServiceImpl implements ObservationService, NotificationL
 
     /**
      * Creates an instance of {@link ObservationServiceImpl}
-     * 
+     *
      * @param store instance of californium's {@link ObservationStore}
      * @param modelProvider instance of {@link LwM2mModelProvider}
      * @param decoder instance of {@link LwM2mDecoder}
      * @param updateRegistrationOnNotification will activate registration update on observe notification.
-     * 
+     *
      * @since 1.1
      */
     public ObservationServiceImpl(CaliforniumRegistrationStore store, LwM2mModelProvider modelProvider,

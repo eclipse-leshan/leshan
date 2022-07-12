@@ -31,7 +31,7 @@ import org.eclipse.leshan.core.util.Validate;
  * This class implements Certificate Usage (3) - Domain Issuer Certificate
  *
  * From RFC 6698:
- * 
+ *
  * <pre>
  * 3 -- Certificate usage 3 is used to specify a certificate, or the
  *       public key of such a certificate, that MUST match the end entity
@@ -44,7 +44,7 @@ import org.eclipse.leshan.core.util.Validate;
  *       requires that the certificate pass PKIX validation, but PKIX
  *       validation is not tested for certificate usage 3.
  * </pre>
- * 
+ *
  * For details about Certificate Usage please see:
  * <a href="https://tools.ietf.org/html/rfc6698#section-2.1.1">rfc6698#section-2.1.1</a> - The Certificate Usage Field
  */

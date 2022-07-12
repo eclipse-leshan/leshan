@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2013-2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Rikard Höglund (RISE) - additions to support OSCORE
@@ -44,7 +44,7 @@ import org.eclipse.leshan.core.util.datatype.ULong;
  * sent.
  * <li>a Map from instanceId to Instance value for ACL object. For each entry a Bootstrap Write Request will be sent.
  * </ul>
- * 
+ *
  * @see BootstrapConfigStore
  * @see DefaultBootstrapHandler
  */
@@ -291,7 +291,7 @@ public class BootstrapConfig {
         /**
          * The Object ID of the OSCORE Object Instance that holds the OSCORE configuration to be used by the LWM2M
          * Client to the LWM2M Server associated with this Security object.
-         * 
+         *
          */
         public Integer oscoreSecurityMode;
 

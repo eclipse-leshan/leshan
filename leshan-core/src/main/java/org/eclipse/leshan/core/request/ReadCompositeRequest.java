@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2021 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -38,12 +38,12 @@ public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResp
 
     /**
      * Create ReadComposite Request.
-     * 
+     *
      * @param requestContentFormat The {@link ContentFormat} used to encode the list of {@link LwM2mPath}
      * @param responseContentFormat The {@link ContentFormat} requested to encode the {@link LwM2mNode} of the response.
      * @param paths List of {@link LwM2mPath} corresponding to {@link LwM2mNode} to read.
      * @exception InvalidRequestException if path has invalid format.
-     * 
+     *
      */
     public ReadCompositeRequest(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
             String... paths) {
@@ -52,12 +52,12 @@ public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResp
 
     /**
      * Create ReadComposite Request.
-     * 
+     *
      * @param requestContentFormat The {@link ContentFormat} used to encode the list of {@link LwM2mPath}
      * @param responseContentFormat The {@link ContentFormat} requested to encode the {@link LwM2mNode} of the response.
      * @param paths List of {@link LwM2mPath} corresponding to {@link LwM2mNode} to read.
      * @exception InvalidRequestException if path has invalid format.
-     * 
+     *
      */
     public ReadCompositeRequest(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
             List<String> paths) {
@@ -76,7 +76,7 @@ public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResp
      * Create ReadComposite Request.
      * <p>
      * This constructor is more for internal usage.
-     * 
+     *
      * @param paths List of {@link LwM2mPath} corresponding to {@link LwM2mNode} to read.
      * @param requestContentFormat The {@link ContentFormat} used to encode the list of {@link LwM2mPath}
      * @param responseContentFormat The {@link ContentFormat} requested to encode the {@link LwM2mNode} of the response.

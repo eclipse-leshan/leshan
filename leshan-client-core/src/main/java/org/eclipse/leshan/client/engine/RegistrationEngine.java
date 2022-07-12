@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2020 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -54,16 +54,16 @@ public interface RegistrationEngine {
 
     /**
      * Trigger a client initiated bootstrap.
-     * 
+     *
      * @param deregister True if client should deregister itself before to stop.
-     * 
+     *
      * @return true if the bootstrap can be initiated.
      */
     boolean triggerClientInitiatedBootstrap(boolean deregister);
 
     /**
      * Returns the current registration Id for this server.
-     * 
+     *
      * @return the client registration Id or <code>null</code> if the client is not registered to this server.
      */
     String getRegistrationId(ServerIdentity server);
@@ -95,14 +95,14 @@ public interface RegistrationEngine {
 
     /**
      * Stop the client and can be restarted later using {@link #start()}.
-     * 
+     *
      * @param deregister True if client should deregister itself before to stop.
      */
     void stop(boolean deregister);
 
     /**
      * Destroy the client, frees all system resources. Client can not be restarted.
-     * 
+     *
      * @param deregister True if client should deregister itself before to be destroyed.
      */
     void destroy(boolean deregister);

@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2013-2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Gemalto M2M GmbH
@@ -115,7 +115,7 @@ public class DefaultLwM2mEncoder implements LwM2mEncoder {
      * <p>
      * Those old codes was used by the LWM2M specification before the official v1.0.0 release and could still be needed
      * for backward compatibility.
-     * 
+     *
      * @param supportDeprecatedContentFormat True to accept to encode old code.
      */
     public DefaultLwM2mEncoder(boolean supportDeprecatedContentFormat) {

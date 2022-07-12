@@ -12,7 +12,7 @@
  *
  * Contributors:
  *     Bosch Software Innovations GmbH - initial API
- *     RISE SICS AB - added more features 
+ *     RISE SICS AB - added more features
  *******************************************************************************/
 package org.eclipse.leshan.server.queue;
 
@@ -27,21 +27,21 @@ public interface PresenceService {
 
     /**
      * Add the listener to get notified when the LWM2M client goes online or offline.
-     * 
+     *
      * @param listener target to notify
      */
     void addListener(PresenceListener listener);
 
     /**
      * Remove the listener previously added. This method has no effect if the given listener is not previously added.
-     * 
+     *
      * @param listener target to be removed.
      */
     void removeListener(PresenceListener listener);
 
     /**
      * Returns the current state of a given LWM2M client registration.
-     * 
+     *
      * @param registration the client's registration object.
      * @return true if the status is awake.
      */

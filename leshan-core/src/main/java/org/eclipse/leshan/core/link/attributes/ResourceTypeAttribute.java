@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2022 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -79,10 +79,10 @@ public class ResourceTypeAttribute extends BaseAttribute {
          * Consume a 'rt' attribute value as described in https://datatracker.ietf.org/doc/html/rfc6690#section-2.
          * <p>
          * Grammar:
-         * 
+         *
          * <pre>
          * "rt" "=" relation-types
-         * 
+         *
          * relation-types = relation-type
          *         / DQUOTE relation-type *( 1*SP relation-type ) DQUOTE
          * </pre>
@@ -116,20 +116,20 @@ public class ResourceTypeAttribute extends BaseAttribute {
          * Consume relation-type as described in https://datatracker.ietf.org/doc/html/rfc6690#section-2.
          * <p>
          * OFFICIAL Grammar:
-         * 
+         *
          * <pre>
          * relation-type  = reg-rel-type / ext-rel-type
          * reg-rel-type   = LOALPHA *( LOALPHA / DIGIT / "." / "-" )
          * ext-rel-type   = URI
          * URI            = {@code <defined in [RFC3986]>}
          * </pre>
-         * 
+         *
          * Parsing URI could be a real challenge, so we implement a more simple grammar which could be too flexible...
          * <p>
          * IMPLEMENTED Grammar :
-         * 
+         *
          * <pre>
-         * relation-type  = reg-rel-type 
+         * relation-type  = reg-rel-type
          * reg-rel-type   = LOALPHA *( LOALPHA / DIGIT / "." / "-" )
          * </pre>
          */

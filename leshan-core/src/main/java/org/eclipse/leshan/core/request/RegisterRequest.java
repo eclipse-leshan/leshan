@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2013-2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690
@@ -45,7 +45,7 @@ public class RegisterRequest extends AbstractLwM2mRequest<RegisterResponse> impl
 
     /**
      * Creates a request for registering a LWM2M client to a LWM2M Server.
-     * 
+     *
      * @param endpointName is the LWM2M client identifier.
      * @param lifetime specifies the lifetime of the registration in seconds.
      * @param lwVersion indicates the version of the LWM2M Enabler that the LWM2M Client supports.
@@ -65,7 +65,7 @@ public class RegisterRequest extends AbstractLwM2mRequest<RegisterResponse> impl
 
     /**
      * Creates a request for registering a LWM2M client to a LWM2M Server.
-     * 
+     *
      * @param endpointName is the LWM2M client identifier.
      * @param lifetime specifies the lifetime of the registration in seconds.
      * @param lwVersion indicates the version of the LWM2M Enabler that the LWM2M Client supports.
@@ -75,7 +75,7 @@ public class RegisterRequest extends AbstractLwM2mRequest<RegisterResponse> impl
      * @param objectLinks is the list of Objects supported and Object Instances available on the LWM2M Client.
      * @param additionalAttributes are any attributes/parameters which is out of the LWM2M specification.
      * @param coapRequest the underlying request
-     * 
+     *
      * @exception InvalidRequestException if endpoint name or objectlinks is empty.
      */
     public RegisterRequest(String endpointName, Long lifetime, String lwVersion, EnumSet<BindingMode> bindingMode,

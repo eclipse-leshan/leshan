@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2013-2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690
@@ -42,7 +42,7 @@ public class UpdateRequest extends AbstractLwM2mRequest<UpdateResponse> implemen
 
     /**
      * Sets all fields.
-     * 
+     *
      * @param registrationId the ID under which the client is registered
      * @param lifetime the number of seconds the client would like its registration to be valid
      * @param smsNumber the SMS number the client can receive messages under
@@ -57,14 +57,14 @@ public class UpdateRequest extends AbstractLwM2mRequest<UpdateResponse> implemen
 
     /**
      * Sets all fields.
-     * 
+     *
      * @param registrationId the ID under which the client is registered
      * @param lifetime the number of seconds the client would like its registration to be valid
      * @param smsNumber the SMS number the client can receive messages under
      * @param binding the binding mode(s) the client supports
      * @param objectLinks the objects and object instances the client hosts/supports
      * @param coapRequest the underlying request
-     * 
+     *
      * @exception InvalidRequestException if the registrationId is empty.
      */
     public UpdateRequest(String registrationId, Long lifetime, String smsNumber, EnumSet<BindingMode> binding,

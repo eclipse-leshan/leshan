@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2013-2018 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Daniel Persson (Husqvarna Group) - Attribute support
@@ -21,7 +21,7 @@ import org.eclipse.leshan.core.util.Validate;
 
 /**
  * Represents an LwM2m Attribute that can be attached to an object, instance or resource.
- * 
+ *
  * The {@link Attachment} level of the attribute indicates where it can be applied, e.g. the 'pmin' attribute is only
  * applicable to resources, but it can be assigned on all levels and then inherited by underlying resources.
  */
@@ -31,7 +31,7 @@ public class LwM2mAttribute<T> implements Attribute {
 
     /**
      * Some constants about model are available at {@link LwM2mAttributes}
-     * 
+     *
      * @see LwM2mAttributes
      */
     public LwM2mAttribute(LwM2mAttributeModel<T> model) {
@@ -44,7 +44,7 @@ public class LwM2mAttribute<T> implements Attribute {
      * Some constants about model are available at {@link LwM2mAttributes}
      * <p>
      * {@link LwM2mAttributes#create(LwM2mAttributeModel, Object)} is more convenient way to create LwM2mAttribute
-     * 
+     *
      * @see LwM2mAttributes
      * @see LwM2mAttributes#create(LwM2mAttributeModel, Object)
      */

@@ -5,9 +5,7 @@
 
 <module name="Checker">
     <module name="RegexpSingleline">
-        <property name="format" value="(?!\*)[^$]\s+$"/>
-        <property name="minimum" value="0"/>
-        <property name="maximum" value="0"/>
-        <property name="message" value="Line has trailing spaces."/>
+        <property name="format" value="\s+$"/>
+        <property name="message" value="No trailing white space allowed."/>
     </module>
 </module>

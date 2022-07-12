@@ -30,7 +30,7 @@ public final class NamedThreadFactory implements ThreadFactory {
 
     /**
      * Creates a new {@link NamedThreadFactory}.
-     * 
+     *
      * @param nameFormat result of {@link String#format(String, Object...)} with this format and unique counter will be
      *        used for thread name. Example: format of {@code xyz-%d} will result in thread names {@code xyz-1},
      *        {@code xyz-2} etc.

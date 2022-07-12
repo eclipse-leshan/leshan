@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2016, 2021 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - redirect onSendError
@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
  * Either a response or an error is raised. Results are available via callbacks.
  * <p>
  * This class also provides response timeout facility.
- * 
+ *
  * @see <a href="https://github.com/eclipse/leshan/wiki/Request-Timeout">Request Timeout Wiki page</a>
  */
 public class CoapAsyncRequestObserver extends AbstractRequestObserver {
@@ -72,7 +72,7 @@ public class CoapAsyncRequestObserver extends AbstractRequestObserver {
      * The Californium API does not ensure that message callback are exclusive. E.g. In some race condition, you can get
      * a onReponse call and a onCancel one. The CoapAsyncRequestObserver ensure that you will receive only one event.
      * Meaning, you get either 1 response or 1 error.
-     * 
+     *
      * @param coapRequest The CoAP request to observe.
      * @param responseCallback This is called when a response is received. This MUST NOT be null.
      * @param errorCallback This is called when an error happens. This MUST NOT be null.

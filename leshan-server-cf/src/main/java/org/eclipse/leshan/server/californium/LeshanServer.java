@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2013-2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     RISE SICS AB - added Queue Mode operation
@@ -130,7 +130,7 @@ public class LeshanServer {
      * Initialize a server which will bind to the specified address and port.
      * <p>
      * {@link LeshanServerBuilder} is the priviledged way to create a {@link LeshanServer}.
-     * 
+     *
      * @param unsecuredEndpoint CoAP endpoint used for <code>coap://</code> communication.
      * @param securedEndpoint CoAP endpoint used for <code>coaps://</code> communication.
      * @param registrationStore the {@link Registration} store.
@@ -465,7 +465,7 @@ public class LeshanServer {
      * Get the {@link PresenceService} to get status of LWM2M clients connected with binding mode 'Q'.
      * <p>
      * You can use this object to add {@link PresenceListener} to get notified when a device comes online or offline.
-     * 
+     *
      */
     public PresenceService getPresenceService() {
         return this.presenceService;
@@ -494,12 +494,12 @@ public class LeshanServer {
      * <p>
      * We choose a default timeout a bit higher to the MAX_TRANSMIT_WAIT(62-93s) which is the time from starting to send
      * a Confirmable message to the time when an acknowledgement is no longer expected.
-     * 
+     *
      * @param destination The {@link Registration} associate to the device we want to sent the request.
      * @param request The request to send to the client.
      * @return the LWM2M response. The response can be <code>null</code> if the timeout expires (see
      *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
-     * 
+     *
      * @throws CodecException if request payload can not be encoded.
      * @throws InterruptedException if the thread was interrupted.
      * @throws RequestRejectedException if the request is rejected by foreign peer.
@@ -518,14 +518,14 @@ public class LeshanServer {
      * <p>
      * The synchronous way could block a thread during a long time so it is more recommended to use the asynchronous
      * way.
-     * 
+     *
      * @param destination The {@link Registration} associate to the device we want to sent the request.
      * @param request The request to send to the client.
      * @param timeoutInMs The global timeout to wait in milliseconds (see
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
      * @return the LWM2M response. The response can be <code>null</code> if the timeout expires (see
      *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
-     * 
+     *
      * @throws CodecException if request payload can not be encoded.
      * @throws InterruptedException if the thread was interrupted.
      * @throws RequestRejectedException if the request is rejected by foreign peer.
@@ -544,7 +544,7 @@ public class LeshanServer {
      * <p>
      * The synchronous way could block a thread during a long time so it is more recommended to use the asynchronous
      * way.
-     * 
+     *
      * @param destination The {@link Registration} associate to the device we want to sent the request.
      * @param request The request to send to the client.
      * @param lowerLayerConfig to tweak lower layer request (e.g. coap request)
@@ -552,7 +552,7 @@ public class LeshanServer {
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
      * @return the LWM2M response. The response can be <code>null</code> if the timeout expires (see
      *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
-     * 
+     *
      * @throws CodecException if request payload can not be encoded.
      * @throws InterruptedException if the thread was interrupted.
      * @throws RequestRejectedException if the request is rejected by foreign peer.
@@ -575,7 +575,7 @@ public class LeshanServer {
      * <p>
      * We choose a default timeout a bit higher to the MAX_TRANSMIT_WAIT(62-93s) which is the time from starting to send
      * a Confirmable message to the time when an acknowledgement is no longer expected.
-     * 
+     *
      * @param destination The {@link Registration} associate to the device we want to sent the request.
      * @param request The request to send to the client.
      * @param responseCallback a callback called when a response is received (successful or error response). This
@@ -605,7 +605,7 @@ public class LeshanServer {
      * The Californium API does not ensure that message callback are exclusive. E.g. In some race condition, you can get
      * a onReponse call and a onCancel one. This method ensures that you will receive only one event. Meaning, you get
      * either 1 response or 1 error.
-     * 
+     *
      * @param destination The {@link Registration} associate to the device we want to sent the request.
      * @param request The request to send to the client.
      * @param timeoutInMs The global timeout to wait in milliseconds (see
@@ -637,7 +637,7 @@ public class LeshanServer {
      * The Californium API does not ensure that message callback are exclusive. E.g. In some race condition, you can get
      * a onReponse call and a onCancel one. This method ensures that you will receive only one event. Meaning, you get
      * either 1 response or 1 error.
-     * 
+     *
      * @param destination The {@link Registration} associate to the device we want to sent the request.
      * @param request The request to send to the client.
      * @param lowerLayerConfig to tweak lower layer request (e.g. coap request)
@@ -658,7 +658,7 @@ public class LeshanServer {
      *        </ul>
      *        This callback MUST NOT be null.
      * @throws CodecException if request payload can not be encoded.
-     * 
+     *
      * @since 1.2
      */
     public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
@@ -728,12 +728,12 @@ public class LeshanServer {
          * <p>
          * We choose a default timeout a bit higher to the MAX_TRANSMIT_WAIT(62-93s) which is the time from starting to
          * send a Confirmable message to the time when an acknowledgement is no longer expected.
-         * 
+         *
          * @param destination The registration linked to the LWM2M client to which the request must be sent.
          * @param request The CoAP request to send to the client.
          * @return the response or <code>null</code> if the timeout expires (see
          *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
-         * 
+         *
          * @throws InterruptedException if the thread was interrupted.
          * @throws RequestRejectedException if the request is rejected by foreign peer.
          * @throws RequestCanceledException if the request is cancelled.
@@ -759,14 +759,14 @@ public class LeshanServer {
          * <p>
          * We choose a default timeout a bit higher to the MAX_TRANSMIT_WAIT(62-93s) which is the time from starting to
          * send a Confirmable message to the time when an acknowledgement is no longer expected.
-         * 
+         *
          * @param destination The registration linked to the LWM2M client to which the request must be sent.
          * @param request The CoAP request to send to the client.
          * @param timeoutInMs The response timeout to wait in milliseconds (see
          *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
          * @return the response or <code>null</code> if the timeout expires (see
          *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
-         * 
+         *
          * @throws InterruptedException if the thread was interrupted.
          * @throws RequestRejectedException if the request is rejected by foreign peer.
          * @throws RequestCanceledException if the request is cancelled.
@@ -787,7 +787,7 @@ public class LeshanServer {
          * Sends a CoAP {@link Request} asynchronously to a LWM2M client using a default 2min timeout.
          * <p>
          * {@link ResponseCallback} and {@link ErrorCallback} are exclusively called.
-         * 
+         *
          * @param destination The registration linked to the LWM2M client to which the request must be sent.
          * @param request The CoAP request to send to the client.
          * @param responseCallback a callback called when a response is received (successful or error response). This
@@ -821,7 +821,7 @@ public class LeshanServer {
          * Sends a CoAP {@link Request} asynchronously to a LWM2M client.
          * <p>
          * {@link ResponseCallback} and {@link ErrorCallback} are exclusively called.
-         * 
+         *
          * @param destination The registration linked to the LWM2M client to which the request must be sent.
          * @param request The CoAP request to send to the client.
          * @param responseCallback a callback called when a response is received (successful or error response). This

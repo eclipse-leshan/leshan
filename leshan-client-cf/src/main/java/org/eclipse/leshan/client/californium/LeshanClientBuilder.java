@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690
@@ -98,7 +98,7 @@ public class LeshanClientBuilder {
 
     /**
      * Creates a new instance for setting the configuration options for a {@link LeshanClient} instance.
-     * 
+     *
      * The builder is initialized with the following default values:
      * <ul>
      * <li><em>local address</em>: a local address and an ephemeral port (picked up during binding)</li>
@@ -111,7 +111,7 @@ public class LeshanClientBuilder {
      * </ul>
      * </li>
      * </ul>
-     * 
+     *
      * @param endpoint the end-point to identify the client on the server
      */
     public LeshanClientBuilder(String endpoint) {
@@ -228,7 +228,7 @@ public class LeshanClientBuilder {
 
     /**
      * Set optional trust store for verifying X.509 server certificates.
-     * 
+     *
      * @param trustStore List of trusted CA certificates
      */
     public LeshanClientBuilder setTrustStore(List<Certificate> trustStore) {
@@ -241,7 +241,7 @@ public class LeshanClientBuilder {
      * <p>
      * An {@link UDPConnector} is expected for unsecured endpoint and a {@link DTLSConnector} is expected for secured
      * endpoint.
-     * 
+     *
      * @param endpointFactory An {@link EndpointFactory}, you can extends {@link DefaultEndpointFactory}.
      * @return the builder for fluent client creation.
      */
@@ -258,7 +258,7 @@ public class LeshanClientBuilder {
      * <p>
      * By default a {@link DefaultRegistrationEngineFactory} is used. Look at this class to change some default timeout
      * value.
-     * 
+     *
      * @return the builder for fluent client creation.
      */
     public LeshanClientBuilder setRegistrationEngineFactory(RegistrationEngineFactory engineFactory) {
@@ -276,7 +276,7 @@ public class LeshanClientBuilder {
 
     /**
      * Set the additionalAttributes for {@link BootstrapRequest}
-     * 
+     *
      * @since 1.1
      */
     public LeshanClientBuilder setBootstrapAdditionalAttributes(Map<String, String> additionalAttributes) {
@@ -288,7 +288,7 @@ public class LeshanClientBuilder {
      * Set a {@link BootstrapConsistencyChecker} which is used to valid client state after a bootstrap session.
      * <p>
      * By default a {@link DefaultBootstrapConsistencyChecker} is used.
-     * 
+     *
      * @return the builder for fluent client creation.
      */
     public LeshanClientBuilder setBootstrapConsistencyChecker(BootstrapConsistencyChecker checker) {
@@ -306,7 +306,7 @@ public class LeshanClientBuilder {
      * <p>
      * Executor will not be shutdown automatically on {@link LeshanClient#destroy(boolean)}, this should be done
      * manually.
-     * 
+     *
      * @param executor the executor to share.
      * @return the builder for fluent client creation.
      */
@@ -411,7 +411,7 @@ public class LeshanClientBuilder {
      * able to build an extended <code>LeshanClient </code>.
      * <p>
      * See all the setters of this builder for more documentation about parameters.
-     * 
+     *
      * @param endpoint The endpoint name for this client.
      * @param localAddress The local address used for unsecured connection.
      * @param objectEnablers The list of object enablers. An enabler adds to support for a given LWM2M object to the
@@ -430,7 +430,7 @@ public class LeshanClientBuilder {
      * @param linkSerializer a serializer {@link LinkSerializer} used to serialize a CoRE Link.
      * @param attributeParser a {@link LwM2mAttributeParser} used to parse {@link LwM2mAttribute} from
      *        {@link WriteAttributesRequest}.
-     * 
+     *
      * @return the new {@link LeshanClient}
      */
     protected LeshanClient createLeshanClient(String endpoint, InetSocketAddress localAddress,

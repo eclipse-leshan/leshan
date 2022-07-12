@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2019 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -70,7 +70,7 @@ public class DefaultEndpointFactory implements EndpointFactory {
      * For client {@link PrincipalEndpointContextMatcher} is created.
      * <p>
      * This method is intended to be overridden.
-     * 
+     *
      * @return the {@link EndpointContextMatcher} used for secured communication
      * @param isClient Indication whether to use client side endpoint context matcher of server side.
      */
@@ -94,7 +94,7 @@ public class DefaultEndpointFactory implements EndpointFactory {
      * By default the Californium default one is used. See {@link EndpointContextMatcherFactory} for more details.
      * <p>
      * This method is intended to be overridden.
-     * 
+     *
      * @return the {@link EndpointContextMatcher} used for unsecured communication
      */
     protected EndpointContextMatcher createUnsecuredContextMatcher() {
@@ -113,7 +113,7 @@ public class DefaultEndpointFactory implements EndpointFactory {
 
     /**
      * This method is intended to be overridden.
-     * 
+     *
      * @param address the IP address and port, if null the connector is bound to an ephemeral port on the wildcard
      *        address.
      * @param coapConfig the CoAP config used to create this endpoint.
@@ -143,7 +143,7 @@ public class DefaultEndpointFactory implements EndpointFactory {
      * By default create an {@link UDPConnector}.
      * <p>
      * This method is intended to be overridden.
-     * 
+     *
      * @param address the IP address and port, if null the connector is bound to an ephemeral port on the wildcard
      *        address
      * @param coapConfig the Configuration
@@ -162,7 +162,7 @@ public class DefaultEndpointFactory implements EndpointFactory {
 
     /**
      * This method is intended to be overridden.
-     * 
+     *
      * @param dtlsConfig the DTLS config used to create this endpoint.
      * @param coapConfig the CoAP config used to create this endpoint.
      * @param store the CoAP observation store used to create this endpoint.
@@ -191,7 +191,7 @@ public class DefaultEndpointFactory implements EndpointFactory {
      * By default create a {@link DTLSConnector}.
      * <p>
      * This method is intended to be overridden.
-     * 
+     *
      * @param dtlsConfig the DTLS config used to create the Secured Connector.
      * @return the {@link Connector} used for unsecured {@link CoapEndpoint}
      */

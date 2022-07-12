@@ -136,7 +136,7 @@ public class Arguments implements Iterable<Argument> {
      * CHAR = "!" / %x23-26 / %x28-5B / %x5D-7E
      * }
      * </pre>
-     * 
+     *
      * @param arglist String contains arguments to parse.
      * @return {@link Arguments} represents list of arguments.
      * @throws InvalidArgumentException if text has invalid format.

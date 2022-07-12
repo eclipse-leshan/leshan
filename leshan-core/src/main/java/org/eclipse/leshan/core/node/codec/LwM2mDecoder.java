@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2016 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -41,7 +41,7 @@ public interface LwM2mDecoder {
 
     /**
      * Deserializes a binary content into a {@link LwM2mNode}.
-     * 
+     *
      * The type of the returned node depends on the path argument.
      *
      * @param content the content
@@ -113,11 +113,11 @@ public interface LwM2mDecoder {
 
     /**
      * Deserializes a binary content into a list of {@link LwM2mPath}.
-     * 
+     *
      * @param content the content to decode
      * @param format the format used to encode the content
      * @return a list of {@link LwM2mPath}
-     * 
+     *
      * @throws CodecException if content is malformed.
      */
     List<LwM2mPath> decodePaths(byte[] content, ContentFormat format) throws CodecException;

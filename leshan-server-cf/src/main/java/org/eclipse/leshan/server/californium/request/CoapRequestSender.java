@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2018 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -39,14 +39,14 @@ public interface CoapRequestSender {
      * <p>
      * The synchronous way could block a thread during a long time so it is more recommended to use the asynchronous
      * way.
-     * 
+     *
      * @param destination The registration linked to the LWM2M client to which the request must be sent.
      * @param coapRequest The request to send to the client.
      * @param timeoutInMs The response timeout to wait in milliseconds (see
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
      * @return the response or <code>null</code> if the timeout expires (see
      *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
-     * 
+     *
      * @throws InterruptedException if the thread was interrupted.
      * @throws RequestRejectedException if the request is rejected by foreign peer.
      * @throws RequestCanceledException if the request is cancelled.
@@ -59,9 +59,9 @@ public interface CoapRequestSender {
 
     /**
      * Sends a CoAP {@link Request} asynchronously to a LWM2M client.
-     * 
+     *
      * {@link ResponseCallback} and {@link ErrorCallback} are exclusively called.
-     * 
+     *
      * @param destination The registration linked to the LWM2M client to which the request must be sent.
      * @param coapRequest The request to send to the client.
      * @param timeoutInMs The response timeout to wait in milliseconds (see

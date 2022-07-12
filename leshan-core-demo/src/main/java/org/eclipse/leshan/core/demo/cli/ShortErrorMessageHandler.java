@@ -16,7 +16,7 @@ import picocli.CommandLine.UnmatchedArgumentException;
 /**
  * A Message Handler which display usage of erroneous option only, unlike the default one which display the global help
  * usage.
- * 
+ *
  */
 public class ShortErrorMessageHandler implements IParameterExceptionHandler {
     @Override

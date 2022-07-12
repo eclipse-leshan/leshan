@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2020 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -24,10 +24,10 @@ public class NumberUtil {
 
     /**
      * Convert the given number to long without loss allowing Floating-point number conversion
-     * 
+     *
      * @param number the number to turn in long
      * @return a long value for the given number
-     * 
+     *
      * @throws IllegalArgumentException if the number can not be store in a long.
      */
     public static Long numberToLong(Number number) throws IllegalArgumentException {
@@ -36,12 +36,12 @@ public class NumberUtil {
 
     /**
      * Convert the given number to long without loss.
-     * 
+     *
      * @param number the number to turn in long
      * @param permissiveNumberConversion this will allow Floating-Point number to be converted in Long, else an
      *        exception is raised.
      * @return a long value for the given number
-     * 
+     *
      * @throws IllegalArgumentException if the number can not be store in a long.
      */
     public static Long numberToLong(Number number, boolean permissiveNumberConversion) throws IllegalArgumentException {
@@ -91,10 +91,10 @@ public class NumberUtil {
 
     /**
      * Convert the given number to ULong without loss allowing Floating-point number conversion.
-     * 
+     *
      * @param number the number to turn in long
      * @return a Ulong value for the given number
-     * 
+     *
      * @throws IllegalArgumentException if the number can not be store in a Ulong.
      */
     public static ULong numberToULong(Number number) {
@@ -103,12 +103,12 @@ public class NumberUtil {
 
     /**
      * Convert the given number to ULong without loss.
-     * 
+     *
      * @param number the number to turn in long
      * @param permissiveNumberConversion this will allow Floating-Point number to be converted in Long, else an
      *        exception is raised.
      * @return a Ulong value for the given number
-     * 
+     *
      * @throws IllegalArgumentException if the number can not be store in a Ulong.
      */
     public static ULong numberToULong(Number number, boolean permissiveNumberConversion)
@@ -177,11 +177,11 @@ public class NumberUtil {
 
     /**
      * Convert the given number to Double with potential precision loss because rounding could be involved.
-     * 
+     *
      * @param number the number to turn in double
      * @param permissiveNumberConversion this will allow Integer to be converted in Double, else an exception is raised.
      * @return a double value for the given number
-     * 
+     *
      * @throws IllegalArgumentException if the number can not be store in a long.
      */
     public static Double numberToDouble(Number number, boolean permissiveNumberConversion) {
@@ -197,7 +197,7 @@ public class NumberUtil {
 
     /**
      * Convert the given long to integer without loss.
-     * 
+     *
      * @throws IllegalArgumentException if the long can not be store in an integer.
      */
     public static int longToInt(long longValue) {

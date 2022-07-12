@@ -31,7 +31,7 @@ import org.eclipse.leshan.core.util.Validate;
  * This class implements Certificate Usage (2) - Trust Anchor Assertion
  *
  * From RFC 6698:
- * 
+ *
  * <pre>
  * 2 -- Certificate usage 2 is used to specify a certificate, or the
  *       public key of such a certificate, that MUST be used as the trust
@@ -45,7 +45,7 @@ import org.eclipse.leshan.core.util.Validate;
  *       certificate matching the TLSA record considered to be a trust
  *       anchor for this certification path validation.
  * </pre>
- * 
+ *
  * For details about Certificate Usage please see:
  * <a href="https://tools.ietf.org/html/rfc6698#section-2.1.1">rfc6698#section-2.1.1</a> - The Certificate Usage Field
  */

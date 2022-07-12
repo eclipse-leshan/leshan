@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2017 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - add support for californium
@@ -48,7 +48,7 @@ public class EndpointContextUtil {
 
     /**
      * Create Leshan {@link Identity} from Californium {@link EndpointContext}.
-     * 
+     *
      * @param context The Californium {@link EndpointContext} to convert.
      * @return The corresponding Leshan {@link Identity}.
      * @throws IllegalStateException if we are not able to extract {@link Identity}.
@@ -85,10 +85,10 @@ public class EndpointContextUtil {
      * <p>
      * OSCORE does not use a Principal but automatically sets properties in the endpoint context at message
      * transmission/reception.
-     * 
+     *
      * @param identity The Leshan {@link Identity} to convert.
      * @param allowConnectionInitiation This request can initiate a Handshake if there is no DTLS connection.
-     * 
+     *
      * @return The corresponding Californium {@link EndpointContext}.
      */
     public static EndpointContext extractContext(Identity identity, boolean allowConnectionInitiation) {
@@ -115,7 +115,7 @@ public class EndpointContextUtil {
 
     /**
      * Extract "common name" from "distinguished name".
-     * 
+     *
      * @param dn The distinguished name.
      * @return The extracted common name.
      * @throws IllegalStateException if no CN is contained in DN.

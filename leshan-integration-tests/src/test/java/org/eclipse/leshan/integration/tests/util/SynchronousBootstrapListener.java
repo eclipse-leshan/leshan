@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2021 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -84,7 +84,7 @@ public class SynchronousBootstrapListener implements BootstrapSessionListener {
 
     /**
      * Wait until next bootstrap success event.
-     * 
+     *
      * @throws TimeoutException if wait timeouts
      */
     public void waitForSuccess(long timeout, TimeUnit timeUnit) throws InterruptedException, TimeoutException {
@@ -98,7 +98,7 @@ public class SynchronousBootstrapListener implements BootstrapSessionListener {
 
     /**
      * Wait until next bootstrap failure event.
-     * 
+     *
      * @throws TimeoutException if wait timeouts
      */
     public void waitForFailure(long timeout, TimeUnit timeUnit) throws InterruptedException, TimeoutException {

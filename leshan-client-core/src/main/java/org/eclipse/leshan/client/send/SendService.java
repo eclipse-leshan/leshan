@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2022 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -40,7 +40,7 @@ public interface SendService {
      * <p>
      * If some data can not be collected before to send, this will be silently ignored.<br>
      * If there is not data to send at all, {@link NoDataException} is raised.
-     * 
+     *
      * @param server to which data must be send
      * @param format {@link ContentFormat} to use. It MUST be {@link ContentFormat#SENML_CBOR} or
      *        {@link ContentFormat#SENML_JSON}
@@ -49,7 +49,7 @@ public interface SendService {
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
      * @return the LWM2M response. The response can be <code>null</code> if the timeout expires (see
      *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
-     * 
+     *
      * @throws InterruptedException if the thread was interrupted.
      * @throws InvalidRequestException if send request can not be created.
      * @throws CodecException if request payload can not be encoded.
@@ -73,7 +73,7 @@ public interface SendService {
      * If there is not data to send at all, {@link NoDataException} is raised.
      * <p>
      * {@link ResponseCallback} and {@link ErrorCallback} are exclusively called.
-     * 
+     *
      * @param server to which data must be send
      * @param format {@link ContentFormat} to use. It MUST be {@link ContentFormat#SENML_CBOR} or
      *        {@link ContentFormat#SENML_JSON}
@@ -103,7 +103,7 @@ public interface SendService {
 
     /**
      * Retrieves a data sender by its name
-     * 
+     *
      * @param senderName name of the sender
      * @throws IllegalArgumentException if there is no data sender with specified name
      * @return a retrieved data sender
@@ -112,7 +112,7 @@ public interface SendService {
 
     /**
      * Retrieves a data sender by its name, cast to a specified subtype
-     * 
+     *
      * @param senderName name of the sender
      * @param senderSubType subtype to which the data sender should be cast
      * @throws IllegalArgumentException if there is no data sender with specified name or the data sender with specified

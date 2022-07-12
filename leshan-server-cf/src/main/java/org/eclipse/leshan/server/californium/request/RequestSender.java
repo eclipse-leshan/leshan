@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2019 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690
@@ -105,7 +105,7 @@ public class RequestSender implements Destroyable {
      * <p>
      * The synchronous way could block a thread during a long time so it is more recommended to use the asynchronous
      * way.
-     * 
+     *
      * @param endpointName the LWM2M client endpoint name.
      * @param destination the LWM2M client {@link Identity}.
      * @param sessionId A session Identifier which could be reused to cancel all ongoing request related to this
@@ -120,7 +120,7 @@ public class RequestSender implements Destroyable {
      * @param allowConnectionInitiation This request can initiate a Handshake if there is no DTLS connection.
      * @return the response or <code>null</code> if the timeout expires (see
      *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
-     * 
+     *
      * @throws CodecException if request payload can not be encoded.
      * @throws InterruptedException if the thread was interrupted.
      * @throws RequestRejectedException if the request is rejected by foreign peer.
@@ -168,11 +168,11 @@ public class RequestSender implements Destroyable {
 
     /**
      * Send a Lightweight M2M {@link DownlinkRequest} asynchronously to a LWM2M client.
-     * 
+     *
      * The Californium API does not ensure that message callback are exclusive. E.g. In some race condition, you can get
      * a onReponse call and a onCancel one. This method ensures that you will receive only one event. Meaning, you get
      * either 1 response or 1 error.
-     * 
+     *
      * @param endpointName the LWM2M client endpoint name.
      * @param destination the LWM2M client {@link Identity}.
      * @param sessionId A session Identifier which could be reused to cancel all ongoing request related to this
@@ -246,7 +246,7 @@ public class RequestSender implements Destroyable {
      * <p>
      * The synchronous way could block a thread during a long time so it is more recommended to use the asynchronous
      * way.
-     * 
+     *
      * @param destination the LWM2M client {@link Identity}.
      * @param sessionId A session Identifier which could be reused to cancel all ongoing request related to this one.
      *        See {@link #cancelRequests(String)}.
@@ -256,7 +256,7 @@ public class RequestSender implements Destroyable {
      * @param allowConnectionInitiation This request can initiate a Handshake if there is no DTLS connection.
      * @return the response or <code>null</code> if the timeout expires (see
      *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
-     * 
+     *
      * @throws InterruptedException if the thread was interrupted.
      * @throws RequestRejectedException if the request is rejected by foreign peer.
      * @throws RequestCanceledException if the request is cancelled.
@@ -297,11 +297,11 @@ public class RequestSender implements Destroyable {
 
     /**
      * Sends a CoAP {@link Request} asynchronously to a LWM2M client.
-     * 
+     *
      * The Californium API does not ensure that message callback are exclusive. E.g. In some race condition, you can get
      * a onReponse call and a onCancel one. This method ensures that you will receive only one event. Meaning, you get
      * either 1 response or 1 error.
-     * 
+     *
      * @param destination the LWM2M client {@link Identity}.
      * @param sessionId A session Identifier which could be reused to cancel all ongoing request related to this one.
      *        See {@link #cancelRequests(String)}.
@@ -358,9 +358,9 @@ public class RequestSender implements Destroyable {
 
     /**
      * Cancel all ongoing requests for the given sessionID.
-     * 
+     *
      * @param sessionID the Id associated to the ongoing requests you want to cancel.
-     * 
+     *
      * @see "All others send methods."
      */
     public void cancelRequests(String sessionID) {

@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2016 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -26,7 +26,7 @@ import org.eclipse.leshan.core.util.Validate;
  * <p>
  * This class is responsible to accept or refuse to start new {@link BootstrapSession}, then to provide request to send.
  * It also decide when session should continue, finished or failed.
- * 
+ *
  * @see DefaultBootstrapSessionManager
  * @see BootstrapSession
  */
@@ -94,10 +94,10 @@ public interface BootstrapSessionManager {
     /**
      * Starts a bootstrapping session for an endpoint. In particular, this is responsible for authorizing the endpoint
      * if applicable.
-     * 
+     *
      * @param request the bootstrap request which initiates the session.
      * @param clientIdentity the {@link Identity} of the client.
-     * 
+     *
      * @return a BootstrapSession, possibly authorized.
      */
     public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity);
@@ -105,7 +105,7 @@ public interface BootstrapSessionManager {
     /**
      * Generally called after {@link #begin(BootstrapRequest, Identity)} to know if there is something to do on this
      * device.
-     * 
+     *
      * @param bsSession the bootstrap session concerned.
      * @return true if there is a bootstrap requests to send for this client.
      */
@@ -113,7 +113,7 @@ public interface BootstrapSessionManager {
 
     /**
      * Generally called after {@link #hasConfigFor(BootstrapSession)} to know the first request to send.
-     * 
+     *
      * @param bsSession the bootstrap session concerned.
      * @return the first request to send.
      */
@@ -121,7 +121,7 @@ public interface BootstrapSessionManager {
 
     /**
      * Called when we receive a successful response to a request.
-     * 
+     *
      * @param bsSession the bootstrap session concerned.
      * @param request The request for which we get a successful response.
      * @param response The response received.
@@ -132,11 +132,11 @@ public interface BootstrapSessionManager {
 
     /**
      * Called when we receive a error response to a request.
-     * 
+     *
      * @param bsSession the bootstrap session concerned.
      * @param request The request for which we get a error response.
      * @param response The response received.
-     * 
+     *
      * @return a {@link BootstrapPolicy} given the way to continue the bootstrap session.
      */
     public BootstrapPolicy onResponseError(BootstrapSession bsSession,
@@ -144,11 +144,11 @@ public interface BootstrapSessionManager {
 
     /**
      * Called when a request failed to be sent.
-     * 
+     *
      * @param bsSession the bootstrap session concerned.
      * @param request The request which failed to be sent.
      * @param cause The cause of the failure. Can be null.
-     * 
+     *
      * @return a {@link BootstrapPolicy} given the way to continue the bootstrap session.
      */
     public BootstrapPolicy onRequestFailure(BootstrapSession bsSession,
@@ -156,14 +156,14 @@ public interface BootstrapSessionManager {
 
     /**
      * Performs any housekeeping related to the successful ending of a Bootstrapping session.
-     * 
+     *
      * @param bsSession the bootstrap session which ends successfully.
      */
     public void end(BootstrapSession bsSession);
 
     /**
      * Performs any housekeeping related to the failure of a Bootstrapping session.
-     * 
+     *
      * @param bsSession the bootstrap session which failed.
      * @param cause why the bootstrap failed.
      */

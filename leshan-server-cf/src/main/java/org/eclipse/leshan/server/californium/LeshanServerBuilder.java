@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2013-2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - use Lwm2mEndpointContextMatcher
@@ -122,9 +122,9 @@ public class LeshanServerBuilder {
      * <p>
      * Set the address/port for unsecured CoAP Server.
      * </p>
-     * 
+     *
      * By default a wildcard address and the default CoAP port(5683) is used
-     * 
+     *
      * @param hostname The address to bind. If null wildcard address is used.
      * @param port A valid port value is between 0 and 65535. A port number of zero will let the system pick up an
      *        ephemeral port in a bind operation.
@@ -142,7 +142,7 @@ public class LeshanServerBuilder {
      * <p>
      * Set the address for unsecured CoAP Server.
      * </p>
-     * 
+     *
      * By default a wildcard address and the default CoAP port(5683) is used.
      */
     public LeshanServerBuilder setLocalAddress(InetSocketAddress localAddress) {
@@ -154,9 +154,9 @@ public class LeshanServerBuilder {
      * <p>
      * Set the address/port for secured CoAP Server (Using DTLS).
      * <p>
-     * 
+     *
      * By default a wildcard address and the default CoAPs port(5684) is used.
-     * 
+     *
      * @param hostname The address to bind. If null wildcard address is used.
      * @param port A valid port value is between 0 and 65535. A port number of zero will let the system pick up an
      *        ephemeral port in a bind operation.
@@ -174,7 +174,7 @@ public class LeshanServerBuilder {
      * <p>
      * Set the address for secured CoAP Server (Using DTLS).
      * </p>
-     * 
+     *
      * By default a wildcard address and the default CoAP port(5684) is used.
      */
     public LeshanServerBuilder setLocalSecureAddress(InetSocketAddress localSecureAddress) {
@@ -187,7 +187,7 @@ public class LeshanServerBuilder {
      * Set your {@link RegistrationStore} implementation which stores {@link Registration} and {@link Observation}.
      * </p>
      * By default the {@link InMemoryRegistrationStore} implementation is used.
-     * 
+     *
      */
     public LeshanServerBuilder setRegistrationStore(CaliforniumRegistrationStore registrationStore) {
         this.registrationStore = registrationStore;
@@ -201,7 +201,7 @@ public class LeshanServerBuilder {
      * By default no security store is set. It is needed for secured connection if you are using the defaultAuthorizer
      * or if you want PSK feature activated. An {@link InMemorySecurityStore} is provided to start using secured
      * connection.
-     * 
+     *
      */
     public LeshanServerBuilder setSecurityStore(SecurityStore securityStore) {
         this.securityStore = securityStore;
@@ -327,7 +327,7 @@ public class LeshanServerBuilder {
      * <p>
      * An {@link UDPConnector} is expected for unsecured endpoint and a {@link DTLSConnector} is expected for secured
      * endpoint.
-     * 
+     *
      * @param endpointFactory An {@link EndpointFactory}, you can extends {@link DefaultEndpointFactory}.
      * @return the builder for fluent Bootstrap Server creation.
      */
@@ -369,7 +369,7 @@ public class LeshanServerBuilder {
      * By default a {@link StaticClientAwakeTimeProvider} will be used initialized with the
      * <code>MAX_TRANSMIT_WAIT</code> value available in CoAP {@link Configuration} which should be by default 93s as
      * defined in <a href="https://tools.ietf.org/html/rfc7252#section-4.8.2">RFC7252</a>.
-     * 
+     *
      * @param awakeTimeProvider the {@link ClientAwakeTimeProvider} to set.
      */
     public LeshanServerBuilder setClientAwakeTimeProvider(ClientAwakeTimeProvider awakeTimeProvider) {
@@ -379,7 +379,7 @@ public class LeshanServerBuilder {
 
     /**
      * Sets a new {@link RegistrationIdProvider} object different from the default one (Random string).
-     * 
+     *
      * @param registrationIdProvider the {@link RegistrationIdProvider} to set.
      */
     public void setRegistrationIdProvider(RegistrationIdProvider registrationIdProvider) {
@@ -395,15 +395,15 @@ public class LeshanServerBuilder {
      * <p>
      * With this option you can allow Leshan to update Registration on observe notification. This is clearly OUT OF
      * SPECIFICATION and so this is not recommended and should be used only if there is no other way.
-     * 
+     *
      * For {@code coap://} you probably need to use a the Relaxed response matching mode.
-     * 
+     *
      * <pre>
      * coapConfig.setString(NetworkConfig.Keys.RESPONSE_MATCHING, "RELAXED");
      * </pre>
-     * 
+     *
      * @since 1.1
-     * 
+     *
      * @see <a href=
      *      "https://github.com/eclipse/leshan/wiki/LWM2M-Devices-with-Dynamic-IP#is-the-update-request-mandatory--should-i-update-registration-on-notification-">Dynamic
      *      IP environnement documentaiton</a>
@@ -442,7 +442,7 @@ public class LeshanServerBuilder {
      * Create the {@link LeshanServer}.
      * <p>
      * Next step will be to start it : {@link LeshanServer#start()}.
-     * 
+     *
      * @return the LWM2M server.
      * @throws IllegalStateException if builder configuration is not consistent.
      */
@@ -621,7 +621,7 @@ public class LeshanServerBuilder {
      * <p>
      * You can extend <code>LeshanServerBuilder</code> and override this method to create a new builder which will be
      * able to build an extended <code>LeshanServer</code>.
-     * 
+     *
      * @param unsecuredEndpoint CoAP endpoint used for <code>coap://</code> communication.
      * @param securedEndpoint CoAP endpoint used for <code>coaps://</code> communication.
      * @param registrationStore the {@link Registration} store.

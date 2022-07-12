@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2020 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -39,7 +39,7 @@ public class X509Util {
      * Validate Certificate Path using <a href=
      * "https://docs.oracle.com/javase/8/docs/technotes/guides/security/certpath/CertPathProgGuide.html#PKIXClasses">Java
      * PKIX algorithm</a> which implement <a href="https://tools.ietf.org/html/rfc3280">RFC3280</a>.
-     * 
+     *
      * @param certPath a certificate path to validate
      * @param trustedCertificates list of trusted certificates
      * @return the certpath from certificate to validate (end node) to first trusted anchor included.
@@ -76,7 +76,7 @@ public class X509Util {
 
     /**
      * Truncate certificate path just before the first trusted certificates.
-     * 
+     *
      * @param certPath a certificate path to eventually truncate
      * @param trustedCertificates list of trusted certificates
      * @return a certPath without trusted any trusted certificates
@@ -95,7 +95,7 @@ public class X509Util {
 
     /**
      * Add certificate at the end of the given certificate path.
-     * 
+     *
      * @param certPath a certificate path to extend
      * @param certificate to add at the end
      * @return a certPath ending with given certificate
@@ -108,7 +108,7 @@ public class X509Util {
 
     /**
      * Search certificate in trusts.
-     * 
+     *
      * @param certificate certificate to search
      * @param certificates to search
      * @return {@code true}, if certificate is contained, {@code false}, otherwise.

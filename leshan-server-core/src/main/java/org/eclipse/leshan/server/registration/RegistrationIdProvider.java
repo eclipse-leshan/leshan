@@ -21,7 +21,7 @@ public interface RegistrationIdProvider {
 
     /**
      * Returns the registrationId using for location-path option values on response of Register operation.
-     * 
+     *
      * @param registerRequest the client's registration request information.
      * @return registrationId
      */

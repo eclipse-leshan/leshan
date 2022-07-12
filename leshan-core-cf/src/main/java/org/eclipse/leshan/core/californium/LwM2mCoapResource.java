@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2019 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -61,7 +61,7 @@ public class LwM2mCoapResource extends CoapResource {
 
     /**
      * Handle an Invalid Request by sending a BAD_REQUEST response and logging the error using debug level.
-     * 
+     *
      * @param exchange The CoAP exchange linked to the invalid request.
      * @param message The error message describing why the request is invalid.
      */
@@ -71,7 +71,7 @@ public class LwM2mCoapResource extends CoapResource {
 
     /**
      * Handle an Invalid Request by sending a BAD_REQUEST response and logging the error using debug level.
-     * 
+     *
      * @param exchange The exchange linked to the invalid request.
      * @param message The error message describing why the request is invalid.
      * @param error An {@link Throwable} raised while we handle try create a LWM2M request from CoAP request.
@@ -101,7 +101,7 @@ public class LwM2mCoapResource extends CoapResource {
 
     /**
      * Create Leshan {@link Identity} from Californium {@link EndpointContext}.
-     * 
+     *
      * @param context The Californium {@link EndpointContext} to convert.
      * @return The corresponding Leshan {@link Identity}.
      * @throws IllegalStateException if we are not able to extract {@link Identity}.
@@ -112,7 +112,7 @@ public class LwM2mCoapResource extends CoapResource {
 
     /**
      * Create Leshan {@link Identity} from Californium {@link EndpointContext}.
-     * 
+     *
      * @param context The Californium {@link EndpointContext} to convert.
      * @return The corresponding Leshan {@link Identity} or <code>null</code> if we didn't succeed to extract Identity.
      */

@@ -44,14 +44,14 @@ public class DefaultLinkParser implements LinkParser {
     /**
      * Parse a byte arrays representation of a {@code String} encoding with UTF_8 {@link Charset} with rules (subset of
      * RFC6690 (https://datatracker.ietf.org/doc/html/RFC6690#section-2)):
-     * 
+     *
      * <pre>
      * {@code
      * Link            = link-value-list
      * link-value-list = [ link-value *[ "," link-value ]]
      * }
      * </pre>
-     * 
+     *
      * @param bytes a byte arrays representing {@code String} encoding with UTF_8 {@link Charset}.
      * @return an array of {@code Link}
      */
@@ -93,7 +93,7 @@ public class DefaultLinkParser implements LinkParser {
 
     /**
      * consume a link-value with rules (subset of RFC6690 (https://datatracker.ietf.org/doc/html/RFC6690#section-2)):
-     * 
+     *
      * <pre>
      * {@code
      * link-value     = "<" URI-Reference ">" *( ";" link-param )
@@ -124,7 +124,7 @@ public class DefaultLinkParser implements LinkParser {
 
     /**
      * consume URI-Reference with rules (subset of RFC3986 (https://datatracker.ietf.org/doc/html/rfc3986#appendix-A)):
-     * 
+     *
      * <pre>
      * {@code
      * URI-reference = relative-ref
@@ -157,7 +157,7 @@ public class DefaultLinkParser implements LinkParser {
     /**
      * consume a segment/segment-nz with rules (subset of RFC3986
      * (https://datatracker.ietf.org/doc/html/rfc3986#appendix-A)):
-     * 
+     *
      * <pre>
      * {@code
      * segment       = *pchar
@@ -199,7 +199,7 @@ public class DefaultLinkParser implements LinkParser {
 
     /**
      * Parse a link-extension with rules:
-     * 
+     *
      * <pre>
      * {@code
      * link-param = link-extension
@@ -226,7 +226,7 @@ public class DefaultLinkParser implements LinkParser {
 
     /**
      * consume parmname as defined in RFC5987 (https://datatracker.ietf.org/doc/html/rfc5987#section-3.2.1):
-     * 
+     *
      * <pre>
      * {@code
      * parmname      = 1*attr-char

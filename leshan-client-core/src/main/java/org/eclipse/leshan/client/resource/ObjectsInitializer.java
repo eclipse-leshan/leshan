@@ -1,10 +1,10 @@
 /*******************************************************************************
  * Copyright (c) 2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
@@ -49,7 +49,7 @@ import org.eclipse.leshan.core.util.Validate;
  * <li>{@link #create(int...)}
  * <li>{@link #create(int)}
  * </ul>
- * 
+ *
  * @author sbernard
  *
  */
@@ -140,7 +140,7 @@ public class ObjectsInitializer {
      * Add dummy instance for each given <code>objectId</code>. ObjectId can be repeated to create several dummy
      * instances. A dummy instance is just a very simple instance implementation which respect the object model and
      * return some random values. A good way to begin to test Leshan client but not adapted to production environment.
-     * 
+     *
      * @param objectIds the list of object id. For each id a dummy instance will be created.
      */
     public void setDummyInstancesForObject(int... objectIds) {
@@ -179,9 +179,9 @@ public class ObjectsInitializer {
     /**
      * Create an {@link LwM2mObjectEnabler} for each object to which you associated an "instances", "object class" or
      * "factory".
-     * 
+     *
      * @return a list of LwM2MObjectEnabler
-     * 
+     *
      * @see ObjectsInitializer#setInstancesForObject(int, LwM2mInstanceEnabler...)
      * @see ObjectsInitializer#setClassForObject(int, Class)
      * @see ObjectsInitializer#setFactoryForObject(int, LwM2mInstanceEnablerFactory)
@@ -204,11 +204,11 @@ public class ObjectsInitializer {
 
     /**
      * Create an {@link LwM2mObjectEnabler} for the given <code>objectId</code>.
-     * 
+     *
      * An "instances", "object class" or "factory" MUST have been associated before.
-     * 
+     *
      * @return a LwM2MObjectEnabler
-     * 
+     *
      * @see ObjectsInitializer#setInstancesForObject(int, LwM2mInstanceEnabler...)
      * @see ObjectsInitializer#setClassForObject(int, Class)
      * @see ObjectsInitializer#setFactoryForObject(int, LwM2mInstanceEnablerFactory)
@@ -224,11 +224,11 @@ public class ObjectsInitializer {
 
     /**
      * Create an {@link LwM2mObjectEnabler} for each given <code>objectId</code>.
-     * 
+     *
      * An "instances", "object class" or "factory" MUST have been associated before.
-     * 
+     *
      * @return a list of LwM2MObjectEnabler
-     * 
+     *
      * @see ObjectsInitializer#setClassForObject(int, Class)
      * @see ObjectsInitializer#setFactoryForObject(int, LwM2mInstanceEnablerFactory)
      * @see ObjectsInitializer#setInstancesForObject(int, LwM2mInstanceEnabler...)

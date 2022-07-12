@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2013-2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -99,10 +99,10 @@ public class ObjectLoader {
      * Models are not validate if you want to ensure that model are valid use
      * {@link #loadDdfFile(InputStream, String, boolean)} or
      * {@link #loadDdfFile(InputStream, String, DDFFileParser, ObjectModelValidator)}
-     * 
+     *
      * @param input An inputStream to a DDF file.
      * @param streamName A name for the stream used for logging only
-     * 
+     *
      * @throws InvalidDDFFileException if DDF file is invalid
      */
     public static List<ObjectModel> loadDdfFile(InputStream input, String streamName)
@@ -113,15 +113,15 @@ public class ObjectLoader {
 
     /**
      * Load object definition from DDF file.
-     * 
+     *
      * @param input An inputStream to a DDF file.
      * @param streamName A name for the stream used for logging only
      * @param validate true if you want model validation. Validation is not free and it could make sense to not validate
      *        model if you already trust it.
-     * 
+     *
      * @throws InvalidDDFFileException if DDF file is invalid
      * @throws InvalidModelException if model is invalid
-     * 
+     *
      * @since 1.1
      */
     public static List<ObjectModel> loadDdfFile(InputStream input, String streamName, boolean validate)
@@ -132,13 +132,13 @@ public class ObjectLoader {
 
     /**
      * Load object definition from DDF file.
-     * 
+     *
      * @param input An inputStream to a DDF file.
      * @param streamName A name for the stream used for logging and validation
      * @param ddfFileParser a ddfFileParser which could do validation optionally.
      * @param modelValidator an Object model validator to ensure model is valid, see
      *        {@link DefaultObjectModelValidator}. If {@code null} then there will be no validation.
-     * 
+     *
      * @throws InvalidDDFFileException if DDF file is invalid
      * @throws InvalidModelException if model is invalid
      */
@@ -159,10 +159,10 @@ public class ObjectLoader {
      * Models are not validate if you want to ensure that model are valid use
      * {@link #loadDdfResources(String, String[], boolean)}
      * {@link #loadDdfResources(String, String[], DDFFileParser, ObjectModelValidator)}
-     * 
+     *
      * @param path directory path to the DDF files
      * @param filenames names of all the DDF files
-     * 
+     *
      * @throws InvalidDDFFileException if DDF file is invalid
      * @throws InvalidModelException if model is invalid
      */
@@ -175,15 +175,15 @@ public class ObjectLoader {
      * Load object definition from DDF resources following rules of {@link Class#getResourceAsStream(String)}.
      * <p>
      * It should be used to load DDF embedded with your application bundle (e.g. jar, war, ...)
-     * 
+     *
      * @param path directory path to the DDF files
      * @param filenames names of all the DDF files
      * @param validate true if you want model validation. Validation is not free and it could make sense to not validate
      *        model if you already trust it.
-     * 
+     *
      * @throws InvalidDDFFileException if DDF file is invalid
      * @throws InvalidModelException if model is invalid
-     * 
+     *
      * @since 1.1
      */
     public static List<ObjectModel> loadDdfResources(String path, String[] filenames, boolean validate)
@@ -198,13 +198,13 @@ public class ObjectLoader {
      * <p>
      * It should be used to load DDF embedded with your application bundle (e.g. jar, war, ...)
      * <p>
-     * 
+     *
      * @param path directory path to the DDF files
      * @param filenames names of all the DDF files
      * @param ddfFileParser a ddfFileParser which could do validation optionally.
      * @param modelValidator an Object model validator to ensure model is valid, see
      *        {@link DefaultObjectModelValidator}. If {@code null} then there will be no validation.
-     * 
+     *
      * @throws InvalidDDFFileException if DDF file is invalid
      * @throws InvalidModelException if model is invalid
      */
@@ -232,9 +232,9 @@ public class ObjectLoader {
      * Models are not validate if you want to ensure that model are valid use
      * {@link #loadDdfResources(String[], boolean)} or
      * {@link #loadDdfResources(String[], DDFFileParser, ObjectModelValidator)}
-     * 
+     *
      * @param paths An array of paths to DDF files.
-     * 
+     *
      * @throws InvalidDDFFileException if DDF file is invalid
      * @throws InvalidModelException if model is invalid
      */
@@ -248,11 +248,11 @@ public class ObjectLoader {
      * <p>
      * It should be used to load DDF embedded with your application bundle (e.g. jar, war, ...)
      * <p>
-     * 
+     *
      * @param paths An array of paths to DDF files.
      * @param validate true if you want model validation. Validation is not free and it could make sense to not validate
      *        model if you already trust it.
-     * 
+     *
      * @throws InvalidDDFFileException if DDF file is invalid
      */
     public static List<ObjectModel> loadDdfResources(String[] paths, boolean validate)
@@ -266,12 +266,12 @@ public class ObjectLoader {
      * <p>
      * It should be used to load DDF embedded with your application bundle (e.g. jar, war, ...)
      * <p>
-     * 
+     *
      * @param paths An array of paths to DDF files.
      * @param ddfFileParser a ddfFileParser which could do validation optionally.
      * @param modelValidator an Object model validator to ensure model is valid, see
      *        {@link DefaultObjectModelValidator}. If {@code null} then there will be no validation.
-     * 
+     *
      * @throws InvalidDDFFileException if DDF file is invalid
      */
     public static List<ObjectModel> loadDdfResources(String[] paths, DDFFileParser ddfFileParser,
@@ -293,7 +293,7 @@ public class ObjectLoader {
      * <p>
      * Models are not validate if you want to ensure that model are valid use {@link #loadObjectsFromDir(File, boolean)}
      * or {@link #loadObjectsFromDir(File, DDFFileParser, ObjectModelValidator)}
-     * 
+     *
      * @param modelsDir the directory containing all the ddf file definition.
      */
     public static List<ObjectModel> loadObjectsFromDir(File modelsDir) {
@@ -304,7 +304,7 @@ public class ObjectLoader {
      * Load object definitions from directory.
      * <p>
      * Invalid model will be logged and ignored.
-     * 
+     *
      * @param modelsDir the directory containing all the ddf file definition.
      * @param validate true if you want model validation. Validation is not free and it could make sense to not validate
      *        model if you already trust it.
@@ -318,12 +318,12 @@ public class ObjectLoader {
      * Load object definitions from directory.
      * <p>
      * Invalid model will be logged and ignored.
-     * 
+     *
      * @param modelsDir the directory containing all the ddf file definition.
      * @param ddfFileParser a ddfFileParser which could do validation optionally.
      * @param modelValidator an Object model validator to ensure model is valid, see
      *        {@link DefaultObjectModelValidator}. If {@code null} then there will be no validation.
-     * 
+     *
      */
     public static List<ObjectModel> loadObjectsFromDir(File modelsDir, DDFFileParser ddfFileParser,
             ObjectModelValidator modelValidator) {

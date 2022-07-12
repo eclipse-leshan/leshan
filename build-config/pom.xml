@@ -268,9 +268,11 @@ Contributors:
                     <configLocation>../eclipse/checkstyle.xml</configLocation>
                     <consoleOutput>true</consoleOutput>
                     <failsOnError>true</failsOnError>
+                    <linkXRef>false</linkXRef>
                 </configuration>
                 <executions>
                     <execution>
+                        <?m2e ignore?>
                         <id>validate</id>
                         <phase>validate</phase>
                         <goals>

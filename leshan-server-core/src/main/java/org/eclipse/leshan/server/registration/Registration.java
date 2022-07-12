@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2013-2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - use Identity as destination
@@ -135,7 +135,7 @@ public class Registration {
 
     /**
      * Gets the clients identity.
-     * 
+     *
      * @return identity from client's most recent registration or registration update.
      */
     public Identity getIdentity() {
@@ -144,7 +144,7 @@ public class Registration {
 
     /**
      * Gets the client's network socket address.
-     * 
+     *
      * @return the source address from the client's most recent CoAP message.
      */
     public InetSocketAddress getSocketAddress() {
@@ -153,7 +153,7 @@ public class Registration {
 
     /**
      * Gets the client's network address.
-     * 
+     *
      * @return the source address from the client's most recent CoAP message.
      */
     public InetAddress getAddress() {
@@ -162,7 +162,7 @@ public class Registration {
 
     /**
      * Gets the client's network port number.
-     * 
+     *
      * @return the source port from the client's most recent CoAP message.
      */
     public int getPort() {
@@ -267,7 +267,7 @@ public class Registration {
 
     /**
      * Gets the unique name the client has registered with.
-     * 
+     *
      * @return the name
      */
     public String getEndpoint() {
@@ -304,7 +304,7 @@ public class Registration {
 
     /**
      * This is the same idea than {@link Registration#isAlive()} but with a grace period. <br>
-     * 
+     *
      * @param gracePeriodInSec an extra time for the registration lifetime.
      * @return true if the last registration update was done less than lifetime+gracePeriod seconds ago.
      */

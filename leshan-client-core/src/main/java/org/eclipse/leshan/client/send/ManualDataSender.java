@@ -53,7 +53,7 @@ public class ManualDataSender implements DataSender {
 
     /**
      * Send collected data.
-     * 
+     *
      * @throws NoDataException if no data was collected before to send
      */
     public void sendCollectedData(ServerIdentity server, ContentFormat format, long timeoutInMs, boolean noFlush)

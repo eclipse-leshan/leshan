@@ -538,7 +538,7 @@ public class Base64 extends BaseNCodec {
     /**
      * Encodes binary data using a URL-safe variation of the base64 algorithm but does not chunk the output. The
      * url-safe variation emits - and _ instead of + and / characters. <b>Note: no padding is added.</b>
-     * 
+     *
      * @param binaryData binary data to encode
      * @return byte[] containing Base64 characters in their UTF-8 representation.
      * @since 1.4
@@ -550,7 +550,7 @@ public class Base64 extends BaseNCodec {
     /**
      * Encodes binary data using a URL-safe variation of the base64 algorithm but does not chunk the output. The
      * url-safe variation emits - and _ instead of + and / characters. <b>Note: no padding is added.</b>
-     * 
+     *
      * @param binaryData binary data to encode
      * @return String containing Base64 characters
      * @since 1.4

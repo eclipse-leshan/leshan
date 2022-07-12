@@ -12,7 +12,7 @@
  *
  * Contributors:
  *     Bosch Software Innovations GmbH - initial API
- *     RISE SICS AB - added more features 
+ *     RISE SICS AB - added more features
  *******************************************************************************/
 package org.eclipse.leshan.server.queue;
 
@@ -68,7 +68,7 @@ public final class PresenceServiceImpl implements PresenceService, Destroyable {
     /**
      * Set the client identified by registration as awake. Listeners are notified if that client state changed to awake
      * state.
-     * 
+     *
      * @param reg the client's registration object
      */
     public void setAwake(final Registration reg) {
@@ -127,7 +127,7 @@ public final class PresenceServiceImpl implements PresenceService, Destroyable {
      * that client state changed to sleeping state.
      * <p>
      * Going in sleeping state should happen when the timer expires or when the client doesn't respond to a request.
-     * 
+     *
      * @param reg the client's registration object
      */
     public void setSleeping(Registration reg) {
@@ -148,7 +148,7 @@ public final class PresenceServiceImpl implements PresenceService, Destroyable {
 
     /**
      * Stop to track presence for the given registration. No event is raised.
-     * 
+     *
      * @param reg the client's registration object.
      */
     public void stopPresenceTracking(Registration reg) {

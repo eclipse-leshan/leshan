@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2013-2015 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -46,7 +46,7 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
      * Create a path to an object
      *
      * @param objectId the object identifier
-     * 
+     *
      * @throws InvalidLwM2mPathException if you try to create path with invalid inputs
      */
     public LwM2mPath(int objectId) throws InvalidLwM2mPathException {
@@ -59,7 +59,7 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
      *
      * @param objectId the object identifier
      * @param objectInstanceId the instance identifier
-     * 
+     *
      * @throws InvalidLwM2mPathException if you try to create path with invalid inputs
      */
     public LwM2mPath(int objectId, int objectInstanceId) throws InvalidLwM2mPathException {
@@ -73,7 +73,7 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
      * @param objectId the object identifier
      * @param objectInstanceId the instance identifier
      * @param resourceId the resource identifier
-     * 
+     *
      * @throws InvalidLwM2mPathException if you try to create path with invalid inputs
      */
     public LwM2mPath(int objectId, int objectInstanceId, int resourceId) throws InvalidLwM2mPathException {
@@ -88,7 +88,7 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
      * @param objectInstanceId the instance identifier
      * @param resourceId the resource identifier
      * @param resourceInstanceId the resource instance identifier
-     * 
+     *
      * @throws InvalidLwM2mPathException if you try to create path with invalid inputs
      */
     public LwM2mPath(int objectId, int objectInstanceId, int resourceId, int resourceInstanceId)
@@ -101,7 +101,7 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
      * Constructs a {@link LwM2mPath} from a string representation
      *
      * @param path the path (e.g. "/3/0/1" or "/3")
-     * 
+     *
      * @throws InvalidLwM2mPathException if you try to create path with invalid inputs
      */
     public LwM2mPath(String path) throws InvalidLwM2mPathException {
@@ -136,7 +136,7 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
 
     /**
      * Validate the current path and raise {@link IllegalArgumentException} is path is not valid
-     * 
+     *
      * @see LwM2mNodeUtil#validatePath(LwM2mPath)
      * @throws InvalidLwM2mPathException if you try to create path with invalid inputs
      */
@@ -416,11 +416,11 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
      * Parse a string containing a full LWM2M path containing rootpath (rt="oma.lwm2m").
      * <p>
      * E.g. : fullpath="/myrootpath/1/0 and rootpath="/myrootpat/" will return <code>new LwM2mPath(1,0)</code>
-     * 
+     *
      * @param fullpath the path to parse.
      * @param lwm2mRootpath the expected rootpath. <code>null</code> is considered as "/"
      * @return A valid {@link LwM2mPath} or null it does not start by lwm2mRootPath
-     * 
+     *
      * @exception NumberFormatException if path contains not Numeric value
      * @exception InvalidLwM2mPathException if path is invalid (e.g. too big number in path)
      * @exception IllegalArgumentException if path length is invalid

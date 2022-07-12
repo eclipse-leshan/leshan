@@ -1,15 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2022 Sierra Wireless and others.
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
+ *
  * The Eclipse Public License is available at
  *    http://www.eclipse.org/legal/epl-v20.html
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
+ *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
@@ -65,11 +65,11 @@ public abstract class StringParser<T extends Throwable> {
 
     /**
      * LOALPHA as defined at https://datatracker.ietf.org/doc/html/rfc6690#section-2
-     * 
+     *
      * <pre>
      * LOALPHA        = %x61-7A   ; a-z
      * </pre>
-     * 
+     *
      * @return<code>true</code> if there is a next char and it is a ALPHA
      */
     public boolean nextCharIsLOALPHA() {
@@ -78,11 +78,11 @@ public abstract class StringParser<T extends Throwable> {
 
     /**
      * ALPHA as defined at https://datatracker.ietf.org/doc/html/rfc2234#section-6.1
-     * 
+     *
      * <pre>
      *  ALPHA          =  %x41-5A / %x61-7A   ; A-Z / a-z
      * </pre>
-     * 
+     *
      * @return<code>true</code> if there is a next char and it is a ALPHA
      */
     public boolean nextCharIsALPHA() {
@@ -91,14 +91,14 @@ public abstract class StringParser<T extends Throwable> {
 
     /**
      * DIGIT as defined at https://datatracker.ietf.org/doc/html/rfc2234#section-6.1
-     * 
+     *
      * <pre>
      *  DIGIT          =  %x30-39
                                ; 0-9
      * </pre>
-     * 
-     * 
-     * 
+     *
+     *
+     *
      * @return <code>true</code> if there is a next char and it is a DIGIT
      */
     public boolean nextCharIsDIGIT() {
@@ -107,13 +107,13 @@ public abstract class StringParser<T extends Throwable> {
 
     /**
      * HEXDIG as defined at https://datatracker.ietf.org/doc/html/rfc2234#section-6.1
-     * 
+     *
      * <pre>
      * HEXDIG = DIGIT / "A" / "B" / "C" / "D" / "E" / "F"
      * </pre>
-     * 
-     * 
-     * 
+     *
+     *
+     *
      * @return <code>true</code> if there is a next char and it is an HEXDIG
      */
     public boolean nextCharIsHEXDIG() {
@@ -162,7 +162,7 @@ public abstract class StringParser<T extends Throwable> {
 
     /**
      * Consume next char if it is an HEXDIG character, if not raise an exception.
-     * 
+     *
      * @see #nextCharIsHEXDIG()
      */
     public void consumeHEXDIG() throws T {
@@ -179,7 +179,7 @@ public abstract class StringParser<T extends Throwable> {
 
     /**
      * Consume next char if it is an DIGIT character, if not raise an exception.
-     * 
+     *
      * @see #nextCharIsDIGIT()
      */
     public void consumeDIGIT() throws T {
@@ -196,7 +196,7 @@ public abstract class StringParser<T extends Throwable> {
 
     /**
      * Consume next char if it is LOALPHA argument if not raise an exception.
-     * 
+     *
      * @see #nextCharIsLOALPHA()
      */
     public void consumeLOALPHA() throws T {
@@ -213,7 +213,7 @@ public abstract class StringParser<T extends Throwable> {
 
     /**
      * Consume cardinal as described at https://datatracker.ietf.org/doc/html/rfc6690#section-2
-     * 
+     *
      * <pre>
      *  cardinal       = "0" / ( %x31-39 *DIGIT )
      * </pre>
@@ -252,7 +252,7 @@ public abstract class StringParser<T extends Throwable> {
 
     /**
      * @return subtring of the string to parse from start to end.
-     * 
+     *
      * @see String#substring(int, int)
      */
     public String substring(int start, int end) {
