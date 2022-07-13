@@ -11,7 +11,9 @@
             <property name="ignoreComments" value="true"/>
             <property name="message" value="No `sysout` or `syserr` allowed."/>
         </module>
+        <module name="AvoidStarImport" />
     </module>
+
     <module name="RegexpSingleline">
         <property name="format" value="\s+$"/>
         <property name="message" value="No trailing white space allowed."/>
