@@ -1,6 +1,8 @@
 package org.eclipse.leshan.core.link.attributes;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.link.lwm2m.attributes.AssignationLevel;

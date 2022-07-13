@@ -15,7 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.read;
 
-import static org.eclipse.leshan.core.ResponseCode.*;
+import static org.eclipse.leshan.core.ResponseCode.BAD_REQUEST;
+import static org.eclipse.leshan.core.ResponseCode.CONTENT;
 import static org.eclipse.leshan.integration.tests.util.TestUtil.assertContentFormat;
 import static org.junit.Assert.assertEquals;
 

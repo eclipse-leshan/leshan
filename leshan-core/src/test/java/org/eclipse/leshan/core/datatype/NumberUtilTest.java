@@ -15,7 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.datatype;
 
-import static org.eclipse.leshan.core.util.datatype.NumberUtil.*;
+import static org.eclipse.leshan.core.util.datatype.NumberUtil.longToInt;
+import static org.eclipse.leshan.core.util.datatype.NumberUtil.numberToLong;
+import static org.eclipse.leshan.core.util.datatype.NumberUtil.numberToULong;
 import static org.junit.Assert.assertEquals;
 
 import java.math.BigDecimal;

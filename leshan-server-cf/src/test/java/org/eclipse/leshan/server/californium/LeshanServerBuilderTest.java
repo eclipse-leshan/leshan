@@ -15,7 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.math.BigInteger;
 import java.security.AlgorithmParameters;

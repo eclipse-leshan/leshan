@@ -17,7 +17,8 @@
 package org.eclipse.leshan.integration.tests.util;
 
 import static org.eclipse.leshan.client.object.Security.oscoreOnly;
-import static org.eclipse.leshan.core.LwM2mId.*;
+import static org.eclipse.leshan.core.LwM2mId.OSCORE;
+import static org.eclipse.leshan.core.LwM2mId.SECURITY;
 
 import java.io.FileInputStream;
 import java.io.IOException;

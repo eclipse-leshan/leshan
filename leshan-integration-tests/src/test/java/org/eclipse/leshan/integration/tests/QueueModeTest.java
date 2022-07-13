@@ -18,7 +18,8 @@
 package org.eclipse.leshan.integration.tests;
 
 import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.linkParser;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.request.ReadRequest;

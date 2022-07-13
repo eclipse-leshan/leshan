@@ -15,7 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
-import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.*;
+import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.CANCELLED;
+import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.FINISH_FAILED;
+import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.INTERNAL_SERVER_ERROR;
+import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.NO_BOOTSTRAP_CONFIG;
+import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.REQUEST_FAILED;
+import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.UNAUTHORIZED;
 
 import java.util.concurrent.ConcurrentHashMap;
 

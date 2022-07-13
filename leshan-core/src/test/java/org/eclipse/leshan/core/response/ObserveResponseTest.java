@@ -15,9 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.response;
 
-import static org.eclipse.leshan.core.ResponseCode.*;
+import static org.eclipse.leshan.core.ResponseCode.CHANGED;
+import static org.eclipse.leshan.core.ResponseCode.CONTENT;
 import static org.eclipse.leshan.core.node.LwM2mSingleResource.newResource;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 
 import java.util.Arrays;
 import java.util.Collection;

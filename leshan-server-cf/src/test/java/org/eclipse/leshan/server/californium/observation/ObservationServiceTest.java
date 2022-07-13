@@ -16,7 +16,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.observation;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

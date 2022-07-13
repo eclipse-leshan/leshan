@@ -15,7 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.tlv;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 import java.nio.ByteBuffer;
 import java.util.Date;

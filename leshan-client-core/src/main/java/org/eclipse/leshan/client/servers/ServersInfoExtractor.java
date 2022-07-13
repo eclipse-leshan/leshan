@@ -18,7 +18,29 @@
 package org.eclipse.leshan.client.servers;
 
 import static org.eclipse.leshan.client.servers.ServerIdentity.SYSTEM;
-import static org.eclipse.leshan.core.LwM2mId.*;
+import static org.eclipse.leshan.core.LwM2mId.DEVICE;
+import static org.eclipse.leshan.core.LwM2mId.DVC_SUPPORTED_BINDING;
+import static org.eclipse.leshan.core.LwM2mId.OSCORE;
+import static org.eclipse.leshan.core.LwM2mId.OSCORE_AEAD_ALGORITHM;
+import static org.eclipse.leshan.core.LwM2mId.OSCORE_HMAC_ALGORITHM;
+import static org.eclipse.leshan.core.LwM2mId.OSCORE_MASTER_SALT;
+import static org.eclipse.leshan.core.LwM2mId.OSCORE_MASTER_SECRET;
+import static org.eclipse.leshan.core.LwM2mId.OSCORE_RECIPIENT_ID;
+import static org.eclipse.leshan.core.LwM2mId.OSCORE_SENDER_ID;
+import static org.eclipse.leshan.core.LwM2mId.SECURITY;
+import static org.eclipse.leshan.core.LwM2mId.SEC_BOOTSTRAP;
+import static org.eclipse.leshan.core.LwM2mId.SEC_CERTIFICATE_USAGE;
+import static org.eclipse.leshan.core.LwM2mId.SEC_OSCORE_SECURITY_MODE;
+import static org.eclipse.leshan.core.LwM2mId.SEC_PUBKEY_IDENTITY;
+import static org.eclipse.leshan.core.LwM2mId.SEC_SECRET_KEY;
+import static org.eclipse.leshan.core.LwM2mId.SEC_SECURITY_MODE;
+import static org.eclipse.leshan.core.LwM2mId.SEC_SERVER_ID;
+import static org.eclipse.leshan.core.LwM2mId.SEC_SERVER_PUBKEY;
+import static org.eclipse.leshan.core.LwM2mId.SEC_SERVER_URI;
+import static org.eclipse.leshan.core.LwM2mId.SERVER;
+import static org.eclipse.leshan.core.LwM2mId.SRV_BINDING;
+import static org.eclipse.leshan.core.LwM2mId.SRV_LIFETIME;
+import static org.eclipse.leshan.core.LwM2mId.SRV_SERVER_ID;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

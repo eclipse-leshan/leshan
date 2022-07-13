@@ -15,7 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import java.util.HashMap;
 import java.util.Map;
