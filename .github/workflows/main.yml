@@ -30,6 +30,11 @@ jobs:
     - name: Check No Merge Commit
       uses: ./.github/actions/no_merge
 
+    - name: POM Format Check
+      if: always()
+      id: sortpom
+      uses: ./.github/actions/sortpom
+
     - name: Code Format Check
       if: always()
       id: formatter

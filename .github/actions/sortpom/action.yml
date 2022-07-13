@@ -1,0 +1,39 @@
+name: "Check POM Formatting"
+description: "Check pom.xml file are well formatted with Maven"
+
+runs:
+  using: "composite"
+  steps:
+
+  - name: Check POM formatting
+    id: sort_pom
+    shell: bash
+    run: mvn -B com.github.ekryd.sortpom:sortpom-maven-plugin:verify -PallPom 
+
+  - name: Add comment
+    if: failure()
+    uses: marocchino/sticky-pull-request-comment@v2
+    with:
+      header: POM Formatting check Failed
+      message: |
+        :x: **Pom.xml files are not well formatted !** [(more details)](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+        Ensure your code build locally using: 
+        ```
+        mvn clean install
+        ```
+        Or just validate pom formatting with : 
+        ```
+        mvn com.github.ekryd.sortpom:sortpom-maven-plugin:verify -PallPom
+        ```
+        You can format pom.xml file with : 
+        ```
+        mvn com.github.ekryd.sortpom:sortpom-maven-plugin:sort -PallPom
+        ```
+
+  - name: Delete comment
+    if: success()
+    uses: marocchino/sticky-pull-request-comment@v2
+    with:
+      header: POM Formatting check Failed
+      delete: true

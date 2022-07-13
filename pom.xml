@@ -482,6 +482,7 @@ Contributors:
         <formatter.skip>true</formatter.skip>
         <checkstyle.skip>true</checkstyle.skip>
         <impsort.skip>true</impsort.skip>
+        <sort.skip>true</sort.skip>
       </properties>
     </profile>
   </profiles>
