@@ -199,7 +199,6 @@ public final class LinkFormatHelper {
 
             // handle oscore
             if (objectEnabler.getId() == LwM2mId.OSCORE) {
-                System.out.println(oscoreAttributesByInstanceId);
                 if (oscoreAttributesByInstanceId != null) {
                     List<LwM2mAttribute<?>> oscoreAttributes = oscoreAttributesByInstanceId.get(instanceId);
                     if (oscoreAttributes != null && !oscoreAttributes.isEmpty()) {
