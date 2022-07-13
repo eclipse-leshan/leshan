@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
 Copyright (c) 2013-2015 Sierra Wireless and others.
@@ -15,477 +16,473 @@ Contributors:
     Sierra Wireless - initial API and implementation
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-    child.project.url.inherit.append.path="false">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" child.project.url.inherit.append.path="false" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.eclipse.leshan</groupId>
-    <artifactId>leshan</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
+  <groupId>org.eclipse.leshan</groupId>
+  <artifactId>leshan</artifactId>
+  <version>2.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
 
-    <name>leshan</name>
-    <url>http://eclipse.org/leshan</url>
-    <description>An OMA Lightweight M2M (LWM2M) implementation in Java</description>
-    <licenses>
-        <license>
-            <name>Eclipse Public License (EPL), Version 2.0</name>
-            <url>http://www.eclipse.org/legal/epl-v20.html</url>
-            <distribution>repo</distribution>
-        </license>
-        <license>
-            <name>Eclipse Distribution License (EDL), Version 1.0</name>
-            <url>http://www.eclipse.org/org/documents/edl-v10.html</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
+  <name>leshan</name>
+  <description>An OMA Lightweight M2M (LWM2M) implementation in Java</description>
+  <url>http://eclipse.org/leshan</url>
+  <licenses>
+    <license>
+      <name>Eclipse Public License (EPL), Version 2.0</name>
+      <url>http://www.eclipse.org/legal/epl-v20.html</url>
+      <distribution>repo</distribution>
+    </license>
+    <license>
+      <name>Eclipse Distribution License (EDL), Version 1.0</name>
+      <url>http://www.eclipse.org/org/documents/edl-v10.html</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 
-    <modules>
-        <!-- library-->
-        <module>leshan-core</module>
-        <module>leshan-core-cf</module>
-        <module>leshan-server-core</module>
-        <module>leshan-server-cf</module>
-        <module>leshan-server-redis</module>
-        <module>leshan-client-core</module>
-        <module>leshan-client-cf</module>
+  <developers>
+    <developer>
+      <id>sbernard</id>
+      <name>Simon Bernard</name>
+      <email>sbernard@sierrawireless.com</email>
+      <organization>Sierra Wireless</organization>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>msangoi</id>
+      <name>Manuel Sangoi</name>
+      <email>msangoi@sierrawireless.com</email>
+      <organization>Sierra Wireless - AirVantage</organization>
+      <organizationUrl>http://airvantage.net</organizationUrl>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>khudalla</id>
+      <name>Kai Hudalla</name>
+      <email>kai.hudalla@bosch-si.com</email>
+      <organization>Bosch Software Innovations GmbH</organization>
+      <organizationUrl>http://www.bosch-si.com</organizationUrl>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>jvermillard</id>
+      <name>Julien Vermillard</name>
+      <email>jvermillard@sierrawireless.com</email>
+      <organization>Sierra Wireless - AirVantage</organization>
+      <organizationUrl>http://airvantage.net</organizationUrl>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+  </developers>
 
-        <!--  integration tests -->
-        <module>leshan-integration-tests</module> 
+  <modules>
+    <!-- library-->
+    <module>leshan-core</module>
+    <module>leshan-core-cf</module>
+    <module>leshan-server-core</module>
+    <module>leshan-server-cf</module>
+    <module>leshan-server-redis</module>
+    <module>leshan-client-core</module>
+    <module>leshan-client-cf</module>
 
-        <!-- demos -->
-        <module>leshan-core-demo</module>
-        <module>leshan-client-demo</module>
-        <module>leshan-server-core-demo</module>
-        <module>leshan-server-demo</module>
-        <module>leshan-bsserver-demo</module>
-    </modules>
+    <!--  integration tests -->
+    <module>leshan-integration-tests</module>
 
-    <scm
-        child.scm.developerConnection.inherit.append.path="false"
-        child.scm.url.inherit.append.path="false">
-        <developerConnection>scm:git:ssh://git@github.com/eclipse/leshan.git</developerConnection>
-        <url>https://github.com/eclipse/leshan.git</url>
-        <tag>HEAD</tag>
-    </scm>
+    <!-- demos -->
+    <module>leshan-core-demo</module>
+    <module>leshan-client-demo</module>
+    <module>leshan-server-core-demo</module>
+    <module>leshan-server-demo</module>
+    <module>leshan-bsserver-demo</module>
+  </modules>
 
-    <developers>
-        <developer>
-            <id>sbernard</id>
-            <name>Simon Bernard</name>
-            <email>sbernard@sierrawireless.com</email>
-            <organization>Sierra Wireless</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>msangoi</id>
-            <name>Manuel Sangoi</name>
-            <email>msangoi@sierrawireless.com</email>
-            <organization>Sierra Wireless - AirVantage</organization>
-            <organizationUrl>http://airvantage.net</organizationUrl>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>khudalla</id>
-            <name>Kai Hudalla</name>
-            <email>kai.hudalla@bosch-si.com</email>
-            <organization>Bosch Software Innovations GmbH</organization>
-            <organizationUrl>http://www.bosch-si.com</organizationUrl>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>jvermillard</id>
-            <name>Julien Vermillard</name>
-            <email>jvermillard@sierrawireless.com</email>
-            <organization>Sierra Wireless - AirVantage</organization>
-            <organizationUrl>http://airvantage.net</organizationUrl>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
-    
-    <profiles>
-        <profile>
-            <!-- Profile needed when shared config pom must be handled too 
-                e.g. update version, check pom formatting ... -->
-            <id>allPom</id>
-            <modules>
-                <module>build-config</module>
-                <module>build-config/lib-build-config</module>
-                <module>build-config/demo-build-config</module>
-            </modules>
-        </profile>
-        <profile>
-            <!-- By default the build, do lot of thing this profile is used mainly my CI to compile only -->
-            <id>CompileOnly</id>
-            <properties>
-                <skipTests>true</skipTests>
-                <skip.yarn>true</skip.yarn>
-                <maven.javadoc.skip>true</maven.javadoc.skip>
-                <animal.sniffer.skip>true</animal.sniffer.skip>
-                <revapi.skip>true</revapi.skip>
-                <formatter.skip>true</formatter.skip>
-                <checkstyle.skip>true</checkstyle.skip>
-                <impsort.skip>true</impsort.skip>
-            </properties>
-        </profile>
-    </profiles>
+  <scm child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
+    <developerConnection>scm:git:ssh://git@github.com/eclipse/leshan.git</developerConnection>
+    <tag>HEAD</tag>
+    <url>https://github.com/eclipse/leshan.git</url>
+  </scm>
 
-    <properties>
-        <!-- configure encoding -->
-        <leshan.encoding>UTF-8</leshan.encoding>
-        <project.build.sourceEncoding>${leshan.encoding}</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>${leshan.encoding}</project.reporting.outputEncoding>
+  <properties>
+    <!-- configure encoding -->
+    <leshan.encoding>UTF-8</leshan.encoding>
+    <project.build.sourceEncoding>${leshan.encoding}</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>${leshan.encoding}</project.reporting.outputEncoding>
 
-        <!-- configure line separator -->
-        <leshan.lineEnding>LF</leshan.lineEnding>
-        <leshan.lineseparator>\n</leshan.lineseparator>
+    <!-- configure line separator -->
+    <leshan.lineEnding>LF</leshan.lineEnding>
+    <leshan.lineseparator>\n</leshan.lineseparator>
 
-        <!-- we use properties for version when there are used more than once -->
-        <!-- dependencies version -->
-        <californium.version>3.5.0</californium.version>
-        <logback.version>1.2.10</logback.version>
-        <slf4j.api.version>1.7.32</slf4j.api.version>
-        <!-- stuck to 9.4.x for java8 compliance -->
-        <jetty.version>9.4.44.v20210927 </jetty.version>
-        <jackson.version>2.13.2.1</jackson.version>
-    </properties>
+    <!-- we use properties for version when there are used more than once -->
+    <!-- dependencies version -->
+    <californium.version>3.5.0</californium.version>
+    <logback.version>1.2.10</logback.version>
+    <slf4j.api.version>1.7.32</slf4j.api.version>
+    <!-- stuck to 9.4.x for java8 compliance -->
+    <jetty.version>9.4.44.v20210927</jetty.version>
+    <jackson.version>2.13.2.1</jackson.version>
+  </properties>
 
-    <!-- Bill Of Materials -->
-    <!--
+  <dependencyManagement>
+    <dependencies>
+      <!-- Leshan Libraries -->
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-core-cf</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-server-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-client-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-server-cf</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-client-cf</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-server-redis</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-core-demo</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-server-core-demo</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <!-- Leshan library dependencies -->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.api.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.californium</groupId>
+        <artifactId>californium-core</artifactId>
+        <version>${californium.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.californium</groupId>
+        <artifactId>element-connector</artifactId>
+        <version>${californium.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.californium</groupId>
+        <artifactId>scandium</artifactId>
+        <version>${californium.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.upokecenter</groupId>
+        <artifactId>cbor</artifactId>
+        <version>4.5.2</version>
+      </dependency>
+
+      <!-- Demos, examples and tests dependencies -->
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>${logback.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-lang</groupId>
+        <artifactId>commons-lang</artifactId>
+        <version>2.6</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>2.11.0</version>
+      </dependency>
+      <dependency>
+        <groupId>info.picocli</groupId>
+        <artifactId>picocli</artifactId>
+        <version>4.6.2</version>
+      </dependency>
+      <dependency>
+        <groupId>info.picocli</groupId>
+        <artifactId>picocli-shell-jline2</artifactId>
+        <version>4.6.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-webapp</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-servlets</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+
+      <!-- test dependencies -->
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13.2</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <!-- Bill Of Materials -->
+  <!--
         Just contains list of maven plugin used. 
         Configuration should rather be placed at ./build-config/pom.xml.
         (Even if there is some exception which concern aggregator pom too)
     -->
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <artifactId>maven-clean-plugin</artifactId>
-                    <version>3.1.0</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>2.8.2</version>
-                    <!-- We do not deploy aggregator pom, this is overrided for child module  -->
-                    <executions>
-                        <execution>
-                            <id>default-deploy</id>
-                            <phase>none</phase>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-install-plugin</artifactId>
-                    <version>2.5.2</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-site-plugin</artifactId>
-                    <version>3.10.0</version> 
-                </plugin>
-                <plugin>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.2.0</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>3.2.1</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-gpg-plugin</artifactId>
-                    <version>3.0.1</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-shade-plugin</artifactId>
-                    <version>3.2.4</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <version>3.3.0</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.0.0</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-toolchains-plugin</artifactId>
-                    <version>3.0.0</version>
-                </plugin>
-                 <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>versions-maven-plugin</artifactId>
-                    <version>2.8.1</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.sonatype.plugins</groupId>
-                    <artifactId>nexus-staging-maven-plugin</artifactId>
-                    <version>1.6.8</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.1</version>
-                </plugin>
-                <plugin>
-                    <groupId>com.github.ekryd.sortpom</groupId>
-                    <artifactId>sortpom-maven-plugin</artifactId>
-                    <!-- can not upgrade because of we stuck with java8 : https://github.com/Ekryd/sortpom/issues/225 --> 
-                    <version>3.0.1</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M5</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.2.1</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <!-- can not upgrade to 3.3.1 because of : https://issues.apache.org/jira/browse/MJAVADOC-694 --> 
-                    <version>3.3.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>com.github.eirslett</groupId>
-                    <artifactId>frontend-maven-plugin</artifactId>
-                    <version>1.12.1</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-eclipse-plugin</artifactId>
-                    <version>2.2</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.2.0</version>
-                    <!-- This goal is used to configure eclipse, but we don't want to execute it on aggregator -->
-                    <executions>
-                        <execution>
-                            <id>configure-eclipse</id>
-                            <goals>
-                                <goal>copy-resources</goal>
-                            </goals>
-                            <inherited>false</inherited>
-                            <configuration>
-                                <skip>true</skip>
-                                <outputDirectory>nothing</outputDirectory>
-                                <resources></resources>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>flatten-maven-plugin</artifactId>
-                    <version>1.2.7</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>3.1.2</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>com.puppycrawl.tools</groupId>
-                            <artifactId>checkstyle</artifactId>
-                            <version>8.45.1</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-                <plugin>
-                    <groupId>net.revelc.code</groupId>
-                    <artifactId>impsort-maven-plugin</artifactId>
-                    <version>1.6.2</version>
-                </plugin>
-                <plugin>
-                    <groupId>net.revelc.code.formatter</groupId>
-                    <artifactId>formatter-maven-plugin</artifactId>
-                    <!--  stuck to 2.16.0 for java8 compatibility -->
-                    <version>2.16.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.felix</groupId>
-                    <artifactId>maven-bundle-plugin</artifactId>
-                    <version>5.1.4</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>buildnumber-maven-plugin</artifactId>
-                    <version>3.0.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>animal-sniffer-maven-plugin</artifactId>
-                    <version>1.20</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.revapi</groupId>
-                    <artifactId>revapi-maven-plugin</artifactId>
-                    <version>0.14.6</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.revapi</groupId>
-                            <artifactId>revapi-java</artifactId>
-                            <version>0.26.1</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-            </plugins>
-        </pluginManagement>
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.1.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>2.8.2</version>
+          <!-- We do not deploy aggregator pom, this is overrided for child module  -->
+          <executions>
+            <execution>
+              <id>default-deploy</id>
+              <phase>none</phase>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>2.5.2</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.10.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.2.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>3.2.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>3.0.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>3.2.4</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>3.3.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-toolchains-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>versions-maven-plugin</artifactId>
+          <version>2.8.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.sonatype.plugins</groupId>
+          <artifactId>nexus-staging-maven-plugin</artifactId>
+          <version>1.6.8</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.8.1</version>
+        </plugin>
+        <plugin>
+          <groupId>com.github.ekryd.sortpom</groupId>
+          <artifactId>sortpom-maven-plugin</artifactId>
+          <!-- can not upgrade because of we stuck with java8 : https://github.com/Ekryd/sortpom/issues/225 -->
+          <version>3.0.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.0.0-M5</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.2.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <!-- can not upgrade to 3.3.1 because of : https://issues.apache.org/jira/browse/MJAVADOC-694 -->
+          <version>3.3.0</version>
+        </plugin>
+        <plugin>
+          <groupId>com.github.eirslett</groupId>
+          <artifactId>frontend-maven-plugin</artifactId>
+          <version>1.12.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-eclipse-plugin</artifactId>
+          <version>2.2</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>3.2.0</version>
+          <!-- This goal is used to configure eclipse, but we don't want to execute it on aggregator -->
+          <executions>
+            <execution>
+              <id>configure-eclipse</id>
+              <goals>
+                <goal>copy-resources</goal>
+              </goals>
+              <inherited>false</inherited>
+              <configuration>
+                <skip>true</skip>
+                <outputDirectory>nothing</outputDirectory>
+                <resources></resources>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>flatten-maven-plugin</artifactId>
+          <version>1.2.7</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>3.1.2</version>
+          <dependencies>
+            <dependency>
+              <groupId>com.puppycrawl.tools</groupId>
+              <artifactId>checkstyle</artifactId>
+              <version>8.45.1</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>net.revelc.code</groupId>
+          <artifactId>impsort-maven-plugin</artifactId>
+          <version>1.6.2</version>
+        </plugin>
+        <plugin>
+          <groupId>net.revelc.code.formatter</groupId>
+          <artifactId>formatter-maven-plugin</artifactId>
+          <!--  stuck to 2.16.0 for java8 compatibility -->
+          <version>2.16.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <version>5.1.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>buildnumber-maven-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>animal-sniffer-maven-plugin</artifactId>
+          <version>1.20</version>
+        </plugin>
+        <plugin>
+          <groupId>org.revapi</groupId>
+          <artifactId>revapi-maven-plugin</artifactId>
+          <version>0.14.6</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.revapi</groupId>
+              <artifactId>revapi-java</artifactId>
+              <version>0.26.1</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+      </plugins>
+    </pluginManagement>
 
-        <plugins>
-            <plugin>
-                <!--  One of the rare plugin which must be called on all module even Aggregator
+    <plugins>
+      <plugin>
+        <!--  One of the rare plugin which must be called on all module even Aggregator
                       because it must check formatting of all pom.xml file.
                       Must be called with -PallPom profile -->
-                <groupId>com.github.ekryd.sortpom</groupId>
-                <artifactId>sortpom-maven-plugin</artifactId>
-                <configuration>
-                    <createBackupFile>false</createBackupFile>
-                    <lineSeparator>${leshan.lineseparator}</lineSeparator>
-                    <verifyFail>stop</verifyFail>
-                    <verifyFailOn>Strict</verifyFailOn>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+        <groupId>com.github.ekryd.sortpom</groupId>
+        <artifactId>sortpom-maven-plugin</artifactId>
+        <configuration>
+          <createBackupFile>false</createBackupFile>
+          <lineSeparator>${leshan.lineseparator}</lineSeparator>
+          <verifyFail>stop</verifyFail>
+          <verifyFailOn>Strict</verifyFailOn>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
-    <dependencyManagement>
-        <dependencies>
-            <!-- Leshan Libraries -->
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>leshan-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>leshan-core-cf</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>leshan-server-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>leshan-client-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>leshan-server-cf</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>leshan-client-cf</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>leshan-server-redis</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>leshan-core-demo</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>leshan-server-core-demo</artifactId>
-                <version>${project.version}</version>
-            </dependency>
- 
-             <!-- Leshan library dependencies -->
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j.api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.californium</groupId>
-                <artifactId>californium-core</artifactId>
-                <version>${californium.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.californium</groupId>
-                <artifactId>element-connector</artifactId>
-                <version>${californium.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.californium</groupId>
-                <artifactId>scandium</artifactId>
-                <version>${californium.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.upokecenter</groupId>
-                <artifactId>cbor</artifactId>
-                <version>4.5.2</version>
-            </dependency>
-            
-
-            <!-- Demos, examples and tests dependencies -->
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-                <version>${logback.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-lang</groupId>
-                <artifactId>commons-lang</artifactId>
-                <version>2.6</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>2.11.0</version>
-            </dependency>
-            <dependency>
-                <groupId>info.picocli</groupId>
-                <artifactId>picocli</artifactId>
-                <version>4.6.2</version>
-            </dependency>
-            <dependency>
-                <groupId>info.picocli</groupId>
-                <artifactId>picocli-shell-jline2</artifactId>
-                <version>4.6.2</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-webapp</artifactId>
-                <version>${jetty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-servlets</artifactId>
-                <version>${jetty.version}</version>
-            </dependency>
-
-            <!-- test dependencies -->
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.13.2</version>
-                <scope>test</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+  <profiles>
+    <profile>
+      <!-- Profile needed when shared config pom must be handled too 
+                e.g. update version, check pom formatting ... -->
+      <id>allPom</id>
+      <modules>
+        <module>build-config</module>
+        <module>build-config/lib-build-config</module>
+        <module>build-config/demo-build-config</module>
+      </modules>
+    </profile>
+    <profile>
+      <!-- By default the build, do lot of thing this profile is used mainly my CI to compile only -->
+      <id>CompileOnly</id>
+      <properties>
+        <skipTests>true</skipTests>
+        <skip.yarn>true</skip.yarn>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+        <animal.sniffer.skip>true</animal.sniffer.skip>
+        <revapi.skip>true</revapi.skip>
+        <formatter.skip>true</formatter.skip>
+        <checkstyle.skip>true</checkstyle.skip>
+        <impsort.skip>true</impsort.skip>
+      </properties>
+    </profile>
+  </profiles>
 </project>

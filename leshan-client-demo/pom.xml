@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
 Copyright (c) 2013-2015 Sierra Wireless and others.
@@ -16,52 +17,54 @@ Contributors:
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.eclipse.leshan</groupId>
-        <artifactId>demo-build-config</artifactId>
-        <version>2.0.0-SNAPSHOT</version>
-        <relativePath>../build-config/demo-build-config/pom.xml</relativePath>
-    </parent>
-    <artifactId>leshan-client-demo</artifactId>
-    <name>leshan - client demo</name>
-    <description>A demonstration client built upon the Leshan client.</description>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.eclipse.leshan</groupId>
+    <artifactId>demo-build-config</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
+    <relativePath>../build-config/demo-build-config/pom.xml</relativePath>
+  </parent>
+  <artifactId>leshan-client-demo</artifactId>
+  <name>leshan - client demo</name>
+  <description>A demonstration client built upon the Leshan client.</description>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.eclipse.leshan</groupId>
-            <artifactId>leshan-client-cf</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.leshan</groupId>
-            <artifactId>leshan-core-demo</artifactId>
-        </dependency>
-    </dependencies>
+  <dependencies>
+    <dependency>
+      <groupId>org.eclipse.leshan</groupId>
+      <artifactId>leshan-client-cf</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.leshan</groupId>
+      <artifactId>leshan-core-demo</artifactId>
+    </dependency>
+  </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>org.eclipse.leshan.client.demo.LeshanClientDemo</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptors>
-                        <descriptor>../build-config/demo-build-config/jar-with-dependencies-with-logback.xml</descriptor>
-                    </descriptors>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
-                        <phase>package</phase> <!-- bind to the packaging phase -->
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>org.eclipse.leshan.client.demo.LeshanClientDemo</mainClass>
+            </manifest>
+          </archive>
+          <descriptors>
+            <descriptor>../build-config/demo-build-config/jar-with-dependencies-with-logback.xml</descriptor>
+          </descriptors>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <!-- bind to the packaging phase -->
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <!-- this is used for inheritance merges -->
+            <phase>package</phase>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

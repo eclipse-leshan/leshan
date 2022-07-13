@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
 Copyright (c) 2013-2015 Sierra Wireless and others.
@@ -16,71 +17,73 @@ Contributors:
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.eclipse.leshan</groupId>
-        <artifactId>demo-build-config</artifactId>
-        <version>2.0.0-SNAPSHOT</version>
-        <relativePath>../build-config/demo-build-config/pom.xml</relativePath>
-    </parent>
-    <artifactId>leshan-bsserver-demo</artifactId>
-    <name>leshan - bootstrap server demo</name>
-    <description>A LWM2M bootstrap demonstration server running an embedded Jetty server</description>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.eclipse.leshan</groupId>
+    <artifactId>demo-build-config</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
+    <relativePath>../build-config/demo-build-config/pom.xml</relativePath>
+  </parent>
+  <artifactId>leshan-bsserver-demo</artifactId>
+  <name>leshan - bootstrap server demo</name>
+  <description>A LWM2M bootstrap demonstration server running an embedded Jetty server</description>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.eclipse.leshan</groupId>
-            <artifactId>leshan-server-cf</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.leshan</groupId>
-            <artifactId>leshan-core-demo</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.leshan</groupId>
-            <artifactId>leshan-server-core-demo</artifactId>
-        </dependency>
+  <dependencies>
+    <dependency>
+      <groupId>org.eclipse.leshan</groupId>
+      <artifactId>leshan-server-cf</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.leshan</groupId>
+      <artifactId>leshan-core-demo</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.leshan</groupId>
+      <artifactId>leshan-server-core-demo</artifactId>
+    </dependency>
 
-        <!-- runtime dependencies -->
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-    </dependencies>
+    <!-- runtime dependencies -->
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+  </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>buildnumber-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>com.github.eirslett</groupId>
-                <artifactId>frontend-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>org.eclipse.leshan.server.bootstrap.demo.LeshanBootstrapServerDemo</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptors>
-                        <descriptor>../build-config/demo-build-config/jar-with-dependencies-with-logback.xml</descriptor>
-                    </descriptors>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
-                        <phase>package</phase> <!-- bind to the packaging phase -->
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>buildnumber-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.github.eirslett</groupId>
+        <artifactId>frontend-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>org.eclipse.leshan.server.bootstrap.demo.LeshanBootstrapServerDemo</mainClass>
+            </manifest>
+          </archive>
+          <descriptors>
+            <descriptor>../build-config/demo-build-config/jar-with-dependencies-with-logback.xml</descriptor>
+          </descriptors>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <!-- bind to the packaging phase -->
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <!-- this is used for inheritance merges -->
+            <phase>package</phase>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

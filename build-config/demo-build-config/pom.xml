@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
 Copyright (c) 2013-2022 Sierra Wireless and others.
@@ -15,93 +16,91 @@ Contributors:
     Sierra Wireless - initial API and implementation
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.eclipse.leshan</groupId>
-        <artifactId>leshan-build-config</artifactId>
-        <version>2.0.0-SNAPSHOT</version>
-    </parent>
-    <artifactId>demo-build-config</artifactId>
-    <packaging>pom</packaging>
-    
-    <name>leshan - shared demo build config</name>
-    <description> Shared Maven configuration for all Leshan demos</description>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.eclipse.leshan</groupId>
+    <artifactId>leshan-build-config</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>demo-build-config</artifactId>
+  <packaging>pom</packaging>
 
-    <build>
-        <pluginManagement>
-            <plugins>
-                <!-- We don't ensure Semantic versioning for demos -->
-                <plugin>
-                    <groupId>org.revapi</groupId>
-                    <artifactId>revapi-maven-plugin</artifactId>
-                    <configuration>
-                        <skip>true</skip>
-                    </configuration>
-                </plugin>
-                <!--  get revision to be able to display build number in demo -->
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>buildnumber-maven-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>create</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <getRevisionOnlyOnce>true</getRevisionOnlyOnce>
-                    </configuration>
-                </plugin>
-                <!-- Config to build server and bs server front end demo -->
-                <plugin>
-                    <groupId>com.github.eirslett</groupId>
-                    <artifactId>frontend-maven-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <?m2e ignore?>
-                            <id>install node and yarn</id>
-                            <goals>
-                                <goal>install-node-and-yarn</goal>
-                            </goals>
-                        </execution>
-                        <execution>
-                            <?m2e ignore?>
-                            <id>yarn install</id>
-                            <goals>
-                                <goal>yarn</goal>
-                            </goals>
-                        </execution>
-                        <execution>
-                            <?m2e ignore?>
-                            <id>yarn build</id>
-                            <goals>
-                                <goal>yarn</goal>
-                            </goals>
-                            <configuration>
-                                <environmentVariables>
-                                    <!-- this variable will be used by webapp/vue.config.js -->
-                                    <MAVEN_OUTPUT_DIR>${project.build.outputDirectory}/webapp</MAVEN_OUTPUT_DIR>
-                                    <!-- this variable is used by the webapp -->
-                                    <VUE_APP_COMMIT_ID>${buildNumber}</VUE_APP_COMMIT_ID>
-                                    <VUE_APP_VERSION>${project.version}</VUE_APP_VERSION>
-                                </environmentVariables>
-                                <arguments>build</arguments>
-                            </configuration>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <workingDirectory>webapp</workingDirectory>
-                        <nodeVersion>v12.22.5</nodeVersion>
-                        <yarnVersion>v1.22.10</yarnVersion>
-                        <!-- See why we use a mirror : https://gitlab.eclipse.org/eclipsefdn/helpdesk/-/issues/1032 -->
-                        <yarnDownloadRoot>https://sourceforge.net/projects/yarn.mirror/files/</yarnDownloadRoot>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
+  <name>leshan - shared demo build config</name>
+  <description>Shared Maven configuration for all Leshan demos</description>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <!-- We don't ensure Semantic versioning for demos -->
+        <plugin>
+          <groupId>org.revapi</groupId>
+          <artifactId>revapi-maven-plugin</artifactId>
+          <configuration>
+            <skip>true</skip>
+          </configuration>
+        </plugin>
+        <!--  get revision to be able to display build number in demo -->
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>buildnumber-maven-plugin</artifactId>
+          <configuration>
+            <getRevisionOnlyOnce>true</getRevisionOnlyOnce>
+          </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>create</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <!-- Config to build server and bs server front end demo -->
+        <plugin>
+          <groupId>com.github.eirslett</groupId>
+          <artifactId>frontend-maven-plugin</artifactId>
+          <configuration>
+            <workingDirectory>webapp</workingDirectory>
+            <nodeVersion>v12.22.5</nodeVersion>
+            <yarnVersion>v1.22.10</yarnVersion>
+            <!-- See why we use a mirror : https://gitlab.eclipse.org/eclipsefdn/helpdesk/-/issues/1032 -->
+            <yarnDownloadRoot>https://sourceforge.net/projects/yarn.mirror/files/</yarnDownloadRoot>
+          </configuration>
+          <executions>
+            <execution>
+              <?m2e ignore?>
+              <id>install node and yarn</id>
+              <goals>
+                <goal>install-node-and-yarn</goal>
+              </goals>
+            </execution>
+            <execution>
+              <?m2e ignore?>
+              <id>yarn install</id>
+              <goals>
+                <goal>yarn</goal>
+              </goals>
+            </execution>
+            <execution>
+              <?m2e ignore?>
+              <id>yarn build</id>
+              <goals>
+                <goal>yarn</goal>
+              </goals>
+              <configuration>
+                <environmentVariables>
+                  <!-- this variable will be used by webapp/vue.config.js -->
+                  <MAVEN_OUTPUT_DIR>${project.build.outputDirectory}/webapp</MAVEN_OUTPUT_DIR>
+                  <!-- this variable is used by the webapp -->
+                  <VUE_APP_COMMIT_ID>${buildNumber}</VUE_APP_COMMIT_ID>
+                  <VUE_APP_VERSION>${project.version}</VUE_APP_VERSION>
+                </environmentVariables>
+                <arguments>build</arguments>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 </project>
