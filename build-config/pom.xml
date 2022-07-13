@@ -282,6 +282,22 @@ Contributors:
                 </executions>
             </plugin>
             <plugin>
+                <groupId>net.revelc.code</groupId>
+                <artifactId>impsort-maven-plugin</artifactId>
+                <configuration>
+                    <removeUnused>true</removeUnused>
+                    <staticGroups>*</staticGroups>
+                    <groups>java.,javax.,org.,com.</groups>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>net.revelc.code.formatter</groupId>
                 <artifactId>formatter-maven-plugin</artifactId>
                 <configuration>

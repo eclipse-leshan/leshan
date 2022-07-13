@@ -286,6 +286,11 @@ Contributors:
                     </dependencies>
                 </plugin>
                 <plugin>
+                    <groupId>net.revelc.code</groupId>
+                    <artifactId>impsort-maven-plugin</artifactId>
+                    <version>1.6.2</version>
+                </plugin>
+                <plugin>
                     <groupId>net.revelc.code.formatter</groupId>
                     <artifactId>formatter-maven-plugin</artifactId>
                     <!--  stuck to 2.16.0 for java8 compatibility -->
