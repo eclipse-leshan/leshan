@@ -18,15 +18,15 @@ package org.eclipse.leshan.core.json.jackson;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import org.eclipse.leshan.core.json.JsonArrayEntry;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.eclipse.leshan.core.util.json.JacksonJsonSerDes;
 import org.eclipse.leshan.core.util.json.JsonException;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class JsonArrayEntrySerDes extends JacksonJsonSerDes<JsonArrayEntry> {
 
