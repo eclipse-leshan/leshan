@@ -17,12 +17,14 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.core.ResponseCode.*;
+import static org.eclipse.leshan.core.ResponseCode.CONTENT;
+import static org.eclipse.leshan.core.ResponseCode.NOT_FOUND;
 import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.linkSerializer;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.link.Link;

@@ -16,7 +16,16 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.object;
 
-import static org.eclipse.leshan.core.LwM2mId.*;
+import static org.eclipse.leshan.core.LwM2mId.OSCORE;
+import static org.eclipse.leshan.core.LwM2mId.SEC_BOOTSTRAP;
+import static org.eclipse.leshan.core.LwM2mId.SEC_CERTIFICATE_USAGE;
+import static org.eclipse.leshan.core.LwM2mId.SEC_OSCORE_SECURITY_MODE;
+import static org.eclipse.leshan.core.LwM2mId.SEC_PUBKEY_IDENTITY;
+import static org.eclipse.leshan.core.LwM2mId.SEC_SECRET_KEY;
+import static org.eclipse.leshan.core.LwM2mId.SEC_SECURITY_MODE;
+import static org.eclipse.leshan.core.LwM2mId.SEC_SERVER_ID;
+import static org.eclipse.leshan.core.LwM2mId.SEC_SERVER_PUBKEY;
+import static org.eclipse.leshan.core.LwM2mId.SEC_SERVER_URI;
 
 import java.util.Arrays;
 import java.util.List;

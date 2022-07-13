@@ -17,7 +17,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.object;
 
-import static org.eclipse.leshan.core.LwM2mId.*;
+import static org.eclipse.leshan.core.LwM2mId.OSCORE_AEAD_ALGORITHM;
+import static org.eclipse.leshan.core.LwM2mId.OSCORE_HMAC_ALGORITHM;
+import static org.eclipse.leshan.core.LwM2mId.OSCORE_MASTER_SALT;
+import static org.eclipse.leshan.core.LwM2mId.OSCORE_MASTER_SECRET;
+import static org.eclipse.leshan.core.LwM2mId.OSCORE_RECIPIENT_ID;
+import static org.eclipse.leshan.core.LwM2mId.OSCORE_SENDER_ID;
 
 import java.util.Arrays;
 import java.util.List;

@@ -16,8 +16,20 @@
 package org.eclipse.leshan.integration.tests;
 
 import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.LIFETIME;
-import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.*;
-import static org.junit.Assert.*;
+import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.BAD_ENDPOINT;
+import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.BAD_PSK_ID;
+import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.BAD_PSK_KEY;
+import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.GOOD_ENDPOINT;
+import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.GOOD_PSK_ID;
+import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.GOOD_PSK_KEY;
+import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.getServerOscoreSetting;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.security.PrivateKey;

@@ -15,7 +15,14 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import static org.eclipse.leshan.core.request.ContentFormat.*;
+import static org.eclipse.leshan.core.request.ContentFormat.CBOR;
+import static org.eclipse.leshan.core.request.ContentFormat.JSON;
+import static org.eclipse.leshan.core.request.ContentFormat.LINK;
+import static org.eclipse.leshan.core.request.ContentFormat.OPAQUE;
+import static org.eclipse.leshan.core.request.ContentFormat.SENML_CBOR;
+import static org.eclipse.leshan.core.request.ContentFormat.SENML_JSON;
+import static org.eclipse.leshan.core.request.ContentFormat.TEXT;
+import static org.eclipse.leshan.core.request.ContentFormat.TLV;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
