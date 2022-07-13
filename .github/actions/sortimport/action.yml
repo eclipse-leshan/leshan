@@ -1,0 +1,40 @@
+name: "Check Java Import"
+description: "Check Java Import are well sorted with Maven"
+
+runs:
+  using: "composite"
+  steps:
+
+  - name: Check Java Import
+    id: sort_import
+    shell: bash
+    run: mvn -B impsort:check
+
+  - name: Add comment
+    if: failure()
+    uses: marocchino/sticky-pull-request-comment@v2
+    with:
+      header: Java Import check Failed
+      message: |
+        :x: **Java Import are not sorted !** [(more details)](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+        Ensure your code build locally using: 
+        ```
+        mvn clean install
+        ```
+        Or just validate java import with : 
+        ```
+        mvn impsort:check
+        ```
+        You can sort Java import with : 
+        ```
+        mvn impsort:sort
+        ```
+        See also [How configure your IDE](https://github.com/eclipse/leshan/wiki/Code-&-design-guidelines#configure-your-ide).
+
+  - name: Delete comment
+    if: success()
+    uses: marocchino/sticky-pull-request-comment@v2
+    with:
+      header: Java Import check Failed
+      delete: true
