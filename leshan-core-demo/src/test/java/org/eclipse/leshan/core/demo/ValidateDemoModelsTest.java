@@ -17,7 +17,6 @@ package org.eclipse.leshan.core.demo;
 
 import java.io.IOException;
 
-import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
 import org.eclipse.leshan.core.model.InvalidDDFFileException;
 import org.eclipse.leshan.core.model.InvalidModelException;
 import org.eclipse.leshan.core.model.ObjectLoader;

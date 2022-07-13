@@ -1,18 +1,21 @@
 package org.eclipse.leshan.core.util;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import javax.security.auth.x500.X500Principal;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.security.*;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+
+import javax.security.auth.x500.X500Principal;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 public class X509CertUtilTest {
 

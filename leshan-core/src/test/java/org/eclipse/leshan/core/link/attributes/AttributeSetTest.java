@@ -22,8 +22,6 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.eclipse.leshan.core.LwM2m.Version;
-import org.eclipse.leshan.core.link.attributes.Attribute;
-import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.eclipse.leshan.core.link.lwm2m.attributes.AssignationLevel;
 import org.eclipse.leshan.core.link.lwm2m.attributes.DefaultLwM2mAttributeParser;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;

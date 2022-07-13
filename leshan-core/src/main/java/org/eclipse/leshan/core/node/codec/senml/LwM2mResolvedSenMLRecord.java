@@ -15,8 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec.senml;
 
-import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.senml.ResolvedSenMLRecord;
 import org.eclipse.leshan.senml.SenMLRecord;
 
