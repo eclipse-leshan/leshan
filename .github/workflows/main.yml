@@ -40,10 +40,16 @@ jobs:
       id: build
       uses: ./.github/actions/build
 
+    - name: Java Import Check
+      if: always()
+      id: sortimport
+      uses: ./.github/actions/sortimport
+
     - name: Code Style Check
       if: always()
       id: checkstyle
       uses: ./.github/actions/checkstyle
+
 
     - name: Check Android API Compliance
       if: ${{ always() && steps.build.conclusion == 'success' }}
