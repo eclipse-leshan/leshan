@@ -1,11 +1,15 @@
 package org.eclipse.leshan.core.util;
 
-import javax.security.auth.x500.X500Principal;
 import java.net.InetAddress;
 import java.security.Principal;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.security.auth.x500.X500Principal;
 
 /**
  * X.509 Certificate Utilities for accessing certificate details.
