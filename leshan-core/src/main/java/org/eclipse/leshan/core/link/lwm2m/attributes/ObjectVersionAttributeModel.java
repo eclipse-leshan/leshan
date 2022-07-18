@@ -83,7 +83,7 @@ public class ObjectVersionAttributeModel extends LwM2mAttributeModel<Version> {
 
         // handle quote (see comment above)
         if (quotedVersion && !tolerateQuote()) {
-            parser.raiseException("Invalid lwm2m version \"%s\" in %s : version should not be quoted", strValue,
+            parser.raiseException("Invalid object version \"%s\" in %s : version should not be quoted", strValue,
                     parser.getStringToParse());
         }
         // create attribute
