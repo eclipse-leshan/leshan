@@ -453,6 +453,10 @@ Contributors:
             <goals>
               <goal>verify</goal>
             </goals>
+            <!-- attach to process-sources to avoid flatten-maven-plugin interaction
+                 with some maven plugin (E.g. maven-source-plugin or maven-javadoc-plugin)
+                 See : https://github.com/Ekryd/sortpom/issues/229#issuecomment-1177872634 -->
+            <phase>process-sources</phase>
           </execution>
         </executions>
       </plugin>
