@@ -98,7 +98,7 @@ public class CoapAsyncRequestObserver extends AbstractRequestObserver {
             try {
                 responseCallback.onResponse(coapResponse);
             } catch (RuntimeException e) {
-                LOG.warn("Uncaught exception during onResponse callback");
+                LOG.warn("Uncaught exception during onResponse callback", e);
             }
 
         } else {
