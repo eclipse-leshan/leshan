@@ -121,7 +121,7 @@ Contributors:
 
     <!-- we use properties for version when there are used more than once -->
     <!-- dependencies version -->
-    <californium.version>3.5.0</californium.version>
+    <californium.version>3.6.0</californium.version>
     <logback.version>1.2.10</logback.version>
     <slf4j.api.version>1.7.32</slf4j.api.version>
     <!-- stuck to 9.4.x for java8 compliance -->

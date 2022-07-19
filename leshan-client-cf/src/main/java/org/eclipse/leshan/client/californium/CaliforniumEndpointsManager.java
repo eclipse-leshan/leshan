@@ -131,8 +131,11 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                         false);
             } else if (serverInfo.secureMode == SecurityMode.RPK) {
                 // set identity
-                newBuilder.setCertificateIdentityProvider(
-                        new SingleCertificateProvider(serverInfo.privateKey, serverInfo.publicKey));
+                SingleCertificateProvider singleCertificateProvider = new SingleCertificateProvider(
+                        serverInfo.privateKey, serverInfo.publicKey);
+                // we don't want to check Key Pair here, if we do it this should be done in BootstrapConsistencyChecker
+                singleCertificateProvider.setVerifyKeyPair(false);
+                newBuilder.setCertificateIdentityProvider(singleCertificateProvider);
                 // set RPK truststore
                 final PublicKey expectedKey = serverInfo.serverPublicKey;
                 NewAdvancedCertificateVerifier rpkVerifier = new StaticNewAdvancedCertificateVerifier.Builder()
@@ -143,8 +146,11 @@ public class CaliforniumEndpointsManager implements EndpointsManager {
                         false, true);
             } else if (serverInfo.secureMode == SecurityMode.X509) {
                 // set identity
-                newBuilder.setCertificateIdentityProvider(new SingleCertificateProvider(serverInfo.privateKey,
-                        new Certificate[] { serverInfo.clientCertificate }));
+                SingleCertificateProvider singleCertificateProvider = new SingleCertificateProvider(
+                        serverInfo.privateKey, new Certificate[] { serverInfo.clientCertificate });
+                // we don't want to check Key Pair here, if we do it this should be done in BootstrapConsistencyChecker
+                singleCertificateProvider.setVerifyKeyPair(false);
+                newBuilder.setCertificateIdentityProvider(singleCertificateProvider);
 
                 // LWM2M v1.1.1 - 5.2.8.7. Certificate Usage Field
                 //
