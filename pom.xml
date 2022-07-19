@@ -122,11 +122,11 @@ Contributors:
     <!-- we use properties for version when there are used more than once -->
     <!-- dependencies version -->
     <californium.version>3.6.0</californium.version>
-    <logback.version>1.2.10</logback.version>
-    <slf4j.api.version>1.7.32</slf4j.api.version>
+    <logback.version>1.2.11</logback.version>
+    <slf4j.api.version>1.7.36</slf4j.api.version>
     <!-- stuck to 9.4.x for java8 compliance -->
-    <jetty.version>9.4.44.v20210927</jetty.version>
-    <jackson.version>2.13.2.1</jackson.version>
+    <jetty.version>9.4.48.v20220622</jetty.version>
+    <jackson.version>2.13.3</jackson.version>
   </properties>
 
   <dependencyManagement>
@@ -209,6 +209,11 @@ Contributors:
         <artifactId>cbor</artifactId>
         <version>4.5.2</version>
       </dependency>
+      <dependency>
+        <groupId>redis.clients</groupId>
+        <artifactId>jedis</artifactId>
+        <version>4.2.3</version>
+      </dependency>
 
       <!-- Demos, examples and tests dependencies -->
       <dependency>
@@ -229,12 +234,12 @@ Contributors:
       <dependency>
         <groupId>info.picocli</groupId>
         <artifactId>picocli</artifactId>
-        <version>4.6.2</version>
+        <version>4.6.3</version>
       </dependency>
       <dependency>
         <groupId>info.picocli</groupId>
         <artifactId>picocli-shell-jline2</artifactId>
-        <version>4.6.2</version>
+        <version>4.6.3</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
@@ -245,6 +250,11 @@ Contributors:
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-servlets</artifactId>
         <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jmdns</groupId>
+        <artifactId>jmdns</artifactId>
+        <version>3.5.8</version>
       </dependency>
 
       <!-- test dependencies -->
