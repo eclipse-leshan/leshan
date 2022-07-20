@@ -22,7 +22,7 @@ Contributors:
   <parent>
     <groupId>org.eclipse.leshan</groupId>
     <artifactId>demo-build-config</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>2.0.0-M8</version>
     <relativePath>../build-config/demo-build-config/pom.xml</relativePath>
   </parent>
   <artifactId>leshan-core-demo</artifactId>
