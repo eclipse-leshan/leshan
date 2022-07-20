@@ -61,6 +61,28 @@ public class RegistrationUpdateTest {
         Assert.assertEquals("101", updatedAdditionalAttributes.get("z"));
         Assert.assertTrue(updatedAdditionalAttributes.containsKey("h"));
         Assert.assertEquals("hello", updatedAdditionalAttributes.get("h"));
+    }
 
+    @Test
+    public void testApplicationDataUpdate() throws Exception {
+
+        Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
+                Identity.unsecure(Inet4Address.getLocalHost(), 1));
+        Map<String, String> appData = new HashMap<String, String>();
+        appData.put("x", "1");
+        appData.put("y", "10");
+        appData.put("z", "100");
+        builder.applicationData(appData);
+        Registration r = builder.build();
+
+        RegistrationUpdate updateReg = new RegistrationUpdate(r.getId(), r.getIdentity(), null, null, null, null, null);
+
+        r = updateReg.update(r);
+
+        Map<String, String> updatedAppData = r.getApplicationData();
+
+        Assert.assertEquals("1", updatedAppData.get("x"));
+        Assert.assertEquals("10", updatedAppData.get("y"));
+        Assert.assertEquals("100", updatedAppData.get("z"));
     }
 }
