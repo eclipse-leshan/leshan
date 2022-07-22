@@ -55,7 +55,7 @@ Contributors:
         <groupId>org.revapi</groupId>
         <artifactId>revapi-maven-plugin</artifactId>
         <configuration>
-          <oldVersion>1.0.0</oldVersion>
+          <versionFormat>^\d+.\d+.\d+$</versionFormat>
           <analysisConfiguration>
             <revapi.versions>
               <enabled>true</enabled>
