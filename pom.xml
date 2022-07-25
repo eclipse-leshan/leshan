@@ -476,6 +476,7 @@ Contributors:
         <artifactId>maven-enforcer-plugin</artifactId>
         <configuration>
           <rules>
+            <requireUpperBoundDeps></requireUpperBoundDeps>
             <dependencyConvergence></dependencyConvergence>
             <requireMavenVersion>
               <version>3.6.0</version>
