@@ -530,20 +530,21 @@ Contributors:
             </plugin>
             <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>
+                 <configuration>
+                    <rules>
+                        <requireUpperBoundDeps/>
+                        <dependencyConvergence/>
+                        <requireMavenVersion>
+                            <version>3.5.0</version>
+                        </requireMavenVersion>
+                    </rules>
+                </configuration>
                 <executions>
                     <execution>
                         <id>enforce-maven</id>
                         <goals>
                             <goal>enforce</goal>
                         </goals>
-                        <configuration>
-                            <rules>
-                                <dependencyConvergence/>
-                                <requireMavenVersion>
-                                    <version>3.5.0</version>
-                                </requireMavenVersion>
-                            </rules>
-                        </configuration>
                      </execution>
                  </executions>
              </plugin>
