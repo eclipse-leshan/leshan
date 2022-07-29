@@ -42,8 +42,8 @@ public class SingleObservation extends Observation {
      * @param context additional information relative to this observation.
      */
     public SingleObservation(byte[] id, String registrationId, LwM2mPath path, ContentFormat contentFormat,
-            Map<String, String> context) {
-        super(id, registrationId, context);
+            Map<String, String> context, Map<String, String> protocolData) {
+        super(id, registrationId, context, protocolData);
         this.path = path;
         this.contentFormat = contentFormat;
     }

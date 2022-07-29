@@ -45,6 +45,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
+import org.eclipse.leshan.server.endpoint.Protocol;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,8 +66,8 @@ public class ObserveTimeStampTest {
 
     protected IntegrationTestHelper helper = new IntegrationTestHelper();
 
-    private ContentFormat contentFormat;
-    private LwM2mEncoder encoder = new DefaultLwM2mEncoder();
+    private final ContentFormat contentFormat;
+    private final LwM2mEncoder encoder = new DefaultLwM2mEncoder();
 
     public ObserveTimeStampTest(ContentFormat contentFormat) {
         this.contentFormat = contentFormat;
@@ -122,7 +123,8 @@ public class ObserveTimeStampTest {
                 new StaticModel(helper.createObjectModels()));
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
         TestObserveUtil.sendNotification(helper.getClientConnector(helper.getCurrentRegisteredServer()),
-                helper.server.getUnsecuredAddress(), payload, firstCoapResponse, contentFormat);
+                helper.server.getEndpoint(Protocol.COAP).getInetSocketAddress(), payload, firstCoapResponse,
+                contentFormat);
         // *** Hack End *** //
 
         // verify result
@@ -165,7 +167,8 @@ public class ObserveTimeStampTest {
                 new StaticModel(helper.createObjectModels()));
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
         TestObserveUtil.sendNotification(helper.getClientConnector(helper.getCurrentRegisteredServer()),
-                helper.server.getUnsecuredAddress(), payload, firstCoapResponse, contentFormat);
+                helper.server.getEndpoint(Protocol.COAP).getInetSocketAddress(), payload, firstCoapResponse,
+                contentFormat);
         // *** Hack End *** //
 
         // verify result
@@ -209,7 +212,8 @@ public class ObserveTimeStampTest {
 
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
         TestObserveUtil.sendNotification(helper.getClientConnector(helper.getCurrentRegisteredServer()),
-                helper.server.getUnsecuredAddress(), payload, firstCoapResponse, contentFormat);
+                helper.server.getEndpoint(Protocol.COAP).getInetSocketAddress(), payload, firstCoapResponse,
+                contentFormat);
         // *** Hack End *** //
 
         // verify result

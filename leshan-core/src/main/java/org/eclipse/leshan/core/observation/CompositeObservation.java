@@ -44,8 +44,9 @@ public class CompositeObservation extends Observation {
      * @param context additional information relative to this observation.
      */
     public CompositeObservation(byte[] id, String registrationId, List<LwM2mPath> paths,
-            ContentFormat requestContentFormat, ContentFormat responseContentFormat, Map<String, String> context) {
-        super(id, registrationId, context);
+            ContentFormat requestContentFormat, ContentFormat responseContentFormat, Map<String, String> context,
+            Map<String, String> protocolData) {
+        super(id, registrationId, context, protocolData);
         this.requestContentFormat = requestContentFormat;
         this.responseContentFormat = responseContentFormat;
         this.paths = paths;

@@ -20,6 +20,8 @@ import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.junit.Ignore;
 import org.junit.Test;
 
+//TODO TL: redis not yet implemented
+@Ignore
 public class RedisSecurityTest extends SecurityTest {
     public RedisSecurityTest() {
         helper = new RedisSecureIntegrationTestHelper();

@@ -107,6 +107,8 @@ public interface RegistrationStore {
      */
     Collection<Observation> addObservation(String registrationId, Observation observation);
 
+    Collection<Observation> addObservation(String registrationId, Observation observation, boolean addIfAbsent);
+
     /**
      * Get the observation for the given registration with the given observationId
      */
@@ -131,4 +133,5 @@ public interface RegistrationStore {
      * set a listener for registration expiration.
      */
     void setExpirationListener(ExpirationListener listener);
+
 }

@@ -26,6 +26,11 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.server.LeshanServer;
+import org.eclipse.leshan.server.LeshanServerBuilder;
+import org.eclipse.leshan.server.californium.endpoint.CaliforniumEndpointsProvider;
+import org.eclipse.leshan.server.californium.endpoint.CaliforniumEndpointsProvider.Builder;
+import org.eclipse.leshan.server.endpoint.Protocol;
 import org.eclipse.leshan.server.queue.PresenceServiceImpl;
 import org.eclipse.leshan.server.registration.Registration;
 import org.junit.Test;
@@ -34,7 +39,9 @@ public class LeshanServerTest {
 
     @Test
     public void testStartStopStart() throws InterruptedException {
-        LeshanServer server = new LeshanServerBuilder().setLocalAddress(new InetSocketAddress(0)).build();
+        Builder EndpointProviderbuilder = new CaliforniumEndpointsProvider.Builder();
+        EndpointProviderbuilder.addEndpoint(new InetSocketAddress(0), Protocol.COAP);
+        LeshanServer server = new LeshanServerBuilder().setEndpointProvider(EndpointProviderbuilder.build()).build();
 
         server.start();
         Thread.sleep(100);
@@ -48,7 +55,10 @@ public class LeshanServerTest {
         // look at nb active thread before.
         int numberOfThreadbefore = Thread.activeCount();
 
-        LeshanServer server = new LeshanServerBuilder().setLocalAddress(new InetSocketAddress(0)).build();
+        Builder EndpointProviderbuilder = new CaliforniumEndpointsProvider.Builder();
+        EndpointProviderbuilder.addEndpoint(new InetSocketAddress(0), Protocol.COAP);
+        LeshanServer server = new LeshanServerBuilder().setEndpointProvider(EndpointProviderbuilder.build()).build();
+
         server.start();
         Thread.sleep(100);
         // HACK force creation thread creation.
@@ -66,7 +76,10 @@ public class LeshanServerTest {
         // look at nb active thread before.
         int numberOfThreadbefore = Thread.activeCount();
 
-        LeshanServer server = new LeshanServerBuilder().setLocalAddress(new InetSocketAddress(0)).build();
+        Builder EndpointProviderbuilder = new CaliforniumEndpointsProvider.Builder();
+        EndpointProviderbuilder.addEndpoint(new InetSocketAddress(0), Protocol.COAP);
+        LeshanServer server = new LeshanServerBuilder().setEndpointProvider(EndpointProviderbuilder.build()).build();
+
         server.start();
         Thread.sleep(100);
         // HACK force creation thread creation.
@@ -83,7 +96,8 @@ public class LeshanServerTest {
 
     private void forceThreadsCreation(LeshanServer server) {
         Registration reg = new Registration.Builder("id", "endpoint", Identity.unsecure(new InetSocketAddress(5555)))
-                .bindingMode(EnumSet.of(BindingMode.U, BindingMode.Q)).build();
+                .bindingMode(EnumSet.of(BindingMode.U, BindingMode.Q))
+                .lastEndpointUsed(server.getEndpoint(Protocol.COAP).getURI()).build();
         // Force timer thread creation of preference service.
         ((PresenceServiceImpl) server.getPresenceService()).setAwake(reg);
         // Force time thread creation of CoapAsyncRequestObserver

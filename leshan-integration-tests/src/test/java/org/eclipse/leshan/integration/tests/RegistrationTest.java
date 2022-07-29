@@ -61,6 +61,7 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.integration.tests.util.Callback;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
+import org.eclipse.leshan.server.endpoint.Protocol;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.junit.After;
@@ -252,7 +253,7 @@ public class RegistrationTest {
         } catch (SendFailedException e) {
             return;
         }
-        fail("Observe request should be sent");
+        fail("Observe request should NOT be sent");
     }
 
     @Test
@@ -287,7 +288,8 @@ public class RegistrationTest {
 
         // create a register request without the list of supported object
         Request coapRequest = new Request(Code.POST);
-        coapRequest.setDestinationContext(new AddressEndpointContext(helper.server.getUnsecuredAddress()));
+        coapRequest.setDestinationContext(
+                new AddressEndpointContext(helper.server.getEndpoint(Protocol.COAP).getInetSocketAddress()));
         coapRequest.getOptions().setContentFormat(ContentFormat.LINK.getCode());
         coapRequest.getOptions().addUriPath("rd");
         coapRequest.getOptions().addUriQuery("ep=" + helper.currentEndpointIdentifier);

@@ -15,14 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.util;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-
-import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
-import org.eclipse.leshan.server.californium.LeshanServerBuilder;
-import org.eclipse.leshan.server.model.StaticModelProvider;
+import org.eclipse.leshan.server.LeshanServerBuilder;
 import org.eclipse.leshan.server.redis.RedisRegistrationStore;
-import org.eclipse.leshan.server.security.InMemorySecurityStore;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -30,24 +24,14 @@ import redis.clients.jedis.util.Pool;
 
 public class RedisIntegrationTestHelper extends IntegrationTestHelper {
     @Override
-    public void createServer() {
-        LeshanServerBuilder builder = new LeshanServerBuilder();
-        StaticModelProvider modelProvider = new StaticModelProvider(createObjectModels());
-        builder.setObjectModelProvider(modelProvider);
-        DefaultLwM2mDecoder decoder = new DefaultLwM2mDecoder();
-        builder.setDecoder(decoder);
-        builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        builder.setSecurityStore(new InMemorySecurityStore());
+    protected LeshanServerBuilder createServerBuilder() {
+        LeshanServerBuilder builder = super.createServerBuilder();
 
         // Create redis store
         Pool<Jedis> jedis = createJedisPool();
         builder.setRegistrationStore(new RedisRegistrationStore(jedis));
 
-        // Build server !
-        server = builder.build();
-        // monitor client registration
-        setupServerMonitoring();
+        return builder;
     }
 
     public Pool<Jedis> createJedisPool() {

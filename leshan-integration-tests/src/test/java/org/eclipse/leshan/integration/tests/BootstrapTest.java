@@ -54,6 +54,7 @@ import org.eclipse.leshan.integration.tests.util.BootstrapIntegrationTestHelper;
 import org.eclipse.leshan.integration.tests.util.BootstrapRequestChecker;
 import org.eclipse.leshan.integration.tests.util.TestObjectsInitializer;
 import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
+import org.eclipse.leshan.server.endpoint.Protocol;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.junit.After;
@@ -293,7 +294,8 @@ public class BootstrapTest {
                 "</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</0/1>;ssid=2222;uri=\"coap://%s:%d\",</1>;ver=1.1,</1/0>;ssid=2222,</3>;ver=1.1,</3/0>,</21>;ver=2.0",
                 helper.bootstrapServer.getUnsecuredAddress().getHostString(),
                 helper.bootstrapServer.getUnsecuredAddress().getPort(),
-                helper.server.getUnsecuredAddress().getHostString(), helper.server.getUnsecuredAddress().getPort()),
+                helper.server.getEndpoint(Protocol.COAP).getInetSocketAddress().getHostString(),
+                helper.server.getEndpoint(Protocol.COAP).getInetSocketAddress().getPort()),
                 linkSerializer.serializeCoreLinkFormat(lastDiscoverAnswer.getObjectLinks()));
 
     }

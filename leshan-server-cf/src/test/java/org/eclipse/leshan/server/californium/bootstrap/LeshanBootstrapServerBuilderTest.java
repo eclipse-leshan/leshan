@@ -43,7 +43,6 @@ import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
-import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.junit.Before;
@@ -181,7 +180,7 @@ public class LeshanBootstrapServerBuilderTest {
 
     @Test
     public void create_server_without_psk_cipher() {
-        Configuration coapConfiguration = LeshanServerBuilder.createDefaultCoapConfiguration();
+        Configuration coapConfiguration = LeshanBootstrapServerBuilder.createDefaultCoapConfiguration();
         coapConfiguration.setAsList(DtlsConfig.DTLS_CIPHER_SUITES, CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8);
         builder.setCoapConfig(coapConfiguration);
         builder.setPrivateKey(privateKey);

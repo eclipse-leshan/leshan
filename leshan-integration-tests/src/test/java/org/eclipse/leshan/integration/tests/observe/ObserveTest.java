@@ -53,6 +53,7 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
+import org.eclipse.leshan.server.endpoint.Protocol;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -466,7 +467,8 @@ public class ObserveTest {
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
         // 666 is not a supported content format.
         TestObserveUtil.sendNotification(helper.getClientConnector(helper.getCurrentRegisteredServer()),
-                helper.server.getUnsecuredAddress(), payload, firstCoapResponse, ContentFormat.fromCode(666));
+                helper.server.getEndpoint(Protocol.COAP).getInetSocketAddress(), payload, firstCoapResponse,
+                ContentFormat.fromCode(666));
         // *** Hack End *** //
 
         // verify result

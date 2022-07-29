@@ -30,6 +30,7 @@ public abstract class Observation {
     protected final byte[] id;
     protected final String registrationId;
     protected final Map<String, String> context;
+    protected final Map<String, String> protocolData;
 
     /**
      * An abstract constructor for {@link Observation}.
@@ -38,13 +39,18 @@ public abstract class Observation {
      * @param registrationId client's unique registration identifier.
      * @param context additional information relative to this observation.
      */
-    public Observation(byte[] id, String registrationId, Map<String, String> context) {
+    public Observation(byte[] id, String registrationId, Map<String, String> context,
+            Map<String, String> protocolData) {
         this.id = id;
         this.registrationId = registrationId;
         if (context != null)
             this.context = Collections.unmodifiableMap(new HashMap<>(context));
         else
             this.context = Collections.emptyMap();
+        if (protocolData != null)
+            this.protocolData = Collections.unmodifiableMap(new HashMap<>(protocolData));
+        else
+            this.protocolData = Collections.emptyMap();
     }
 
     /**
@@ -69,6 +75,13 @@ public abstract class Observation {
      */
     public Map<String, String> getContext() {
         return context;
+    }
+
+    /**
+     * @return internal data specific to LwM2mEndpointsProvider
+     */
+    public Map<String, String> getProtocolData() {
+        return protocolData;
     }
 
     @Override

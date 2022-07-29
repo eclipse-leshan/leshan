@@ -17,6 +17,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
+import java.net.URI;
 import java.util.Date;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
@@ -40,9 +41,9 @@ public class RegistrationHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationHandler.class);
 
-    private RegistrationServiceImpl registrationService;
-    private RegistrationIdProvider registrationIdProvider;
-    private Authorizer authorizer;
+    private final RegistrationServiceImpl registrationService;
+    private final RegistrationIdProvider registrationIdProvider;
+    private final Authorizer authorizer;
 
     public RegistrationHandler(RegistrationServiceImpl registrationService, Authorizer authorizer,
             RegistrationIdProvider registrationIdProvider) {
@@ -51,7 +52,8 @@ public class RegistrationHandler {
         this.registrationIdProvider = registrationIdProvider;
     }
 
-    public SendableResponse<RegisterResponse> register(Identity sender, RegisterRequest registerRequest) {
+    public SendableResponse<RegisterResponse> register(Identity sender, RegisterRequest registerRequest,
+            URI endpointUsed) {
 
         Registration.Builder builder = new Registration.Builder(
                 registrationIdProvider.getRegistrationId(registerRequest), registerRequest.getEndpointName(), sender);
@@ -61,7 +63,8 @@ public class RegistrationHandler {
                 .lifeTimeInSec(registerRequest.getLifetime()).bindingMode(registerRequest.getBindingMode())
                 .queueMode(registerRequest.getQueueMode()).objectLinks(registerRequest.getObjectLinks())
                 .smsNumber(registerRequest.getSmsNumber()).registrationDate(new Date()).lastUpdate(new Date())
-                .additionalRegistrationAttributes(registerRequest.getAdditionalAttributes());
+                .additionalRegistrationAttributes(registerRequest.getAdditionalAttributes())
+                .lastEndpointUsed(endpointUsed);
 
         // We must check if the client is using the right identity.
         final Registration registration = authorizer.isAuthorized(registerRequest, builder.build(), sender);
