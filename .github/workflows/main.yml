@@ -48,12 +48,12 @@ jobs:
       uses: ./.github/actions/build
 
     - name: Java Import Check
-      if: always()
+      if: ${{ always() && steps.build.conclusion == 'success' }}
       id: sortimport
       uses: ./.github/actions/sortimport
 
     - name: Code Style Check
-      if: always()
+      if: ${{ always() && steps.build.conclusion == 'success' }}
       id: checkstyle
       uses: ./.github/actions/checkstyle
 
