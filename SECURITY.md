@@ -35,25 +35,25 @@ See : https://github.com/eclipse/californium/security/policy
     </thead>
     <tbody>
         <tr>
-            <td> 2.0.0-M7 + </td>
+            <td> 2.0.0-M8 + </td>
             <td> :heavy_check_mark: </td>
             <td />
             <td />
             <td />
         </tr>
         <tr>
-            <td> 2.0.0-M5 -> 2.0.0-M6 </td>
+            <td> 2.0.0-M6 -> 2.0.0-M7 </td>
             <td> :x: </td>
-            <td> <a href="https://github.com/peteroupc/CBOR-Java/security/advisories/GHSA-fj2w-wfgv-mwq6">GHSA-fj2w-wfgv-mwq6</a> </td>
-            <td> dependency (com.upokecenter.cbor) </td>
-            <td> CBOR or SenML-CBOR decoding </td>
+            <td> <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-2576">CVE-2022-2576</a> </td>
+            <td> dependency (californium/scandium) </td>
+            <td> DTLS_VERIFY_PEERS_ ON_RESUMPTION_THRESHOLD > 0 </td>
         </tr>
         <tr>
-            <td rowspan=2> 2.0.0-M2 -> 2.0.0-M4</td>
+            <td rowspan=2> 2.0.0-M5 -> 2.0.0-M6 </td>
             <td rowspan=2> :x: </td>
-                <td> <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-34433">CVE-2021-34433</a> </td>
+                <td> <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-2576">CVE-2022-2576</a> </td>
                 <td> dependency (californium/scandium) </td>
-                <td> DTLS with x509 and/or RPK  </td>
+                <td> DTLS_VERIFY_PEERS_ ON_RESUMPTION_THRESHOLD > 0 </td>
             <tr>
                 <td> <a href="https://github.com/peteroupc/CBOR-Java/security/advisories/GHSA-fj2w-wfgv-mwq6">GHSA-fj2w-wfgv-mwq6</a> </td>
                 <td> dependency (com.upokecenter.cbor) </td>
@@ -61,34 +61,73 @@ See : https://github.com/eclipse/californium/security/policy
             </tr>
         </tr>
         <tr>
-            <td> 2.0.0-M1 </td>
-            <td> :x: </td>
-            <td> <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-34433">CVE-2021-34433</a> </td>
-            <td> dependency (californium/scandium) </td>
-            <td> DTLS with x509 and/or RPK  </td>
+            <td rowspan=3> 2.0.0-M2 -> 2.0.0-M4</td>
+            <td rowspan=3> :x: </td>
+                <td> <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-2576">CVE-2022-2576</a> </td>
+                <td> dependency (californium/scandium) </td>
+                <td> DTLS_VERIFY_PEERS_ ON_RESUMPTION_THRESHOLD > 0 </td>
+            <tr>
+                <td> <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-34433">CVE-2021-34433</a> </td>
+                <td> dependency (californium/scandium) </td>
+                <td> DTLS with x509 and/or RPK  </td>
+            </tr>
+            <tr>
+                <td> <a href="https://github.com/peteroupc/CBOR-Java/security/advisories/GHSA-fj2w-wfgv-mwq6">GHSA-fj2w-wfgv-mwq6</a> </td>
+                <td> dependency (com.upokecenter.cbor) </td>
+                <td> CBOR or SenML-CBOR decoding </td>
+            </tr>
         </tr>
-         <tr>
-            <td> 1.3.2 +  </td>
+        <tr>
+            <td rowspan=2> 2.0.0-M1 </td>
+            <td rowspan=2> :x: </td>
+                <td> <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-2576">CVE-2022-2576</a> </td>
+                <td> dependency (californium/scandium) </td>
+                <td> DTLS_VERIFY_PEERS_ ON_RESUMPTION_THRESHOLD > 0 </td>
+            <tr>
+                <td> <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-34433">CVE-2021-34433</a> </td>
+                <td> dependency (californium/scandium) </td>
+                <td> DTLS with x509 and/or RPK  </td>
+            </tr>
+        </tr>
+        <tr>
+            <td> 1.4.1  </td>
             <td> :heavy_check_mark: </td>
             <td />
             <td />
             <td />
         </tr>
         <tr>
-            <td> 1.1.0 -> 1.3.1 </td>
+            <td> 1.3.1 -> 1.4.0  </td>
             <td> :x: </td>
-            <td> <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-27222">CVE-2020-27222</a>
-                 <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-34433">CVE-2021-34433</a>
-            </td>
+            <td> <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-2576">CVE-2022-2576</a> </td>
             <td> dependency (californium/scandium) </td>
-            <td> DTLS with x509 and/or RPK  </td>
+            <td> DTLS_VERIFY_PEERS_ ON_RESUMPTION_THRESHOLD > 0 </td>
         </tr>
         <tr>
-            <td> 1.0.0 -> 1.0.2 </td>
-            <td> :x: </td>
-            <td> <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-34433">CVE-2021-34433</a> </td>
-            <td> dependency (californium/scandium) </td>
-            <td> DTLS with x509 and/or RPK  </td>
+            <td rowspan=2> 1.1.0 -> 1.3.1 </td>
+            <td rowspan=2> :x: </td>
+                <td> <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-2576">CVE-2022-2576</a> </td>
+                <td> dependency (californium/scandium) </td>
+                <td> DTLS_VERIFY_PEERS_ ON_RESUMPTION_THRESHOLD > 0 </td>
+            <tr>
+                <td> <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-27222">CVE-2020-27222</a>
+                     <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-34433">CVE-2021-34433</a>
+                </td>
+                <td> dependency (californium/scandium) </td>
+                <td> DTLS with x509 and/or RPK  </td>
+            </tr>       
+        </tr>
+        <tr>
+            <td rowspan=2> 1.0.0 -> 1.0.2 </td>
+            <td rowspan=2>:x: </td>
+                <td> <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-2576">CVE-2022-2576</a> </td>
+                <td> dependency (californium/scandium) </td>
+                <td> DTLS_VERIFY_PEERS_ ON_RESUMPTION_THRESHOLD > 0 </td>
+            <tr>
+                <td> <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-34433">CVE-2021-34433</a> </td>
+                <td> dependency (californium/scandium) </td>
+                <td> DTLS with x509 and/or RPK  </td>
+            </tr>
         </tr>
     </tbody>
 </table>
