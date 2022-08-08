@@ -94,7 +94,7 @@ public class EventServlet extends EventSourceServlet {
                         objectMapper.writeValueAsString(new BootstrapEvent("new session", endpointName, b.toString())),
                         endpointName);
             } catch (JsonProcessingException e) {
-                LOG.error("Bootstap Event JSON serialization failed", e);
+                LOG.error("Bootstrap Event JSON serialization failed", e);
             }
         }
 
@@ -112,7 +112,7 @@ public class EventServlet extends EventSourceServlet {
                         objectMapper.writeValueAsString(new BootstrapEvent("unauthorized", endpointName, b.toString())),
                         endpointName);
             } catch (JsonProcessingException e) {
-                LOG.error("Bootstap Event JSON serialization failed", e);
+                LOG.error("Bootstrap Event JSON serialization failed", e);
             }
         }
 
@@ -128,7 +128,7 @@ public class EventServlet extends EventSourceServlet {
                         objectMapper.writeValueAsString(new BootstrapEvent("authorized", endpointName, b.toString())),
                         endpointName);
             } catch (JsonProcessingException e) {
-                LOG.error("Bootstap Event JSON serialization failed", e);
+                LOG.error("Bootstrap Event JSON serialization failed", e);
             }
         }
 
@@ -143,7 +143,7 @@ public class EventServlet extends EventSourceServlet {
                         objectMapper.writeValueAsString(new BootstrapEvent("no config", endpointName, b.toString())),
                         endpointName);
             } catch (JsonProcessingException e) {
-                LOG.error("Bootstap Event JSON serialization failed", e);
+                LOG.error("Bootstreap Event JSON serialization failed", e);
             }
         }
 
@@ -185,7 +185,7 @@ public class EventServlet extends EventSourceServlet {
                 }
 
             } catch (JsonProcessingException e) {
-                LOG.error("Bootstap Event JSON serialization failed", e);
+                LOG.error("Bootstrap Event JSON serialization failed", e);
             }
         }
 
@@ -214,7 +214,7 @@ public class EventServlet extends EventSourceServlet {
                             endpointName);
                 }
             } catch (JsonProcessingException e) {
-                LOG.error("Bootstap Event JSON serialization failed", e);
+                LOG.error("Bootstrap Event JSON serialization failed", e);
             }
         }
 
@@ -235,7 +235,7 @@ public class EventServlet extends EventSourceServlet {
                                 new BootstrapEvent("receive error response", endpointName, b.toString())),
                         endpointName);
             } catch (JsonProcessingException e) {
-                LOG.error("Bootstap Event JSON serialization failed", e);
+                LOG.error("Bootstrap Event JSON serialization failed", e);
             }
         }
 
@@ -250,7 +250,7 @@ public class EventServlet extends EventSourceServlet {
                 sendEvent(EVENT_BOOTSTRAP_SESSION, objectMapper.writeValueAsString(
                         new BootstrapEvent("request failure", endpointName, b.toString())), endpointName);
             } catch (JsonProcessingException e) {
-                LOG.error("Bootstap Event JSON serialization failed", e);
+                LOG.error("Bootstrap Event JSON serialization failed", e);
             }
         }
 
@@ -277,7 +277,7 @@ public class EventServlet extends EventSourceServlet {
                         objectMapper.writeValueAsString(new BootstrapEvent("finished", endpointName, b.toString())),
                         endpointName);
             } catch (JsonProcessingException e) {
-                LOG.error("Bootstap Event JSON serialization failed", e);
+                LOG.error("Bootstrap Event JSON serialization failed", e);
             }
         }
 
@@ -293,7 +293,7 @@ public class EventServlet extends EventSourceServlet {
                         objectMapper.writeValueAsString(new BootstrapEvent("failed", endpointName, b.toString())),
                         endpointName);
             } catch (JsonProcessingException e) {
-                LOG.error("Bootstap Event JSON serialization failed", e);
+                LOG.error("Bootstrap Event JSON serialization failed", e);
             }
         }
 

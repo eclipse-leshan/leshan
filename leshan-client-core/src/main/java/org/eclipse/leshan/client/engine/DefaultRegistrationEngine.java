@@ -111,7 +111,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private final Map<Integer /* objectId */, LwM2mObjectEnabler> objectEnablers;
     private final Map<String /* registrationId */, ServerIdentity> registeredServers;
     private final List<ServerIdentity> registeringServers;
-    private final AtomicReference<ServerIdentity> currentBoostrapServer;
+    private final AtomicReference<ServerIdentity> currentBootstrapServer;
 
     // helpers
     private final LwM2mRequestSender sender;
@@ -144,7 +144,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         this.bsAdditionalAttributes = bsAdditionalAttributes;
         this.registeredServers = new ConcurrentHashMap<>();
         this.registeringServers = new CopyOnWriteArrayList<>();
-        this.currentBoostrapServer = new AtomicReference<>();
+        this.currentBootstrapServer = new AtomicReference<>();
         this.requestTimeoutInMs = requestTimeoutInMs;
         this.deregistrationTimeoutInMs = deregistrationTimeoutInMs;
         this.bootstrapSessionTimeoutInSec = bootstrapSessionTimeoutInSec;
@@ -219,7 +219,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             cancelUpdateTask(true);
             ServerIdentity bootstrapServer = endpointsManager.createEndpoint(bootstrapServerInfo, true);
             if (bootstrapServer != null) {
-                currentBoostrapServer.set(bootstrapServer);
+                currentBootstrapServer.set(bootstrapServer);
             }
 
             // Send bootstrap request
@@ -240,7 +240,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                     LOG.info("Bootstrap started");
                     // Wait until it is finished (or too late)
                     try {
-                        boolean timeout = !bootstrapHandler.waitBoostrapFinished(bootstrapSessionTimeoutInSec);
+                        boolean timeout = !bootstrapHandler.waitBootstrapFinished(bootstrapSessionTimeoutInSec);
                         if (timeout) {
                             LOG.info("Bootstrap sequence aborted: Timeout.");
                             if (observer != null) {
@@ -282,7 +282,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 }
                 return null;
             } finally {
-                currentBoostrapServer.set(null);
+                currentBootstrapServer.set(null);
                 bootstrapHandler.closeSession();
             }
         } else {
@@ -868,7 +868,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     public boolean isAllowedToCommunicate(ServerIdentity foreingPeer) {
         if (foreingPeer == null)
             return false;
-        ServerIdentity bootstrapServer = currentBoostrapServer.get();
+        ServerIdentity bootstrapServer = currentBootstrapServer.get();
         if (bootstrapServer != null && foreingPeer.equals(bootstrapServer)) {
             return true;
         } else {

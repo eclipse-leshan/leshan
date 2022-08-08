@@ -248,7 +248,7 @@ public class LinkFormatHelperTest {
     public void encode_bootstrap_security_object() {
         Map<Integer, LwM2mInstanceEnabler> instancesMap = new HashMap<>();
         instancesMap.put(0, Security.noSec("coap://localhost:11", 111));
-        instancesMap.put(1, Security.noSecBootstap("coap://localhost:1"));
+        instancesMap.put(1, Security.noSecBootstrap("coap://localhost:1"));
         instancesMap.put(2, Security.noSec("coap://localhost:22", 222));
         instancesMap.put(3, Security.noSec("coap://localhost:33", 333));
         LwM2mObjectEnabler objectEnabler = new ObjectEnabler(0, getObjectModel(0), instancesMap, null,
@@ -272,7 +272,7 @@ public class LinkFormatHelperTest {
         // object 0
         Map<Integer, LwM2mInstanceEnabler> securityInstances = new HashMap<>();
         securityInstances.put(0, Security.noSec("coap://localhost:11", 111));
-        securityInstances.put(1, Security.noSecBootstap("coap://localhost:1"));
+        securityInstances.put(1, Security.noSecBootstrap("coap://localhost:1"));
         securityInstances.put(2, Security.noSec("coap://localhost:22", 222));
         securityInstances.put(3, Security.noSec("coap://localhost:33", 333));
         LwM2mObjectEnabler securityObjectEnabler = createObjectEnabler(getObjectModel(0), securityInstances);

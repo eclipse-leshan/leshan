@@ -114,7 +114,7 @@ public class LeshanClient implements LwM2mClient {
         this.encoder = encoder;
         this.linkSerializer = linkSerializer;
         observers = createClientObserverDispatcher();
-        bootstrapHandler = createBoostrapHandler(objectTree, checker);
+        bootstrapHandler = createBootstrapHandler(objectTree, checker);
         endpointsManager = createEndpointsManager(localAddress, coapConfig, dtlsConfigBuilder, trustStore,
                 endpointFactory);
         requestSender = createRequestSender(endpointsManager, sharedExecutor, encoder, objectTree.getModel(),
@@ -162,7 +162,7 @@ public class LeshanClient implements LwM2mClient {
         return observer;
     }
 
-    protected BootstrapHandler createBoostrapHandler(LwM2mObjectTree objectTree, BootstrapConsistencyChecker checker) {
+    protected BootstrapHandler createBootstrapHandler(LwM2mObjectTree objectTree, BootstrapConsistencyChecker checker) {
         return new BootstrapHandler(objectTree.getObjectEnablers(), checker);
     }
 

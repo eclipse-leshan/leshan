@@ -16,7 +16,7 @@
 package org.eclipse.leshan.client.demo;
 
 import static org.eclipse.leshan.client.object.Security.noSec;
-import static org.eclipse.leshan.client.object.Security.noSecBootstap;
+import static org.eclipse.leshan.client.object.Security.noSecBootstrap;
 import static org.eclipse.leshan.client.object.Security.oscoreOnly;
 import static org.eclipse.leshan.client.object.Security.oscoreOnlyBootstrap;
 import static org.eclipse.leshan.client.object.Security.psk;
@@ -188,7 +188,7 @@ public class LeshanClientDemo {
                     initializer.setInstancesForObject(SECURITY,
                             oscoreOnlyBootstrap(cli.main.url, oscoreObjectInstanceId));
                 } else {
-                    initializer.setInstancesForObject(SECURITY, noSecBootstap(cli.main.url));
+                    initializer.setInstancesForObject(SECURITY, noSecBootstrap(cli.main.url));
                 }
                 initializer.setClassForObject(SERVER, Server.class);
             }

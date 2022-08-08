@@ -101,7 +101,7 @@ public class Security extends BaseInstanceEnabler {
     /**
      * Returns a new security instance (NoSec) for a bootstrap server.
      */
-    public static Security noSecBootstap(String serverUri) {
+    public static Security noSecBootstrap(String serverUri) {
         return new Security(serverUri, true, SecurityMode.NO_SEC.code, new byte[0], new byte[0], new byte[0], null,
                 CertificateUsage.DOMAIN_ISSUER_CERTIFICATE.code, new ObjectLink());
     }

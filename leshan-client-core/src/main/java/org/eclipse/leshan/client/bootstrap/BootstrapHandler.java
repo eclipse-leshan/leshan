@@ -116,7 +116,7 @@ public class BootstrapHandler {
         return bootstrapping;
     }
 
-    public boolean waitBoostrapFinished(long timeInSeconds) throws InterruptedException, InvalidStateException {
+    public boolean waitBootstrapFinished(long timeInSeconds) throws InterruptedException, InvalidStateException {
         boolean finished = bootstrappingLatch.await(timeInSeconds, TimeUnit.SECONDS);
         if (finished) {
             if (lastConsistencyError != null) {

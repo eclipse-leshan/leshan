@@ -25,7 +25,7 @@ public interface BootstrapHandlerFactory {
     /**
      * Creates {@link BootstrapHandler}.
      *
-     * @param sender the class responsible to send LWM2M request during a bootstapSession.
+     * @param sender the class responsible to send LWM2M request during a bootstrapSession.
      * @param sessionManager the manager responsible to handle bootstrap session.
      * @param listener a listener of bootstrap session life-cycle.
      * @return the new {@link BootstrapHandler}.
