@@ -10,9 +10,12 @@ on:
 
 jobs:
   build:
-    # To be able to write/remove comments on PR  
+    # To be able :
+    #  - to write/remove comments on PR,
+    #  - to create checks for Test Report.
     permissions:  
       pull-requests: write
+      checks: write   
 
     name : Code Check
     if: github.event.pull_request.draft == false
