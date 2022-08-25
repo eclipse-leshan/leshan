@@ -55,7 +55,7 @@ public class SecurityInfoSerDesTest {
         ECParameterSpec parameterSpec = algoParameters.getParameterSpec(ECParameterSpec.class);
 
         // Create key specs
-        KeySpec publicKeySpec = new ECPublicKeySpec(new ECPoint(new BigInteger(publicX), new BigInteger(publicY)),
+        KeySpec publicKeySpec = new ECPublicKeySpec(new ECPoint(new BigInteger(1, publicX), new BigInteger(1, publicY)),
                 parameterSpec);
 
         SecurityInfo si = SecurityInfo.newRawPublicKeyInfo("myendpoint",

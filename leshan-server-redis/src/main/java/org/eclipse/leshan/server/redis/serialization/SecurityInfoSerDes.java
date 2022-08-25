@@ -106,7 +106,8 @@ public class SecurityInfoSerDes {
                 algoParameters.init(new ECGenParameterSpec(params));
                 ECParameterSpec parameterSpec = algoParameters.getParameterSpec(ECParameterSpec.class);
 
-                KeySpec keySpec = new ECPublicKeySpec(new ECPoint(new BigInteger(x), new BigInteger(y)), parameterSpec);
+                KeySpec keySpec = new ECPublicKeySpec(new ECPoint(new BigInteger(1, x), new BigInteger(1, y)),
+                        parameterSpec);
 
                 key = KeyFactory.getInstance("EC").generatePublic(keySpec);
 

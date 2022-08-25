@@ -140,9 +140,9 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
             ECParameterSpec parameterSpec = algoParameters.getParameterSpec(ECParameterSpec.class);
 
             // Create key specs
-            KeySpec publicKeySpec = new ECPublicKeySpec(new ECPoint(new BigInteger(publicX), new BigInteger(publicY)),
-                    parameterSpec);
-            KeySpec privateKeySpec = new ECPrivateKeySpec(new BigInteger(privateS), parameterSpec);
+            KeySpec publicKeySpec = new ECPublicKeySpec(
+                    new ECPoint(new BigInteger(1, publicX), new BigInteger(1, publicY)), parameterSpec);
+            KeySpec privateKeySpec = new ECPrivateKeySpec(new BigInteger(1, privateS), parameterSpec);
 
             // Get keys
             bootstrapServerPublicKey = KeyFactory.getInstance("EC").generatePublic(publicKeySpec);
