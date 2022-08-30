@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.senml;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Utility class used to resolve SenML record.
  *
@@ -49,7 +51,7 @@ public abstract class SenMLResolver<T extends ResolvedSenMLRecord> {
             // A negative value indicates seconds in the past from roughly "now".
             // Positive values up to 2**28 indicate seconds in the future from "now".
             if (resolvedTimestamp < 268_435_456) {
-                resolvedTimestamp = currentTimestamp + resolvedTimestamp;
+                resolvedTimestamp =  TimeUnit.MILLISECONDS.toSeconds(currentTimestamp) + resolvedTimestamp;
             }
             // else
             // Values greater than or equal to 2**28 represent an absolute time relative to the Unix epoch
