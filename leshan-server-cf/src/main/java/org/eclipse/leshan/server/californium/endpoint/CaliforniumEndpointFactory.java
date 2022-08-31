@@ -19,9 +19,9 @@ import java.net.URI;
 
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.server.endpoint.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.endpoint.LwM2mServer;
-import org.eclipse.leshan.server.endpoint.Protocol;
 import org.eclipse.leshan.server.endpoint.ServerSecurityInfo;
 
 public interface CaliforniumEndpointFactory {

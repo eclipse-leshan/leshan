@@ -18,6 +18,8 @@ package org.eclipse.leshan.server.endpoint;
 import java.net.InetSocketAddress;
 import java.net.URI;
 
+import org.eclipse.leshan.core.endpoint.LowerLayerSetting;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.LwM2mRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;

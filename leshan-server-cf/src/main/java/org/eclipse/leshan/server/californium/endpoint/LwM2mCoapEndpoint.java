@@ -32,6 +32,8 @@ import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.core.californium.AsyncRequestObserver;
 import org.eclipse.leshan.core.californium.SyncRequestObserver;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
+import org.eclipse.leshan.core.endpoint.LowerLayerSetting;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.LwM2mRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
@@ -41,12 +43,10 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.endpoint.ClientProfile;
-import org.eclipse.leshan.server.endpoint.LowerLayerSetting;
 import org.eclipse.leshan.server.endpoint.LwM2mEndpoint;
 import org.eclipse.leshan.server.endpoint.LwM2mEndpointToolbox;
 import org.eclipse.leshan.server.endpoint.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.endpoint.PeerProfile;
-import org.eclipse.leshan.server.endpoint.Protocol;
 
 public class LwM2mCoapEndpoint implements LwM2mEndpoint {
 

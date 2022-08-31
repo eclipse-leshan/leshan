@@ -155,13 +155,13 @@ public class CoapAsyncRequestObserver extends AbstractRequestObserver {
     public void onSendError(Throwable error) {
         if (eventRaised.compareAndSet(false, true)) {
             cancelCleaningTask();
+            // TODO TL : this should not be Scandium dependent
             if (error instanceof DtlsHandshakeTimeoutException) {
                 errorCallback.onError(new TimeoutException(Type.DTLS_HANDSHAKE_TIMEOUT, error,
                         "Request %s timeout : dtls handshake timeout", coapRequest.getURI()));
             } else if (error instanceof EndpointUnconnectedException) {
                 errorCallback.onError(new UnconnectedPeerException(error,
-                        "Unable to send request %s : peer is not connected (no DTLS connection)",
-                        coapRequest.getURI()));
+                        "Unable to send request %s : peer is not connected", coapRequest.getURI()));
             } else {
                 errorCallback
                         .onError(new SendFailedException(error, "Unable to send request %s", coapRequest.getURI()));

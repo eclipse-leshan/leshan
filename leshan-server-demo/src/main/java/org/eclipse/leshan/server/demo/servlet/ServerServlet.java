@@ -27,11 +27,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.core.demo.json.PublicKeySerDes;
 import org.eclipse.leshan.server.core.demo.json.X509CertificateSerDes;
 import org.eclipse.leshan.server.endpoint.LwM2mEndpoint;
-import org.eclipse.leshan.server.endpoint.Protocol;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;

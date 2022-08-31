@@ -13,8 +13,22 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.endpoint;
+package org.eclipse.leshan.client.californium.enpoint;
 
-public interface LowerLayerSetting {
-    void apply(Object lowerLayerRequest);
-};
+import java.net.InetSocketAddress;
+import java.util.List;
+
+import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
+import org.eclipse.leshan.core.endpoint.Protocol;
+
+public interface CaliforniumProtocolProvider {
+
+    Protocol getProtocol();
+
+    List<ModuleDefinitionsProvider> getModuleDefinitionsProviders();
+
+    void applyDefaultValue(Configuration configuration);
+
+    CaliforniumEndpointFactory createDefaultEndpointFactory(InetSocketAddress addr);
+}

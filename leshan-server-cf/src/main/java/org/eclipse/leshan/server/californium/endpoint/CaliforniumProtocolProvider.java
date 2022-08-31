@@ -20,7 +20,7 @@ import java.util.List;
 
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
-import org.eclipse.leshan.server.endpoint.Protocol;
+import org.eclipse.leshan.core.endpoint.Protocol;
 
 public interface CaliforniumProtocolProvider {
 

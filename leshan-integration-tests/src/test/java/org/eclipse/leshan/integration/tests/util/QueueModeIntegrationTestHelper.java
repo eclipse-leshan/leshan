@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.eclipse.leshan.client.californium.LeshanClientBuilder;
+import org.eclipse.leshan.client.LeshanClientBuilder;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
@@ -34,12 +34,12 @@ import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.LwM2mId;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.integration.tests.PresenceCounter;
 import org.eclipse.leshan.server.LeshanServerBuilder;
-import org.eclipse.leshan.server.endpoint.Protocol;
 import org.eclipse.leshan.server.queue.StaticClientAwakeTimeProvider;
 import org.eclipse.leshan.server.registration.Registration;
 
@@ -81,6 +81,7 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         LeshanClientBuilder builder = new LeshanClientBuilder(currentEndpointIdentifier.get());
         builder.setRegistrationEngineFactory(new DefaultRegistrationEngineFactory().setQueueMode(true));
         builder.setObjects(objects);
+        builder.setEndpointsProvider(new org.eclipse.leshan.client.californium.enpoint.CaliforniumEndpointsProvider());
         client = builder.build();
         setupClientMonitoring();
     }

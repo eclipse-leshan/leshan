@@ -3,7 +3,7 @@ package org.eclipse.leshan.client.demo.cli.interactive;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.leshan.client.californium.LeshanClient;
+import org.eclipse.leshan.client.LeshanClient;
 import org.eclipse.leshan.client.demo.MyLocation;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.CollectCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.CreateCommand;
@@ -63,8 +63,8 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
 
     private static final Logger LOG = LoggerFactory.getLogger(InteractiveCommands.class);
 
-    private LeshanClient client;
-    private LwM2mModelRepository repository;
+    private final LeshanClient client;
+    private final LwM2mModelRepository repository;
 
     public InteractiveCommands(LeshanClient client, LwM2mModelRepository repository) {
         this.client = client;

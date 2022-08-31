@@ -17,6 +17,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.request;
 
+import org.eclipse.leshan.core.endpoint.LowerLayerSetting;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -35,7 +36,6 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.endpoint.ClientProfile;
-import org.eclipse.leshan.server.endpoint.LowerLayerSetting;
 import org.eclipse.leshan.server.endpoint.LwM2mEndpoint;
 import org.eclipse.leshan.server.endpoint.LwM2mEndpointsProvider;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;

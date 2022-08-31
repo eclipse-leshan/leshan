@@ -46,7 +46,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.leshan.client.californium.LeshanClientBuilder;
+import org.eclipse.leshan.client.LeshanClientBuilder;
+import org.eclipse.leshan.client.californium.endpoint.coap.CoapProtocolProvider;
+import org.eclipse.leshan.client.californium.endpoint.coap.OscoreCoapEndpointFactory;
+import org.eclipse.leshan.client.californium.endpoint.coaps.CoapsProtocolProvider;
+import org.eclipse.leshan.client.californium.enpoint.CaliforniumEndpointFactory;
+import org.eclipse.leshan.client.californium.enpoint.CaliforniumEndpointsProvider;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Oscore;
@@ -55,6 +60,7 @@ import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.SecurityMode;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.oscore.OscoreIdentity;
@@ -78,7 +84,6 @@ import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSession;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSessionManager;
 import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServer;
 import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServerBuilder;
-import org.eclipse.leshan.server.endpoint.Protocol;
 import org.eclipse.leshan.server.model.StandardBootstrapModelProvider;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
@@ -353,6 +358,17 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 }
             });
         }
+
+        // create endpoint provider
+        CaliforniumEndpointsProvider.Builder endpointProviderBuilder = new CaliforniumEndpointsProvider.Builder(
+                new CoapProtocolProvider() {
+                    @Override
+                    public CaliforniumEndpointFactory createDefaultEndpointFactory(InetSocketAddress address) {
+                        return new OscoreCoapEndpointFactory(address);
+                    }
+                }, new CoapsProtocolProvider());
+        endpointProviderBuilder.setClientAddress(InetAddress.getLoopbackAddress());
+        builder.setEndpointsProvider(endpointProviderBuilder.build());
         client = builder.build();
         setupClientMonitoring();
     }

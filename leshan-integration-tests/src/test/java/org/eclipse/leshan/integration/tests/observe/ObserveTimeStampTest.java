@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.ResponseCode;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -45,7 +46,6 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
-import org.eclipse.leshan.server.endpoint.Protocol;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

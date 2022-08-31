@@ -36,8 +36,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.elements.Connector;
-import org.eclipse.leshan.client.californium.LeshanClient;
-import org.eclipse.leshan.client.californium.LeshanClientBuilder;
+import org.eclipse.leshan.client.LeshanClient;
+import org.eclipse.leshan.client.LeshanClientBuilder;
+import org.eclipse.leshan.client.californium.enpoint.LwM2mClientCoapEndpoint;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.LwM2mTestObject;
 import org.eclipse.leshan.client.object.Security;
@@ -49,6 +50,7 @@ import org.eclipse.leshan.client.send.ManualDataSender;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.DefaultLinkSerializer;
 import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.link.LinkSerializer;
@@ -69,7 +71,6 @@ import org.eclipse.leshan.server.californium.endpoint.CaliforniumEndpointsProvid
 import org.eclipse.leshan.server.californium.endpoint.coap.CoapProtocolProvider;
 import org.eclipse.leshan.server.californium.endpoint.coap.OscoreCoapEndpointFactory;
 import org.eclipse.leshan.server.californium.endpoint.coaps.CoapsProtocolProvider;
-import org.eclipse.leshan.server.endpoint.Protocol;
 import org.eclipse.leshan.server.model.VersionedModelProvider;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationServiceImpl;
@@ -169,6 +170,7 @@ public class IntegrationTestHelper {
         builder.setDataSenders(new ManualDataSender());
         builder.setAdditionalAttributes(additionalAttributes);
         builder.setObjects(objects);
+        builder.setEndpointsProvider(new org.eclipse.leshan.client.californium.enpoint.CaliforniumEndpointsProvider());
         client = builder.build();
         setupClientMonitoring();
     }
@@ -366,7 +368,7 @@ public class IntegrationTestHelper {
     }
 
     public Connector getClientConnector(ServerIdentity server) {
-        CoapEndpoint endpoint = (CoapEndpoint) client.coap().getServer().getEndpoint(client.getAddress(server));
-        return endpoint.getConnector();
+        LwM2mClientCoapEndpoint endpoint = (LwM2mClientCoapEndpoint) client.getEndpoint(server);
+        return ((CoapEndpoint) endpoint.getCoapEndpoint()).getConnector();
     }
 }

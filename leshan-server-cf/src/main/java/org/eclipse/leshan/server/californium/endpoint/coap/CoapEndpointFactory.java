@@ -28,12 +28,12 @@ import org.eclipse.californium.elements.EndpointContextMatcher;
 import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.server.californium.endpoint.CaliforniumEndpointFactory;
 import org.eclipse.leshan.server.californium.observation.LwM2mObservationStore;
 import org.eclipse.leshan.server.californium.observation.ObservationSerDes;
 import org.eclipse.leshan.server.endpoint.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.endpoint.LwM2mServer;
-import org.eclipse.leshan.server.endpoint.Protocol;
 import org.eclipse.leshan.server.endpoint.ServerSecurityInfo;
 
 public class CoapEndpointFactory implements CaliforniumEndpointFactory {

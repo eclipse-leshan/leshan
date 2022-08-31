@@ -24,10 +24,9 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
-import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
-import org.eclipse.leshan.client.californium.CaliforniumEndpointsManager;
 import org.eclipse.leshan.client.californium.LwM2mClientCoapResource;
-import org.eclipse.leshan.client.engine.RegistrationEngine;
+import org.eclipse.leshan.client.californium.enpoint.ServerIdentityExtractor;
+import org.eclipse.leshan.client.endpoint.LwM2mRequestReceiver;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.response.BootstrapFinishResponse;
@@ -38,12 +37,11 @@ import org.eclipse.leshan.core.response.SendableResponse;
  */
 public class BootstrapResource extends LwM2mClientCoapResource {
 
-    protected BootstrapHandler bootstrapHandler;
+    protected LwM2mRequestReceiver requestReceiver;
 
-    public BootstrapResource(RegistrationEngine registrationEngine, CaliforniumEndpointsManager endpointsManager,
-            BootstrapHandler bootstrapHandler) {
-        super("bs", registrationEngine, endpointsManager);
-        this.bootstrapHandler = bootstrapHandler;
+    public BootstrapResource(ServerIdentityExtractor identityExtractor, LwM2mRequestReceiver requestReceiver) {
+        super("bs", identityExtractor);
+        this.requestReceiver = requestReceiver;
         this.setVisible(false);
     }
 
@@ -57,7 +55,7 @@ public class BootstrapResource extends LwM2mClientCoapResource {
         // Acknowledge bootstrap finished request
         exchange.accept();
         Request coapRequest = exchange.advanced().getRequest();
-        final SendableResponse<BootstrapFinishResponse> sendableResponse = bootstrapHandler.finished(identity,
+        final SendableResponse<BootstrapFinishResponse> sendableResponse = requestReceiver.requestReceived(identity,
                 new BootstrapFinishRequest(coapRequest));
 
         // Create CoAP response

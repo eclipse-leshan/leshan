@@ -28,7 +28,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 /**
  * An {@link ObserveRelationFilter} which select {@link ObserveRelation} based on one of resource URIs.
  */
-class ObserveCompositeRelationFilter implements ObserveRelationFilter {
+public class ObserveCompositeRelationFilter implements ObserveRelationFilter {
 
     private final List<LwM2mPath> paths;
 

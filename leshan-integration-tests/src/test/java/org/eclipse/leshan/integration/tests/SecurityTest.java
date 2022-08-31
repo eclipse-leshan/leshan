@@ -43,8 +43,6 @@ import java.util.List;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Token;
-import org.eclipse.californium.core.network.CoapEndpoint;
-import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
 import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.californium.elements.EndpointContext;
@@ -54,6 +52,7 @@ import org.eclipse.californium.elements.exception.EndpointMismatchException;
 import org.eclipse.californium.elements.util.SimpleMessageCallback;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.leshan.core.CertificateUsage;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
@@ -61,7 +60,6 @@ import org.eclipse.leshan.core.request.exception.UnconnectedPeerException;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.integration.tests.util.Callback;
 import org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper;
-import org.eclipse.leshan.server.endpoint.Protocol;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
@@ -251,15 +249,11 @@ public class SecurityTest {
 
         // Create new session with new credentials at client side.
         // Get connector
-        Endpoint endpoint = helper.client.coap().getServer()
-                .getEndpoint(helper.client.getAddress(helper.getCurrentRegisteredServer()));
-        DTLSConnector connector = (DTLSConnector) ((CoapEndpoint) endpoint).getConnector();
+        DTLSConnector connector = (DTLSConnector) helper.getClientConnector(helper.getCurrentRegisteredServer());
         // Clear DTLS session to force new handshake
         connector.clearConnectionState();
         // Change PSK id
         helper.setNewPsk("anotherPSK", GOOD_PSK_KEY);
-        // restart connector
-        connector.start();
         // send and empty message to force a new handshake with new credentials
         SimpleMessageCallback callback = new SimpleMessageCallback();
         // create a ping message

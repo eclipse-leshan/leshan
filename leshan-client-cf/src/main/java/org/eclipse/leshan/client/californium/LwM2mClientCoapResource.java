@@ -18,9 +18,8 @@ package org.eclipse.leshan.client.californium;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.network.Exchange;
-import org.eclipse.californium.core.network.Exchange.Origin;
 import org.eclipse.californium.core.server.resources.CoapExchange;
-import org.eclipse.leshan.client.engine.RegistrationEngine;
+import org.eclipse.leshan.client.californium.enpoint.ServerIdentityExtractor;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.californium.LwM2mCoapResource;
 
@@ -29,27 +28,11 @@ import org.eclipse.leshan.core.californium.LwM2mCoapResource;
  */
 public class LwM2mClientCoapResource extends LwM2mCoapResource {
 
-    protected final CaliforniumEndpointsManager endpointsManager;
-    protected final RegistrationEngine registrationEngine;
+    protected final ServerIdentityExtractor identityExtractor;
 
-    public LwM2mClientCoapResource(String name, RegistrationEngine registrationEngine,
-            CaliforniumEndpointsManager endpointsManager) {
+    public LwM2mClientCoapResource(String name, ServerIdentityExtractor identityExtractor) {
         super(name);
-        this.registrationEngine = registrationEngine;
-        this.endpointsManager = endpointsManager;
-    }
-
-    /**
-     * @return the server identity of a registered or bootstrap server, return null if this identity does match to any
-     *         server for which we are in communication.
-     */
-    protected ServerIdentity getServer(CoapExchange exchange) {
-        ServerIdentity serverIdentity = extractIdentity(exchange);
-        if (registrationEngine.isAllowedToCommunicate(serverIdentity)) {
-            return serverIdentity;
-        } else {
-            return null;
-        }
+        this.identityExtractor = identityExtractor;
     }
 
     /**
@@ -58,7 +41,7 @@ public class LwM2mClientCoapResource extends LwM2mCoapResource {
      */
     protected ServerIdentity getServerOrRejectRequest(CoapExchange exchange) {
         // search if we are in communication with this server.
-        ServerIdentity server = getServer(exchange);
+        ServerIdentity server = extractIdentity(exchange);
         if (server != null)
             return server;
 
@@ -74,8 +57,6 @@ public class LwM2mClientCoapResource extends LwM2mCoapResource {
      * @throws IllegalStateException if we are not able to extract {@link ServerIdentity}.
      */
     protected ServerIdentity extractIdentity(CoapExchange exchange) {
-        return endpointsManager.getServerIdentity(exchange.advanced().getEndpoint(), exchange.getSourceSocketAddress(),
-                exchange.advanced().getOrigin() == Origin.REMOTE ? exchange.advanced().getRequest().getSourceContext()
-                        : exchange.advanced().getRequest().getDestinationContext());
+        return identityExtractor.extractIdentity(exchange);
     }
 }

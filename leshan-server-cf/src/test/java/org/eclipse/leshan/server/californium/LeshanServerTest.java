@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import java.net.InetSocketAddress;
 import java.util.EnumSet;
 
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -30,7 +31,6 @@ import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.endpoint.CaliforniumEndpointsProvider;
 import org.eclipse.leshan.server.californium.endpoint.CaliforniumEndpointsProvider.Builder;
-import org.eclipse.leshan.server.endpoint.Protocol;
 import org.eclipse.leshan.server.queue.PresenceServiceImpl;
 import org.eclipse.leshan.server.registration.Registration;
 import org.junit.Test;

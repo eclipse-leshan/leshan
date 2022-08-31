@@ -38,6 +38,7 @@ import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsPr
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.californium.ObserveUtil;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
@@ -55,7 +56,6 @@ import org.eclipse.leshan.server.endpoint.LwM2mEndpointsProvider;
 import org.eclipse.leshan.server.endpoint.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.endpoint.LwM2mRequestReceiver;
 import org.eclipse.leshan.server.endpoint.LwM2mServer;
-import org.eclipse.leshan.server.endpoint.Protocol;
 import org.eclipse.leshan.server.endpoint.ServerSecurityInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

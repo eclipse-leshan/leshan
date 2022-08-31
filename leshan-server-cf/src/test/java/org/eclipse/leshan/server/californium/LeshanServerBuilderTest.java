@@ -37,6 +37,7 @@ import java.security.spec.KeySpec;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.LeshanServerBuilder;
@@ -44,7 +45,6 @@ import org.eclipse.leshan.server.californium.endpoint.CaliforniumEndpointsProvid
 import org.eclipse.leshan.server.californium.endpoint.CaliforniumEndpointsProvider.Builder;
 import org.eclipse.leshan.server.californium.endpoint.coap.CoapProtocolProvider;
 import org.eclipse.leshan.server.californium.endpoint.coaps.CoapsProtocolProvider;
-import org.eclipse.leshan.server.endpoint.Protocol;
 import org.eclipse.leshan.server.security.InMemorySecurityStore;
 import org.junit.Before;
 import org.junit.Test;
