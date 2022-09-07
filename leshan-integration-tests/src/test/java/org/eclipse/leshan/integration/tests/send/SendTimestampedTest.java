@@ -79,7 +79,7 @@ public class SendTimestampedTest {
         ManualDataSender sender = helper.client.getSendService().getDataSender(ManualDataSender.DEFAULT_NAME,
                 ManualDataSender.class);
         sender.collectData(Arrays.asList(getExamplePath()));
-        Thread.sleep(100);
+        Thread.sleep(1000);
         sender.collectData(Arrays.asList(getExamplePath()));
         sender.sendCollectedData(server, ContentFormat.SENML_JSON, 1000, false);
         listener.waitForData(1, TimeUnit.SECONDS);

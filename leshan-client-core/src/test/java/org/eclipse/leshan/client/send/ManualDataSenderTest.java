@@ -73,11 +73,11 @@ public class ManualDataSenderTest {
         Map<LwM2mPath, LwM2mNode> firstValue = fakeDataSenderManager.getCurrentValues(givenServer, givenPaths);
         manualDataSender.collectData(givenPaths);
 
-        Thread.sleep(100);
+        Thread.sleep(1000);
         Map<LwM2mPath, LwM2mNode> secondValue = fakeDataSenderManager.changeCurrentValues(givenServer, givenPaths);
         manualDataSender.collectData(givenPaths);
 
-        Thread.sleep(100);
+        Thread.sleep(1000);
         Map<LwM2mPath, LwM2mNode> thirdValue = fakeDataSenderManager.changeCurrentValues(givenServer, givenPaths);
         manualDataSender.collectData(givenPaths);
 
