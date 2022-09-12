@@ -136,4 +136,46 @@ public class ObserveCompositeRequest extends AbstractLwM2mRequest<ObserveComposi
     public Map<String, String> getContext() {
         return context;
     }
+
+    @Override
+    public final String toString() {
+        return String.format(
+                "ObserveCompositeRequest [paths=%s, requestContentFormat=%s, responseContentFormat=%s, context=%s]",
+                paths, requestContentFormat, responseContentFormat, context);
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((paths == null) ? 0 : paths.hashCode());
+        result = prime * result + ((requestContentFormat == null) ? 0 : requestContentFormat.hashCode());
+        result = prime * result + ((responseContentFormat == null) ? 0 : responseContentFormat.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ObserveCompositeRequest other = (ObserveCompositeRequest) obj;
+        if (paths == null) {
+            if (other.paths != null)
+                return false;
+        } else if (!paths.equals(other.paths))
+            return false;
+        if (requestContentFormat == null) {
+            if (other.requestContentFormat != null)
+                return false;
+        } else if (!requestContentFormat.equals(other.requestContentFormat))
+            return false;
+        if (responseContentFormat == null) {
+            return other.responseContentFormat == null;
+        } else
+            return responseContentFormat.equals(other.responseContentFormat);
+    }
 }
