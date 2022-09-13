@@ -140,8 +140,8 @@ public class ObserveCompositeRequest extends AbstractLwM2mRequest<ObserveComposi
     @Override
     public final String toString() {
         return String.format(
-                "ObserveRequest [paths=%s requestContentFormat=%s responseContentFormat=%s, context=%s coapRequest=%s]",
-                paths, requestContentFormat, responseContentFormat, context, getCoapRequest());
+                "ObserveCompositeRequest [paths=%s requestContentFormat=%s responseContentFormat=%s, context=%s]",
+                paths, requestContentFormat, responseContentFormat, context);
     }
 
     @Override
