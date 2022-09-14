@@ -54,6 +54,7 @@ import org.eclipse.leshan.server.californium.endpoint.coap.CoapOscoreServerEndpo
 import org.eclipse.leshan.server.californium.endpoint.coap.CoapServerProtocolProvider;
 import org.eclipse.leshan.server.californium.endpoint.coaps.CoapsServerEndpointFactory;
 import org.eclipse.leshan.server.californium.endpoint.coaps.CoapsServerProtocolProvider;
+import org.eclipse.leshan.server.californium.endpoint.coaptcp.CoapTcpServerProtocolProvider;
 import org.eclipse.leshan.server.core.demo.json.servlet.SecurityServlet;
 import org.eclipse.leshan.server.demo.cli.LeshanServerDemoCLI;
 import org.eclipse.leshan.server.demo.servlet.ClientServlet;
@@ -205,7 +206,7 @@ public class LeshanServerDemo {
 
         // Create Server Endpoints Provider
         CaliforniumServerEndpointsProvider.Builder endpointsBuilder = new CaliforniumServerEndpointsProvider.Builder(
-                new CoapServerProtocolProvider(), coapsProtocolProvider);
+                new CoapServerProtocolProvider(), coapsProtocolProvider, new CoapTcpServerProtocolProvider());
 
         // Create Californium Configuration
         Configuration serverCoapConfig = endpointsBuilder.createDefaultConfiguration();
@@ -264,6 +265,10 @@ public class LeshanServerDemo {
         InetSocketAddress coapsAddr = cli.main.secureLocalAddress == null ? new InetSocketAddress(coapsPort)
                 : new InetSocketAddress(cli.main.secureLocalAddress, coapsPort);
         endpointsBuilder.addEndpoint(coapsAddr, Protocol.COAPS);
+
+        // Create CoAP over TCP endpoint
+        // TODO TCP : add command line for this endpoint
+        endpointsBuilder.addEndpoint(new InetSocketAddress(5683), Protocol.COAP_TCP);
 
         // Create LWM2M server
         builder.setEndpointsProvider(endpointsBuilder.build());

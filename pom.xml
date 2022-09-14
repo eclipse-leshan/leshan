@@ -200,6 +200,11 @@ Contributors:
         <version>${californium.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.eclipse.californium</groupId>
+        <artifactId>element-connector-tcp-netty</artifactId>
+        <version>${californium.version}</version>
+      </dependency>
+      <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
         <version>${jackson.version}</version>
