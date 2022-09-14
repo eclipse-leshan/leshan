@@ -14,6 +14,7 @@
 
 package org.eclipse.leshan.senml;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 
 import org.eclipse.leshan.core.util.Hex;
@@ -30,10 +31,10 @@ public class SenMLRecord {
     }
 
     private String baseName = null;
-    private Long baseTime;
+    private BigDecimal baseTime;
 
     private String name;
-    private Long time;
+    private BigDecimal time;
 
     private Number numberValue;
     private Boolean booleanValue;
@@ -60,11 +61,11 @@ public class SenMLRecord {
         return null;
     }
 
-    public void setTime(Long time) {
+    public void setTime(BigDecimal time) {
         this.time = time;
     }
 
-    public Long getTime() {
+    public BigDecimal getTime() {
         return time;
     }
 
@@ -124,11 +125,11 @@ public class SenMLRecord {
         this.baseName = baseName;
     }
 
-    public Long getBaseTime() {
+    public BigDecimal getBaseTime() {
         return baseTime;
     }
 
-    public void setBaseTime(Long baseTime) {
+    public void setBaseTime(BigDecimal baseTime) {
         this.baseTime = baseTime;
     }
 
@@ -235,7 +236,7 @@ public class SenMLRecord {
     @Override
     public String toString() {
         return String.format(
-                "SenMLRecord [baseName=%s, baseTime=%d, name=%s, time=%d, numberValue=%s, booleanValue=%s, objectLinkValue=%s, stringValue=%s, opaque=%s]",
+                "SenMLRecord [baseName=%s, baseTime=%s, name=%s, time=%s, numberValue=%s, booleanValue=%s, objectLinkValue=%s, stringValue=%s, opaque=%s]",
                 baseName, baseTime, name, time, numberValue, booleanValue, objectLinkValue, stringValue,
                 opaqueValue != null ? Hex.encodeHexString(opaqueValue) : "null");
     }

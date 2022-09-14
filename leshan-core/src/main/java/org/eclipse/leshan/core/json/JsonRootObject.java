@@ -17,6 +17,7 @@
 
 package org.eclipse.leshan.core.json;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class JsonRootObject {
 
     private List<JsonArrayEntry> jsonArray;
 
-    private Long baseTime;
+    private BigDecimal baseTime;
 
     public JsonRootObject() {
     }
@@ -42,11 +43,11 @@ public class JsonRootObject {
         this.baseName = baseName;
     }
 
-    public Long getBaseTime() {
+    public BigDecimal getBaseTime() {
         return baseTime;
     }
 
-    public void setBaseTime(Long baseTime) {
+    public void setBaseTime(BigDecimal baseTime) {
         this.baseTime = baseTime;
     }
 
@@ -99,7 +100,7 @@ public class JsonRootObject {
 
     @Override
     public String toString() {
-        return String.format("LwM2mJsonElement [baseName=%s, baseTime=%d, resourceList=%s]", baseName, baseTime,
+        return String.format("LwM2mJsonElement [baseName=%s, baseTime=%s, resourceList=%s]", baseName, baseTime,
                 jsonArray);
     }
 

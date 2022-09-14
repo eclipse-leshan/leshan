@@ -17,6 +17,8 @@
 
 package org.eclipse.leshan.core.json;
 
+import java.math.BigDecimal;
+
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 
@@ -32,7 +34,7 @@ public class JsonArrayEntry {
 
     private String stringValue;
 
-    private Long time;
+    private BigDecimal time;
 
     public ResourceModel.Type getType() {
         if (booleanValue != null) {
@@ -58,11 +60,11 @@ public class JsonArrayEntry {
         this.name = name;
     }
 
-    public Long getTime() {
+    public BigDecimal getTime() {
         return time;
     }
 
-    public void setTime(Long time) {
+    public void setTime(BigDecimal time) {
         this.time = time;
     }
 

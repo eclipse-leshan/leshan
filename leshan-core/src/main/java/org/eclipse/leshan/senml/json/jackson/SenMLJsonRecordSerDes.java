@@ -50,7 +50,7 @@ public class SenMLJsonRecordSerDes extends JacksonJsonSerDes<SenMLRecord> {
 
     @Override
     public JsonNode jSerialize(SenMLRecord record) throws JsonException {
-        ObjectNode jsonObj = JsonNodeFactory.instance.objectNode();
+        ObjectNode jsonObj = JsonNodeFactory.withExactBigDecimals(true).objectNode();
 
         if (record.getBaseName() != null && record.getBaseName().length() > 0) {
             jsonObj.put("bn", record.getBaseName());
@@ -134,7 +134,7 @@ public class SenMLJsonRecordSerDes extends JacksonJsonSerDes<SenMLRecord> {
 
         JsonNode bt = o.get("bt");
         if (bt != null && bt.isNumber())
-            record.setBaseTime(bt.asLong());
+            record.setBaseTime(new BigDecimal(bt.asText()));
 
         JsonNode n = o.get("n");
         if (n != null && n.isTextual())
@@ -142,7 +142,7 @@ public class SenMLJsonRecordSerDes extends JacksonJsonSerDes<SenMLRecord> {
 
         JsonNode t = o.get("t");
         if (t != null && t.isNumber())
-            record.setTime(t.asLong());
+            record.setTime(new BigDecimal(t.asText()));
 
         JsonNode v = o.get("v");
         boolean hasValue = false;

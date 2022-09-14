@@ -15,7 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.senml;
 
-import java.util.concurrent.TimeUnit;
+import java.math.BigDecimal;
+import java.time.Instant;
+
+import org.eclipse.leshan.core.util.TimestampUtil;
 
 /**
  * Utility class used to resolve SenML record.
@@ -24,9 +27,9 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class SenMLResolver<T extends ResolvedSenMLRecord> {
 
-    private long currentTimestamp = System.currentTimeMillis();
+    private BigDecimal currentTimestampInSeconds = TimestampUtil.fromInstant(Instant.now());
     private String currentBasename = null;
-    private Long currentBasetime = null;
+    private BigDecimal currentBasetime = null;
 
     public T resolve(SenMLRecord record) throws SenMLException {
         // Resolve SenML name (see https://tools.ietf.org/html/rfc8428#section-4.5.1)
@@ -40,18 +43,18 @@ public abstract class SenMLResolver<T extends ResolvedSenMLRecord> {
         }
 
         // Resolve SenML time (https://tools.ietf.org/html/rfc8428#section-4.5.3)
-        Long resolvedTimestamp = null;
+        BigDecimal resolvedTimestamp = null;
         if (record.getBaseTime() != null)
             currentBasetime = record.getBaseTime();
         if (currentBasetime != null || record.getTime() != null) {
-            Long basetime = currentBasetime != null ? currentBasetime : 0l;
-            resolvedTimestamp = record.getTime() != null ? basetime + record.getTime() : basetime;
+            BigDecimal basetime = currentBasetime != null ? currentBasetime : BigDecimal.ZERO;
+            resolvedTimestamp = record.getTime() != null ? basetime.add(record.getTime()) : basetime;
 
             // Values less than 268,435,456 (2**28) represent time relative to the current time.
             // A negative value indicates seconds in the past from roughly "now".
             // Positive values up to 2**28 indicate seconds in the future from "now".
-            if (resolvedTimestamp < 268_435_456) {
-                resolvedTimestamp = TimeUnit.MILLISECONDS.toSeconds(currentTimestamp) + resolvedTimestamp;
+            if (resolvedTimestamp.compareTo(BigDecimal.valueOf(268_435_456)) < 0) {
+                resolvedTimestamp = currentTimestampInSeconds.add(resolvedTimestamp);
             }
             // else
             // Values greater than or equal to 2**28 represent an absolute time relative to the Unix epoch
@@ -61,6 +64,6 @@ public abstract class SenMLResolver<T extends ResolvedSenMLRecord> {
         return createResolvedRecord(record, resolvedName, resolvedTimestamp);
     }
 
-    protected abstract T createResolvedRecord(SenMLRecord record, String resolvedName, Long resolvedTimestamp)
+    protected abstract T createResolvedRecord(SenMLRecord record, String resolvedName, BigDecimal resolvedTimestamp)
             throws SenMLException;
 }

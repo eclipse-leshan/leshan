@@ -15,21 +15,23 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
+import java.time.Instant;
+
 import org.eclipse.leshan.core.util.Validate;
 
 public class TimestampedLwM2mNode {
 
-    private final Long timestamp;
+    private final Instant timestamp;
 
     private final LwM2mNode node;
 
-    public TimestampedLwM2mNode(Long timestamp, LwM2mNode node) {
+    public TimestampedLwM2mNode(Instant timestamp, LwM2mNode node) {
         Validate.notNull(node);
         this.timestamp = timestamp;
         this.node = node;
     }
 
-    public Long getTimestamp() {
+    public Instant getTimestamp() {
         return timestamp;
     }
 
@@ -38,7 +40,7 @@ public class TimestampedLwM2mNode {
     }
 
     public boolean isTimestamped() {
-        return timestamp != null && timestamp >= 0;
+        return timestamp != null && timestamp.isAfter(Instant.EPOCH);
     }
 
     @Override

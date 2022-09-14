@@ -1,5 +1,6 @@
 package org.eclipse.leshan.client.send;
 
+import java.time.Instant;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -86,7 +87,7 @@ public class ManualDataSenderTest {
 
         // ensure that sent values equals collected ones.
         TimestampedLwM2mNodes lastValuesSent = fakeDataSenderManager.getLastValuesSent();
-        List<Long> timestamps = new ArrayList<>(lastValuesSent.getTimestamps());
+        List<Instant> timestamps = new ArrayList<>(lastValuesSent.getTimestamps());
         Assert.assertEquals(3, timestamps.size());
         Assert.assertEquals(firstValue, lastValuesSent.getNodesAt(timestamps.get(0)));
         Assert.assertEquals(secondValue, lastValuesSent.getNodesAt(timestamps.get(1)));

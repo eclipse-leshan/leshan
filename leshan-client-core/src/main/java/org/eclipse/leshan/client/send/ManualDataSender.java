@@ -15,9 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.send;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -45,7 +45,7 @@ public class ManualDataSender implements DataSender {
     }
 
     public synchronized void collectData(List<LwM2mPath> paths) {
-        long currentTimestamp = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
+        Instant currentTimestamp = Instant.now();
         Map<LwM2mPath, LwM2mNode> currentValues = dataSenderManager.getCurrentValues(ServerIdentity.SYSTEM, paths);
         synchronized (this) {
             builder.addNodes(currentTimestamp, currentValues);

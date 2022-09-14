@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -112,11 +113,11 @@ public class ObserveTimeStampTest {
 
         // *** HACK send time-stamped notification as Leshan client does not support it *** //
         // create time-stamped nodes
-        TimestampedLwM2mNode mostRecentNode = new TimestampedLwM2mNode(System.currentTimeMillis(),
+        TimestampedLwM2mNode mostRecentNode = new TimestampedLwM2mNode(Instant.ofEpochMilli(System.currentTimeMillis()),
                 LwM2mSingleResource.newStringResource(15, "Paris"));
         List<TimestampedLwM2mNode> timestampedNodes = new ArrayList<>();
         timestampedNodes.add(mostRecentNode);
-        timestampedNodes.add(new TimestampedLwM2mNode(mostRecentNode.getTimestamp() - 2,
+        timestampedNodes.add(new TimestampedLwM2mNode(mostRecentNode.getTimestamp().minusMillis(2),
                 LwM2mSingleResource.newStringResource(15, "Londres")));
         byte[] payload = encoder.encodeTimestampedData(timestampedNodes, contentFormat, new LwM2mPath("/3/0/15"),
                 new StaticModel(helper.createObjectModels()));
@@ -155,11 +156,11 @@ public class ObserveTimeStampTest {
 
         // *** HACK send time-stamped notification as Leshan client does not support it *** //
         // create time-stamped nodes
-        TimestampedLwM2mNode mostRecentNode = new TimestampedLwM2mNode(System.currentTimeMillis(),
+        TimestampedLwM2mNode mostRecentNode = new TimestampedLwM2mNode(Instant.ofEpochMilli(System.currentTimeMillis()),
                 new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Paris")));
         List<TimestampedLwM2mNode> timestampedNodes = new ArrayList<>();
         timestampedNodes.add(mostRecentNode);
-        timestampedNodes.add(new TimestampedLwM2mNode(mostRecentNode.getTimestamp() - 2,
+        timestampedNodes.add(new TimestampedLwM2mNode(mostRecentNode.getTimestamp().minusMillis(2),
                 new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Londres"))));
         byte[] payload = encoder.encodeTimestampedData(timestampedNodes, contentFormat, new LwM2mPath("/3/0"),
                 new StaticModel(helper.createObjectModels()));
@@ -198,11 +199,11 @@ public class ObserveTimeStampTest {
 
         // *** HACK send time-stamped notification as Leshan client does not support it *** //
         // create time-stamped nodes
-        TimestampedLwM2mNode mostRecentNode = new TimestampedLwM2mNode(System.currentTimeMillis(),
+        TimestampedLwM2mNode mostRecentNode = new TimestampedLwM2mNode(Instant.ofEpochMilli(System.currentTimeMillis()),
                 new LwM2mObject(3, new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Paris"))));
         List<TimestampedLwM2mNode> timestampedNodes = new ArrayList<>();
         timestampedNodes.add(mostRecentNode);
-        timestampedNodes.add(new TimestampedLwM2mNode(mostRecentNode.getTimestamp() - 2,
+        timestampedNodes.add(new TimestampedLwM2mNode(mostRecentNode.getTimestamp().minusMillis(2),
                 new LwM2mObject(3, new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Londres")))));
         byte[] payload = encoder.encodeTimestampedData(timestampedNodes, contentFormat, new LwM2mPath("/3"),
                 new StaticModel(helper.createObjectModels()));

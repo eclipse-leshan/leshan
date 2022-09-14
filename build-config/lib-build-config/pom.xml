@@ -38,8 +38,8 @@ Contributors:
         <configuration>
           <signature>
             <groupId>net.sf.androidscents.signature</groupId>
-            <artifactId>android-api-level-19</artifactId>
-            <version>4.4.2_r4</version>
+            <artifactId>android-api-level-26</artifactId>
+            <version>8.0.0_r2</version>
           </signature>
         </configuration>
         <executions>

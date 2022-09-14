@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -88,8 +89,8 @@ public class ObserveResponseTest {
     public void should_get_content_from_first_of_timestamped_values() {
         // given
         List<TimestampedLwM2mNode> timestampedValues = Arrays.asList(
-                new TimestampedLwM2mNode(123L, newResource(15, "example 1")),
-                new TimestampedLwM2mNode(456L, newResource(15, "example 2")));
+                new TimestampedLwM2mNode(Instant.ofEpochSecond(123), newResource(15, "example 1")),
+                new TimestampedLwM2mNode(Instant.ofEpochSecond(456), newResource(15, "example 2")));
 
         LwM2mSingleResource content = responseCode == CHANGED ? newResource(15, "example 1") : null;
 

@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.senml;
 
+import java.math.BigDecimal;
+
 /**
  * A resolved SenML record where name and time is resolved for each record, meaning that time or name is no more
  * relative to a previous <code>basename</code> or <code>basetime</code>.
@@ -22,13 +24,13 @@ package org.eclipse.leshan.senml;
 public class ResolvedSenMLRecord {
     private SenMLRecord record;
     private String name;
-    private Long timestamp;
+    private BigDecimal timestampInSeconds;
 
-    public ResolvedSenMLRecord(SenMLRecord unresolvedRecord, String resolvedName, Long resolvedTimestamp) {
+    public ResolvedSenMLRecord(SenMLRecord unresolvedRecord, String resolvedName, BigDecimal resolvedTimestamp) {
         super();
         this.record = unresolvedRecord;
         this.name = resolvedName;
-        this.timestamp = resolvedTimestamp;
+        this.timestampInSeconds = resolvedTimestamp;
     }
 
     /**
@@ -50,7 +52,7 @@ public class ResolvedSenMLRecord {
      * @return the resolved timestamp (see
      *         <a href="https://tools.ietf.org/html/rfc8428#section-4.5.3">rfc8428#section-4.5.3</a>)
      */
-    public Long getTimeStamp() {
-        return timestamp;
+    public BigDecimal getTimeStamp() {
+        return timestampInSeconds;
     }
 }

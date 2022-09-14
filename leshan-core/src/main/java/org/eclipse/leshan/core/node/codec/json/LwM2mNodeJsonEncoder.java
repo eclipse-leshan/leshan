@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec.json;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -44,6 +45,7 @@ import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
 import org.eclipse.leshan.core.node.codec.TimestampedNodeEncoder;
 import org.eclipse.leshan.core.util.Base64;
+import org.eclipse.leshan.core.util.TimestampUtil;
 import org.eclipse.leshan.core.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,7 +105,7 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
             internalEncoder.requestPath = path;
             internalEncoder.converter = converter;
             internalEncoder.resourceList = null;
-            internalEncoder.timestamp = timestampedLwM2mNode.getTimestamp();
+            internalEncoder.timestampInSeconds = TimestampUtil.fromInstant(timestampedLwM2mNode.getTimestamp());
             timestampedLwM2mNode.getNode().accept(internalEncoder);
             entries.addAll(internalEncoder.resourceList);
             if (baseName != null) {
@@ -132,7 +134,7 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
         private int objectId;
         private LwM2mModel model;
         private LwM2mPath requestPath;
-        private Long timestamp;
+        private BigDecimal timestampInSeconds;
         private LwM2mValueConverter converter;
 
         // visitor output
@@ -153,7 +155,7 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
             for (LwM2mObjectInstance instance : object.getInstances().values()) {
                 for (LwM2mResource resource : instance.getResources().values()) {
                     String prefixPath = Integer.toString(instance.getId()) + "/" + Integer.toString(resource.getId());
-                    resourceList.addAll(lwM2mResourceToJsonArrayEntry(prefixPath, timestamp, resource));
+                    resourceList.addAll(lwM2mResourceToJsonArrayEntry(prefixPath, timestampInSeconds, resource));
                 }
             }
         }
@@ -177,7 +179,7 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
                 }
                 baseName = requestPath + "/";
                 // Create resources
-                resourceList.addAll(lwM2mResourceToJsonArrayEntry(prefixPath, timestamp, resource));
+                resourceList.addAll(lwM2mResourceToJsonArrayEntry(prefixPath, timestampInSeconds, resource));
             }
         }
 
@@ -192,7 +194,7 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
             } else {
                 baseName = requestPath.toString();
             }
-            resourceList = lwM2mResourceToJsonArrayEntry(null, timestamp, resource);
+            resourceList = lwM2mResourceToJsonArrayEntry(null, timestampInSeconds, resource);
         }
 
         @Override
@@ -207,14 +209,14 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
             ResourceModel rSpec = model.getResourceModel(objectId, requestPath.getResourceId());
             Type expectedType = rSpec != null ? rSpec.type : instance.getType();
 
-            JsonArrayEntry jsonArrayEntry = createJsonArrayEntry(null, timestamp, instance.getType(), expectedType,
-                    instance.getValue());
+            JsonArrayEntry jsonArrayEntry = createJsonArrayEntry(null, timestampInSeconds, instance.getType(),
+                    expectedType, instance.getValue());
             resourceList = new ArrayList<>();
             resourceList.add(jsonArrayEntry);
         }
 
-        private ArrayList<JsonArrayEntry> lwM2mResourceToJsonArrayEntry(String resourcePath, Long timestamp,
-                LwM2mResource resource) {
+        private ArrayList<JsonArrayEntry> lwM2mResourceToJsonArrayEntry(String resourcePath,
+                BigDecimal timestampInSeconds, LwM2mResource resource) {
             // get type for this resource
             ResourceModel rSpec = model.getResourceModel(objectId, resource.getId());
             Type expectedType = rSpec != null ? rSpec.type : resource.getType();
@@ -233,24 +235,24 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
                         resourceInstancePath = resourcePath + "/" + entry.getKey();
                     }
 
-                    JsonArrayEntry jsonArrayEntry = createJsonArrayEntry(resourceInstancePath, timestamp,
+                    JsonArrayEntry jsonArrayEntry = createJsonArrayEntry(resourceInstancePath, timestampInSeconds,
                             resource.getType(), expectedType, instance.getValue());
                     resourcesList.add(jsonArrayEntry);
                 }
             } else {
-                JsonArrayEntry jsonArrayEntry = createJsonArrayEntry(resourcePath, timestamp, resource.getType(),
-                        expectedType, resource.getValue());
+                JsonArrayEntry jsonArrayEntry = createJsonArrayEntry(resourcePath, timestampInSeconds,
+                        resource.getType(), expectedType, resource.getValue());
                 resourcesList.add(jsonArrayEntry);
             }
             return resourcesList;
         }
 
-        private JsonArrayEntry createJsonArrayEntry(String name, Long timestamp, Type type, Type expectedType,
-                Object value) {
+        private JsonArrayEntry createJsonArrayEntry(String name, BigDecimal timestampInSeconds, Type type,
+                Type expectedType, Object value) {
             // Create resource element
             JsonArrayEntry jsonResourceElt = new JsonArrayEntry();
             jsonResourceElt.setName(name);
-            jsonResourceElt.setTime(timestamp);
+            jsonResourceElt.setTime(timestampInSeconds);
 
             // Convert value using expected type
             LwM2mPath lwM2mResourcePath = name != null ? new LwM2mPath(name) : null;

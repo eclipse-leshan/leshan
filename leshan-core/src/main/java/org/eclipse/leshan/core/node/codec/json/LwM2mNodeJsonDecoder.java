@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec.json;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -52,6 +53,7 @@ import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.TimestampedNodeDecoder;
 import org.eclipse.leshan.core.util.Base64;
+import org.eclipse.leshan.core.util.TimestampUtil;
 import org.eclipse.leshan.core.util.datatype.NumberUtil;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.slf4j.Logger;
@@ -110,14 +112,14 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
         LOG.trace("Parsing JSON content for path {}: {}", requestPath, jsonObject);
 
         // Group JSON entry by time-stamp
-        Map<Long, Collection<JsonArrayEntry>> jsonEntryByTimestamp = groupJsonEntryByTimestamp(jsonObject);
+        Map<BigDecimal, Collection<JsonArrayEntry>> jsonEntryByTimestamp = groupJsonEntryByTimestamp(jsonObject);
 
         // Extract baseName
         String baseName = jsonObject.getBaseName() == null ? "" : jsonObject.getBaseName();
 
         // fill time-stamped nodes collection
         List<TimestampedLwM2mNode> timestampedNodes = new ArrayList<>();
-        for (Entry<Long, Collection<JsonArrayEntry>> entryByTimestamp : jsonEntryByTimestamp.entrySet()) {
+        for (Entry<BigDecimal, Collection<JsonArrayEntry>> entryByTimestamp : jsonEntryByTimestamp.entrySet()) {
 
             // Group JSON entry by instance
             Map<Integer, Collection<JsonArrayEntry>> jsonEntryByInstanceId = groupJsonEntryByInstanceId(
@@ -194,32 +196,32 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
             }
 
             // compute time-stamp
-            Long timestamp = computeTimestamp(jsonObject.getBaseTime(), entryByTimestamp.getKey());
+            BigDecimal timestampInSeconds = computeTimestamp(jsonObject.getBaseTime(), entryByTimestamp.getKey());
 
             // add time-stamped node
-            timestampedNodes.add(new TimestampedLwM2mNode(timestamp, node));
+            timestampedNodes.add(new TimestampedLwM2mNode(TimestampUtil.fromSeconds(timestampInSeconds), node));
         }
 
         return timestampedNodes;
 
     }
 
-    private Long computeTimestamp(Long baseTime, Long time) {
-        Long timestamp;
+    private BigDecimal computeTimestamp(BigDecimal baseTime, BigDecimal time) {
+        BigDecimal timestampInSeconds;
         if (baseTime != null) {
             if (time != null) {
-                timestamp = baseTime + time;
+                timestampInSeconds = baseTime.add(time);
             } else {
-                timestamp = baseTime;
+                timestampInSeconds = baseTime;
             }
         } else {
             if (time != null) {
-                timestamp = time;
+                timestampInSeconds = time;
             } else {
-                timestamp = null;
+                timestampInSeconds = null;
             }
         }
-        return timestamp;
+        return timestampInSeconds;
     }
 
     /**
@@ -227,20 +229,26 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
      *
      * @return a map (relativeTimestamp => collection of JsonArrayEntry)
      */
-    private SortedMap<Long, Collection<JsonArrayEntry>> groupJsonEntryByTimestamp(JsonRootObject jsonObject) {
-        SortedMap<Long, Collection<JsonArrayEntry>> result = new TreeMap<>(new Comparator<Long>() {
+    private SortedMap<BigDecimal, Collection<JsonArrayEntry>> groupJsonEntryByTimestamp(JsonRootObject jsonObject) {
+        SortedMap<BigDecimal, Collection<JsonArrayEntry>> result = new TreeMap<>(new Comparator<BigDecimal>() {
             @Override
-            public int compare(Long o1, Long o2) {
+            public int compare(BigDecimal o1, BigDecimal o2) {
                 // comparator which
                 // - supports null (time null means 0 if there is a base time)
                 // - reverses natural order (most recent value in first)
-                return Long.compare(o2 == null ? 0 : o2, o1 == null ? 0 : o1);
+                if (o1 == null) {
+                    return o2 == null ? 0 : 1;
+                } else if (o2 == null) {
+                    return -1;
+                } else {
+                    return o2.compareTo(o1);
+                }
             }
         });
 
         for (JsonArrayEntry e : jsonObject.getResourceList()) {
             // Get time for this entry
-            Long time = e.getTime();
+            BigDecimal time = e.getTime();
 
             // Get jsonArray for this time-stamp
             Collection<JsonArrayEntry> jsonArray = result.get(time);
@@ -255,7 +263,7 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
 
         // Ensure there is at least one entry for null timestamp
         if (result.isEmpty()) {
-            result.put((Long) null, new ArrayList<JsonArrayEntry>());
+            result.put(null, new ArrayList<JsonArrayEntry>());
         }
 
         return result;

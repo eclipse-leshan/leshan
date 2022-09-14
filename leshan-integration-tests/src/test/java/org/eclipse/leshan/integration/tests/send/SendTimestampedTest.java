@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -89,7 +90,7 @@ public class SendTimestampedTest {
         TimestampedLwM2mNodes data = listener.getData();
         assertEquals(2, data.getTimestamps().size());
 
-        for (Long ts : data.getTimestamps()) {
+        for (Instant ts : data.getTimestamps()) {
             assertNotNull(ts);
             Map<LwM2mPath, LwM2mNode> pathNodeMap = data.getNodesAt(ts);
             assertTrue(pathNodeMap.containsKey(getExamplePath()));

@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -30,9 +31,9 @@ import java.util.TreeMap;
  */
 public class TimestampedLwM2mNodes {
 
-    private final Map<Long, Map<LwM2mPath, LwM2mNode>> timestampedPathNodesMap;
+    private final Map<Instant, Map<LwM2mPath, LwM2mNode>> timestampedPathNodesMap;
 
-    private TimestampedLwM2mNodes(Map<Long, Map<LwM2mPath, LwM2mNode>> timestampedPathNodesMap) {
+    private TimestampedLwM2mNodes(Map<Instant, Map<LwM2mPath, LwM2mNode>> timestampedPathNodesMap) {
         this.timestampedPathNodesMap = timestampedPathNodesMap;
     }
 
@@ -41,7 +42,7 @@ public class TimestampedLwM2mNodes {
      *
      * @return map of {@link LwM2mPath}-{@link LwM2mNode} or null if there is no value for asked timestamp.
      */
-    public Map<LwM2mPath, LwM2mNode> getNodesAt(Long timestamp) {
+    public Map<LwM2mPath, LwM2mNode> getNodesAt(Instant timestamp) {
         Map<LwM2mPath, LwM2mNode> map = timestampedPathNodesMap.get(timestamp);
         if (map != null) {
             return Collections.unmodifiableMap(timestampedPathNodesMap.get(timestamp));
@@ -55,7 +56,7 @@ public class TimestampedLwM2mNodes {
      */
     public Map<LwM2mPath, LwM2mNode> getNodes() {
         Map<LwM2mPath, LwM2mNode> result = new HashMap<>();
-        for (Map.Entry<Long, Map<LwM2mPath, LwM2mNode>> entry : timestampedPathNodesMap.entrySet()) {
+        for (Map.Entry<Instant, Map<LwM2mPath, LwM2mNode>> entry : timestampedPathNodesMap.entrySet()) {
             result.putAll(entry.getValue());
         }
         return Collections.unmodifiableMap(result);
@@ -65,7 +66,7 @@ public class TimestampedLwM2mNodes {
      * Returns the all sorted timestamps of contained nodes with ascending order. Null timestamp is considered as most
      * recent one.
      */
-    public Set<Long> getTimestamps() {
+    public Set<Instant> getTimestamps() {
         return Collections.unmodifiableSet(timestampedPathNodesMap.keySet());
     }
 
@@ -110,11 +111,11 @@ public class TimestampedLwM2mNodes {
     public static class Builder {
 
         private static class InternalNode {
-            Long timestamp;
+            Instant timestamp;
             LwM2mPath path;
             LwM2mNode node;
 
-            public InternalNode(Long timestamp, LwM2mPath path, LwM2mNode node) {
+            public InternalNode(Instant timestamp, LwM2mPath path, LwM2mNode node) {
                 this.timestamp = timestamp;
                 this.path = path;
                 this.node = node;
@@ -136,14 +137,14 @@ public class TimestampedLwM2mNodes {
             return this;
         }
 
-        public Builder addNodes(long timestamp, Map<LwM2mPath, LwM2mNode> pathNodesMap) {
+        public Builder addNodes(Instant timestamp, Map<LwM2mPath, LwM2mNode> pathNodesMap) {
             for (Entry<LwM2mPath, LwM2mNode> node : pathNodesMap.entrySet()) {
                 nodes.add(new InternalNode(timestamp, node.getKey(), node.getValue()));
             }
             return this;
         }
 
-        public Builder put(Long timestamp, LwM2mPath path, LwM2mNode node) {
+        public Builder put(Instant timestamp, LwM2mPath path, LwM2mNode node) {
             nodes.add(new InternalNode(timestamp, path, node));
             return this;
         }
@@ -154,7 +155,7 @@ public class TimestampedLwM2mNodes {
         }
 
         public Builder add(TimestampedLwM2mNodes timestampedNodes) {
-            for (Long timestamp : timestampedNodes.getTimestamps()) {
+            for (Instant timestamp : timestampedNodes.getTimestamps()) {
                 Map<LwM2mPath, LwM2mNode> pathNodeMap = timestampedNodes.getNodesAt(timestamp);
                 for (Map.Entry<LwM2mPath, LwM2mNode> pathNodeEntry : pathNodeMap.entrySet()) {
                     nodes.add(new InternalNode(timestamp, pathNodeEntry.getKey(), pathNodeEntry.getValue()));
@@ -168,7 +169,7 @@ public class TimestampedLwM2mNodes {
          * invalid.
          */
         public TimestampedLwM2mNodes build() throws IllegalArgumentException {
-            Map<Long, Map<LwM2mPath, LwM2mNode>> timestampToPathToNode = new TreeMap<>(getTimestampComparator());
+            Map<Instant, Map<LwM2mPath, LwM2mNode>> timestampToPathToNode = new TreeMap<>(getTimestampComparator());
 
             for (InternalNode internalNode : nodes) {
                 // validate path is consistent with Node
@@ -195,7 +196,7 @@ public class TimestampedLwM2mNodes {
             return new TimestampedLwM2mNodes(timestampToPathToNode);
         }
 
-        private static Comparator<Long> getTimestampComparator() {
+        private static Comparator<Instant> getTimestampComparator() {
             return (o1, o2) -> {
                 if (o1 == null) {
                     return (o2 == null) ? 0 : 1;

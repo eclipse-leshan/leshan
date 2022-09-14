@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec.senml;
 
+import java.math.BigDecimal;
+
 import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.senml.SenMLException;
 import org.eclipse.leshan.senml.SenMLRecord;
@@ -27,7 +29,7 @@ public class LwM2mSenMLResolver extends SenMLResolver<LwM2mResolvedSenMLRecord> 
 
     @Override
     protected LwM2mResolvedSenMLRecord createResolvedRecord(SenMLRecord unresolvedRecord, String resolvedName,
-            Long resolvedTimestamp) throws SenMLException {
+            BigDecimal resolvedTimestamp) throws SenMLException {
         try {
             return new LwM2mResolvedSenMLRecord(unresolvedRecord, resolvedName, resolvedTimestamp);
         } catch (InvalidLwM2mPathException e) {

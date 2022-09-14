@@ -50,6 +50,7 @@ import org.eclipse.leshan.core.node.codec.MultiNodeDecoder;
 import org.eclipse.leshan.core.node.codec.TimestampedMultiNodeDecoder;
 import org.eclipse.leshan.core.node.codec.TimestampedNodeDecoder;
 import org.eclipse.leshan.core.util.Hex;
+import org.eclipse.leshan.core.util.TimestampUtil;
 import org.eclipse.leshan.core.util.datatype.NumberUtil;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.eclipse.leshan.senml.SenMLDecoder;
@@ -171,15 +172,17 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
             SenMLPack pack = decoder.fromSenML(content);
 
             // Resolve records & Group it by time-stamp
-            Map<Long, Collection<LwM2mResolvedSenMLRecord>> recordsByTimestamp = groupRecordByTimestamp(
+            Map<BigDecimal, Collection<LwM2mResolvedSenMLRecord>> recordsByTimestamp = groupRecordByTimestamp(
                     pack.getRecords(), path);
 
             // Fill time-stamped nodes collection
             List<TimestampedLwM2mNode> timestampedNodes = new ArrayList<>();
-            for (Entry<Long, Collection<LwM2mResolvedSenMLRecord>> entryByTimestamp : recordsByTimestamp.entrySet()) {
+            for (Entry<BigDecimal, Collection<LwM2mResolvedSenMLRecord>> entryByTimestamp : recordsByTimestamp
+                    .entrySet()) {
                 LwM2mNode node = parseRecords(entryByTimestamp.getValue(), path, model, nodeClass);
                 // add time-stamped node
-                timestampedNodes.add(new TimestampedLwM2mNode(entryByTimestamp.getKey(), node));
+                timestampedNodes
+                        .add(new TimestampedLwM2mNode(TimestampUtil.fromSeconds(entryByTimestamp.getKey()), node));
             }
             return timestampedNodes;
         } catch (SenMLException e) {
@@ -202,7 +205,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                 LwM2mPath path = resolvedRecord.getPath();
                 LwM2mNode node = parseRecords(Arrays.asList(resolvedRecord), path, model,
                         DefaultLwM2mDecoder.nodeClassFromPath(path));
-                nodes.put(resolvedRecord.getTimeStamp(), path, node);
+                nodes.put(TimestampUtil.fromSeconds(resolvedRecord.getTimeStamp()), path, node);
             }
 
             return nodes.build();
@@ -356,21 +359,22 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
      * @return a sorted map (timestamp => collection of record) order by descending time-stamp (most recent one at first
      *         place). If null time-stamp (meaning no time information) exists it always at first place.
      */
-    private SortedMap<Long, Collection<LwM2mResolvedSenMLRecord>> groupRecordByTimestamp(List<SenMLRecord> records,
-            LwM2mPath requestPath) throws SenMLException {
-        SortedMap<Long, Collection<LwM2mResolvedSenMLRecord>> result = new TreeMap<>(new Comparator<Long>() {
-            @Override
-            public int compare(Long o1, Long o2) {
-                // null at first place
-                if (o1 == null && o2 == null)
-                    return 0;
-                if (o1 == null)
-                    return -1;
-                if (o2 == null)
-                    return 1;
-                return Long.compare(o2, o1);
-            }
-        });
+    private SortedMap<BigDecimal, Collection<LwM2mResolvedSenMLRecord>> groupRecordByTimestamp(
+            List<SenMLRecord> records, LwM2mPath requestPath) throws SenMLException {
+        SortedMap<BigDecimal, Collection<LwM2mResolvedSenMLRecord>> result = new TreeMap<>(
+                new Comparator<BigDecimal>() {
+                    @Override
+                    public int compare(BigDecimal o1, BigDecimal o2) {
+                        // null at first place
+                        if (o1 == null) {
+                            return o2 == null ? 0 : 1;
+                        } else if (o2 == null) {
+                            return -1;
+                        } else {
+                            return o2.compareTo(o1);
+                        }
+                    }
+                });
 
         LwM2mSenMLResolver resolver = new LwM2mSenMLResolver();
         for (SenMLRecord record : records) {
@@ -400,7 +404,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
         // Ensure there is at least one entry for null timestamp
         if (result.isEmpty()) {
             Collection<LwM2mResolvedSenMLRecord> emptylist = Collections.emptyList();
-            result.put((Long) null, emptylist);
+            result.put(null, emptylist);
         }
         return result;
     }

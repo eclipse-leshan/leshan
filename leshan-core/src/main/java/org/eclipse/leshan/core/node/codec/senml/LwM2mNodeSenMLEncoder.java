@@ -13,6 +13,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec.senml;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -40,6 +42,7 @@ import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
 import org.eclipse.leshan.core.node.codec.MultiNodeEncoder;
 import org.eclipse.leshan.core.node.codec.TimestampedMultiNodeEncoder;
 import org.eclipse.leshan.core.node.codec.TimestampedNodeEncoder;
+import org.eclipse.leshan.core.util.TimestampUtil;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.senml.SenMLEncoder;
 import org.eclipse.leshan.senml.SenMLException;
@@ -132,7 +135,7 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
         SenMLPack pack = new SenMLPack();
         for (TimestampedLwM2mNode timestampedLwM2mNode : timestampedNodes) {
 
-            if (timestampedLwM2mNode.getTimestamp() < 268_435_456) {
+            if (timestampedLwM2mNode.getTimestamp().getEpochSecond() < 268_435_456) {
                 // The smallest absolute Time value that can be expressed (2**28) is 1978-07-04 21:24:16 UTC.
                 // see https://tools.ietf.org/html/rfc8428#section-4.5.3
                 throw new CodecException(
@@ -147,7 +150,8 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
             internalEncoder.converter = converter;
             internalEncoder.records = new ArrayList<>();
             timestampedLwM2mNode.getNode().accept(internalEncoder);
-            internalEncoder.records.get(0).setBaseTime(timestampedLwM2mNode.getTimestamp());
+            BigDecimal timestampInSeconds = TimestampUtil.fromInstant(timestampedLwM2mNode.getTimestamp());
+            internalEncoder.records.get(0).setBaseTime(timestampInSeconds);
             pack.addRecords(internalEncoder.records);
         }
 
@@ -164,7 +168,7 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
         Validate.notEmpty(timestampedNodes.getTimestamps());
 
         SenMLPack pack = new SenMLPack();
-        for (Long timestamp : timestampedNodes.getTimestamps()) {
+        for (Instant timestamp : timestampedNodes.getTimestamps()) {
             Map<LwM2mPath, LwM2mNode> nodesAtTimestamp = timestampedNodes.getNodesAt(timestamp);
             for (Entry<LwM2mPath, LwM2mNode> entry : nodesAtTimestamp.entrySet()) {
                 LwM2mPath path = entry.getKey();
@@ -180,7 +184,7 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
 
                     List<SenMLRecord> records = internalEncoder.records;
                     if (!records.isEmpty()) {
-                        records.get(0).setBaseTime(timestamp);
+                        records.get(0).setBaseTime(TimestampUtil.fromInstant(timestamp));
                         pack.addRecords(records);
                     }
                 }

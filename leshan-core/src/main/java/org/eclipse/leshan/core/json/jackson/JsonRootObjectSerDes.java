@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.json.jackson;
 
+import java.math.BigDecimal;
+
 import org.eclipse.leshan.core.json.JsonRootObject;
 import org.eclipse.leshan.core.util.json.JacksonJsonSerDes;
 import org.eclipse.leshan.core.util.json.JsonException;
@@ -30,7 +32,7 @@ public class JsonRootObjectSerDes extends JacksonJsonSerDes<JsonRootObject> {
 
     @Override
     public JsonNode jSerialize(JsonRootObject jro) throws JsonException {
-        ObjectNode o = JsonNodeFactory.instance.objectNode();
+        ObjectNode o = JsonNodeFactory.withExactBigDecimals(true).objectNode();
 
         if (jro.getBaseName() != null)
             o.put("bn", jro.getBaseName());
@@ -64,7 +66,7 @@ public class JsonRootObjectSerDes extends JacksonJsonSerDes<JsonRootObject> {
 
         JsonNode bt = jsonNode.get("bt");
         if (bt != null && bt.isNumber())
-            jro.setBaseTime(bt.asLong());
+            jro.setBaseTime(new BigDecimal(bt.asText()));
 
         return jro;
     }
