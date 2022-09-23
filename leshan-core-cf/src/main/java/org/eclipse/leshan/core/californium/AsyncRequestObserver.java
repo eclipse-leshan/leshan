@@ -33,6 +33,11 @@ import org.eclipse.leshan.core.response.ResponseCallback;
  */
 public abstract class AsyncRequestObserver<T extends LwM2mResponse> extends CoapAsyncRequestObserver {
 
+    public AsyncRequestObserver(Request coapRequest, final ResponseCallback<T> responseCallback,
+            final ErrorCallback errorCallback, long timeoutInMs, ScheduledExecutorService executor) {
+        this(coapRequest, responseCallback, errorCallback, timeoutInMs, executor, new TemporaryExceptionTranslator());
+    }
+
     /**
      * A Californium message observer for a CoAP request helping to get results asynchronously dedicated for LWM2M
      * requests.
@@ -49,8 +54,9 @@ public abstract class AsyncRequestObserver<T extends LwM2mResponse> extends Coap
      * @param executor used to scheduled timeout tasks.
      */
     public AsyncRequestObserver(Request coapRequest, final ResponseCallback<T> responseCallback,
-            final ErrorCallback errorCallback, long timeoutInMs, ScheduledExecutorService executor) {
-        super(coapRequest, null, errorCallback, timeoutInMs, executor);
+            final ErrorCallback errorCallback, long timeoutInMs, ScheduledExecutorService executor,
+            ExceptionTranslator exceptionTranslator) {
+        super(coapRequest, null, errorCallback, timeoutInMs, executor, exceptionTranslator);
         this.responseCallback = new CoapResponseCallback() {
 
             @Override

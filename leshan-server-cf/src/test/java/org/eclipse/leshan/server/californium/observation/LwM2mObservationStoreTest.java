@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2015 Sierra Wireless and others.
+ * Copyright (c) 2022 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -12,16 +12,15 @@
  *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
- *     Michał Wadowski (Orange) - Add Observe-Composite feature.
- *     Michał Wadowski (Orange) - Improved compliance with rfc6690.
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.registration;
+package org.eclipse.leshan.server.californium.observation;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -31,26 +30,32 @@ import java.util.Map;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Token;
+import org.eclipse.californium.core.network.serialization.UdpDataParser;
+import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
+import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.leshan.core.californium.ObserveUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.ObservationIdentifier;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
+import org.eclipse.leshan.core.response.ObserveCompositeResponse;
+import org.eclipse.leshan.core.response.ObserveResponse;
+import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
+import org.eclipse.leshan.server.profile.ClientProfile;
+import org.eclipse.leshan.server.registration.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.registration.Registration;
-import org.eclipse.leshan.server.registration.RegistrationUpdate;
-import org.eclipse.leshan.server.registration.UpdatedRegistration;
-import org.junit.Assert;
+import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.junit.Before;
 import org.junit.Test;
 
-public class InMemoryRegistrationStoreTest {
-
+public class LwM2mObservationStoreTest {
     private final String ep = "urn:endpoint";
     private final int port = 23452;
     private final Long lifetime = 10000L;
@@ -62,7 +67,8 @@ public class InMemoryRegistrationStoreTest {
     private final String examplePath = "/1/2/3";
     private final List<LwM2mPath> examplePaths = Arrays.asList(new LwM2mPath("/1/2/3"), new LwM2mPath("/4/5/6"));
 
-    CaliforniumRegistrationStore store;
+    RegistrationStore store;
+    LwM2mObservationStore observationStore;
     InetAddress address;
     Registration registration;
 
@@ -70,48 +76,28 @@ public class InMemoryRegistrationStoreTest {
     public void setUp() throws UnknownHostException {
         address = InetAddress.getLocalHost();
         store = new InMemoryRegistrationStore();
-    }
+        observationStore = new LwM2mObservationStore(store, new LwM2mNotificationReceiver() {
+            @Override
+            public void onNotification(CompositeObservation observation, ClientProfile profile,
+                    ObserveCompositeResponse response) {
+            }
 
-    @Test
-    public void update_registration_keeps_properties_unchanged() {
-        givenASimpleRegistration(lifetime);
-        store.addRegistration(registration);
+            @Override
+            public void onNotification(SingleObservation observation, ClientProfile profile, ObserveResponse response) {
+            }
 
-        RegistrationUpdate update = new RegistrationUpdate(registrationId, Identity.unsecure(address, port), null, null,
-                null, null, null);
-        UpdatedRegistration updatedRegistration = store.updateRegistration(update);
-        assertEquals(lifetime, updatedRegistration.getUpdatedRegistration().getLifeTimeInSec());
-        Assert.assertSame(binding, updatedRegistration.getUpdatedRegistration().getBindingMode());
-        assertEquals(sms, updatedRegistration.getUpdatedRegistration().getSmsNumber());
+            @Override
+            public void onError(Observation observation, ClientProfile profile, Exception error) {
+            }
 
-        assertEquals(registration, updatedRegistration.getPreviousRegistration());
+            @Override
+            public void newObservation(Observation observation, Registration registration) {
+            }
 
-        Registration reg = store.getRegistrationByEndpoint(ep);
-        assertEquals(lifetime, reg.getLifeTimeInSec());
-        Assert.assertSame(binding, reg.getBindingMode());
-        assertEquals(sms, reg.getSmsNumber());
-    }
-
-    @Test
-    public void client_registration_sets_time_to_live() {
-        givenASimpleRegistration(lifetime);
-        store.addRegistration(registration);
-        Assert.assertTrue(registration.isAlive());
-    }
-
-    @Test
-    public void update_registration_to_extend_time_to_live() {
-        givenASimpleRegistration(0L);
-        store.addRegistration(registration);
-        Assert.assertFalse(registration.isAlive());
-
-        RegistrationUpdate update = new RegistrationUpdate(registrationId, Identity.unsecure(address, port), lifetime,
-                null, null, null, null);
-        UpdatedRegistration updatedRegistration = store.updateRegistration(update);
-        Assert.assertTrue(updatedRegistration.getUpdatedRegistration().isAlive());
-
-        Registration reg = store.getRegistrationByEndpoint(ep);
-        Assert.assertTrue(reg.isAlive());
+            @Override
+            public void cancelled(Observation observation) {
+            }
+        }, new ObservationSerDes(new UdpDataParser(), new UdpDataSerializer()));
     }
 
     @Test
@@ -123,10 +109,10 @@ public class InMemoryRegistrationStoreTest {
         org.eclipse.californium.core.observe.Observation observationToStore = prepareCoapObservation();
 
         // when
-        store.put(exampleToken, observationToStore);
+        observationStore.put(exampleToken, observationToStore);
 
         // then
-        org.eclipse.californium.core.observe.Observation observationFetched = store.get(exampleToken);
+        org.eclipse.californium.core.observe.Observation observationFetched = observationStore.get(exampleToken);
 
         assertNotNull(observationFetched);
         assertEquals(observationToStore.toString(), observationFetched.toString());
@@ -141,10 +127,11 @@ public class InMemoryRegistrationStoreTest {
         org.eclipse.californium.core.observe.Observation observationToStore = prepareCoapObservation();
 
         // when
-        store.put(exampleToken, observationToStore);
+        observationStore.put(exampleToken, observationToStore);
 
         // then
-        Observation leshanObservation = store.getObservation(registrationId, exampleToken.getBytes());
+        Observation leshanObservation = store.getObservation(registrationId,
+                new ObservationIdentifier(exampleToken.getBytes()));
         assertNotNull(leshanObservation);
         assertTrue(leshanObservation instanceof SingleObservation);
         SingleObservation observation = (SingleObservation) leshanObservation;
@@ -160,10 +147,11 @@ public class InMemoryRegistrationStoreTest {
         org.eclipse.californium.core.observe.Observation observationToStore = prepareCoapCompositeObservation();
 
         // when
-        store.put(exampleToken, observationToStore);
+        observationStore.put(exampleToken, observationToStore);
 
         // then
-        Observation leshanObservation = store.getObservation(registrationId, exampleToken.getBytes());
+        Observation leshanObservation = store.getObservation(registrationId,
+                new ObservationIdentifier(exampleToken.getBytes()));
         assertNotNull(leshanObservation);
         assertTrue(leshanObservation instanceof CompositeObservation);
         CompositeObservation observation = (CompositeObservation) leshanObservation;
@@ -177,10 +165,12 @@ public class InMemoryRegistrationStoreTest {
                 observeRequest);
 
         Request coapRequest = new Request(CoAP.Code.GET);
+        coapRequest.setMID(123);
         coapRequest.setUserContext(userContext);
         coapRequest.setToken(exampleToken);
         coapRequest.setObserve();
         coapRequest.getOptions().setAccept(ContentFormat.DEFAULT.getCode());
+        coapRequest.setDestinationContext(new AddressEndpointContext(new InetSocketAddress("localhost", 5683)));
 
         return new org.eclipse.californium.core.observe.Observation(coapRequest, null);
     }
@@ -192,10 +182,12 @@ public class InMemoryRegistrationStoreTest {
                 observeRequest);
 
         Request coapRequest = new Request(CoAP.Code.FETCH);
+        coapRequest.setMID(123);
         coapRequest.setUserContext(userContext);
         coapRequest.setToken(exampleToken);
         coapRequest.setObserve();
         coapRequest.getOptions().setAccept(ContentFormat.DEFAULT.getCode());
+        coapRequest.setDestinationContext(new AddressEndpointContext(new InetSocketAddress("localhost", 5683)));
 
         return new org.eclipse.californium.core.observe.Observation(coapRequest, null);
     }

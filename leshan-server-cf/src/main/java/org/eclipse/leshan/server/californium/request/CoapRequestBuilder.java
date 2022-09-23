@@ -26,6 +26,7 @@ import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.util.Bytes;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.californium.ObserveUtil;
+import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
@@ -76,11 +77,13 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     private final LwM2mModel model;
     private final LwM2mEncoder encoder;
 
-    private LowerLayerConfig lowerLayerConfig;
+    private final LowerLayerConfig lowerLayerConfig;
+
+    private final IdentityHandler identityHandler;
 
     public CoapRequestBuilder(Identity destination, String rootPath, String registrationId, String endpoint,
             LwM2mModel model, LwM2mEncoder encoder, boolean allowConnectionInitiation,
-            LowerLayerConfig lowerLayerConfig) {
+            LowerLayerConfig lowerLayerConfig, IdentityHandler identityHandler) {
         this.destination = destination;
         this.rootPath = rootPath;
         this.endpoint = endpoint;
@@ -89,6 +92,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         this.encoder = encoder;
         this.allowConnectionInitiation = allowConnectionInitiation;
         this.lowerLayerConfig = lowerLayerConfig;
+        this.identityHandler = identityHandler;
     }
 
     @Override
@@ -188,7 +192,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     public void visit(CancelObservationRequest request) {
         coapRequest = Request.newGet();
         coapRequest.setObserveCancel();
-        coapRequest.setToken(request.getObservation().getId());
+        coapRequest.setToken(request.getObservation().getId().getBytes());
         if (request.getContentFormat() != null)
             coapRequest.getOptions().setAccept(request.getContentFormat().getCode());
         setURI(coapRequest, request.getPath());
@@ -233,7 +237,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     public void visit(CancelCompositeObservationRequest request) {
         coapRequest = Request.newFetch();
         coapRequest.setObserveCancel();
-        coapRequest.setToken(request.getObservation().getId());
+        coapRequest.setToken(request.getObservation().getId().getBytes());
 
         coapRequest.getOptions().setContentFormat(request.getRequestContentFormat().getCode());
         coapRequest.setPayload(encoder.encodePaths(request.getPaths(), request.getRequestContentFormat()));
@@ -351,9 +355,15 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     }
 
     protected void setSecurityContext(Request coapRequest) {
-        EndpointContext context = EndpointContextUtil.extractContext(destination, allowConnectionInitiation);
-        coapRequest.setDestinationContext(context);
+        if (identityHandler != null) {
+            EndpointContext context = identityHandler.createEndpointContext(destination, allowConnectionInitiation);
+            coapRequest.setDestinationContext(context);
 
+        } else {
+            EndpointContext context = EndpointContextUtil.extractContext(destination, allowConnectionInitiation);
+            coapRequest.setDestinationContext(context);
+
+        }
         if (destination.isOSCORE()) {
             coapRequest.getOptions().setOscore(Bytes.EMPTY);
         }

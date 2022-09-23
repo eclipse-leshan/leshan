@@ -34,11 +34,12 @@ import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.LwM2mId;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.integration.tests.PresenceCounter;
-import org.eclipse.leshan.server.californium.LeshanServerBuilder;
+import org.eclipse.leshan.server.LeshanServerBuilder;
 import org.eclipse.leshan.server.queue.StaticClientAwakeTimeProvider;
 import org.eclipse.leshan.server.registration.Registration;
 
@@ -68,9 +69,8 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
     public void createClient() {
         // Create objects Enabler
         ObjectsInitializer initializer = new TestObjectsInitializer(new StaticModel(createObjectModels()));
-        initializer.setInstancesForObject(LwM2mId.SECURITY, Security.noSec(
-                "coap://" + server.getUnsecuredAddress().getHostString() + ":" + server.getUnsecuredAddress().getPort(),
-                12345));
+        initializer.setInstancesForObject(LwM2mId.SECURITY,
+                Security.noSec(server.getEndpoint(Protocol.COAP).getURI().toString(), 12345));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new TestDevice("Eclipse Leshan", MODEL_NUMBER, "12345"));
         initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);

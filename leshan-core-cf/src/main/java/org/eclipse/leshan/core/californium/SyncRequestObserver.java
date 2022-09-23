@@ -34,7 +34,11 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 public abstract class SyncRequestObserver<T extends LwM2mResponse> extends CoapSyncRequestObserver {
 
     public SyncRequestObserver(Request coapRequest, long timeout) {
-        super(coapRequest, timeout);
+        this(coapRequest, timeout, new TemporaryExceptionTranslator());
+    }
+
+    public SyncRequestObserver(Request coapRequest, long timeout, ExceptionTranslator exceptionTranslator) {
+        super(coapRequest, timeout, exceptionTranslator);
     }
 
     /**

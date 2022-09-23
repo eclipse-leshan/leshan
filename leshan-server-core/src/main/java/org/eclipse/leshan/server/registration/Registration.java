@@ -19,6 +19,7 @@ package org.eclipse.leshan.server.registration;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -94,6 +95,8 @@ public class Registration {
 
     private final Map<String, String> applicationData;
 
+    private final URI lastEndpointUsed;
+
     protected Registration(Builder builder) {
 
         Validate.notNull(builder.registrationId);
@@ -123,6 +126,8 @@ public class Registration {
         additionalRegistrationAttributes = builder.additionalRegistrationAttributes;
 
         applicationData = builder.applicationData;
+
+        lastEndpointUsed = builder.lastEndpointUsed;
     }
 
     public String getId() {
@@ -346,6 +351,10 @@ public class Registration {
         return applicationData;
     }
 
+    public URI getLastEndpointUsed() {
+        return lastEndpointUsed;
+    }
+
     @Override
     public String toString() {
         return String.format(
@@ -490,6 +499,7 @@ public class Registration {
         private Set<LwM2mPath> availableInstances;
         private Map<String, String> additionalRegistrationAttributes;
         private Map<String, String> applicationData;
+        private URI lastEndpointUsed;
 
         // builder setting
         private boolean extractData; // if true extract data from objectLinks
@@ -519,6 +529,7 @@ public class Registration {
             additionalRegistrationAttributes = registration.additionalRegistrationAttributes;
 
             applicationData = registration.applicationData;
+            lastEndpointUsed = registration.lastEndpointUsed;
         }
 
         public Builder(String registrationId, String endpoint, Identity identity) {
@@ -611,6 +622,11 @@ public class Registration {
 
         public Builder applicationData(Map<String, String> applicationData) {
             this.applicationData = applicationData;
+            return this;
+        }
+
+        public Builder lastEndpointUsed(URI lastEndpointUsed) {
+            this.lastEndpointUsed = lastEndpointUsed;
             return this;
         }
 

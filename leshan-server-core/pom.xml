@@ -35,11 +35,6 @@ Contributors:
       <groupId>org.eclipse.leshan</groupId>
       <artifactId>leshan-core</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.eclipse.californium</groupId>
-      <artifactId>cf-oscore</artifactId>
-      <version>${californium.version}</version>
-    </dependency>
 
     <!-- test dependencies -->
     <dependency>

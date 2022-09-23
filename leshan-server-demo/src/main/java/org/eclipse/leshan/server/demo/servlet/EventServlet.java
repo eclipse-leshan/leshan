@@ -27,7 +27,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.jetty.servlets.EventSource;
 import org.eclipse.jetty.servlets.EventSourceServlet;
 import org.eclipse.leshan.core.link.Link;
@@ -40,13 +39,15 @@ import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
-import org.eclipse.leshan.server.californium.LeshanServer;
+import org.eclipse.leshan.server.LeshanServer;
+import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpoint;
 import org.eclipse.leshan.server.demo.servlet.json.JacksonLinkSerializer;
 import org.eclipse.leshan.server.demo.servlet.json.JacksonLwM2mNodeSerializer;
 import org.eclipse.leshan.server.demo.servlet.json.JacksonRegistrationSerializer;
 import org.eclipse.leshan.server.demo.servlet.log.CoapMessage;
 import org.eclipse.leshan.server.demo.servlet.log.CoapMessageListener;
 import org.eclipse.leshan.server.demo.servlet.log.CoapMessageTracer;
+import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
 import org.eclipse.leshan.server.observation.ObservationListener;
 import org.eclipse.leshan.server.queue.PresenceListener;
 import org.eclipse.leshan.server.registration.Registration;
@@ -92,7 +93,7 @@ public class EventServlet extends EventSourceServlet {
 
     private final CoapMessageTracer coapMessageTracer;
 
-    private Set<LeshanEventSource> eventSources = Collections
+    private final Set<LeshanEventSource> eventSources = Collections
             .newSetFromMap(new ConcurrentHashMap<LeshanEventSource, Boolean>());
 
     private final RegistrationListener registrationListener = new RegistrationListener() {
@@ -288,8 +289,9 @@ public class EventServlet extends EventSourceServlet {
 
         // add an interceptor to each endpoint to trace all CoAP messages
         coapMessageTracer = new CoapMessageTracer(server.getRegistrationService());
-        for (Endpoint endpoint : server.coap().getServer().getEndpoints()) {
-            endpoint.addInterceptor(coapMessageTracer);
+        for (LwM2mServerEndpoint endpoint : server.getEndpoints()) {
+            if (endpoint instanceof CaliforniumServerEndpoint)
+                ((CaliforniumServerEndpoint) endpoint).getCoapEndpoint().addInterceptor(coapMessageTracer);
         }
 
         ObjectMapper mapper = new ObjectMapper();
@@ -354,7 +356,7 @@ public class EventServlet extends EventSourceServlet {
 
     private class LeshanEventSource implements EventSource {
 
-        private String endpoint;
+        private final String endpoint;
         private Emitter emitter;
 
         public LeshanEventSource(String endpoint) {
@@ -365,9 +367,11 @@ public class EventServlet extends EventSourceServlet {
         public void onOpen(Emitter emitter) throws IOException {
             this.emitter = emitter;
             eventSources.add(this);
+
             if (endpoint != null) {
                 coapMessageTracer.addListener(endpoint, new ClientCoapListener(endpoint));
             }
+
         }
 
         @Override

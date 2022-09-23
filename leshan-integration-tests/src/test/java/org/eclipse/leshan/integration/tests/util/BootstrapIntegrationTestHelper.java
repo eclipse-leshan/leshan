@@ -55,6 +55,7 @@ import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.SecurityMode;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.oscore.OscoreIdentity;
@@ -100,7 +101,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     public final PrivateKey bootstrapServerPrivateKey;
     public volatile LwM2mResponse lastCustomResponse;
 
-    private SynchronousBootstrapListener bootstrapListener = new SynchronousBootstrapListener();
+    private final SynchronousBootstrapListener bootstrapListener = new SynchronousBootstrapListener();
 
     private class TestBootstrapSessionManager extends DefaultBootstrapSessionManager {
 
@@ -491,8 +492,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
                 // security for DM server
                 ServerSecurity dmSecurity = new ServerSecurity();
-                dmSecurity.uri = "coap://" + server.getUnsecuredAddress().getHostString() + ":"
-                        + server.getUnsecuredAddress().getPort();
+                dmSecurity.uri = server.getEndpoint(Protocol.COAP).getURI().toString();
                 dmSecurity.serverId = 2222;
                 dmSecurity.securityMode = SecurityMode.NO_SEC;
                 bsConfig.security.put(1, dmSecurity);
@@ -547,8 +547,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
                 // security for DM server
                 ServerSecurity dmSecurity = new ServerSecurity();
-                dmSecurity.uri = "coap://" + server.getUnsecuredAddress().getHostString() + ":"
-                        + server.getUnsecuredAddress().getPort();
+                dmSecurity.uri = server.getEndpoint(Protocol.COAP).getURI().toString();
                 dmSecurity.serverId = 2222;
                 dmSecurity.securityMode = SecurityMode.NO_SEC;
                 bsConfig.security.put(1, dmSecurity);
@@ -597,8 +596,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
                 // security for DM server
                 ServerSecurity dmSecurity = new ServerSecurity();
-                dmSecurity.uri = "coaps://" + server.getUnsecuredAddress().getHostString() + ":"
-                        + server.getSecuredAddress().getPort();
+                dmSecurity.uri = server.getEndpoint(Protocol.COAPS).getURI().toString();
                 dmSecurity.serverId = 2222;
                 dmSecurity.securityMode = SecurityMode.PSK;
                 dmSecurity.publicKeyOrId = GOOD_PSK_ID.getBytes();
@@ -633,8 +631,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
                 // security for DM server
                 ServerSecurity dmSecurity = new ServerSecurity();
-                dmSecurity.uri = "coaps://" + server.getUnsecuredAddress().getHostString() + ":"
-                        + server.getSecuredAddress().getPort();
+                dmSecurity.uri = server.getEndpoint(Protocol.COAPS).getURI().toString();
                 dmSecurity.serverId = 2222;
                 dmSecurity.securityMode = SecurityMode.RPK;
                 dmSecurity.publicKeyOrId = clientPublicKey.getEncoded();
@@ -694,8 +691,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
                 // security for DM server
                 ServerSecurity dmSecurity = new ServerSecurity();
-                dmSecurity.uri = "coap://" + server.getUnsecuredAddress().getHostString() + ":"
-                        + server.getUnsecuredAddress().getPort();
+                dmSecurity.uri = server.getEndpoint(Protocol.COAP).getURI().toString();
                 dmSecurity.serverId = 2222;
                 dmSecurity.securityMode = SecurityMode.NO_SEC;
                 dmSecurity.oscoreSecurityMode = 1;
@@ -733,8 +729,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
                 // security for DM server
                 ServerSecurity dmSecurity = new ServerSecurity();
-                dmSecurity.uri = "coap://" + server.getUnsecuredAddress().getHostString() + ":"
-                        + server.getUnsecuredAddress().getPort();
+                dmSecurity.uri = server.getEndpoint(Protocol.COAP).getURI().toString();
                 dmSecurity.serverId = 2222;
                 dmSecurity.securityMode = SecurityMode.NO_SEC;
                 dmSecurity.oscoreSecurityMode = 1;
@@ -772,8 +767,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
                 // security for DM server
                 ServerSecurity dmSecurity = new ServerSecurity();
-                dmSecurity.uri = "coap://" + server.getUnsecuredAddress().getHostString() + ":"
-                        + server.getUnsecuredAddress().getPort();
+                dmSecurity.uri = server.getEndpoint(Protocol.COAP).getURI().toString();
                 dmSecurity.serverId = 2222;
                 dmSecurity.securityMode = SecurityMode.NO_SEC;
                 bsConfig.security.put(1, dmSecurity);

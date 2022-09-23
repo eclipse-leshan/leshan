@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.ResponseCode;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -466,7 +467,8 @@ public class ObserveTest {
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
         // 666 is not a supported content format.
         TestObserveUtil.sendNotification(helper.getClientConnector(helper.getCurrentRegisteredServer()),
-                helper.server.getUnsecuredAddress(), payload, firstCoapResponse, ContentFormat.fromCode(666));
+                helper.server.getEndpoint(Protocol.COAP).getURI(), payload, firstCoapResponse,
+                ContentFormat.fromCode(666));
         // *** Hack End *** //
 
         // verify result

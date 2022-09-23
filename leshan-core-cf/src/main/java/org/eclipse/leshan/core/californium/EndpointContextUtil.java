@@ -39,6 +39,8 @@ import org.eclipse.leshan.core.oscore.OscoreIdentity;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.util.Hex;
 
+//TODO TL : to be delete when no more class use it (at the end of the refactoring)
+
 /**
  * Utility class used to handle Californium {@link EndpointContext} in Leshan.
  * <p>

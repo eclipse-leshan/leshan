@@ -21,7 +21,7 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.core.californium.LwM2mCoapResource;
-import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
@@ -31,10 +31,9 @@ import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.SendResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
-import org.eclipse.leshan.server.model.LwM2mModelProvider;
-import org.eclipse.leshan.server.registration.Registration;
-import org.eclipse.leshan.server.registration.RegistrationStore;
-import org.eclipse.leshan.server.send.SendHandler;
+import org.eclipse.leshan.server.profile.ClientProfile;
+import org.eclipse.leshan.server.profile.ClientProfileProvider;
+import org.eclipse.leshan.server.request.UplinkRequestReceiver;
 
 /**
  * A CoAP Resource used to handle "Send" request sent by LWM2M devices.
@@ -42,49 +41,50 @@ import org.eclipse.leshan.server.send.SendHandler;
  * @see SendRequest
  */
 public class SendResource extends LwM2mCoapResource {
-    private RegistrationStore registrationStore;
-    private LwM2mDecoder decoder;
-    private LwM2mModelProvider modelProvider;
-    private SendHandler sendHandler;
+    private final LwM2mDecoder decoder;
+    private final UplinkRequestReceiver receiver;
+    private final ClientProfileProvider profileProvider;
 
-    public SendResource(SendHandler sendHandler, LwM2mModelProvider modelProvider, LwM2mDecoder decoder,
-            RegistrationStore registrationStore) {
-        super("dp");
-        this.registrationStore = registrationStore;
+    public SendResource(UplinkRequestReceiver receiver, LwM2mDecoder decoder, ClientProfileProvider profileProvider,
+            IdentityHandlerProvider identityHandlerProvider) {
+        super("dp", identityHandlerProvider);
         this.decoder = decoder;
-        this.modelProvider = modelProvider;
-        this.sendHandler = sendHandler;
+        this.receiver = receiver;
+        this.profileProvider = profileProvider;
     }
 
     @Override
     public void handlePOST(CoapExchange exchange) {
         Request coapRequest = exchange.advanced().getRequest();
-        Identity sender = extractIdentity(coapRequest.getSourceContext());
-        Registration registration = registrationStore.getRegistrationByIdentity(sender);
+        Identity sender = getForeignPeerIdentity(exchange.advanced(), coapRequest);
+        ClientProfile clientProfile = profileProvider.getProfile(sender);
 
         // check we have a registration for this identity
-        if (registration == null) {
+        if (clientProfile == null) {
             exchange.respond(ResponseCode.NOT_FOUND, "no registration found");
             return;
         }
 
         try {
             // Decode payload
-            LwM2mModel model = modelProvider.getObjectModel(registration);
             byte[] payload = exchange.getRequestPayload();
             ContentFormat contentFormat = ContentFormat.fromCode(exchange.getRequestOptions().getContentFormat());
             if (!decoder.isSupported(contentFormat)) {
                 exchange.respond(ResponseCode.BAD_REQUEST, "Unsupported content format");
-                sendHandler.onError(registration, new InvalidRequestException(
-                        "Unsupported content format [%s] in [%s] from [%s]", contentFormat, coapRequest, sender));
+                receiver.onError(sender, clientProfile,
+                        new InvalidRequestException("Unsupported content format [%s] in [%s] from [%s]", contentFormat,
+                                coapRequest, sender),
+                        SendRequest.class, exchange.advanced().getEndpoint().getUri());
                 return;
             }
 
-            TimestampedLwM2mNodes data = decoder.decodeTimestampedNodes(payload, contentFormat, model);
+            TimestampedLwM2mNodes data = decoder.decodeTimestampedNodes(payload, contentFormat,
+                    clientProfile.getModel());
 
             // Handle "send op request
             SendRequest sendRequest = new SendRequest(contentFormat, data, coapRequest);
-            SendableResponse<SendResponse> sendableResponse = sendHandler.handleSend(registration, sendRequest);
+            SendableResponse<SendResponse> sendableResponse = receiver.requestReceived(sender, clientProfile,
+                    sendRequest, exchange.advanced().getEndpoint().getUri());
             SendResponse response = sendableResponse.getResponse();
 
             // send reponse
@@ -99,11 +99,12 @@ public class SendResource extends LwM2mCoapResource {
             }
         } catch (CodecException e) {
             exchange.respond(ResponseCode.BAD_REQUEST, "Invalid Payload");
-            sendHandler.onError(registration,
-                    new InvalidRequestException(e, "Invalid payload in [%s] from [%s]", coapRequest, sender));
+            receiver.onError(sender, clientProfile,
+                    new InvalidRequestException(e, "Invalid payload in [%s] from [%s]", coapRequest, sender),
+                    SendRequest.class, exchange.advanced().getEndpoint().getUri());
             return;
         } catch (RuntimeException e) {
-            sendHandler.onError(registration, e);
+            receiver.onError(sender, clientProfile, e, SendRequest.class, exchange.advanced().getEndpoint().getUri());
             throw e;
         }
     }

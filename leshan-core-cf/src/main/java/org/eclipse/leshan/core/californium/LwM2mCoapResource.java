@@ -18,11 +18,14 @@ package org.eclipse.leshan.core.californium;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
+import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.elements.EndpointContext;
+import org.eclipse.leshan.core.californium.identity.IdentityHandler;
+import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.slf4j.Logger;
@@ -37,12 +40,15 @@ public class LwM2mCoapResource extends CoapResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mCoapResource.class);
 
+    private final IdentityHandlerProvider identityHandlerProvider;
+
     /**
      * @param name the resource name
      * @see CoapResource#CoapResource(String)
      */
-    public LwM2mCoapResource(String name) {
+    public LwM2mCoapResource(String name, IdentityHandlerProvider identityHandlerProvider) {
         super(name);
+        this.identityHandlerProvider = identityHandlerProvider;
     }
 
     @Override
@@ -54,7 +60,7 @@ public class LwM2mCoapResource extends CoapResource {
         } catch (RuntimeException e) {
             Request request = exchange.getRequest();
             LOG.error("Exception while handling request [{}] on the resource {} from {}", request, getURI(),
-                    extractIdentitySafely(request.getSourceContext()), e);
+                    extractIdentitySafely(exchange, request), e);
             exchange.sendResponse(new Response(ResponseCode.INTERNAL_SERVER_ERROR));
         }
     }
@@ -83,10 +89,10 @@ public class LwM2mCoapResource extends CoapResource {
         if (LOG.isDebugEnabled()) {
             if (error != null) {
                 LOG.debug("Invalid request [{}] received on the resource {} from {}", request, getURI(),
-                        extractIdentitySafely(request.getSourceContext()), error);
+                        extractIdentitySafely(exchange, request), error);
             } else {
                 LOG.debug("Invalid request [{}] received on the resource {} from {} : {}", request, getURI(),
-                        extractIdentitySafely(request.getSourceContext()), message);
+                        extractIdentitySafely(exchange, request), message);
             }
         }
 
@@ -107,18 +113,30 @@ public class LwM2mCoapResource extends CoapResource {
      * @throws IllegalStateException if we are not able to extract {@link Identity}.
      */
     protected Identity extractIdentity(EndpointContext context) {
+        // TODO TL : to delete once server / client / bootstrap server will use new design
         return EndpointContextUtil.extractIdentity(context);
+    }
+
+    protected Identity getForeignPeerIdentity(Exchange exchange, Message receivedMessage) {
+        IdentityHandler identityHandler = identityHandlerProvider.getIdentityHandler(exchange.getEndpoint());
+        if (identityHandler != null) {
+            return identityHandler.getIdentity(receivedMessage);
+        }
+        return null;
     }
 
     /**
      * Create Leshan {@link Identity} from Californium {@link EndpointContext}.
      *
-     * @param context The Californium {@link EndpointContext} to convert.
      * @return The corresponding Leshan {@link Identity} or <code>null</code> if we didn't succeed to extract Identity.
      */
-    protected Identity extractIdentitySafely(EndpointContext context) {
+    protected Identity extractIdentitySafely(Exchange exchange, Message receivedMessage) {
         try {
-            return extractIdentity(context);
+            if (identityHandlerProvider == null) {
+                return extractIdentity(receivedMessage.getSourceContext());
+            } else {
+                return getForeignPeerIdentity(exchange, receivedMessage);
+            }
         } catch (RuntimeException e) {
             LOG.error("Unable to extract identity", e);
             return null;

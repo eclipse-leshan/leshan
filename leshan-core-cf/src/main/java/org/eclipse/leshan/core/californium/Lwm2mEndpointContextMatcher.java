@@ -22,6 +22,8 @@ import javax.security.auth.x500.X500Principal;
 import org.eclipse.californium.elements.PrincipalEndpointContextMatcher;
 import org.eclipse.leshan.core.request.Identity;
 
+// TODO TL: to be move in californium.identity package
+
 /**
  * LWM2M principal based endpoint context matcher.
  *

@@ -23,7 +23,8 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
-import org.eclipse.californium.elements.EndpointContext;
+import javax.xml.ws.EndpointContext;
+
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.util.Hex;
 

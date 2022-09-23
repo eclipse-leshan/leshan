@@ -92,10 +92,10 @@ public class RegistrationUpdate {
                 .supportedContentFormats(registration.getSupportedContentFormats())
                 .supportedObjects(registration.getSupportedObject())
                 .availableInstances(registration.getAvailableInstances())
-                .applicationData(registration.getApplicationData());
+                .applicationData(registration.getApplicationData())
+                .lastEndpointUsed(registration.getLastEndpointUsed());
 
         return builder.build();
-
     }
 
     public String getRegistrationId() {

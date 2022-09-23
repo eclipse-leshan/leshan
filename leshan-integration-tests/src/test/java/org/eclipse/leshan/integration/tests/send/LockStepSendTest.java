@@ -28,6 +28,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
@@ -38,7 +39,7 @@ import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.integration.tests.lockstep.LockStepLwM2mClient;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.eclipse.leshan.integration.tests.util.SynchronousSendListener;
-import org.eclipse.leshan.server.californium.LeshanServerBuilder;
+import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointsProvider.Builder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,9 +47,11 @@ import org.junit.Test;
 public class LockStepSendTest {
 
     public IntegrationTestHelper helper = new IntegrationTestHelper() {
+
         @Override
-        protected LeshanServerBuilder createServerBuilder() {
-            Configuration coapConfig = LeshanServerBuilder.createDefaultCoapConfiguration();
+        protected Builder createEndpointsProviderBuilder() {
+            Builder builder = super.createEndpointsProviderBuilder();
+            Configuration coapConfig = builder.createDefaultConfiguration();
 
             // configure retransmission, with this configuration a request without ACK should timeout in ~200*5ms
             coapConfig.set(CoapConfig.ACK_TIMEOUT, 200, TimeUnit.MILLISECONDS) //
@@ -56,11 +59,9 @@ public class LockStepSendTest {
                     .set(CoapConfig.ACK_TIMEOUT_SCALE, 1f) //
                     .set(CoapConfig.MAX_RETRANSMIT, 4);
 
-            LeshanServerBuilder builder = super.createServerBuilder();
-            builder.setCoapConfig(coapConfig);
-
+            builder.setConfiguration(coapConfig);
             return builder;
-        };
+        }
     };
 
     @Before
@@ -79,7 +80,7 @@ public class LockStepSendTest {
     @Test
     public void register_send_with_invalid_payload() throws Exception {
         // Register client
-        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getUnsecuredAddress());
+        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getEndpoint(Protocol.COAP).getURI());
         Token token = client.sendLwM2mRequest(
                 new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1", EnumSet.of(BindingMode.U), null, null,
                         linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null));

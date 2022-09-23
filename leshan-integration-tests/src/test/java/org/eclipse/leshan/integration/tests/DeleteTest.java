@@ -27,13 +27,18 @@ import static org.junit.Assert.assertNotNull;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.leshan.core.ResponseCode;
+import org.eclipse.leshan.core.californium.CoapSyncRequestObserver;
+import org.eclipse.leshan.core.californium.DefaultExceptionTranslator;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.response.DeleteResponse;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
+import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpoint;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -83,7 +88,16 @@ public class DeleteTest {
         // try to delete this resource using coap API as lwm2m API does not allow it.
         Request delete = Request.newDelete();
         delete.getOptions().addUriPath("2").addUriPath("0").addUriPath("0");
-        Response response = helper.server.coap().send(helper.getCurrentRegistration(), delete);
+
+        // TODO TL add Coap API again ?
+        delete.setDestinationContext(new AddressEndpointContext(helper.getCurrentRegistration().getSocketAddress()));
+        CoapSyncRequestObserver syncMessageObserver = new CoapSyncRequestObserver(delete, 2000,
+                new DefaultExceptionTranslator());
+        delete.addMessageObserver(syncMessageObserver);
+
+        CaliforniumServerEndpoint endpoint = (CaliforniumServerEndpoint) helper.server.getEndpoint(Protocol.COAP);
+        endpoint.getCoapEndpoint().sendRequest(delete);
+        Response response = syncMessageObserver.waitForCoapResponse();
 
         // verify result
         assertEquals(org.eclipse.californium.core.coap.CoAP.ResponseCode.BAD_REQUEST, response.getCode());

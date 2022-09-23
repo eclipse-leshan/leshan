@@ -75,12 +75,13 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.californium.EndpointFactory;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.oscore.AeadAlgorithm;
 import org.eclipse.leshan.core.oscore.HkdfAlgorithm;
 import org.eclipse.leshan.core.oscore.OscoreSetting;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.X509CertUtil;
-import org.eclipse.leshan.server.californium.LeshanServerBuilder;
+import org.eclipse.leshan.server.LeshanServerBuilder;
 import org.eclipse.leshan.server.security.DefaultAuthorizer;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.InMemorySecurityStore;
@@ -147,6 +148,8 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
     public final List<Certificate> clientTrustStore;
     // client's initial empty trust store
     public final List<Certificate> clientEmptyTrustStore = new ArrayList<>();
+
+    private Boolean serverOnly = null;
 
     public SecureIntegrationTestHelper() {
         // create client credentials
@@ -248,10 +251,8 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
     public void createPSKClient(boolean queueMode) {
         ObjectsInitializer initializer = new TestObjectsInitializer();
         initializer.setInstancesForObject(LwM2mId.SECURITY,
-                Security.psk(
-                        "coaps://" + server.getSecuredAddress().getHostString() + ":"
-                                + server.getSecuredAddress().getPort(),
-                        12345, GOOD_PSK_ID.getBytes(StandardCharsets.UTF_8), GOOD_PSK_KEY));
+                Security.psk(server.getEndpoint(Protocol.COAPS).getURI().toString(), 12345,
+                        GOOD_PSK_ID.getBytes(StandardCharsets.UTF_8), GOOD_PSK_KEY));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345"));
         initializer.setDummyInstancesForObject(LwM2mId.ACCESS_CONTROL);
@@ -315,8 +316,8 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
     public void createRPKClient(boolean useServerCertificate) {
         ObjectsInitializer initializer = new TestObjectsInitializer();
         initializer.setInstancesForObject(LwM2mId.SECURITY, Security.rpk(
-                "coaps://" + server.getSecuredAddress().getHostString() + ":" + server.getSecuredAddress().getPort(),
-                12345, clientPublicKey.getEncoded(), clientPrivateKey.getEncoded(),
+                server.getEndpoint(Protocol.COAPS).getURI().toString(), 12345, clientPublicKey.getEncoded(),
+                clientPrivateKey.getEncoded(),
                 useServerCertificate ? serverX509Cert.getPublicKey().getEncoded() : serverPublicKey.getEncoded()));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345"));
@@ -358,11 +359,8 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
             Certificate serverCertificate) throws CertificateEncodingException {
         ObjectsInitializer initializer = new TestObjectsInitializer();
         initializer.setInstancesForObject(LwM2mId.SECURITY,
-                Security.x509(
-                        "coaps://" + server.getSecuredAddress().getHostString() + ":"
-                                + server.getSecuredAddress().getPort(),
-                        12345, clientCertificate.getEncoded(), privatekey.getEncoded(),
-                        serverCertificate.getEncoded()));
+                Security.x509(server.getEndpoint(Protocol.COAPS).getURI().toString(), 12345,
+                        clientCertificate.getEncoded(), privatekey.getEncoded(), serverCertificate.getEncoded()));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345"));
         initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);
@@ -390,11 +388,9 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
         ObjectsInitializer initializer = new TestObjectsInitializer();
         initializer.setInstancesForObject(LwM2mId.SECURITY,
-                Security.x509(
-                        "coaps://" + server.getSecuredAddress().getHostString() + ":"
-                                + server.getSecuredAddress().getPort(),
-                        12345, clientCertificate[0].getEncoded(), privatekey.getEncoded(),
-                        serverCertificate.getEncoded(), certificateUsage.code));
+                Security.x509(server.getEndpoint(Protocol.COAPS).getURI().toString(), 12345,
+                        clientCertificate[0].getEncoded(), privatekey.getEncoded(), serverCertificate.getEncoded(),
+                        certificateUsage.code));
         initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, LIFETIME));
         initializer.setInstancesForObject(LwM2mId.DEVICE, new Device("Eclipse Leshan", MODEL_NUMBER, "12345"));
         initializer.setClassForObject(LwM2mId.ACCESS_CONTROL, DummyInstanceEnabler.class);
@@ -416,26 +412,24 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
     }
 
     @Override
-    protected LeshanServerBuilder createServerBuilder() {
-        return createServerBuilder(null);
-    }
-
-    @Override
     protected SecurityStore createSecurityStore() {
         securityStore = new InMemorySecurityStore();
         return securityStore;
     }
 
-    protected LeshanServerBuilder createServerBuilder(Boolean serverOnly) {
-        LeshanServerBuilder builder = super.createServerBuilder();
-        Configuration configuration = LeshanServerBuilder.createDefaultCoapConfiguration();
-        Builder dtlsConfig = DtlsConnectorConfig.builder(configuration);
-        dtlsConfig.set(DtlsConfig.DTLS_MAX_RETRANSMISSIONS, 1);
-        dtlsConfig.set(DtlsConfig.DTLS_RETRANSMISSION_TIMEOUT, 300, TimeUnit.MILLISECONDS);
+    @Override
+    protected org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointsProvider.Builder createEndpointsProviderBuilder() {
+        org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointsProvider.Builder builder = super.createEndpointsProviderBuilder();
+        Configuration configuration = builder.createDefaultConfiguration();
+        configuration.set(DtlsConfig.DTLS_MAX_RETRANSMISSIONS, 1);
+        configuration.set(DtlsConfig.DTLS_RETRANSMISSION_TIMEOUT, 300, TimeUnit.MILLISECONDS);
         if (serverOnly != null && serverOnly) {
-            dtlsConfig.set(DtlsConfig.DTLS_ROLE, DtlsRole.SERVER_ONLY);
+            configuration.set(DtlsConfig.DTLS_ROLE, DtlsRole.SERVER_ONLY);
         }
-        builder.setDtlsConfig(dtlsConfig);
+        builder.setConfiguration(configuration);
+
+        builder.addEndpoint(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), Protocol.COAPS);
+
         return builder;
     }
 
@@ -464,7 +458,8 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
 
     public void createServerWithX509Cert(X509Certificate serverCertificateChain[], PrivateKey privateKey,
             Certificate[] trustedCertificates, Boolean serverOnly) {
-        LeshanServerBuilder builder = createServerBuilder(serverOnly);
+        this.serverOnly = serverOnly;
+        LeshanServerBuilder builder = createServerBuilder();
         builder.setPrivateKey(privateKey);
         builder.setCertificateChain(serverCertificateChain);
         builder.setTrustedCertificates(trustedCertificates);
@@ -484,8 +479,7 @@ public class SecureIntegrationTestHelper extends IntegrationTestHelper {
     public void createOscoreClient() {
         ObjectsInitializer initializer = new TestObjectsInitializer();
 
-        String serverUri = "coap://" + server.getUnsecuredAddress().getHostString() + ":"
-                + server.getUnsecuredAddress().getPort();
+        String serverUri = server.getEndpoint(Protocol.COAP).getURI().toString();
 
         Oscore oscoreObject = new Oscore(12345, getClientOscoreSetting());
         initializer.setInstancesForObject(SECURITY, oscoreOnly(serverUri, 12345, oscoreObject.getId()));

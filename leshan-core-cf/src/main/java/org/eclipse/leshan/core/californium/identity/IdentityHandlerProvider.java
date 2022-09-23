@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Sierra Wireless and others.
+ * Copyright (c) 2022 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -13,14 +13,21 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.registration;
+package org.eclipse.leshan.core.californium.identity;
 
-import org.eclipse.californium.core.observe.ObservationStore;
-import org.eclipse.leshan.server.registration.RegistrationStore;
+import java.util.HashMap;
 
-/**
- * A registration store which is able to store Californium observation.
- */
-public interface CaliforniumRegistrationStore extends RegistrationStore, ObservationStore {
+import org.eclipse.californium.core.network.Endpoint;
 
+public class IdentityHandlerProvider {
+
+    private final HashMap<Endpoint, IdentityHandler> identityHandlers = new HashMap<>();
+
+    public void addIdentityHandler(Endpoint endpoint, IdentityHandler identityHandler) {
+        identityHandlers.put(endpoint, identityHandler);
+    }
+
+    public IdentityHandler getIdentityHandler(Endpoint endpoint) {
+        return identityHandlers.get(endpoint);
+    }
 }

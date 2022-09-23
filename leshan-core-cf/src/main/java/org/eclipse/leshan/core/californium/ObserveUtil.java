@@ -26,8 +26,10 @@ import java.util.Map.Entry;
 
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.observe.Observation;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
+import org.eclipse.leshan.core.observation.ObservationIdentifier;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveCompositeRequest;
@@ -42,37 +44,63 @@ public class ObserveUtil {
     public static final String CTX_ENDPOINT = "leshan-endpoint";
     public static final String CTX_REGID = "leshan-regId";
     public static final String CTX_LWM2M_PATH = "leshan-path";
+    public static final String CTX_CF_OBERSATION = "leshan-cf-obs";
+
+    public static org.eclipse.leshan.core.observation.Observation createLwM2mObservation(Observation observation,
+            String serializedObservation) {
+        if (observation == null)
+            return null;
+
+        if (observation.getRequest().getCode() == CoAP.Code.GET) {
+            return ObserveUtil.createLwM2mObservation(observation.getRequest(), serializedObservation);
+        } else if (observation.getRequest().getCode() == CoAP.Code.FETCH) {
+            return ObserveUtil.createLwM2mCompositeObservation(observation.getRequest(), serializedObservation);
+        } else {
+            throw new IllegalStateException("Observation request can be GET or FETCH only");
+        }
+    }
+
+    public static SingleObservation createLwM2mObservation(Request request) {
+        return createLwM2mObservation(request, null);
+    }
 
     /**
      * Create a LWM2M observation from a CoAP request.
      */
-    public static SingleObservation createLwM2mObservation(Request request) {
-        ObserveCommon observeCommon = new ObserveCommon(request);
+    public static SingleObservation createLwM2mObservation(Request request, String serializedObservation) {
+        ObserveCommon observeCommon = new ObserveCommon(request, serializedObservation);
 
         if (observeCommon.lwm2mPaths.size() != 1) {
             throw new IllegalStateException(
                     "1 path is expected in observe request context but was " + observeCommon.lwm2mPaths);
         }
 
-        return new SingleObservation(request.getToken().getBytes(), observeCommon.regId,
-                observeCommon.lwm2mPaths.get(0), observeCommon.responseContentFormat, observeCommon.context);
+        return new SingleObservation(new ObservationIdentifier(request.getToken().getBytes()), observeCommon.regId,
+                observeCommon.lwm2mPaths.get(0), observeCommon.responseContentFormat, observeCommon.context,
+                observeCommon.protocolData);
     }
 
     public static CompositeObservation createLwM2mCompositeObservation(Request request) {
-        ObserveCommon observeCommon = new ObserveCommon(request);
+        return createLwM2mCompositeObservation(request, null);
+    }
 
-        return new CompositeObservation(request.getToken().getBytes(), observeCommon.regId, observeCommon.lwm2mPaths,
-                observeCommon.requestContentFormat, observeCommon.responseContentFormat, observeCommon.context);
+    public static CompositeObservation createLwM2mCompositeObservation(Request request, String serializedObservation) {
+        ObserveCommon observeCommon = new ObserveCommon(request, serializedObservation);
+
+        return new CompositeObservation(new ObservationIdentifier(request.getToken().getBytes()), observeCommon.regId,
+                observeCommon.lwm2mPaths, observeCommon.requestContentFormat, observeCommon.responseContentFormat,
+                observeCommon.context, observeCommon.protocolData);
     }
 
     private static class ObserveCommon {
         String regId;
         Map<String, String> context;
+        Map<String, String> protocolData;
         List<LwM2mPath> lwm2mPaths;
         ContentFormat requestContentFormat;
         ContentFormat responseContentFormat;
 
-        public ObserveCommon(Request request) {
+        public ObserveCommon(Request request, String serializedObservation) {
             if (request.getUserContext() == null) {
                 throw new IllegalStateException("missing request context");
             }
@@ -104,6 +132,11 @@ public class ObserveUtil {
 
             if (request.getOptions().hasAccept()) {
                 responseContentFormat = ContentFormat.fromCode(request.getOptions().getAccept());
+            }
+
+            if (serializedObservation != null) {
+                protocolData = new HashMap<>();
+                protocolData.put(CTX_CF_OBERSATION, serializedObservation);
             }
         }
     }
@@ -202,6 +235,10 @@ public class ObserveUtil {
 
     public static String extractEndpoint(org.eclipse.californium.core.observe.Observation observation) {
         return observation.getRequest().getUserContext().get(CTX_ENDPOINT);
+    }
+
+    public static String extractSerializedObservation(org.eclipse.leshan.core.observation.Observation observation) {
+        return observation.getProtocolData().get(CTX_CF_OBERSATION);
     }
 
     /**

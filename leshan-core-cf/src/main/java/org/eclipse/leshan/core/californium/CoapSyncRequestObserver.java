@@ -24,12 +24,10 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
-import org.eclipse.californium.elements.exception.EndpointUnconnectedException;
-import org.eclipse.californium.scandium.dtls.DtlsHandshakeTimeoutException;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
-import org.eclipse.leshan.core.request.exception.UnconnectedPeerException;
+import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,20 +44,22 @@ public class CoapSyncRequestObserver extends AbstractRequestObserver {
 
     private static final Logger LOG = LoggerFactory.getLogger(CoapSyncRequestObserver.class);
 
-    private CountDownLatch latch = new CountDownLatch(1);
-    private AtomicReference<Response> ref = new AtomicReference<>(null);
-    private AtomicBoolean coapTimeout = new AtomicBoolean(false);
-    private AtomicReference<RuntimeException> exception = new AtomicReference<>();
-    private long timeout;
+    private final CountDownLatch latch = new CountDownLatch(1);
+    private final AtomicReference<Response> ref = new AtomicReference<>(null);
+    private final AtomicBoolean coapTimeout = new AtomicBoolean(false);
+    private final AtomicReference<RuntimeException> exception = new AtomicReference<>();
+    private final long timeout;
+    private final ExceptionTranslator exceptionTranslator;
 
     /**
      * @param coapRequest The CoAP request to observe.
      * @param timeoutInMs A response timeout(in millisecond) which is raised if neither a response or error happens (see
      *        https://github.com/eclipse/leshan/wiki/Request-Timeout).
      */
-    public CoapSyncRequestObserver(Request coapRequest, long timeoutInMs) {
+    public CoapSyncRequestObserver(Request coapRequest, long timeoutInMs, ExceptionTranslator exceptionTranslator) {
         super(coapRequest);
         this.timeout = timeoutInMs;
+        this.exceptionTranslator = exceptionTranslator;
     }
 
     @Override
@@ -97,13 +97,13 @@ public class CoapSyncRequestObserver extends AbstractRequestObserver {
 
     @Override
     public void onSendError(Throwable error) {
-        if (error instanceof DtlsHandshakeTimeoutException) {
+        Exception e = exceptionTranslator.translate(coapRequest, error);
+        if (e instanceof TimeoutException) {
             coapTimeout.set(true);
-        } else if (error instanceof EndpointUnconnectedException) {
-            exception.set(new UnconnectedPeerException(error,
-                    "Unable to send request %s : peer is not connected (no DTLS connection)", coapRequest.getURI()));
+        } else if (e instanceof RuntimeException) {
+            exception.set((RuntimeException) e);
         } else {
-            exception.set(new SendFailedException(error, "Request %s cannot be sent", coapRequest, error.getMessage()));
+            exception.set(new SendFailedException(e, "Request %s cannot be sent", coapRequest, e.getMessage()));
         }
         latch.countDown();
     }

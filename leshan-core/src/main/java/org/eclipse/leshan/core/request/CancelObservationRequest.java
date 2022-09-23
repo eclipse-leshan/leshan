@@ -19,7 +19,6 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.CancelObservationResponse;
-import org.eclipse.leshan.core.util.Hex;
 
 /**
  * A Lightweight M2M request for actively cancel an observation.
@@ -57,8 +56,7 @@ public class CancelObservationRequest extends AbstractSimpleDownlinkRequest<Canc
 
     @Override
     public final String toString() {
-        return String.format("CancelObservation [path=%s token=%s]", getPath(),
-                Hex.encodeHexString(observation.getId()));
+        return String.format("CancelObservation [path=%s token=%s]", getPath(), observation.getId());
     }
 
     @Override

@@ -38,6 +38,7 @@ import org.eclipse.leshan.core.californium.CoapResponseCallback;
 import org.eclipse.leshan.core.californium.CoapSyncRequestObserver;
 import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.californium.SyncRequestObserver;
+import org.eclipse.leshan.core.californium.TemporaryExceptionTranslator;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -136,7 +137,7 @@ public class RequestSender implements Destroyable {
 
         // Create the CoAP request from LwM2m request
         CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(destination, rootPath, sessionId,
-                endpointName, model, encoder, allowConnectionInitiation, lowerLayerConfig);
+                endpointName, model, encoder, allowConnectionInitiation, lowerLayerConfig, null);
         request.accept(coapClientRequestBuilder);
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 
@@ -212,7 +213,7 @@ public class RequestSender implements Destroyable {
 
         // Create the CoAP request from LwM2m request
         CoapRequestBuilder coapClientRequestBuilder = new CoapRequestBuilder(destination, rootPath, sessionId,
-                endpointName, model, encoder, allowConnectionInitiation, lowerLayerConfig);
+                endpointName, model, encoder, allowConnectionInitiation, lowerLayerConfig, null);
         request.accept(coapClientRequestBuilder);
         final Request coapRequest = coapClientRequestBuilder.getRequest();
 
@@ -279,7 +280,8 @@ public class RequestSender implements Destroyable {
         // TODO OSCORE : should we add the OSCORE option automatically here too ?
 
         // Send CoAP request synchronously
-        CoapSyncRequestObserver syncMessageObserver = new CoapSyncRequestObserver(coapRequest, timeoutInMs);
+        CoapSyncRequestObserver syncMessageObserver = new CoapSyncRequestObserver(coapRequest, timeoutInMs,
+                new TemporaryExceptionTranslator());
         coapRequest.addMessageObserver(syncMessageObserver);
 
         // Store pending request to be able to cancel it later
@@ -343,7 +345,7 @@ public class RequestSender implements Destroyable {
 
         // Add CoAP request callback
         MessageObserver obs = new CoapAsyncRequestObserver(coapRequest, responseCallback, errorCallback, timeoutInMs,
-                executor);
+                executor, new TemporaryExceptionTranslator());
         coapRequest.addMessageObserver(obs);
 
         // Store pending request to be able to cancel it later
@@ -399,7 +401,7 @@ public class RequestSender implements Destroyable {
         ongoingRequests.remove(key, coapRequest);
     }
 
-    private AtomicLong idGenerator = new AtomicLong(0l);
+    private final AtomicLong idGenerator = new AtomicLong(0l);
 
     private class CleanerMessageObserver extends MessageObserverAdapter {
 

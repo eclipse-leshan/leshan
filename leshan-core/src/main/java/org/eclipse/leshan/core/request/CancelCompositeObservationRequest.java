@@ -21,7 +21,6 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.response.CancelCompositeObservationResponse;
-import org.eclipse.leshan.core.util.Hex;
 
 /**
  * A Lightweight M2M request for actively cancel an composite-observation.
@@ -54,8 +53,7 @@ public class CancelCompositeObservationRequest extends AbstractLwM2mRequest<Canc
 
     @Override
     public final String toString() {
-        return String.format("CancelCompositeObservation [paths=%s token=%s]", getPaths(),
-                Hex.encodeHexString(observation.getId()));
+        return String.format("CancelCompositeObservation [paths=%s token=%s]", getPaths(), observation.getId());
     }
 
     @Override

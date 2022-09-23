@@ -15,24 +15,15 @@
  *     RISE SICS AB - added Queue Mode operation
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
-package org.eclipse.leshan.server.californium;
+package org.eclipse.leshan.server;
 
-import java.net.InetSocketAddress;
 import java.util.Collection;
+import java.util.List;
 
-import org.eclipse.californium.core.CoapResource;
-import org.eclipse.californium.core.CoapServer;
-import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.core.coap.Response;
-import org.eclipse.californium.core.network.CoapEndpoint;
-import org.eclipse.californium.core.network.Endpoint;
-import org.eclipse.californium.core.server.resources.Resource;
-import org.eclipse.californium.elements.config.Configuration;
-import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
-import org.eclipse.leshan.core.californium.CoapResponseCallback;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
@@ -50,20 +41,19 @@ import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.util.Validate;
-import org.eclipse.leshan.server.californium.observation.ObservationServiceImpl;
-import org.eclipse.leshan.server.californium.registration.CaliforniumRegistrationStore;
-import org.eclipse.leshan.server.californium.registration.RegisterResource;
-import org.eclipse.leshan.server.californium.request.CaliforniumLwM2mRequestSender;
-import org.eclipse.leshan.server.californium.request.CaliforniumQueueModeRequestSender;
-import org.eclipse.leshan.server.californium.request.CoapRequestSender;
-import org.eclipse.leshan.server.californium.send.SendResource;
+import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
+import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
+import org.eclipse.leshan.server.endpoint.ServerEndpointToolbox;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationService;
+import org.eclipse.leshan.server.observation.ObservationServiceImpl;
+import org.eclipse.leshan.server.profile.DefaultClientProfileProvider;
 import org.eclipse.leshan.server.queue.ClientAwakeTimeProvider;
 import org.eclipse.leshan.server.queue.PresenceListener;
 import org.eclipse.leshan.server.queue.PresenceService;
 import org.eclipse.leshan.server.queue.PresenceServiceImpl;
 import org.eclipse.leshan.server.queue.PresenceStateListener;
+import org.eclipse.leshan.server.queue.QueueModeLwM2mRequestSender;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.registration.RegistrationIdProvider;
@@ -72,13 +62,14 @@ import org.eclipse.leshan.server.registration.RegistrationService;
 import org.eclipse.leshan.server.registration.RegistrationServiceImpl;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
+import org.eclipse.leshan.server.request.DefaultDownlinkRequestSender;
+import org.eclipse.leshan.server.request.DefaultUplinkRequestReceiver;
+import org.eclipse.leshan.server.request.DownlinkRequestSender;
 import org.eclipse.leshan.server.request.LowerLayerConfig;
-import org.eclipse.leshan.server.request.LwM2mRequestSender;
 import org.eclipse.leshan.server.security.Authorizer;
-import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityStore;
-import org.eclipse.leshan.server.security.SecurityStoreListener;
+import org.eclipse.leshan.server.security.ServerSecurityInfo;
 import org.eclipse.leshan.server.send.SendHandler;
 import org.eclipse.leshan.server.send.SendService;
 import org.slf4j.Logger;
@@ -86,9 +77,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A Lightweight M2M server.
- * <p>
- * This implementation starts a Californium {@link CoapServer} with a unsecured (for coap://) and secured endpoint (for
- * coaps://). This CoAP server defines a <i>/rd</i> resource as described in the LWM2M specification.
  * <p>
  * This class is the entry point to send synchronous and asynchronous requests to registered clients.
  * <p>
@@ -102,176 +90,98 @@ public class LeshanServer {
     // send a Confirmable message to the time when an acknowledgement is no longer expected.
     private static final long DEFAULT_TIMEOUT = 2 * 60 * 1000l; // 2min in ms
 
-    // CoAP/Californium attributes
-    private final CoapAPI coapApi;
-    private final CoapServer coapServer;
-    private final CoapEndpoint unsecuredEndpoint;
-    private final CoapEndpoint securedEndpoint;
-
     // LWM2M attributes
     private final RegistrationServiceImpl registrationService;
-    private final CaliforniumRegistrationStore registrationStore;
+    private final RegistrationStore registrationStore;
     private final SendHandler sendService;
+    private final LwM2mServerEndpointsProvider endpointsProvider;
 
-    /** @since 1.1 */
-    protected final ObservationServiceImpl observationService;
+    private final ObservationServiceImpl observationService;
     private final SecurityStore securityStore;
     private final LwM2mModelProvider modelProvider;
-    private final PresenceServiceImpl presenceService;
-    private final LwM2mRequestSender requestSender;
-
-    // Configuration
-    /** since 1.1 */
-    protected final boolean updateRegistrationOnNotification;
-
-    protected final LwM2mLinkParser linkParser;
+    private PresenceServiceImpl presenceService;
+    private final DownlinkRequestSender requestSender;
 
     /**
      * Initialize a server which will bind to the specified address and port.
      * <p>
      * {@link LeshanServerBuilder} is the priviledged way to create a {@link LeshanServer}.
      *
-     * @param unsecuredEndpoint CoAP endpoint used for <code>coap://</code> communication.
-     * @param securedEndpoint CoAP endpoint used for <code>coaps://</code> communication.
+     * @param endpointsProvider which will create all available {@link LwM2mServerEndpoint}
      * @param registrationStore the {@link Registration} store.
      * @param securityStore the {@link SecurityInfo} store.
      * @param authorizer define which devices is allow to register on this server.
      * @param modelProvider provides the objects description for each client.
      * @param encoder encode used to encode request payload.
      * @param decoder decoder used to decode response payload.
-     * @param coapConfig the CoAP {@link Configuration}.
-     * @param noQueueMode true to disable presenceService.
-     * @param awakeTimeProvider to set the client awake time if queue mode is used.
-     * @param registrationIdProvider to provide registrationId using for location-path option values on response of
-     * @param linkParser a parser {@link LwM2mLinkParser} used to parse a CoRE Link.
-     */
-    public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
-            CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
-            LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder, Configuration coapConfig,
-            boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
-            RegistrationIdProvider registrationIdProvider, LwM2mLinkParser linkParser) {
-        this(unsecuredEndpoint, securedEndpoint, registrationStore, securityStore, authorizer, modelProvider, encoder,
-                decoder, coapConfig, noQueueMode, awakeTimeProvider, registrationIdProvider, false, linkParser);
-    }
-
-    /**
-     * Initialize a server which will bind to the specified address and port.
-     * <p>
-     * {@link LeshanServerBuilder} is the priviledged way to create a {@link LeshanServer}.
-     *
-     * @param unsecuredEndpoint CoAP endpoint used for <code>coap://</code> communication.
-     * @param securedEndpoint CoAP endpoint used for <code>coaps://</code> communication.
-     * @param registrationStore the {@link Registration} store.
-     * @param securityStore the {@link SecurityInfo} store.
-     * @param authorizer define which devices is allow to register on this server.
-     * @param modelProvider provides the objects description for each client.
-     * @param encoder encode used to encode request payload.
-     * @param decoder decoder used to decode response payload.
-     * @param coapConfig the CoAP {@link Configuration}.
      * @param noQueueMode true to disable presenceService.
      * @param awakeTimeProvider to set the client awake time if queue mode is used.
      * @param registrationIdProvider to provide registrationId using for location-path option values on response of
      *        Register operation.
      * @param updateRegistrationOnNotification will activate registration update on observe notification.
      * @param linkParser a parser {@link LwM2mLinkParser} used to parse a CoRE Link.
+     * @param serverSecurityInfo credentials of the Server
      * @since 1.1
      */
-    public LeshanServer(CoapEndpoint unsecuredEndpoint, CoapEndpoint securedEndpoint,
-            CaliforniumRegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
-            LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder, Configuration coapConfig,
-            boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
+    public LeshanServer(LwM2mServerEndpointsProvider endpointsProvider, RegistrationStore registrationStore,
+            SecurityStore securityStore, Authorizer authorizer, LwM2mModelProvider modelProvider, LwM2mEncoder encoder,
+            LwM2mDecoder decoder, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
             RegistrationIdProvider registrationIdProvider, boolean updateRegistrationOnNotification,
-            LwM2mLinkParser linkParser) {
-        this.linkParser = linkParser;
+            LwM2mLinkParser linkParser, ServerSecurityInfo serverSecurityInfo) {
 
+        Validate.notNull(endpointsProvider, "endpointsProvider cannot be null");
         Validate.notNull(registrationStore, "registration store cannot be null");
         Validate.notNull(authorizer, "authorizer cannot be null");
         Validate.notNull(modelProvider, "modelProvider cannot be null");
         Validate.notNull(encoder, "encoder cannot be null");
         Validate.notNull(decoder, "decoder cannot be null");
-        Validate.notNull(coapConfig, "coapConfig cannot be null");
         Validate.notNull(registrationIdProvider, "registrationIdProvider cannot be null");
 
-        // Create CoAP server
-        coapServer = createCoapServer(coapConfig);
-
-        // unsecured endpoint
-        this.unsecuredEndpoint = unsecuredEndpoint;
-        if (unsecuredEndpoint != null) {
-            coapServer.addEndpoint(unsecuredEndpoint);
-        }
-
-        // secure endpoint
-        this.securedEndpoint = securedEndpoint;
-        if (securedEndpoint != null) {
-            coapServer.addEndpoint(securedEndpoint);
-        }
-
         // init services and stores
+        this.endpointsProvider = endpointsProvider;
         this.registrationStore = registrationStore;
         registrationService = createRegistrationService(registrationStore);
         this.securityStore = securityStore;
         this.modelProvider = modelProvider;
-        this.updateRegistrationOnNotification = updateRegistrationOnNotification;
-        observationService = createObservationService(registrationStore, modelProvider, decoder, unsecuredEndpoint,
-                securedEndpoint);
+        this.observationService = createObservationService(registrationStore, updateRegistrationOnNotification,
+                endpointsProvider);
         if (noQueueMode) {
             presenceService = null;
         } else {
-            presenceService = createPresenceService(registrationService, awakeTimeProvider);
+            presenceService = createPresenceService(registrationService, awakeTimeProvider,
+                    updateRegistrationOnNotification);
         }
-
-        // define /rd resource
-        coapServer.add(createRegisterResource(registrationService, authorizer, registrationIdProvider));
-
-        // define /dp resource
         this.sendService = createSendHandler();
-        coapServer.add(createSendResource(sendService, modelProvider, decoder, registrationStore));
+
+        // create endpoints
+        ServerEndpointToolbox toolbox = new ServerEndpointToolbox(decoder, encoder, linkParser,
+                new DefaultClientProfileProvider(registrationStore, modelProvider));
+        RegistrationHandler registrationHandler = new RegistrationHandler(registrationService, authorizer,
+                registrationIdProvider);
+        DefaultUplinkRequestReceiver requestReceiver = new DefaultUplinkRequestReceiver(registrationHandler,
+                sendService);
+        endpointsProvider.createEndpoints(requestReceiver, observationService, toolbox, serverSecurityInfo, this);
 
         // create request sender
-        requestSender = createRequestSender(securedEndpoint, unsecuredEndpoint, registrationService, observationService,
-                this.modelProvider, encoder, decoder, presenceService);
+        requestSender = createRequestSender(endpointsProvider, registrationService, this.modelProvider,
+                presenceService);
 
-        // connection cleaner
-        createConnectionCleaner(securityStore, securedEndpoint);
-
-        coapApi = new CoapAPI();
-    }
-
-    protected CoapServer createCoapServer(Configuration coapConfig) {
-        return new CoapServer(coapConfig) {
-            @Override
-            protected Resource createRoot() {
-                return new RootResource();
-            }
-        };
     }
 
     protected RegistrationServiceImpl createRegistrationService(RegistrationStore registrationStore) {
         return new RegistrationServiceImpl(registrationStore);
     }
 
-    protected ObservationServiceImpl createObservationService(CaliforniumRegistrationStore registrationStore,
-            LwM2mModelProvider modelProvider, LwM2mDecoder decoder, CoapEndpoint unsecuredEndpoint,
-            CoapEndpoint securedEndpoint) {
+    protected ObservationServiceImpl createObservationService(RegistrationStore registrationStore,
+            boolean updateRegistrationOnNotification, LwM2mServerEndpointsProvider endpointsProvider) {
 
-        ObservationServiceImpl observationService = new ObservationServiceImpl(registrationStore, modelProvider,
-                decoder, updateRegistrationOnNotification);
-
-        if (unsecuredEndpoint != null) {
-            unsecuredEndpoint.addNotificationListener(observationService);
-            observationService.setNonSecureEndpoint(unsecuredEndpoint);
-        }
-
-        if (securedEndpoint != null) {
-            securedEndpoint.addNotificationListener(observationService);
-            observationService.setSecureEndpoint(securedEndpoint);
-        }
+        ObservationServiceImpl observationService = new ObservationServiceImpl(registrationStore, endpointsProvider,
+                updateRegistrationOnNotification);
         return observationService;
     }
 
     protected PresenceServiceImpl createPresenceService(RegistrationService registrationService,
-            ClientAwakeTimeProvider awakeTimeProvider) {
+            ClientAwakeTimeProvider awakeTimeProvider, boolean updateRegistrationOnNotification) {
         PresenceServiceImpl presenceService = new PresenceServiceImpl(awakeTimeProvider);
         PresenceStateListener presenceStateListener = new PresenceStateListener(presenceService);
         registrationService.addListener(new PresenceStateListener(presenceService));
@@ -281,35 +191,21 @@ public class LeshanServer {
         return presenceService;
     }
 
-    protected CoapResource createRegisterResource(RegistrationServiceImpl registrationService, Authorizer authorizer,
-            RegistrationIdProvider registrationIdProvider) {
-        return new RegisterResource(new RegistrationHandler(registrationService, authorizer, registrationIdProvider),
-                linkParser);
-    }
-
     protected SendHandler createSendHandler() {
         return new SendHandler();
     }
 
-    protected CoapResource createSendResource(SendHandler sendHandler, LwM2mModelProvider modelProvider,
-            LwM2mDecoder decoder, CaliforniumRegistrationStore registrationStore) {
-        return new SendResource(sendHandler, modelProvider, decoder, registrationStore);
-    }
-
-    protected LwM2mRequestSender createRequestSender(Endpoint securedEndpoint, Endpoint unsecuredEndpoint,
-            RegistrationServiceImpl registrationService, ObservationServiceImpl observationService,
-            LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder,
+    protected DownlinkRequestSender createRequestSender(LwM2mServerEndpointsProvider endpointsProvider,
+            RegistrationServiceImpl registrationService, LwM2mModelProvider modelProvider,
             PresenceServiceImpl presenceService) {
 
         // if no queue mode, create a "simple" sender
-        final LwM2mRequestSender requestSender;
+        final DownlinkRequestSender requestSender;
         if (presenceService == null)
-            requestSender = new CaliforniumLwM2mRequestSender(securedEndpoint, unsecuredEndpoint, observationService,
-                    modelProvider, encoder, decoder, linkParser);
+            requestSender = new DefaultDownlinkRequestSender(endpointsProvider, modelProvider);
         else
-            requestSender = new CaliforniumQueueModeRequestSender(presenceService,
-                    new CaliforniumLwM2mRequestSender(securedEndpoint, unsecuredEndpoint, observationService,
-                            modelProvider, encoder, decoder, linkParser));
+            requestSender = new QueueModeLwM2mRequestSender(presenceService,
+                    new DefaultDownlinkRequestSender(endpointsProvider, modelProvider));
 
         // Cancel observations on client unregistering
         registrationService.addListener(new RegistrationListener() {
@@ -330,29 +226,11 @@ public class LeshanServer {
 
             @Override
             public void registered(Registration registration, Registration previousReg,
-                    Collection<Observation> previousObservations) {
+                    Collection<Observation> previousObsersations) {
             }
         });
 
         return requestSender;
-    }
-
-    protected void createConnectionCleaner(SecurityStore securityStore, CoapEndpoint securedEndpoint) {
-        if (securedEndpoint != null && securedEndpoint.getConnector() instanceof DTLSConnector
-                && securityStore instanceof EditableSecurityStore) {
-
-            final ConnectionCleaner connectionCleaner = new ConnectionCleaner(
-                    (DTLSConnector) securedEndpoint.getConnector());
-
-            ((EditableSecurityStore) securityStore).addListener(new SecurityStoreListener() {
-                @Override
-                public void securityInfoRemoved(boolean infosAreCompromised, SecurityInfo... infos) {
-                    if (infosAreCompromised) {
-                        connectionCleaner.cleanConnectionFor(infos);
-                    }
-                }
-            });
-        }
     }
 
     /**
@@ -372,12 +250,13 @@ public class LeshanServer {
         }
 
         // Start server
-        coapServer.start();
+        endpointsProvider.start();
 
         if (LOG.isInfoEnabled()) {
-            LOG.info("LWM2M server started at {} {}",
-                    getUnsecuredAddress() == null ? "" : "coap://" + getUnsecuredAddress(),
-                    getSecuredAddress() == null ? "" : "coaps://" + getSecuredAddress());
+            LOG.info("LWM2M server started.");
+            for (LwM2mServerEndpoint endpoint : endpointsProvider.getEndpoints()) {
+                LOG.info("{} endpoint available at {}.", endpoint.getProtocol().getName(), endpoint.getURI());
+            }
         }
     }
 
@@ -386,7 +265,7 @@ public class LeshanServer {
      */
     public void stop() {
         // Stop server
-        coapServer.stop();
+        endpointsProvider.stop();
 
         // Stop stores
         if (registrationStore instanceof Stoppable) {
@@ -409,7 +288,7 @@ public class LeshanServer {
      */
     public void destroy() {
         // Destroy server
-        coapServer.destroy();
+        endpointsProvider.destroy();
 
         // Destroy stores
         if (registrationStore instanceof Destroyable) {
@@ -442,6 +321,10 @@ public class LeshanServer {
      */
     public RegistrationService getRegistrationService() {
         return this.registrationService;
+    }
+
+    public RegistrationStore getRegistrationStore() {
+        return registrationService.getStore();
     }
 
     /**
@@ -483,6 +366,19 @@ public class LeshanServer {
      */
     public LwM2mModelProvider getModelProvider() {
         return this.modelProvider;
+    }
+
+    public List<LwM2mServerEndpoint> getEndpoints() {
+        return endpointsProvider.getEndpoints();
+    }
+
+    public LwM2mServerEndpoint getEndpoint(Protocol protocol) {
+        for (LwM2mServerEndpoint endpoint : endpointsProvider.getEndpoints()) {
+            if (endpoint.getProtocol().equals(protocol)) {
+                return endpoint;
+            }
+        }
+        return null;
     }
 
     /**
@@ -665,190 +561,5 @@ public class LeshanServer {
             LowerLayerConfig lowerLayerConfig, long timeoutInMs, ResponseCallback<T> responseCallback,
             ErrorCallback errorCallback) {
         requestSender.send(destination, request, lowerLayerConfig, timeoutInMs, responseCallback, errorCallback);
-    }
-
-    /**
-     * @return the {@link InetSocketAddress} used for <code>coap://</code>
-     */
-    public InetSocketAddress getUnsecuredAddress() {
-        if (unsecuredEndpoint != null) {
-            return unsecuredEndpoint.getAddress();
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * @return the {@link InetSocketAddress} used for <code>coaps://</code>
-     */
-    public InetSocketAddress getSecuredAddress() {
-        if (securedEndpoint != null) {
-            return securedEndpoint.getAddress();
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * A CoAP API, generally needed when you want to mix LWM2M and CoAP protocol.
-     */
-    public CoapAPI coap() {
-        return coapApi;
-    }
-
-    public class CoapAPI {
-
-        /**
-         * @return the underlying {@link CoapServer}
-         */
-        public CoapServer getServer() {
-            return coapServer;
-        }
-
-        /**
-         * @return the {@link CoapEndpoint} used for secured CoAP communication (coaps://)
-         */
-        public CoapEndpoint getSecuredEndpoint() {
-            return securedEndpoint;
-        }
-
-        /**
-         * @return the {@link CoapEndpoint} used for unsecured CoAP communication (coap://)
-         */
-        public CoapEndpoint getUnsecuredEndpoint() {
-            return unsecuredEndpoint;
-        }
-
-        /**
-         * Send a CoAP {@link Request} synchronously to a LWM2M client using a default 2min timeout. Will block until a
-         * response is received from the remote client.
-         * <p>
-         * The synchronous way could block a thread during a long time so it is more recommended to use the asynchronous
-         * way.
-         * <p>
-         * We choose a default timeout a bit higher to the MAX_TRANSMIT_WAIT(62-93s) which is the time from starting to
-         * send a Confirmable message to the time when an acknowledgement is no longer expected.
-         *
-         * @param destination The registration linked to the LWM2M client to which the request must be sent.
-         * @param request The CoAP request to send to the client.
-         * @return the response or <code>null</code> if the timeout expires (see
-         *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
-         *
-         * @throws InterruptedException if the thread was interrupted.
-         * @throws RequestRejectedException if the request is rejected by foreign peer.
-         * @throws RequestCanceledException if the request is cancelled.
-         * @throws SendFailedException if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.
-         * @throws ClientSleepingException if client is currently sleeping.
-         */
-        public Response send(Registration destination, Request request) throws InterruptedException {
-            // Ensure that delegated sender is able to send CoAP request
-            if (!(requestSender instanceof CoapRequestSender)) {
-                throw new UnsupportedOperationException("This sender does not support to send CoAP request");
-            }
-            CoapRequestSender sender = (CoapRequestSender) requestSender;
-
-            return sender.sendCoapRequest(destination, request, DEFAULT_TIMEOUT);
-        }
-
-        /**
-         * Send a CoAP {@link Request} synchronously to a LWM2M client. Will block until a response is received from the
-         * remote client.
-         * <p>
-         * The synchronous way could block a thread during a long time so it is more recommended to use the asynchronous
-         * way.
-         * <p>
-         * We choose a default timeout a bit higher to the MAX_TRANSMIT_WAIT(62-93s) which is the time from starting to
-         * send a Confirmable message to the time when an acknowledgement is no longer expected.
-         *
-         * @param destination The registration linked to the LWM2M client to which the request must be sent.
-         * @param request The CoAP request to send to the client.
-         * @param timeoutInMs The response timeout to wait in milliseconds (see
-         *        https://github.com/eclipse/leshan/wiki/Request-Timeout)
-         * @return the response or <code>null</code> if the timeout expires (see
-         *         https://github.com/eclipse/leshan/wiki/Request-Timeout).
-         *
-         * @throws InterruptedException if the thread was interrupted.
-         * @throws RequestRejectedException if the request is rejected by foreign peer.
-         * @throws RequestCanceledException if the request is cancelled.
-         * @throws SendFailedException if the request can not be sent. E.g. error at CoAP or DTLS/UDP layer.
-         * @throws ClientSleepingException if client is currently sleeping.
-         */
-        public Response send(Registration destination, Request request, long timeoutInMs) throws InterruptedException {
-            // Ensure that delegated sender is able to send CoAP request
-            if (!(requestSender instanceof CoapRequestSender)) {
-                throw new UnsupportedOperationException("This sender does not support to send CoAP request");
-            }
-            CoapRequestSender sender = (CoapRequestSender) requestSender;
-
-            return sender.sendCoapRequest(destination, request, timeoutInMs);
-        }
-
-        /**
-         * Sends a CoAP {@link Request} asynchronously to a LWM2M client using a default 2min timeout.
-         * <p>
-         * {@link ResponseCallback} and {@link ErrorCallback} are exclusively called.
-         *
-         * @param destination The registration linked to the LWM2M client to which the request must be sent.
-         * @param request The CoAP request to send to the client.
-         * @param responseCallback a callback called when a response is received (successful or error response). This
-         *        callback MUST NOT be null.
-         * @param errorCallback a callback called when an error or exception occurred when response is received. It can
-         *        be :
-         *        <ul>
-         *        <li>{@link RequestRejectedException} if the request is rejected by foreign peer.</li>
-         *        <li>{@link RequestCanceledException} if the request is cancelled.</li>
-         *        <li>{@link SendFailedException} if the request can not be sent. E.g. error at CoAP or DTLS/UDP
-         *        layer.</li>
-         *        <li>{@link ClientSleepingException} if client is currently sleeping.</li>
-         *        <li>{@link TimeoutException} if the timeout expires (see
-         *        https://github.com/eclipse/leshan/wiki/Request-Timeout).</li>
-         *        <li>or any other RuntimeException for unexpected issue.
-         *        </ul>
-         *        This callback MUST NOT be null.
-         */
-        public void send(Registration destination, Request request, CoapResponseCallback responseCallback,
-                ErrorCallback errorCallback) {
-            // Ensure that delegated sender is able to send CoAP request
-            if (!(requestSender instanceof CoapRequestSender)) {
-                throw new UnsupportedOperationException("This sender does not support to send CoAP request");
-            }
-            CoapRequestSender sender = (CoapRequestSender) requestSender;
-
-            sender.sendCoapRequest(destination, request, DEFAULT_TIMEOUT, responseCallback, errorCallback);
-        }
-
-        /**
-         * Sends a CoAP {@link Request} asynchronously to a LWM2M client.
-         * <p>
-         * {@link ResponseCallback} and {@link ErrorCallback} are exclusively called.
-         *
-         * @param destination The registration linked to the LWM2M client to which the request must be sent.
-         * @param request The CoAP request to send to the client.
-         * @param responseCallback a callback called when a response is received (successful or error response). This
-         *        callback MUST NOT be null.
-         * @param errorCallback a callback called when an error or exception occurred when response is received. It can
-         *        be :
-         *        <ul>
-         *        <li>{@link RequestRejectedException} if the request is rejected by foreign peer.</li>
-         *        <li>{@link RequestCanceledException} if the request is cancelled.</li>
-         *        <li>{@link SendFailedException} if the request can not be sent. E.g. error at CoAP or DTLS/UDP
-         *        layer.</li>
-         *        <li>{@link ClientSleepingException} if client is currently sleeping.</li>
-         *        <li>{@link TimeoutException} if the timeout expires (see
-         *        https://github.com/eclipse/leshan/wiki/Request-Timeout).</li>
-         *        <li>or any other RuntimeException for unexpected issue.
-         *        </ul>
-         *        This callback MUST NOT be null.
-         */
-        public void send(Registration destination, Request request, long timeout, CoapResponseCallback responseCallback,
-                ErrorCallback errorCallback) {
-            // Ensure that delegated sender is able to send CoAP request
-            if (!(requestSender instanceof CoapRequestSender)) {
-                throw new UnsupportedOperationException("This sender does not support to send CoAP request");
-            }
-            CoapRequestSender sender = (CoapRequestSender) requestSender;
-
-            sender.sendCoapRequest(destination, request, timeout, responseCallback, errorCallback);
-        }
     }
 }

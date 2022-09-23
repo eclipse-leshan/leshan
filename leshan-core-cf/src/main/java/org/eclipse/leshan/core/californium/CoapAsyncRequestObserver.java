@@ -25,14 +25,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
-import org.eclipse.californium.elements.exception.EndpointUnconnectedException;
-import org.eclipse.californium.scandium.dtls.DtlsHandshakeTimeoutException;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
-import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.request.exception.TimeoutException.Type;
-import org.eclipse.leshan.core.request.exception.UnconnectedPeerException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +52,7 @@ public class CoapAsyncRequestObserver extends AbstractRequestObserver {
     private ScheduledFuture<?> cleaningTask;
     private boolean cancelled = false;
     private final ScheduledExecutorService executor;
+    private final ExceptionTranslator exceptionTranslator;
 
     // The Californium API does not ensure that message callback are exclusive
     // meaning that you can get a onReponse call and a onCancel one.
@@ -81,12 +78,14 @@ public class CoapAsyncRequestObserver extends AbstractRequestObserver {
      * @param executor used to scheduled timeout tasks.
      */
     public CoapAsyncRequestObserver(Request coapRequest, CoapResponseCallback responseCallback,
-            ErrorCallback errorCallback, long timeoutInMs, ScheduledExecutorService executor) {
+            ErrorCallback errorCallback, long timeoutInMs, ScheduledExecutorService executor,
+            ExceptionTranslator exceptionTranslator) {
         super(coapRequest);
         this.responseCallback = responseCallback;
         this.errorCallback = errorCallback;
         this.timeoutInMs = timeoutInMs;
         this.executor = executor;
+        this.exceptionTranslator = exceptionTranslator;
     }
 
     @Override
@@ -155,17 +154,7 @@ public class CoapAsyncRequestObserver extends AbstractRequestObserver {
     public void onSendError(Throwable error) {
         if (eventRaised.compareAndSet(false, true)) {
             cancelCleaningTask();
-            if (error instanceof DtlsHandshakeTimeoutException) {
-                errorCallback.onError(new TimeoutException(Type.DTLS_HANDSHAKE_TIMEOUT, error,
-                        "Request %s timeout : dtls handshake timeout", coapRequest.getURI()));
-            } else if (error instanceof EndpointUnconnectedException) {
-                errorCallback.onError(new UnconnectedPeerException(error,
-                        "Unable to send request %s : peer is not connected (no DTLS connection)",
-                        coapRequest.getURI()));
-            } else {
-                errorCallback
-                        .onError(new SendFailedException(error, "Unable to send request %s", coapRequest.getURI()));
-            }
+            errorCallback.onError(exceptionTranslator.translate(coapRequest, error));
         } else {
             LOG.debug("onSendError callback ignored because an event was already raised for this request {}",
                     coapRequest);
