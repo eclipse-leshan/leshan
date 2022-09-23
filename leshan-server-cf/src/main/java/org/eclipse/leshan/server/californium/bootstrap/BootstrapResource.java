@@ -46,7 +46,7 @@ public class BootstrapResource extends LwM2mCoapResource {
     private final BootstrapHandler bootstrapHandler;
 
     public BootstrapResource(BootstrapHandler handler) {
-        super("bs");
+        super("bs", null);
         bootstrapHandler = handler;
     }
 

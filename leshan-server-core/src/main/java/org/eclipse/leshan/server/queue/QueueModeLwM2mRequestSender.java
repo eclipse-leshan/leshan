@@ -24,23 +24,23 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.request.DownlinkRequestSender;
 import org.eclipse.leshan.server.request.LowerLayerConfig;
-import org.eclipse.leshan.server.request.LwM2mRequestSender;
 
 /**
- * A {@link LwM2mRequestSender} which supports LWM2M Queue Mode.
+ * A {@link DownlinkRequestSender} which supports LWM2M Queue Mode.
  */
-public class QueueModeLwM2mRequestSender implements LwM2mRequestSender {
+public class QueueModeLwM2mRequestSender implements DownlinkRequestSender {
 
     protected PresenceServiceImpl presenceService;
-    protected LwM2mRequestSender delegatedSender;
+    protected DownlinkRequestSender delegatedSender;
 
     /**
      * @param presenceService the presence service object for setting the client into sleepint state when request
      *        Timeout expires and into awake state when a response arrives.
      * @param delegatedSender internal sender that it is used for sending the requests, using delegation.
      */
-    public QueueModeLwM2mRequestSender(PresenceServiceImpl presenceService, LwM2mRequestSender delegatedSender) {
+    public QueueModeLwM2mRequestSender(PresenceServiceImpl presenceService, DownlinkRequestSender delegatedSender) {
         Validate.notNull(presenceService);
         Validate.notNull(delegatedSender);
 

@@ -19,6 +19,8 @@ package org.eclipse.leshan.server.redis.serialization;
 import static org.junit.Assert.assertEquals;
 
 import java.net.Inet4Address;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,10 +39,10 @@ import org.junit.Test;
 
 public class RegistrationSerDesTest {
 
-    private RegistrationSerDes registrationSerDes = new RegistrationSerDes();
+    private final RegistrationSerDes registrationSerDes = new RegistrationSerDes();
 
     @Test
-    public void ser_and_des_are_equals() {
+    public void ser_and_des_are_equals() throws URISyntaxException {
         Link[] objs = new Link[2];
         AttributeSet attrs = new AttributeSet( //
                 new UnquotedStringAttribute("us", "12"), //
@@ -54,7 +56,7 @@ public class RegistrationSerDesTest {
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
                 Identity.unsecure(Inet4Address.getLoopbackAddress(), 1)).objectLinks(objs).rootPath("/")
                         .supportedContentFormats(ContentFormat.TLV, ContentFormat.TEXT);
-
+        builder.lastEndpointUsed(new URI("coap://localhost:5683"));
         builder.registrationDate(new Date(100L));
         builder.extractDataFromObjectLink(true);
         builder.lastUpdate(new Date(101L));
@@ -67,7 +69,7 @@ public class RegistrationSerDesTest {
     }
 
     @Test
-    public void ser_and_des_are_equals_with_app_data() {
+    public void ser_and_des_are_equals_with_app_data() throws URISyntaxException {
         Link[] objs = new Link[2];
         AttributeSet attrs = new AttributeSet( //
                 new UnquotedStringAttribute("us", "12"), //
@@ -86,6 +88,7 @@ public class RegistrationSerDesTest {
                 Identity.unsecure(Inet4Address.getLoopbackAddress(), 1)).objectLinks(objs).rootPath("/")
                         .supportedContentFormats(ContentFormat.TLV, ContentFormat.TEXT).applicationData(appData);
 
+        builder.lastEndpointUsed(new URI("coap://localhost:5683"));
         builder.registrationDate(new Date(100L));
         builder.lastUpdate(new Date(101L));
         builder.extractDataFromObjectLink(true);

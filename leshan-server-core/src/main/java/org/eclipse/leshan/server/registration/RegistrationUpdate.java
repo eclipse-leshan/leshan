@@ -101,10 +101,10 @@ public class RegistrationUpdate {
                 .additionalRegistrationAttributes(additionalAttributes).rootPath(registration.getRootPath())
                 .supportedContentFormats(registration.getSupportedContentFormats())
                 .supportedObjects(registration.getSupportedObject())
-                .availableInstances(registration.getAvailableInstances()).applicationData(applicationData);
+                .availableInstances(registration.getAvailableInstances()).applicationData(applicationData)
+                .lastEndpointUsed(registration.getLastEndpointUsed());
 
         return builder.build();
-
     }
 
     public String getRegistrationId() {

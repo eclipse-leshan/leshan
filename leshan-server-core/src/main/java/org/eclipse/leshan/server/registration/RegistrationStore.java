@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.ObservationIdentifier;
 import org.eclipse.leshan.core.request.Identity;
 
 /**
@@ -105,17 +106,17 @@ public interface RegistrationStore {
      *
      * @return the list of removed observations or an empty list if none were removed.
      */
-    Collection<Observation> addObservation(String registrationId, Observation observation);
+    Collection<Observation> addObservation(String registrationId, Observation observation, boolean addIfAbsent);
 
     /**
      * Get the observation for the given registration with the given observationId
      */
-    Observation getObservation(String registrationId, byte[] observationId);
+    Observation getObservation(String registrationId, ObservationIdentifier observationId);
 
     /**
      * Remove the observation for the given registration with the given observationId
      */
-    Observation removeObservation(String registrationId, byte[] observationId);
+    Observation removeObservation(String registrationId, ObservationIdentifier observationId);
 
     /**
      * Get all observations for the given registrationId
@@ -131,4 +132,5 @@ public interface RegistrationStore {
      * set a listener for registration expiration.
      */
     void setExpirationListener(ExpirationListener listener);
+
 }

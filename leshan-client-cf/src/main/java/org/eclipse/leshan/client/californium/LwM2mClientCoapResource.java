@@ -34,7 +34,7 @@ public class LwM2mClientCoapResource extends LwM2mCoapResource {
 
     public LwM2mClientCoapResource(String name, RegistrationEngine registrationEngine,
             CaliforniumEndpointsManager endpointsManager) {
-        super(name);
+        super(name, null);
         this.registrationEngine = registrationEngine;
         this.endpointsManager = endpointsManager;
     }

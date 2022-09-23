@@ -13,16 +13,18 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.registration;
+package org.eclipse.leshan.server.registration;
 
 import static org.junit.Assert.assertEquals;
 
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.DefaultLinkParser;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -30,17 +32,11 @@ import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.UplinkRequest;
-import org.eclipse.leshan.server.registration.RandomStringRegistrationIdProvider;
-import org.eclipse.leshan.server.registration.Registration;
-import org.eclipse.leshan.server.registration.RegistrationHandler;
-import org.eclipse.leshan.server.registration.RegistrationServiceImpl;
-import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.security.Authorization;
 import org.eclipse.leshan.server.security.Authorizer;
 import org.junit.Before;
 import org.junit.Test;
 
-// TODO TL : this test should be moved in leshan-server-core once we integrate transport layer abstraction
 public class RegistrationHandlerTest {
 
     private RegistrationHandler registrationHandler;
@@ -65,7 +61,8 @@ public class RegistrationHandlerTest {
         authorizer.willReturn(Authorization.approved(appData));
 
         // handle REGISTER request
-        registrationHandler.register(givenIdentity(), givenRegisterRequestWithEndpoint("myEndpoint"));
+        registrationHandler.register(givenIdentity(), givenRegisterRequestWithEndpoint("myEndpoint"),
+                givenServerEndpointUri());
 
         // check result
         Registration registration = registrationStore.getRegistrationByEndpoint("myEndpoint");
@@ -95,7 +92,8 @@ public class RegistrationHandlerTest {
         authorizer.willReturn(Authorization.approved(appData));
 
         // handle REGISTER request
-        registrationHandler.register(givenIdentity(), givenRegisterRequestWithEndpoint("myEndpoint"));
+        registrationHandler.register(givenIdentity(), givenRegisterRequestWithEndpoint("myEndpoint"),
+                givenServerEndpointUri());
 
         // check result
         Registration registration = registrationStore.getRegistrationByEndpoint("myEndpoint");
@@ -114,6 +112,10 @@ public class RegistrationHandlerTest {
 
     private Identity givenIdentity() {
         return Identity.unsecure(new InetSocketAddress(0));
+    }
+
+    private URI givenServerEndpointUri() {
+        return EndpointUriUtil.createUri("coap", "localhost", 5683);
     }
 
     private RegisterRequest givenRegisterRequestWithEndpoint(String endpoint) {

@@ -32,6 +32,7 @@ import java.util.Set;
 
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.ResponseCode;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -66,8 +67,8 @@ public class ObserveTimeStampTest {
 
     protected IntegrationTestHelper helper = new IntegrationTestHelper();
 
-    private ContentFormat contentFormat;
-    private LwM2mEncoder encoder = new DefaultLwM2mEncoder();
+    private final ContentFormat contentFormat;
+    private final LwM2mEncoder encoder = new DefaultLwM2mEncoder();
 
     public ObserveTimeStampTest(ContentFormat contentFormat) {
         this.contentFormat = contentFormat;
@@ -123,7 +124,7 @@ public class ObserveTimeStampTest {
                 new StaticModel(helper.createObjectModels()));
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
         TestObserveUtil.sendNotification(helper.getClientConnector(helper.getCurrentRegisteredServer()),
-                helper.server.getUnsecuredAddress(), payload, firstCoapResponse, contentFormat);
+                helper.server.getEndpoint(Protocol.COAP).getURI(), payload, firstCoapResponse, contentFormat);
         // *** Hack End *** //
 
         // verify result
@@ -166,7 +167,7 @@ public class ObserveTimeStampTest {
                 new StaticModel(helper.createObjectModels()));
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
         TestObserveUtil.sendNotification(helper.getClientConnector(helper.getCurrentRegisteredServer()),
-                helper.server.getUnsecuredAddress(), payload, firstCoapResponse, contentFormat);
+                helper.server.getEndpoint(Protocol.COAP).getURI(), payload, firstCoapResponse, contentFormat);
         // *** Hack End *** //
 
         // verify result
@@ -210,7 +211,7 @@ public class ObserveTimeStampTest {
 
         Response firstCoapResponse = (Response) observeResponse.getCoapResponse();
         TestObserveUtil.sendNotification(helper.getClientConnector(helper.getCurrentRegisteredServer()),
-                helper.server.getUnsecuredAddress(), payload, firstCoapResponse, contentFormat);
+                helper.server.getEndpoint(Protocol.COAP).getURI(), payload, firstCoapResponse, contentFormat);
         // *** Hack End *** //
 
         // verify result

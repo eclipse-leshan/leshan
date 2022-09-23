@@ -21,7 +21,6 @@ import java.util.Map;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.util.Hex;
 
 /**
  * An observation of a resource provided by a LWM2M Client.
@@ -41,9 +40,9 @@ public class SingleObservation extends Observation {
      * @param contentFormat contentFormat used to read the resource (could be null).
      * @param context additional information relative to this observation.
      */
-    public SingleObservation(byte[] id, String registrationId, LwM2mPath path, ContentFormat contentFormat,
-            Map<String, String> context) {
-        super(id, registrationId, context);
+    public SingleObservation(ObservationIdentifier id, String registrationId, LwM2mPath path,
+            ContentFormat contentFormat, Map<String, String> context, Map<String, String> protocolData) {
+        super(id, registrationId, context, protocolData);
         this.path = path;
         this.contentFormat = contentFormat;
     }
@@ -69,7 +68,7 @@ public class SingleObservation extends Observation {
     @Override
     public String toString() {
         return String.format("SingleObservation [path=%s, id=%s, contentFormat=%s, registrationId=%s, context=%s]",
-                path, Hex.encodeHexString(id), contentFormat, registrationId, context);
+                path, id, contentFormat, registrationId, context);
     }
 
     @Override

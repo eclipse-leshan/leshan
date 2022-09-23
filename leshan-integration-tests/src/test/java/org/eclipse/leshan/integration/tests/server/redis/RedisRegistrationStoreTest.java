@@ -31,22 +31,31 @@ import java.util.Map;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Token;
+import org.eclipse.californium.core.network.serialization.UdpDataParser;
+import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
 import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.leshan.core.californium.ObserveUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.ObservationIdentifier;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
+import org.eclipse.leshan.core.response.ObserveCompositeResponse;
+import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.integration.tests.util.RedisIntegrationTestHelper;
-import org.eclipse.leshan.server.californium.registration.CaliforniumRegistrationStore;
+import org.eclipse.leshan.server.californium.observation.LwM2mObservationStore;
+import org.eclipse.leshan.server.californium.observation.ObservationSerDes;
+import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
+import org.eclipse.leshan.server.profile.ClientProfile;
 import org.eclipse.leshan.server.redis.RedisRegistrationStore;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,9 +69,11 @@ public class RedisRegistrationStoreTest {
     private final EnumSet<BindingMode> binding = EnumSet.of(BindingMode.U, BindingMode.Q, BindingMode.S);
     private final Link[] objectLinks = new Link[] { new Link("/3") };
     private final String registrationId = "4711";
-    private final Token exampleToken = Token.EMPTY;
+    private final Token aToken = Token.EMPTY;
+    private final ObservationIdentifier anObservationId = new ObservationIdentifier(aToken.getBytes());
 
-    CaliforniumRegistrationStore store;
+    RegistrationStore store;
+    LwM2mObservationStore observationStore;
     InetAddress address;
     Registration registration;
 
@@ -73,6 +84,29 @@ public class RedisRegistrationStoreTest {
         helper = new RedisIntegrationTestHelper();
         address = InetAddress.getLocalHost();
         store = new RedisRegistrationStore(helper.createJedisPool());
+        observationStore = new LwM2mObservationStore(store, new LwM2mNotificationReceiver() {
+
+            @Override
+            public void onNotification(CompositeObservation observation, ClientProfile profile,
+                    ObserveCompositeResponse response) {
+            }
+
+            @Override
+            public void onNotification(SingleObservation observation, ClientProfile profile, ObserveResponse response) {
+            }
+
+            @Override
+            public void onError(Observation observation, ClientProfile profile, Exception error) {
+            }
+
+            @Override
+            public void newObservation(Observation observation, Registration registration) {
+            }
+
+            @Override
+            public void cancelled(Observation observation) {
+            }
+        }, new ObservationSerDes(new UdpDataParser(), new UdpDataSerializer()));
     }
 
     @After
@@ -92,10 +126,10 @@ public class RedisRegistrationStoreTest {
                 examplePath);
 
         // when
-        store.put(exampleToken, observationToStore);
+        observationStore.put(aToken, observationToStore);
 
         // then
-        Observation leshanObservation = store.getObservation(registrationId, exampleToken.getBytes());
+        Observation leshanObservation = store.getObservation(registrationId, anObservationId);
         assertNotNull(leshanObservation);
         assertTrue(leshanObservation instanceof SingleObservation);
         SingleObservation observation = (SingleObservation) leshanObservation;
@@ -106,7 +140,6 @@ public class RedisRegistrationStoreTest {
     public void get_composite_observation_from_request() {
         // given
         List<LwM2mPath> examplePaths = Arrays.asList(new LwM2mPath("/1/2/3"), new LwM2mPath("/4/5/6"));
-        Token exampleToken = Token.EMPTY;
 
         givenASimpleRegistration(lifetime);
         store.addRegistration(registration);
@@ -115,10 +148,10 @@ public class RedisRegistrationStoreTest {
                 examplePaths);
 
         // when
-        store.put(exampleToken, observationToStore);
+        observationStore.put(aToken, observationToStore);
 
         // then
-        Observation leshanObservation = store.getObservation(registrationId, exampleToken.getBytes());
+        Observation leshanObservation = store.getObservation(registrationId, anObservationId);
         assertNotNull(leshanObservation);
         assertTrue(leshanObservation instanceof CompositeObservation);
         CompositeObservation observation = (CompositeObservation) leshanObservation;
@@ -153,7 +186,7 @@ public class RedisRegistrationStoreTest {
     private org.eclipse.californium.core.observe.Observation prepareCoapObservation(Request coapRequest,
             Map<String, String> userContext) {
         coapRequest.setUserContext(userContext);
-        coapRequest.setToken(exampleToken);
+        coapRequest.setToken(aToken);
         coapRequest.setObserve();
         coapRequest.getOptions().setAccept(ContentFormat.DEFAULT.getCode());
         coapRequest.setMID(1);

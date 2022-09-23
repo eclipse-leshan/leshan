@@ -32,6 +32,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.net.URI;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
@@ -55,6 +56,7 @@ import org.eclipse.californium.elements.util.SimpleMessageCallback;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.dtls.DTLSSession;
 import org.eclipse.leshan.core.CertificateUsage;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
@@ -261,8 +263,9 @@ public class SecurityTest {
         request.setMID(0);
         byte[] ping = new UdpDataSerializer().getByteArray(request);
         // sent it
-        connector.send(
-                RawData.outbound(ping, new AddressEndpointContext(helper.server.getSecuredAddress()), callback, false));
+        URI destinationUri = helper.server.getEndpoint(Protocol.COAPS).getURI();
+        connector.send(RawData.outbound(ping,
+                new AddressEndpointContext(destinationUri.getHost(), destinationUri.getPort()), callback, false));
         // Wait until new handshake DTLS is done
         EndpointContext endpointContext = callback.getEndpointContext(1000);
         assertEquals(((PreSharedKeyIdentity) endpointContext.getPeerIdentity()).getIdentity(), "anotherPSK");
@@ -379,15 +382,15 @@ public class SecurityTest {
         helper.assertClientRegisterered();
 
         // Remove DTLS connection at server side.
-        ((DTLSConnector) helper.server.coap().getSecuredEndpoint().getConnector()).clearConnectionState();
+        DTLSConnector dtlsServerConnector = helper.getServerDTLSConnector();
+        dtlsServerConnector.clearConnectionState();
 
         // try to send request
         ReadResponse readResponse = helper.server.send(registration, new ReadRequest(3), 1000);
         assertTrue(readResponse.isSuccess());
 
         // ensure we have a new session for it
-        DTLSSession session = ((DTLSConnector) helper.server.coap().getSecuredEndpoint().getConnector())
-                .getSessionByAddress(registration.getSocketAddress());
+        DTLSSession session = dtlsServerConnector.getSessionByAddress(registration.getSocketAddress());
         assertNotNull(session);
     }
 
@@ -412,7 +415,7 @@ public class SecurityTest {
         helper.assertClientRegisterered();
 
         // Remove DTLS connection at server side.
-        ((DTLSConnector) helper.server.coap().getSecuredEndpoint().getConnector()).clearConnectionState();
+        helper.getServerDTLSConnector().clearConnectionState();
 
         // stop client
         helper.client.stop(false);
@@ -453,7 +456,7 @@ public class SecurityTest {
         helper.assertClientRegisterered();
 
         // Remove DTLS connection at server side.
-        ((DTLSConnector) helper.server.coap().getSecuredEndpoint().getConnector()).clearConnectionState();
+        helper.getServerDTLSConnector().clearConnectionState();
 
         // try to send request
         try {
@@ -1817,7 +1820,6 @@ public class SecurityTest {
 
         boolean useServerCertifcatePublicKey = true;
         helper.createRPKClient(useServerCertifcatePublicKey);
-        helper.client.start();
 
         helper.getSecurityStore()
                 .add(SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(), helper.clientPublicKey));

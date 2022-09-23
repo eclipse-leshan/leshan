@@ -33,6 +33,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +50,7 @@ import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.leshan.core.ResponseCode;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.Observation;
@@ -252,7 +254,7 @@ public class RegistrationTest {
         } catch (SendFailedException e) {
             return;
         }
-        fail("Observe request should be sent");
+        fail("Observe request should NOT be sent");
     }
 
     @Test
@@ -287,7 +289,9 @@ public class RegistrationTest {
 
         // create a register request without the list of supported object
         Request coapRequest = new Request(Code.POST);
-        coapRequest.setDestinationContext(new AddressEndpointContext(helper.server.getUnsecuredAddress()));
+        URI destinationURI = helper.server.getEndpoint(Protocol.COAP).getURI();
+        coapRequest
+                .setDestinationContext(new AddressEndpointContext(destinationURI.getHost(), destinationURI.getPort()));
         coapRequest.getOptions().setContentFormat(ContentFormat.LINK.getCode());
         coapRequest.getOptions().addUriPath("rd");
         coapRequest.getOptions().addUriQuery("ep=" + helper.currentEndpointIdentifier);

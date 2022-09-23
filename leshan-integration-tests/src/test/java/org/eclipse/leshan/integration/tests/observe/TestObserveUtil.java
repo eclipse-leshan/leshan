@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.observe;
 
-import java.net.InetSocketAddress;
+import java.net.URI;
 
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.OptionSet;
@@ -28,7 +28,7 @@ import org.eclipse.californium.elements.RawData;
 import org.eclipse.leshan.core.request.ContentFormat;
 
 public class TestObserveUtil {
-    public static void sendNotification(Connector connector, InetSocketAddress destination, byte[] payload,
+    public static void sendNotification(Connector connector, URI destination, byte[] payload,
             Response firstCoapResponse, ContentFormat contentFormat) {
 
         // create observe response
@@ -40,7 +40,7 @@ public class TestObserveUtil {
         OptionSet options = new OptionSet().setContentFormat(contentFormat.getCode())
                 .setObserve(firstCoapResponse.getOptions().getObserve() + 1);
         response.setOptions(options);
-        EndpointContext context = new AddressEndpointContext(destination);
+        EndpointContext context = new AddressEndpointContext(destination.getHost(), destination.getPort());
         response.setDestinationContext(context);
 
         // serialize response

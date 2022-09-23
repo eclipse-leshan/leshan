@@ -17,6 +17,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
+import java.net.URI;
 import java.util.Date;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
@@ -52,7 +53,8 @@ public class RegistrationHandler {
         this.registrationIdProvider = registrationIdProvider;
     }
 
-    public SendableResponse<RegisterResponse> register(Identity sender, RegisterRequest registerRequest) {
+    public SendableResponse<RegisterResponse> register(Identity sender, RegisterRequest registerRequest,
+            URI endpointUsed) {
 
         // Create Registration from RegisterRequest
         Registration.Builder builder = new Registration.Builder(
@@ -63,7 +65,9 @@ public class RegistrationHandler {
                 .lifeTimeInSec(registerRequest.getLifetime()).bindingMode(registerRequest.getBindingMode())
                 .queueMode(registerRequest.getQueueMode()).objectLinks(registerRequest.getObjectLinks())
                 .smsNumber(registerRequest.getSmsNumber()).registrationDate(new Date()).lastUpdate(new Date())
-                .additionalRegistrationAttributes(registerRequest.getAdditionalAttributes());
+                .additionalRegistrationAttributes(registerRequest.getAdditionalAttributes())
+                .lastEndpointUsed(endpointUsed);
+
         Registration registrationToApproved = builder.build();
 
         // We check if the client get authorization.

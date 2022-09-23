@@ -16,6 +16,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.redis.serialization;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -56,7 +58,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public class RegistrationSerDes {
 
-    private AttributeParser attributeParser;
+    private final AttributeParser attributeParser;
 
     public RegistrationSerDes() {
         // Define all supported Attributes
@@ -86,6 +88,7 @@ public class RegistrationSerDes {
             o.put("qm", r.getQueueMode());
         o.put("ep", r.getEndpoint());
         o.put("regId", r.getId());
+        o.put("epUri", r.getLastEndpointUsed().toString());
 
         ArrayNode links = JsonNodeFactory.instance.arrayNode();
         for (Link l : r.getObjectLinks()) {
@@ -154,6 +157,15 @@ public class RegistrationSerDes {
     public Registration deserialize(JsonNode jObj) {
         Registration.Builder b = new Registration.Builder(jObj.get("regId").asText(), jObj.get("ep").asText(),
                 IdentitySerDes.deserialize(jObj.get("identity")));
+
+        try {
+            b.lastEndpointUsed(new URI(jObj.get("epUri").asText()));
+        } catch (URISyntaxException e1) {
+            throw new IllegalStateException(
+                    String.format("Unable to deserialize last endpoint used URI %s of registration %s/%s",
+                            jObj.get("epUri").asText(), jObj.get("regId").asText(), jObj.get("ep").asText()));
+        }
+
         b.bindingMode(BindingMode.parse(jObj.get("bnd").asText()));
         if (jObj.get("qm") != null)
             b.queueMode(jObj.get("qm").asBoolean());

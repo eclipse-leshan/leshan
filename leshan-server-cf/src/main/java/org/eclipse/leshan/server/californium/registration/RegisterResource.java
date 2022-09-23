@@ -29,6 +29,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.core.californium.LwM2mCoapResource;
+import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.LinkParser;
@@ -41,8 +42,8 @@ import org.eclipse.leshan.core.response.DeregisterResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.core.response.UpdateResponse;
-import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.registration.RegistrationService;
+import org.eclipse.leshan.server.request.UplinkRequestReceiver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,14 +72,14 @@ public class RegisterResource extends LwM2mCoapResource {
 
     public static final String RESOURCE_NAME = "rd";
 
-    private final RegistrationHandler registrationHandler;
-
+    private final UplinkRequestReceiver receiver;
     private final LinkParser linkParser;
 
-    public RegisterResource(RegistrationHandler registrationHandler, LinkParser linkParser) {
-        super(RESOURCE_NAME);
+    public RegisterResource(UplinkRequestReceiver receiver, LinkParser linkParser,
+            IdentityHandlerProvider identityHandlerProvider) {
+        super(RESOURCE_NAME, identityHandlerProvider);
 
-        this.registrationHandler = registrationHandler;
+        this.receiver = receiver;
         this.linkParser = linkParser;
         getAttributes().addResourceType("core.rd");
     }
@@ -128,7 +129,7 @@ public class RegisterResource extends LwM2mCoapResource {
     protected void handleRegister(CoapExchange exchange, Request request) {
         // Get identity
         // --------------------------------
-        Identity sender = extractIdentity(request.getSourceContext());
+        Identity sender = getForeignPeerIdentity(exchange.advanced(), request);
 
         // Create LwM2m request from CoAP request
         // --------------------------------
@@ -180,8 +181,8 @@ public class RegisterResource extends LwM2mCoapResource {
 
         // Handle request
         // -------------------------------
-        final SendableResponse<RegisterResponse> sendableResponse = registrationHandler.register(sender,
-                registerRequest);
+        final SendableResponse<RegisterResponse> sendableResponse = receiver.requestReceived(sender, null,
+                registerRequest, exchange.advanced().getEndpoint().getUri());
         RegisterResponse response = sendableResponse.getResponse();
 
         // Create CoAP Response from LwM2m request
@@ -197,7 +198,7 @@ public class RegisterResource extends LwM2mCoapResource {
 
     protected void handleUpdate(CoapExchange exchange, Request request, String registrationId) {
         // Get identity
-        Identity sender = extractIdentity(request.getSourceContext());
+        Identity sender = getForeignPeerIdentity(exchange.advanced(), request);
 
         // Create LwM2m request from CoAP request
         Long lifetime = null;
@@ -233,7 +234,8 @@ public class RegisterResource extends LwM2mCoapResource {
                 additionalParams, coapRequest);
 
         // Handle request
-        final SendableResponse<UpdateResponse> sendableResponse = registrationHandler.update(sender, updateRequest);
+        final SendableResponse<UpdateResponse> sendableResponse = receiver.requestReceived(sender, null, updateRequest,
+                exchange.advanced().getEndpoint().getUri());
         UpdateResponse updateResponse = sendableResponse.getResponse();
 
         // Create CoAP Response from LwM2m request
@@ -247,15 +249,15 @@ public class RegisterResource extends LwM2mCoapResource {
 
     protected void handleDeregister(CoapExchange exchange, String registrationId) {
         // Get identity
-        Identity sender = extractIdentity(exchange.advanced().getRequest().getSourceContext());
+        Request coapRequest = exchange.advanced().getRequest();
+        Identity sender = getForeignPeerIdentity(exchange.advanced(), coapRequest);
 
         // Create request
-        Request coapRequest = exchange.advanced().getRequest();
         DeregisterRequest deregisterRequest = new DeregisterRequest(registrationId, coapRequest);
 
         // Handle request
-        final SendableResponse<DeregisterResponse> sendableResponse = registrationHandler.deregister(sender,
-                deregisterRequest);
+        final SendableResponse<DeregisterResponse> sendableResponse = receiver.requestReceived(sender, null,
+                deregisterRequest, exchange.advanced().getEndpoint().getUri());
         DeregisterResponse deregisterResponse = sendableResponse.getResponse();
 
         // Create CoAP Response from LwM2m request

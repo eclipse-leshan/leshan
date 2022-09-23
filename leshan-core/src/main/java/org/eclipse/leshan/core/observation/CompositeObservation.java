@@ -22,7 +22,6 @@ import java.util.Map;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.util.Hex;
 
 /**
  * An composite-observation of a resource provided by a LWM2M Client.
@@ -43,9 +42,10 @@ public class CompositeObservation extends Observation {
      * @param responseContentFormat The {@link ContentFormat} requested to encode the {@link LwM2mNode} of the response.
      * @param context additional information relative to this observation.
      */
-    public CompositeObservation(byte[] id, String registrationId, List<LwM2mPath> paths,
-            ContentFormat requestContentFormat, ContentFormat responseContentFormat, Map<String, String> context) {
-        super(id, registrationId, context);
+    public CompositeObservation(ObservationIdentifier id, String registrationId, List<LwM2mPath> paths,
+            ContentFormat requestContentFormat, ContentFormat responseContentFormat, Map<String, String> context,
+            Map<String, String> protocolData) {
+        super(id, registrationId, context, protocolData);
         this.requestContentFormat = requestContentFormat;
         this.responseContentFormat = responseContentFormat;
         this.paths = paths;
@@ -78,7 +78,7 @@ public class CompositeObservation extends Observation {
     public String toString() {
         return String.format(
                 "CompositeObservation [paths=%s, id=%s, requestContentFormat=%s, responseContentFormat=%s, registrationId=%s, context=%s]",
-                paths, Hex.encodeHexString(id), requestContentFormat, responseContentFormat, registrationId, context);
+                paths, id, requestContentFormat, responseContentFormat, registrationId, context);
     }
 
     @Override

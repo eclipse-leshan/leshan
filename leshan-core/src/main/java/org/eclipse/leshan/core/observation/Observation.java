@@ -17,7 +17,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.observation;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,9 +26,10 @@ import java.util.Map;
  */
 public abstract class Observation {
 
-    protected final byte[] id;
+    protected final ObservationIdentifier id;
     protected final String registrationId;
     protected final Map<String, String> context;
+    protected final Map<String, String> protocolData;
 
     /**
      * An abstract constructor for {@link Observation}.
@@ -38,20 +38,25 @@ public abstract class Observation {
      * @param registrationId client's unique registration identifier.
      * @param context additional information relative to this observation.
      */
-    public Observation(byte[] id, String registrationId, Map<String, String> context) {
+    public Observation(ObservationIdentifier id, String registrationId, Map<String, String> context,
+            Map<String, String> protocolData) {
         this.id = id;
         this.registrationId = registrationId;
         if (context != null)
             this.context = Collections.unmodifiableMap(new HashMap<>(context));
         else
             this.context = Collections.emptyMap();
+        if (protocolData != null)
+            this.protocolData = Collections.unmodifiableMap(new HashMap<>(protocolData));
+        else
+            this.protocolData = Collections.emptyMap();
     }
 
     /**
      * Get the id of this observation.
      *
      */
-    public byte[] getId() {
+    public ObservationIdentifier getId() {
         return id;
     }
 
@@ -71,12 +76,19 @@ public abstract class Observation {
         return context;
     }
 
+    /**
+     * @return internal data specific to LwM2mEndpointsProvider
+     */
+    public Map<String, String> getProtocolData() {
+        return protocolData;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((context == null) ? 0 : context.hashCode());
-        result = prime * result + Arrays.hashCode(id);
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
         result = prime * result + ((registrationId == null) ? 0 : registrationId.hashCode());
         return result;
     }
@@ -95,7 +107,10 @@ public abstract class Observation {
                 return false;
         } else if (!context.equals(other.context))
             return false;
-        if (!Arrays.equals(id, other.id))
+        if (id == null) {
+            if (other.id != null)
+                return false;
+        } else if (!id.equals(other.id))
             return false;
         if (registrationId == null) {
             if (other.registrationId != null)
@@ -104,5 +119,4 @@ public abstract class Observation {
             return false;
         return true;
     }
-
 }

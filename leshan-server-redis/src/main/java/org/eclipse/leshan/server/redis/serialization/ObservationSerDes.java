@@ -18,81 +18,158 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.redis.serialization;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.core.network.serialization.DataParser;
-import org.eclipse.californium.core.network.serialization.DataSerializer;
-import org.eclipse.californium.core.network.serialization.UdpDataParser;
-import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
-import org.eclipse.californium.core.observe.Observation;
-import org.eclipse.californium.elements.EndpointContext;
+import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.observation.CompositeObservation;
+import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.ObservationIdentifier;
+import org.eclipse.leshan.core.observation.SingleObservation;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.util.Hex;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
- * Functions for serializing and deserializing a Californium {@link Observation} in JSON.
- *
- * The embedded CoAP request is serialized using the Californium network serialization (see {@link UdpDataParser} and
- * {@link UdpDataSerializer}).
+ * Functions for serializing and deserializing a {@link Observation} in JSON.
  */
 public class ObservationSerDes {
 
-    private static final DataSerializer serializer = new UdpDataSerializer();
-    private static final DataParser parser = new UdpDataParser();
+    private static final String OBS_ID = "id";
+    private static final String OBS_REGID = "regid";
+    private static final String OBS_USER_CONTEXT = "userContext";
+    private static final String OBS_PROTOCOL_DATA = "protocolData";
+    private static final String OBS_KIND = "kind";
+
+    private static final String SOBS_CONTENT_FORMAT = "ct";
+    private static final String SOBS_PATH = "path";
+
+    private static final String COBS_RESP_CONTENT_FORMAT = "resCt";
+    private static final String COBS_REQ_CONTENT_FORMAT = "reqCt";
+    private static final String COBS_PATHS = "paths";
+
+    private static final String KIND_SINGLE = "single";
+    private static final String KIND_COMPOSITE = "composite";
 
     public static byte[] serialize(Observation obs) {
-        ObjectNode o = JsonNodeFactory.instance.objectNode();
+        ObjectNode n = JsonNodeFactory.instance.objectNode();
+        n.put(OBS_ID, obs.getId().getAsHexString());
+        n.put(OBS_REGID, obs.getRegistrationId());
 
-        o.put("request", Hex.encodeHexString(serializer.serializeRequest(obs.getRequest()).bytes));
-        if (obs.getContext() != null)
-            o.set("peer", EndpointContextSerDes.serialize(obs.getContext()));
-        else
-            o.set("peer", EndpointContextSerDes.serialize(obs.getRequest().getDestinationContext()));
-
-        if (obs.getRequest().getUserContext() != null) {
-            ObjectNode ctxObject = JsonNodeFactory.instance.objectNode();
-            for (Entry<String, String> e : obs.getRequest().getUserContext().entrySet()) {
-                ctxObject.put(e.getKey(), e.getValue());
-            }
-            o.set("context", ctxObject);
+        ObjectNode userContext = JsonNodeFactory.instance.objectNode();
+        for (Map.Entry<String, String> e : obs.getContext().entrySet()) {
+            userContext.put(e.getKey(), e.getValue());
         }
-        return o.toString().getBytes();
+        n.set(OBS_USER_CONTEXT, userContext);
+
+        ObjectNode protocolData = JsonNodeFactory.instance.objectNode();
+        for (Map.Entry<String, String> e : obs.getProtocolData().entrySet()) {
+            protocolData.put(e.getKey(), e.getValue());
+        }
+        n.set(OBS_PROTOCOL_DATA, protocolData);
+
+        if (obs instanceof SingleObservation) {
+            SingleObservation sobs = (SingleObservation) obs;
+            n.put(OBS_KIND, KIND_SINGLE);
+            if (sobs.getContentFormat() != null) {
+                n.put(SOBS_CONTENT_FORMAT, sobs.getContentFormat().getCode());
+            }
+            n.put(SOBS_PATH, sobs.getPath().toString());
+        } else if (obs instanceof CompositeObservation) {
+            CompositeObservation cobs = (CompositeObservation) obs;
+            n.put(OBS_KIND, KIND_COMPOSITE);
+            if (cobs.getRequestContentFormat() != null) {
+                n.put(COBS_REQ_CONTENT_FORMAT, cobs.getRequestContentFormat().getCode());
+            }
+            if (cobs.getResponseContentFormat() != null) {
+                n.put(COBS_RESP_CONTENT_FORMAT, cobs.getResponseContentFormat().getCode());
+            }
+
+            ArrayNode paths = JsonNodeFactory.instance.arrayNode();
+            for (LwM2mPath path : cobs.getPaths()) {
+                paths.add(path.toString());
+            }
+            n.set(COBS_PATHS, paths);
+        } else {
+            throw new IllegalArgumentException(String.format("Unsupported kind of Observation : %s", obs));
+        }
+
+        return n.toString().getBytes();
     }
 
     public static Observation deserialize(byte[] data) {
         String json = new String(data);
         try {
-            JsonNode v = new ObjectMapper().readTree(json);
+            JsonNode n = new ObjectMapper().readTree(json);
+            String id = n.get(OBS_ID).asText();
+            ObservationIdentifier obsId = new ObservationIdentifier(Hex.decodeHex(id.toCharArray()));
+            String regid = n.get(OBS_REGID).asText();
+            String kind = n.get(OBS_KIND).asText();
 
-            EndpointContext endpointContext = EndpointContextSerDes.deserialize(v.get("peer"));
-            byte[] req = Hex.decodeHex(v.get("request").asText().toCharArray());
-
-            Request request = (Request) parser.parseMessage(req);
-            request.setDestinationContext(endpointContext);
-
-            JsonNode ctxValue = v.get("context");
-            if (ctxValue != null) {
-                Map<String, String> context = new HashMap<>();
-                for (Iterator<String> it = ctxValue.fieldNames(); it.hasNext();) {
-                    String name = it.next();
-                    context.put(name, ctxValue.get(name).asText());
+            Map<String, String> context = null;
+            ObjectNode jUserContext = (ObjectNode) n.get(OBS_USER_CONTEXT);
+            if (jUserContext != null) {
+                context = new HashMap<>();
+                for (Iterator<String> it = jUserContext.fieldNames(); it.hasNext();) {
+                    String k = it.next();
+                    context.put(k, jUserContext.get(k).asText());
                 }
-                request.setUserContext(context);
             }
 
-            return new Observation(request, endpointContext);
+            Map<String, String> protocolData = null;
+            ObjectNode jProtocolData = (ObjectNode) n.get(OBS_PROTOCOL_DATA);
+            if (jProtocolData != null) {
+                protocolData = new HashMap<>();
+                for (Iterator<String> it = jProtocolData.fieldNames(); it.hasNext();) {
+                    String k = it.next();
+                    protocolData.put(k, jProtocolData.get(k).asText());
+                }
+            }
+
+            if (KIND_SINGLE.equals(kind)) {
+                ContentFormat contentFormat = null;
+                if (n.has(SOBS_CONTENT_FORMAT)) {
+                    contentFormat = ContentFormat.fromCode(n.get(SOBS_CONTENT_FORMAT).asInt());
+                }
+                LwM2mPath path = new LwM2mPath(n.get(SOBS_PATH).asText());
+
+                return new SingleObservation(obsId, regid, path, contentFormat, context, protocolData);
+            } else if (KIND_COMPOSITE.equals(kind)) {
+                ContentFormat reqContentFormat = null;
+                if (n.has(COBS_REQ_CONTENT_FORMAT)) {
+                    reqContentFormat = ContentFormat.fromCode(n.get(COBS_REQ_CONTENT_FORMAT).asInt());
+                }
+                ContentFormat respcontentFormat = null;
+                if (n.has(COBS_RESP_CONTENT_FORMAT)) {
+                    respcontentFormat = ContentFormat.fromCode(n.get(COBS_RESP_CONTENT_FORMAT).asInt());
+                }
+
+                List<LwM2mPath> paths = null;
+                ArrayNode jPaths = (ArrayNode) n.get(COBS_PATHS);
+                if (jPaths != null) {
+                    paths = new ArrayList<>();
+                    for (JsonNode jPath : jPaths) {
+                        paths.add(new LwM2mPath(jPath.asText()));
+                    }
+                }
+                return new CompositeObservation(obsId, regid, paths, reqContentFormat, respcontentFormat, context,
+                        protocolData);
+
+            } else {
+                throw new IllegalArgumentException(
+                        String.format("Unsupported kind of Observation : %s in %s", kind, json));
+            }
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException(String.format("Unable to deserialize Observation %s", json), e);
         }
     }
-
 }

@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.observation;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -63,7 +64,7 @@ public class ObserveUtilTest {
         // then
         assertEquals(examplePath, observation.getPath().toString());
         assertEquals(exampleRegistrationId, observation.getRegistrationId());
-        assertEquals(exampleToken.getBytes(), observation.getId());
+        assertArrayEquals(exampleToken.getBytes(), observation.getId().getBytes());
         assertTrue(observation.getContext().containsKey("extraKey"));
         assertEquals("extraValue", observation.getContext().get("extraKey"));
         assertEquals(ContentFormat.DEFAULT, observation.getContentFormat());
@@ -94,7 +95,7 @@ public class ObserveUtilTest {
         // then
         assertEquals(examplePaths, observation.getPaths());
         assertEquals(exampleRegistrationId, observation.getRegistrationId());
-        assertEquals(exampleToken.getBytes(), observation.getId());
+        assertArrayEquals(exampleToken.getBytes(), observation.getId().getBytes());
         assertTrue(observation.getContext().containsKey("extraKey"));
         assertEquals("extraValue", observation.getContext().get("extraKey"));
         assertEquals(ContentFormat.CBOR, observation.getRequestContentFormat());

@@ -33,7 +33,7 @@ Contributors:
   <dependencies>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-server-cf</artifactId>
+      <artifactId>leshan-server-core</artifactId>
     </dependency>
     <dependency>
       <groupId>redis.clients</groupId>
