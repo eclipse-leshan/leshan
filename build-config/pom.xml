@@ -119,6 +119,7 @@ Contributors:
         <artifactId>maven-checkstyle-plugin</artifactId>
         <configuration>
           <configLocation>../eclipse/checkstyle.xml</configLocation>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
           <consoleOutput>true</consoleOutput>
           <failsOnError>true</failsOnError>
           <linkXRef>false</linkXRef>

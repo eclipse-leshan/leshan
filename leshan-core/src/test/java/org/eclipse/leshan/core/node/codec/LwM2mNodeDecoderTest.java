@@ -1337,7 +1337,6 @@ public class LwM2mNodeDecoderTest {
                 .put(timestamp.plusSeconds(2), new LwM2mPath("/4/0/1"), LwM2mSingleResource.newIntegerResource(1, 2))
                 .put(timestamp.plusSeconds(3), new LwM2mPath("/4/0/1"), LwM2mSingleResource.newIntegerResource(1, 3));
 
-        TimestampedLwM2mNodes res = expectedResult.build();
         assertEquals(expectedResult.build(), data);
     }
 

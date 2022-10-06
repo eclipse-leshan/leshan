@@ -12,13 +12,14 @@
             <property name="message" value="No `sysout` or `syserr` allowed."/>
         </module>
         <module name="AvoidStarImport" />
+        <module name="UnusedLocalVariable"/>
     </module>
 
     <module name="RegexpSingleline">
         <property name="format" value="\s+$"/>
         <property name="message" value="No trailing white space allowed."/>
     </module>
-    
+
     <!-- Remove some rules for specifics classes -->
     <module name="SuppressionSingleFilter">
         <property name="id" value="no_sys"/>
