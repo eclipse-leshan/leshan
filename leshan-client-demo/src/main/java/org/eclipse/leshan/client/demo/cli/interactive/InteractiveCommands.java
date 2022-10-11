@@ -17,7 +17,7 @@ package org.eclipse.leshan.client.demo.cli.interactive;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.leshan.client.californium.LeshanClient;
+import org.eclipse.leshan.client.LeshanClient;
 import org.eclipse.leshan.client.demo.MyLocation;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.CollectCommand;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.CreateCommand;

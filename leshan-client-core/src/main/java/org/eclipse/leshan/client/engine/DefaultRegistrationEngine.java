@@ -36,7 +36,7 @@ import org.eclipse.leshan.client.RegistrationUpdate;
 import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.bootstrap.InvalidStateException;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
-import org.eclipse.leshan.client.request.LwM2mRequestSender;
+import org.eclipse.leshan.client.request.UplinkRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.servers.DmServerInfo;
@@ -79,7 +79,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultRegistrationEngine.class);
 
     private static final long NOW = 0;
-    private static final ServerIdentity ALL = new ServerIdentity(null, null);
+    private static final ServerIdentity ALL = new ServerIdentity(null, null, null);
 
     // Timeout for bootstrap/register/update request
     private final long requestTimeoutInMs;
@@ -90,11 +90,11 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     // Time between bootstrap retry should incremental
     private final int retryWaitingTimeInMs;
     // Time between 2 update requests (used only if it is smaller than the lifetime)
-    private Integer communicationPeriodInMs;
+    private final Integer communicationPeriodInMs;
     // True if client should re-initiate a connection (DTLS) on registration update
-    private boolean reconnectOnUpdate;
+    private final boolean reconnectOnUpdate;
     // True if client should try to resume connection if possible.
-    private boolean resumeOnConnect;
+    private final boolean resumeOnConnect;
     // True if client use queueMode : for now this just add Q parameter on register request.
     private final boolean queueMode;
 
@@ -114,7 +114,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private final AtomicReference<ServerIdentity> currentBootstrapServer;
 
     // helpers
-    private final LwM2mRequestSender sender;
+    private final UplinkRequestSender sender;
     private final BootstrapHandler bootstrapHandler;
     private final EndpointsManager endpointsManager;
     private final LwM2mClientObserver observer;
@@ -124,12 +124,12 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private Future<?> bootstrapFuture;
     private Future<?> registerFuture;
     private Future<?> updateFuture;
-    private Object taskLock = new Object(); // a lock to avoid several task to be executed at the same time
+    private final Object taskLock = new Object(); // a lock to avoid several task to be executed at the same time
     private final ScheduledExecutorService schedExecutor;
     private final boolean attachedExecutor;
 
     public DefaultRegistrationEngine(String endpoint, LwM2mObjectTree objectTree, EndpointsManager endpointsManager,
-            LwM2mRequestSender requestSender, BootstrapHandler bootstrapState, LwM2mClientObserver observer,
+            UplinkRequestSender requestSender, BootstrapHandler bootstrapState, LwM2mClientObserver observer,
             Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes,
             ScheduledExecutorService executor, long requestTimeoutInMs, long deregistrationTimeoutInMs,
             int bootstrapSessionTimeoutInSec, int retryWaitingTimeInMs, Integer communicationPeriodInMs,
@@ -705,8 +705,8 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
 
     private class QueueUpdateTask implements Runnable {
 
-        private RegistrationUpdate registrationUpdate;
-        private ServerIdentity server;
+        private final RegistrationUpdate registrationUpdate;
+        private final ServerIdentity server;
 
         public QueueUpdateTask(ServerIdentity server, RegistrationUpdate registrationUpdate) {
             this.registrationUpdate = registrationUpdate;

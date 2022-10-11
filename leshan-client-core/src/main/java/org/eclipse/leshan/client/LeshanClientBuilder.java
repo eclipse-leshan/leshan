@@ -14,9 +14,8 @@
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
-package org.eclipse.leshan.client.californium;
+package org.eclipse.leshan.client;
 
-import java.net.InetSocketAddress;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,21 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.eclipse.californium.core.CoapServer;
-import org.eclipse.californium.core.config.CoapConfig;
-import org.eclipse.californium.core.config.CoapConfig.TrackerMode;
-import org.eclipse.californium.core.network.CoapEndpoint;
-import org.eclipse.californium.elements.Connector;
-import org.eclipse.californium.elements.UDPConnector;
-import org.eclipse.californium.elements.config.Configuration;
-import org.eclipse.californium.elements.config.SystemConfig;
-import org.eclipse.californium.elements.config.UdpConfig;
-import org.eclipse.californium.scandium.DTLSConnector;
-import org.eclipse.californium.scandium.config.DtlsConfig;
-import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
-import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.client.bootstrap.BootstrapConsistencyChecker;
-import org.eclipse.leshan.client.californium.bootstrap.DefaultBootstrapConsistencyChecker;
+import org.eclipse.leshan.client.bootstrap.DefaultBootstrapConsistencyChecker;
+import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
@@ -50,8 +37,6 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.send.DataSender;
 import org.eclipse.leshan.core.LwM2mId;
-import org.eclipse.leshan.core.californium.DefaultEndpointFactory;
-import org.eclipse.leshan.core.californium.EndpointFactory;
 import org.eclipse.leshan.core.link.DefaultLinkSerializer;
 import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.link.lwm2m.attributes.DefaultLwM2mAttributeParser;
@@ -74,12 +59,9 @@ public class LeshanClientBuilder {
 
     private final String endpoint;
 
-    private InetSocketAddress localAddress;
     private List<? extends LwM2mObjectEnabler> objectEnablers;
     private List<DataSender> dataSenders;
 
-    private Configuration coapConfig;
-    private Builder dtlsConfigBuilder;
     private List<Certificate> trustStore;
 
     private LwM2mEncoder encoder;
@@ -87,7 +69,6 @@ public class LeshanClientBuilder {
     private LinkSerializer linkSerializer;
     private LwM2mAttributeParser attributeParser;
 
-    private EndpointFactory endpointFactory;
     private RegistrationEngineFactory engineFactory;
     private Map<String, String> additionalAttributes;
     private Map<String, String> bsAdditionalAttributes;
@@ -95,6 +76,8 @@ public class LeshanClientBuilder {
     private BootstrapConsistencyChecker bootstrapConsistencyChecker;
 
     private ScheduledExecutorService executor;
+
+    private LwM2mClientEndpointsProvider endpointsProvider;
 
     /**
      * Creates a new instance for setting the configuration options for a {@link LeshanClient} instance.
@@ -117,18 +100,6 @@ public class LeshanClientBuilder {
     public LeshanClientBuilder(String endpoint) {
         Validate.notEmpty(endpoint);
         this.endpoint = endpoint;
-    }
-
-    /**
-     * Sets the local address to use.
-     */
-    public LeshanClientBuilder setLocalAddress(String hostname, int port) {
-        if (hostname == null) {
-            this.localAddress = new InetSocketAddress(port);
-        } else {
-            this.localAddress = new InetSocketAddress(hostname, port);
-        }
-        return this;
     }
 
     /**
@@ -208,45 +179,12 @@ public class LeshanClientBuilder {
     }
 
     /**
-     * Set the Californium/CoAP {@link Configuration}.
-     * <p>
-     * This is strongly recommended to create the {@link Configuration} with {@link #createDefaultCoapConfiguration()}
-     * before to modify it.
-     */
-    public LeshanClientBuilder setCoapConfig(Configuration config) {
-        this.coapConfig = config;
-        return this;
-    }
-
-    /**
-     * Set the Scandium/DTLS Configuration : {@link DtlsConnectorConfig}.
-     */
-    public LeshanClientBuilder setDtlsConfig(DtlsConnectorConfig.Builder config) {
-        this.dtlsConfigBuilder = config;
-        return this;
-    }
-
-    /**
      * Set optional trust store for verifying X.509 server certificates.
      *
      * @param trustStore List of trusted CA certificates
      */
     public LeshanClientBuilder setTrustStore(List<Certificate> trustStore) {
         this.trustStore = trustStore;
-        return this;
-    }
-
-    /**
-     * Advanced setter used to create custom CoAP endpoint.
-     * <p>
-     * An {@link UDPConnector} is expected for unsecured endpoint and a {@link DTLSConnector} is expected for secured
-     * endpoint.
-     *
-     * @param endpointFactory An {@link EndpointFactory}, you can extends {@link DefaultEndpointFactory}.
-     * @return the builder for fluent client creation.
-     */
-    public LeshanClientBuilder setEndpointFactory(EndpointFactory endpointFactory) {
-        this.endpointFactory = endpointFactory;
         return this;
     }
 
@@ -315,31 +253,18 @@ public class LeshanClientBuilder {
         return this;
     }
 
-    public static Configuration createDefaultCoapConfiguration() {
-        Configuration networkConfig = new Configuration(CoapConfig.DEFINITIONS, DtlsConfig.DEFINITIONS,
-                UdpConfig.DEFINITIONS, SystemConfig.DEFINITIONS);
-        networkConfig.set(CoapConfig.MID_TRACKER, TrackerMode.NULL);
-        networkConfig.set(CoapConfig.MAX_ACTIVE_PEERS, 10);
-        networkConfig.set(CoapConfig.PROTOCOL_STAGE_THREAD_COUNT, 1);
-        networkConfig.set(DtlsConfig.DTLS_MAX_CONNECTIONS, 10);
-        networkConfig.set(DtlsConfig.DTLS_RECEIVER_THREAD_COUNT, 1);
-        networkConfig.set(DtlsConfig.DTLS_CONNECTOR_THREAD_COUNT, 1);
-        // currently not supported by leshan's CertificateVerifier
-        networkConfig.setTransient(DtlsConfig.DTLS_VERIFY_SERVER_CERTIFICATES_SUBJECT);
-        // Set it to null to allow automatic mode
-        // See org.eclipse.leshan.client.californium.CaliforniumEndpointsManager
-        networkConfig.set(DtlsConfig.DTLS_ROLE, null);
-
-        return networkConfig;
+    /**
+     * @return the builder for fluent client creation.
+     */
+    public LeshanClientBuilder setEndpointsProvider(LwM2mClientEndpointsProvider endpointsProvider) {
+        this.endpointsProvider = endpointsProvider;
+        return this;
     }
 
     /**
      * Creates an instance of {@link LeshanClient} based on the properties set on this builder.
      */
     public LeshanClient build() {
-        if (localAddress == null) {
-            localAddress = new InetSocketAddress(0);
-        }
         if (objectEnablers == null) {
             ObjectsInitializer initializer = new ObjectsInitializer();
             initializer.setInstancesForObject(LwM2mId.SECURITY,
@@ -359,49 +284,16 @@ public class LeshanClientBuilder {
             linkSerializer = new DefaultLinkSerializer();
         if (attributeParser == null)
             attributeParser = new DefaultLwM2mAttributeParser();
-        if (coapConfig == null) {
-            coapConfig = createDefaultCoapConfiguration();
-        }
         if (engineFactory == null) {
             engineFactory = new DefaultRegistrationEngineFactory();
-        }
-        if (endpointFactory == null) {
-            endpointFactory = new DefaultEndpointFactory("LWM2M Client", true) {
-                @Override
-                protected Connector createSecuredConnector(DtlsConnectorConfig dtlsConfig) {
-                    DTLSConnector dtlsConnector = new DTLSConnector(dtlsConfig);
-                    if (executor != null) {
-                        dtlsConnector.setExecutor(executor);
-                    }
-                    return dtlsConnector;
-                }
-            };
         }
         if (bootstrapConsistencyChecker == null) {
             bootstrapConsistencyChecker = new DefaultBootstrapConsistencyChecker();
         }
 
-        // handle dtlsConfig
-        if (dtlsConfigBuilder == null) {
-            dtlsConfigBuilder = DtlsConnectorConfig.builder(coapConfig);
-        }
-        DtlsConnectorConfig incompleteConfig = dtlsConfigBuilder.getIncompleteConfig();
-
-        // Handle secure address
-        if (incompleteConfig.getAddress() == null) {
-            if (localAddress == null) {
-                localAddress = new InetSocketAddress(0);
-            }
-            dtlsConfigBuilder.setAddress(localAddress);
-        } else if (localAddress != null && !localAddress.equals(incompleteConfig.getAddress())) {
-            throw new IllegalStateException(String.format(
-                    "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for address: %s != %s",
-                    localAddress, incompleteConfig.getAddress()));
-        }
-
-        return createLeshanClient(endpoint, localAddress, objectEnablers, dataSenders, coapConfig, dtlsConfigBuilder,
-                this.trustStore, endpointFactory, engineFactory, bootstrapConsistencyChecker, additionalAttributes,
-                bsAdditionalAttributes, encoder, decoder, executor, linkSerializer, attributeParser);
+        return createLeshanClient(endpoint, objectEnablers, dataSenders, this.trustStore, engineFactory,
+                bootstrapConsistencyChecker, additionalAttributes, bsAdditionalAttributes, encoder, decoder, executor,
+                linkSerializer, attributeParser, endpointsProvider);
     }
 
     /**
@@ -413,14 +305,9 @@ public class LeshanClientBuilder {
      * See all the setters of this builder for more documentation about parameters.
      *
      * @param endpoint The endpoint name for this client.
-     * @param localAddress The local address used for unsecured connection.
      * @param objectEnablers The list of object enablers. An enabler adds to support for a given LWM2M object to the
      *        client.
-     * @param coapConfig The coap config used to create {@link CoapEndpoint} and {@link CoapServer}.
-     * @param dtlsConfigBuilder The dtls config used to create the {@link DTLSConnector}.
      * @param trustStore The optional trust store for verifying X.509 server certificates.
-     * @param endpointFactory The factory which will create the {@link CoapEndpoint}.
-     * @param engineFactory The factory which will create the {@link RegistrationEngine}.
      * @param checker Used to check if client state is consistent after a bootstrap session.
      * @param additionalAttributes Some extra (out-of-spec) attributes to add to the register request.
      * @param bsAdditionalAttributes Some extra (out-of-spec) attributes to add to the bootstrap request.
@@ -433,15 +320,14 @@ public class LeshanClientBuilder {
      *
      * @return the new {@link LeshanClient}
      */
-    protected LeshanClient createLeshanClient(String endpoint, InetSocketAddress localAddress,
-            List<? extends LwM2mObjectEnabler> objectEnablers, List<DataSender> dataSenders, Configuration coapConfig,
-            Builder dtlsConfigBuilder, List<Certificate> trustStore, EndpointFactory endpointFactory,
-            RegistrationEngineFactory engineFactory, BootstrapConsistencyChecker checker,
-            Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder,
-            LwM2mDecoder decoder, ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer,
-            LwM2mAttributeParser attributeParser) {
-        return new LeshanClient(endpoint, localAddress, objectEnablers, dataSenders, coapConfig, dtlsConfigBuilder,
-                trustStore, endpointFactory, engineFactory, checker, additionalAttributes, bsAdditionalAttributes,
-                encoder, decoder, sharedExecutor, linkSerializer, attributeParser);
+    protected LeshanClient createLeshanClient(String endpoint, List<? extends LwM2mObjectEnabler> objectEnablers,
+            List<DataSender> dataSenders, List<Certificate> trustStore, RegistrationEngineFactory engineFactory,
+            BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
+            Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
+            ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer,
+            LwM2mAttributeParser attributeParser, LwM2mClientEndpointsProvider endpointsProvider) {
+        return new LeshanClient(endpoint, objectEnablers, dataSenders, trustStore, engineFactory, checker,
+                additionalAttributes, bsAdditionalAttributes, encoder, decoder, sharedExecutor, linkSerializer,
+                attributeParser, endpointsProvider);
     }
 }

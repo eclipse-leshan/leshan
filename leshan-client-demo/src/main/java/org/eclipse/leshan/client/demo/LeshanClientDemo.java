@@ -38,17 +38,14 @@ import java.util.List;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
-import org.eclipse.californium.scandium.dtls.ClientHandshaker;
-import org.eclipse.californium.scandium.dtls.DTLSContext;
-import org.eclipse.californium.scandium.dtls.HandshakeException;
-import org.eclipse.californium.scandium.dtls.Handshaker;
-import org.eclipse.californium.scandium.dtls.ResumingClientHandshaker;
-import org.eclipse.californium.scandium.dtls.ResumingServerHandshaker;
-import org.eclipse.californium.scandium.dtls.ServerHandshaker;
-import org.eclipse.californium.scandium.dtls.SessionAdapter;
-import org.eclipse.californium.scandium.dtls.SessionId;
-import org.eclipse.leshan.client.californium.LeshanClient;
-import org.eclipse.leshan.client.californium.LeshanClientBuilder;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
+import org.eclipse.leshan.client.LeshanClient;
+import org.eclipse.leshan.client.LeshanClientBuilder;
+import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpointFactory;
+import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpointsProvider;
+import org.eclipse.leshan.client.californium.endpoint.coap.CoapOscoreProtocolProvider;
+import org.eclipse.leshan.client.californium.endpoint.coaps.CoapsClientEndpointFactory;
+import org.eclipse.leshan.client.californium.endpoint.coaps.CoapsClientProtocolProvider;
 import org.eclipse.leshan.client.demo.cli.LeshanClientDemoCLI;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
@@ -228,27 +225,6 @@ public class LeshanClientDemo {
 
         List<LwM2mObjectEnabler> enablers = initializer.createAll();
 
-        // Create CoAP Config
-        File configFile = new File(CF_CONFIGURATION_FILENAME);
-        Configuration coapConfig = LeshanClientBuilder.createDefaultCoapConfiguration();
-        // these configuration values are always overwritten by CLI
-        // therefore set them to transient.
-        coapConfig.setTransient(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY);
-        coapConfig.setTransient(DtlsConfig.DTLS_CONNECTION_ID_LENGTH);
-        if (configFile.isFile()) {
-            coapConfig.load(configFile);
-        } else {
-            coapConfig.store(configFile, CF_CONFIGURATION_HEADER);
-        }
-
-        // Create DTLS Config
-        DtlsConnectorConfig.Builder dtlsConfig = DtlsConnectorConfig.builder(coapConfig);
-        dtlsConfig.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, !cli.dtls.supportDeprecatedCiphers);
-        dtlsConfig.set(DtlsConfig.DTLS_CONNECTION_ID_LENGTH, cli.dtls.cid);
-        if (cli.dtls.ciphers != null) {
-            dtlsConfig.set(DtlsConfig.DTLS_CIPHER_SUITES, cli.dtls.ciphers);
-        }
-
         // Configure Registration Engine
         DefaultRegistrationEngineFactory engineFactory = new DefaultRegistrationEngineFactory();
         if (cli.main.comPeriodInSec != null)
@@ -257,84 +233,68 @@ public class LeshanClientDemo {
         engineFactory.setResumeOnConnect(!cli.dtls.forceFullhandshake);
         engineFactory.setQueueMode(cli.main.queueMode);
 
-        // Add MDC for connection logs
-        if (cli.helpsOptions.getVerboseLevel() > 0) {
-            dtlsConfig.setConnectionListener(new PrincipalMdcConnectionListener());
+        // Create Californium Endpoints Provider:
+        // --------------------------------------
+        // Define Custom CoAPS protocol provider
+        CoapsClientProtocolProvider customCoapsProtocolProvider = new CoapsClientProtocolProvider() {
+            @Override
+            public CaliforniumClientEndpointFactory createDefaultEndpointFactory() {
+                return new CoapsClientEndpointFactory() {
+
+                    @Override
+                    protected DtlsConnectorConfig.Builder createRootDtlsConnectorConfigBuilder(
+                            Configuration configuration) {
+                        Builder builder = super.createRootDtlsConnectorConfigBuilder(configuration);
+
+                        // Add DTLS Session lifecycle logger
+                        builder.setSessionListener(new DtlsSessionLogger());
+
+                        // Add MDC for connection logs
+                        if (cli.helpsOptions.getVerboseLevel() > 0)
+                            builder.setConnectionListener(new PrincipalMdcConnectionListener());
+                        return builder;
+                    };
+                };
+            }
+        };
+
+        // Create client endpoints Provider
+        CaliforniumClientEndpointsProvider.Builder endpointsBuilder = new CaliforniumClientEndpointsProvider.Builder(
+                new CoapOscoreProtocolProvider(), customCoapsProtocolProvider);
+
+        // Create Californium Configuration
+        Configuration clientCoapConfig = endpointsBuilder.createDefaultConfiguration();
+
+        // Set some DTLS stuff
+        // These configuration values are always overwritten by CLI therefore set them to transient.
+        clientCoapConfig.setTransient(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY);
+        clientCoapConfig.setTransient(DtlsConfig.DTLS_CONNECTION_ID_LENGTH);
+        clientCoapConfig.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, !cli.dtls.supportDeprecatedCiphers);
+        clientCoapConfig.set(DtlsConfig.DTLS_CONNECTION_ID_LENGTH, cli.dtls.cid);
+        if (cli.dtls.ciphers != null) {
+            clientCoapConfig.set(DtlsConfig.DTLS_CIPHER_SUITES, cli.dtls.ciphers);
         }
 
-        // Log Session lifecycle
-        dtlsConfig.setSessionListener(new SessionAdapter() {
+        // Persist configuration
+        File configFile = new File(CF_CONFIGURATION_FILENAME);
+        if (configFile.isFile()) {
+            clientCoapConfig.load(configFile);
+        } else {
+            clientCoapConfig.store(configFile, CF_CONFIGURATION_HEADER);
+        }
 
-            private SessionId sessionIdentifier = null;
+        // Set Californium Configuration
+        endpointsBuilder.setConfiguration(clientCoapConfig);
 
-            @Override
-            public void handshakeStarted(Handshaker handshaker) throws HandshakeException {
-                if (handshaker instanceof ResumingServerHandshaker) {
-                    LOG.info("DTLS abbreviated Handshake initiated by server : STARTED ...");
-                } else if (handshaker instanceof ServerHandshaker) {
-                    LOG.info("DTLS Full Handshake initiated by server : STARTED ...");
-                } else if (handshaker instanceof ResumingClientHandshaker) {
-                    sessionIdentifier = handshaker.getSession().getSessionIdentifier();
-                    LOG.info("DTLS abbreviated Handshake initiated by client : STARTED ...");
-                } else if (handshaker instanceof ClientHandshaker) {
-                    LOG.info("DTLS Full Handshake initiated by client : STARTED ...");
-                }
-            }
-
-            @Override
-            public void contextEstablished(Handshaker handshaker, DTLSContext establishedContext)
-                    throws HandshakeException {
-                if (handshaker instanceof ResumingServerHandshaker) {
-                    LOG.info("DTLS abbreviated Handshake initiated by server : SUCCEED");
-                } else if (handshaker instanceof ServerHandshaker) {
-                    LOG.info("DTLS Full Handshake initiated by server : SUCCEED");
-                } else if (handshaker instanceof ResumingClientHandshaker) {
-                    if (sessionIdentifier != null
-                            && sessionIdentifier.equals(handshaker.getSession().getSessionIdentifier())) {
-                        LOG.info("DTLS abbreviated Handshake initiated by client : SUCCEED");
-                    } else {
-                        LOG.info("DTLS abbreviated turns into Full Handshake initiated by client : SUCCEED");
-                    }
-                } else if (handshaker instanceof ClientHandshaker) {
-                    LOG.info("DTLS Full Handshake initiated by client : SUCCEED");
-                }
-            }
-
-            @Override
-            public void handshakeFailed(Handshaker handshaker, Throwable error) {
-                // get cause
-                String cause;
-                if (error != null) {
-                    if (error.getMessage() != null) {
-                        cause = error.getMessage();
-                    } else {
-                        cause = error.getClass().getName();
-                    }
-                } else {
-                    cause = "unknown cause";
-                }
-
-                if (handshaker instanceof ResumingServerHandshaker) {
-                    LOG.info("DTLS abbreviated Handshake initiated by server : FAILED ({})", cause);
-                } else if (handshaker instanceof ServerHandshaker) {
-                    LOG.info("DTLS Full Handshake initiated by server : FAILED ({})", cause);
-                } else if (handshaker instanceof ResumingClientHandshaker) {
-                    LOG.info("DTLS abbreviated Handshake initiated by client : FAILED ({})", cause);
-                } else if (handshaker instanceof ClientHandshaker) {
-                    LOG.info("DTLS Full Handshake initiated by client : FAILED ({})", cause);
-                }
-            }
-        });
+        endpointsBuilder.setClientAddress(cli.main.localAddress);
 
         // Create client
         LeshanClientBuilder builder = new LeshanClientBuilder(cli.main.endpoint);
-        builder.setLocalAddress(cli.main.localAddress, cli.main.localPort);
         builder.setObjects(enablers);
+        builder.setEndpointsProvider(endpointsBuilder.build());
         builder.setDataSenders(new ManualDataSender());
-        builder.setCoapConfig(coapConfig);
         if (cli.identity.isx509())
             builder.setTrustStore(cli.identity.getX509().trustStore);
-        builder.setDtlsConfig(dtlsConfig);
         builder.setRegistrationEngineFactory(engineFactory);
         if (cli.main.supportOldFormat) {
             builder.setDecoder(new DefaultLwM2mDecoder(true));

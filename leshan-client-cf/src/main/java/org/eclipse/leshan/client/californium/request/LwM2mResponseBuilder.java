@@ -40,13 +40,13 @@ import org.eclipse.leshan.core.response.UpdateResponse;
  *
  * @param <T> the type of the response to build.
  */
-public class LwM2mClientResponseBuilder<T extends LwM2mResponse> implements UplinkRequestVisitor {
+public class LwM2mResponseBuilder<T extends LwM2mResponse> implements UplinkRequestVisitor {
 
     protected final Response coapResponse;
 
     protected LwM2mResponse lwM2mresponse;
 
-    public LwM2mClientResponseBuilder(Response coapResponse) {
+    public LwM2mResponseBuilder(Response coapResponse) {
         this.coapResponse = coapResponse;
     }
 

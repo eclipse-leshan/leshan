@@ -13,25 +13,21 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.californium.identity;
+package org.eclipse.leshan.client.californium.endpoint;
 
-import java.util.HashMap;
+import java.util.List;
 
-import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
+import org.eclipse.leshan.core.endpoint.Protocol;
 
-public class IdentityHandlerProvider {
+public interface ClientProtocolProvider {
 
-    private final HashMap<Endpoint, IdentityHandler> identityHandlers = new HashMap<>();
+    Protocol getProtocol();
 
-    public void addIdentityHandler(Endpoint endpoint, IdentityHandler identityHandler) {
-        identityHandlers.put(endpoint, identityHandler);
-    }
+    List<ModuleDefinitionsProvider> getModuleDefinitionsProviders();
 
-    public void clear() {
-        identityHandlers.clear();
-    }
+    void applyDefaultValue(Configuration configuration);
 
-    public IdentityHandler getIdentityHandler(Endpoint endpoint) {
-        return identityHandlers.get(endpoint);
-    }
+    CaliforniumClientEndpointFactory createDefaultEndpointFactory();
 }

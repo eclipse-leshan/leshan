@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.leshan.client.request.LwM2mRequestSender;
+import org.eclipse.leshan.client.request.UplinkRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mRootEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.Destroyable;
@@ -38,10 +38,10 @@ import org.eclipse.leshan.core.response.SendResponse;
 public class DataSenderManager implements Startable, Stoppable, Destroyable {
     private final Map<String, DataSender> dataSenders;
     private final LwM2mRootEnabler rootEnabler;
-    private final LwM2mRequestSender requestSender;
+    private final UplinkRequestSender requestSender;
 
     public DataSenderManager(Map<String, DataSender> dataSenders, LwM2mRootEnabler rootEnabler,
-            LwM2mRequestSender requestSender) {
+            UplinkRequestSender requestSender) {
         this.rootEnabler = rootEnabler;
         this.requestSender = requestSender;
         this.dataSenders = dataSenders != null ? dataSenders : new HashMap<>();

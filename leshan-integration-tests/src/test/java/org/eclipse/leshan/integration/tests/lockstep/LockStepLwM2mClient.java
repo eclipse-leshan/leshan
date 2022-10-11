@@ -32,6 +32,7 @@ import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.leshan.client.californium.request.CoapRequestBuilder;
+import org.eclipse.leshan.core.californium.identity.DefaultCoapIdentityHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.DefaultLinkSerializer;
 import org.eclipse.leshan.core.link.LinkSerializer;
@@ -70,7 +71,7 @@ public class LockStepLwM2mClient extends LockstepEndpoint {
     public Request createCoapRequest(UplinkRequest<? extends LwM2mResponse> lwm2mReq) {
         // create CoAP request
         CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(Identity.unsecure(destination), encoder, model,
-                linkSerializer);
+                linkSerializer, new DefaultCoapIdentityHandler());
         lwm2mReq.accept(coapRequestBuilder);
         Request coapReq = coapRequestBuilder.getRequest();
         byte[] token = new byte[8];

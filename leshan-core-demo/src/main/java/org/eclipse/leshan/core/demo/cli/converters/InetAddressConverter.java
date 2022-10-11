@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 Sierra Wireless and others.
+ * Copyright (c) 2023 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -13,25 +13,21 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.californium.identity;
+package org.eclipse.leshan.core.demo.cli.converters;
 
-import java.util.HashMap;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
-import org.eclipse.californium.core.network.Endpoint;
+import picocli.CommandLine.ITypeConverter;
 
-public class IdentityHandlerProvider {
+public class InetAddressConverter implements ITypeConverter<InetAddress> {
 
-    private final HashMap<Endpoint, IdentityHandler> identityHandlers = new HashMap<>();
-
-    public void addIdentityHandler(Endpoint endpoint, IdentityHandler identityHandler) {
-        identityHandlers.put(endpoint, identityHandler);
-    }
-
-    public void clear() {
-        identityHandlers.clear();
-    }
-
-    public IdentityHandler getIdentityHandler(Endpoint endpoint) {
-        return identityHandlers.get(endpoint);
+    @Override
+    public InetAddress convert(String value) throws Exception {
+        if (value == null || value.equals("*")) {
+            // create a wildcard address meaning any local address.
+            return new InetSocketAddress(0).getAddress();
+        }
+        return InetAddress.getByName(value);
     }
 }

@@ -44,8 +44,6 @@ import java.util.List;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Token;
-import org.eclipse.californium.core.network.CoapEndpoint;
-import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
 import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.californium.elements.EndpointContext;
@@ -246,15 +244,11 @@ public class SecurityTest {
 
         // Create new session with new credentials at client side.
         // Get connector
-        Endpoint endpoint = helper.client.coap().getServer()
-                .getEndpoint(helper.client.getAddress(helper.getCurrentRegisteredServer()));
-        DTLSConnector connector = (DTLSConnector) ((CoapEndpoint) endpoint).getConnector();
+        DTLSConnector connector = (DTLSConnector) helper.getClientConnector(helper.getCurrentRegisteredServer());
         // Clear DTLS session to force new handshake
         connector.clearConnectionState();
         // Change PSK id
         helper.setNewPsk("anotherPSK", GOOD_PSK_KEY);
-        // restart connector
-        connector.start();
         // send and empty message to force a new handshake with new credentials
         SimpleMessageCallback callback = new SimpleMessageCallback();
         // create a ping message
