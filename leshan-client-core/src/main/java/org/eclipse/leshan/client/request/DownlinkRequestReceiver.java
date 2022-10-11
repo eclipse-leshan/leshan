@@ -13,25 +13,18 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.californium.identity;
+package org.eclipse.leshan.client.request;
 
-import java.util.HashMap;
+import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.leshan.core.request.LwM2mRequest;
+import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.SendableResponse;
 
-import org.eclipse.californium.core.network.Endpoint;
+public interface DownlinkRequestReceiver {
 
-public class IdentityHandlerProvider {
+    <T extends LwM2mResponse> SendableResponse<T> requestReceived(ServerIdentity identity, DownlinkRequest<T> request);
 
-    private final HashMap<Endpoint, IdentityHandler> identityHandlers = new HashMap<>();
-
-    public void addIdentityHandler(Endpoint endpoint, IdentityHandler identityHandler) {
-        identityHandlers.put(endpoint, identityHandler);
-    }
-
-    public void clear() {
-        identityHandlers.clear();
-    }
-
-    public IdentityHandler getIdentityHandler(Endpoint endpoint) {
-        return identityHandlers.get(endpoint);
-    }
+    void onError(ServerIdentity identity, Exception e,
+            Class<? extends LwM2mRequest<? extends LwM2mResponse>> requestType);
 }

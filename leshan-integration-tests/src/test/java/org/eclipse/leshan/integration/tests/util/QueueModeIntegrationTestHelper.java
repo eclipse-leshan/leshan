@@ -26,7 +26,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.eclipse.leshan.client.californium.LeshanClientBuilder;
+import org.eclipse.leshan.client.LeshanClientBuilder;
+import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpointsProvider;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
@@ -81,6 +82,7 @@ public class QueueModeIntegrationTestHelper extends IntegrationTestHelper {
         LeshanClientBuilder builder = new LeshanClientBuilder(currentEndpointIdentifier.get());
         builder.setRegistrationEngineFactory(new DefaultRegistrationEngineFactory().setQueueMode(true));
         builder.setObjects(objects);
+        builder.setEndpointsProvider(new CaliforniumClientEndpointsProvider());
         client = builder.build();
         setupClientMonitoring();
     }

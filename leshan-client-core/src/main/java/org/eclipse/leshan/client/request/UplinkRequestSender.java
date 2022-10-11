@@ -30,9 +30,9 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 
 /**
- * A {@link LwM2mRequestSender} is responsible to send LWM2M {@link UplinkRequest} for a given {@link ServerIdentity}.
+ * A {@link UplinkRequestSender} is responsible to send LWM2M {@link UplinkRequest} for a given {@link ServerIdentity}.
  */
-public interface LwM2mRequestSender {
+public interface UplinkRequestSender {
 
     /**
      * Send a Lightweight M2M request synchronously. Will block until a response is received from the remote server.
@@ -90,8 +90,4 @@ public interface LwM2mRequestSender {
     <T extends LwM2mResponse> void send(ServerIdentity server, UplinkRequest<T> request, long timeoutInMs,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback);
 
-    /**
-     * Destroy the sender. Free all resources. Sender can not be used anymore.
-     */
-    void destroy();
 }

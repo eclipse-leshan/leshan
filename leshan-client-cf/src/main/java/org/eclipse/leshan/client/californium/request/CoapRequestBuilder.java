@@ -23,7 +23,7 @@ import java.util.Map.Entry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.util.Bytes;
-import org.eclipse.leshan.core.californium.EndpointContextUtil;
+import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -51,12 +51,15 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
     protected final LwM2mEncoder encoder;
     protected final LwM2mModel model;
     protected final LinkSerializer linkSerializer;
+    protected final IdentityHandler identityHandler;
 
-    public CoapRequestBuilder(Identity server, LwM2mEncoder encoder, LwM2mModel model, LinkSerializer linkSerializer) {
+    public CoapRequestBuilder(Identity server, LwM2mEncoder encoder, LwM2mModel model, LinkSerializer linkSerializer,
+            IdentityHandler identityHandler) {
         this.server = server;
         this.encoder = encoder;
         this.model = model;
         this.linkSerializer = linkSerializer;
+        this.identityHandler = identityHandler;
     }
 
     @Override
@@ -171,7 +174,7 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
     }
 
     protected void buildRequestSettings() {
-        EndpointContext context = EndpointContextUtil.extractContext(server, true);
+        EndpointContext context = identityHandler.createEndpointContext(server, true);
         coapRequest.setDestinationContext(context);
 
         if (server.isOSCORE()) {

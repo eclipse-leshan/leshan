@@ -16,6 +16,7 @@
 package org.eclipse.leshan.client.servers;
 
 import java.net.InetSocketAddress;
+import java.net.URI;
 
 import org.eclipse.leshan.core.request.Identity;
 
@@ -28,7 +29,7 @@ public class ServerIdentity {
      * Identity for system calls.
      */
     public final static ServerIdentity SYSTEM = new ServerIdentity(
-            Identity.unsecure(InetSocketAddress.createUnresolved(Role.SYSTEM.toString(), 1)), null, Role.SYSTEM);
+            Identity.unsecure(InetSocketAddress.createUnresolved(Role.SYSTEM.toString(), 1)), null, Role.SYSTEM, null);
 
     public enum Role {
         /**
@@ -49,15 +50,17 @@ public class ServerIdentity {
     private final Identity identity;
     private final Long id;
     private final Role role;
+    private final URI uri;
 
-    public ServerIdentity(Identity identity, Long id) {
-        this(identity, id, Role.LWM2M_SERVER);
+    public ServerIdentity(Identity identity, Long id, URI uri) {
+        this(identity, id, Role.LWM2M_SERVER, uri);
     }
 
-    public ServerIdentity(Identity identity, Long id, Role role) {
+    public ServerIdentity(Identity identity, Long id, Role role, URI uri) {
         this.identity = identity;
         this.id = id;
         this.role = role;
+        this.uri = uri;
     }
 
     public Identity getIdentity() {
@@ -105,14 +108,6 @@ public class ServerIdentity {
     }
 
     public String getUri() {
-        StringBuilder uri = new StringBuilder();
-        if (identity.isSecure())
-            uri.append("coaps://");
-        else
-            uri.append("coap://");
-        uri.append(identity.getPeerAddress().getHostString());
-        uri.append(":");
-        uri.append(identity.getPeerAddress().getPort());
         return uri.toString();
     }
 

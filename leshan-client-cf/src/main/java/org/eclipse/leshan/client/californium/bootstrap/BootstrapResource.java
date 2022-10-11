@@ -24,11 +24,11 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
-import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
-import org.eclipse.leshan.client.californium.CaliforniumEndpointsManager;
 import org.eclipse.leshan.client.californium.LwM2mClientCoapResource;
-import org.eclipse.leshan.client.engine.RegistrationEngine;
+import org.eclipse.leshan.client.californium.endpoint.ServerIdentityExtractor;
+import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.response.BootstrapFinishResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
@@ -38,26 +38,26 @@ import org.eclipse.leshan.core.response.SendableResponse;
  */
 public class BootstrapResource extends LwM2mClientCoapResource {
 
-    protected BootstrapHandler bootstrapHandler;
+    protected DownlinkRequestReceiver requestReceiver;
 
-    public BootstrapResource(RegistrationEngine registrationEngine, CaliforniumEndpointsManager endpointsManager,
-            BootstrapHandler bootstrapHandler) {
-        super("bs", registrationEngine, endpointsManager);
-        this.bootstrapHandler = bootstrapHandler;
+    public BootstrapResource(IdentityHandlerProvider identityHandlerProvider,
+            ServerIdentityExtractor serverIdentityExtractor, DownlinkRequestReceiver requestReceiver) {
+        super("bs", identityHandlerProvider, serverIdentityExtractor);
+        this.requestReceiver = requestReceiver;
         this.setVisible(false);
     }
 
     @Override
     public void handlePOST(CoapExchange exchange) {
         // Handle bootstrap request
-        ServerIdentity identity = getServerOrRejectRequest(exchange);
+        Request coapRequest = exchange.advanced().getRequest();
+        ServerIdentity identity = getServerOrRejectRequest(exchange, coapRequest);
         if (identity == null)
             return;
 
         // Acknowledge bootstrap finished request
         exchange.accept();
-        Request coapRequest = exchange.advanced().getRequest();
-        final SendableResponse<BootstrapFinishResponse> sendableResponse = bootstrapHandler.finished(identity,
+        final SendableResponse<BootstrapFinishResponse> sendableResponse = requestReceiver.requestReceived(identity,
                 new BootstrapFinishRequest(coapRequest));
 
         // Create CoAP response

@@ -22,7 +22,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.eclipse.leshan.client.EndpointsManager;
 import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
-import org.eclipse.leshan.client.request.LwM2mRequestSender;
+import org.eclipse.leshan.client.request.UplinkRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.core.request.ContentFormat;
 
@@ -48,7 +48,7 @@ public class DefaultRegistrationEngineFactory implements RegistrationEngineFacto
 
     @Override
     public RegistrationEngine createRegistratioEngine(String endpoint, LwM2mObjectTree objectTree,
-            EndpointsManager endpointsManager, LwM2mRequestSender requestSender, BootstrapHandler bootstrapState,
+            EndpointsManager endpointsManager, UplinkRequestSender requestSender, BootstrapHandler bootstrapState,
             LwM2mClientObserver observer, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, Set<ContentFormat> supportedContentFormat,
             ScheduledExecutorService sharedExecutor) {

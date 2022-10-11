@@ -13,25 +13,16 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.californium.identity;
+package org.eclipse.leshan.client.californium.endpoint.coap;
 
-import java.util.HashMap;
+import java.net.InetSocketAddress;
 
-import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpointFactory;
 
-public class IdentityHandlerProvider {
+public class CoapOscoreProtocolProvider extends CoapClientProtocolProvider {
 
-    private final HashMap<Endpoint, IdentityHandler> identityHandlers = new HashMap<>();
-
-    public void addIdentityHandler(Endpoint endpoint, IdentityHandler identityHandler) {
-        identityHandlers.put(endpoint, identityHandler);
-    }
-
-    public void clear() {
-        identityHandlers.clear();
-    }
-
-    public IdentityHandler getIdentityHandler(Endpoint endpoint) {
-        return identityHandlers.get(endpoint);
+    @Override
+    public CaliforniumClientEndpointFactory createDefaultEndpointFactory(InetSocketAddress address) {
+        return new CoapOscoreClientEndpointFactory(address);
     }
 }

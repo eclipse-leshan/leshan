@@ -13,14 +13,11 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.californium.bootstrap;
+package org.eclipse.leshan.client.bootstrap;
 
 import java.security.cert.X509Certificate;
 import java.util.List;
 
-import org.eclipse.californium.elements.util.CertPathUtil;
-import org.eclipse.leshan.client.bootstrap.BaseBootstrapConsistencyChecker;
-import org.eclipse.leshan.client.bootstrap.BootstrapConsistencyChecker;
 import org.eclipse.leshan.client.servers.DmServerInfo;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.SecurityMode;
@@ -32,7 +29,7 @@ import org.eclipse.leshan.core.oscore.OscoreValidator;
  */
 public class DefaultBootstrapConsistencyChecker extends BaseBootstrapConsistencyChecker {
 
-    private OscoreValidator oscoreValidator = new OscoreValidator();
+    private final OscoreValidator oscoreValidator = new OscoreValidator();
 
     @Override
     protected void checkBootstrapServerInfo(ServerInfo bootstrapServerInfo, List<String> errors) {

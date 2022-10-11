@@ -46,7 +46,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.leshan.client.californium.LeshanClientBuilder;
+import org.eclipse.leshan.client.LeshanClientBuilder;
+import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpointsProvider;
+import org.eclipse.leshan.client.californium.endpoint.coap.CoapOscoreProtocolProvider;
+import org.eclipse.leshan.client.californium.endpoint.coaps.CoapsClientProtocolProvider;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.Oscore;
@@ -353,6 +356,12 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 }
             });
         }
+
+        // create endpoint provider
+        CaliforniumClientEndpointsProvider.Builder endpointProviderBuilder = new CaliforniumClientEndpointsProvider.Builder(
+                new CoapOscoreProtocolProvider(), new CoapsClientProtocolProvider());
+        endpointProviderBuilder.setClientAddress(InetAddress.getLoopbackAddress());
+        builder.setEndpointsProvider(endpointProviderBuilder.build());
         client = builder.build();
         setupClientMonitoring();
     }

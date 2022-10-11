@@ -37,8 +37,10 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.scandium.DTLSConnector;
-import org.eclipse.leshan.client.californium.LeshanClient;
-import org.eclipse.leshan.client.californium.LeshanClientBuilder;
+import org.eclipse.leshan.client.LeshanClient;
+import org.eclipse.leshan.client.LeshanClientBuilder;
+import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpoint;
+import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpointsProvider;
 import org.eclipse.leshan.client.object.Device;
 import org.eclipse.leshan.client.object.LwM2mTestObject;
 import org.eclipse.leshan.client.object.Security;
@@ -171,6 +173,7 @@ public class IntegrationTestHelper {
         builder.setDataSenders(new ManualDataSender());
         builder.setAdditionalAttributes(additionalAttributes);
         builder.setObjects(objects);
+        builder.setEndpointsProvider(new CaliforniumClientEndpointsProvider());
         client = builder.build();
         setupClientMonitoring();
     }
@@ -368,8 +371,8 @@ public class IntegrationTestHelper {
     }
 
     public Connector getClientConnector(ServerIdentity server) {
-        CoapEndpoint endpoint = (CoapEndpoint) client.coap().getServer().getEndpoint(client.getAddress(server));
-        return endpoint.getConnector();
+        CaliforniumClientEndpoint endpoint = (CaliforniumClientEndpoint) client.getEndpoint(server);
+        return ((CoapEndpoint) endpoint.getCoapEndpoint()).getConnector();
     }
 
     public DTLSConnector getServerDTLSConnector() {
