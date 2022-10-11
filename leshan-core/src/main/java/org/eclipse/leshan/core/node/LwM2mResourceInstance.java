@@ -20,6 +20,7 @@ import java.util.Date;
 
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.util.datatype.LwM2mValueUtil;
 import org.eclipse.leshan.core.util.datatype.ULong;
 
 /**
@@ -224,7 +225,7 @@ public class LwM2mResourceInstance implements LwM2mNode {
         // We don't print OPAQUE value as this could be credentials one.
         // Not ideal but didn't find better way for now.
         return String.format("LwM2mResourceInstance [id=%s, value=%s, type=%s]", id,
-                type == Type.OPAQUE ? ((byte[]) value).length + "Bytes" : value, type);
+                LwM2mValueUtil.toPrettyString(type, value), type);
     }
 
     @Override
