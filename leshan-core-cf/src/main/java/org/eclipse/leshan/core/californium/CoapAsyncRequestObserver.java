@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2021 Sierra Wireless and others.
+ * Copyright (c) 2016-2021 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -55,14 +55,14 @@ public class CoapAsyncRequestObserver extends AbstractRequestObserver {
     private final long timeoutInMs;
     private ScheduledFuture<?> cleaningTask;
     private boolean cancelled = false;
-    private ScheduledExecutorService executor;
+    private final ScheduledExecutorService executor;
 
     // The Californium API does not ensure that message callback are exclusive
     // meaning that you can get a onReponse call and a onCancel one.
     // The CoapAsyncRequestObserver ensure that you will receive only one event.
     // You get either 1 response or 1 error.
     // This boolean is used to ensure this.
-    private AtomicBoolean eventRaised = new AtomicBoolean(false);
+    private final AtomicBoolean eventRaised = new AtomicBoolean(false);
 
     private final AtomicBoolean responseTimedOut = new AtomicBoolean(false);
 
