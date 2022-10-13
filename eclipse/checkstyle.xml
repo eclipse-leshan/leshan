@@ -15,6 +15,12 @@
         <module name="UnusedLocalVariable"/>
     </module>
 
+    <module name="RegexpHeader">
+        <property name="headerFile" value="./eclipse/java.header"/>
+        <property name="multiLines" value="2, 3, 14"/>
+        <property name="fileExtensions" value="java"/>
+    </module>
+
     <module name="RegexpSingleline">
         <property name="format" value="\s+$"/>
         <property name="message" value="No trailing white space allowed."/>

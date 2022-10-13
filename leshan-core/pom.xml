@@ -61,6 +61,12 @@ Contributors:
   <build>
     <plugins>
       <plugin>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <excludes>org/eclipse/leshan/core/util/Base64.java,org/eclipse/leshan/core/util/BaseNCodec.java,org/eclipse/leshan/core/util/Hex.java,org/eclipse/leshan/core/util/RandomStringUtils.java,org/eclipse/leshan/core/util/StringUtils.java,org/eclipse/leshan/core/util/Validate.java,org/eclipse/leshan/core/util/datatype/ULong.java</excludes>
+        </configuration>
+      </plugin>
+      <plugin>
         <!-- Create test-jar to reuse it in integration-tests -->
         <artifactId>maven-jar-plugin</artifactId>
         <executions>
