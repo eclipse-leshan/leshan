@@ -26,10 +26,14 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.Destroyable;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.request.argument.Arguments;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,6 +94,21 @@ public class RandomTemperatureSensor extends BaseInstanceEnabler implements Dest
         default:
             return super.execute(identity, resourceId, arguments);
         }
+    }
+
+    @Override
+    public synchronized WriteAttributesResponse writeAttributes(ServerIdentity identity, int resourceId,
+            LwM2mAttributeSet attributes) {
+        try {
+            LwM2mAttribute<Long> pmax = attributes.getLwM2mAttribute(LwM2mAttributes.MAXIMUM_PERIOD);
+            if (pmax != null && pmax.hasValue() && pmax.hasValue() && pmax.getValue() > 0) {
+                LOG.info("write pmax {} for resourceId {}", pmax.getValue(), resourceId);
+                return WriteAttributesResponse.success();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return WriteAttributesResponse.internalServerError("Internal error");
     }
 
     private double getTwoDigitValue(double value) {

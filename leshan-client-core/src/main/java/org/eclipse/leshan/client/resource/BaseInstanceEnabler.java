@@ -26,6 +26,7 @@ import java.util.Map;
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.resource.listener.ResourceListener;
 import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
@@ -37,6 +38,7 @@ import org.eclipse.leshan.core.request.argument.Arguments;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 
 /**
@@ -264,6 +266,12 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
         ReadResponse readResponse = this.read(identity, resourceid, resourceInstanceId);
         return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null,
                 readResponse.getErrorMessage());
+    }
+
+    @Override
+    public WriteAttributesResponse writeAttributes(ServerIdentity identity, int resourceId,
+            LwM2mAttributeSet attributes) {
+        return WriteAttributesResponse.notFound();
     }
 
     @Override

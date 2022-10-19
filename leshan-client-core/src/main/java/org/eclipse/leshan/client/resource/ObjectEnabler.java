@@ -49,6 +49,7 @@ import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
+import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
@@ -59,6 +60,7 @@ import org.eclipse.leshan.core.response.DeleteResponse;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -348,6 +350,16 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
             return ExecuteResponse.notFound();
         }
         return instance.execute(identity, path.getResourceId(), request.getArguments());
+    }
+
+    @Override
+    protected WriteAttributesResponse doWriteAttributes(ServerIdentity identity, WriteAttributesRequest request) {
+        LwM2mPath path = request.getPath();
+        LwM2mInstanceEnabler instance = instances.get(path.getObjectInstanceId());
+        if (instance == null) {
+            return WriteAttributesResponse.notFound();
+        }
+        return instance.writeAttributes(identity, path.getResourceId(), request.getAttributes());
     }
 
     @Override
