@@ -18,9 +18,14 @@
 package org.eclipse.leshan.server.registration;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.RegisterRequest;
@@ -107,6 +112,73 @@ public class RegistrationHandler {
         return new SendableResponse<>(RegisterResponse.success(approvedRegistration.getId()), whenSent);
     }
 
+    public boolean registerEndDevice(String gatewayRegId, String endpoint, String prefix, Link[] objectLinks) {
+        Registration gatewayRegistration = registrationService.getById(gatewayRegId);
+        if (gatewayRegistration == null) {
+            LOG.error("gateway registration not found {}", gatewayRegId);
+            return false;
+        }
+
+        RegisterRequest registerRequest = new RegisterRequest(endpoint, gatewayRegistration.getLifeTimeInSec(),
+                gatewayRegistration.getLwM2mVersion().toString(), gatewayRegistration.getBindingMode(),
+                gatewayRegistration.getQueueMode(), gatewayRegistration.getSmsNumber(), objectLinks, null);
+
+        Registration.Builder builder = new Registration.Builder(
+                registrationIdProvider.getRegistrationId(registerRequest), endpoint, gatewayRegistration.getIdentity(),
+                gatewayRegistration.getLastEndpointUsed());
+
+        builder.lwM2mVersion(gatewayRegistration.getLwM2mVersion());
+        builder.queueMode(gatewayRegistration.getQueueMode());
+        builder.bindingMode(gatewayRegistration.getBindingMode());
+        builder.gatewayRegId(gatewayRegistration.getId());
+        builder.smsNumber(gatewayRegistration.getSmsNumber());
+        builder.gatewayPrefix(prefix);
+        builder.objectLinks(objectLinks);
+        builder.extractDataFromObjectLink(true); // JV: not sure if it's useful or not
+
+        // TODO: how to handle identity with gateways ??
+        // we probably need a service which can authorize a given gateway to manage a list of end devices
+        // final Registration registration = authorizer.isAuthorized(registerRequest, builder.build(),
+        // gatewayRegistration.getIdentity());
+
+        final Registration registration = builder.build();
+
+        // update the gateway registration for adding the end IoT device
+        Set<String> endDevices = new HashSet<>();
+        if (gatewayRegistration.getEndDeviceEndpoints() != null) {
+            endDevices.addAll(gatewayRegistration.getEndDeviceEndpoints());
+        }
+        endDevices.add(endpoint);
+        RegistrationUpdate update = new RegistrationUpdate(gatewayRegistration.getId(),
+                gatewayRegistration.getIdentity(), null, null, null, null, null, null, null, null, endDevices);
+        registrationService.getStore().updateRegistration(update);
+
+        // Add registration to the store
+        final Deregistration deregistration = registrationService.getStore().addRegistration(registration);
+
+        // since this is executed on a read of object /25 of the gateway, does it make sense to have a runnable??
+        if (deregistration != null) {
+            registrationService.fireUnregistered(deregistration.getRegistration(), deregistration.getObservations(),
+                    registration);
+            registrationService.fireRegistered(registration, deregistration.registration, deregistration.observations);
+        } else {
+            registrationService.fireRegistered(registration, null, null);
+        }
+        return true;
+    }
+
+    public UpdatedRegistration registerUpdateEndDevice(RegistrationUpdate gatewayRegUpdate, String registrationId,
+            String endpoint, String prefix, Link[] objectLinks) {
+        RegistrationUpdate endDeviceRegUpdate = new RegistrationUpdate(registrationId, gatewayRegUpdate.getIdentity(),
+                gatewayRegUpdate.getLifeTimeInSec(), gatewayRegUpdate.getSmsNumber(), gatewayRegUpdate.getBindingMode(),
+                objectLinks, gatewayRegUpdate.getAdditionalAttributes(), gatewayRegUpdate.getApplicationData(), null,
+                prefix, null);
+        UpdatedRegistration updatedRegistration = registrationService.getStore().updateRegistration(endDeviceRegUpdate);
+        registrationService.fireUpdated(endDeviceRegUpdate, updatedRegistration.getUpdatedRegistration(),
+                updatedRegistration.getPreviousRegistration());
+        return updatedRegistration;
+    }
+
     public SendableResponse<UpdateResponse> update(Identity sender, UpdateRequest updateRequest) {
 
         // We check if there is a registration to update
@@ -128,7 +200,7 @@ public class RegistrationHandler {
         final RegistrationUpdate update = new RegistrationUpdate(updateRequest.getRegistrationId(), sender,
                 updateRequest.getLifeTimeInSec(), updateRequest.getSmsNumber(), updateRequest.getBindingMode(),
                 updateRequest.getObjectLinks(), updateRequest.getAdditionalAttributes(),
-                authorization.getApplicationData());
+                authorization.getApplicationData(), null, null, null);
 
         // update registration
         final UpdatedRegistration updatedRegistration = registrationService.getStore().updateRegistration(update);
@@ -166,6 +238,20 @@ public class RegistrationHandler {
         final Deregistration deregistration = registrationService.getStore()
                 .removeRegistration(deregisterRequest.getRegistrationId());
 
+        // list all the attached registration
+        final List<Deregistration> endIoTdevices = new ArrayList<>();
+        if (currentRegistration.getEndDeviceEndpoints() != null) {
+            for (String endIotEp : currentRegistration.getEndDeviceEndpoints()) {
+                Registration regEndIoT = registrationService.getByEndpoint(endIotEp);
+                if (regEndIoT != null && regEndIoT.getGatewayRegId().equals(deregisterRequest.getRegistrationId())) {
+                    final Deregistration deregEndIoT = registrationService.getStore()
+                            .removeRegistration(regEndIoT.getId());
+
+                    endIoTdevices.add(deregEndIoT);
+                }
+            }
+        }
+
         if (deregistration != null) {
             LOG.debug("Deregistered client: {}", deregistration.getRegistration());
             // Create callback to notify new de-registration
@@ -174,6 +260,10 @@ public class RegistrationHandler {
                 public void run() {
                     registrationService.fireUnregistered(deregistration.getRegistration(),
                             deregistration.getObservations(), null);
+                    // End Iot devices linked
+                    for (Deregistration dereg : endIoTdevices) {
+                        registrationService.fireUnregistered(dereg.getRegistration(), dereg.getObservations(), null);
+                    }
                 };
             };
             return new SendableResponse<>(DeregisterResponse.success(), whenSent);

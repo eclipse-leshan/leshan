@@ -53,7 +53,7 @@ public class RegistrationUpdateTest {
         updateAdditionalAttributes.put("h", "hello");
 
         RegistrationUpdate updateReg = new RegistrationUpdate(r.getId(), r.getIdentity(), null, null, null, null,
-                updateAdditionalAttributes, null);
+                updateAdditionalAttributes, null, null, null, null);
 
         r = updateReg.update(r);
 
@@ -79,7 +79,7 @@ public class RegistrationUpdateTest {
         Registration r = builder.build();
 
         RegistrationUpdate updateReg = new RegistrationUpdate(r.getId(), r.getIdentity(), null, null, null, null, null,
-                null);
+                null, null, null, null);
 
         r = updateReg.update(r);
 

@@ -46,7 +46,11 @@ public class ClientProfile {
     }
 
     public String getRootPath() {
-        return registration.getRootPath();
+        String rootPath = registration.getRootPath();
+        if (registration.getGatewayPrefix() != null) {
+            rootPath += registration.getGatewayPrefix();
+        }
+        return rootPath;
     }
 
     public boolean canInitiateConnection() {

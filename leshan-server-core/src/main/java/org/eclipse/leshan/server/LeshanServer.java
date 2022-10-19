@@ -24,6 +24,7 @@ import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
 import org.eclipse.leshan.core.endpoint.Protocol;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
@@ -62,6 +63,7 @@ import org.eclipse.leshan.server.registration.RegistrationService;
 import org.eclipse.leshan.server.registration.RegistrationServiceImpl;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
+import org.eclipse.leshan.server.registration.UpdatedRegistration;
 import org.eclipse.leshan.server.request.DefaultDownlinkRequestSender;
 import org.eclipse.leshan.server.request.DefaultUplinkRequestReceiver;
 import org.eclipse.leshan.server.request.DownlinkRequestSender;
@@ -101,6 +103,8 @@ public class LeshanServer {
     private final LwM2mModelProvider modelProvider;
     private PresenceServiceImpl presenceService;
     private final DownlinkRequestSender requestSender;
+
+    private RegistrationHandler registrationHandler;
 
     /**
      * Initialize a server which will bind to the specified address and port.
@@ -156,8 +160,7 @@ public class LeshanServer {
         // create endpoints
         ServerEndpointToolbox toolbox = new ServerEndpointToolbox(decoder, encoder, linkParser,
                 new DefaultClientProfileProvider(registrationStore, modelProvider));
-        RegistrationHandler registrationHandler = new RegistrationHandler(registrationService, authorizer,
-                registrationIdProvider);
+        registrationHandler = new RegistrationHandler(registrationService, authorizer, registrationIdProvider);
         DefaultUplinkRequestReceiver requestReceiver = new DefaultUplinkRequestReceiver(registrationHandler,
                 sendService);
         endpointsProvider.createEndpoints(requestReceiver, observationService, toolbox, serverSecurityInfo, this);
@@ -563,5 +566,35 @@ public class LeshanServer {
             LowerLayerConfig lowerLayerConfig, long timeoutInMs, ResponseCallback<T> responseCallback,
             ErrorCallback errorCallback) {
         requestSender.send(destination, request, lowerLayerConfig, timeoutInMs, responseCallback, errorCallback);
+    }
+
+    /**
+     * Register an "end IoT device", a device communicating thru a gateway (see object 25 specification)
+     *
+     * @param gatewayRegId the registration identifier of the gateway used for communicating
+     * @param endpoint this device endpoint
+     * @param prefix the prefix (CoAP path) used for communicating on the gateway
+     * @param objectLinks the list of supported object
+     * @return <code>true</code> if the device is registered successfully
+     */
+    public boolean registerEndIotDevice(String gatewayRegId, String endpoint, String prefix, Link[] objectLinks) {
+        return registrationHandler.registerEndDevice(gatewayRegId, endpoint, prefix, objectLinks);
+    }
+
+    /**
+     * Update the registration of an "end IoT device", a device communicating thru a gateway (see object 25
+     * specification)
+     *
+     * @param gatewayRegUpdate the registration of the gateway used for communicating
+     * @param registrationId the registration identifier of the registration to update
+     * @param endpoint this device endpoint
+     * @param prefix the prefix (CoAP path) used for communicating on the gateway (if updated)
+     * @param objectLinks the list of supported object (if updated)
+     * @return the registration updated and the original one
+     */
+    public UpdatedRegistration registrationUpdateEndIotDevice(RegistrationUpdate gatewayRegUpdate,
+            String registrationId, String endpoint, String prefix, Link[] objectLinks) {
+        return registrationHandler.registerUpdateEndDevice(gatewayRegUpdate, registrationId, endpoint, prefix,
+                objectLinks);
     }
 }

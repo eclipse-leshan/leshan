@@ -51,6 +51,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
@@ -143,6 +144,24 @@ public class RegistrationSerDes {
             ad.put(appData.getKey(), appData.getValue());
         }
         o.set("appdata", ad);
+
+        // gateway support
+        if (r.getGatewayRegId() != null) {
+            o.put("gwRegId", r.getGatewayRegId());
+        }
+        if (r.getGatewayPrefix() != null) {
+            o.put("gwPrefix", r.getGatewayPrefix());
+        }
+
+        Set<String> endDeviceEndpoints = r.getEndDeviceEndpoints();
+
+        if (endDeviceEndpoints != null) {
+            ArrayNode endDevicesNode = JsonNodeFactory.instance.arrayNode();
+            for (String endpoint : endDeviceEndpoints) {
+                endDevicesNode.add(endpoint);
+            }
+            o.replace("endDeviceEp", endDevicesNode);
+        }
         return o;
     }
 
@@ -290,6 +309,25 @@ public class RegistrationSerDes {
         }
         b.applicationData(appData);
 
+        // gateway support
+        JsonNode gwEp = jObj.get("gwRegId");
+        if (gwEp != null) {
+            b.gatewayRegId(gwEp.asText());
+        }
+
+        JsonNode gwPrefix = jObj.get("gwPrefix");
+        if (gwEp != null) {
+            b.gatewayPrefix(gwPrefix.asText());
+        }
+
+        JsonNode endDeviceEp = jObj.get("endDeviceEp");
+        if (endDeviceEp != null && endDeviceEp.getNodeType() == JsonNodeType.ARRAY) {
+            Set<String> ep = new HashSet<>();
+            for (int i = 0; i < endDeviceEp.size(); i++) {
+                ep.add(endDeviceEp.get(i).asText());
+            }
+            b.endDeviceEndpoints(ep);
+        }
         return b.build();
     }
 

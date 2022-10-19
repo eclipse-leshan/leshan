@@ -22,6 +22,7 @@ import java.net.Inet4Address;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
@@ -59,9 +60,15 @@ public class RegistrationSerDesTest {
         builder.registrationDate(new Date(100L));
         builder.extractDataFromObjectLink(true);
         builder.lastUpdate(new Date(101L));
+
+        builder.gatewayRegId("GW1234");
+
+        builder.endDeviceEndpoints(Set.of(new String[] { "a", "b", "c" }));
+        builder.gatewayPrefix("/myPrefix/");
         Registration r = builder.build();
 
         byte[] ser = registrationSerDes.bSerialize(r);
+
         Registration r2 = registrationSerDes.deserialize(ser);
 
         assertEquals(r, r2);

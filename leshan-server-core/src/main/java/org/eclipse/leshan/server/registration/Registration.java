@@ -92,6 +92,17 @@ public class Registration {
     // All available instances
     private final Set<LwM2mPath> availableInstances;
 
+    // if the device is a endDevice, the 'registration id' identifying the gateway registration for this device,
+    // otherwise 'null'
+    private String gatewayRegId;
+
+    // if the device is a endDevice, the prefix used on the gateway CoAP path, otherwise 'null'
+    private String gatewayPrefix;
+
+    // if this device is a gateway, the 'endpoint' of the devices communicating using this device as a gateway,
+    // otherwise 'null'
+    private Set<String> endDeviceEndpoints;
+
     private final Date lastUpdate;
 
     private final Map<String, String> applicationData;
@@ -124,6 +135,11 @@ public class Registration {
         additionalRegistrationAttributes = builder.additionalRegistrationAttributes;
 
         applicationData = builder.applicationData;
+
+        // gateway
+        gatewayRegId = builder.gatewayRegId;
+        gatewayPrefix = builder.gatewayPrefix;
+        endDeviceEndpoints = builder.endDeviceEndpoints;
     }
 
     public String getId() {
@@ -266,6 +282,18 @@ public class Registration {
         return availableInstances;
     }
 
+    public String getGatewayRegId() {
+        return gatewayRegId;
+    }
+
+    public String getGatewayPrefix() {
+        return gatewayPrefix;
+    }
+
+    public Set<String> getEndDeviceEndpoints() {
+        return endDeviceEndpoints;
+    }
+
     /**
      * Gets the unique name the client has registered with.
      *
@@ -354,34 +382,38 @@ public class Registration {
     @Override
     public String toString() {
         return String.format(
-                "Registration [registrationDate=%s, identity=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, queueMode=%s, endpoint=%s, id=%s, objectLinks=%s, additionalRegistrationAttributes=%s, rootPath=%s, supportedContentFormats=%s, supportedObjects=%s, availableInstances=%s, lastUpdate=%s, applicationData=%s]",
+                "Registration [registrationDate=%s, identity=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, queueMode=%s, endpoint=%s, id=%s, objectLinks=%s, additionalRegistrationAttributes=%s, rootPath=%s, supportedContentFormats=%s, supportedObjects=%s, availableInstances=%s, lastUpdate=%s, applicationData=%s, gatewayRegId=%s, gatewayPrefix=%s, endDeviceEndpoints=%s]",
                 registrationDate, identity, lifeTimeInSec, smsNumber, lwM2mVersion, bindingMode, queueMode, endpoint,
                 id, Arrays.toString(objectLinks), additionalRegistrationAttributes, rootPath, supportedContentFormats,
-                supportedObjects, availableInstances, lastUpdate, applicationData);
+                supportedObjects, availableInstances, lastUpdate, applicationData, gatewayRegId, gatewayPrefix,
+                endDeviceEndpoints);
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result
-                + ((additionalRegistrationAttributes == null) ? 0 : additionalRegistrationAttributes.hashCode());
-        result = prime * result + ((applicationData == null) ? 0 : applicationData.hashCode());
-        result = prime * result + ((availableInstances == null) ? 0 : availableInstances.hashCode());
+        result = prime * result + ((registrationDate == null) ? 0 : registrationDate.hashCode());
+        result = prime * result + ((identity == null) ? 0 : identity.hashCode());
+        result = prime * result + (int) (lifeTimeInSec ^ (lifeTimeInSec >>> 32));
+        result = prime * result + ((smsNumber == null) ? 0 : smsNumber.hashCode());
+        result = prime * result + ((lwM2mVersion == null) ? 0 : lwM2mVersion.hashCode());
         result = prime * result + ((bindingMode == null) ? 0 : bindingMode.hashCode());
+        result = prime * result + ((queueMode == null) ? 0 : queueMode.hashCode());
         result = prime * result + ((endpoint == null) ? 0 : endpoint.hashCode());
         result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((identity == null) ? 0 : identity.hashCode());
-        result = prime * result + ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
-        result = prime * result + (int) (lifeTimeInSec ^ (lifeTimeInSec >>> 32));
-        result = prime * result + ((lwM2mVersion == null) ? 0 : lwM2mVersion.hashCode());
         result = prime * result + Arrays.hashCode(objectLinks);
-        result = prime * result + ((queueMode == null) ? 0 : queueMode.hashCode());
-        result = prime * result + ((registrationDate == null) ? 0 : registrationDate.hashCode());
+        result = prime * result
+                + ((additionalRegistrationAttributes == null) ? 0 : additionalRegistrationAttributes.hashCode());
         result = prime * result + ((rootPath == null) ? 0 : rootPath.hashCode());
-        result = prime * result + ((smsNumber == null) ? 0 : smsNumber.hashCode());
         result = prime * result + ((supportedContentFormats == null) ? 0 : supportedContentFormats.hashCode());
         result = prime * result + ((supportedObjects == null) ? 0 : supportedObjects.hashCode());
+        result = prime * result + ((availableInstances == null) ? 0 : availableInstances.hashCode());
+        result = prime * result + ((gatewayRegId == null) ? 0 : gatewayRegId.hashCode());
+        result = prime * result + ((gatewayPrefix == null) ? 0 : gatewayPrefix.hashCode());
+        result = prime * result + ((endDeviceEndpoints == null) ? 0 : endDeviceEndpoints.hashCode());
+        result = prime * result + ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
+        result = prime * result + ((applicationData == null) ? 0 : applicationData.hashCode());
         return result;
     }
 
@@ -394,25 +426,37 @@ public class Registration {
         if (getClass() != obj.getClass())
             return false;
         Registration other = (Registration) obj;
-        if (additionalRegistrationAttributes == null) {
-            if (other.additionalRegistrationAttributes != null)
+        if (registrationDate == null) {
+            if (other.registrationDate != null)
                 return false;
-        } else if (!additionalRegistrationAttributes.equals(other.additionalRegistrationAttributes))
+        } else if (!registrationDate.equals(other.registrationDate))
             return false;
-        if (applicationData == null) {
-            if (other.applicationData != null)
+        if (identity == null) {
+            if (other.identity != null)
                 return false;
-        } else if (!applicationData.equals(other.applicationData))
+        } else if (!identity.equals(other.identity))
             return false;
-        if (availableInstances == null) {
-            if (other.availableInstances != null)
+        if (lifeTimeInSec != other.lifeTimeInSec)
+            return false;
+        if (smsNumber == null) {
+            if (other.smsNumber != null)
                 return false;
-        } else if (!availableInstances.equals(other.availableInstances))
+        } else if (!smsNumber.equals(other.smsNumber))
+            return false;
+        if (lwM2mVersion == null) {
+            if (other.lwM2mVersion != null)
+                return false;
+        } else if (!lwM2mVersion.equals(other.lwM2mVersion))
             return false;
         if (bindingMode == null) {
             if (other.bindingMode != null)
                 return false;
         } else if (!bindingMode.equals(other.bindingMode))
+            return false;
+        if (queueMode == null) {
+            if (other.queueMode != null)
+                return false;
+        } else if (!queueMode.equals(other.queueMode))
             return false;
         if (endpoint == null) {
             if (other.endpoint != null)
@@ -424,44 +468,17 @@ public class Registration {
                 return false;
         } else if (!id.equals(other.id))
             return false;
-        if (identity == null) {
-            if (other.identity != null)
-                return false;
-        } else if (!identity.equals(other.identity))
-            return false;
-        if (lastUpdate == null) {
-            if (other.lastUpdate != null)
-                return false;
-        } else if (!lastUpdate.equals(other.lastUpdate))
-            return false;
-        if (lifeTimeInSec != other.lifeTimeInSec)
-            return false;
-        if (lwM2mVersion == null) {
-            if (other.lwM2mVersion != null)
-                return false;
-        } else if (!lwM2mVersion.equals(other.lwM2mVersion))
-            return false;
         if (!Arrays.equals(objectLinks, other.objectLinks))
             return false;
-        if (queueMode == null) {
-            if (other.queueMode != null)
+        if (additionalRegistrationAttributes == null) {
+            if (other.additionalRegistrationAttributes != null)
                 return false;
-        } else if (!queueMode.equals(other.queueMode))
-            return false;
-        if (registrationDate == null) {
-            if (other.registrationDate != null)
-                return false;
-        } else if (!registrationDate.equals(other.registrationDate))
+        } else if (!additionalRegistrationAttributes.equals(other.additionalRegistrationAttributes))
             return false;
         if (rootPath == null) {
             if (other.rootPath != null)
                 return false;
         } else if (!rootPath.equals(other.rootPath))
-            return false;
-        if (smsNumber == null) {
-            if (other.smsNumber != null)
-                return false;
-        } else if (!smsNumber.equals(other.smsNumber))
             return false;
         if (supportedContentFormats == null) {
             if (other.supportedContentFormats != null)
@@ -472,6 +489,36 @@ public class Registration {
             if (other.supportedObjects != null)
                 return false;
         } else if (!supportedObjects.equals(other.supportedObjects))
+            return false;
+        if (availableInstances == null) {
+            if (other.availableInstances != null)
+                return false;
+        } else if (!availableInstances.equals(other.availableInstances))
+            return false;
+        if (gatewayRegId == null) {
+            if (other.gatewayRegId != null)
+                return false;
+        } else if (!gatewayRegId.equals(other.gatewayRegId))
+            return false;
+        if (gatewayPrefix == null) {
+            if (other.gatewayPrefix != null)
+                return false;
+        } else if (!gatewayPrefix.equals(other.gatewayPrefix))
+            return false;
+        if (endDeviceEndpoints == null) {
+            if (other.endDeviceEndpoints != null)
+                return false;
+        } else if (!endDeviceEndpoints.equals(other.endDeviceEndpoints))
+            return false;
+        if (lastUpdate == null) {
+            if (other.lastUpdate != null)
+                return false;
+        } else if (!lastUpdate.equals(other.lastUpdate))
+            return false;
+        if (applicationData == null) {
+            if (other.applicationData != null)
+                return false;
+        } else if (!applicationData.equals(other.applicationData))
             return false;
         return true;
     }
@@ -496,6 +543,9 @@ public class Registration {
         private Set<LwM2mPath> availableInstances;
         private Map<String, String> additionalRegistrationAttributes;
         private Map<String, String> applicationData;
+        private String gatewayRegId;
+        private String gatewayPrefix;
+        private Set<String> endDeviceEndpoints;
 
         // builder setting
         private boolean extractData; // if true extract data from objectLinks
@@ -526,6 +576,11 @@ public class Registration {
             additionalRegistrationAttributes = registration.additionalRegistrationAttributes;
 
             applicationData = registration.applicationData;
+
+            // gateway/end iot devices
+            gatewayRegId = registration.gatewayRegId;
+            gatewayPrefix = registration.gatewayPrefix;
+            endDeviceEndpoints = registration.endDeviceEndpoints;
         }
 
         public Builder(String registrationId, String endpoint, Identity identity, URI lastEndpointUsed) {
@@ -621,6 +676,21 @@ public class Registration {
 
         public Builder applicationData(Map<String, String> applicationData) {
             this.applicationData = applicationData;
+            return this;
+        }
+
+        public Builder gatewayRegId(String gatewayRegId) {
+            this.gatewayRegId = gatewayRegId;
+            return this;
+        }
+
+        public Builder gatewayPrefix(String gatewayPrefix) {
+            this.gatewayPrefix = gatewayPrefix;
+            return this;
+        }
+
+        public Builder endDeviceEndpoints(Set<String> endDeviceEndpoints) {
+            this.endDeviceEndpoints = endDeviceEndpoints;
             return this;
         }
 
