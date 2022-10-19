@@ -27,7 +27,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServer;
+import org.eclipse.leshan.core.endpoint.Protocol;
+import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
+import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpoint;
 import org.eclipse.leshan.server.core.demo.json.PublicKeySerDes;
 import org.eclipse.leshan.server.core.demo.json.X509CertificateSerDes;
 
@@ -83,14 +85,23 @@ public class ServerServlet extends HttpServlet {
             return;
         }
 
+        // search coap and coaps port
+        Integer coapPort = null;
+        Integer coapsPort = null;
+        for (LwM2mBootstrapServerEndpoint endpoint : server.getEndpoints()) {
+            if (endpoint.getProtocol().equals(Protocol.COAP)) {
+                coapPort = endpoint.getURI().getPort();
+            } else if (endpoint.getProtocol().equals(Protocol.COAPS)) {
+                coapsPort = endpoint.getURI().getPort();
+            }
+        }
+
         if ("endpoint".equals(path[0])) {
             resp.setStatus(HttpServletResponse.SC_OK);
             resp.setContentType("application/json");
-            resp.getOutputStream()
-                    .write(String
-                            .format("{ \"securedEndpointPort\":\"%s\", \"unsecuredEndpointPort\":\"%s\"}",
-                                    server.getSecuredAddress().getPort(), server.getUnsecuredAddress().getPort())
-                            .getBytes(StandardCharsets.UTF_8));
+            resp.getOutputStream().write(String
+                    .format("{ \"securedEndpointPort\":\"%s\", \"unsecuredEndpointPort\":\"%s\"}", coapsPort, coapPort)
+                    .getBytes(StandardCharsets.UTF_8));
             return;
         }
 

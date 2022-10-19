@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +42,7 @@ public class DefaultBootstrapSession implements BootstrapSession {
     private final ContentFormat contentFormat;
     private final Map<String, String> applicationData;
     private final long creationTime;
+    private final URI endpointUsed;
     private final BootstrapRequest request;
 
     private volatile LwM2mModel model;
@@ -60,8 +62,8 @@ public class DefaultBootstrapSession implements BootstrapSession {
      * @param applicationData Data that could be attached to a session.
      */
     public DefaultBootstrapSession(BootstrapRequest request, Identity identity, boolean authorized,
-            Map<String, String> applicationData) {
-        this(request, identity, authorized, null, applicationData);
+            Map<String, String> applicationData, URI endpointUsed) {
+        this(request, identity, authorized, null, applicationData, endpointUsed);
     }
 
     /**
@@ -74,8 +76,8 @@ public class DefaultBootstrapSession implements BootstrapSession {
      * @param applicationData Data that could be attached to a session.
      */
     public DefaultBootstrapSession(BootstrapRequest request, Identity identity, boolean authorized,
-            ContentFormat contentFormat, Map<String, String> applicationData) {
-        this(request, identity, authorized, contentFormat, applicationData, System.currentTimeMillis());
+            ContentFormat contentFormat, Map<String, String> applicationData, URI endpointUsed) {
+        this(request, identity, authorized, contentFormat, applicationData, System.currentTimeMillis(), endpointUsed);
     }
 
     /**
@@ -89,12 +91,13 @@ public class DefaultBootstrapSession implements BootstrapSession {
      * @param creationTime The creation time of this session in ms.
      */
     public DefaultBootstrapSession(BootstrapRequest request, Identity identity, boolean authorized,
-            ContentFormat contentFormat, Map<String, String> applicationData, long creationTime) {
+            ContentFormat contentFormat, Map<String, String> applicationData, long creationTime, URI endpointUsed) {
         Validate.notNull(request);
         this.id = RandomStringUtils.random(10, true, true);
         this.request = request;
         this.endpoint = request.getEndpointName();
         this.identity = identity;
+        this.endpointUsed = endpointUsed;
         this.authorized = authorized;
         if (contentFormat == null) {
             if (request.getPreferredContentFormat() != null) {
@@ -126,6 +129,11 @@ public class DefaultBootstrapSession implements BootstrapSession {
     @Override
     public Identity getIdentity() {
         return identity;
+    }
+
+    @Override
+    public URI getEndpointUsed() {
+        return endpointUsed;
     }
 
     @Override

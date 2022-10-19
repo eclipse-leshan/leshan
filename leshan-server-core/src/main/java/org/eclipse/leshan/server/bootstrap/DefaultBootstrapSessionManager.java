@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,10 +73,10 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
     }
 
     @Override
-    public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity) {
+    public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity, URI endpointUsed) {
         Authorization authorization = authorizer.isAuthorized(request, clientIdentity);
         DefaultBootstrapSession session = new DefaultBootstrapSession(request, clientIdentity,
-                authorization.isApproved(), authorization.getApplicationData());
+                authorization.isApproved(), authorization.getApplicationData(), endpointUsed);
         LOG.trace("Bootstrap session started : {}", session);
 
         return session;

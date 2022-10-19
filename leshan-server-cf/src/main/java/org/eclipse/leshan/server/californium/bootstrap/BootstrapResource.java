@@ -25,17 +25,18 @@ import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.core.californium.LwM2mCoapResource;
+import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.BootstrapResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
-import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
+import org.eclipse.leshan.server.bootstrap.request.BootstrapUplinkRequestReceiver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link CoapResource} used to handle /bs request sent to {@link LeshanBootstrapServer}.
+ * The {@link CoapResource} used to handle /bs request.
  */
 public class BootstrapResource extends LwM2mCoapResource {
 
@@ -43,11 +44,11 @@ public class BootstrapResource extends LwM2mCoapResource {
     private static final String QUERY_PARAM_ENDPOINT = "ep=";
     private static final String QUERY_PARAM_PREFERRED_CONTENT_FORMAT = "pct=";
 
-    private final BootstrapHandler bootstrapHandler;
+    private final BootstrapUplinkRequestReceiver receiver;
 
-    public BootstrapResource(BootstrapHandler handler) {
-        super("bs", null);
-        bootstrapHandler = handler;
+    public BootstrapResource(BootstrapUplinkRequestReceiver receiver, IdentityHandlerProvider identityHandlerProvider) {
+        super("bs", identityHandlerProvider);
+        this.receiver = receiver;
     }
 
     @Override
@@ -87,12 +88,13 @@ public class BootstrapResource extends LwM2mCoapResource {
         }
 
         // Extract client identity
-        Identity clientIdentity = extractIdentity(request.getSourceContext());
+        Identity clientIdentity = getForeignPeerIdentity(exchange.advanced(), request);
 
         // handle bootstrap request
         Request coapRequest = exchange.advanced().getRequest();
-        SendableResponse<BootstrapResponse> sendableResponse = bootstrapHandler.bootstrap(clientIdentity,
-                new BootstrapRequest(endpoint, preferredContentFomart, additionalParams, coapRequest));
+        SendableResponse<BootstrapResponse> sendableResponse = receiver.requestReceived(clientIdentity,
+                new BootstrapRequest(endpoint, preferredContentFomart, additionalParams, coapRequest),
+                exchange.advanced().getEndpoint().getUri());
         BootstrapResponse response = sendableResponse.getResponse();
         if (response.isSuccess()) {
             exchange.respond(toCoapResponseCode(response.getCode()));
