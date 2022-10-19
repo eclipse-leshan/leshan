@@ -367,10 +367,30 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     @Override
     public synchronized WriteAttributesResponse writeAttributes(ServerIdentity identity,
             WriteAttributesRequest request) {
-        // execute is not supported for bootstrap
+        LwM2mPath path = request.getPath();
+
+        // writeAttributes is not supported for bootstrap
         if (identity.isLwm2mBootstrapServer()) {
             return WriteAttributesResponse.methodNotAllowed();
         }
+
+        // only resource could be wrote
+        if (!path.isResource()) {
+            return WriteAttributesResponse.badRequest(null);
+        }
+
+        // check if the resource is readable
+        ResourceModel resourceModel = objectModel.resources.get(path.getResourceId());
+        if (resourceModel == null) {
+            return WriteAttributesResponse.notFound();
+        } else if (!resourceModel.operations.isReadable()) {
+            return WriteAttributesResponse.methodNotAllowed();
+        }
+
+        return doWriteAttributes(identity, request);
+    }
+
+    protected WriteAttributesResponse doWriteAttributes(ServerIdentity identity, WriteAttributesRequest request) {
         // TODO should be implemented here to be available for all object enabler
         // This should be a not implemented error, but this is not defined in the spec.
         return WriteAttributesResponse.internalServerError("not implemented");

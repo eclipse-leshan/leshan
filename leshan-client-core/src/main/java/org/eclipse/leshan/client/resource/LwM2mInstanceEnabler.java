@@ -26,6 +26,7 @@ import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
@@ -35,6 +36,7 @@ import org.eclipse.leshan.core.request.argument.Arguments;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 
 /**
@@ -223,6 +225,18 @@ public interface LwM2mInstanceEnabler {
      * @param resourceInstanceId the ID of the resource instance to observe
      */
     ObserveResponse observe(ServerIdentity identity, int resourceid, int resourceInstanceId);
+
+    /**
+     * Sets the attitubes of one of this LWM2M object instance's resources.
+     *
+     * @param identity the identity of the requester. This could be an internal call in this case
+     *        <code> identity == ServerIdentity.SYSTEM</code>.
+     * @param resourceId the ID of the resource to get the value of
+     * @return the response object representing the outcome of the operation. An implementation should set the result's
+     *         {@link WriteAttributesResponse#getCode() response code} to either reflect the success or reason for
+     *         failure to retrieve the value.
+     */
+    WriteAttributesResponse writeAttributes(ServerIdentity identity, int resourceId, LwM2mAttributeSet attributes);
 
     /**
      * A callback called when this instance is deleted
