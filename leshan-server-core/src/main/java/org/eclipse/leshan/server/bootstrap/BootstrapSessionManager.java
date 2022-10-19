@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import java.net.URI;
+
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.Identity;
@@ -100,11 +102,11 @@ public interface BootstrapSessionManager {
      *
      * @return a BootstrapSession, possibly authorized.
      */
-    public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity);
+    public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity, URI endpointUsed);
 
     /**
-     * Generally called after {@link #begin(BootstrapRequest, Identity)} to know if there is something to do on this
-     * device.
+     * Generally called after {@link #begin(BootstrapRequest, Identity, URI)} to know if there is something to do on
+     * this device.
      *
      * @param bsSession the bootstrap session concerned.
      * @return true if there is a bootstrap requests to send for this client.

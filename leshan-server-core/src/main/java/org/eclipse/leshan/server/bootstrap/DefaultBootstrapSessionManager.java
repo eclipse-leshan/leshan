@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -45,10 +46,10 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultBootstrapSessionManager.class);
 
-    private BootstrapSecurityStore bsSecurityStore;
-    private SecurityChecker securityChecker;
-    private BootstrapTaskProvider tasksProvider;
-    private LwM2mBootstrapModelProvider modelProvider;
+    private final BootstrapSecurityStore bsSecurityStore;
+    private final SecurityChecker securityChecker;
+    private final BootstrapTaskProvider tasksProvider;
+    private final LwM2mBootstrapModelProvider modelProvider;
 
     /**
      * Create a {@link DefaultBootstrapSessionManager} using a default {@link SecurityChecker} to accept or refuse new
@@ -78,7 +79,7 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
     }
 
     @Override
-    public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity) {
+    public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity, URI endpointUsed) {
         boolean authorized;
         if (bsSecurityStore != null && securityChecker != null) {
             Iterator<SecurityInfo> securityInfos = bsSecurityStore.getAllByEndpoint(request.getEndpointName());
@@ -86,7 +87,8 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
         } else {
             authorized = true;
         }
-        DefaultBootstrapSession session = new DefaultBootstrapSession(request, clientIdentity, authorized);
+        DefaultBootstrapSession session = new DefaultBootstrapSession(request, clientIdentity, authorized,
+                endpointUsed);
         LOG.trace("Bootstrap session started : {}", session);
 
         return session;

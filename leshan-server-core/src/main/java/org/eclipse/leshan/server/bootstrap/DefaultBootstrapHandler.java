@@ -22,6 +22,7 @@ import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.NO_BOOTS
 import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.REQUEST_FAILED;
 import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.UNAUTHORIZED;
 
+import java.net.URI;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
@@ -35,6 +36,7 @@ import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager.BootstrapPolicy;
+import org.eclipse.leshan.server.bootstrap.request.BootstrapDownlinkRequestSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,19 +58,19 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
     // send a Confirmable message to the time when an acknowledgement is no longer expected.
     public static final long DEFAULT_TIMEOUT = 2 * 60 * 1000l; // 2min in ms
 
-    protected final LwM2mBootstrapRequestSender sender;
+    protected final BootstrapDownlinkRequestSender sender;
     protected final long requestTimeout;
 
     protected final ConcurrentHashMap<String, BootstrapSession> onGoingSession = new ConcurrentHashMap<>();
     protected final BootstrapSessionManager sessionManager;
     protected final BootstrapSessionListener listener;
 
-    public DefaultBootstrapHandler(LwM2mBootstrapRequestSender sender, BootstrapSessionManager sessionManager,
+    public DefaultBootstrapHandler(BootstrapDownlinkRequestSender sender, BootstrapSessionManager sessionManager,
             BootstrapSessionListener listener) {
         this(sender, sessionManager, listener, DEFAULT_TIMEOUT);
     }
 
-    public DefaultBootstrapHandler(LwM2mBootstrapRequestSender sender, BootstrapSessionManager sessionManager,
+    public DefaultBootstrapHandler(BootstrapDownlinkRequestSender sender, BootstrapSessionManager sessionManager,
             BootstrapSessionListener listener, long requestTimeout) {
         Validate.notNull(sender);
         Validate.notNull(sessionManager);
@@ -80,12 +82,12 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
     }
 
     @Override
-    public SendableResponse<BootstrapResponse> bootstrap(Identity sender, BootstrapRequest request) {
+    public SendableResponse<BootstrapResponse> bootstrap(Identity sender, BootstrapRequest request, URI endpointUsed) {
         String endpoint = request.getEndpointName();
 
         // Start session, checking the BS credentials
         final BootstrapSession session;
-        session = sessionManager.begin(request, sender);
+        session = sessionManager.begin(request, sender, endpointUsed);
         listener.sessionInitiated(request, sender);
 
         if (!session.isAuthorized()) {
@@ -215,7 +217,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
     protected abstract class SafeResponseCallback<T extends LwM2mResponse> implements ResponseCallback<T> {
 
-        private BootstrapSession session;
+        private final BootstrapSession session;
 
         public SafeResponseCallback(BootstrapSession session) {
             this.session = session;
@@ -236,7 +238,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
     protected abstract class SafeErrorCallback implements ErrorCallback {
 
-        private BootstrapSession session;
+        private final BootstrapSession session;
 
         public SafeErrorCallback(BootstrapSession session) {
             this.session = session;

@@ -238,8 +238,8 @@ public class BootstrapTest {
         assertEquals(ResponseCode.CONTENT, lastDiscoverAnswer.getCode());
         assertEquals(String.format(
                 "</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</3>;ver=1.1,</3/0>,</21>;ver=2.0",
-                helper.bootstrapServer.getUnsecuredAddress().getHostString(),
-                helper.bootstrapServer.getUnsecuredAddress().getPort()),
+                helper.bootstrapServer.getEndpoint(Protocol.COAP).getURI().getHost(),
+                helper.bootstrapServer.getEndpoint(Protocol.COAP).getURI().getPort()),
                 linkSerializer.serializeCoreLinkFormat(lastDiscoverAnswer.getObjectLinks()));
     }
 
@@ -269,8 +269,8 @@ public class BootstrapTest {
         assertEquals(ResponseCode.CONTENT, lastDiscoverAnswer.getCode());
         assertEquals(String.format(
                 "</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</3>;ver=1.1,</3/0>,</21>;ver=2.0",
-                helper.bootstrapServer.getUnsecuredAddress().getHostString(),
-                helper.bootstrapServer.getUnsecuredAddress().getPort()),
+                helper.bootstrapServer.getEndpoint(Protocol.COAP).getURI().getHost(),
+                helper.bootstrapServer.getEndpoint(Protocol.COAP).getURI().getPort()),
                 linkSerializer.serializeCoreLinkFormat(lastDiscoverAnswer.getObjectLinks()));
 
         // re-bootstrap
@@ -292,8 +292,8 @@ public class BootstrapTest {
         assertEquals(ResponseCode.CONTENT, lastDiscoverAnswer.getCode());
         assertEquals(String.format(
                 "</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</0/1>;ssid=2222;uri=\"coap://%s:%d\",</1>;ver=1.1,</1/0>;ssid=2222,</3>;ver=1.1,</3/0>,</21>;ver=2.0",
-                helper.bootstrapServer.getUnsecuredAddress().getHostString(),
-                helper.bootstrapServer.getUnsecuredAddress().getPort(),
+                helper.bootstrapServer.getEndpoint(Protocol.COAP).getURI().getHost(),
+                helper.bootstrapServer.getEndpoint(Protocol.COAP).getURI().getPort(),
                 helper.server.getEndpoint(Protocol.COAP).getURI().getHost(),
                 helper.server.getEndpoint(Protocol.COAP).getURI().getPort()),
                 linkSerializer.serializeCoreLinkFormat(lastDiscoverAnswer.getObjectLinks()));

@@ -18,7 +18,9 @@ package org.eclipse.leshan.server.californium.bootstrap;
 import static org.junit.Assert.assertEquals;
 
 import java.net.InetSocketAddress;
+import java.net.URI;
 
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.BootstrapResponse;
@@ -31,7 +33,10 @@ import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionListener;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapHandler;
-import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
+import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
+import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServerBuilder;
+import org.eclipse.leshan.server.bootstrap.request.BootstrapDownlinkRequestSender;
+import org.eclipse.leshan.server.californium.bootstrap.endpoint.CaliforniumBootstrapServerEndpointsProvider;
 import org.junit.Test;
 
 public class LeshanBootstrapServerTest {
@@ -39,13 +44,12 @@ public class LeshanBootstrapServerTest {
     private BootstrapHandler bsHandler;
 
     private LeshanBootstrapServer createBootstrapServer() {
-        LeshanBootstrapServerBuilder builder = new LeshanBootstrapServerBuilder()
-                .setLocalAddress(new InetSocketAddress(0));
+        LeshanBootstrapServerBuilder builder = new LeshanBootstrapServerBuilder();
         builder.setBootstrapHandlerFactory(new BootstrapHandlerFactory() {
 
             @Override
-            public BootstrapHandler create(LwM2mBootstrapRequestSender sender, BootstrapSessionManager sessionManager,
-                    BootstrapSessionListener listener) {
+            public BootstrapHandler create(BootstrapDownlinkRequestSender sender,
+                    BootstrapSessionManager sessionManager, BootstrapSessionListener listener) {
                 bsHandler = new DefaultBootstrapHandler(sender, sessionManager, listener);
                 return bsHandler;
             }
@@ -59,6 +63,7 @@ public class LeshanBootstrapServerTest {
                 return config;
             }
         });
+        builder.setEndpointsProvider(new CaliforniumBootstrapServerEndpointsProvider());
         return builder.build();
 
     }
@@ -83,7 +88,7 @@ public class LeshanBootstrapServerTest {
         server.start();
         Thread.sleep(100);
         // HACK force creation thread creation.
-        forceThreadsCreation();
+        forceThreadsCreation(server.getEndpoint(Protocol.COAP).getURI());
         Thread.sleep(100);
         server.destroy();
 
@@ -101,7 +106,7 @@ public class LeshanBootstrapServerTest {
         server.start();
         Thread.sleep(100);
         // HACK force creation thread creation.
-        forceThreadsCreation();
+        forceThreadsCreation(server.getEndpoint(Protocol.COAP).getURI());
         Thread.sleep(100);
         server.stop();
         Thread.sleep(100);
@@ -112,9 +117,9 @@ public class LeshanBootstrapServerTest {
         assertEquals("All news created threads must be destroyed", numberOfThreadbefore, Thread.activeCount());
     }
 
-    private void forceThreadsCreation() {
+    private void forceThreadsCreation(URI endpointURI) {
         SendableResponse<BootstrapResponse> bootstrap = bsHandler
-                .bootstrap(Identity.unsecure(new InetSocketAddress(5683)), new BootstrapRequest("test"));
+                .bootstrap(Identity.unsecure(new InetSocketAddress(5683)), new BootstrapRequest("test"), endpointURI);
         bootstrap.sent();
     }
 }

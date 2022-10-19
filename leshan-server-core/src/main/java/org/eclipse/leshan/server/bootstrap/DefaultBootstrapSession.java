@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import java.net.URI;
 import java.util.List;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -37,6 +38,7 @@ public class DefaultBootstrapSession implements BootstrapSession {
     private final boolean authorized;
     private final ContentFormat contentFormat;
     private final long creationTime;
+    private final URI endpointUsed;
     private final BootstrapRequest request;
 
     private volatile LwM2mModel model;
@@ -56,8 +58,8 @@ public class DefaultBootstrapSession implements BootstrapSession {
      *
      * @since 1.1
      */
-    public DefaultBootstrapSession(BootstrapRequest request, Identity identity, boolean authorized) {
-        this(request, identity, authorized, null);
+    public DefaultBootstrapSession(BootstrapRequest request, Identity identity, boolean authorized, URI endpointUsed) {
+        this(request, identity, authorized, null, endpointUsed);
     }
 
     /**
@@ -71,8 +73,8 @@ public class DefaultBootstrapSession implements BootstrapSession {
      * @since 1.1
      */
     public DefaultBootstrapSession(BootstrapRequest request, Identity identity, boolean authorized,
-            ContentFormat contentFormat) {
-        this(request, identity, authorized, contentFormat, System.currentTimeMillis());
+            ContentFormat contentFormat, URI endpointUsed) {
+        this(request, identity, authorized, contentFormat, System.currentTimeMillis(), endpointUsed);
     }
 
     /**
@@ -87,12 +89,13 @@ public class DefaultBootstrapSession implements BootstrapSession {
      * @since 1.1
      */
     public DefaultBootstrapSession(BootstrapRequest request, Identity identity, boolean authorized,
-            ContentFormat contentFormat, long creationTime) {
+            ContentFormat contentFormat, long creationTime, URI endpointUsed) {
         Validate.notNull(request);
         this.id = RandomStringUtils.random(10, true, true);
         this.request = request;
         this.endpoint = request.getEndpointName();
         this.identity = identity;
+        this.endpointUsed = endpointUsed;
         this.authorized = authorized;
         if (contentFormat == null) {
             if (request.getPreferredContentFormat() != null) {
@@ -119,6 +122,11 @@ public class DefaultBootstrapSession implements BootstrapSession {
     @Override
     public Identity getIdentity() {
         return identity;
+    }
+
+    @Override
+    public URI getEndpointUsed() {
+        return endpointUsed;
     }
 
     @Override

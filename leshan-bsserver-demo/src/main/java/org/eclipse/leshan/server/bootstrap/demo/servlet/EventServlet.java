@@ -36,7 +36,7 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionListener;
-import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServer;
+import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

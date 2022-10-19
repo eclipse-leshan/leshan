@@ -23,8 +23,6 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
-import javax.xml.ws.EndpointContext;
-
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.util.Hex;
 
@@ -32,9 +30,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-/**
- * Functions for serializing and deserializing a Californium {@link EndpointContext} in JSON.
- */
 public class IdentitySerDes {
 
     private static final String KEY_ADDRESS = "address";

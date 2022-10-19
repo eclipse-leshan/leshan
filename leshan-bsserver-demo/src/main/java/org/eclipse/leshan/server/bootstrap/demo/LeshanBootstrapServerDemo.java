@@ -27,20 +27,25 @@ import java.util.List;
 import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.config.DtlsConfig;
-import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.server.bootstrap.EditableBootstrapConfigStore;
+import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
+import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServerBuilder;
 import org.eclipse.leshan.server.bootstrap.demo.cli.LeshanBsServerDemoCLI;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.BootstrapServlet;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.EventServlet;
 import org.eclipse.leshan.server.bootstrap.demo.servlet.ServerServlet;
-import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServer;
-import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServerBuilder;
+import org.eclipse.leshan.server.californium.bootstrap.endpoint.CaliforniumBootstrapServerEndpointsProvider;
+import org.eclipse.leshan.server.californium.bootstrap.endpoint.coap.CoapBootstrapServerProtocolProvider;
+import org.eclipse.leshan.server.californium.bootstrap.endpoint.coap.CoapOscoreBootstrapServerEndpointFactory;
+import org.eclipse.leshan.server.californium.bootstrap.endpoint.coaps.CoapsBootstrapServerProtocolProvider;
 import org.eclipse.leshan.server.core.demo.json.servlet.SecurityServlet;
 import org.eclipse.leshan.server.model.VersionedBootstrapModelProvider;
 import org.eclipse.leshan.server.security.BootstrapSecurityStoreAdapter;
@@ -112,33 +117,15 @@ public class LeshanBootstrapServerDemo {
         // Prepare LWM2M server
         LeshanBootstrapServerBuilder builder = new LeshanBootstrapServerBuilder();
 
-        // Create CoAP Config
-        File configFile = new File(CF_CONFIGURATION_FILENAME);
-        Configuration coapConfig = LeshanBootstrapServerBuilder.createDefaultCoapConfiguration();
-        // these configuration values are always overwritten by CLI
-        // therefore set them to transient.
-        coapConfig.setTransient(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY);
-        coapConfig.setTransient(DtlsConfig.DTLS_CONNECTION_ID_LENGTH);
-        if (configFile.isFile()) {
-            coapConfig.load(configFile);
-        } else {
-            coapConfig.store(configFile, CF_CONFIGURATION_HEADER);
+        // Create Models
+        List<ObjectModel> models = ObjectLoader.loadDefault();
+        if (cli.main.modelsFolder != null) {
+            models.addAll(ObjectLoader.loadObjectsFromDir(cli.main.modelsFolder, true));
         }
-        builder.setCoapConfig(coapConfig);
+        builder.setObjectModelProvider(new VersionedBootstrapModelProvider(models));
 
-        // ports from CoAP Config if needed
-        builder.setLocalAddress(cli.main.localAddress,
-                cli.main.localPort == null ? coapConfig.get(CoapConfig.COAP_PORT) : cli.main.localPort);
-        builder.setLocalSecureAddress(cli.main.secureLocalAddress,
-                cli.main.secureLocalPort == null ? coapConfig.get(CoapConfig.COAP_SECURE_PORT)
-                        : cli.main.secureLocalPort);
-
-        // Create DTLS Config
-        DtlsConnectorConfig.Builder dtlsConfig = DtlsConnectorConfig.builder(coapConfig);
-        dtlsConfig.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, !cli.dtls.supportDeprecatedCiphers);
-        if (cli.dtls.cid != null) {
-            dtlsConfig.set(DtlsConfig.DTLS_CONNECTION_ID_LENGTH, cli.dtls.cid);
-        }
+        builder.setConfigStore(bsConfigStore);
+        builder.setSecurityStore(new BootstrapSecurityStoreAdapter(securityStore));
 
         if (cli.identity.isx509()) {
             // use X.509 mode (+ RPK)
@@ -154,24 +141,54 @@ public class LeshanBootstrapServerDemo {
             builder.setPrivateKey(cli.identity.getPrivateKey());
         }
 
-        // Set DTLS Config
-        builder.setDtlsConfig(dtlsConfig);
+        // Create Californium Endpoints Provider:
+        // ------------------
+        CaliforniumBootstrapServerEndpointsProvider.Builder endpointsBuilder = new CaliforniumBootstrapServerEndpointsProvider.Builder(
+                new CoapBootstrapServerProtocolProvider(), new CoapsBootstrapServerProtocolProvider());
 
-        // Create Models
-        List<ObjectModel> models = ObjectLoader.loadDefault();
-        if (cli.main.modelsFolder != null) {
-            models.addAll(ObjectLoader.loadObjectsFromDir(cli.main.modelsFolder, true));
+        // Create Californium Configuration
+        Configuration serverCoapConfig = endpointsBuilder.createDefaultConfiguration();
+
+        // Set some DTLS stuff
+        // These configuration values are always overwritten by CLI therefore set them to transient.
+        serverCoapConfig.setTransient(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY);
+        serverCoapConfig.setTransient(DtlsConfig.DTLS_CONNECTION_ID_LENGTH);
+        serverCoapConfig.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, !cli.dtls.supportDeprecatedCiphers);
+        if (cli.dtls.cid != null) {
+            serverCoapConfig.set(DtlsConfig.DTLS_CONNECTION_ID_LENGTH, cli.dtls.cid);
         }
-        builder.setObjectModelProvider(new VersionedBootstrapModelProvider(models));
 
-        builder.setConfigStore(bsConfigStore);
-        builder.setSecurityStore(new BootstrapSecurityStoreAdapter(securityStore));
-
-        // TODO OSCORE Temporary cli option to deactivate OSCORE
-        if (!cli.main.disableOscore) {
-            builder.setEnableOscore(true);
+        // Persist configuration
+        File configFile = new File(CF_CONFIGURATION_FILENAME);
+        if (configFile.isFile()) {
+            serverCoapConfig.load(configFile);
+        } else {
+            serverCoapConfig.store(configFile, CF_CONFIGURATION_HEADER);
         }
 
+        // Set Californium Configuration
+        endpointsBuilder.setConfiguration(serverCoapConfig);
+
+        // Create CoAP endpoint
+        int coapPort = cli.main.localPort == null ? serverCoapConfig.get(CoapConfig.COAP_PORT) : cli.main.localPort;
+        InetSocketAddress coapAddr = cli.main.localAddress == null ? new InetSocketAddress(coapPort)
+                : new InetSocketAddress(cli.main.localAddress, coapPort);
+        if (cli.main.disableOscore) {
+            endpointsBuilder.addEndpoint(coapAddr, Protocol.COAP);
+        } else {
+            endpointsBuilder.addEndpoint(new CoapOscoreBootstrapServerEndpointFactory(
+                    EndpointUriUtil.createUri(Protocol.COAP.getUriScheme(), coapAddr)));
+        }
+
+        // Create CoAP over DTLS endpoint
+        int coapsPort = cli.main.secureLocalPort == null ? serverCoapConfig.get(CoapConfig.COAP_SECURE_PORT)
+                : cli.main.secureLocalPort;
+        InetSocketAddress coapsAddr = cli.main.secureLocalAddress == null ? new InetSocketAddress(coapsPort)
+                : new InetSocketAddress(cli.main.secureLocalAddress, coapsPort);
+        endpointsBuilder.addEndpoint(coapsAddr, Protocol.COAPS);
+
+        // Create LWM2M server
+        builder.setEndpointsProvider(endpointsBuilder.build());
         return builder.build();
     }
 

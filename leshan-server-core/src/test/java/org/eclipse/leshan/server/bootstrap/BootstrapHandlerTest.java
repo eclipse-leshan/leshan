@@ -21,17 +21,19 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.core.ResponseCode;
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
+import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
-import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
@@ -43,9 +45,12 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerTest.MockRequestSender.Mode;
+import org.eclipse.leshan.server.bootstrap.request.BootstrapDownlinkRequestSender;
 import org.junit.Test;
 
 public class BootstrapHandlerTest {
+
+    private final URI endpointUsed = EndpointUriUtil.createUri("coap://localhost:5683");
 
     @Test
     public void error_if_not_authorized() {
@@ -56,9 +61,8 @@ public class BootstrapHandlerTest {
                 bsSessionManager, new BootstrapSessionDispatcher());
 
         // Try to bootstrap
-        BootstrapResponse response = bsHandler
-                .bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("endpoint"))
-                .getResponse();
+        BootstrapResponse response = bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"),
+                new BootstrapRequest("endpoint"), endpointUsed).getResponse();
 
         // Ensure bootstrap session is refused
         assertEquals(ResponseCode.BAD_REQUEST, response.getCode());
@@ -69,7 +73,7 @@ public class BootstrapHandlerTest {
         // prepare a bootstrap handler with a session manager which authorize all session
         // and a sender which "obtains" always successful response.
         // and a config store with and an empty config for the expected endpoint
-        LwM2mBootstrapRequestSender requestSender = new MockRequestSender(Mode.ALWAYS_SUCCESS);
+        BootstrapDownlinkRequestSender requestSender = new MockRequestSender(Mode.ALWAYS_SUCCESS);
         EditableBootstrapConfigStore bsStore = new InMemoryBootstrapConfigStore();
         bsStore.add("endpoint", new BootstrapConfig());
         MockBootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(true, bsStore);
@@ -78,8 +82,9 @@ public class BootstrapHandlerTest {
                 new BootstrapSessionDispatcher());
 
         // Try to bootstrap
-        SendableResponse<BootstrapResponse> sendableResponse = bsHandler
-                .bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("endpoint"));
+        SendableResponse<BootstrapResponse> sendableResponse = bsHandler.bootstrap(
+                Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("endpoint"),
+                endpointUsed);
         sendableResponse.sent();
 
         // Ensure bootstrap finished
@@ -92,7 +97,7 @@ public class BootstrapHandlerTest {
         // prepare a bootstrap handler with a session manager which authorize all session
         // and a sender which always failed to send request.
         // and a config store with and an empty config for the expected endpoint
-        LwM2mBootstrapRequestSender requestSender = new MockRequestSender(Mode.ALWAYS_FAILURE);
+        BootstrapDownlinkRequestSender requestSender = new MockRequestSender(Mode.ALWAYS_FAILURE);
         EditableBootstrapConfigStore bsStore = new InMemoryBootstrapConfigStore();
         bsStore.add("endpoint", new BootstrapConfig());
         MockBootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(true, bsStore);
@@ -100,8 +105,9 @@ public class BootstrapHandlerTest {
                 new BootstrapSessionDispatcher());
 
         // Try to bootstrap
-        SendableResponse<BootstrapResponse> sendableResponse = bsHandler
-                .bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("endpoint"));
+        SendableResponse<BootstrapResponse> sendableResponse = bsHandler.bootstrap(
+                Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("endpoint"),
+                endpointUsed);
         sendableResponse.sent();
 
         // Ensure bootstrap failed
@@ -124,8 +130,9 @@ public class BootstrapHandlerTest {
                 new BootstrapSessionDispatcher(), DefaultBootstrapHandler.DEFAULT_TIMEOUT);
 
         // First bootstrap : which will not end (because of sender)
-        SendableResponse<BootstrapResponse> first_response = bsHandler
-                .bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("endpoint"));
+        SendableResponse<BootstrapResponse> first_response = bsHandler.bootstrap(
+                Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("endpoint"),
+                endpointUsed);
         first_response.sent();
         // Ensure bootstrap is accepted and not finished
         BootstrapSession firstSession = bsSessionManager.lastSession;
@@ -137,8 +144,9 @@ public class BootstrapHandlerTest {
         // Second bootstrap : for the same endpoint it must be accepted and previous one should be cancelled
         bsSessionManager.reset();
         requestSender.setMode(Mode.ALWAYS_SUCCESS);
-        SendableResponse<BootstrapResponse> second_response = bsHandler
-                .bootstrap(Identity.psk(new InetSocketAddress(4243), "pskdentity"), new BootstrapRequest("endpoint"));
+        SendableResponse<BootstrapResponse> second_response = bsHandler.bootstrap(
+                Identity.psk(new InetSocketAddress(4243), "pskdentity"), new BootstrapRequest("endpoint"),
+                endpointUsed);
         second_response.sent();
         // ensure last session is accepted
         assertTrue(second_response.getResponse().isSuccess());
@@ -149,7 +157,7 @@ public class BootstrapHandlerTest {
         assertTrue(bsSessionManager.failedWasCalled(firstSession, BootstrapFailureCause.CANCELLED));
     }
 
-    static class MockRequestSender implements LwM2mBootstrapRequestSender {
+    public static class MockRequestSender implements BootstrapDownlinkRequestSender {
 
         public enum Mode {
             ALWAYS_SUCCESS, ALWAYS_FAILURE, NO_RESPONSE
@@ -163,8 +171,8 @@ public class BootstrapHandlerTest {
         }
 
         @Override
-        public <T extends LwM2mResponse> T send(BootstrapSession session, DownlinkRequest<T> request, long timeout)
-                throws InterruptedException {
+        public <T extends LwM2mResponse> T send(BootstrapSession session, BootstrapDownlinkRequest<T> request,
+                long timeout) throws InterruptedException {
             // Not Implemented
             return null;
         }
@@ -175,8 +183,8 @@ public class BootstrapHandlerTest {
 
         @SuppressWarnings("unchecked")
         @Override
-        public <T extends LwM2mResponse> void send(BootstrapSession session, DownlinkRequest<T> request, long timeout,
-                ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
+        public <T extends LwM2mResponse> void send(BootstrapSession session, BootstrapDownlinkRequest<T> request,
+                long timeout, ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
             // no response, no callback call
             if (mode == Mode.NO_RESPONSE) {
                 this.errorCallback = errorCallback;
@@ -219,11 +227,11 @@ public class BootstrapHandlerTest {
 
     private static class MockBootstrapSessionManager extends DefaultBootstrapSessionManager {
 
-        private boolean authorized;
+        private final boolean authorized;
         private BootstrapSession lastSession;
         private BootstrapFailureCause lastFailureCause;
-        private List<BootstrapSession> endedSession = new ArrayList<BootstrapSession>();
-        private Map<BootstrapSession, BootstrapFailureCause> failureCauses = new HashMap<>();
+        private final List<BootstrapSession> endedSession = new ArrayList<BootstrapSession>();
+        private final Map<BootstrapSession, BootstrapFailureCause> failureCauses = new HashMap<>();
 
         public MockBootstrapSessionManager(boolean authorized, BootstrapConfigStore store) {
             super(null, store);
@@ -231,8 +239,8 @@ public class BootstrapHandlerTest {
         }
 
         @Override
-        public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity) {
-            lastSession = new DefaultBootstrapSession(request, clientIdentity, authorized);
+        public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity, URI endpointUsed) {
+            lastSession = new DefaultBootstrapSession(request, clientIdentity, authorized, endpointUsed);
             return lastSession;
         }
 

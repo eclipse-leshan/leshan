@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import java.net.URI;
+
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -24,7 +26,7 @@ import org.eclipse.leshan.core.request.Identity;
  * Represent a single Bootstrapping session.
  *
  * Should be created by {@link BootstrapSessionManager} implementations in
- * {@link BootstrapSessionManager#begin(BootstrapRequest, Identity)}.
+ * {@link BootstrapSessionManager#begin(BootstrapRequest, Identity, URI)}.
  */
 public interface BootstrapSession {
 
@@ -47,6 +49,8 @@ public interface BootstrapSession {
      * @return the network identity of the LwM2M client.
      */
     Identity getIdentity();
+
+    URI getEndpointUsed();
 
     /**
      * @return <code>true</code> if the LwM2M client is authorized to start a bootstrap session.

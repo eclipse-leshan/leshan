@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import org.eclipse.leshan.server.bootstrap.request.BootstrapDownlinkRequestSender;
+
 /**
  * Creates {@link BootstrapHandler}.
  *
@@ -30,6 +32,6 @@ public interface BootstrapHandlerFactory {
      * @param listener a listener of bootstrap session life-cycle.
      * @return the new {@link BootstrapHandler}.
      */
-    BootstrapHandler create(LwM2mBootstrapRequestSender sender, BootstrapSessionManager sessionManager,
+    BootstrapHandler create(BootstrapDownlinkRequestSender sender, BootstrapSessionManager sessionManager,
             BootstrapSessionListener listener);
 }

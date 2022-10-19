@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Sierra Wireless and others.
+ * Copyright (c) 2022 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -13,22 +13,11 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap;
+package org.eclipse.leshan.server.bootstrap.profile;
 
-import java.net.URI;
-
-import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.Identity;
-import org.eclipse.leshan.core.response.BootstrapResponse;
-import org.eclipse.leshan.core.response.SendableResponse;
 
-/**
- * Handle the bootstrap logic at Server side. Check if the client is allowed to bootstrap, with the wanted security
- * scheme. Then send requests to the client, then close the bootstrap session by sending a bootstrap finished request.
- *
- * @see DefaultBootstrapHandler
- */
-public interface BootstrapHandler {
+public interface ClientProfileProvider {
 
-    SendableResponse<BootstrapResponse> bootstrap(Identity sender, BootstrapRequest request, URI serverEndpointUri);
+    ClientProfile getProfile(Identity identity);
 }

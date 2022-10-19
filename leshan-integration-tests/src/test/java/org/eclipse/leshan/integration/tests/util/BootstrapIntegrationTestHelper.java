@@ -24,6 +24,7 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.AlgorithmParameters;
 import java.security.GeneralSecurityException;
@@ -58,6 +59,7 @@ import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.SecurityMode;
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
@@ -80,8 +82,13 @@ import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 import org.eclipse.leshan.server.bootstrap.BootstrapTaskProvider;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSession;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSessionManager;
-import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServer;
-import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServerBuilder;
+import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
+import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServerBuilder;
+import org.eclipse.leshan.server.californium.bootstrap.endpoint.CaliforniumBootstrapServerEndpointsProvider;
+import org.eclipse.leshan.server.californium.bootstrap.endpoint.CaliforniumBootstrapServerEndpointsProvider.Builder;
+import org.eclipse.leshan.server.californium.bootstrap.endpoint.coap.CoapBootstrapServerProtocolProvider;
+import org.eclipse.leshan.server.californium.bootstrap.endpoint.coap.CoapOscoreBootstrapServerEndpointFactory;
+import org.eclipse.leshan.server.californium.bootstrap.endpoint.coaps.CoapsBootstrapServerProtocolProvider;
 import org.eclipse.leshan.server.model.StandardBootstrapModelProvider;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
@@ -119,9 +126,9 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
         }
 
         @Override
-        public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity) {
+        public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity, URI endpointUsed) {
             assertThat(request.getCoapRequest(), instanceOf(Request.class));
-            return super.begin(request, clientIdentity);
+            return super.begin(request, clientIdentity, endpointUsed);
         }
     }
 
@@ -159,16 +166,23 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     private LeshanBootstrapServerBuilder createBootstrapBuilder(BootstrapSecurityStore securityStore,
             BootstrapConfigStore configStore) {
         LeshanBootstrapServerBuilder builder = new LeshanBootstrapServerBuilder();
-        builder.setLocalAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        builder.setLocalSecureAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+
+        Builder endpointsBuilder = new CaliforniumBootstrapServerEndpointsProvider.Builder(
+                new CoapBootstrapServerProtocolProvider(), new CoapsBootstrapServerProtocolProvider());
+        endpointsBuilder.addEndpoint(
+                EndpointUriUtil.createUri("coap", new InetSocketAddress(InetAddress.getLoopbackAddress(), 0)));
+        endpointsBuilder.addEndpoint(
+                EndpointUriUtil.createUri("coaps", new InetSocketAddress(InetAddress.getLoopbackAddress(), 0)));
+        builder.setEndpointsProvider(endpointsBuilder.build());
+
         builder.setPrivateKey(bootstrapServerPrivateKey);
         builder.setPublicKey(bootstrapServerPublicKey);
         builder.setSessionManager(new DefaultBootstrapSessionManager(securityStore, configStore) {
 
             @Override
-            public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity) {
+            public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity, URI endpointUsed) {
                 assertThat(request.getCoapRequest(), instanceOf(Request.class));
-                return super.begin(request, clientIdentity);
+                return super.begin(request, clientIdentity, endpointUsed);
             }
 
             @Override
@@ -181,7 +195,14 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
     public void createOscoreBootstrapServer(BootstrapSecurityStore securityStore, BootstrapConfigStore bootstrapStore) {
         LeshanBootstrapServerBuilder builder = createBootstrapBuilder(securityStore, bootstrapStore);
-        builder.setEnableOscore(true);
+        Builder endpointsBuilder = new CaliforniumBootstrapServerEndpointsProvider.Builder(
+                new CoapBootstrapServerProtocolProvider(), new CoapsBootstrapServerProtocolProvider());
+
+        endpointsBuilder.addEndpoint(new CoapOscoreBootstrapServerEndpointFactory(
+                EndpointUriUtil.createUri("coap", new InetSocketAddress(InetAddress.getLoopbackAddress(), 0))));
+        endpointsBuilder.addEndpoint(
+                EndpointUriUtil.createUri("coaps", new InetSocketAddress(InetAddress.getLoopbackAddress(), 0)));
+        builder.setEndpointsProvider(endpointsBuilder.build());
         if (bootstrapStore == null) {
             bootstrapStore = unsecuredBootstrapStore();
         }
@@ -255,8 +276,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
     public Security withoutSecurityAndInstanceId(Integer id) {
         // Create Security Object (with bootstrap server only)
-        String bsUrl = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
-                + bootstrapServer.getUnsecuredAddress().getPort();
+        String bsUrl = bootstrapServer.getEndpoint(Protocol.COAP).getURI().toString();
         Security sec = Security.noSecBootstrap(bsUrl);
         if (id != null)
             sec.setId(id);
@@ -268,8 +288,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
     }
 
     public void createOscoreOnlyBootstrapClient() {
-        String bsServerUri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
-                + bootstrapServer.getUnsecuredAddress().getPort();
+        String bsServerUri = bootstrapServer.getEndpoint(Protocol.COAP).getURI().toString();
 
         Oscore oscoreObject = new Oscore(12345, getBootstrapClientOscoreSetting());
         ObjectsInitializer initializer = new TestObjectsInitializer();
@@ -288,8 +307,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
     public void createPSKClient(String pskIdentity, byte[] pskKey) {
         // Create Security Object (with bootstrap server only)
-        String bsUrl = "coaps://" + bootstrapServer.getSecuredAddress().getHostString() + ":"
-                + bootstrapServer.getSecuredAddress().getPort();
+        String bsUrl = bootstrapServer.getEndpoint(Protocol.COAPS).getURI().toString();
         byte[] pskId = pskIdentity.getBytes(StandardCharsets.UTF_8);
         Security security = Security.pskBootstrap(bsUrl, pskId, pskKey);
 
@@ -298,8 +316,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
     @Override
     public void createRPKClient() {
-        String bsUrl = "coaps://" + bootstrapServer.getSecuredAddress().getHostString() + ":"
-                + bootstrapServer.getSecuredAddress().getPort();
+        String bsUrl = bootstrapServer.getEndpoint(Protocol.COAPS).getURI().toString();
         Security security = Security.rpkBootstrap(bsUrl, clientPublicKey.getEncoded(), clientPrivateKey.getEncoded(),
                 bootstrapServerPublicKey.getEncoded());
 
@@ -494,8 +511,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 // security for BS server
                 ServerSecurity bsSecurity = new ServerSecurity();
                 bsSecurity.bootstrapServer = true;
-                bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
-                        + bootstrapServer.getUnsecuredAddress().getPort();
+                bsSecurity.uri = bootstrapServer.getEndpoint(Protocol.COAP).getURI().toString();
                 bsSecurity.securityMode = SecurityMode.NO_SEC;
                 bsConfig.security.put(bsInstanceId, bsSecurity);
 
@@ -549,8 +565,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 // security for BS server
                 ServerSecurity bsSecurity = new ServerSecurity();
                 bsSecurity.bootstrapServer = true;
-                bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
-                        + bootstrapServer.getUnsecuredAddress().getPort();
+                bsSecurity.uri = bootstrapServer.getEndpoint(Protocol.COAP).getURI().toString();
                 bsSecurity.securityMode = SecurityMode.NO_SEC;
                 bsConfig.security.put(0, bsSecurity);
 
@@ -598,8 +613,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 // security for BS server
                 ServerSecurity bsSecurity = new ServerSecurity();
                 bsSecurity.bootstrapServer = true;
-                bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
-                        + bootstrapServer.getUnsecuredAddress().getPort();
+                bsSecurity.uri = bootstrapServer.getEndpoint(Protocol.COAP).getURI().toString();
                 bsSecurity.securityMode = SecurityMode.NO_SEC;
                 bsConfig.security.put(0, bsSecurity);
 
@@ -633,8 +647,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 // security for BS server
                 ServerSecurity bsSecurity = new ServerSecurity();
                 bsSecurity.bootstrapServer = true;
-                bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
-                        + bootstrapServer.getUnsecuredAddress().getPort();
+                bsSecurity.uri = bootstrapServer.getEndpoint(Protocol.COAP).getURI().toString();
                 bsSecurity.securityMode = SecurityMode.NO_SEC;
                 bsConfig.security.put(0, bsSecurity);
 
@@ -693,8 +706,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 // security for BS server
                 ServerSecurity bsSecurity = new ServerSecurity();
                 bsSecurity.bootstrapServer = true;
-                bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
-                        + bootstrapServer.getUnsecuredAddress().getPort();
+                bsSecurity.uri = bootstrapServer.getEndpoint(Protocol.COAP).getURI().toString();
                 bsSecurity.securityMode = SecurityMode.NO_SEC;
                 bsConfig.security.put(0, bsSecurity);
 
@@ -729,8 +741,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 // security for BS server
                 ServerSecurity bsSecurity = new ServerSecurity();
                 bsSecurity.bootstrapServer = true;
-                bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
-                        + bootstrapServer.getUnsecuredAddress().getPort();
+                bsSecurity.uri = bootstrapServer.getEndpoint(Protocol.COAP).getURI().toString();
                 bsSecurity.securityMode = SecurityMode.NO_SEC;
                 bsSecurity.oscoreSecurityMode = 1;
                 bsConfig.security.put(0, bsSecurity);
@@ -767,8 +778,7 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
                 // security for BS server
                 ServerSecurity bsSecurity = new ServerSecurity();
                 bsSecurity.bootstrapServer = true;
-                bsSecurity.uri = "coap://" + bootstrapServer.getUnsecuredAddress().getHostString() + ":"
-                        + bootstrapServer.getUnsecuredAddress().getPort();
+                bsSecurity.uri = bootstrapServer.getEndpoint(Protocol.COAP).getURI().toString();
                 bsSecurity.securityMode = SecurityMode.NO_SEC;
                 bsSecurity.oscoreSecurityMode = 1;
                 bsConfig.security.put(0, bsSecurity);
