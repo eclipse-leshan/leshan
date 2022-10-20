@@ -828,14 +828,18 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                         System.currentTimeMillis(), 0, cleanLimit);
 
                 for (byte[] endpoint : endpointsExpired) {
-                    Registration r = deserializeReg(j.get(toEndpointKey(endpoint)));
-                    if (!r.isAlive(gracePeriod)) {
-                        Deregistration dereg = removeRegistration(j, r.getId(), true);
-                        if (dereg != null)
-                            expirationListener.registrationExpired(dereg.getRegistration(), dereg.getObservations());
+                    byte[] regBytes = j.get(toEndpointKey(endpoint));
+                    if (regBytes != null) {
+                        Registration r = deserializeReg(regBytes);
+                        if (!r.isAlive(gracePeriod)) {
+                            Deregistration dereg = removeRegistration(j, r.getId(), true);
+                            if (dereg != null)
+                                expirationListener.registrationExpired(dereg.getRegistration(),
+                                        dereg.getObservations());
+                        }
                     }
                 }
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 LOG.warn("Unexpected Exception while registration cleaning", e);
             }
         }
