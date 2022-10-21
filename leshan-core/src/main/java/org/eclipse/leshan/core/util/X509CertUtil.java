@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.security.auth.x500.X500Principal;
 
@@ -135,6 +137,26 @@ public class X509CertUtil {
      */
     private static boolean isHex(char ch) {
         return (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'F' || ch >= 'a' && ch <= 'f');
+    }
+
+    private static Pattern extactCNPattern = Pattern.compile("CN=(.*?)(,|$)");
+
+    /**
+     * Extract "common name" from "distinguished name".
+     *
+     * @param dn The distinguished name.
+     * @return The extracted common name.
+     * @throws IllegalStateException if no CN is contained in DN.
+     */
+    public static String extractCN(String dn) {
+        // Extract common name
+        Matcher endpointMatcher = extactCNPattern.matcher(dn);
+        if (endpointMatcher.find()) {
+            return endpointMatcher.group(1);
+        } else {
+            throw new IllegalStateException(
+                    "Unable to extract sender identity : can not get common name in certificate");
+        }
     }
 
     /**

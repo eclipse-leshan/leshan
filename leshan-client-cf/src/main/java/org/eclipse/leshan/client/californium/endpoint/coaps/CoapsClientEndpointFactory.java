@@ -67,7 +67,6 @@ import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.californium.DefaultExceptionTranslator;
-import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.californium.ExceptionTranslator;
 import org.eclipse.leshan.core.californium.Lwm2mEndpointContextMatcher;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
@@ -76,6 +75,7 @@ import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.request.exception.TimeoutException.Type;
+import org.eclipse.leshan.core.util.X509CertUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -358,7 +358,7 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
                         return Identity.rpk(peerAddress, publicKey);
                     } else if (senderIdentity instanceof X500Principal || senderIdentity instanceof X509CertPath) {
                         // Extract common name
-                        String x509CommonName = EndpointContextUtil.extractCN(senderIdentity.getName());
+                        String x509CommonName = X509CertUtil.extractCN(senderIdentity.getName());
                         return Identity.x509(peerAddress, x509CommonName);
                     }
                     throw new IllegalStateException(

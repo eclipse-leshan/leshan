@@ -24,7 +24,6 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.util.Bytes;
-import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.californium.ObserveUtil;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -355,15 +354,8 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     }
 
     protected void setSecurityContext(Request coapRequest) {
-        if (identityHandler != null) {
-            EndpointContext context = identityHandler.createEndpointContext(destination, allowConnectionInitiation);
-            coapRequest.setDestinationContext(context);
-
-        } else {
-            EndpointContext context = EndpointContextUtil.extractContext(destination, allowConnectionInitiation);
-            coapRequest.setDestinationContext(context);
-
-        }
+        EndpointContext context = identityHandler.createEndpointContext(destination, allowConnectionInitiation);
+        coapRequest.setDestinationContext(context);
         if (destination.isOSCORE()) {
             coapRequest.getOptions().setOscore(Bytes.EMPTY);
         }

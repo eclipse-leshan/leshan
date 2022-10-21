@@ -105,18 +105,6 @@ public class LwM2mCoapResource extends CoapResource {
         exchange.sendResponse(response);
     }
 
-    /**
-     * Create Leshan {@link Identity} from Californium {@link EndpointContext}.
-     *
-     * @param context The Californium {@link EndpointContext} to convert.
-     * @return The corresponding Leshan {@link Identity}.
-     * @throws IllegalStateException if we are not able to extract {@link Identity}.
-     */
-    protected Identity extractIdentity(EndpointContext context) {
-        // TODO TL : to delete once server / client / bootstrap server will use new design
-        return EndpointContextUtil.extractIdentity(context);
-    }
-
     protected Identity getForeignPeerIdentity(Exchange exchange, Message receivedMessage) {
         IdentityHandler identityHandler = identityHandlerProvider.getIdentityHandler(exchange.getEndpoint());
         if (identityHandler != null) {
@@ -132,11 +120,7 @@ public class LwM2mCoapResource extends CoapResource {
      */
     protected Identity extractIdentitySafely(Exchange exchange, Message receivedMessage) {
         try {
-            if (identityHandlerProvider == null) {
-                return extractIdentity(receivedMessage.getSourceContext());
-            } else {
-                return getForeignPeerIdentity(exchange, receivedMessage);
-            }
+            return getForeignPeerIdentity(exchange, receivedMessage);
         } catch (RuntimeException e) {
             LOG.error("Unable to extract identity", e);
             return null;

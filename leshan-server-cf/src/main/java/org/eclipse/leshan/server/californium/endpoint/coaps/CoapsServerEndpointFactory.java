@@ -50,7 +50,6 @@ import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.californium.scandium.dtls.x509.SingleCertificateProvider;
 import org.eclipse.californium.scandium.dtls.x509.StaticNewAdvancedCertificateVerifier;
 import org.eclipse.leshan.core.californium.DefaultExceptionTranslator;
-import org.eclipse.leshan.core.californium.EndpointContextUtil;
 import org.eclipse.leshan.core.californium.ExceptionTranslator;
 import org.eclipse.leshan.core.californium.Lwm2mEndpointContextMatcher;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
@@ -59,6 +58,7 @@ import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.request.exception.TimeoutException.Type;
+import org.eclipse.leshan.core.util.X509CertUtil;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.californium.ConnectionCleaner;
 import org.eclipse.leshan.server.californium.LwM2mPskStore;
@@ -267,7 +267,7 @@ public class CoapsServerEndpointFactory implements CaliforniumServerEndpointFact
                         return Identity.rpk(peerAddress, publicKey);
                     } else if (senderIdentity instanceof X500Principal || senderIdentity instanceof X509CertPath) {
                         // Extract common name
-                        String x509CommonName = EndpointContextUtil.extractCN(senderIdentity.getName());
+                        String x509CommonName = X509CertUtil.extractCN(senderIdentity.getName());
                         return Identity.x509(peerAddress, x509CommonName);
                     }
                     throw new IllegalStateException(

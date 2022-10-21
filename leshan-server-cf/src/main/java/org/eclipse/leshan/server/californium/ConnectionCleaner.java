@@ -25,7 +25,7 @@ import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.auth.X509CertPath;
 import org.eclipse.californium.elements.util.LeastRecentlyUsedCache.Predicate;
 import org.eclipse.californium.scandium.DTLSConnector;
-import org.eclipse.leshan.core.californium.EndpointContextUtil;
+import org.eclipse.leshan.core.util.X509CertUtil;
 import org.eclipse.leshan.server.security.SecurityInfo;
 
 /**
@@ -33,7 +33,7 @@ import org.eclipse.leshan.server.security.SecurityInfo;
  */
 public class ConnectionCleaner {
 
-    private DTLSConnector connector;
+    private final DTLSConnector connector;
 
     public ConnectionCleaner(DTLSConnector connector) {
         this.connector = connector;
@@ -64,7 +64,7 @@ public class ConnectionCleaner {
                             else if (info.useX509Cert() && principal instanceof X500Principal
                                     || principal instanceof X509CertPath) {
                                 // Extract common name
-                                String x509CommonName = EndpointContextUtil.extractCN(principal.getName());
+                                String x509CommonName = X509CertUtil.extractCN(principal.getName());
                                 if (x509CommonName.equals(info.getEndpoint())) {
                                     return true;
                                 }
