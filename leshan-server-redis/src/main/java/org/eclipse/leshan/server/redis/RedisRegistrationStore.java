@@ -829,11 +829,7 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
 
                 for (byte[] endpoint : endpointsExpired) {
                     byte[] regBytes = j.get(toEndpointKey(endpoint));
-                    if (regBytes == null) {
-                        LOG.warn("An expiration index points to an unknown registration: '{}'",
-                                new String(endpoint, UTF_8));
-                        j.zrem(EXP_EP, endpoint);
-                    } else {
+                    if (regBytes != null) {
                         Registration r = deserializeReg(regBytes);
                         if (!r.isAlive(gracePeriod)) {
                             Deregistration dereg = removeRegistration(j, r.getId(), true);
