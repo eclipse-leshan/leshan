@@ -35,8 +35,11 @@ import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
 import org.eclipse.leshan.core.node.codec.NodeEncoder;
-import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.Validate;
+import org.eclipse.leshan.core.util.base64.Base64Encoder;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Encoder;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Encoder.EncoderAlphabet;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Encoder.EncoderPadding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,13 +48,15 @@ public class LwM2mNodeTextEncoder implements NodeEncoder {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeTextEncoder.class);
 
     private final LinkSerializer linkSerializer;
+    private final Base64Encoder base64Encoder;
 
     public LwM2mNodeTextEncoder() {
-        this(new DefaultLinkSerializer());
+        this(new DefaultLinkSerializer(), new DefaultBase64Encoder(EncoderAlphabet.BASE64, EncoderPadding.WITH));
     }
 
-    public LwM2mNodeTextEncoder(LinkSerializer linkSerializer) {
+    public LwM2mNodeTextEncoder(LinkSerializer linkSerializer, Base64Encoder base64Encoder) {
         this.linkSerializer = linkSerializer;
+        this.base64Encoder = base64Encoder;
     }
 
     @Override
@@ -154,7 +159,7 @@ public class LwM2mNodeTextEncoder implements NodeEncoder {
                 break;
             case OPAQUE:
                 byte[] binaryValue = (byte[]) val;
-                strValue = Base64.encodeBase64String(binaryValue);
+                strValue = base64Encoder.encode(binaryValue);
                 break;
             default:
                 throw new CodecException("Cannot encode %s in text format for %s", val, path);

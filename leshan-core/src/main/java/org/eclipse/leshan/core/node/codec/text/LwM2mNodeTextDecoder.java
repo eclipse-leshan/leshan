@@ -31,7 +31,11 @@ import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.NodeDecoder;
-import org.eclipse.leshan.core.util.Base64;
+import org.eclipse.leshan.core.util.base64.Base64Decoder;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Decoder;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Decoder.DecoderAlphabet;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Decoder.DecoderPadding;
+import org.eclipse.leshan.core.util.base64.InvalidBase64Exception;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,9 +45,10 @@ public class LwM2mNodeTextDecoder implements NodeDecoder {
 
     // parser used for core link data type
     private final LinkParser linkParser;
+    private final Base64Decoder base64Decoder;
 
     public LwM2mNodeTextDecoder() {
-        this(new DefaultLwM2mLinkParser());
+        this(new DefaultLwM2mLinkParser(), new DefaultBase64Decoder(DecoderAlphabet.BASE64, DecoderPadding.REQUIRED));
     }
 
     /**
@@ -51,8 +56,9 @@ public class LwM2mNodeTextDecoder implements NodeDecoder {
      *
      * @param linkParser the link parser for core link format resources.
      */
-    public LwM2mNodeTextDecoder(LinkParser linkParser) {
+    public LwM2mNodeTextDecoder(LinkParser linkParser, Base64Decoder base64Decoder) {
         this.linkParser = linkParser;
+        this.base64Decoder = base64Decoder;
     }
 
     @Override
@@ -137,10 +143,12 @@ public class LwM2mNodeTextDecoder implements NodeDecoder {
                 throw new CodecException(e, "Invalid value [%s] for CoreLink resource [%s]", value, path);
             }
         case OPAQUE:
-            if (!Base64.isBase64(value)) {
-                throw new CodecException("Invalid value for opaque resource [%s], base64 expected", path);
+            try {
+                return base64Decoder.decode(value);
+            } catch (InvalidBase64Exception e) {
+                throw new CodecException(e, "Invalid value for opaque resource [%s], base64 expected", path);
             }
-            return Base64.decodeBase64(value);
+
         default:
             throw new CodecException("Could not handle %s value with TEXT encoder for resource %s", type, path);
         }

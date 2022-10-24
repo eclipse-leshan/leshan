@@ -44,9 +44,12 @@ import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
 import org.eclipse.leshan.core.node.codec.TimestampedNodeEncoder;
-import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.TimestampUtil;
 import org.eclipse.leshan.core.util.Validate;
+import org.eclipse.leshan.core.util.base64.Base64Encoder;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Encoder;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Encoder.EncoderAlphabet;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Encoder.EncoderPadding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,14 +59,18 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
 
     private final LwM2mJsonEncoder encoder;
     private final LinkSerializer linkSerializer;
+    private final Base64Encoder base64Encoder;
 
     public LwM2mNodeJsonEncoder() {
-        this(new LwM2mJsonJacksonEncoderDecoder(), new DefaultLinkSerializer());
+        this(new LwM2mJsonJacksonEncoderDecoder(), new DefaultLinkSerializer(),
+                new DefaultBase64Encoder(EncoderAlphabet.BASE64, EncoderPadding.WITH));
     }
 
-    public LwM2mNodeJsonEncoder(LwM2mJsonEncoder jsonEncoder, LinkSerializer linkSerializer) {
+    public LwM2mNodeJsonEncoder(LwM2mJsonEncoder jsonEncoder, LinkSerializer linkSerializer,
+            Base64Encoder base64Encoder) {
         this.encoder = jsonEncoder;
         this.linkSerializer = linkSerializer;
+        this.base64Encoder = base64Encoder;
     }
 
     @Override
@@ -289,7 +296,7 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
                 jsonResource.setFloatValue((((Date) value).getTime() / 1000L));
                 break;
             case OPAQUE:
-                jsonResource.setStringValue(Base64.encodeBase64String((byte[]) value));
+                jsonResource.setStringValue(base64Encoder.encode((byte[]) value));
                 break;
             case OBJLNK:
                 try {

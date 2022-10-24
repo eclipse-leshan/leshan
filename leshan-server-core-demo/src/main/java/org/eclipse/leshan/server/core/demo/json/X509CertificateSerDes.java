@@ -19,7 +19,10 @@ package org.eclipse.leshan.server.core.demo.json;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
-import org.eclipse.leshan.core.util.Base64;
+import org.eclipse.leshan.core.util.base64.Base64Encoder;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Encoder;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Encoder.EncoderAlphabet;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Encoder.EncoderPadding;
 import org.eclipse.leshan.core.util.json.JacksonJsonSerDes;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,7 +33,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 // TODO create a leshan-demo project ?
 public class X509CertificateSerDes extends JacksonJsonSerDes<X509Certificate> {
 
-    private PublicKeySerDes publicKeySerDes = new PublicKeySerDes();
+    private final PublicKeySerDes publicKeySerDes = new PublicKeySerDes();
+    private final Base64Encoder base64Encoder = new DefaultBase64Encoder(EncoderAlphabet.BASE64, EncoderPadding.WITH);
 
     @Override
     public JsonNode jSerialize(X509Certificate certificate) {
@@ -40,7 +44,7 @@ public class X509CertificateSerDes extends JacksonJsonSerDes<X509Certificate> {
 
         // Get certificate (DER encoding)
         try {
-            o.put("b64Der", Base64.encodeBase64String(certificate.getEncoded()));
+            o.put("b64Der", base64Encoder.encode(certificate.getEncoded()));
         } catch (CertificateEncodingException e) {
             throw new RuntimeException(e);
         }

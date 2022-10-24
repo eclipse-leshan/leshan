@@ -52,8 +52,11 @@ import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.TimestampedNodeDecoder;
-import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.TimestampUtil;
+import org.eclipse.leshan.core.util.base64.Base64Decoder;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Decoder;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Decoder.DecoderAlphabet;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Decoder.DecoderPadding;
 import org.eclipse.leshan.core.util.datatype.NumberUtil;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.slf4j.Logger;
@@ -65,14 +68,17 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
 
     private final LwM2mJsonDecoder decoder;
     private final LinkParser linkParser;
+    private final Base64Decoder base64decoder;
 
     public LwM2mNodeJsonDecoder() {
-        this(new LwM2mJsonJacksonEncoderDecoder(), new DefaultLwM2mLinkParser());
+        this(new LwM2mJsonJacksonEncoderDecoder(), new DefaultLwM2mLinkParser(),
+                new DefaultBase64Decoder(DecoderAlphabet.BASE64, DecoderPadding.REQUIRED));
     }
 
-    public LwM2mNodeJsonDecoder(LwM2mJsonDecoder jsonDecoder, LinkParser linkParser) {
+    public LwM2mNodeJsonDecoder(LwM2mJsonDecoder jsonDecoder, LinkParser linkParser, Base64Decoder base64decoder) {
         this.decoder = jsonDecoder;
         this.linkParser = linkParser;
+        this.base64decoder = base64decoder;
     }
 
     @SuppressWarnings("unchecked")
@@ -462,7 +468,7 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
             case OPAQUE:
                 // If the Resource data type is opaque the string value
                 // holds the Base64 encoded representation of the Resource
-                return Base64.decodeBase64((String) value);
+                return base64decoder.decode((String) value);
             case STRING:
                 return value;
             case OBJLNK:

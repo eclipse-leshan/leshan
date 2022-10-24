@@ -20,8 +20,11 @@ import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.util.Arrays;
 
-import org.eclipse.leshan.core.util.Base64;
 import org.eclipse.leshan.core.util.Hex;
+import org.eclipse.leshan.core.util.base64.Base64Encoder;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Encoder;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Encoder.EncoderAlphabet;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Encoder.EncoderPadding;
 import org.eclipse.leshan.core.util.json.JacksonJsonSerDes;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -29,6 +32,8 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class PublicKeySerDes extends JacksonJsonSerDes<PublicKey> {
+
+    private final Base64Encoder base64Encoder = new DefaultBase64Encoder(EncoderAlphabet.BASE64, EncoderPadding.WITH);
 
     @Override
     public JsonNode jSerialize(PublicKey publicKey) {
@@ -54,7 +59,7 @@ public class PublicKeySerDes extends JacksonJsonSerDes<PublicKey> {
         o.put("params", ecPublicKey.getParams().toString());
 
         // Get raw public key in format SubjectPublicKeyInfo (DER encoding)
-        o.put("b64Der", Base64.encodeBase64String(ecPublicKey.getEncoded()));
+        o.put("b64Der", base64Encoder.encode(ecPublicKey.getEncoded()));
 
         return o;
     }
