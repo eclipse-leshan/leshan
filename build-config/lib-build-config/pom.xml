@@ -89,6 +89,15 @@ Contributors:
                     <match>/org\.eclipse\.californium(\..*)?/</match>
                   </item>
                 </exclude>
+                <exclude>
+                  <item>
+                    <!-- HACK : we exclide slf4j because of revapi bug. 
+                         See : https://github.com/revapi/revapi/issues/186
+                         This should be removed once it will be fixed in revapi. -->
+                    <matcher>java-package</matcher>
+                    <match>/org\.slf4j(\..*)?/</match>
+                  </item>
+                </exclude>
               </elements>
             </revapi.filter>
           </analysisConfiguration>
