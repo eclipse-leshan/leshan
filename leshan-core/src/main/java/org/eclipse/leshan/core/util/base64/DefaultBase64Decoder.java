@@ -4,20 +4,28 @@ import java.util.Base64;
 
 public class DefaultBase64Decoder implements Base64Decoder {
     private final boolean urlSafe;
-
-    public DefaultBase64Decoder(boolean urlSafe) {
+    private final boolean withoutPadding;
+    public DefaultBase64Decoder(boolean urlSafe, boolean withoutPadding) {
         this.urlSafe = urlSafe;
+        this.withoutPadding = withoutPadding;
     }
 
     @Override public String decode(String encoded) {
-        validateEncodedData(encoded);
+        if (!this.withoutPadding)
+        {
+            validateEncodedData(encoded);
+        }
         Base64.Decoder decoder = urlSafe ? Base64.getUrlDecoder() : Base64.getDecoder();
         byte[] decoded = decoder.decode(encoded);
         return new String(decoded);
     }
 
     @Override public String decode(byte[] encoded) {
-        validateEncodedData(new String(encoded));
+        if (!this.withoutPadding)
+        {
+            validateEncodedData(new String(encoded));
+        }
+
         Base64.Decoder decoder = urlSafe ? Base64.getUrlDecoder() : Base64.getDecoder();
         byte[] decoded = decoder.decode(encoded);
         return new String(decoded);
