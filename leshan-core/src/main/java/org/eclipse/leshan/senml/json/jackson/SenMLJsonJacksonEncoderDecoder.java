@@ -75,7 +75,7 @@ public class SenMLJsonJacksonEncoderDecoder implements SenMLDecoder, SenMLEncode
             }
             return new SenMLPack(serDes.deserialize(node.iterator()));
 
-        } catch (JsonException | IOException e) {
+        } catch (JsonException | IllegalArgumentException | IOException e) {
             throw new SenMLException("Unable to parse SenML JSON.", e);
         }
     }

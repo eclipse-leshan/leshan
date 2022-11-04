@@ -17,7 +17,8 @@ package org.eclipse.leshan.senml.json.jackson;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import org.eclipse.leshan.core.util.Base64;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Decoder;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Encoder;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.eclipse.leshan.core.util.json.JacksonJsonSerDes;
 import org.eclipse.leshan.core.util.json.JsonException;
@@ -105,7 +106,7 @@ public class SenMLJsonRecordSerDes extends JacksonJsonSerDes<SenMLRecord> {
                 jsonObj.put("vlo", record.getObjectLinkValue());
                 break;
             case OPAQUE:
-                jsonObj.put("vd", Base64.encodeBase64String(record.getOpaqueValue()));
+                jsonObj.put("vd", (new DefaultBase64Encoder(true, true)).encode(record.getOpaqueValue()));
                 break;
             case STRING:
                 jsonObj.put("vs", record.getStringValue());
@@ -171,7 +172,8 @@ public class SenMLJsonRecordSerDes extends JacksonJsonSerDes<SenMLRecord> {
 
         JsonNode vd = o.get("vd");
         if (vd != null && vd.isTextual()) {
-            record.setOpaqueValue(Base64.decodeBase64(vd.asText()));
+            record.setOpaqueValue(new DefaultBase64Decoder(false, false).decode(vd.asText()));
+            // record.setOpaqueValue(Base64.decodeBase64(vd.asText()));
             hasValue = true;
         }
 
