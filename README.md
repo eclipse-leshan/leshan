@@ -26,6 +26,13 @@ Join the project mailing list : [subscribe](https://dev.eclipse.org/mailman/list
 Mail address: leshan-dev@eclipse.org.  
 Access to [leshan-dev archives](https://dev.eclipse.org/mhonarc/lists/leshan-dev/).  
 
+License
+-------
+
+This work is dual-licensed under the Eclipse Public License v2.0 and Eclipse Distribution License v1.0
+
+`SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause`
+
 Test Server Sandbox
 ------------
 
