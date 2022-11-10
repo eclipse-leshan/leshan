@@ -67,7 +67,7 @@ public class WriteMultiValueTest {
                 { ContentFormat.SENML_CBOR } });
     }
 
-    private ContentFormat contentFormat;
+    private final ContentFormat contentFormat;
 
     public WriteMultiValueTest(ContentFormat contentFormat) {
         this.contentFormat = contentFormat;
@@ -177,13 +177,7 @@ public class WriteMultiValueTest {
     }
 
     @Test
-    public void can_write_multi_instance_objlnk_resource_in_tlv() throws InterruptedException {
-        // object link not yet implemented for some content format.
-        switch (contentFormat.getCode()) {
-        case ContentFormat.JSON_CODE:
-        case ContentFormat.OLD_JSON_CODE:
-            return;
-        }
+    public void can_write_multi_instance_objlnk_resource() throws InterruptedException {
 
         Map<Integer, ObjectLink> neighbourCellReport = new HashMap<>();
         neighbourCellReport.put(0, new ObjectLink(10245, 1));
