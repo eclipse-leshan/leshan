@@ -31,7 +31,7 @@ public class LwM2mValueUtil {
         case CORELINK:
             return Arrays.toString((Link[]) value);
         default:
-            return type.toString();
+            return value.toString();
         }
     }
 }
