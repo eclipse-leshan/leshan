@@ -208,6 +208,70 @@ public class WriteMultiValueTest {
     }
 
     @Test
+    public void can_write_object_instance_with_empty_multi_resource() throws InterruptedException {
+
+        // =============== Try to write ==================
+        // /3442/0/1110 : { 0 = "string1", 1 = "string2" }
+        // /3442/0/1120 : { 1= 11, 1 = 22 }
+
+        // create initial value
+        Map<Integer, String> strings = new HashMap<>();
+        strings.put(0, "string1");
+        strings.put(1, "string2");
+        LwM2mMultipleResource stringMultiResource = LwM2mMultipleResource
+                .newStringResource(TestLwM2mId.MULTIPLE_STRING_VALUE, strings);
+
+        Map<Integer, Long> ints = new HashMap<>();
+        ints.put(0, 11l);
+        ints.put(1, 22l);
+        LwM2mMultipleResource intMultiResource = LwM2mMultipleResource
+                .newIntegerResource(TestLwM2mId.MULTIPLE_INTEGER_VALUE, ints);
+
+        // Write new instance
+        WriteResponse response = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(Mode.REPLACE,
+                contentFormat, TestLwM2mId.TEST_OBJECT, 0, stringMultiResource, intMultiResource));
+
+        // Verify Write result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+
+        // Reading back the instance
+        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
+                new ReadRequest(TestLwM2mId.TEST_OBJECT, 0));
+        LwM2mObjectInstance instance = (LwM2mObjectInstance) readResponse.getContent();
+
+        // verify read value
+        assertEquals(stringMultiResource, instance.getResource(TestLwM2mId.MULTIPLE_STRING_VALUE));
+        assertEquals(intMultiResource, instance.getResource(TestLwM2mId.MULTIPLE_INTEGER_VALUE));
+
+        // =============== Now try to replace with ==================
+        // /3441/0/1110 : { 3 = "newString"}
+
+        // create initial value
+        strings = new HashMap<>();
+        strings.put(3, "newString");
+        stringMultiResource = LwM2mMultipleResource.newStringResource(TestLwM2mId.MULTIPLE_STRING_VALUE, strings);
+
+        // Write new instance
+        response = helper.server.send(helper.getCurrentRegistration(),
+                new WriteRequest(Mode.REPLACE, contentFormat, TestLwM2mId.TEST_OBJECT, 0, stringMultiResource));
+
+        // Verify Write result
+        assertEquals(ResponseCode.CHANGED, response.getCode());
+        assertNotNull(response.getCoapResponse());
+        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+
+        // Reading back the instance
+        readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(TestLwM2mId.TEST_OBJECT, 0));
+        instance = (LwM2mObjectInstance) readResponse.getContent();
+
+        // verify read value
+        assertEquals(stringMultiResource, instance.getResource(TestLwM2mId.MULTIPLE_STRING_VALUE));
+        assertNull(instance.getResource(TestLwM2mId.MULTIPLE_INTEGER_VALUE));
+    }
+
+    @Test
     public void can_write_object_resource_instance() throws InterruptedException {
 
         // --------------------------------
