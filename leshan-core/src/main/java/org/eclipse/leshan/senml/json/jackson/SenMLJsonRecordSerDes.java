@@ -106,7 +106,7 @@ public class SenMLJsonRecordSerDes extends JacksonJsonSerDes<SenMLRecord> {
                 jsonObj.put("vlo", record.getObjectLinkValue());
                 break;
             case OPAQUE:
-                jsonObj.put("vd", (new DefaultBase64Encoder(true, true)).encode(record.getOpaqueValue()));
+                jsonObj.put("vd", new DefaultBase64Encoder(true, true).encode(record.getOpaqueValue()));
                 break;
             case STRING:
                 jsonObj.put("vs", record.getStringValue());
@@ -172,8 +172,7 @@ public class SenMLJsonRecordSerDes extends JacksonJsonSerDes<SenMLRecord> {
 
         JsonNode vd = o.get("vd");
         if (vd != null && vd.isTextual()) {
-            record.setOpaqueValue(new DefaultBase64Decoder(false, false).decode(vd.asText()));
-            // record.setOpaqueValue(Base64.decodeBase64(vd.asText()));
+            record.setOpaqueValue(new DefaultBase64Decoder(true, true).decode(vd.asText()));
             hasValue = true;
         }
 

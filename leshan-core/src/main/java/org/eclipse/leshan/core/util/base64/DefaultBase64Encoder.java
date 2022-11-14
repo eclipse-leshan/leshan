@@ -28,11 +28,10 @@ public class DefaultBase64Encoder implements Base64Encoder {
 
     @Override
     public String encode(byte[] dataToEncode) {
-        Base64.Encoder encoder;
-        if (this.withoutPadding) {
-            encoder = urlSafe ? Base64.getUrlEncoder().withoutPadding() : Base64.getEncoder().withoutPadding();
-        } else
-            encoder = urlSafe ? Base64.getUrlEncoder() : Base64.getEncoder();
+        Base64.Encoder encoder = urlSafe ? Base64.getUrlEncoder() : Base64.getEncoder();
+        if (withoutPadding) {
+            encoder = encoder.withoutPadding();
+        }
 
         return encoder.encodeToString(dataToEncode);
     }

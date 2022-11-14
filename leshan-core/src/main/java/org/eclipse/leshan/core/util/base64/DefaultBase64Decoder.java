@@ -31,8 +31,7 @@ public class DefaultBase64Decoder implements Base64Decoder {
             validateEncodedData(encoded);
         }
         Base64.Decoder decoder = urlSafe ? Base64.getUrlDecoder() : Base64.getDecoder();
-        byte[] decoded = decoder.decode(encoded);
-        return decoded;
+        return decoder.decode(encoded);
     }
 
     @Override
