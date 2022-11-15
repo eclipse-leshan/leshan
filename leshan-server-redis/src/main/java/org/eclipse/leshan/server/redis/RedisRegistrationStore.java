@@ -249,6 +249,9 @@ public class RedisRegistrationStore implements CaliforniumRegistrationStore, Sta
                 if (!r.getSocketAddress().equals(updatedRegistration.getSocketAddress())) {
                     removeAddrIndex(j, r);
                 }
+                // update secondary index :
+                byte[] identity_idx = toRegIdentityKey(updatedRegistration.getIdentity());
+                j.set(identity_idx, updatedRegistration.getEndpoint().getBytes(UTF_8));
                 if (!r.getIdentity().equals(updatedRegistration.getIdentity())) {
                     removeIdentityIndex(j, r);
                 }
