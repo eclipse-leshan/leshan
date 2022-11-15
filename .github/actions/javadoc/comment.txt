@@ -1,0 +1,6 @@
+:x: **Javadoc Generation failed !** [(more details)](###_URL_###)
+
+Ensure you can generate javadoc locally using: 
+```
+mvn javadoc:javadoc
+```

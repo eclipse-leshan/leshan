@@ -1,0 +1,1 @@
+This is not a real action but a kind of HACK, to easily add a global advice for all failing build.

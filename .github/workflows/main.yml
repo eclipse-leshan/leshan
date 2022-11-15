@@ -1,21 +1,32 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+# This workflow validate Leshan Contribution. 
+# We execute each step of the build separatly to be able to provide some feedback on failure as a PR comment.
+# 
+# This jobs will be executed automatically on untrusted contribution and so have very limited right. 
+# It will just store some very validation status in a "build_status.properties" file as workflow artifact.
+#
+# Then this artifact will be reused by a priviledged job to add comment to the PR (See "Comment Pull Request" workflow)
+# 
+# See: 
+#  - https://github.com/eclipse/leshan/issues/1314
+#  - https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
 
-name: Maven
+name: Check Pull Request
+
+permissions: {} # Remove all permissions as this workflow which run untrusted code from PR
 
 on:
   pull_request:
     branches: [ "master" ]
     types: [synchronize, opened, reopened, ready_for_review]
 
+env:
+  build_status_filename: "build_status"
+  pr_id_key: "pullrequestid"
+  run_id_key: "runid"
+  build_status_key: "buildstatus"
+
 jobs:
   build:
-    # To be able :
-    #  - to write/remove comments on PR,
-    #  - to create checks for Test Report.
-    permissions:  
-      pull-requests: write
-      checks: write   
 
     name : Code Check
     if: github.event.pull_request.draft == false
@@ -32,80 +43,106 @@ jobs:
         distribution: 'adopt'
         cache: maven
 
+    # ------------- Begin of : Build Steps ------------- 
     - name: Check No Merge Commit
-      uses: ./.github/actions/no_merge
+      id: nomerge
+      uses: ./.github/actions/nomerge
+      with:
+         build_status_filename: ${{env.build_status_filename}}
 
     - name: POM Format Check
-      if: always()
       id: sortpom
+      if: always()
       uses: ./.github/actions/sortpom
+      with:
+         build_status_filename: ${{env.build_status_filename}}
 
     - name: Code Format Check
-      if: always()
       id: formatter
+      if: always()
       uses: ./.github/actions/formatter
+      with:
+         build_status_filename: ${{env.build_status_filename}}
 
     - name: Build
-      if: always()
       id: build
+      if: always()
       uses: ./.github/actions/build
+      with:
+         build_status_filename: ${{env.build_status_filename}}
 
     - name: Java Import Check
-      if: ${{ always() && steps.build.conclusion == 'success' }}
       id: sortimport
+      if: ${{ always() && steps.build.conclusion == 'success' }}
       uses: ./.github/actions/sortimport
+      with:
+         build_status_filename: ${{env.build_status_filename}}
 
     - name: Code Style Check
-      if: ${{ always() && steps.build.conclusion == 'success' }}
       id: checkstyle
+      if: ${{ always() && steps.build.conclusion == 'success' }}
       uses: ./.github/actions/checkstyle
+      with:
+         build_status_filename: ${{env.build_status_filename}}
 
 
     - name: Check Android API Compliance
+      id: androidcheck
       if: ${{ always() && steps.build.conclusion == 'success' }}
-      uses: ./.github/actions/android-check
+      uses: ./.github/actions/androidcheck
+      with:
+         build_status_filename: ${{env.build_status_filename}}
 
     - name: Check Semantic Versioning Compliance
+      id: semvercheck
       if: ${{ always() && steps.build.conclusion == 'success' }}
-      uses: ./.github/actions/semver-check
+      uses: ./.github/actions/semvercheck
+      with:
+         build_status_filename: ${{env.build_status_filename}}
 
     - name: Generate Javadoc
+      id: javadoc
       if: ${{ always() && steps.build.conclusion == 'success' }}
       uses: ./.github/actions/javadoc
+      with:
+         build_status_filename: ${{env.build_status_filename}}
       
     - name: Unit Tests
-      id: unit_tests
+      id: unittests
       if: ${{ always() &&  steps.build.conclusion == 'success' }}
-      uses: ./.github/actions/unit-tests
+      uses: ./.github/actions/unittests
+      with:
+         build_status_filename: ${{env.build_status_filename}}
 
     - name: Integration Tests
-      id: integration_tests
+      id: integrationtests
       if: ${{ always() && steps.build.conclusion == 'success' }}
-      uses: ./.github/actions/integration-tests
-
-    - name: Report Test Failure
-      uses: mikepenz/action-junit-report@v3
-      if: ${{ always() && (steps.unit_tests.conclusion == 'failure' || steps.integration_tests.conclusion == 'failure') }}
+      uses: ./.github/actions/integrationtests
       with:
-          check_name: Automatic Tests Report
-          report_paths: '**/target/surefire-reports/*.xml'
-          fail_on_failure: true
+         build_status_filename: ${{env.build_status_filename}}
 
-    - name: Add Tips comment
-      if: failure()
-      uses: marocchino/sticky-pull-request-comment@v2
-      with:
-        header: Refine your PR
-        message: |
-          :information_source: Some tips : 
-           - Once you fix your issues locally, **do not create a new PR**, see [how to refine your PR](https://github.com/eclipse/leshan/wiki/How-to-contribute#refine-it).
-           - See [How to contribute](https://github.com/eclipse/leshan/wiki/How-to-contribute) guide and some [Code & design guidelines](https://github.com/eclipse/leshan/wiki/Code-&-design-guidelines). 
+    # ------------- End of :  Build Steps -------------
 
-          If documentation or those automatic comments are not clear enough, please [create a new issue](https://github.com/eclipse/leshan/issues/new) to discus about how to enhance it. 
-      
-    - name: Delete Tips comment
-      if: success()
-      uses: marocchino/sticky-pull-request-comment@v2
+    # Store Data to be able to add comment in "Comment Pull Request"  workflow
+    # See : https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+    - name: Store Variables for "Comment Pull Request" Workflow
+      if: always()
+      # unstrusted action use commit ID instead of version 
+      uses: GuillaumeFalourd/write-java-properties-file@c6762204aa02d62718ed285bca4cbcc400c65a10 #v1
       with:
-        header: Refine your PR
-        delete: true
+        file_path: ${{env.build_status_filename}}
+        property: |
+          ${{env.pr_id_key}}
+          ${{env.run_id_key}}
+          ${{env.build_status_key}}
+        value: |
+          ${{ github.event.number }}
+          ${{ github.run_id }}
+          ${{ job.status }}
+
+    - name: Upload Build Status File for "Comment Pull Request" Workflow
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+       name: ${{env.build_status_filename}}
+       path: ${{env.build_status_filename}}

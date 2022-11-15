@@ -1,0 +1,89 @@
+# This workflow add comment on PR to help user to fix contribution issue.
+# See "Check Pull Request" workflow (main.yml) for more details
+
+name: Comment Pull Request
+
+permissions:
+  pull-requests: write # we need pull-request permission to write comment on PR
+on:
+  workflow_run:
+    workflows: ["Check Pull Request"]
+    types:
+      - completed
+
+env:
+   build_status_filename: "build_status"
+   pr_id_key: "pullrequestid"
+   run_id_key: "runid"
+
+jobs:
+  add_comment:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.event == 'pull_request'
+    strategy:
+      # Maybe we could create this matrix dynamically  : 
+      # See : https://tomasvotruba.com/blog/2020/11/16/how-to-make-dynamic-matrix-in-github-actions/
+      matrix:
+        jobstep: [nomerge,sortpom,formatter,build,sortimport,checkstyle,androidcheck,semvercheck,javadoc,unittests,integrationtests,buildstatus]
+
+    steps:
+
+      # Waiting https://github.com/actions/download-artifact/issues/172
+      # We are using github script
+      # Inspired by : https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+      - name: Download Build Status Archive
+        uses: actions/github-script@v6.3.3
+        with:
+          script: |
+            var artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               run_id: ${{github.event.workflow_run.id }},
+            });
+            var matchArtifact = artifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == '${{env.build_status_filename}}'
+            })[0];
+            var download = await github.rest.actions.downloadArtifact({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               artifact_id: matchArtifact.id,
+               archive_format: 'zip',
+            });
+            var fs = require('fs');
+            fs.writeFileSync('${{github.workspace}}/${{env.build_status_filename}}.zip', Buffer.from(download.data));
+            
+      - name: Unzip Build Status Archive
+        run: unzip ${{env.build_status_filename}}.zip
+
+      - name: Read Build Status Properties File
+        id: read_property
+        # unstrusted action use commit ID instead of version 
+        uses: christian-draeger/read-properties@908f99d3334be3802ec7cb528395a69d19914e7b #1.1.1
+        with:
+          path: ${{env.build_status_filename}}
+          properties: ${{env.pr_id_key}} ${{ matrix.jobstep }} ${{env.run_id_key}}
+
+      - name: Download Add Comment Action
+        if: ${{ steps.read_property.outputs[matrix.jobstep] == 'failure'}}
+        # unstrusted action use commit ID instead of version 
+        uses: Bhacaz/checkout-files@e3e34e7daef91a5f237485bb88a260aee4be29dd #v2
+        with:
+          files: .github/actions/utils/addcomment/action.yml
+
+      - name: Add Comment on failure
+        if: ${{ steps.read_property.outputs[matrix.jobstep] == 'failure'}} 
+        uses: ./.github/actions/utils/addcomment
+        with:
+          pullrequest_id: ${{ steps.read_property.outputs[env.pr_id_key]}}
+          action_name: ${{ matrix.jobstep }}
+          job_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{steps.read_property.outputs[env.run_id_key]}}
+
+      - name: Delete Comment on Success
+        if: ${{ steps.read_property.outputs[matrix.jobstep] == 'success'}}
+        # unstrusted action use commit ID instead of version 
+        # we don't use 2.3.0 because of : https://github.com/marocchino/sticky-pull-request-comment/issues/825
+        uses: marocchino/sticky-pull-request-comment@97bddef64db61b9d80edc69593cc4e4c415c3362 #v2.2.1
+        with:
+          number: ${{ steps.read_property.outputs[env.pr_id_key]}}
+          header: ${{matrix.jobstep}}
+          delete: true

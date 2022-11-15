@@ -1,39 +1,26 @@
 name: "Check POM Formatting"
 description: "Check pom.xml file are well formatted with Maven"
 
+inputs:
+  build_status_filename:  
+    description: 'Path to build status properties file'
+    required: true
+
 runs:
   using: "composite"
   steps:
 
   - name: Check POM formatting
-    id: sort_pom
+    id: main
     shell: bash
     run: mvn -B com.github.ekryd.sortpom:sortpom-maven-plugin:verify -PallPom 
 
-  - name: Add comment
-    if: failure()
-    uses: marocchino/sticky-pull-request-comment@v2
+    # Store Step status in Build Status Properties file
+  - name: Store Step Status
+    if: always()
+    # unstrusted action use commit ID instead of version 
+    uses: GuillaumeFalourd/write-java-properties-file@c6762204aa02d62718ed285bca4cbcc400c65a10 #v1
     with:
-      header: POM Formatting check Failed
-      message: |
-        :x: **Pom.xml files are not well formatted !** [(more details)](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
-        Ensure your code build locally using: 
-        ```
-        mvn clean install
-        ```
-        Or just validate pom formatting with : 
-        ```
-        mvn com.github.ekryd.sortpom:sortpom-maven-plugin:verify -PallPom
-        ```
-        You can format pom.xml file with : 
-        ```
-        mvn com.github.ekryd.sortpom:sortpom-maven-plugin:sort -PallPom
-        ```
-
-  - name: Delete comment
-    if: success()
-    uses: marocchino/sticky-pull-request-comment@v2
-    with:
-      header: POM Formatting check Failed
-      delete: true
+      file_path: ${{inputs.build_status_filename}}
+      property: ${{github.action}}
+      value: ${{steps.main.outcome}}

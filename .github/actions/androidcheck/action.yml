@@ -1,5 +1,5 @@
-name: "Build Code"
-description: "Build repository with Maven"
+name: "Android Check"
+description: "Check compliance with android API"
 
 inputs:
   build_status_filename:  
@@ -10,10 +10,11 @@ runs:
   using: "composite"
   steps:
 
-  - name: Build
+  - name: Check Android API
     id: main
     shell: bash
-    run: mvn -B install -PCompileOnly
+    run: mvn -B animal-sniffer:check
+
 
     # Store Step status in Build Status Properties file
   - name: Store Step Status

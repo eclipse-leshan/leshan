@@ -1,0 +1,15 @@
+:x: **Code is not well-formatted !** [(more details)](###_URL_###)
+
+Ensure your code build locally using: 
+```
+mvn clean install
+```
+Or just validate code format with : 
+```
+mvn formatter:validate
+```
+You can format the code with : 
+```
+mvn formatter:format
+```
+See also [How configure your IDE](https://github.com/eclipse/leshan/wiki/Code-&-design-guidelines#configure-your-ide).

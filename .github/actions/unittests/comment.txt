@@ -1,0 +1,14 @@
+:x: **Unit Tests failed !** [(more details)](###_URL_###)
+
+Ensure your code build locally using: 
+```
+mvn clean install
+```
+Or just launch tests : 
+```
+mvn surefire:test
+```
+To launch unit tests only : 
+```
+mvn surefire:test '-Dtest=!org.eclipse.leshan.integration.tests.**' -DfailIfNoTests=false -Dskip.yarn
+```

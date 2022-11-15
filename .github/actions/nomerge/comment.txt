@@ -1,0 +1,1 @@
+:x: **PR should not contain "Merge Commit"**, so please use `git rebase` instead.

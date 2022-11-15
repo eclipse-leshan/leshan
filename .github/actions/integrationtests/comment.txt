@@ -1,0 +1,15 @@
+:x: **Integration Tests failed !** [(more details)](###_URL_###)
+
+Ensure your code build locally using: 
+```
+mvn clean install
+```
+Or just launch all tests : 
+```
+mvn surefire:test
+```
+To launch integration tests only : 
+```
+mvn surefire:test '-Dtest=org.eclipse.leshan.integration.tests.**,!**/Redis*.java' -DfailIfNoTests=false
+```
+Currently, some of our integration tests are flaky :unamused: ,so do not hesitate to re-run in case of failure. 

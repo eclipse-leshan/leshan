@@ -1,0 +1,6 @@
+:x: **Maven Build failed !** [(more details)](###_URL_###)
+
+Ensure your code build locally using: 
+```
+mvn clean install
+```

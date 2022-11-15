@@ -1,0 +1,11 @@
+:x: **Checkstyle Validation Failed !** [(more details)](###_URL_###)
+
+Ensure your code build locally using: 
+```
+mvn clean install
+```
+Or just validate checkstyle rules with : 
+```
+mvn checkstyle:checkstyle
+```
+See also [How configure your IDE](https://github.com/eclipse/leshan/wiki/Code-&-design-guidelines#configure-your-ide).

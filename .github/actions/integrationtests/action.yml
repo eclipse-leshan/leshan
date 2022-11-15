@@ -1,5 +1,5 @@
-name: "Build Code"
-description: "Build repository with Maven"
+name: "Integration Tests"
+description: "Run Integration Tests with Maven"
 
 inputs:
   build_status_filename:  
@@ -9,11 +9,10 @@ inputs:
 runs:
   using: "composite"
   steps:
-
-  - name: Build
+  - name: Run Integration Tests 
     id: main
     shell: bash
-    run: mvn -B install -PCompileOnly
+    run: mvn -B surefire:test '-Dtest=org.eclipse.leshan.integration.tests.**,!**/Redis*.java' -Dsurefire.rerunFailingTestsCount=10 -DfailIfNoTests=false 
 
     # Store Step status in Build Status Properties file
   - name: Store Step Status

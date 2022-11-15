@@ -1,0 +1,5 @@
+:information_source: Some tips : 
+ - Once you fix your issues locally, **do not create a new PR**, see [how to refine your PR](https://github.com/eclipse/leshan/wiki/How-to-contribute#refine-it).
+ - See [How to contribute](https://github.com/eclipse/leshan/wiki/How-to-contribute) guide and some [Code & design guidelines](https://github.com/eclipse/leshan/wiki/Code-&-design-guidelines). 
+
+If documentation or those automatic comments are not clear enough, please [create a new issue](https://github.com/eclipse/leshan/issues/new) to discus about how to enhance it. 

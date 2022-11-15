@@ -1,0 +1,12 @@
+:x: **API break detected !** [(more details)](###_URL_###)
+
+Ensure your code build locally using: 
+```
+mvn clean install
+```
+Or just check Semantic Versioning Compliance with : 
+```
+mvn revapi:check
+```
+We are using revapi to ensure API break respect [Semantic Versioning rules](https://semver.org/). 
+```

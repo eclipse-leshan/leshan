@@ -1,0 +1,11 @@
+:x: **Android API Compliance Check failed !** [(more details)](###_URL_###)
+
+Ensure your code build locally using: 
+```
+mvn clean install
+```
+Or just check Android API Compliance with : 
+```
+mvn animal-sniffer:check
+```
+[More details](https://github.com/eclipse/leshan/wiki/F.A.Q.#can-i-use-leshan-with-android-) about this check

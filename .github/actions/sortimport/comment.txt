@@ -1,0 +1,15 @@
+:x: **Java Import are not sorted !** [(more details)](###_URL_###)
+
+Ensure your code build locally using: 
+```
+mvn clean install
+```
+Or just validate java import with : 
+```
+mvn impsort:check
+```
+You can sort Java import with : 
+```
+mvn impsort:sort
+```
+See also [How configure your IDE](https://github.com/eclipse/leshan/wiki/Code-&-design-guidelines#configure-your-ide).

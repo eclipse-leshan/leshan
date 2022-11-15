@@ -1,40 +1,26 @@
 name: "Check code Format"
 description: "Check code is well formatted with Maven"
 
+inputs:
+  build_status_filename:  
+    description: 'Path to build status properties file'
+    required: true
+
 runs:
   using: "composite"
   steps:
 
   - name: Check Code Format
-    id: formatter
+    id: main
     shell: bash
     run: mvn -B formatter:validate
 
-  - name: Add comment
-    if: failure()
-    uses: marocchino/sticky-pull-request-comment@v2
+    # Store Step status in Build Status Properties file
+  - name: Store Step Status
+    if: always()
+    # unstrusted action use commit ID instead of version 
+    uses: GuillaumeFalourd/write-java-properties-file@c6762204aa02d62718ed285bca4cbcc400c65a10 #v1
     with:
-      header: Code Formatter Validation Failed
-      message: |
-        :x: **Code is not well-formatted !** [(more details)](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
-        Ensure your code build locally using: 
-        ```
-        mvn clean install
-        ```
-        Or just validate code format with : 
-        ```
-        mvn formatter:validate
-        ```
-        You can format the code with : 
-        ```
-        mvn formatter:format
-        ```
-        See also [How configure your IDE](https://github.com/eclipse/leshan/wiki/Code-&-design-guidelines#configure-your-ide).
-
-  - name: Delete comment
-    if: success()
-    uses: marocchino/sticky-pull-request-comment@v2
-    with:
-      header: Code Formatter Validation Failed
-      delete: true
+      file_path: ${{inputs.build_status_filename}}
+      property: ${{github.action}}
+      value: ${{steps.main.outcome}}
