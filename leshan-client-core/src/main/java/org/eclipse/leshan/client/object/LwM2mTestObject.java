@@ -51,13 +51,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This aims to implements LWM2M Test Object(Id:3441) from LWM2M registry.
+ * This aims to implements LWM2M Test Object(Id:3442) from LWM2M registry.
  */
 public class LwM2mTestObject extends SimpleInstanceEnabler {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mTestObject.class);
 
     public static final String INITIAL_STRING_VALUE = "initial value";
-    public static final Long INITIAL_INTEGER_VALUE = 64l;
+    public static final Long INITIAL_INTEGER_VALUE = 1024l;
     public static final ULong INITIAL_UNSIGNED_INTEGER_VALUE = ULong.valueOf("9223372036854775808");
     public static final Double INITIAL_FLOAT_VALUE = 3.14159d;
     public static final Boolean INITIAL_BOOLEAN_VALUE = true;
