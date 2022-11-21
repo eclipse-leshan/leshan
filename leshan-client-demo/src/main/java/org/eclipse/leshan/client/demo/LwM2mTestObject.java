@@ -23,7 +23,7 @@ import org.eclipse.leshan.core.util.RandomStringUtils;
  */
 public class LwM2mTestObject extends SimpleInstanceEnabler {
 
-    private Random random = new Random(System.currentTimeMillis());
+    private final Random random = new Random(System.currentTimeMillis());
 
     public LwM2mTestObject() {
         super();
@@ -33,7 +33,7 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
 
         // single
         initialValues.put(110, "initial value");
-        initialValues.put(120, 64l);
+        initialValues.put(120, 1024l);
         initialValues.put(130, 3.14159d);
         initialValues.put(140, true);
         initialValues.put(150, Hex.decodeHex("0123456789ABCDEF".toCharArray()));
@@ -42,7 +42,7 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
 
         // multi
         initialValues.put(1110, getValues(0, "initial value"));
-        initialValues.put(1120, getValues(0, 64l));
+        initialValues.put(1120, getValues(0, 1024l));
         initialValues.put(1130, getValues(0, 3.14159d));
         initialValues.put(1140, getValues(0, true));
         initialValues.put(1150, getValues(0, Hex.decodeHex("0123456789ABCDEF".toCharArray())));
