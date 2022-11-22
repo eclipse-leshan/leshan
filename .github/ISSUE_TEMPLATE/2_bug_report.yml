@@ -1,0 +1,64 @@
+name: Bug Report
+description: You think you maybe find a bug ? 
+labels: ["bug"]
+body:
+
+  - type: input
+    id: version
+    attributes:
+      label: Version(s)
+      description: Which version of Leshan are concerned ? 
+      placeholder: eg. v1.4.2 or v2.0.0-M8 or 5877f57d87e81137b5dba40da4cdd03738c3651d
+    validations:
+      required: true
+
+  - type: input
+    id: used-component
+    attributes:
+      label: Which components
+      description: |
+        Which part of Leshan are concerned ?
+        client, server, bootstrap server, library or demo ?
+      placeholder: eg. a leshan server demo
+    validations:
+      required: true
+
+  - type: input
+    id: another-implementation
+    attributes:
+      label: Tested With
+      description: If another implementation is involved let us know.
+      placeholder: e.g. wakaama at client side (commit a78290755fb0467820b83512671536b6c4ddbd4e) 
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: Also tell us, what did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproductible-steps
+    attributes:
+      label: How to reproduce
+      description: |
+         Please provide simple steps to reproduce,
+         or a small example of code,
+         or a link to your code, 
+         or a detailed context explanation. 
+
+  - type: textarea
+    id: logs-or-capture
+    attributes:
+      label: Relevant Output
+      description: |
+         Please copy and paste any relevant [output log](https://github.com/eclipse/leshan/wiki/F.A.Q.#how-to-activate-more-log-),
+         Or attach a [wireshark/tcpdump capture](https://github.com/eclipse-californium/californium/wiki/Logs-and-IP-Capturing-%E2%80%90-How-To-Provide-The-Right-Information#ip-capturing) if needed.
+
+         (Do not use screenshot to share textual information)
+
+  - type: markdown
+    attributes:
+      value: |
+        If you're using Leshan [let us know](https://github.com/eclipse/leshan/issues/830) and/or star the project ⭐.
