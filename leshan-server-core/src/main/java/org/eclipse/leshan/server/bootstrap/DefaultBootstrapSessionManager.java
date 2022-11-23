@@ -16,7 +16,6 @@
 package org.eclipse.leshan.server.bootstrap;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
@@ -28,9 +27,9 @@ import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.bootstrap.BootstrapTaskProvider.Tasks;
 import org.eclipse.leshan.server.model.LwM2mBootstrapModelProvider;
 import org.eclipse.leshan.server.model.StandardBootstrapModelProvider;
+import org.eclipse.leshan.server.security.BootstrapAuthorizer;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityChecker;
-import org.eclipse.leshan.server.security.SecurityInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,47 +44,35 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultBootstrapSessionManager.class);
 
-    private BootstrapSecurityStore bsSecurityStore;
-    private SecurityChecker securityChecker;
     private BootstrapTaskProvider tasksProvider;
     private LwM2mBootstrapModelProvider modelProvider;
+    private final BootstrapAuthorizer authorizer;
 
     /**
      * Create a {@link DefaultBootstrapSessionManager} using a default {@link SecurityChecker} to accept or refuse new
      * {@link BootstrapSession}.
-     *
-     * @param bsSecurityStore the {@link BootstrapSecurityStore} used by default {@link SecurityChecker}.
      */
     public DefaultBootstrapSessionManager(BootstrapSecurityStore bsSecurityStore, BootstrapConfigStore configStore) {
-        this(bsSecurityStore, new SecurityChecker(), new BootstrapConfigStoreTaskProvider(configStore),
-                new StandardBootstrapModelProvider());
+        this(new BootstrapConfigStoreTaskProvider(configStore), new StandardBootstrapModelProvider(),
+                new DefaultBootstrapAuthorizer(bsSecurityStore));
     }
 
     /**
      * Create a {@link DefaultBootstrapSessionManager}.
-     *
-     * @param bsSecurityStore the {@link BootstrapSecurityStore} used by {@link SecurityChecker}.
-     * @param securityChecker used to accept or refuse new {@link BootstrapSession}.
      */
-    public DefaultBootstrapSessionManager(BootstrapSecurityStore bsSecurityStore, SecurityChecker securityChecker,
-            BootstrapTaskProvider tasksProvider, LwM2mBootstrapModelProvider modelProvider) {
+    public DefaultBootstrapSessionManager(BootstrapTaskProvider tasksProvider,
+            LwM2mBootstrapModelProvider modelProvider, BootstrapAuthorizer authorizer) {
         Validate.notNull(tasksProvider);
         Validate.notNull(modelProvider);
-        this.bsSecurityStore = bsSecurityStore;
-        this.securityChecker = securityChecker;
+        Validate.notNull(authorizer);
         this.tasksProvider = tasksProvider;
         this.modelProvider = modelProvider;
+        this.authorizer = authorizer;
     }
 
     @Override
     public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity) {
-        boolean authorized;
-        if (bsSecurityStore != null && securityChecker != null) {
-            Iterator<SecurityInfo> securityInfos = bsSecurityStore.getAllByEndpoint(request.getEndpointName());
-            authorized = securityChecker.checkSecurityInfos(request.getEndpointName(), clientIdentity, securityInfos);
-        } else {
-            authorized = true;
-        }
+        boolean authorized = authorizer.isAuthorized(request, clientIdentity);
         DefaultBootstrapSession session = new DefaultBootstrapSession(request, clientIdentity, authorized);
         LOG.trace("Bootstrap session started : {}", session);
 
