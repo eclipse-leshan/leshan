@@ -59,12 +59,14 @@ import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionListener;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
+import org.eclipse.leshan.server.bootstrap.DefaultBootstrapAuthorizer;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapHandler;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.InMemoryBootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.LwM2mBootstrapRequestSender;
 import org.eclipse.leshan.server.model.LwM2mBootstrapModelProvider;
 import org.eclipse.leshan.server.model.StandardBootstrapModelProvider;
+import org.eclipse.leshan.server.security.BootstrapAuthorizer;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityChecker;
 import org.slf4j.Logger;
@@ -106,6 +108,8 @@ public class LeshanBootstrapServerBuilder {
     private LwM2mLinkParser linkParser;
 
     private boolean enableOscore = false;
+
+    private BootstrapAuthorizer authorizer;
 
     /**
      * Set the address/port for unsecured CoAP communication (<code>coap://</code>).
@@ -411,6 +415,11 @@ public class LeshanBootstrapServerBuilder {
         return this;
     }
 
+    public LeshanBootstrapServerBuilder setAuthorizer(BootstrapAuthorizer authorizer) {
+        this.authorizer = authorizer;
+        return this;
+    }
+
     /**
      * Create the default CoAP/Californium {@link Configuration} used by the builder.
      * <p>
@@ -458,8 +467,11 @@ public class LeshanBootstrapServerBuilder {
                     "modelProvider is set but you also provide a custom SessionManager so this provider will not be used");
         }
         if (sessionManager == null) {
-            sessionManager = new DefaultBootstrapSessionManager(securityStore, new SecurityChecker(),
-                    new BootstrapConfigStoreTaskProvider(configStore), modelProvider);
+            SecurityChecker securityChecker = new SecurityChecker();
+            if (authorizer == null)
+                authorizer = new DefaultBootstrapAuthorizer(securityStore, securityChecker);
+            sessionManager = new DefaultBootstrapSessionManager(securityStore, securityChecker,
+                    new BootstrapConfigStoreTaskProvider(configStore), modelProvider, authorizer);
         }
         if (coapConfig == null) {
             coapConfig = createDefaultCoapConfiguration();

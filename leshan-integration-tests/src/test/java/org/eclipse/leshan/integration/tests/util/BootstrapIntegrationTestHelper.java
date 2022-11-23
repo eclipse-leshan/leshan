@@ -106,12 +106,12 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
         public TestBootstrapSessionManager(BootstrapSecurityStore bsSecurityStore,
                 BootstrapTaskProvider tasksProvider) {
-            super(bsSecurityStore, new SecurityChecker(), tasksProvider, new StandardBootstrapModelProvider());
+            super(bsSecurityStore, new SecurityChecker(), tasksProvider, new StandardBootstrapModelProvider(), null);
         }
 
         public TestBootstrapSessionManager(BootstrapSecurityStore bsSecurityStore, BootstrapConfigStore configStore) {
             super(bsSecurityStore, new SecurityChecker(), new BootstrapConfigStoreTaskProvider(configStore),
-                    new StandardBootstrapModelProvider());
+                    new StandardBootstrapModelProvider(), null);
         }
 
         @Override
