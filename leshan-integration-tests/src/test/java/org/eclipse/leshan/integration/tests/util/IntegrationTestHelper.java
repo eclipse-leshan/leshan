@@ -66,6 +66,7 @@ import org.eclipse.leshan.server.californium.LeshanServerBuilder;
 import org.eclipse.leshan.server.model.VersionedModelProvider;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationServiceImpl;
+import org.eclipse.leshan.server.security.Authorization;
 import org.eclipse.leshan.server.security.DefaultAuthorizer;
 import org.eclipse.leshan.server.security.InMemorySecurityStore;
 import org.eclipse.leshan.server.security.SecurityStore;
@@ -188,7 +189,7 @@ public class IntegrationTestHelper {
         builder.setSecurityStore(securityStore);
         builder.setAuthorizer(new DefaultAuthorizer(securityStore) {
             @Override
-            public Registration isAuthorized(UplinkRequest<?> request, Registration registration,
+            public Authorization isAuthorized(UplinkRequest<?> request, Registration registration,
                     Identity senderIdentity) {
                 assertThat(request.getCoapRequest(), instanceOf(Request.class));
                 return super.isAuthorized(request, registration, senderIdentity);

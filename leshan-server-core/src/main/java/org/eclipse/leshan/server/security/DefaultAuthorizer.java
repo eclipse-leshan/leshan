@@ -28,8 +28,8 @@ import org.eclipse.leshan.server.registration.Registration;
  */
 public class DefaultAuthorizer implements Authorizer {
 
-    private SecurityStore securityStore;
-    private SecurityChecker securityChecker;
+    private final SecurityStore securityStore;
+    private final SecurityChecker securityChecker;
 
     public DefaultAuthorizer(SecurityStore store) {
         this(store, new SecurityChecker());
@@ -41,16 +41,17 @@ public class DefaultAuthorizer implements Authorizer {
     }
 
     @Override
-    public Registration isAuthorized(UplinkRequest<?> request, Registration registration, Identity senderIdentity) {
+    public Authorization isAuthorized(UplinkRequest<?> request, Registration registration, Identity senderIdentity) {
 
         // do we have security information for this client?
         SecurityInfo expectedSecurityInfo = null;
         if (securityStore != null)
             expectedSecurityInfo = securityStore.getByEndpoint(registration.getEndpoint());
+
         if (securityChecker.checkSecurityInfo(registration.getEndpoint(), senderIdentity, expectedSecurityInfo)) {
-            return registration;
+            return Authorization.approved();
         } else {
-            return null;
+            return Authorization.declined();
         }
     }
 }

@@ -28,6 +28,7 @@ import org.eclipse.leshan.core.response.DeregisterResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.core.response.UpdateResponse;
+import org.eclipse.leshan.server.security.Authorization;
 import org.eclipse.leshan.server.security.Authorizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,9 +41,9 @@ public class RegistrationHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationHandler.class);
 
-    private RegistrationServiceImpl registrationService;
-    private RegistrationIdProvider registrationIdProvider;
-    private Authorizer authorizer;
+    private final RegistrationServiceImpl registrationService;
+    private final RegistrationIdProvider registrationIdProvider;
+    private final Authorizer authorizer;
 
     public RegistrationHandler(RegistrationServiceImpl registrationService, Authorizer authorizer,
             RegistrationIdProvider registrationIdProvider) {
@@ -53,6 +54,7 @@ public class RegistrationHandler {
 
     public SendableResponse<RegisterResponse> register(Identity sender, RegisterRequest registerRequest) {
 
+        // Create Registration from RegisterRequest
         Registration.Builder builder = new Registration.Builder(
                 registrationIdProvider.getRegistrationId(registerRequest), registerRequest.getEndpointName(), sender);
         builder.extractDataFromObjectLink(true);
@@ -62,59 +64,72 @@ public class RegistrationHandler {
                 .queueMode(registerRequest.getQueueMode()).objectLinks(registerRequest.getObjectLinks())
                 .smsNumber(registerRequest.getSmsNumber()).registrationDate(new Date()).lastUpdate(new Date())
                 .additionalRegistrationAttributes(registerRequest.getAdditionalAttributes());
+        Registration registrationToApproved = builder.build();
 
-        // We must check if the client is using the right identity.
-        final Registration registration = authorizer.isAuthorized(registerRequest, builder.build(), sender);
-        if (registration == null) {
+        // We check if the client get authorization.
+        Authorization authorization = authorizer.isAuthorized(registerRequest, registrationToApproved, sender);
+        if (authorization.isDeclined()) {
             return new SendableResponse<>(RegisterResponse.forbidden(null));
         }
 
+        // Add Authorization Application Data to Registration if needed
+        final Registration approvedRegistration;
+        if (authorization.hasApplicationData()) {
+            approvedRegistration = new Registration.Builder(registrationToApproved)
+                    .applicationData(authorization.getApplicationData()).build();
+        } else {
+            approvedRegistration = registrationToApproved;
+        }
+
         // Add registration to the store
-        final Deregistration deregistration = registrationService.getStore().addRegistration(registration);
+        final Deregistration deregistration = registrationService.getStore().addRegistration(approvedRegistration);
 
         // Create callback to notify new registration and de-registration
-        LOG.debug("New registration: {}", registration);
+        LOG.debug("New registration: {}", approvedRegistration);
         Runnable whenSent = new Runnable() {
             @Override
             public void run() {
                 if (deregistration != null) {
                     registrationService.fireUnregistered(deregistration.getRegistration(),
-                            deregistration.getObservations(), registration);
-                    registrationService.fireRegistered(registration, deregistration.registration,
+                            deregistration.getObservations(), approvedRegistration);
+                    registrationService.fireRegistered(approvedRegistration, deregistration.registration,
                             deregistration.observations);
                 } else {
-                    registrationService.fireRegistered(registration, null, null);
+                    registrationService.fireRegistered(approvedRegistration, null, null);
                 }
             }
         };
 
-        return new SendableResponse<>(RegisterResponse.success(registration.getId()), whenSent);
+        return new SendableResponse<>(RegisterResponse.success(approvedRegistration.getId()), whenSent);
     }
 
     public SendableResponse<UpdateResponse> update(Identity sender, UpdateRequest updateRequest) {
 
-        // We must check if the client is using the right identity.
-        Registration registration = registrationService.getById(updateRequest.getRegistrationId());
-        if (registration == null) {
+        // We check if there is a registration to update
+        Registration currentRegistration = registrationService.getById(updateRequest.getRegistrationId());
+        if (currentRegistration == null) {
             return new SendableResponse<>(UpdateResponse.notFound());
         }
 
-        if (authorizer.isAuthorized(updateRequest, registration, sender) == null) {
+        // We check if the client get authorization.
+        Authorization authorization = authorizer.isAuthorized(updateRequest, currentRegistration, sender);
+        if (authorization.isDeclined()) {
             return new SendableResponse<>(UpdateResponse.badRequest("forbidden"));
         }
 
         // validate request
-        updateRequest.validate(registration.getLwM2mVersion());
+        updateRequest.validate(currentRegistration.getLwM2mVersion());
 
         // Create update
         final RegistrationUpdate update = new RegistrationUpdate(updateRequest.getRegistrationId(), sender,
                 updateRequest.getLifeTimeInSec(), updateRequest.getSmsNumber(), updateRequest.getBindingMode(),
-                updateRequest.getObjectLinks(), updateRequest.getAdditionalAttributes());
+                updateRequest.getObjectLinks(), updateRequest.getAdditionalAttributes(),
+                authorization.getApplicationData());
 
         // update registration
         final UpdatedRegistration updatedRegistration = registrationService.getStore().updateRegistration(update);
         if (updatedRegistration == null) {
-            LOG.debug("Invalid update:  registration {} not found", registration.getId());
+            LOG.debug("Invalid update:  registration {} not found", currentRegistration.getId());
             return new SendableResponse<>(UpdateResponse.notFound());
         } else {
             LOG.debug("Updated registration {} by {}", updatedRegistration, update);
@@ -132,12 +147,15 @@ public class RegistrationHandler {
 
     public SendableResponse<DeregisterResponse> deregister(Identity sender, DeregisterRequest deregisterRequest) {
 
-        // We must check if the client is using the right identity.
-        Registration registration = registrationService.getById(deregisterRequest.getRegistrationId());
-        if (registration == null) {
+        // We check if there is a registration to remove
+        Registration currentRegistration = registrationService.getById(deregisterRequest.getRegistrationId());
+        if (currentRegistration == null) {
             return new SendableResponse<>(DeregisterResponse.notFound());
         }
-        if (authorizer.isAuthorized(deregisterRequest, registration, sender) == null) {
+
+        // We check if the client get authorization.
+        Authorization authorization = authorizer.isAuthorized(deregisterRequest, currentRegistration, sender);
+        if (authorization.isDeclined()) {
             return new SendableResponse<>(DeregisterResponse.badRequest("forbidden"));
         }
 
@@ -156,7 +174,7 @@ public class RegistrationHandler {
             };
             return new SendableResponse<>(DeregisterResponse.success(), whenSent);
         } else {
-            LOG.debug("Invalid deregistration :  registration {} not found", registration.getId());
+            LOG.debug("Invalid deregistration :  registration {} not found", currentRegistration.getId());
             return new SendableResponse<>(DeregisterResponse.notFound());
         }
     }

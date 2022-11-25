@@ -26,14 +26,14 @@ import org.eclipse.leshan.server.registration.Registration;
 public interface Authorizer {
 
     /**
-     * Return the registration if this request should be handled by the LWM2M Server. When <code>null</code> is returned
-     * the LWM2M server will stop to handle this request and will respond with a {@link ResponseCode#FORBIDDEN} or
-     * {@link ResponseCode#BAD_REQUEST}.
+     * Return an approved {@link Authorization}, if this request should be handled by the LWM2M Server. when a
+     * declined{@link Authorization} is returned the LWM2M server will stop to handle this request and will respond with
+     * a {@link ResponseCode#FORBIDDEN} or {@link ResponseCode#BAD_REQUEST}.
      * <p>
-     * Some Application Data could be attached to the Registration using :
+     * Some Application Data could be attached to on approved {@link Authorization} using :
      *
      * <pre>
-     * return new Registration.Builder(registration).applicationData(myAppData).build();
+     * return Authorization.approved(myAppData);
      * </pre>
      *
      * @param request the request received
@@ -42,7 +42,7 @@ public interface Authorizer {
      *        For update request this is the registration before the update was done.
      * @param senderIdentity the {@link Identity} used to send the request.
      *
-     * @return the registration if this request is authorized or <code>null</code> it is not authorized.
+     * @return an {@link Authorization} status.
      */
-    Registration isAuthorized(UplinkRequest<?> request, Registration registration, Identity senderIdentity);
+    Authorization isAuthorized(UplinkRequest<?> request, Registration registration, Identity senderIdentity);
 }

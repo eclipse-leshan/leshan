@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -43,9 +44,11 @@ public class RegistrationUpdate {
     private final EnumSet<BindingMode> bindingMode;
     private final Link[] objectLinks;
     private final Map<String, String> additionalAttributes;
+    private final Map<String, String> applicationData;
 
     public RegistrationUpdate(String registrationId, Identity identity, Long lifeTimeInSec, String smsNumber,
-            EnumSet<BindingMode> bindingMode, Link[] objectLinks, Map<String, String> additionalAttributes) {
+            EnumSet<BindingMode> bindingMode, Link[] objectLinks, Map<String, String> additionalAttributes,
+            Map<String, String> applicationData) {
         Validate.notNull(registrationId);
         Validate.notNull(identity);
         this.registrationId = registrationId;
@@ -58,6 +61,10 @@ public class RegistrationUpdate {
             this.additionalAttributes = Collections.emptyMap();
         else
             this.additionalAttributes = Collections.unmodifiableMap(new HashMap<>(additionalAttributes));
+        if (applicationData == null)
+            this.applicationData = Collections.emptyMap();
+        else
+            this.applicationData = Collections.unmodifiableMap(new HashMap<>(applicationData));
     }
 
     /**
@@ -77,6 +84,9 @@ public class RegistrationUpdate {
                 ? registration.getAdditionalRegistrationAttributes()
                 : updateAdditionalAttributes(registration.getAdditionalRegistrationAttributes());
 
+        Map<String, String> applicationData = this.applicationData.isEmpty() ? registration.getApplicationData()
+                : this.applicationData;
+
         // this needs to be done in any case, even if no properties have changed, in order
         // to extend the client registration time-to-live period ...
         Date lastUpdate = new Date();
@@ -91,8 +101,7 @@ public class RegistrationUpdate {
                 .additionalRegistrationAttributes(additionalAttributes).rootPath(registration.getRootPath())
                 .supportedContentFormats(registration.getSupportedContentFormats())
                 .supportedObjects(registration.getSupportedObject())
-                .availableInstances(registration.getAvailableInstances())
-                .applicationData(registration.getApplicationData());
+                .availableInstances(registration.getAvailableInstances()).applicationData(applicationData);
 
         return builder.build();
 
@@ -134,6 +143,10 @@ public class RegistrationUpdate {
         return additionalAttributes;
     }
 
+    public Map<String, String> getApplicationData() {
+        return applicationData;
+    }
+
     private Map<String, String> updateAdditionalAttributes(Map<String, String> oldAdditionalAttributes) {
 
         // putAll method updates already present key values or add them if not present.
@@ -145,21 +158,19 @@ public class RegistrationUpdate {
 
     @Override
     public String toString() {
-        return String.format(
-                "RegistrationUpdate [registrationId=%s, identity=%s, lifeTimeInSec=%s, smsNumber=%s, bindingMode=%s, objectLinks=%s]",
-                registrationId, identity, lifeTimeInSec, smsNumber, bindingMode, Arrays.toString(objectLinks));
+        return "RegistrationUpdate [registrationId=" + registrationId + ", identity=" + identity + ", lifeTimeInSec="
+                + lifeTimeInSec + ", smsNumber=" + smsNumber + ", bindingMode=" + bindingMode + ", objectLinks="
+                + Arrays.toString(objectLinks) + ", additionalAttributes=" + additionalAttributes + ", applicationData="
+                + applicationData + "]";
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((bindingMode == null) ? 0 : bindingMode.hashCode());
-        result = prime * result + ((identity == null) ? 0 : identity.hashCode());
-        result = prime * result + ((lifeTimeInSec == null) ? 0 : lifeTimeInSec.hashCode());
         result = prime * result + Arrays.hashCode(objectLinks);
-        result = prime * result + ((registrationId == null) ? 0 : registrationId.hashCode());
-        result = prime * result + ((smsNumber == null) ? 0 : smsNumber.hashCode());
+        result = prime * result + Objects.hash(additionalAttributes, applicationData, bindingMode, identity,
+                lifeTimeInSec, registrationId, smsNumber);
         return result;
     }
 
@@ -172,30 +183,10 @@ public class RegistrationUpdate {
         if (getClass() != obj.getClass())
             return false;
         RegistrationUpdate other = (RegistrationUpdate) obj;
-        if (bindingMode != other.bindingMode)
-            return false;
-        if (identity == null) {
-            if (other.identity != null)
-                return false;
-        } else if (!identity.equals(other.identity))
-            return false;
-        if (lifeTimeInSec == null) {
-            if (other.lifeTimeInSec != null)
-                return false;
-        } else if (!lifeTimeInSec.equals(other.lifeTimeInSec))
-            return false;
-        if (!Arrays.equals(objectLinks, other.objectLinks))
-            return false;
-        if (registrationId == null) {
-            if (other.registrationId != null)
-                return false;
-        } else if (!registrationId.equals(other.registrationId))
-            return false;
-        if (smsNumber == null) {
-            if (other.smsNumber != null)
-                return false;
-        } else if (!smsNumber.equals(other.smsNumber))
-            return false;
-        return true;
+        return Objects.equals(additionalAttributes, other.additionalAttributes)
+                && Objects.equals(applicationData, other.applicationData)
+                && Objects.equals(bindingMode, other.bindingMode) && Objects.equals(identity, other.identity)
+                && Objects.equals(lifeTimeInSec, other.lifeTimeInSec) && Arrays.equals(objectLinks, other.objectLinks)
+                && Objects.equals(registrationId, other.registrationId) && Objects.equals(smsNumber, other.smsNumber);
     }
 }
