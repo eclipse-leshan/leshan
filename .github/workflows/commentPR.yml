@@ -19,7 +19,8 @@ env:
 jobs:
   add_comment:
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.event == 'pull_request'
+    # we don't want to run workflow if "Check Pull Request" is skipped or cancelled
+    if: ${{ github.event.workflow_run.event == 'pull_request' && (github.event.workflow_run.conclusion == 'success' || github.event.workflow_run.conclusion == 'failure')}} 
     strategy:
       # Maybe we could create this matrix dynamically  : 
       # See : https://tomasvotruba.com/blog/2020/11/16/how-to-make-dynamic-matrix-in-github-actions/
@@ -27,7 +28,6 @@ jobs:
         jobstep: [nomerge,sortpom,formatter,build,sortimport,checkstyle,androidcheck,semvercheck,javadoc,unittests,integrationtests,buildstatus]
 
     steps:
-
       # Waiting https://github.com/actions/download-artifact/issues/172
       # We are using github script
       # Inspired by : https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
