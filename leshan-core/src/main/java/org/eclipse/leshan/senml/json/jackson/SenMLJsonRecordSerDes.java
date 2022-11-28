@@ -172,7 +172,11 @@ public class SenMLJsonRecordSerDes extends JacksonJsonSerDes<SenMLRecord> {
 
         JsonNode vd = o.get("vd");
         if (vd != null && vd.isTextual()) {
-            record.setOpaqueValue(new DefaultBase64Decoder(true, true).decode(vd.asText()));
+            try {
+                record.setOpaqueValue(new DefaultBase64Decoder(true, true).decode(vd.asText()));
+            } catch (IllegalArgumentException exception) {
+                throw new JsonException("Node vd with value '%s' is not in valid Base64 format.", vd.asText());
+            }
             hasValue = true;
         }
 
