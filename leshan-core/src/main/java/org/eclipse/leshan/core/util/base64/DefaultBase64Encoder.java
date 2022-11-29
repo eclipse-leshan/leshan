@@ -17,13 +17,9 @@ package org.eclipse.leshan.core.util.base64;
 import java.util.Base64;
 
 public class DefaultBase64Encoder implements Base64Encoder {
-    private final boolean urlSafe;
-    private final boolean withoutPadding;
     private final Base64.Encoder encoder;
 
     public DefaultBase64Encoder(boolean urlSafe, boolean withoutPadding) {
-        this.urlSafe = urlSafe;
-        this.withoutPadding = withoutPadding;
 
         Base64.Encoder encoder = urlSafe ? Base64.getUrlEncoder() : Base64.getEncoder();
         if (withoutPadding) {
@@ -32,8 +28,7 @@ public class DefaultBase64Encoder implements Base64Encoder {
         this.encoder = encoder;
     }
 
-    @Override
-    public String encode(byte[] dataToEncode) {
+    @Override public String encode(byte[] dataToEncode) {
         return encoder.encodeToString(dataToEncode);
     }
 }

@@ -17,12 +17,10 @@ package org.eclipse.leshan.core.util.base64;
 import java.util.Base64;
 
 public class DefaultBase64Decoder implements Base64Decoder {
-    private final boolean urlSafe;
     private final boolean withoutPadding;
     private final Base64.Decoder decoder;
 
     public DefaultBase64Decoder(boolean urlSafe, boolean withoutPadding) {
-        this.urlSafe = urlSafe;
         this.withoutPadding = withoutPadding;
         this.decoder = urlSafe ? Base64.getUrlDecoder() : Base64.getDecoder();
     }
@@ -32,7 +30,6 @@ public class DefaultBase64Decoder implements Base64Decoder {
         if (!this.withoutPadding) {
             validateEncodedData(encoded);
         }
-        Base64.Decoder decoder = urlSafe ? Base64.getUrlDecoder() : Base64.getDecoder();
         return decoder.decode(encoded);
     }
 
