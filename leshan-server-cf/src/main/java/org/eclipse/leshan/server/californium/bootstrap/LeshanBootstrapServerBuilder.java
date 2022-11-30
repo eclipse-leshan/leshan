@@ -251,7 +251,6 @@ public class LeshanBootstrapServerBuilder {
      *
      * @param configStore the bootstrap configuration store.
      * @return the builder for fluent Bootstrap Server creation.
-     *
      */
     public LeshanBootstrapServerBuilder setConfigStore(BootstrapConfigStore configStore) {
         this.configStore = configStore;
@@ -306,7 +305,6 @@ public class LeshanBootstrapServerBuilder {
      * Set your {@link LwM2mBootstrapModelProvider} implementation.
      * </p>
      * By default the {@link StandardBootstrapModelProvider}.
-     *
      */
     public LeshanBootstrapServerBuilder setObjectModelProvider(LwM2mBootstrapModelProvider objectModelProvider) {
         this.modelProvider = objectModelProvider;
@@ -415,6 +413,11 @@ public class LeshanBootstrapServerBuilder {
         return this;
     }
 
+    /**
+     * Set the Bootstrap authorizer {@link BootstrapAuthorizer}
+     * <p>
+     * By default the {@link DefaultBootstrapAuthorizer} is used.
+     */
     public LeshanBootstrapServerBuilder setAuthorizer(BootstrapAuthorizer authorizer) {
         this.authorizer = authorizer;
         return this;
@@ -470,8 +473,8 @@ public class LeshanBootstrapServerBuilder {
             SecurityChecker securityChecker = new SecurityChecker();
             if (authorizer == null)
                 authorizer = new DefaultBootstrapAuthorizer(securityStore, securityChecker);
-            sessionManager = new DefaultBootstrapSessionManager(securityStore, securityChecker,
-                    new BootstrapConfigStoreTaskProvider(configStore), modelProvider, authorizer);
+            sessionManager = new DefaultBootstrapSessionManager(new BootstrapConfigStoreTaskProvider(configStore),
+                    modelProvider, authorizer);
         }
         if (coapConfig == null) {
             coapConfig = createDefaultCoapConfiguration();

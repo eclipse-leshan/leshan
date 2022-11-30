@@ -34,7 +34,9 @@ public class DefaultBootstrapAuthorizer implements BootstrapAuthorizer {
         this.securityChecker = securityChecker;
     }
 
-    public DefaultBootstrapAuthorizer() {
+    public DefaultBootstrapAuthorizer(BootstrapSecurityStore bsSecurityStore) {
+        this.bsSecurityStore = bsSecurityStore;
+        this.securityChecker = new SecurityChecker();
     }
 
     @Override

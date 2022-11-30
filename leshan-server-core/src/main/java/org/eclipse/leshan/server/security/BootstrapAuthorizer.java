@@ -21,7 +21,7 @@ import org.eclipse.leshan.core.request.Identity;
 public interface BootstrapAuthorizer {
 
     /**
-     * ...
+     * Returns if request is authorized for given client identity.
      *
      * @param request the request received
      * @param clientIdentity the {@link Identity} of the client that sent the request.
