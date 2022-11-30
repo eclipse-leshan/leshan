@@ -28,7 +28,8 @@ public class DefaultBase64Encoder implements Base64Encoder {
         this.encoder = encoder;
     }
 
-    @Override public String encode(byte[] dataToEncode) {
+    @Override
+    public String encode(byte[] dataToEncode) {
         return encoder.encodeToString(dataToEncode);
     }
 }
