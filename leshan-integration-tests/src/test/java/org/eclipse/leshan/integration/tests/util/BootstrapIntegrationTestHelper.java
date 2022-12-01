@@ -82,7 +82,6 @@ import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServerBuil
 import org.eclipse.leshan.server.model.StandardBootstrapModelProvider;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
-import org.eclipse.leshan.server.security.SecurityChecker;
 import org.eclipse.leshan.server.security.SecurityInfo;
 
 /**
