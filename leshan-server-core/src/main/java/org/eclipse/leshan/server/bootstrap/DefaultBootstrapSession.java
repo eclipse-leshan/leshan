@@ -15,7 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
@@ -36,6 +39,7 @@ public class DefaultBootstrapSession implements BootstrapSession {
     private final Identity identity;
     private final boolean authorized;
     private final ContentFormat contentFormat;
+    private final Map<String, String> applicationData;
     private final long creationTime;
     private final BootstrapRequest request;
 
@@ -53,11 +57,11 @@ public class DefaultBootstrapSession implements BootstrapSession {
      * @param request The bootstrap request which initiate the session.
      * @param identity The transport layer identity of the device.
      * @param authorized True if device is authorized to bootstrap.
-     *
-     * @since 1.1
+     * @param applicationData Data that could be attached to a session.
      */
-    public DefaultBootstrapSession(BootstrapRequest request, Identity identity, boolean authorized) {
-        this(request, identity, authorized, null);
+    public DefaultBootstrapSession(BootstrapRequest request, Identity identity, boolean authorized,
+            Map<String, String> applicationData) {
+        this(request, identity, authorized, null, applicationData);
     }
 
     /**
@@ -67,12 +71,11 @@ public class DefaultBootstrapSession implements BootstrapSession {
      * @param identity The transport layer identity of the device.
      * @param authorized True if device is authorized to bootstrap.
      * @param contentFormat The content format to use to write object.
-     *
-     * @since 1.1
+     * @param applicationData Data that could be attached to a session.
      */
     public DefaultBootstrapSession(BootstrapRequest request, Identity identity, boolean authorized,
-            ContentFormat contentFormat) {
-        this(request, identity, authorized, contentFormat, System.currentTimeMillis());
+            ContentFormat contentFormat, Map<String, String> applicationData) {
+        this(request, identity, authorized, contentFormat, applicationData, System.currentTimeMillis());
     }
 
     /**
@@ -82,12 +85,11 @@ public class DefaultBootstrapSession implements BootstrapSession {
      * @param identity The transport layer identity of the device.
      * @param authorized True if device is authorized to bootstrap.
      * @param contentFormat The content format to use to write object.
+     * @param applicationData Data that could be attached to a session.
      * @param creationTime The creation time of this session in ms.
-     *
-     * @since 1.1
      */
     public DefaultBootstrapSession(BootstrapRequest request, Identity identity, boolean authorized,
-            ContentFormat contentFormat, long creationTime) {
+            ContentFormat contentFormat, Map<String, String> applicationData, long creationTime) {
         Validate.notNull(request);
         this.id = RandomStringUtils.random(10, true, true);
         this.request = request;
@@ -102,6 +104,11 @@ public class DefaultBootstrapSession implements BootstrapSession {
             }
         } else {
             this.contentFormat = contentFormat;
+        }
+        if (applicationData == null) {
+            this.applicationData = Collections.emptyMap();
+        } else {
+            this.applicationData = Collections.unmodifiableMap(new HashMap<>(applicationData));
         }
         this.creationTime = creationTime;
     }
@@ -129,6 +136,11 @@ public class DefaultBootstrapSession implements BootstrapSession {
     @Override
     public ContentFormat getContentFormat() {
         return contentFormat;
+    }
+
+    @Override
+    public Map<String, String> getApplicationData() {
+        return applicationData;
     }
 
     @Override
@@ -187,7 +199,8 @@ public class DefaultBootstrapSession implements BootstrapSession {
     @Override
     public String toString() {
         return String.format(
-                "DefaultBootstrapSession [id=%s, endpoint=%s, identity=%s, authorized=%s, contentFormat=%s, creationTime=%s, request=%s, cancelled=%s]",
-                id, endpoint, identity, authorized, contentFormat, creationTime, request, cancelled);
+                "DefaultBootstrapSession [id=%s, endpoint=%s, identity=%s, authorized=%s, contentFormat=%s, applicationData=%s, creationTime=%s, request=%s, cancelled=%s]",
+                id, endpoint, identity, authorized, contentFormat, applicationData, creationTime, request, cancelled);
     }
+
 }

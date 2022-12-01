@@ -27,6 +27,7 @@ import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.bootstrap.BootstrapTaskProvider.Tasks;
 import org.eclipse.leshan.server.model.LwM2mBootstrapModelProvider;
 import org.eclipse.leshan.server.model.StandardBootstrapModelProvider;
+import org.eclipse.leshan.server.security.Authorization;
 import org.eclipse.leshan.server.security.BootstrapAuthorizer;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityChecker;
@@ -44,8 +45,8 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultBootstrapSessionManager.class);
 
-    private BootstrapTaskProvider tasksProvider;
-    private LwM2mBootstrapModelProvider modelProvider;
+    private final BootstrapTaskProvider tasksProvider;
+    private final LwM2mBootstrapModelProvider modelProvider;
     private final BootstrapAuthorizer authorizer;
 
     /**
@@ -72,8 +73,9 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
 
     @Override
     public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity) {
-        boolean authorized = authorizer.isAuthorized(request, clientIdentity);
-        DefaultBootstrapSession session = new DefaultBootstrapSession(request, clientIdentity, authorized);
+        Authorization authorization = authorizer.isAuthorized(request, clientIdentity);
+        DefaultBootstrapSession session = new DefaultBootstrapSession(request, clientIdentity,
+                authorization.isApproved(), authorization.getApplicationData());
         LOG.trace("Bootstrap session started : {}", session);
 
         return session;

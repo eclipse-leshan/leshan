@@ -15,10 +15,13 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import java.util.Map;
+
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.server.security.BootstrapAuthorizer;
 
 /**
  * Represent a single Bootstrapping session.
@@ -57,6 +60,11 @@ public interface BootstrapSession {
      * @return the content format to use on write request during this bootstrap session.
      */
     ContentFormat getContentFormat();
+
+    /**
+     * @return some application data that could be attached by {@link BootstrapAuthorizer}.
+     */
+    Map<String, String> getApplicationData();
 
     /**
      * @return the create time in milliseconds

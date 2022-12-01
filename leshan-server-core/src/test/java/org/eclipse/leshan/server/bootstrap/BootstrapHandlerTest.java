@@ -232,7 +232,7 @@ public class BootstrapHandlerTest {
 
         @Override
         public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity) {
-            lastSession = new DefaultBootstrapSession(request, clientIdentity, authorized);
+            lastSession = new DefaultBootstrapSession(request, clientIdentity, authorized, null);
             return lastSession;
         }
 

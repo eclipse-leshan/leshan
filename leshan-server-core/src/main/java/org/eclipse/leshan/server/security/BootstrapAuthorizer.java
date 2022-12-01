@@ -15,17 +15,26 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.security;
 
+import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.Identity;
 
 public interface BootstrapAuthorizer {
 
     /**
-     * Returns if request is authorized for given client identity.
+     * Return an approved {@link Authorization}, if a bootstrap session can be started for this client. when a
+     * declined{@link Authorization} is returned the LWM2M Bootstrap Server will stop the Bootstrap session and will
+     * respond with {@link ResponseCode#BAD_REQUEST}.
+     * <p>
+     * Some Application Data could be attached to on approved {@link Authorization} using :
+     *
+     * <pre>
+     * return Authorization.approved(myAppData);
+     * </pre>
      *
      * @param request the request received
      * @param clientIdentity the {@link Identity} of the client that sent the request.
-     * @return <code>true</code> if request is authorized or <code>false</code> if it is not authorized.
+     * @return an {@link Authorization} status.
      */
-    boolean isAuthorized(BootstrapRequest request, Identity clientIdentity);
+    Authorization isAuthorized(BootstrapRequest request, Identity clientIdentity);
 }

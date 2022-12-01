@@ -19,6 +19,7 @@ import java.util.Iterator;
 
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.server.security.Authorization;
 import org.eclipse.leshan.server.security.BootstrapAuthorizer;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityChecker;
@@ -26,26 +27,29 @@ import org.eclipse.leshan.server.security.SecurityInfo;
 
 public class DefaultBootstrapAuthorizer implements BootstrapAuthorizer {
 
-    private BootstrapSecurityStore bsSecurityStore;
-    private SecurityChecker securityChecker;
+    private final BootstrapSecurityStore bsSecurityStore;
+    private final SecurityChecker securityChecker;
+
+    public DefaultBootstrapAuthorizer(BootstrapSecurityStore bsSecurityStore) {
+        this(bsSecurityStore, new SecurityChecker());
+    }
 
     public DefaultBootstrapAuthorizer(BootstrapSecurityStore bsSecurityStore, SecurityChecker securityChecker) {
         this.bsSecurityStore = bsSecurityStore;
         this.securityChecker = securityChecker;
     }
 
-    public DefaultBootstrapAuthorizer(BootstrapSecurityStore bsSecurityStore) {
-        this.bsSecurityStore = bsSecurityStore;
-        this.securityChecker = new SecurityChecker();
-    }
-
     @Override
-    public boolean isAuthorized(BootstrapRequest request, Identity clientIdentity) {
+    public Authorization isAuthorized(BootstrapRequest request, Identity clientIdentity) {
         if (bsSecurityStore != null && securityChecker != null) {
             Iterator<SecurityInfo> securityInfos = bsSecurityStore.getAllByEndpoint(request.getEndpointName());
-            return securityChecker.checkSecurityInfos(request.getEndpointName(), clientIdentity, securityInfos);
+            if (securityChecker.checkSecurityInfos(request.getEndpointName(), clientIdentity, securityInfos)) {
+                return Authorization.approved();
+            } else {
+                return Authorization.declined();
+            }
         } else {
-            return true;
+            return Authorization.approved();
         }
     }
 }
