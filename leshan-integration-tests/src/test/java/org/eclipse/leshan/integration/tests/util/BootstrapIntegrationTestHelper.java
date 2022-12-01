@@ -74,6 +74,7 @@ import org.eclipse.leshan.server.bootstrap.BootstrapConfigStoreTaskProvider;
 import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 import org.eclipse.leshan.server.bootstrap.BootstrapTaskProvider;
+import org.eclipse.leshan.server.bootstrap.DefaultBootstrapAuthorizer;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSession;
 import org.eclipse.leshan.server.bootstrap.DefaultBootstrapSessionManager;
 import org.eclipse.leshan.server.californium.bootstrap.LeshanBootstrapServer;
@@ -106,12 +107,11 @@ public class BootstrapIntegrationTestHelper extends SecureIntegrationTestHelper 
 
         public TestBootstrapSessionManager(BootstrapSecurityStore bsSecurityStore,
                 BootstrapTaskProvider tasksProvider) {
-            super(bsSecurityStore, new SecurityChecker(), tasksProvider, new StandardBootstrapModelProvider(), null);
+            super(tasksProvider, new StandardBootstrapModelProvider(), new DefaultBootstrapAuthorizer(bsSecurityStore));
         }
 
         public TestBootstrapSessionManager(BootstrapSecurityStore bsSecurityStore, BootstrapConfigStore configStore) {
-            super(bsSecurityStore, new SecurityChecker(), new BootstrapConfigStoreTaskProvider(configStore),
-                    new StandardBootstrapModelProvider(), null);
+            super(bsSecurityStore, configStore);
         }
 
         @Override
