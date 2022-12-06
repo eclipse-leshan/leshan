@@ -14,6 +14,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.util.base64;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class DefaultBase64Decoder implements Base64Decoder {
@@ -27,10 +28,7 @@ public class DefaultBase64Decoder implements Base64Decoder {
 
     @Override
     public byte[] decode(String encoded) {
-        if (!this.withoutPadding) {
-            validateEncodedData(encoded);
-        }
-        return decoder.decode(encoded);
+        return decode(encoded.getBytes(StandardCharsets.ISO_8859_1)).getBytes(StandardCharsets.ISO_8859_1);
     }
 
     @Override
@@ -39,7 +37,7 @@ public class DefaultBase64Decoder implements Base64Decoder {
             validateEncodedData(new String(encoded));
         }
         byte[] decoded = decoder.decode(encoded);
-        return new String(decoded);
+        return new String(decoded, StandardCharsets.ISO_8859_1);
     }
 
     private void validateEncodedData(String encoded) {
