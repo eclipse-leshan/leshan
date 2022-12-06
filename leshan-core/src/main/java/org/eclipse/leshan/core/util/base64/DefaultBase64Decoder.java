@@ -27,10 +27,7 @@ public class DefaultBase64Decoder implements Base64Decoder {
 
     @Override
     public byte[] decode(String encoded) {
-        if (!this.withoutPadding) {
-            validateEncodedData(encoded);
-        }
-        return decoder.decode(encoded);
+        return decode(encoded.getBytes()).getBytes();
     }
 
     @Override
