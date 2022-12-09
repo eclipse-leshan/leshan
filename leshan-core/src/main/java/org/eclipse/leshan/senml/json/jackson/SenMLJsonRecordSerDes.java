@@ -19,12 +19,6 @@ import java.math.BigInteger;
 
 import org.eclipse.leshan.core.util.base64.Base64Decoder;
 import org.eclipse.leshan.core.util.base64.Base64Encoder;
-import org.eclipse.leshan.core.util.base64.DefaultBase64Decoder;
-import org.eclipse.leshan.core.util.base64.DefaultBase64Decoder.DecoderAlphabet;
-import org.eclipse.leshan.core.util.base64.DefaultBase64Decoder.DecoderPadding;
-import org.eclipse.leshan.core.util.base64.DefaultBase64Encoder;
-import org.eclipse.leshan.core.util.base64.DefaultBase64Encoder.EncoderAlphabet;
-import org.eclipse.leshan.core.util.base64.DefaultBase64Encoder.EncoderPadding;
 import org.eclipse.leshan.core.util.base64.InvalidBase64Exception;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.eclipse.leshan.core.util.json.JacksonJsonSerDes;
@@ -37,15 +31,10 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class SenMLJsonRecordSerDes extends JacksonJsonSerDes<SenMLRecord> {
-    private final boolean allowNoValue;
-    private final Base64Decoder base64Decoder = new DefaultBase64Decoder(DecoderAlphabet.BASE64URL,
-            DecoderPadding.FORBIDEN);
-    private final Base64Encoder base64Encoder = new DefaultBase64Encoder(EncoderAlphabet.BASE64URL,
-            EncoderPadding.WITHOUT);
 
-    public SenMLJsonRecordSerDes() {
-        this(false);
-    }
+    private final boolean allowNoValue;
+    private final Base64Decoder base64Decoder;
+    private final Base64Encoder base64Encoder;
 
     /**
      * Create SenML-JSON serializer/deserializer based on Jackson.
@@ -56,8 +45,10 @@ public class SenMLJsonRecordSerDes extends JacksonJsonSerDes<SenMLRecord> {
      *
      * @param allowNoValue <code>True</code> to not check if there is a value for each SenML record.
      */
-    public SenMLJsonRecordSerDes(boolean allowNoValue) {
+    public SenMLJsonRecordSerDes(boolean allowNoValue, Base64Decoder base64Decoder, Base64Encoder base64Encoder) {
         this.allowNoValue = allowNoValue;
+        this.base64Decoder = base64Decoder;
+        this.base64Encoder = base64Encoder;
     }
 
     @Override

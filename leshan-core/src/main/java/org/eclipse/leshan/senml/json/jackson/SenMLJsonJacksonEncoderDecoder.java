@@ -16,11 +16,21 @@ package org.eclipse.leshan.senml.json.jackson;
 
 import java.io.IOException;
 
+import org.eclipse.leshan.core.util.base64.Base64Decoder;
+import org.eclipse.leshan.core.util.base64.Base64Encoder;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Decoder;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Decoder.DecoderAlphabet;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Decoder.DecoderPadding;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Encoder;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Encoder.EncoderAlphabet;
+import org.eclipse.leshan.core.util.base64.DefaultBase64Encoder.EncoderPadding;
+import org.eclipse.leshan.core.util.json.JacksonJsonSerDes;
 import org.eclipse.leshan.core.util.json.JsonException;
 import org.eclipse.leshan.senml.SenMLDecoder;
 import org.eclipse.leshan.senml.SenMLEncoder;
 import org.eclipse.leshan.senml.SenMLException;
 import org.eclipse.leshan.senml.SenMLPack;
+import org.eclipse.leshan.senml.SenMLRecord;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,7 +39,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Helper for encoding/decoding SenML JSON using Jackson
  */
 public class SenMLJsonJacksonEncoderDecoder implements SenMLDecoder, SenMLEncoder {
-    private final SenMLJsonRecordSerDes serDes;
+    private final JacksonJsonSerDes<SenMLRecord> serDes;
     private static final ObjectMapper mapper = new ObjectMapper();
 
     public SenMLJsonJacksonEncoderDecoder() {
@@ -46,7 +56,17 @@ public class SenMLJsonJacksonEncoderDecoder implements SenMLDecoder, SenMLEncode
      * @param allowNoValue <code>True</code> to not check if there is a value for each SenML record.
      */
     public SenMLJsonJacksonEncoderDecoder(boolean allowNoValue) {
-        this.serDes = new SenMLJsonRecordSerDes(allowNoValue);
+        this(allowNoValue, new DefaultBase64Decoder(DecoderAlphabet.BASE64URL, DecoderPadding.FORBIDEN),
+                new DefaultBase64Encoder(EncoderAlphabet.BASE64URL, EncoderPadding.WITHOUT));
+    }
+
+    public SenMLJsonJacksonEncoderDecoder(boolean allowNoValue, Base64Decoder base64Decoder,
+            Base64Encoder base64Encoder) {
+        this(new SenMLJsonRecordSerDes(allowNoValue, base64Decoder, base64Encoder));
+    }
+
+    public SenMLJsonJacksonEncoderDecoder(JacksonJsonSerDes<SenMLRecord> senMLJSONSerializerDeserializer) {
+        this.serDes = senMLJSONSerializerDeserializer;
     }
 
     @Override
