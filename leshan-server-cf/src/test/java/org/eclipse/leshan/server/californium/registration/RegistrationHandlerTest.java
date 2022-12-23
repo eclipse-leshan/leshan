@@ -65,7 +65,7 @@ public class RegistrationHandlerTest {
         authorizer.willReturn(Authorization.approved(appData));
 
         // handle REGISTER request
-        registrationHandler.register(givenIdenity(), givenRegisterRequestWithEndpoint("myEndpoint"));
+        registrationHandler.register(givenIdentity(), givenRegisterRequestWithEndpoint("myEndpoint"));
 
         // check result
         Registration registration = registrationStore.getRegistrationByEndpoint("myEndpoint");
@@ -77,7 +77,7 @@ public class RegistrationHandlerTest {
         authorizer.willReturn(Authorization.approved(updatedAppData));
 
         // handle UPDATE request
-        registrationHandler.update(givenIdenity(), givenUpdateRequestWithID(registration.getId()));
+        registrationHandler.update(givenIdentity(), givenUpdateRequestWithID(registration.getId()));
 
         // check result
         registration = registrationStore.getRegistrationByEndpoint("myEndpoint");
@@ -95,7 +95,7 @@ public class RegistrationHandlerTest {
         authorizer.willReturn(Authorization.approved(appData));
 
         // handle REGISTER request
-        registrationHandler.register(givenIdenity(), givenRegisterRequestWithEndpoint("myEndpoint"));
+        registrationHandler.register(givenIdentity(), givenRegisterRequestWithEndpoint("myEndpoint"));
 
         // check result
         Registration registration = registrationStore.getRegistrationByEndpoint("myEndpoint");
@@ -105,14 +105,14 @@ public class RegistrationHandlerTest {
         authorizer.willReturn(Authorization.approved());
 
         // handle UPDATE request
-        registrationHandler.update(givenIdenity(), givenUpdateRequestWithID(registration.getId()));
+        registrationHandler.update(givenIdentity(), givenUpdateRequestWithID(registration.getId()));
 
         // check result
         registration = registrationStore.getRegistrationByEndpoint("myEndpoint");
         assertEquals(appData, registration.getApplicationData());
     }
 
-    private Identity givenIdenity() {
+    private Identity givenIdentity() {
         return Identity.unsecure(new InetSocketAddress(0));
     }
 
