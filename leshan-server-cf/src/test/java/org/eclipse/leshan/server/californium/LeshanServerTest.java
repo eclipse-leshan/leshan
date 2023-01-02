@@ -80,11 +80,34 @@ public class LeshanServerTest {
         assertEquals("All news created threads must be destroyed", numberOfThreadbefore, Thread.activeCount());
     }
 
+    @Test
+    public void testStartStopDestroyQueueModeDisabled() throws InterruptedException {
+        // look at nb active thread before.
+        int numberOfThreadbefore = Thread.activeCount();
+
+        LeshanServer server = new LeshanServerBuilder().setLocalAddress(new InetSocketAddress(0))
+                .disableQueueModeSupport().build();
+        server.start();
+        Thread.sleep(100);
+        // HACK force creation thread creation.
+        forceThreadsCreation(server);
+        Thread.sleep(100);
+        server.stop();
+        Thread.sleep(100);
+        server.destroy();
+
+        // ensure all thread are destroyed
+        Thread.sleep(500);
+        assertEquals("All news created threads must be destroyed", numberOfThreadbefore, Thread.activeCount());
+    }
+
     private void forceThreadsCreation(LeshanServer server) {
         Registration reg = new Registration.Builder("id", "endpoint", Identity.unsecure(new InetSocketAddress(5555)))
                 .bindingMode(BindingMode.UQ).build();
         // Force timer thread creation of preference service.
-        ((PresenceServiceImpl) server.getPresenceService()).setAwake(reg);
+        if (server.getPresenceService() != null) {
+            ((PresenceServiceImpl) server.getPresenceService()).setAwake(reg);
+        }
         // Force time thread creation of CoapAsyncRequestObserver
         server.send(reg, new ReadRequest(3), new ResponseCallback<ReadResponse>() {
             @Override

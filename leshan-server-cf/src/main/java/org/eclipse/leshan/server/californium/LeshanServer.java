@@ -404,7 +404,9 @@ public class LeshanServer {
             ((Stoppable) requestSender).stop();
         }
 
-        presenceService.destroy();
+        if (presenceService != null) {
+            presenceService.destroy();
+        }
 
         LOG.info("LWM2M server destroyed.");
     }
