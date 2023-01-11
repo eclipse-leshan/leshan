@@ -20,7 +20,6 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.server.LeshanServer;
@@ -33,10 +32,7 @@ import org.eclipse.leshan.server.security.ServerSecurityInfo;
 import org.eclipse.leshan.transport.javacoap.resource.RegistrationResource;
 import org.eclipse.leshan.transport.javacoap.resource.ResourcesService;
 
-import com.mbed.coap.packet.CoapRequest;
-import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.utils.Service;
 
 public class JavaCoapServerEndpointsProvider implements LwM2mServerEndpointsProvider {
 
@@ -53,25 +49,17 @@ public class JavaCoapServerEndpointsProvider implements LwM2mServerEndpointsProv
     public void createEndpoints(UplinkRequestReceiver requestReceiver, LwM2mNotificationReceiver observationService,
             ServerEndpointToolbox toolbox, ServerSecurityInfo serverSecurityInfo, LeshanServer server) {
 
-        // TODO we should get endpoint used URI dynamically in Resources
+        // TODO we should get endpoint URI dynamically in Resources
         URI endpointURI = EndpointUriUtil.createUri("coap", "0.0.0.0", coapPort);
 
         // create Resources / Routes
+        RegistrationResource registerResource = new RegistrationResource(requestReceiver, toolbox.getLinkParser(),
+                endpointURI);
         ResourcesService resources = ResourcesService.builder() //
-                .add("/rd/*", new RegistrationResource(requestReceiver, toolbox.getLinkParser(), endpointURI)).build();
-        coapServer = CoapServer.builder().transport(5683).route(resources).build();
+                .add("/rd/*", registerResource).add("/rd", registerResource).build();
+        coapServer = CoapServer.builder().transport(coapPort).route(resources).build();
 
-        lwm2mEndpoint = new JavaCoapServerEndpoint(endpointURI, coapServer);
-    }
-
-    protected Service<CoapRequest, CoapResponse> createRequestsHandler() {
-        return new Service<CoapRequest, CoapResponse>() {
-            @Override
-            public CompletableFuture<CoapResponse> apply(CoapRequest t) {
-                // TODO Auto-generated method stub
-                return null;
-            }
-        };
+        lwm2mEndpoint = new JavaCoapServerEndpoint(endpointURI, coapServer, new ServerCoapMessageTranslator(), toolbox);
     }
 
     @Override

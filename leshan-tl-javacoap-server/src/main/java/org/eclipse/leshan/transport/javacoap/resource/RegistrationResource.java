@@ -19,7 +19,6 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import java.net.URI;
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -31,13 +30,16 @@ import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
+import org.eclipse.leshan.core.response.DeregisterResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.core.response.UpdateResponse;
 import org.eclipse.leshan.server.request.UplinkRequestReceiver;
+import org.eclipse.leshan.transport.javacoap.request.ResponseCodeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,15 +51,15 @@ public class RegistrationResource extends LwM2mCoapResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationResource.class);
 
-    private static final String QUERY_PARAM_ENDPOINT = "ep=";
+    private static final String QUERY_PARAM_ENDPOINT = "ep";
 
-    private static final String QUERY_PARAM_BINDING_MODE = "b=";
+    private static final String QUERY_PARAM_BINDING_MODE = "b";
 
-    private static final String QUERY_PARAM_LWM2M_VERSION = "lwm2m=";
+    private static final String QUERY_PARAM_LWM2M_VERSION = "lwm2m";
 
-    private static final String QUERY_PARAM_SMS = "sms=";
+    private static final String QUERY_PARAM_SMS = "sms";
 
-    private static final String QUERY_PARAM_LIFETIME = "lt=";
+    private static final String QUERY_PARAM_LIFETIME = "lt";
 
     private static final String QUERY_PARAM_QUEUEMMODE = "Q"; // since LWM2M 1.1
 
@@ -87,12 +89,8 @@ public class RegistrationResource extends LwM2mCoapResource {
 //        }
 
         // validate URI
-        String uriAsString = coapRequest.options().getUriPath();
-        if (uriAsString == null) {
-            return handleInvalidRequest(coapRequest, "Bad URI");
-        }
-        List<String> uri = Arrays.asList(uriAsString.split("/"));
-        if (uri.size() == 0 || !RESOURCE_NAME.equals(uri.get(0))) {
+        List<String> uri = getUriPart(coapRequest);
+        if (uri == null || uri.size() == 0 || !RESOURCE_NAME.equals(uri.get(0))) {
             return handleInvalidRequest(coapRequest, "Bad URI");
         }
 
@@ -110,16 +108,8 @@ public class RegistrationResource extends LwM2mCoapResource {
     public CompletableFuture<CoapResponse> handleDELETE(CoapRequest coapRequest) {
         LOG.trace("DELETE received : {}", coapRequest);
 
-        // validate URI
-        String uriAsString = coapRequest.options().getUriPath();
-        if (uriAsString == null) {
-            return handleInvalidRequest(coapRequest, "Bad URI");
-        }
-        List<String> uri = Arrays.asList(uriAsString.split("/"));
-        if (uri.size() == 0 || !RESOURCE_NAME.equals(uri.get(0))) {
-            return handleInvalidRequest(coapRequest, "Bad URI");
-        }
-
+        /// validate URI
+        List<String> uri = getUriPart(coapRequest);
         if (uri != null && uri.size() == 2 && RESOURCE_NAME.equals(uri.get(0))) {
             return handleDeregister(coapRequest, uri.get(1));
         } else {
@@ -249,34 +239,30 @@ public class RegistrationResource extends LwM2mCoapResource {
         if (updateResponse.getCode().isError()) {
             return errorMessage(updateResponse.getCode(), updateResponse.getErrorMessage());
         } else {
-            return completedFuture(CoapResponse.of(Code.valueOf(updateResponse.getCode().getCode())));
+            return completedFuture(CoapResponse.of(ResponseCodeUtil.toCoapResponseCode(updateResponse.getCode())));
         }
 
     }
 
     protected CompletableFuture<CoapResponse> handleDeregister(CoapRequest coapRequest, String registrationId) {
-        // TODO implement it
-
         // Get identity
-//        Request coapRequest = exchange.advanced().getRequest();
-//        Identity sender = getForeignPeerIdentity(exchange.advanced(), coapRequest);
-//
-//        // Create request
-//        DeregisterRequest deregisterRequest = new DeregisterRequest(registrationId, coapRequest);
-//
-//        // Handle request
-//        final SendableResponse<DeregisterResponse> sendableResponse = receiver.requestReceived(sender, null,
-//                deregisterRequest, exchange.advanced().getEndpoint().getUri());
-//        DeregisterResponse deregisterResponse = sendableResponse.getResponse();
-//
-//        // Create CoAP Response from LwM2m request
-//        if (deregisterResponse.getCode().isError()) {
-//            exchange.respond(toCoapResponseCode(deregisterResponse.getCode()), deregisterResponse.getErrorMessage());
-//        } else {
-//            exchange.respond(toCoapResponseCode(deregisterResponse.getCode()));
-//        }
-//        sendableResponse.sent();
-        return completedFuture(CoapResponse.of(Code.C405_METHOD_NOT_ALLOWED));
-    }
+        Identity sender = getForeignPeerIdentity(coapRequest);
 
+        // Create request
+        DeregisterRequest deregisterRequest = new DeregisterRequest(registrationId, coapRequest);
+
+        // Handle request
+        final SendableResponse<DeregisterResponse> sendableResponse = receiver.requestReceived(sender, null,
+                deregisterRequest, endpointUsed);
+        DeregisterResponse deregisterResponse = sendableResponse.getResponse();
+
+        // Create CoAP Response from LwM2m request
+        // TODO this should be called after.
+        sendableResponse.sent();
+        if (deregisterResponse.getCode().isError()) {
+            return errorMessage(deregisterResponse.getCode(), deregisterResponse.getErrorMessage());
+        } else {
+            return completedFuture(CoapResponse.of(ResponseCodeUtil.toCoapResponseCode(deregisterResponse.getCode())));
+        }
+    }
 }

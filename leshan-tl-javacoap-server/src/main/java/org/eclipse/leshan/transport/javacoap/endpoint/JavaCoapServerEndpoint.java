@@ -20,23 +20,35 @@ import java.net.URI;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
+import org.eclipse.leshan.server.endpoint.ServerEndpointToolbox;
 import org.eclipse.leshan.server.profile.ClientProfile;
 import org.eclipse.leshan.server.request.LowerLayerConfig;
 
+import com.mbed.coap.client.CoapClient;
+import com.mbed.coap.client.CoapClientBuilder;
+import com.mbed.coap.exception.CoapException;
+import com.mbed.coap.packet.CoapRequest;
+import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.server.CoapServer;
 
 public class JavaCoapServerEndpoint implements LwM2mServerEndpoint {
 
     private final URI endpointUri;
     private final CoapServer coapServer;
+    private final ServerCoapMessageTranslator translator;
+    private final ServerEndpointToolbox toolbox;
 
-    public JavaCoapServerEndpoint(URI endpointUri, CoapServer coapServer) {
+    public JavaCoapServerEndpoint(URI endpointUri, CoapServer coapServer, ServerCoapMessageTranslator translator,
+            ServerEndpointToolbox toolbox) {
         this.endpointUri = endpointUri;
         this.coapServer = coapServer;
+        this.translator = translator;
+        this.toolbox = toolbox;
     }
 
     @Override
@@ -52,6 +64,21 @@ public class JavaCoapServerEndpoint implements LwM2mServerEndpoint {
     @Override
     public <T extends LwM2mResponse> T send(ClientProfile destination, DownlinkRequest<T> request,
             LowerLayerConfig lowerLayerConfig, long timeoutInMs) throws InterruptedException {
+
+        final CoapRequest coapRequest = translator.createCoapRequest(destination, request, toolbox);
+
+        // create a Coap Client to send request
+        CoapClient coapClient = CoapClientBuilder.clientFor(destination.getIdentity().getPeerAddress(), coapServer);
+
+        // Send CoAP request synchronously
+        CoapResponse coapResponse = null;
+        try {
+            coapResponse = coapClient.sendSync(coapRequest);
+        } catch (CoapException e) {
+            throw new IllegalStateException("Unable to send request");
+        }
+
+        return translator.createLwM2mResponse(destination, request, coapRequest, coapResponse, toolbox);
 
         // TODO send request using code like this ?
         // from
@@ -71,14 +98,30 @@ public class JavaCoapServerEndpoint implements LwM2mServerEndpoint {
 //                    .blockSize(blockSize)
 //                    .payload(payload)
 //            );
-        return null;
     }
 
     @Override
     public <T extends LwM2mResponse> void send(ClientProfile destination, DownlinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback, LowerLayerConfig lowerLayerConfig,
             long timeoutInMs) {
-        // TODO not implemented yet
+        final CoapRequest coapRequest = translator.createCoapRequest(destination, request, toolbox);
+
+        // create a Coap Client to send request
+        CoapClient coapClient = CoapClientBuilder.clientFor(destination.getIdentity().getPeerAddress(), coapServer);
+
+        // Send CoAP request asynchronously
+        coapClient.send(coapRequest)
+                // Handle Exception
+                .exceptionally((exception) -> {
+                    errorCallback.onError(new SendFailedException(exception));
+                    return null;
+                })
+                // Handle CoAP Response
+                .thenAccept((coapResponse) -> {
+                    T lwM2mResponse = translator.createLwM2mResponse(destination, request, coapRequest, coapResponse,
+                            toolbox);
+                    responseCallback.onResponse(lwM2mResponse);
+                });
     }
 
     @Override

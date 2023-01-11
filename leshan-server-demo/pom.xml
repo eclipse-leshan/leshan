@@ -43,6 +43,11 @@ Contributors:
     </dependency>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
+      <artifactId>leshan-tl-javacoap-server</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.leshan</groupId>
       <artifactId>leshan-server-core-demo</artifactId>
     </dependency>
     <dependency>

@@ -17,11 +17,14 @@ package org.eclipse.leshan.transport.javacoap.resource;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
+import org.eclipse.leshan.transport.javacoap.request.ResponseCodeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -145,11 +148,24 @@ public abstract class LwM2mCoapResource implements Service<CoapRequest, CoapResp
     }
 
     protected CompletableFuture<CoapResponse> errorMessage(ResponseCode errorCode, String message) {
-        CoapResponse coapResponse = CoapResponse.of(Code.valueOf(errorCode.getCode()));
+        CoapResponse coapResponse = CoapResponse.of(ResponseCodeUtil.toCoapResponseCode(errorCode));
         if (message != null) {
-            coapResponse.payload(Opaque.of(message));
+            coapResponse = coapResponse.payload(Opaque.of(message));
             coapResponse.options().setContentFormat(MediaTypes.CT_TEXT_PLAIN);
         }
         return completedFuture(coapResponse);
+    }
+
+    protected List<String> getUriPart(CoapRequest coapRequest) {
+        String uriAsString = coapRequest.options().getUriPath();
+        if (uriAsString == null) {
+            return null;
+        }
+        // remove first '/'
+        if (uriAsString.startsWith("/")) {
+            uriAsString = uriAsString.substring(1);
+        }
+        List<String> uri = Arrays.asList(uriAsString.split("/"));
+        return uri;
     }
 }
