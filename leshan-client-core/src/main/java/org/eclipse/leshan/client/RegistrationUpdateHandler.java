@@ -35,8 +35,8 @@ import org.eclipse.leshan.core.request.BindingMode;
  */
 public class RegistrationUpdateHandler {
 
-    private RegistrationEngine engine;
-    private BootstrapHandler bsHandler;
+    private final RegistrationEngine engine;
+    private final BootstrapHandler bsHandler;
 
     public RegistrationUpdateHandler(RegistrationEngine engine, BootstrapHandler bsHandler) {
         this.engine = engine;
@@ -104,7 +104,7 @@ public class RegistrationUpdateHandler {
                                 // handle supported binding changes
                                 EnumSet<BindingMode> bindingMode = null;
                                 if (path.getResourceId() == LwM2mId.DVC_SUPPORTED_BINDING) {
-                                    LwM2mObjectEnabler enabler = objecTree.getObjectEnabler(LwM2mId.SERVER);
+                                    LwM2mObjectEnabler enabler = objecTree.getObjectEnabler(LwM2mId.DEVICE);
                                     if (enabler != null) {
                                         bindingMode = ServersInfoExtractor.getDeviceSupportedBindingMode(enabler,
                                                 path.getObjectInstanceId());
