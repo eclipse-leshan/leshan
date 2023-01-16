@@ -89,10 +89,16 @@ public class LeshanClient implements LwM2mClient {
 
         Validate.notNull(endpoint);
         Validate.notEmpty(objectEnablers);
-
-        this.endpointsProvider = endpointsProvider;
+        Validate.notNull(checker);
 
         objectTree = createObjectTree(objectEnablers);
+        List<String> errors = checker.checkconfig(objectTree.getObjectEnablers());
+        if (errors != null) {
+            throw new IllegalArgumentException(
+                    String.format("Invalid 'ObjectEnabler' Setting : \n - %s", String.join("\n - ", errors)));
+        }
+
+        this.endpointsProvider = endpointsProvider;
         rootEnabler = createRootEnabler(objectTree);
         observers = createClientObserverDispatcher();
         bootstrapHandler = createBoostrapHandler(objectTree, checker);
