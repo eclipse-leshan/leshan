@@ -209,7 +209,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
             }
 
             return nodes.build();
-        } catch (SenMLException e) {
+        } catch (SenMLException | IllegalArgumentException e) {
             String hexValue = content != null ? Hex.encodeHexString(content) : "";
             throw new CodecException(e, "Unable to decode nodes : %s", hexValue, e);
         }
