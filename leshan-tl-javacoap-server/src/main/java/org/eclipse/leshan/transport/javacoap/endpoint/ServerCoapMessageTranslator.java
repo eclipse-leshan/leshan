@@ -26,6 +26,7 @@ import org.eclipse.leshan.server.profile.ClientProfile;
 import org.eclipse.leshan.server.request.UplinkRequestReceiver;
 import org.eclipse.leshan.transport.javacoap.request.CoapRequestBuilder;
 import org.eclipse.leshan.transport.javacoap.request.LwM2mResponseBuilder;
+import org.eclipse.leshan.transport.javacoap.request.RandomTokenGenerator;
 import org.eclipse.leshan.transport.javacoap.resource.LwM2mCoapResource;
 
 import com.mbed.coap.packet.CoapRequest;
@@ -33,13 +34,16 @@ import com.mbed.coap.packet.CoapResponse;
 
 public class ServerCoapMessageTranslator {
 
+    // TODO : this should be configurable
+    private final RandomTokenGenerator tokenGenerator = new RandomTokenGenerator(8);
+
     public CoapRequest createCoapRequest(ClientProfile clientProfile,
             DownlinkRequest<? extends LwM2mResponse> lwm2mRequest,
             ServerEndpointToolbox toolbox /* , IdentityHandler identityHandler */) {
 
         CoapRequestBuilder builder = new CoapRequestBuilder(clientProfile.getIdentity(), clientProfile.getRootPath(),
                 clientProfile.getRegistrationId(), clientProfile.getEndpoint(), clientProfile.getModel(),
-                toolbox.getEncoder(), clientProfile.canInitiateConnection(), null);
+                toolbox.getEncoder(), clientProfile.canInitiateConnection(), null, tokenGenerator);
         lwm2mRequest.accept(builder);
         return builder.getRequest();
     }

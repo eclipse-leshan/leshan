@@ -77,11 +77,14 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
 
     private final LowerLayerConfig lowerLayerConfig;
 
+    private final RandomTokenGenerator tokenGenerator;
+
     // private final IdentityHandler identityHandler;
 
     public CoapRequestBuilder(Identity destination, String rootPath, String registrationId, String endpoint,
             LwM2mModel model, LwM2mEncoder encoder, boolean allowConnectionInitiation,
-            LowerLayerConfig lowerLayerConfig /* ,IdentityHandler identityHandler */) {
+            LowerLayerConfig lowerLayerConfig /* ,IdentityHandler identityHandler */,
+            RandomTokenGenerator tokenGenerator) {
         this.destination = destination;
         this.rootPath = rootPath;
         // this.endpoint = endpoint;
@@ -89,6 +92,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         this.model = model;
         this.encoder = encoder;
         // this.allowConnectionInitiation = allowConnectionInitiation;
+        this.tokenGenerator = tokenGenerator;
         this.lowerLayerConfig = lowerLayerConfig;
         // this.identityHandler = identityHandler;
     }
@@ -96,6 +100,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     @Override
     public void visit(ReadRequest request) {
         coapRequest = CoapRequest.get(getAddress(), getURI(request.getPath()));
+        coapRequest = setToken(coapRequest);
         if (request.getContentFormat() != null)
             coapRequest.options().setAccept(request.getContentFormat().getCode());
         applyLowerLayerConfig(coapRequest);
@@ -104,6 +109,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     @Override
     public void visit(DiscoverRequest request) {
         coapRequest = CoapRequest.get(getAddress(), getURI(request.getPath()));
+        coapRequest = setToken(coapRequest);
         coapRequest.options().setAccept(MediaTypes.CT_APPLICATION_LINK__FORMAT);
         applyLowerLayerConfig(coapRequest);
     }
@@ -112,6 +118,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     public void visit(WriteRequest request) {
         coapRequest = request.isReplaceRequest() ? CoapRequest.put(getAddress(), getURI(request.getPath()))
                 : CoapRequest.post(getAddress(), getURI(request.getPath()));
+        coapRequest = setToken(coapRequest);
         ContentFormat format = request.getContentFormat();
         coapRequest.options().setContentFormat((short) format.getCode());
         coapRequest = coapRequest
@@ -122,6 +129,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     @Override
     public void visit(WriteAttributesRequest request) {
         coapRequest = CoapRequest.put(getAddress(), getURI(request.getPath()));
+        coapRequest = setToken(coapRequest);
         coapRequest.options().setUriQuery(request.getAttributes().toString());
         applyLowerLayerConfig(coapRequest);
     }
@@ -129,6 +137,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     @Override
     public void visit(ExecuteRequest request) {
         coapRequest = CoapRequest.post(getAddress(), getURI(request.getPath()));
+        coapRequest = setToken(coapRequest);
         String payload = request.getArguments().serialize();
         if (payload != null) {
             coapRequest.payload(payload);
@@ -140,6 +149,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     @Override
     public void visit(CreateRequest request) {
         coapRequest = CoapRequest.post(getAddress(), getURI(request.getPath()));
+        coapRequest = setToken(coapRequest);
         coapRequest.options().setContentFormat((short) request.getContentFormat().getCode());
         // if no instance id, the client will assign it.
         LwM2mNode node;
@@ -156,6 +166,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     @Override
     public void visit(DeleteRequest request) {
         coapRequest = CoapRequest.delete(getAddress(), getURI(request.getPath()));
+        coapRequest = setToken(coapRequest);
         applyLowerLayerConfig(coapRequest);
     }
 
@@ -260,6 +271,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     @Override
     public void visit(BootstrapWriteRequest request) {
         coapRequest = CoapRequest.put(getAddress(), getURI(request.getPath()));
+        coapRequest = setToken(coapRequest);
         // TODO how to set request as confirmable
         // coapRequest.setConfirmable(true);
         ContentFormat format = request.getContentFormat();
@@ -272,6 +284,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     @Override
     public void visit(BootstrapReadRequest request) {
         coapRequest = CoapRequest.get(getAddress(), getURI(request.getPath()));
+        coapRequest = setToken(coapRequest);
         if (request.getContentFormat() != null)
             coapRequest.options().setAccept(request.getContentFormat().getCode());
         applyLowerLayerConfig(coapRequest);
@@ -280,6 +293,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     @Override
     public void visit(BootstrapDiscoverRequest request) {
         coapRequest = CoapRequest.get(getAddress(), getURI(request.getPath()));
+        coapRequest = setToken(coapRequest);
         coapRequest.options().setAccept(MediaTypes.CT_APPLICATION_LINK__FORMAT);
         applyLowerLayerConfig(coapRequest);
     }
@@ -287,6 +301,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     @Override
     public void visit(BootstrapDeleteRequest request) {
         coapRequest = CoapRequest.delete(getAddress(), getURI(request.getPath()));
+        coapRequest = setToken(coapRequest);
         // TODO how to set request as confirmable
         // coapRequest.setConfirmable(true);
         applyLowerLayerConfig(coapRequest);
@@ -295,6 +310,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     @Override
     public void visit(BootstrapFinishRequest request) {
         coapRequest = CoapRequest.post(getAddress(), "bs");
+        coapRequest = setToken(coapRequest);
         // TODO how to set request as confirmable
         // coapRequest.setConfirmable(true);
         // setSecurityContext(coapRequest);
@@ -327,6 +343,12 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
 //            coapRequest.getOptions().setOscore(Bytes.EMPTY);
 //        }
 //    }
+
+    protected CoapRequest setToken(CoapRequest coapRequest) {
+        if (coapRequest.getToken().isEmpty())
+            return coapRequest.token(tokenGenerator.createToken());
+        return coapRequest;
+    }
 
     protected void applyLowerLayerConfig(CoapRequest coapRequest) {
         if (lowerLayerConfig != null)
