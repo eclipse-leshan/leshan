@@ -31,6 +31,7 @@ import org.eclipse.leshan.server.request.UplinkRequestReceiver;
 import org.eclipse.leshan.server.security.ServerSecurityInfo;
 import org.eclipse.leshan.transport.javacoap.resource.RegistrationResource;
 import org.eclipse.leshan.transport.javacoap.resource.ResourcesService;
+import org.eclipse.leshan.transport.javacoap.resource.SendResource;
 
 import com.mbed.coap.server.CoapServer;
 
@@ -56,7 +57,12 @@ public class JavaCoapServerEndpointsProvider implements LwM2mServerEndpointsProv
         RegistrationResource registerResource = new RegistrationResource(requestReceiver, toolbox.getLinkParser(),
                 endpointURI);
         ResourcesService resources = ResourcesService.builder() //
-                .add("/rd/*", registerResource).add("/rd", registerResource).build();
+                .add("/rd/*", registerResource) //
+                .add("/rd", registerResource)//
+                .add("/dp",
+                        new SendResource(requestReceiver, toolbox.getDecoder(), toolbox.getProfileProvider(),
+                                endpointURI))//
+                .build();
         coapServer = CoapServer.builder().transport(coapPort).route(resources).build();
 
         lwm2mEndpoint = new JavaCoapServerEndpoint(endpointURI, coapServer, new ServerCoapMessageTranslator(), toolbox);
