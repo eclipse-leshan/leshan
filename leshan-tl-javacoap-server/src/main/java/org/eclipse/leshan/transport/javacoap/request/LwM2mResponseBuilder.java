@@ -79,7 +79,6 @@ import org.eclipse.leshan.transport.javacoap.observation.ObservationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
 import com.mbed.coap.packet.MediaTypes;
@@ -97,26 +96,28 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mResponseBuilder.class);
 
     private LwM2mResponse lwM2mresponse;
-    // private final CoapRequest coapRequest;
-    private final String registrationId;
+
+    private final Opaque token; // TODO HACK because know token used
+
     private final CoapResponse coapResponse;
     private final String clientEndpoint;
+    private final String registrationId;
     private final LwM2mModel model;
     private final LwM2mDecoder decoder;
     private final LwM2mLinkParser linkParser;
-    private final Opaque token;
 
-    public LwM2mResponseBuilder(CoapRequest coapRequest, CoapResponse coapResponse, String clientEndpoint,
-            LwM2mModel model, LwM2mDecoder decoder, LwM2mLinkParser linkParser, String registrationId,
-            /* TODO HACK */ Opaque token) {
-        // this.coapRequest = coapRequest;
+    public LwM2mResponseBuilder(CoapResponse coapResponse, String clientEndpoint, LwM2mModel model,
+            LwM2mDecoder decoder, LwM2mLinkParser linkParser, String registrationId, /* TODO HACK */ Opaque token) {
         this.coapResponse = coapResponse;
+
         this.clientEndpoint = clientEndpoint;
+        this.registrationId = registrationId;
+
         this.model = model;
         this.decoder = decoder;
         this.linkParser = linkParser;
+
         this.token = token;
-        this.registrationId = registrationId;
     }
 
     @Override

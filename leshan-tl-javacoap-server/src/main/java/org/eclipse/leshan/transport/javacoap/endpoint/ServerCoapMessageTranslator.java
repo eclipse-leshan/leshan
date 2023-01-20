@@ -50,11 +50,10 @@ public class ServerCoapMessageTranslator {
     }
 
     public <T extends LwM2mResponse> T createLwM2mResponse(ClientProfile clientProfile, DownlinkRequest<T> lwm2mRequest,
-            CoapRequest coapRequest, CoapResponse coapResponse, ServerEndpointToolbox toolbox,
-            /* TODO HACK */ Opaque token) {
+            CoapResponse coapResponse, ServerEndpointToolbox toolbox, /* TODO HACK */ Opaque token) {
 
-        LwM2mResponseBuilder<T> builder = new LwM2mResponseBuilder<T>(coapRequest, coapResponse,
-                clientProfile.getEndpoint(), clientProfile.getModel(), toolbox.getDecoder(), toolbox.getLinkParser(),
+        LwM2mResponseBuilder<T> builder = new LwM2mResponseBuilder<T>(coapResponse, clientProfile.getEndpoint(),
+                clientProfile.getModel(), toolbox.getDecoder(), toolbox.getLinkParser(),
                 clientProfile.getRegistrationId(), token);
         lwm2mRequest.accept(builder);
         return builder.getResponse();
