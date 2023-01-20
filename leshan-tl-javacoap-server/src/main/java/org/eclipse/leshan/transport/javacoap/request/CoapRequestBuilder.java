@@ -172,18 +172,10 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
 
     @Override
     public void visit(ObserveRequest request) {
-        // TODO not implemented : need to investigate how observe work with java-coap
-
-//        coapRequest = Request.newGet();
-//        if (request.getContentFormat() != null)
-//            coapRequest.getOptions().setAccept(request.getContentFormat().getCode());
-//        coapRequest.setObserve();
-//        setURI(coapRequest, request.getPath());
-//        setSecurityContext(coapRequest);
-//
-//        // add context info to the observe request
-//        coapRequest.setUserContext(ObserveUtil.createCoapObserveRequestContext(endpoint, registrationId, request));
-//        applyLowerLayerConfig(coapRequest);
+        coapRequest = CoapRequest.observe(getAddress(), getURI(request.getPath()));
+        if (request.getContentFormat() != null)
+            coapRequest.options().setAccept(request.getContentFormat().getCode());
+        applyLowerLayerConfig(coapRequest);
     }
 
     @Override

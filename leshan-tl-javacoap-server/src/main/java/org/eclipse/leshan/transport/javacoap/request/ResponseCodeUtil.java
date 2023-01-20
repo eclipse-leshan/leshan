@@ -27,19 +27,22 @@ public class ResponseCodeUtil {
 //    }
 
     public static ResponseCode toLwM2mResponseCode(Code coapResponseCode) {
-        return ResponseCode.fromCode(coapResponseCode.getHttpCode());
+        // TODO hack we can use line below because of
+        // https://github.com/open-coap/java-coap/issues/27#issuecomment-1397211257
+        // return ResponseCode.fromCode(coapResponseCode.getHttpCode());
+        return ResponseCode.fromCode(toLwM2mCode(coapResponseCode.getCoapCode()));
     }
 
-//    public static int toLwM2mCode(int coapCode) {
-//        int codeClass = CoAP.getCodeClass(coapCode);
-//        int codeDetail = CoAP.getCodeDetail(coapCode);
-//        return codeClass * 100 + codeDetail;
-//    }
-//
-//    public static ResponseCode toLwM2mResponseCode(int coapCode) {
-//        return ResponseCode.fromCode(toLwM2mCode(coapCode));
-//    }
-//
+    public static int toLwM2mCode(int coapCode) {
+        int codeClass = (coapCode & 0b11100000) >> 5;
+        int codeDetail = coapCode & 0b00011111;
+        return codeClass * 100 + codeDetail;
+    }
+
+    public static ResponseCode toLwM2mResponseCode(int coapCode) {
+        return ResponseCode.fromCode(toLwM2mCode(coapCode));
+    }
+
     public static int toCoapCode(int lwm2mCode) {
         int codeClass = lwm2mCode / 100;
         int codeDetail = lwm2mCode % 100;

@@ -33,6 +33,7 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
+import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
@@ -67,12 +68,14 @@ import org.eclipse.leshan.core.response.DeleteResponse;
 import org.eclipse.leshan.core.response.DiscoverResponse;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadCompositeResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteCompositeResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.core.util.Hex;
+import org.eclipse.leshan.transport.javacoap.observation.ObservationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +83,7 @@ import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Code;
 import com.mbed.coap.packet.MediaTypes;
+import com.mbed.coap.packet.Opaque;
 
 /**
  * This class is able to create a {@link LwM2mResponse} from a CoAP {@link Response}.
@@ -94,20 +98,25 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
 
     private LwM2mResponse lwM2mresponse;
     // private final CoapRequest coapRequest;
+    private final String registrationId;
     private final CoapResponse coapResponse;
     private final String clientEndpoint;
     private final LwM2mModel model;
     private final LwM2mDecoder decoder;
     private final LwM2mLinkParser linkParser;
+    private final Opaque token;
 
     public LwM2mResponseBuilder(CoapRequest coapRequest, CoapResponse coapResponse, String clientEndpoint,
-            LwM2mModel model, LwM2mDecoder decoder, LwM2mLinkParser linkParser) {
+            LwM2mModel model, LwM2mDecoder decoder, LwM2mLinkParser linkParser, String registrationId,
+            /* TODO HACK */ Opaque token) {
         // this.coapRequest = coapRequest;
         this.coapResponse = coapResponse;
         this.clientEndpoint = clientEndpoint;
         this.model = model;
         this.decoder = decoder;
         this.linkParser = linkParser;
+        this.token = token;
+        this.registrationId = registrationId;
     }
 
     @Override
@@ -236,42 +245,26 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     @Override
     public void visit(ObserveRequest request) {
         // TODO implement observe
-
-//        if (coapResponse.getCode().getHttpCode() >= 400) {
-//            // handle error response:
-//            lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null, null, null,
-//                    coapResponse.getPayloadString(), coapResponse);
-//        } else if (isResponseCodeContent()
-//                // This is for backward compatibility, when the spec say notification used CHANGED code
-//                || isResponseCodeChanged()) {
-//            // handle success response:
-//            LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request, clientEndpoint);
-//            SingleObservation observation = null;
-//            if (coapResponse.getOptions().hasObserve()) {
-//
-//                /*
-//                 * Note: When using OSCORE and Observe the first coapRequest sent to register an observation can have
-//                 * its Token missing here. Is this because OSCORE re-creates the request before sending? When looking in
-//                 * Wireshark all messages have a Token as they should. The lines below fixes this by taking the Token
-//                 * from the response that came to the request (since the request actually has a Token when going out the
-//                 * response will have the same correct Token.
-//                 *
-//                 * TODO OSCORE : This should probably not be done here. should we fix this ? should we check if oscore
-//                 * is used ?
-//                 */
-//                if (coapRequest.getTokenBytes() == null) {
-//                    coapRequest.setToken(coapResponse.getTokenBytes());
-//                }
-//
-//                // observe request successful
-//                observation = ObserveUtil.createLwM2mObservation(coapRequest);
-//            }
-//            lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null, observation,
-//                    null, coapResponse);
-//        } else {
-//            // handle unexpected response:
-//            handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
-//        }
+        if (coapResponse.getCode().getHttpCode() >= 400) {
+            // handle error response:
+            lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null, null, null,
+                    coapResponse.getPayloadString(), coapResponse);
+        } else if (isResponseCodeContent()
+                // This is for backward compatibility, when the spec say notification used CHANGED code
+                || isResponseCodeChanged()) {
+            // handle success response:
+            LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request, clientEndpoint);
+            SingleObservation observation = null;
+            if (coapResponse.options().getObserve() != null) {
+                // observe request successful
+                observation = ObservationUtil.createSingleObservation(registrationId, request, token, coapResponse);
+            }
+            lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null, observation,
+                    null, coapResponse);
+        } else {
+            // handle unexpected response:
+            handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
+        }
     }
 
     @Override
@@ -468,7 +461,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     }
 
     public static ResponseCode toLwM2mResponseCode(Code coapResponseCode) {
-        return ResponseCode.fromCode(coapResponseCode.getHttpCode());
+        return ResponseCodeUtil.toLwM2mResponseCode(coapResponseCode);
     }
 
     private LwM2mNode decodeCoapResponse(LwM2mPath path, CoapResponse coapResponse, LwM2mRequest<?> request,

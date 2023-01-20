@@ -47,7 +47,7 @@ public class JavaCoapServerEndpointsProvider implements LwM2mServerEndpointsProv
     }
 
     @Override
-    public void createEndpoints(UplinkRequestReceiver requestReceiver, LwM2mNotificationReceiver observationService,
+    public void createEndpoints(UplinkRequestReceiver requestReceiver, LwM2mNotificationReceiver notificationReceiver,
             ServerEndpointToolbox toolbox, ServerSecurityInfo serverSecurityInfo, LeshanServer server) {
 
         // TODO we should get endpoint URI dynamically in Resources
@@ -65,7 +65,8 @@ public class JavaCoapServerEndpointsProvider implements LwM2mServerEndpointsProv
                 .build();
         coapServer = CoapServer.builder().transport(coapPort).route(resources).build();
 
-        lwm2mEndpoint = new JavaCoapServerEndpoint(endpointURI, coapServer, new ServerCoapMessageTranslator(), toolbox);
+        lwm2mEndpoint = new JavaCoapServerEndpoint(endpointURI, coapServer, new ServerCoapMessageTranslator(), toolbox,
+                notificationReceiver, server.getRegistrationStore());
     }
 
     @Override

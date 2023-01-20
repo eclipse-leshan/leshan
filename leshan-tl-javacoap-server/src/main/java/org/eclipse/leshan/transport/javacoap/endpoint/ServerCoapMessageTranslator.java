@@ -31,6 +31,7 @@ import org.eclipse.leshan.transport.javacoap.resource.LwM2mCoapResource;
 
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
+import com.mbed.coap.packet.Opaque;
 
 public class ServerCoapMessageTranslator {
 
@@ -49,10 +50,12 @@ public class ServerCoapMessageTranslator {
     }
 
     public <T extends LwM2mResponse> T createLwM2mResponse(ClientProfile clientProfile, DownlinkRequest<T> lwm2mRequest,
-            CoapRequest coapRequest, CoapResponse coapResponse, ServerEndpointToolbox toolbox) {
+            CoapRequest coapRequest, CoapResponse coapResponse, ServerEndpointToolbox toolbox,
+            /* TODO HACK */ Opaque token) {
 
         LwM2mResponseBuilder<T> builder = new LwM2mResponseBuilder<T>(coapRequest, coapResponse,
-                clientProfile.getEndpoint(), clientProfile.getModel(), toolbox.getDecoder(), toolbox.getLinkParser());
+                clientProfile.getEndpoint(), clientProfile.getModel(), toolbox.getDecoder(), toolbox.getLinkParser(),
+                clientProfile.getRegistrationId(), token);
         lwm2mRequest.accept(builder);
         return builder.getResponse();
     }
@@ -71,5 +74,10 @@ public class ServerCoapMessageTranslator {
             ServerEndpointToolbox toolbox, ClientProfile profile) {
 // TODO implement it ?
         return null;
+    }
+
+    // TODO HACK remove this public access
+    public RandomTokenGenerator getTokenGenerator() {
+        return tokenGenerator;
     }
 }
