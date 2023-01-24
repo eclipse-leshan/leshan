@@ -85,15 +85,24 @@ public class LwM2mObservationStore implements ObservationStore {
 
     @Override
     public void remove(Token token) {
-        org.eclipse.leshan.core.observation.Observation removedObservation = registrationStore.removeObservation(null,
-                new ObservationIdentifier(token.getBytes()));
-        notificationListener.cancelled(removedObservation);
+        // try to find observation for given token
+        org.eclipse.leshan.core.observation.Observation observation = registrationStore
+                .getObservation(new ObservationIdentifier(token.getBytes()));
+
+        if (observation != null) {
+            // try to remove observation
+            org.eclipse.leshan.core.observation.Observation removedObservation = registrationStore
+                    .removeObservation(observation.getRegistrationId(), new ObservationIdentifier(token.getBytes()));
+            if (removedObservation != null) {
+                notificationListener.cancelled(removedObservation);
+            }
+        }
     }
 
     @Override
     public Observation get(Token token) {
-        org.eclipse.leshan.core.observation.Observation observation = registrationStore.getObservation(null,
-                new ObservationIdentifier(token.getBytes()));
+        org.eclipse.leshan.core.observation.Observation observation = registrationStore
+                .getObservation(new ObservationIdentifier(token.getBytes()));
         if (observation == null) {
             return null;
         } else {

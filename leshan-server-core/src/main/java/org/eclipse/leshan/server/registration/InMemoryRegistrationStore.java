@@ -281,8 +281,7 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
         try {
             lock.writeLock().lock();
             Observation observation = unsafeGetObservation(observationId);
-            if (observation != null
-                    && (registrationId == null || registrationId.equals(observation.getRegistrationId()))) {
+            if (observation != null && registrationId.equals(observation.getRegistrationId())) {
                 unsafeRemoveObservation(observationId);
                 return observation;
             }
