@@ -16,17 +16,18 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.json;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.eclipse.leshan.core.json.jackson.LwM2mJsonJacksonEncoderDecoder;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class JsonDeserializerTest {
 
-    private static final Logger log = LoggerFactory.getLogger(JsonDeserializerTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JsonDeserializerTest.class);
 
-    private static final LwM2mJsonJacksonEncoderDecoder LwM2mJson = new LwM2mJsonJacksonEncoderDecoder();
+    private static final LwM2mJsonJacksonEncoderDecoder LWM2M_JSON_ENCODER_DECODER = new LwM2mJsonJacksonEncoderDecoder();
 
     @Test
     public void deserialize_device_object() throws LwM2mJsonException {
@@ -51,11 +52,11 @@ public class JsonDeserializerTest {
         b.append("{\"n\":\"15\",\"sv\":\"U\"}]}");
 
         String dataString = b.toString();
-        log.debug(dataString.trim());
-        JsonRootObject element = LwM2mJson.fromJsonLwM2m(dataString);
-        log.debug(element.toString());
-        String outString = LwM2mJson.toJsonLwM2m(element);
-        Assert.assertEquals(dataString.trim(), outString);
+        LOG.debug(dataString.trim());
+        JsonRootObject element = LWM2M_JSON_ENCODER_DECODER.fromJsonLwM2m(dataString);
+        LOG.debug(element.toString());
+        String outString = LWM2M_JSON_ENCODER_DECODER.toJsonLwM2m(element);
+        assertEquals(dataString.trim(), outString);
     }
 
     @Test
@@ -71,10 +72,10 @@ public class JsonDeserializerTest {
 
         String dataString = b.toString();
 
-        JsonRootObject element = LwM2mJson.fromJsonLwM2m(dataString);
-        log.debug(element.toString());
-        String outString = LwM2mJson.toJsonLwM2m(element);
-        Assert.assertEquals(dataString.trim(), outString);
+        JsonRootObject element = LWM2M_JSON_ENCODER_DECODER.fromJsonLwM2m(dataString);
+        LOG.debug(element.toString());
+        String outString = LWM2M_JSON_ENCODER_DECODER.toJsonLwM2m(element);
+        assertEquals(dataString.trim(), outString);
     }
 
     @Test
@@ -101,11 +102,11 @@ public class JsonDeserializerTest {
 
         String dataString = b.toString();
 
-        log.debug(dataString.trim());
-        JsonRootObject element = LwM2mJson.fromJsonLwM2m(dataString);
-        log.debug(element.toString());
-        String outString = LwM2mJson.toJsonLwM2m(element);
-        Assert.assertEquals(dataString.trim(), outString);
+        LOG.debug(dataString.trim());
+        JsonRootObject element = LWM2M_JSON_ENCODER_DECODER.fromJsonLwM2m(dataString);
+        LOG.debug(element.toString());
+        String outString = LWM2M_JSON_ENCODER_DECODER.toJsonLwM2m(element);
+        assertEquals(dataString.trim(), outString);
     }
 
 }

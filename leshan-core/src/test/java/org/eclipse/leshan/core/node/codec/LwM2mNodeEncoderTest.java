@@ -16,6 +16,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -44,9 +48,8 @@ import org.eclipse.leshan.core.node.codec.senml.LwM2mNodeSenMLEncoder;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.senml.cbor.upokecenter.SenMLCborUpokecenterEncoderDecoder;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link LwM2mEncoder}
@@ -56,7 +59,7 @@ public class LwM2mNodeEncoderTest {
     private static LwM2mModel model;
     private static LwM2mEncoder encoder;
 
-    @BeforeClass
+    @BeforeAll
     public static void loadModel() {
         model = new StaticModel(ObjectLoader.loadDefault());
 
@@ -75,7 +78,7 @@ public class LwM2mNodeEncoderTest {
         byte[] encoded = encoder.encode(LwM2mSingleResource.newFloatResource(15, 56.4D), ContentFormat.TEXT,
                 new LwM2mPath("/323/0/15"), model);
 
-        Assert.assertEquals("56.4", new String(encoded, StandardCharsets.UTF_8));
+        assertEquals("56.4", new String(encoded, StandardCharsets.UTF_8));
     }
 
     @Test
@@ -84,16 +87,19 @@ public class LwM2mNodeEncoderTest {
         byte[] encoded = encoder.encode(LwM2mSingleResource.newDateResource(13, new Date(1367491215000L)),
                 ContentFormat.TEXT, new LwM2mPath("/3/0/13"), model);
 
-        Assert.assertEquals("1367491215", new String(encoded, StandardCharsets.UTF_8));
+        assertEquals("1367491215", new String(encoded, StandardCharsets.UTF_8));
     }
 
-    @Test(expected = CodecException.class)
+    @Test
     public void text_encode_multiple_instances() {
         Map<Integer, Long> values = new HashMap<>();
         values.put(0, 1L);
         values.put(1, 5L);
-        encoder.encode(LwM2mMultipleResource.newIntegerResource(6, values), ContentFormat.TEXT, new LwM2mPath("/3/0/6"),
-                model);
+
+        assertThrowsExactly(CodecException.class, () -> {
+            encoder.encode(LwM2mMultipleResource.newIntegerResource(6, values), ContentFormat.TEXT,
+                    new LwM2mPath("/3/0/6"), model);
+        });
     }
 
     @Test
@@ -102,7 +108,7 @@ public class LwM2mNodeEncoderTest {
         byte[] encoded = encoder.encode(LwM2mSingleResource.newBinaryResource(0, opaqueValue), ContentFormat.TEXT,
                 new LwM2mPath("/5/0/0"), model);
 
-        Assert.assertEquals("AQIDBAU=", new String(encoded, StandardCharsets.UTF_8));
+        assertEquals("AQIDBAU=", new String(encoded, StandardCharsets.UTF_8));
     }
 
     // tlv content for instance 0 of device object (encoded as an array of resource TLVs)
@@ -159,7 +165,7 @@ public class LwM2mNodeEncoderTest {
         LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, getDeviceResources());
         byte[] encoded = encoder.encode(oInstance, ContentFormat.TLV, new LwM2mPath("/3/0"), model);
 
-        Assert.assertArrayEquals(ENCODED_DEVICE_WITHOUT_INSTANCE, encoded);
+        assertArrayEquals(ENCODED_DEVICE_WITHOUT_INSTANCE, encoded);
     }
 
     @Test
@@ -167,7 +173,7 @@ public class LwM2mNodeEncoderTest {
         LwM2mObjectInstance oInstance = new LwM2mObjectInstance(getDeviceResources());
         byte[] encoded = encoder.encode(oInstance, ContentFormat.TLV, new LwM2mPath("/3"), model);
 
-        Assert.assertArrayEquals(ENCODED_DEVICE_WITHOUT_INSTANCE, encoded);
+        assertArrayEquals(ENCODED_DEVICE_WITHOUT_INSTANCE, encoded);
     }
 
     @Test
@@ -175,7 +181,7 @@ public class LwM2mNodeEncoderTest {
         LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, getDeviceResources());
         byte[] encoded = encoder.encode(oInstance, ContentFormat.TLV, new LwM2mPath("/3"), model);
 
-        Assert.assertArrayEquals(ENCODED_DEVICE_WITH_INSTANCE, encoded);
+        assertArrayEquals(ENCODED_DEVICE_WITH_INSTANCE, encoded);
     }
 
     @Test
@@ -185,7 +191,7 @@ public class LwM2mNodeEncoderTest {
         byte[] encoded = encoder.encode(object, ContentFormat.TLV, new LwM2mPath("/3"), model);
 
         // encoded as an array of resource TLVs
-        Assert.assertArrayEquals(ENCODED_DEVICE_WITH_INSTANCE, encoded);
+        assertArrayEquals(ENCODED_DEVICE_WITH_INSTANCE, encoded);
     }
 
     @Test
@@ -214,7 +220,7 @@ public class LwM2mNodeEncoderTest {
         b.append("{\"n\":\"16\",\"sv\":\"U\"}]}");
 
         String expected = b.toString();
-        Assert.assertEquals(expected, new String(encoded));
+        assertEquals(expected, new String(encoded));
     }
 
     @Test
@@ -233,7 +239,7 @@ public class LwM2mNodeEncoderTest {
         b.append("{\"v\":24.1,\"t\":520}]}");
 
         String expected = b.toString();
-        Assert.assertEquals(expected, new String(encoded));
+        assertEquals(expected, new String(encoded));
     }
 
     @Test
@@ -252,7 +258,7 @@ public class LwM2mNodeEncoderTest {
         b.append("{\"v\":24.1,\"t\":520}]}");
 
         String expected = b.toString();
-        Assert.assertEquals(expected, new String(encoded));
+        assertEquals(expected, new String(encoded));
     }
 
     @Test
@@ -278,7 +284,7 @@ public class LwM2mNodeEncoderTest {
         b.append("{\"n\":\"1\",\"v\":24.1,\"t\":130}]}");
 
         String expected = b.toString();
-        Assert.assertEquals(expected, new String(encoded));
+        assertEquals(expected, new String(encoded));
     }
 
     @Test
@@ -311,7 +317,7 @@ public class LwM2mNodeEncoderTest {
         b.append("{\"n\":\"0/1\",\"v\":24.1,\"t\":230}]}");
 
         String expected = b.toString();
-        Assert.assertEquals(expected, new String(encoded));
+        assertEquals(expected, new String(encoded));
     }
 
     @Test
@@ -338,7 +344,7 @@ public class LwM2mNodeEncoderTest {
         b.append("{\"n\":\"16\",\"vs\":\"U\"}]");
 
         String expected = b.toString();
-        Assert.assertEquals(expected, new String(encoded));
+        assertEquals(expected, new String(encoded));
     }
 
     @Test
@@ -347,7 +353,7 @@ public class LwM2mNodeEncoderTest {
         byte[] encoded = encoder.encode(oResource, ContentFormat.SENML_JSON, new LwM2mPath("/3/0/0"), model);
 
         String expected = "[{\"bn\":\"/3/0/0\",\"vs\":\"Open Mobile Alliance\"}]";
-        Assert.assertEquals(expected, new String(encoded));
+        assertEquals(expected, new String(encoded));
     }
 
     @Test
@@ -359,7 +365,7 @@ public class LwM2mNodeEncoderTest {
         byte[] encoded = encoder.encode(oResource, ContentFormat.SENML_JSON, new LwM2mPath("/3/0/7"), model);
 
         String expected = "[{\"bn\":\"/3/0/7/\",\"n\":\"0\",\"v\":3800},{\"n\":\"1\",\"v\":5000}]";
-        Assert.assertEquals(expected, new String(encoded));
+        assertEquals(expected, new String(encoded));
     }
 
     @Test
@@ -381,7 +387,7 @@ public class LwM2mNodeEncoderTest {
         b.append("{\"bn\":\"/1024/0/1\",\"bt\":268500020,\"v\":24.1}]");
 
         String expected = b.toString();
-        Assert.assertEquals(expected, new String(encoded));
+        assertEquals(expected, new String(encoded));
     }
 
     @Test
@@ -403,7 +409,7 @@ public class LwM2mNodeEncoderTest {
                 .append("{\"n\":\"2\",\"v\":123}]") //
                 .toString();
 
-        Assert.assertEquals(expectedString, new String(encoded));
+        assertEquals(expectedString, new String(encoded));
     }
 
     @Test
@@ -420,7 +426,7 @@ public class LwM2mNodeEncoderTest {
 
         String expectedString = "83a321662f302f302f3022c482001a1dcd6504036c53616d706c65537472696e67a321662f302f302f3122c482001a1dcd650504f4a321662f302f302f3222c482001a1dcd6506021901c8";
 
-        Assert.assertEquals(expectedString, Hex.encodeHexString(encoded));
+        assertEquals(expectedString, Hex.encodeHexString(encoded));
     }
 
     @Test
@@ -441,7 +447,7 @@ public class LwM2mNodeEncoderTest {
         b.append("{\"bn\":\"/1/0/1\",\"v\":86400}]");
         String expected = b.toString();
 
-        Assert.assertEquals(expected, new String(encoded));
+        assertEquals(expected, new String(encoded));
     }
 
     @Test
@@ -466,7 +472,7 @@ public class LwM2mNodeEncoderTest {
         b.append("{\"n\":\"1\",\"v\":2.351149}]");
         String expected = b.toString();
 
-        Assert.assertEquals(expected, new String(encoded));
+        assertEquals(expected, new String(encoded));
     }
 
     @Test
@@ -485,7 +491,7 @@ public class LwM2mNodeEncoderTest {
         b.append("[{\"n\":\"/4/0/0\"},");
         b.append("{\"n\":\"/4/0/1\"},");
         b.append("{\"n\":\"/4/0/2\"}]");
-        Assert.assertEquals(b.toString(), new String(res));
+        assertEquals(b.toString(), new String(res));
     }
 
     @Test
@@ -495,7 +501,7 @@ public class LwM2mNodeEncoderTest {
         byte[] json = encoder.encode(oResource, ContentFormat.SENML_JSON, new LwM2mPath("/0/0/3"), model);
 
         String expected = "[{\"bn\":\"/0/0/3\",\"vd\":\"q83v\"}]"; // q83v is base64 of ABCDE
-        Assert.assertEquals(expected, new String(json));
+        assertEquals(expected, new String(json));
     }
 
     @Test
@@ -505,6 +511,6 @@ public class LwM2mNodeEncoderTest {
         byte[] cbor = encoder.encode(oResource, ContentFormat.SENML_CBOR, new LwM2mPath("/0/0/3"), model);
         // value : [{-2: "/0/0/3", 8: h'ABCDEF'}]
         String expected = "81a221662f302f302f330843abcdef";
-        Assert.assertEquals(expected, Hex.encodeHexString(cbor));
+        assertEquals(expected, Hex.encodeHexString(cbor));
     }
 }

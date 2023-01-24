@@ -23,14 +23,14 @@ import static org.eclipse.leshan.core.request.ContentFormat.SENML_CBOR;
 import static org.eclipse.leshan.core.request.ContentFormat.SENML_JSON;
 import static org.eclipse.leshan.core.request.ContentFormat.TEXT;
 import static org.eclipse.leshan.core.request.ContentFormat.TLV;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.node.codec.CodecException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ContentFormatTest {
 

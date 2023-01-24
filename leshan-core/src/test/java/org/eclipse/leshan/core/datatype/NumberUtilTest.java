@@ -18,13 +18,14 @@ package org.eclipse.leshan.core.datatype;
 import static org.eclipse.leshan.core.util.datatype.NumberUtil.longToInt;
 import static org.eclipse.leshan.core.util.datatype.NumberUtil.numberToLong;
 import static org.eclipse.leshan.core.util.datatype.NumberUtil.numberToULong;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import org.eclipse.leshan.core.util.datatype.ULong;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class NumberUtilTest {
 
@@ -59,64 +60,88 @@ public class NumberUtilTest {
         assertEquals(Long.valueOf(9223372036854775807l), numberToLong(new BigDecimal("9223372036854775807")));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void biginteger_too_small_for_long() {
-        numberToLong(new BigInteger("-9223372036854775809"));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToLong(new BigInteger("-9223372036854775809"));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void biginteger_too_big_for_long() {
-        numberToLong(new BigInteger("9223372036854775808"));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToLong(new BigInteger("9223372036854775808"));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void ulong_too_big_for_long() {
-        numberToLong(ULong.valueOf("9223372036854775808"));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToLong(ULong.valueOf("9223372036854775808"));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void float_too_small_for_long() {
-        numberToLong(Float.valueOf("-9223373136366403584"));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToLong(Float.valueOf("-9223373136366403584"));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void float_too_big_for_long() {
-        numberToLong(Float.valueOf("9223372036854775808"));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToLong(Float.valueOf("9223372036854775808"));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void float_with_decimal_for_long() {
-        numberToLong(Float.valueOf(30.50f));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToLong(Float.valueOf(30.50f));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void double_too_small_for_long() {
-        numberToLong(Double.valueOf("-9223373136366403584"));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToLong(Double.valueOf("-9223373136366403584"));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void double_too_big_for_long() {
-        numberToLong(Double.valueOf("9223372036854775808"));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToLong(Double.valueOf("9223372036854775808"));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void double_with_decimal() {
-        numberToLong(Double.valueOf(30.50d));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToLong(Double.valueOf(30.50d));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void bigdecimal_too_small_for_long() {
-        numberToLong(new BigDecimal("-9223372036854775809"));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToLong(new BigDecimal("-9223372036854775809"));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void bigdecimal_too_big_for_long() {
-        numberToLong(new BigDecimal("9223372036854775808"));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToLong(new BigDecimal("9223372036854775808"));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void bigdecimal_with_decimal_for_long() {
-        numberToLong(new BigDecimal(30.50f));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToLong(new BigDecimal(30.50f));
+        });
     }
 
     @Test
@@ -150,73 +175,101 @@ public class NumberUtilTest {
         assertEquals(ULong.valueOf("18446744073709551615"), numberToULong(new BigDecimal("18446744073709551615")));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void byte_negative_for_ulong() {
-        numberToULong(Byte.valueOf("-1"));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToULong(Byte.valueOf("-1"));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void short_negative_for_ulong() {
-        numberToULong(Short.valueOf("-1"));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToULong(Short.valueOf("-1"));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void integer_negative_for_ulong() {
-        numberToULong(Integer.valueOf("-1"));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToULong(Integer.valueOf("-1"));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void long_negative_for_ulong() {
-        numberToULong(Long.valueOf("-1"));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToULong(Long.valueOf("-1"));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void biginteger_negative_for_ulong() {
-        numberToULong(new BigInteger("-1"));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToULong(new BigInteger("-1"));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void float_negative_for_ulong() {
-        numberToULong(Float.valueOf("-1"));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToULong(Float.valueOf("-1"));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void double_negative_for_ulong() {
-        numberToULong(Double.valueOf("-1"));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToULong(Double.valueOf("-1"));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void bigdecimal_negative_for_ulong() {
-        numberToULong(new BigDecimal("-1"));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToULong(new BigDecimal("-1"));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void float_with_decimal_for_ulong() {
-        numberToULong(Float.valueOf(30.50f));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToULong(Float.valueOf(30.50f));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void biginteger_to_big_for_ulong() {
-        numberToULong(new BigInteger("18446744073709551616"));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToULong(new BigInteger("18446744073709551616"));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void float_too_big_for_ulong() {
-        numberToULong(Float.valueOf("18446744073709551616"));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToULong(Float.valueOf("18446744073709551616"));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void double_too_big_for_ulong() {
-        numberToULong(Double.valueOf("18446744073709551616"));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToULong(Double.valueOf("18446744073709551616"));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void bigdecimal_to_big_for_ulong() {
-        numberToULong(new BigDecimal("18446744073709551616"));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            numberToULong(new BigDecimal("18446744073709551616"));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void too_long_to_int() {
-        longToInt(2147483648l);
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            longToInt(2147483648l);
+        });
     }
 }

@@ -15,32 +15,35 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request.argument;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ArgumentsTest {
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void should_throw_exception_if_use_invalid_digit_for_hasDigit() throws InvalidArgumentException {
-        Arguments arguments = Arguments.builder() //
-                .build();
+        Arguments arguments = Arguments.builder().build();
 
-        arguments.hasDigit(10);
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            arguments.hasDigit(10);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void should_throw_exception_if_use_invalid_digit_for_get() throws InvalidArgumentException {
-        Arguments arguments = Arguments.builder() //
-                .build();
+        Arguments arguments = Arguments.builder().build();
 
-        arguments.get(-1);
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            arguments.get(-1);
+        });
     }
 
     @Test()
@@ -91,11 +94,13 @@ public class ArgumentsTest {
         assertFalse(iterator.hasNext());
     }
 
-    @Test(expected = InvalidArgumentException.class)
+    @Test
     public void should_forbid_arguments_with_the_same_digit() throws InvalidArgumentException {
-        Arguments.builder() //
-                .addArgument(3, "stringValue") //
-                .addArgument(3, "stringValue") //
-                .build();
+        assertThrowsExactly(InvalidArgumentException.class, () -> {
+            Arguments.builder() //
+                    .addArgument(3, "stringValue") //
+                    .addArgument(3, "stringValue") //
+                    .build();
+        });
     }
 }

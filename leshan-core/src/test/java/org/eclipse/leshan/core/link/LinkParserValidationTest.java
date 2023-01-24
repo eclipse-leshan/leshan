@@ -15,70 +15,51 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link;
 
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collection;
 
-import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-@RunWith(Parameterized.class)
 public class LinkParserValidationTest {
 
     private final LinkParser parser = new DefaultLinkParser();
 
-    @Parameterized.Parameters(name = "{index} - {0}")
-    public static Collection<?> linkValueListProvider() {
-        return Arrays.asList( //
-                "<file:///etc/hosts>", //
-                "</hosts?query>", //
-                "</hosts#hash>", //
-                "</%>", //
-                "</%a>", //
-                "</%1g>", //
-                "</fóó>", //
-                "</foo>;pąrąm", //
-                "</foo>;param=ą", //
-                "</foo>;param=\"bar", //
-                "</foo>;param=\"bar\\\"", //
-                "</>;=", //
-                "</>;param=", //
-                "</>; param=123", //
-                "</> ;param=123", //
-                "</>;param =123", //
-                "</>;param= 123", //
-                "</>;param=123 ", //
-                "<>", //
-                "</", //
-                "<//>", //
-                "//>", //
-                "</>,", //
-                "</>;", //
-                "</>, </>", //
-                "</> ,</>", //
-                " </>,</>", //
-                "</>,</> " //
-        );
-    }
-
-    private String linkValueList;
-
-    public LinkParserValidationTest(String linkValueList) {
-        this.linkValueList = linkValueList;
-    }
-
-    @Test
-    public void parse_invalid_formats() {
-        assertThrows(LinkParseException.class, new ThrowingRunnable() {
-            @Override
-            public void run() throws LinkParseException {
-                parser.parseCoreLinkFormat(linkValueList.getBytes(StandardCharsets.UTF_8));
-            }
+    @ParameterizedTest
+    @ValueSource(strings = { //
+            "<file:///etc/hosts>", //
+            "</hosts?query>", //
+            "</hosts#hash>", //
+            "</%>", //
+            "</%a>", //
+            "</%1g>", //
+            "</fóó>", //
+            "</foo>;pąrąm", //
+            "</foo>;param=ą", //
+            "</foo>;param=\"bar", //
+            "</foo>;param=\"bar\\\"", //
+            "</>;=", //
+            "</>;param=", //
+            "</>; param=123", //
+            "</> ;param=123", //
+            "</>;param =123", //
+            "</>;param= 123", //
+            "</>;param=123 ", //
+            "<>", //
+            "</", //
+            "<//>", //
+            "//>", //
+            "</>,", //
+            "</>;", //
+            "</>, </>", //
+            "</> ,</>", //
+            " </>,</>", //
+            "</>,</> " //
+    })
+    public void parse_invalid_formats(String linkValueList) {
+        assertThrowsExactly(LinkParseException.class, () -> {
+            parser.parseCoreLinkFormat(linkValueList.getBytes(StandardCharsets.UTF_8));
         });
     }
-
 }

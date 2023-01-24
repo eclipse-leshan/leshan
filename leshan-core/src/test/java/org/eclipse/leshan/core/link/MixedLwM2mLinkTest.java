@@ -15,12 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
 import org.eclipse.leshan.core.link.lwm2m.MixedLwM2mLink;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class MixedLwM2mLinkTest {
 

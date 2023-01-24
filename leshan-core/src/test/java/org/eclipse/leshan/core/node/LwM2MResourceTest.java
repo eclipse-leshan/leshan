@@ -15,14 +15,15 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class LwM2MResourceTest {
 
@@ -119,42 +120,56 @@ public class LwM2MResourceTest {
                 LwM2mMultipleResource.newBinaryResource(10, values2));
     }
 
-    @Test(expected = LwM2mNodeException.class)
+    @Test
     public void string_resource_with_null_value() {
-        LwM2mSingleResource.newStringResource(1, null);
+        assertThrowsExactly(LwM2mNodeException.class, () -> {
+
+            LwM2mSingleResource.newStringResource(1, null);
+        });
     }
 
-    @Test(expected = LwM2mNodeException.class)
+    @Test
     public void generic_resource_with_null_value() {
-        LwM2mSingleResource.newResource(1, null, Type.INTEGER);
+        assertThrowsExactly(LwM2mNodeException.class, () -> {
+            LwM2mSingleResource.newResource(1, null, Type.INTEGER);
+        });
     }
 
-    @Test(expected = LwM2mNodeException.class)
+    @Test
     public void generic_instance_with_incompatible_value_and_type() {
-        LwM2mSingleResource.newResource(0, "a string", Type.BOOLEAN);
+        assertThrowsExactly(LwM2mNodeException.class, () -> {
+            LwM2mSingleResource.newResource(0, "a string", Type.BOOLEAN);
+        });
     }
 
-    @Test(expected = LwM2mNodeException.class)
+    @Test
     public void integer_multi_instances_resource_with_null_value() {
-        Map<Integer, Long> values = new HashMap<>();
-        values.put(2, 2L);
-        values.put(3, null);
-        LwM2mMultipleResource.newIntegerResource(0, values);
+        assertThrowsExactly(LwM2mNodeException.class, () -> {
+
+            Map<Integer, Long> values = new HashMap<>();
+            values.put(2, 2L);
+            values.put(3, null);
+            LwM2mMultipleResource.newIntegerResource(0, values);
+        });
     }
 
-    @Test(expected = LwM2mNodeException.class)
+    @Test
     public void generic_multi_instances_resource_with_null_value() {
-        Map<Integer, String> values = new HashMap<>();
-        values.put(2, "value");
-        values.put(3, null);
-        LwM2mMultipleResource.newResource(0, values, Type.STRING);
+        assertThrowsExactly(LwM2mNodeException.class, () -> {
+            Map<Integer, String> values = new HashMap<>();
+            values.put(2, "value");
+            values.put(3, null);
+            LwM2mMultipleResource.newResource(0, values, Type.STRING);
+        });
     }
 
-    @Test(expected = LwM2mNodeException.class)
+    @Test
     public void generic_multi_instance_with_incompatible_value_and_type() {
-        Map<Integer, String> values = new HashMap<>();
-        values.put(2, "value");
-        values.put(3, null);
-        LwM2mMultipleResource.newResource(0, values, Type.BOOLEAN);
+        assertThrowsExactly(LwM2mNodeException.class, () -> {
+            Map<Integer, String> values = new HashMap<>();
+            values.put(2, "value");
+            values.put(3, null);
+            LwM2mMultipleResource.newResource(0, values, Type.BOOLEAN);
+        });
     }
 }

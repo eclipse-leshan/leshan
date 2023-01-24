@@ -34,6 +34,22 @@ public class DefaultBase64Decoder implements Base64Decoder {
         this.alphabet = alphabet;
     }
 
+    public boolean supportUrlSafeEncoding() {
+        return alphabet == DecoderAlphabet.BASE64URL || alphabet == DecoderAlphabet.BASE64URL_OR_BASE64;
+    }
+
+    public boolean supportUrlUnSafeEncoding() {
+        return alphabet == DecoderAlphabet.BASE64 || alphabet == DecoderAlphabet.BASE64URL_OR_BASE64;
+    }
+
+    public boolean requirePadding() {
+        return padding == DecoderPadding.REQUIRED;
+    }
+
+    public boolean supportPadding() {
+        return padding == DecoderPadding.REQUIRED || padding == DecoderPadding.OPTIONAL;
+    }
+
     @Override
     public byte[] decode(String encoded) throws InvalidBase64Exception {
         // String are UTF-8 encoded in Java
@@ -191,5 +207,10 @@ public class DefaultBase64Decoder implements Base64Decoder {
             }
         }
         throw new InvalidBase64Exception("Base64 string %s is not in canonical form.", new String(encoded));
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s Decoder - Padding %s", alphabet, padding);
     }
 }

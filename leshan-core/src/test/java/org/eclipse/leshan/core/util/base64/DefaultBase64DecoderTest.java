@@ -15,63 +15,42 @@
 
 package org.eclipse.leshan.core.util.base64;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
-import java.util.Arrays;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.stream.Stream;
 
 import org.eclipse.leshan.core.util.base64.DefaultBase64Decoder.DecoderAlphabet;
 import org.eclipse.leshan.core.util.base64.DefaultBase64Decoder.DecoderPadding;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class DefaultBase64DecoderTest {
 
-    @Parameterized.Parameters(name = "{0} - Padding {1}")
-    public static Iterable<Object[]> base64Decoder() {
-        return Arrays.asList(new Object[][] { //
-                { DecoderAlphabet.BASE64, DecoderPadding.REQUIRED }, //
-                { DecoderAlphabet.BASE64, DecoderPadding.FORBIDEN }, //
-                { DecoderAlphabet.BASE64, DecoderPadding.OPTIONAL }, //
-                { DecoderAlphabet.BASE64URL, DecoderPadding.REQUIRED }, //
-                { DecoderAlphabet.BASE64URL, DecoderPadding.FORBIDEN }, //
-                { DecoderAlphabet.BASE64URL, DecoderPadding.OPTIONAL }, //
-                { DecoderAlphabet.BASE64URL_OR_BASE64, DecoderPadding.REQUIRED }, //
-                { DecoderAlphabet.BASE64URL_OR_BASE64, DecoderPadding.FORBIDEN }, //
-                { DecoderAlphabet.BASE64URL_OR_BASE64, DecoderPadding.OPTIONAL }, //
-        });
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("base64Decoder")
+    @Retention(RetentionPolicy.RUNTIME)
+    private @interface TestAllDecoder {
     }
 
-    private final Base64Decoder decoder;
-    private final DecoderAlphabet alphabet;
-    private final DecoderPadding padding;
-
-    public DefaultBase64DecoderTest(DecoderAlphabet alphabet, DecoderPadding padding) {
-        this.decoder = new DefaultBase64Decoder(alphabet, padding);
-        this.alphabet = alphabet;
-        this.padding = padding;
+    static Stream<DefaultBase64Decoder> base64Decoder() {
+        return Stream.of(//
+                new DefaultBase64Decoder(DecoderAlphabet.BASE64, DecoderPadding.REQUIRED), //
+                new DefaultBase64Decoder(DecoderAlphabet.BASE64, DecoderPadding.FORBIDEN), //
+                new DefaultBase64Decoder(DecoderAlphabet.BASE64, DecoderPadding.OPTIONAL), //
+                new DefaultBase64Decoder(DecoderAlphabet.BASE64URL, DecoderPadding.REQUIRED), //
+                new DefaultBase64Decoder(DecoderAlphabet.BASE64URL, DecoderPadding.FORBIDEN), //
+                new DefaultBase64Decoder(DecoderAlphabet.BASE64URL, DecoderPadding.OPTIONAL), //
+                new DefaultBase64Decoder(DecoderAlphabet.BASE64URL_OR_BASE64, DecoderPadding.REQUIRED), //
+                new DefaultBase64Decoder(DecoderAlphabet.BASE64URL_OR_BASE64, DecoderPadding.FORBIDEN), //
+                new DefaultBase64Decoder(DecoderAlphabet.BASE64URL_OR_BASE64, DecoderPadding.OPTIONAL) //
+        );
     }
 
-    public boolean decoderSupportUrlSafeEncoding() {
-        return alphabet == DecoderAlphabet.BASE64URL || alphabet == DecoderAlphabet.BASE64URL_OR_BASE64;
-    }
-
-    public boolean decoderSupportUrlUnSafeEncoding() {
-        return alphabet == DecoderAlphabet.BASE64 || alphabet == DecoderAlphabet.BASE64URL_OR_BASE64;
-    }
-
-    public boolean decoderRequirePadding() {
-        return padding == DecoderPadding.REQUIRED;
-    }
-
-    public boolean decoderSupportPadding() {
-        return padding == DecoderPadding.REQUIRED || padding == DecoderPadding.OPTIONAL;
-    }
-
-    @Test
-    public void decode_valid_base64() throws InvalidBase64Exception {
+    @TestAllDecoder
+    public void decode_valid_base64(DefaultBase64Decoder decoder) throws InvalidBase64Exception {
         // Test value from : https://www.rfc-editor.org/rfc/rfc4648#section-10
 
         // given
@@ -81,7 +60,7 @@ public class DefaultBase64DecoderTest {
         for (int i = 0; i < valuesToDecode.length; i++) {
             // when
             String valueToDecode = valuesToDecode[i];
-            if (!decoderSupportPadding()) {
+            if (!decoder.supportPadding()) {
                 // remove padding
                 valueToDecode = valueToDecode.replaceAll("=", "");
             }
@@ -92,15 +71,15 @@ public class DefaultBase64DecoderTest {
         }
     }
 
-    @Test
-    public void reject_string_containing_non_ascii_char() {
+    @TestAllDecoder
+    public void reject_string_containing_non_ascii_char(DefaultBase64Decoder decoder) {
 
         // given
         String[] valuesToDecode = new String[] { "€", "ù==", "€=", "Z€", "€ùg==", "€€E=", "€€ù" };
 
         for (int i = 0; i < valuesToDecode.length; i++) {
             final String valueToDecode;
-            if (!decoderSupportPadding()) {
+            if (!decoder.supportPadding()) {
                 // remove padding
                 valueToDecode = valuesToDecode[i].replaceAll("=", "");
             } else {
@@ -108,20 +87,20 @@ public class DefaultBase64DecoderTest {
             }
 
             // then
-            Assert.assertThrows(InvalidBase64Exception.class, () -> {
+            assertThrowsExactly(InvalidBase64Exception.class, () -> {
                 decoder.decode(valueToDecode);
             });
         }
     }
 
-    @Test
-    public void reject_string_containing_illegal_base64_char() {
+    @TestAllDecoder
+    public void reject_string_containing_illegal_base64_char(DefaultBase64Decoder decoder) {
         // given
         String[] valuesToDecode = new String[] { "Z!==", "Z,8=", "Zm9>", ">m9vYg==", "Zm<vYmE=", "Zm9%YmFy" };
 
         for (int i = 0; i < valuesToDecode.length; i++) {
             final String valueToDecode;
-            if (!decoderSupportPadding()) {
+            if (!decoder.supportPadding()) {
                 // remove padding
                 valueToDecode = valuesToDecode[i].replaceAll("=", "");
             } else {
@@ -129,20 +108,20 @@ public class DefaultBase64DecoderTest {
             }
 
             // then
-            Assert.assertThrows(InvalidBase64Exception.class, () -> {
+            assertThrowsExactly(InvalidBase64Exception.class, () -> {
                 decoder.decode(valueToDecode);
             });
         }
     }
 
-    @Test
-    public void test_url_unsafe_char() throws InvalidBase64Exception {
+    @TestAllDecoder
+    public void test_url_unsafe_char(DefaultBase64Decoder decoder) throws InvalidBase64Exception {
         // given
         String[] valuesToDecode = new String[] { "A+BB", "+g==", "/m8=", "Z/9v", "Z++vYg==", "Zm/v+mE=", "Zm/v+mFy" };
 
         for (int i = 0; i < valuesToDecode.length; i++) {
             final String valueToDecode;
-            if (!decoderSupportPadding()) {
+            if (!decoder.supportPadding()) {
                 // remove padding
                 valueToDecode = valuesToDecode[i].replaceAll("=", "");
             } else {
@@ -150,8 +129,8 @@ public class DefaultBase64DecoderTest {
             }
 
             // then
-            if (!decoderSupportUrlUnSafeEncoding()) {
-                Assert.assertThrows(InvalidBase64Exception.class, () -> {
+            if (!decoder.supportUrlUnSafeEncoding()) {
+                assertThrowsExactly(InvalidBase64Exception.class, () -> {
                     decoder.decode(valueToDecode);
                 });
             } else {
@@ -160,14 +139,14 @@ public class DefaultBase64DecoderTest {
         }
     }
 
-    @Test
-    public void test_url_safe_char() throws InvalidBase64Exception {
+    @TestAllDecoder
+    public void test_url_safe_char(DefaultBase64Decoder decoder) throws InvalidBase64Exception {
         // given
         String[] valuesToDecode = new String[] { "A-BB", "-g==", "_m8=", "Z_9v", "Z--vYg==", "Zm_v-mE=", "Zm_v-mFy" };
 
         for (int i = 0; i < valuesToDecode.length; i++) {
             final String valueToDecode;
-            if (!decoderSupportPadding()) {
+            if (!decoder.supportPadding()) {
                 // remove padding
                 valueToDecode = valuesToDecode[i].replaceAll("=", "");
             } else {
@@ -175,8 +154,8 @@ public class DefaultBase64DecoderTest {
             }
 
             // then
-            if (!decoderSupportUrlSafeEncoding()) {
-                Assert.assertThrows(InvalidBase64Exception.class, () -> {
+            if (!decoder.supportUrlSafeEncoding()) {
+                assertThrowsExactly(InvalidBase64Exception.class, () -> {
                     decoder.decode(valueToDecode);
                 });
             } else {
@@ -185,16 +164,16 @@ public class DefaultBase64DecoderTest {
         }
     }
 
-    @Test
-    public void test_without_padding() throws InvalidBase64Exception {
+    @TestAllDecoder
+    public void test_without_padding(DefaultBase64Decoder decoder) throws InvalidBase64Exception {
         // given
         String[] valuesToDecode = new String[] { "ABA", "Zg", "Zm8", "Zm9vYg", "Zm9vYmE" };
 
         for (int i = 0; i < valuesToDecode.length; i++) {
             final String valueToDecode = valuesToDecode[i];
             // then
-            if (decoderRequirePadding()) {
-                Assert.assertThrows(InvalidBase64Exception.class, () -> {
+            if (decoder.requirePadding()) {
+                assertThrowsExactly(InvalidBase64Exception.class, () -> {
                     decoder.decode(valueToDecode);
                 });
             } else {
@@ -203,8 +182,8 @@ public class DefaultBase64DecoderTest {
         }
     }
 
-    @Test
-    public void reject_if_not_canonical_with_padding() {
+    @TestAllDecoder
+    public void reject_if_not_canonical_with_padding(DefaultBase64Decoder decoder) {
         // given
         String[] valuesToDecode = new String[] { "ABC=", "Zh==", "Zm9=", "Zm9vYi==", "Zm9vYmF=" };
 
@@ -212,14 +191,14 @@ public class DefaultBase64DecoderTest {
             final String valueToDecode = valuesToDecode[i];
 
             // then
-            Assert.assertThrows(InvalidBase64Exception.class, () -> {
+            assertThrowsExactly(InvalidBase64Exception.class, () -> {
                 decoder.decode(valueToDecode);
             });
         }
     }
 
-    @Test
-    public void reject_if_not_canonical_without_padding() {
+    @TestAllDecoder
+    public void reject_if_not_canonical_without_padding(DefaultBase64Decoder decoder) {
         // given
         String[] valuesToDecode = new String[] { "ABC", "Zh", "Zm9", "Zm9vYi", "Zm9vYmF" };
 
@@ -227,14 +206,14 @@ public class DefaultBase64DecoderTest {
             final String valueToDecode = valuesToDecode[i];
 
             // then
-            Assert.assertThrows(InvalidBase64Exception.class, () -> {
+            assertThrowsExactly(InvalidBase64Exception.class, () -> {
                 decoder.decode(valueToDecode);
             });
         }
     }
 
-    @Test
-    public void reject_too_many_padding() {
+    @TestAllDecoder
+    public void reject_too_many_padding(DefaultBase64Decoder decoder) {
         // given
         String[] valuesToDecode = new String[] { "Zg===", "Zm8==", "Zm9v=", "Zm9vYg====", "Zm9vYmE===",
                 "Zm9vYmFy====" };
@@ -243,14 +222,14 @@ public class DefaultBase64DecoderTest {
             final String valueToDecode = valuesToDecode[i];
 
             // then
-            Assert.assertThrows(InvalidBase64Exception.class, () -> {
+            assertThrowsExactly(InvalidBase64Exception.class, () -> {
                 decoder.decode(valueToDecode);
             });
         }
     }
 
-    @Test
-    public void reject_invalid_number_of_char() {
+    @TestAllDecoder
+    public void reject_invalid_number_of_char(DefaultBase64Decoder decoder) {
         // given
         String[] valuesToDecode = new String[] { "Z", "Zm8ac", "Zm9va", "Zm9vYmFya" };
 
@@ -258,14 +237,14 @@ public class DefaultBase64DecoderTest {
             final String valueToDecode = valuesToDecode[i];
 
             // then
-            Assert.assertThrows(InvalidBase64Exception.class, () -> {
+            assertThrowsExactly(InvalidBase64Exception.class, () -> {
                 decoder.decode(valueToDecode);
             });
         }
     }
 
-    @Test
-    public void reject_char_after_padding() {
+    @TestAllDecoder
+    public void reject_char_after_padding(DefaultBase64Decoder decoder) {
         // given
         String[] valuesToDecode = new String[] { "Zg==aaaa", "Zm8=aaaa", "Zm9v====aaaa", "Zm9vYg==aaaa", "Zm9vYmE=aaaa",
                 "Zm9vYmFy====aaaa" };
@@ -274,7 +253,7 @@ public class DefaultBase64DecoderTest {
             final String valueToDecode = valuesToDecode[i];
 
             // then
-            Assert.assertThrows(InvalidBase64Exception.class, () -> {
+            assertThrowsExactly(InvalidBase64Exception.class, () -> {
                 decoder.decode(valueToDecode);
             });
         }

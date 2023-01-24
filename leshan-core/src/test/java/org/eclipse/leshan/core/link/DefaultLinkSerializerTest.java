@@ -15,7 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,8 +25,7 @@ import org.eclipse.leshan.core.link.attributes.AttributeSet;
 import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
 import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
 import org.eclipse.leshan.core.link.attributes.ValuelessAttribute;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class DefaultLinkSerializerTest {
 
@@ -40,7 +40,7 @@ public class DefaultLinkSerializerTest {
 
         String res = serializer.serializeCoreLinkFormat(obj1, obj2, obj3);
 
-        Assert.assertEquals("</1/0/1>,</2/1>,</3>", res);
+        assertEquals("</1/0/1>,</2/1>,</3>", res);
 
     }
 
@@ -52,7 +52,7 @@ public class DefaultLinkSerializerTest {
 
         String res = serializer.serializeCoreLinkFormat(obj1, obj2, obj3);
 
-        Assert.assertEquals("</1/0/1>;number=12,</2/1>;string=\"stringval\",</3>;empty", res);
+        assertEquals("</1/0/1>;number=12,</2/1>;string=\"stringval\",</3>;empty", res);
     }
 
     @Test
@@ -61,7 +61,7 @@ public class DefaultLinkSerializerTest {
 
         String res = serializer.serializeCoreLinkFormat(obj1);
 
-        Assert.assertEquals("</>;number=12", res);
+        assertEquals("</>;number=12", res);
     }
 
     @Test
@@ -77,7 +77,7 @@ public class DefaultLinkSerializerTest {
         String strObjs = serializer.serializeCoreLinkFormat(input);
         Link[] output = parser.parseCoreLinkFormat(strObjs.getBytes());
 
-        Assert.assertArrayEquals(input, output);
+        assertArrayEquals(input, output);
     }
 
     @Test
@@ -85,7 +85,7 @@ public class DefaultLinkSerializerTest {
         String input = "</lwm2m>;rt=\"oma.lwm2m\",</lwm2m/1/101>,</lwm2m/1/102>,</lwm2m/2/0>";
         Link[] objs = parser.parseCoreLinkFormat(input.getBytes());
         String output = serializer.serializeCoreLinkFormat(objs);
-        Assert.assertEquals(input, output);
+        assertEquals(input, output);
 
     }
 
