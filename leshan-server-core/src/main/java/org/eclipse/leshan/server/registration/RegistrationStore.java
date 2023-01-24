@@ -114,6 +114,11 @@ public interface RegistrationStore {
     Observation getObservation(String registrationId, ObservationIdentifier observationId);
 
     /**
+     * Get the observation for the given observationId
+     */
+    Observation getObservation(ObservationIdentifier observationId);
+
+    /**
      * Remove the observation for the given registration with the given observationId
      */
     Observation removeObservation(String registrationId, ObservationIdentifier observationId);

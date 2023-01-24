@@ -587,11 +587,17 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
     public Observation getObservation(String registrationId, ObservationIdentifier observationId) {
         try (Jedis j = pool.getResource()) {
             Observation observation = unsafeGetObservation(j, observationId);
-            if (observation != null
-                    && (registrationId == null || registrationId.equals(observation.getRegistrationId()))) {
+            if (observation != null && registrationId.equals(observation.getRegistrationId())) {
                 return observation;
             }
             return null;
+        }
+    }
+
+    @Override
+    public Observation getObservation(ObservationIdentifier observationId) {
+        try (Jedis j = pool.getResource()) {
+            return unsafeGetObservation(j, observationId);
         }
     }
 
