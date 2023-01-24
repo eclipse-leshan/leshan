@@ -35,6 +35,7 @@ import org.eclipse.californium.core.network.serialization.UdpDataParser;
 import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
 import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.leshan.core.californium.ObserveUtil;
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
@@ -162,7 +163,7 @@ public class RedisRegistrationStoreTest {
         Registration.Builder builder = new Registration.Builder(registrationId, ep, Identity.unsecure(address, port));
 
         registration = builder.lifeTimeInSec(lifetime).smsNumber(sms).bindingMode(binding).objectLinks(objectLinks)
-                .build();
+                .lastEndpointUsed(EndpointUriUtil.createUri("coap://localhost:5683")).build();
     }
 
     private org.eclipse.californium.core.observe.Observation prepareCoapObservationOnSingle(String path) {
