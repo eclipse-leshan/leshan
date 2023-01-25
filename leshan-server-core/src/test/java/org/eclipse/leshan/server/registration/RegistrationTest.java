@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.leshan.core.LwM2m.Version;
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
@@ -241,7 +242,8 @@ public class RegistrationTest {
 
     private Registration given_a_registration_with_object_link_like(String objectLinks) throws LinkParseException {
         Builder builder = new Registration.Builder("id", "endpoint",
-                Identity.unsecure(InetSocketAddress.createUnresolved("localhost", 0)));
+                Identity.unsecure(InetSocketAddress.createUnresolved("localhost", 0)),
+                EndpointUriUtil.createUri("coap://localhost:5683"));
         builder.extractDataFromObjectLink(true);
         builder.objectLinks(linkParser.parseCoreLinkFormat(objectLinks.getBytes()));
         return builder.build();

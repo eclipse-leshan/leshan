@@ -19,12 +19,11 @@ package org.eclipse.leshan.server.redis.serialization;
 import static org.junit.Assert.assertEquals;
 
 import java.net.Inet4Address;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.AttributeSet;
 import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
@@ -42,7 +41,7 @@ public class RegistrationSerDesTest {
     private final RegistrationSerDes registrationSerDes = new RegistrationSerDes();
 
     @Test
-    public void ser_and_des_are_equals() throws URISyntaxException {
+    public void ser_and_des_are_equals() {
         Link[] objs = new Link[2];
         AttributeSet attrs = new AttributeSet( //
                 new UnquotedStringAttribute("us", "12"), //
@@ -54,9 +53,9 @@ public class RegistrationSerDesTest {
         objs[1] = new Link("/0/2");
 
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
-                Identity.unsecure(Inet4Address.getLoopbackAddress(), 1)).objectLinks(objs).rootPath("/")
+                Identity.unsecure(Inet4Address.getLoopbackAddress(), 1),
+                EndpointUriUtil.createUri("coap://localhost:5683")).objectLinks(objs).rootPath("/")
                         .supportedContentFormats(ContentFormat.TLV, ContentFormat.TEXT);
-        builder.lastEndpointUsed(new URI("coap://localhost:5683"));
         builder.registrationDate(new Date(100L));
         builder.extractDataFromObjectLink(true);
         builder.lastUpdate(new Date(101L));
@@ -69,7 +68,7 @@ public class RegistrationSerDesTest {
     }
 
     @Test
-    public void ser_and_des_are_equals_with_app_data() throws URISyntaxException {
+    public void ser_and_des_are_equals_with_app_data() {
         Link[] objs = new Link[2];
         AttributeSet attrs = new AttributeSet( //
                 new UnquotedStringAttribute("us", "12"), //
@@ -85,10 +84,10 @@ public class RegistrationSerDesTest {
         appData.put("null", null);
 
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
-                Identity.unsecure(Inet4Address.getLoopbackAddress(), 1)).objectLinks(objs).rootPath("/")
+                Identity.unsecure(Inet4Address.getLoopbackAddress(), 1),
+                EndpointUriUtil.createUri("coap://localhost:5683")).objectLinks(objs).rootPath("/")
                         .supportedContentFormats(ContentFormat.TLV, ContentFormat.TEXT).applicationData(appData);
 
-        builder.lastEndpointUsed(new URI("coap://localhost:5683"));
         builder.registrationDate(new Date(100L));
         builder.lastUpdate(new Date(101L));
         builder.extractDataFromObjectLink(true);

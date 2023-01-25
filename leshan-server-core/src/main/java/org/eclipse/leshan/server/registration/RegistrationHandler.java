@@ -58,15 +58,15 @@ public class RegistrationHandler {
 
         // Create Registration from RegisterRequest
         Registration.Builder builder = new Registration.Builder(
-                registrationIdProvider.getRegistrationId(registerRequest), registerRequest.getEndpointName(), sender);
+                registrationIdProvider.getRegistrationId(registerRequest), registerRequest.getEndpointName(), sender,
+                endpointUsed);
         builder.extractDataFromObjectLink(true);
 
         builder.lwM2mVersion(LwM2mVersion.get(registerRequest.getLwVersion()))
                 .lifeTimeInSec(registerRequest.getLifetime()).bindingMode(registerRequest.getBindingMode())
                 .queueMode(registerRequest.getQueueMode()).objectLinks(registerRequest.getObjectLinks())
                 .smsNumber(registerRequest.getSmsNumber()).registrationDate(new Date()).lastUpdate(new Date())
-                .additionalRegistrationAttributes(registerRequest.getAdditionalAttributes())
-                .lastEndpointUsed(endpointUsed);
+                .additionalRegistrationAttributes(registerRequest.getAdditionalAttributes());
 
         Registration registrationToApproved = builder.build();
 

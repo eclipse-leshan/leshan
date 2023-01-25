@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -73,7 +74,8 @@ public class ObservationServiceTest {
 
     private Registration givenASimpleRegistration() throws UnknownHostException {
         Registration.Builder builder = new Registration.Builder("4711", "urn:endpoint",
-                Identity.unsecure(InetAddress.getLocalHost(), 23452));
+                Identity.unsecure(InetAddress.getLocalHost(), 23452),
+                EndpointUriUtil.createUri("coap://localhost:5683"));
         return builder.lifeTimeInSec(10000L).bindingMode(EnumSet.of(BindingMode.U))
                 .objectLinks(new Link[] { new Link("/3") }).build();
     }
@@ -183,7 +185,8 @@ public class ObservationServiceTest {
         Registration.Builder builder;
         try {
             builder = new Registration.Builder(registrationId, registrationId + "_ep",
-                    Identity.unsecure(InetAddress.getLocalHost(), 10000));
+                    Identity.unsecure(InetAddress.getLocalHost(), 10000),
+                    EndpointUriUtil.createUri("coap://localhost:5683"));
             return builder.build();
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);

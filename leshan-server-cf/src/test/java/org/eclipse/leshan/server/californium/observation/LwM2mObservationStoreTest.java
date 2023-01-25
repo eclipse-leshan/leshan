@@ -34,6 +34,7 @@ import org.eclipse.californium.core.network.serialization.UdpDataParser;
 import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
 import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.leshan.core.californium.ObserveUtil;
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
@@ -194,7 +195,8 @@ public class LwM2mObservationStoreTest {
 
     private void givenASimpleRegistration(Long lifetime) {
 
-        Registration.Builder builder = new Registration.Builder(registrationId, ep, Identity.unsecure(address, port));
+        Registration.Builder builder = new Registration.Builder(registrationId, ep, Identity.unsecure(address, port),
+                EndpointUriUtil.createUri("coap://localhost:5683"));
 
         registration = builder.lifeTimeInSec(lifetime).smsNumber(sms).bindingMode(binding).objectLinks(objectLinks)
                 .build();

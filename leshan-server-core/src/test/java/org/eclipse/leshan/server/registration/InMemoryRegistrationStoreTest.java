@@ -23,6 +23,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.EnumSet;
 
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.Identity;
@@ -94,7 +95,8 @@ public class InMemoryRegistrationStoreTest {
 
     private void givenASimpleRegistration(Long lifetime) {
 
-        Registration.Builder builder = new Registration.Builder(registrationId, ep, Identity.unsecure(address, port));
+        Registration.Builder builder = new Registration.Builder(registrationId, ep, Identity.unsecure(address, port),
+                EndpointUriUtil.createUri("coap://localhost:5683"));
 
         registration = builder.lifeTimeInSec(lifetime).smsNumber(sms).bindingMode(binding).objectLinks(objectLinks)
                 .build();

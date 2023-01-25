@@ -28,6 +28,7 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.core.californium.identity.DefaultCoapIdentityHandler;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
@@ -81,7 +82,8 @@ public class CoapRequestBuilderTest {
 
     private Registration newRegistration(String rootpath) throws UnknownHostException {
         Builder b = new Registration.Builder("regid", "endpoint",
-                Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354));
+                Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354),
+                EndpointUriUtil.createUri("coap://localhost:5683"));
         b.extractDataFromObjectLink(true);
         if (rootpath != null) {
             b.objectLinks(new Link[] { new Link(rootpath, new ResourceTypeAttribute("oma.lwm2m")) });

@@ -20,6 +20,7 @@ package org.eclipse.leshan.server.registration;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.request.Identity;
 import org.junit.Assert;
@@ -35,7 +36,8 @@ public class RegistrationSortObjectLinksTest {
         objs[2] = null;
 
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
-                Identity.unsecure(Inet4Address.getLocalHost(), 1)).objectLinks(objs);
+                Identity.unsecure(Inet4Address.getLocalHost(), 1), EndpointUriUtil.createUri("coap://localhost:5683"))
+                        .objectLinks(objs);
 
         Registration r = builder.build();
 

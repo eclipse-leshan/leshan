@@ -155,16 +155,17 @@ public class RegistrationSerDes {
     }
 
     public Registration deserialize(JsonNode jObj) {
-        Registration.Builder b = new Registration.Builder(jObj.get("regId").asText(), jObj.get("ep").asText(),
-                IdentitySerDes.deserialize(jObj.get("identity")));
-
+        URI lastEndpointUsed;
         try {
-            b.lastEndpointUsed(new URI(jObj.get("epUri").asText()));
+            lastEndpointUsed = new URI(jObj.get("epUri").asText());
         } catch (URISyntaxException e1) {
             throw new IllegalStateException(
                     String.format("Unable to deserialize last endpoint used URI %s of registration %s/%s",
                             jObj.get("epUri").asText(), jObj.get("regId").asText(), jObj.get("ep").asText()));
         }
+
+        Registration.Builder b = new Registration.Builder(jObj.get("regId").asText(), jObj.get("ep").asText(),
+                IdentitySerDes.deserialize(jObj.get("identity")), lastEndpointUsed);
 
         b.bindingMode(BindingMode.parse(jObj.get("bnd").asText()));
         if (jObj.get("qm") != null)

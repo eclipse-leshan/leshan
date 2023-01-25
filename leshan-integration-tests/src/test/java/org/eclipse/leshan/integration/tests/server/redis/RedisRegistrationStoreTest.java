@@ -160,10 +160,11 @@ public class RedisRegistrationStoreTest {
     }
 
     private void givenASimpleRegistration(Long lifetime) {
-        Registration.Builder builder = new Registration.Builder(registrationId, ep, Identity.unsecure(address, port));
+        Registration.Builder builder = new Registration.Builder(registrationId, ep, Identity.unsecure(address, port),
+                EndpointUriUtil.createUri("coap://localhost:5683"));
 
         registration = builder.lifeTimeInSec(lifetime).smsNumber(sms).bindingMode(binding).objectLinks(objectLinks)
-                .lastEndpointUsed(EndpointUriUtil.createUri("coap://localhost:5683")).build();
+                .build();
     }
 
     private org.eclipse.californium.core.observe.Observation prepareCoapObservationOnSingle(String path) {
