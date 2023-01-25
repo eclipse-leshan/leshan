@@ -23,6 +23,7 @@ import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHel
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -430,7 +431,7 @@ public class BootstrapTest {
     }
 
     @Test
-    public void bootstrapDeleteSecurity() {
+    public void bootstrap_delete_access_control_and_connectivity_statistics() {
         // Create DM Server without security & start it
         helper.createServer();
         helper.server.start();
@@ -444,6 +445,7 @@ public class BootstrapTest {
         ObjectsInitializer initializer = new TestObjectsInitializer();
         initializer.setInstancesForObject(LwM2mId.ACCESS_CONTROL, new SimpleInstanceEnabler());
         initializer.setInstancesForObject(LwM2mId.CONNECTIVITY_STATISTICS, new SimpleInstanceEnabler());
+        initializer.setInstancesForObject(LwM2mId.LOCATION, new SimpleInstanceEnabler());
         helper.createClient(helper.withoutSecurity(), initializer);
         helper.assertClientNotRegisterered();
 
@@ -460,6 +462,19 @@ public class BootstrapTest {
                 .read(ServerIdentity.SYSTEM, new ReadRequest(LwM2mId.CONNECTIVITY_STATISTICS));
         assertTrue("Connectvity instance is not deleted",
                 ((LwM2mObject) response.getContent()).getInstances().isEmpty());
+
+        // ensure other instances are not deleted.
+        response = helper.client.getObjectTree().getObjectEnabler(LwM2mId.DEVICE).read(ServerIdentity.SYSTEM,
+                new ReadRequest(LwM2mId.DEVICE));
+        assertFalse("Device instance is deleted", ((LwM2mObject) response.getContent()).getInstances().isEmpty());
+
+        response = helper.client.getObjectTree().getObjectEnabler(LwM2mId.SECURITY).read(ServerIdentity.SYSTEM,
+                new ReadRequest(LwM2mId.SECURITY));
+        assertFalse("Security instance is deleted", ((LwM2mObject) response.getContent()).getInstances().isEmpty());
+
+        response = helper.client.getObjectTree().getObjectEnabler(LwM2mId.LOCATION).read(ServerIdentity.SYSTEM,
+                new ReadRequest(LwM2mId.LOCATION));
+        assertFalse("Location instance is deleted", ((LwM2mObject) response.getContent()).getInstances().isEmpty());
     }
 
     @Test

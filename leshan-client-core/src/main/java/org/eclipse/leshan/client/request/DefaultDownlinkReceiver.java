@@ -266,7 +266,19 @@ public class DefaultDownlinkReceiver implements DownlinkRequestReceiver {
 
         @Override
         public void visit(BootstrapDeleteRequest request) {
-            response = toSendableResponse(bootstrapHandler.delete(sender, request));
+            if (request.getPath().isRoot()) {
+                response = toSendableResponse(bootstrapHandler.delete(sender, request));
+            } else {
+                LwM2mObjectEnabler objectEnabler = getObjectEnabler(request);
+                if (objectEnabler == null) {
+                    // Bootstrap delete operation does not support Not Found Response code :
+                    // See
+                    // http://www.openmobilealliance.org/release/LightweightM2M/V1_1_1-20190617-A/HTML-Version/OMA-TS-LightweightM2M_Transport-V1_1_1-20190617-A.html#Table-642-1-Operation-to-Method-and-URI-Mapping-Bootstrap-Interface
+                    response = toSendableResponse(BootstrapDeleteResponse.badRequest("not found"));
+                } else {
+                    response = toSendableResponse(objectEnabler.delete(sender, request));
+                }
+            }
         }
 
         @Override
