@@ -33,6 +33,7 @@ import java.util.TreeSet;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.Attributes;
 import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
@@ -102,7 +103,7 @@ public class Registration {
         Validate.notNull(builder.registrationId);
         Validate.notEmpty(builder.endpoint);
         Validate.notNull(builder.identity);
-        Validate.notNull(builder.lastEndpointUsed);
+        EndpointUriUtil.validateURI(builder.lastEndpointUsed);
 
         // mandatory params
         id = builder.registrationId;
@@ -537,8 +538,7 @@ public class Registration {
             Validate.notNull(registrationId);
             Validate.notEmpty(endpoint);
             Validate.notNull(identity);
-            Validate.notNull(lastEndpointUsed);
-            // TODO we should maybe do some validation on URI
+            EndpointUriUtil.validateURI(lastEndpointUsed);
 
             this.registrationId = registrationId;
             this.endpoint = endpoint;

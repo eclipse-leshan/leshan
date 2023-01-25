@@ -19,6 +19,8 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.eclipse.leshan.core.util.Validate;
+
 public class EndpointUriUtil {
 
     public static URI createUri(String scheme, String host, int port) {
@@ -47,5 +49,21 @@ public class EndpointUriUtil {
 
     public static InetSocketAddress getSocketAddr(URI uri) {
         return new InetSocketAddress(uri.getHost(), uri.getPort());
+    }
+
+    public static void validateURI(URI uri) throws IllegalArgumentException {
+        Validate.notNull(uri);
+
+        if (uri.getScheme() == null) {
+            throw new IllegalArgumentException("URI Scheme MUST NOT be null");
+        }
+
+        if (uri.getHost() == null) {
+            throw new IllegalArgumentException("URI Host MUST NOT be null");
+        }
+
+        if (uri.getPort() == -1) {
+            throw new IllegalArgumentException("URI Post MUST NOT be undefined");
+        }
     }
 }
