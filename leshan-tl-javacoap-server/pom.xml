@@ -30,23 +30,16 @@ Contributors:
   <name>leshan - server java-coap</name>
   <description>A transport implementation for leshan server based on Java CoAP</description>
 
-	<repositories>
-	    <repository>
-	        <id>jitpack.io</id>
-	        <url>https://jitpack.io</url>
-	    </repository>
-	</repositories>
-
   <dependencies>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
       <artifactId>leshan-server-core</artifactId>
     </dependency>
-    
+
     <dependency>
-    <groupId>com.github.open-coap.java-coap</groupId>
+    <groupId>io.github.open-coap</groupId>
     <artifactId>coap-core</artifactId>
-    <version>6.5.0</version>
+    <version>6.8.0</version>
 </dependency>
 
     <!-- test dependencies -->

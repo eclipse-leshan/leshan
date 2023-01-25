@@ -18,7 +18,6 @@ package org.eclipse.leshan.transport.javacoap.resource;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import java.net.URI;
-import java.text.ParseException;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -161,7 +160,7 @@ public class RegistrationResource extends LwM2mCoapResource {
                     additionalParams.put(entry.getKey(), entry.getValue());
                 }
             }
-        } catch (NumberFormatException | ParseException e) {
+        } catch (/* NumberFormatException | */ IllegalArgumentException e) {
             return handleInvalidRequest(coapRequest, e.getMessage() != null ? e.getMessage() : "Uri Query", e);
         }
 
@@ -215,7 +214,7 @@ public class RegistrationResource extends LwM2mCoapResource {
                     additionalParams.put(entry.getKey(), entry.getValue());
                 }
             }
-        } catch (NumberFormatException | ParseException e) {
+        } catch (/* NumberFormatException | */ IllegalArgumentException e) {
             return handleInvalidRequest(coapRequest, e.getMessage() != null ? e.getMessage() : "Uri Query", e);
         }
         if (coapRequest.getPayload() != null && coapRequest.getPayload().size() > 0) {
