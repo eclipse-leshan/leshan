@@ -100,11 +100,6 @@ public class Registration {
 
     protected Registration(Builder builder) {
 
-        Validate.notNull(builder.registrationId);
-        Validate.notEmpty(builder.endpoint);
-        Validate.notNull(builder.identity);
-        EndpointUriUtil.validateURI(builder.lastEndpointUsed);
-
         // mandatory params
         id = builder.registrationId;
         identity = builder.identity;
