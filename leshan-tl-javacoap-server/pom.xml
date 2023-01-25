@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-Copyright (c) 2013-2015 Sierra Wireless and others.
+Copyright (c) 2022 Sierra Wireless and others.
 
 All rights reserved. This program and the accompanying materials
 are made available under the terms of the Eclipse Public License v2.0
@@ -14,7 +14,6 @@ and the Eclipse Distribution License is available at
 
 Contributors:
     Sierra Wireless - initial API and implementation
-    Bosch Software Innovations GmbH - OSGi support
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
