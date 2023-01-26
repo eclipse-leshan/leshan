@@ -18,6 +18,7 @@ package org.eclipse.leshan.integration.tests.server.redis;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.net.InetAddress;
@@ -157,6 +158,24 @@ public class RedisRegistrationStoreTest {
         assertTrue(leshanObservation instanceof CompositeObservation);
         CompositeObservation observation = (CompositeObservation) leshanObservation;
         assertEquals(examplePaths, observation.getPaths());
+    }
+
+    @Test
+    public void remove_observation() {
+        // given
+        givenASimpleRegistration(lifetime);
+        store.addRegistration(registration);
+
+        org.eclipse.californium.core.observe.Observation observationToStore = prepareCoapObservationOnSingle("/1/2/3");
+        observationStore.put(aToken, observationToStore);
+
+        // when
+        observationStore.remove(aToken);
+
+        // then
+        Observation leshanObservation = store.getObservation(registrationId,
+                new ObservationIdentifier(aToken.getBytes()));
+        assertNull(leshanObservation);
     }
 
     private void givenASimpleRegistration(Long lifetime) {
