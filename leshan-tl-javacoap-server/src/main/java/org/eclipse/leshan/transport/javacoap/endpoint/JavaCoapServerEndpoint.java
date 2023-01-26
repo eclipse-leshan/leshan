@@ -41,8 +41,6 @@ import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.request.LowerLayerConfig;
 import org.eclipse.leshan.transport.javacoap.observation.ObservationUtil;
 
-import com.mbed.coap.client.CoapClient;
-import com.mbed.coap.client.CoapClientBuilder;
 import com.mbed.coap.client.ObservationConsumer;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
@@ -132,11 +130,8 @@ public class JavaCoapServerEndpoint implements LwM2mServerEndpoint {
             // Create Coap Request to send from LWM2M Request
             CoapRequest coapRequest = translator.createCoapRequest(destination, lwm2mRequest, toolbox);
 
-            // Create a Coap Client to send request
-            CoapClient coapClient = CoapClientBuilder.clientFor(destination.getIdentity().getPeerAddress(), coapServer);
-
             // Send CoAP Request
-            CompletableFuture<CoapResponse> coapResponseFuture = coapClient.send(coapRequest);
+            CompletableFuture<CoapResponse> coapResponseFuture = coapServer.clientService().apply(coapRequest);
 
             // On response, create LWM2M Response from CoAP response
             CompletableFuture<T> lwm2mResponseFuture = coapResponseFuture.thenApply(coapResponse -> translator
@@ -156,11 +151,8 @@ public class JavaCoapServerEndpoint implements LwM2mServerEndpoint {
         Opaque token = translator.getTokenGenerator().createToken();
         final CoapRequest hackedCoapRequest = coapRequest.token(token);
 
-        // Create a Coap Client to send request
-        CoapClient coapClient = CoapClientBuilder.clientFor(destination.getIdentity().getPeerAddress(), coapServer);
-
         // Send CoAP Request
-        CompletableFuture<CoapResponse> coapResponseFuture = coapClient.send(hackedCoapRequest);
+        CompletableFuture<CoapResponse> coapResponseFuture = coapServer.clientService().apply(hackedCoapRequest);
 
         // Handle Notifications
         // --------------------
