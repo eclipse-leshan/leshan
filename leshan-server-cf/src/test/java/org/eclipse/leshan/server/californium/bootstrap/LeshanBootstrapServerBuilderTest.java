@@ -15,9 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.bootstrap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.math.BigInteger;
 import java.security.AlgorithmParameters;
@@ -53,8 +53,8 @@ import org.eclipse.leshan.server.californium.bootstrap.endpoint.coap.CoapBootstr
 import org.eclipse.leshan.server.californium.bootstrap.endpoint.coaps.CoapsBootstrapServerProtocolProvider;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class LeshanBootstrapServerBuilderTest {
 
@@ -92,7 +92,7 @@ public class LeshanBootstrapServerBuilderTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void start() {
         builder = new LeshanBootstrapServerBuilder();
         builder.setConfigStore(new BootstrapConfigStore() {

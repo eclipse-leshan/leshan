@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.bootstrap;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -37,7 +37,7 @@ import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
 import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServerBuilder;
 import org.eclipse.leshan.server.bootstrap.request.BootstrapDownlinkRequestSender;
 import org.eclipse.leshan.server.californium.bootstrap.endpoint.CaliforniumBootstrapServerEndpointsProvider;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class LeshanBootstrapServerTest {
 
@@ -94,7 +94,7 @@ public class LeshanBootstrapServerTest {
 
         // ensure all thread are destroyed
         Thread.sleep(500);
-        assertEquals("All news created threads must be destroyed", numberOfThreadbefore, Thread.activeCount());
+        assertEquals(numberOfThreadbefore, Thread.activeCount(), "All news created threads must be destroyed");
     }
 
     @Test
@@ -114,7 +114,7 @@ public class LeshanBootstrapServerTest {
 
         // ensure all thread are destroyed
         Thread.sleep(500);
-        assertEquals("All news created threads must be destroyed", numberOfThreadbefore, Thread.activeCount());
+        assertEquals(numberOfThreadbefore, Thread.activeCount(), "All news created threads must be destroyed");
     }
 
     private void forceThreadsCreation(URI endpointURI) {

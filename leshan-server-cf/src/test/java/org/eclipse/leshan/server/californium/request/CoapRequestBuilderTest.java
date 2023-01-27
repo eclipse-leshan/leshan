@@ -16,8 +16,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.request;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
@@ -57,8 +57,8 @@ import org.eclipse.leshan.core.tlv.Tlv.TlvType;
 import org.eclipse.leshan.core.tlv.TlvDecoder;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.Registration.Builder;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link CoapRequestBuilder}
@@ -69,7 +69,7 @@ public class CoapRequestBuilderTest {
     private static LwM2mEncoder encoder;
     private static IdentityHandler identityHandler;
 
-    @BeforeClass
+    @BeforeAll
     public static void loadModel() {
         model = new StaticModel(ObjectLoader.loadDefault());
         encoder = new DefaultLwM2mEncoder();
