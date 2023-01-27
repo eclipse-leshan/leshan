@@ -17,10 +17,12 @@ package org.eclipse.leshan.integration.tests.read;
 
 import static org.eclipse.leshan.core.ResponseCode.CONTENT;
 import static org.eclipse.leshan.integration.tests.util.TestUtil.assertContentFormat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.stream.Stream;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mObject;
@@ -31,34 +33,30 @@ import org.eclipse.leshan.core.request.ReadCompositeRequest;
 import org.eclipse.leshan.core.response.ReadCompositeResponse;
 import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class ReadCompositeTest {
+
+    @ParameterizedTest(name = "{0} - {1}")
+    @MethodSource("contentFormats")
+    @Retention(RetentionPolicy.RUNTIME)
+    private @interface TestAllContentFormat {
+    }
+
+    static Stream<Arguments> contentFormats() {
+        return Stream.of(//
+                // {request content format, response content format}
+                arguments(ContentFormat.SENML_JSON, ContentFormat.SENML_JSON), //
+                arguments(ContentFormat.SENML_CBOR, ContentFormat.SENML_CBOR));
+    }
+
     protected IntegrationTestHelper helper = new IntegrationTestHelper();
 
-    @Parameters(name = "{0}{1}")
-    public static Collection<?> contentFormats() {
-        return Arrays.asList(new Object[][] { //
-                // {request content format, response content format}
-                { ContentFormat.SENML_JSON, ContentFormat.SENML_JSON }, //
-                { ContentFormat.SENML_CBOR, ContentFormat.SENML_CBOR } });
-    }
-
-    private ContentFormat requestContentFormat;
-    private ContentFormat responseContentFormat;
-
-    public ReadCompositeTest(ContentFormat requestContentFormat, ContentFormat responseContentFormat) {
-        this.requestContentFormat = requestContentFormat;
-        this.responseContentFormat = responseContentFormat;
-    }
-
-    @Before
+    @BeforeEach
     public void start() {
         helper.initialize();
         helper.createServer();
@@ -68,15 +66,16 @@ public class ReadCompositeTest {
         helper.waitForRegistrationAtServerSide(1);
     }
 
-    @After
+    @AfterEach
     public void stop() {
         helper.client.destroy(false);
         helper.server.destroy();
         helper.dispose();
     }
 
-    @Test
-    public void can_read_resources() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_read_resources(ContentFormat requestContentFormat, ContentFormat responseContentFormat)
+            throws InterruptedException {
         // read device model number
         ReadCompositeResponse response = helper.server.send(helper.getCurrentRegistration(),
                 new ReadCompositeRequest(requestContentFormat, responseContentFormat, "/3/0/0", "/1/0/1"));
@@ -95,8 +94,9 @@ public class ReadCompositeTest {
 
     }
 
-    @Test
-    public void can_read_resource_instance() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_read_resource_instance(ContentFormat requestContentFormat, ContentFormat responseContentFormat)
+            throws InterruptedException {
         // read resource instance
         String path = "/" + TestLwM2mId.TEST_OBJECT + "/0/" + TestLwM2mId.MULTIPLE_STRING_VALUE + "/0";
         ReadCompositeResponse response = helper.server.send(helper.getCurrentRegistration(),
@@ -112,8 +112,9 @@ public class ReadCompositeTest {
 
     }
 
-    @Test
-    public void can_read_resource_and_instance() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_read_resource_and_instance(ContentFormat requestContentFormat, ContentFormat responseContentFormat)
+            throws InterruptedException {
         // read device model number
         ReadCompositeResponse response = helper.server.send(helper.getCurrentRegistration(),
                 new ReadCompositeRequest(requestContentFormat, responseContentFormat, "/3/0/0", "/1"));

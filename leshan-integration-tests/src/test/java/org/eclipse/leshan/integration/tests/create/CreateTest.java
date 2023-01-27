@@ -21,12 +21,13 @@ package org.eclipse.leshan.integration.tests.create;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.stream.Stream;
 
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.LwM2mId;
@@ -42,33 +43,30 @@ import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class CreateTest {
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("contentFormats")
+    @Retention(RetentionPolicy.RUNTIME)
+    private @interface TestAllContentFormat {
+    }
+
+    static Stream<ContentFormat> contentFormats() {
+        return Stream.of(//
+                ContentFormat.TLV, //
+                ContentFormat.JSON, //
+                ContentFormat.SENML_JSON, //
+                ContentFormat.SENML_CBOR);
+    }
+
     protected IntegrationTestHelper helper = new IntegrationTestHelper();
 
-    @Parameters(name = "{0}")
-    public static Collection<?> contentFormats() {
-        return Arrays.asList(new Object[][] { //
-                { ContentFormat.TLV }, //
-                { ContentFormat.JSON }, //
-                { ContentFormat.SENML_JSON }, //
-                { ContentFormat.SENML_CBOR } });
-    }
-
-    private ContentFormat contentFormat;
-
-    public CreateTest(ContentFormat contentFormat) {
-        this.contentFormat = contentFormat;
-    }
-
-    @Before
+    @BeforeEach
     public void start() {
         helper.initialize();
         helper.createServer();
@@ -78,15 +76,15 @@ public class CreateTest {
         helper.waitForRegistrationAtServerSide(1);
     }
 
-    @After
+    @AfterEach
     public void stop() {
         helper.client.destroy(false);
         helper.server.destroy();
         helper.dispose();
     }
 
-    @Test
-    public void can_create_instance_without_instance_id() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_create_instance_without_instance_id(ContentFormat contentFormat) throws InterruptedException {
         try {
             // create ACL instance
             CreateResponse response = helper.server.send(helper.getCurrentRegistration(),
@@ -120,8 +118,8 @@ public class CreateTest {
         }
     }
 
-    @Test
-    public void can_create_instance_with_id() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_create_instance_with_id(ContentFormat contentFormat) throws InterruptedException {
         // create ACL instance
         LwM2mObjectInstance instance = new LwM2mObjectInstance(12, LwM2mSingleResource.newIntegerResource(3, 123));
         CreateResponse response = helper.server.send(helper.getCurrentRegistration(),
@@ -140,8 +138,8 @@ public class CreateTest {
         assertEquals(object.getInstance(12).getResource(3).getValue(), 123l);
     }
 
-    @Test
-    public void can_create_2_instances_of_object() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_create_2_instances_of_object(ContentFormat contentFormat) throws InterruptedException {
         // create ACL instance
         LwM2mObjectInstance instance1 = new LwM2mObjectInstance(12, LwM2mSingleResource.newIntegerResource(3, 123));
         LwM2mObjectInstance instance2 = new LwM2mObjectInstance(13, LwM2mSingleResource.newIntegerResource(3, 124));
@@ -162,8 +160,9 @@ public class CreateTest {
         assertEquals(object.getInstance(13).getResource(3).getValue(), 124l);
     }
 
-    @Test
-    public void cannot_create_instance_without_all_required_resources() throws InterruptedException {
+    @TestAllContentFormat
+    public void cannot_create_instance_without_all_required_resources(ContentFormat contentFormat)
+            throws InterruptedException {
         // create ACL instance without any resources
         CreateResponse response = helper.server.send(helper.getCurrentRegistration(), new CreateRequest(contentFormat,
                 LwM2mId.ACCESS_CONTROL, new LwM2mObjectInstance(0, new LwM2mResource[0])));

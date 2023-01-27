@@ -19,11 +19,12 @@ package org.eclipse.leshan.integration.tests.read;
 
 import static org.eclipse.leshan.core.ResponseCode.CONTENT;
 import static org.eclipse.leshan.integration.tests.util.TestUtil.assertContentFormat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.stream.Stream;
 
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -31,33 +32,30 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class ReadMultiValueTest {
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("contentFormats")
+    @Retention(RetentionPolicy.RUNTIME)
+    private @interface TestAllContentFormat {
+    }
+
+    static Stream<ContentFormat> contentFormats() {
+        return Stream.of(//
+                ContentFormat.TLV, //
+                ContentFormat.JSON, //
+                ContentFormat.SENML_JSON, //
+                ContentFormat.SENML_CBOR);
+    }
+
     protected IntegrationTestHelper helper = new IntegrationTestHelper();
 
-    @Parameters(name = "{0}")
-    public static Collection<?> contentFormats() {
-        return Arrays.asList(new Object[][] { //
-                { ContentFormat.TLV }, //
-                { ContentFormat.JSON }, //
-                { ContentFormat.SENML_JSON }, //
-                { ContentFormat.SENML_CBOR } });
-    }
-
-    private ContentFormat contentFormat;
-
-    public ReadMultiValueTest(ContentFormat contentFormat) {
-        this.contentFormat = contentFormat;
-    }
-
-    @Before
+    @BeforeEach
     public void start() {
         helper.initialize();
         helper.createServer();
@@ -67,15 +65,15 @@ public class ReadMultiValueTest {
         helper.waitForRegistrationAtServerSide(1);
     }
 
-    @After
+    @AfterEach
     public void stop() {
         helper.client.destroy(false);
         helper.server.destroy();
         helper.dispose();
     }
 
-    @Test
-    public void can_read_empty_object() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_read_empty_object(ContentFormat contentFormat) throws InterruptedException {
         // read ACL object
         ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(contentFormat, 2));
 
@@ -89,8 +87,8 @@ public class ReadMultiValueTest {
 
     }
 
-    @Test
-    public void can_read_object() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_read_object(ContentFormat contentFormat) throws InterruptedException {
         // read device object
         ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(contentFormat, 3));
 
@@ -105,8 +103,8 @@ public class ReadMultiValueTest {
         assertEquals(0, instance.getId());
     }
 
-    @Test
-    public void can_read_object_instance() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_read_object_instance(ContentFormat contentFormat) throws InterruptedException {
         // read device single instance
         ReadResponse response = helper.server.send(helper.getCurrentRegistration(),
                 new ReadRequest(contentFormat, 3, 0));

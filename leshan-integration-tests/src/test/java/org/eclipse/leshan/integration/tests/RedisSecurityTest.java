@@ -17,8 +17,8 @@ package org.eclipse.leshan.integration.tests;
 
 import org.eclipse.leshan.integration.tests.util.RedisSecureIntegrationTestHelper;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class RedisSecurityTest extends SecurityTest {
     public RedisSecurityTest() {
@@ -26,7 +26,7 @@ public class RedisSecurityTest extends SecurityTest {
     }
 
     @Test
-    @Ignore
+    @Disabled
     @Override
     public void registered_device_with_oscore_to_server_with_oscore()
             throws NonUniqueSecurityInfoException, InterruptedException {
@@ -35,7 +35,7 @@ public class RedisSecurityTest extends SecurityTest {
     }
 
     @Test
-    @Ignore
+    @Disabled
     @Override
     public void registered_device_with_oscore_to_server_with_oscore_then_removed_security_info_then_server_fails_to_send_request()
             throws NonUniqueSecurityInfoException, InterruptedException {
@@ -44,7 +44,7 @@ public class RedisSecurityTest extends SecurityTest {
     }
 
     @Test
-    @Ignore
+    @Disabled
     @Override
     public void registered_device_with_oscore_to_server_with_oscore_then_removed_security_info_then_client_fails_to_update()
             throws NonUniqueSecurityInfoException, InterruptedException {

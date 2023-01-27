@@ -18,14 +18,15 @@ package org.eclipse.leshan.integration.tests.write;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.ResponseCode;
@@ -47,31 +48,28 @@ import org.eclipse.leshan.core.response.WriteCompositeResponse;
 import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.integration.tests.observe.TestObservationListener;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class WriteCompositeTest {
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("contentFormats")
+    @Retention(RetentionPolicy.RUNTIME)
+    private @interface TestAllContentFormat {
+    }
+
+    static Stream<ContentFormat> contentFormats() {
+        return Stream.of(//
+                ContentFormat.SENML_JSON, //
+                ContentFormat.SENML_CBOR);
+    }
+
     protected IntegrationTestHelper helper = new IntegrationTestHelper();
 
-    @Parameters(name = "{0}")
-    public static Collection<?> contentFormats() {
-        return Arrays.asList(new Object[][] { //
-                { ContentFormat.SENML_JSON }, //
-                { ContentFormat.SENML_CBOR } });
-    }
-
-    private ContentFormat contentFormat;
-
-    public WriteCompositeTest(ContentFormat contentFormat) {
-        this.contentFormat = contentFormat;
-    }
-
-    @Before
+    @BeforeEach
     public void start() {
         helper.initialize();
         helper.createServer();
@@ -81,15 +79,15 @@ public class WriteCompositeTest {
         helper.waitForRegistrationAtServerSide(1);
     }
 
-    @After
+    @AfterEach
     public void stop() {
         helper.client.destroy(false);
         helper.server.destroy();
         helper.dispose();
     }
 
-    @Test
-    public void can_write_resources() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_write_resources(ContentFormat contentFormat) throws InterruptedException {
         // write device timezone and offset
         Map<String, Object> nodes = new HashMap<>();
         nodes.put("/3/0/14", "+02");
@@ -110,8 +108,8 @@ public class WriteCompositeTest {
         assertEquals(100l, ((LwM2mSingleResource) readResponse.getContent()).getValue());
     }
 
-    @Test
-    public void can_write_resource_and_instance() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_write_resource_and_instance(ContentFormat contentFormat) throws InterruptedException {
         // create value
         LwM2mSingleResource utcOffset = LwM2mSingleResource.newStringResource(14, "+02");
         LwM2mPath resourceInstancePath = new LwM2mPath(TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_STRING_VALUE,
@@ -141,8 +139,8 @@ public class WriteCompositeTest {
         assertEquals(testStringResourceInstance, readResponse.getContent());
     }
 
-    @Test
-    public void can_add_resource_instances() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_add_resource_instances(ContentFormat contentFormat) throws InterruptedException {
         // Prepare node
         LwM2mPath resourceInstancePath = new LwM2mPath(TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_STRING_VALUE,
                 1);
@@ -169,8 +167,8 @@ public class WriteCompositeTest {
                 multiResource.getInstance(resourceInstancePath.getResourceInstanceId()));
     }
 
-    @Test
-    public void can_observe_instance_with_composite_write() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_observe_instance_with_composite_write(ContentFormat contentFormat) throws InterruptedException {
         TestObservationListener listener = new TestObservationListener();
         helper.server.getObservationService().addListener(listener);
 

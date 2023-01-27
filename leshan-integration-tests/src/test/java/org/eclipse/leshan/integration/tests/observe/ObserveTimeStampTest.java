@@ -19,16 +19,17 @@ import static org.eclipse.leshan.integration.tests.util.TestUtil.assertContentFo
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.ResponseCode;
@@ -47,34 +48,30 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class ObserveTimeStampTest {
 
-    @Parameters(name = "{0}")
-    public static Collection<?> contentFormats() {
-        return Arrays.asList(new Object[][] { //
-                { ContentFormat.JSON }, //
-                { ContentFormat.SENML_JSON }, //
-                { ContentFormat.SENML_CBOR } });
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("contentFormats")
+    @Retention(RetentionPolicy.RUNTIME)
+    private @interface TestAllContentFormat {
+    }
+
+    static Stream<ContentFormat> contentFormats() {
+        return Stream.of(//
+                ContentFormat.JSON, //
+                ContentFormat.SENML_JSON, //
+                ContentFormat.SENML_CBOR);
     }
 
     protected IntegrationTestHelper helper = new IntegrationTestHelper();
-
-    private final ContentFormat contentFormat;
     private final LwM2mEncoder encoder = new DefaultLwM2mEncoder();
 
-    public ObserveTimeStampTest(ContentFormat contentFormat) {
-        this.contentFormat = contentFormat;
-    }
-
-    @Before
+    @BeforeEach
     public void start() {
         helper.initialize();
         helper.createServer();
@@ -84,15 +81,15 @@ public class ObserveTimeStampTest {
         helper.waitForRegistrationAtServerSide(1);
     }
 
-    @After
+    @AfterEach
     public void stop() {
         helper.client.destroy(false);
         helper.server.destroy();
         helper.dispose();
     }
 
-    @Test
-    public void can_observe_timestamped_resource() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_observe_timestamped_resource(ContentFormat contentFormat) throws InterruptedException {
         TestObservationListener listener = new TestObservationListener();
         helper.server.getObservationService().addListener(listener);
 
@@ -109,8 +106,8 @@ public class ObserveTimeStampTest {
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
         Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
-        assertTrue("We should have only one observation", observations.size() == 1);
-        assertTrue("New observation is not there", observations.contains(observation));
+        assertTrue(observations.size() == 1, "We should have only one observation");
+        assertTrue(observations.contains(observation), "New observation is not there");
 
         // *** HACK send time-stamped notification as Leshan client does not support it *** //
         // create time-stamped nodes
@@ -135,8 +132,8 @@ public class ObserveTimeStampTest {
         assertContentFormat(contentFormat, listener.getObserveResponse());
     }
 
-    @Test
-    public void can_observe_timestamped_instance() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_observe_timestamped_instance(ContentFormat contentFormat) throws InterruptedException {
         TestObservationListener listener = new TestObservationListener();
         helper.server.getObservationService().addListener(listener);
 
@@ -152,8 +149,8 @@ public class ObserveTimeStampTest {
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
         Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
-        assertTrue("We should have only one observation", observations.size() == 1);
-        assertTrue("New observation is not there", observations.contains(observation));
+        assertTrue(observations.size() == 1, "We should have only one observation");
+        assertTrue(observations.contains(observation), "New observation is not there");
 
         // *** HACK send time-stamped notification as Leshan client does not support it *** //
         // create time-stamped nodes
@@ -178,8 +175,8 @@ public class ObserveTimeStampTest {
         assertContentFormat(contentFormat, listener.getObserveResponse());
     }
 
-    @Test
-    public void can_observe_timestamped_object() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_observe_timestamped_object(ContentFormat contentFormat) throws InterruptedException {
         TestObservationListener listener = new TestObservationListener();
         helper.server.getObservationService().addListener(listener);
 
@@ -195,8 +192,8 @@ public class ObserveTimeStampTest {
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
         Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
-        assertTrue("We should have only one observation", observations.size() == 1);
-        assertTrue("New observation is not there", observations.contains(observation));
+        assertTrue(observations.size() == 1, "We should have only one observation");
+        assertTrue(observations.contains(observation), "New observation is not there");
 
         // *** HACK send time-stamped notification as Leshan client does not support it *** //
         // create time-stamped nodes

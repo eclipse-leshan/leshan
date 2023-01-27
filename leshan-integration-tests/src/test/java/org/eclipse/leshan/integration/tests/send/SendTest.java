@@ -15,15 +15,17 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.send;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Stream;
 
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.servers.ServerIdentity;
@@ -36,15 +38,25 @@ import org.eclipse.leshan.core.response.SendResponse;
 import org.eclipse.leshan.integration.tests.util.Callback;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.eclipse.leshan.integration.tests.util.SynchronousSendListener;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class SendTest {
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("contentFormats")
+    @Retention(RetentionPolicy.RUNTIME)
+    private @interface TestAllContentFormat {
+    }
+
+    static Stream<ContentFormat> contentFormats() {
+        return Stream.of(//
+                ContentFormat.SENML_JSON, //
+                ContentFormat.SENML_CBOR);
+    }
+
     protected IntegrationTestHelper helper = new IntegrationTestHelper() {
         @Override
         protected ObjectsInitializer createObjectsInitializer() {
@@ -52,21 +64,7 @@ public class SendTest {
         };
     };
 
-    @Parameters(name = "{0}{1}")
-    public static Collection<?> contentFormats() {
-        return Arrays.asList(new Object[][] { //
-                // {content format}
-                { ContentFormat.SENML_JSON }, //
-                { ContentFormat.SENML_CBOR } });
-    }
-
-    private ContentFormat contentformat;
-
-    public SendTest(ContentFormat contentformat) {
-        this.contentformat = contentformat;
-    }
-
-    @Before
+    @BeforeEach
     public void start() {
         helper.initialize();
         helper.createServer();
@@ -76,15 +74,15 @@ public class SendTest {
         helper.waitForRegistrationAtServerSide(1);
     }
 
-    @After
+    @AfterEach
     public void stop() {
         helper.client.destroy(false);
         helper.server.destroy();
         helper.dispose();
     }
 
-    @Test
-    public void can_send_resources() throws InterruptedException, TimeoutException {
+    @TestAllContentFormat
+    public void can_send_resources(ContentFormat contentformat) throws InterruptedException, TimeoutException {
         // Define send listener
         SynchronousSendListener listener = new SynchronousSendListener();
         helper.server.getSendService().addListener(listener);
@@ -109,8 +107,9 @@ public class SendTest {
         assertEquals(serialnumber.getValue(), "12345");
     }
 
-    @Test
-    public void can_send_resources_asynchronously() throws InterruptedException, TimeoutException {
+    @TestAllContentFormat
+    public void can_send_resources_asynchronously(ContentFormat contentformat)
+            throws InterruptedException, TimeoutException {
         // Define send listener
         SynchronousSendListener listener = new SynchronousSendListener();
         helper.server.getSendService().addListener(listener);

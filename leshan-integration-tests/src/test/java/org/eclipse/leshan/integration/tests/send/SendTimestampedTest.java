@@ -15,15 +15,18 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.send;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Stream;
 
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.send.ManualDataSender;
@@ -38,11 +41,24 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.eclipse.leshan.integration.tests.util.SynchronousSendListener;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class SendTimestampedTest {
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("contentFormats")
+    @Retention(RetentionPolicy.RUNTIME)
+    private @interface TestAllContentFormat {
+    }
+
+    static Stream<ContentFormat> contentFormats() {
+        return Stream.of(//
+                ContentFormat.SENML_JSON, //
+                ContentFormat.SENML_CBOR);
+    }
 
     protected final IntegrationTestHelper helper = new IntegrationTestHelper() {
         @Override
@@ -51,7 +67,7 @@ public class SendTimestampedTest {
         };
     };
 
-    @Before
+    @BeforeEach
     public void start() {
         helper.initialize();
         helper.createServer();
@@ -61,15 +77,16 @@ public class SendTimestampedTest {
         helper.waitForRegistrationAtServerSide(1);
     }
 
-    @After
+    @AfterEach
     public void stop() {
         helper.client.destroy(false);
         helper.server.destroy();
         helper.dispose();
     }
 
-    @Test
-    public void server_handle_multiple_timestamped_node() throws InterruptedException, TimeoutException {
+    @TestAllContentFormat
+    public void server_handle_multiple_timestamped_node(ContentFormat contentFormat)
+            throws InterruptedException, TimeoutException {
         // Define send listener
         SynchronousSendListener listener = new SynchronousSendListener();
         helper.server.getSendService().addListener(listener);
@@ -82,7 +99,7 @@ public class SendTimestampedTest {
         sender.collectData(Arrays.asList(getExamplePath()));
         Thread.sleep(1000);
         sender.collectData(Arrays.asList(getExamplePath()));
-        sender.sendCollectedData(server, ContentFormat.SENML_JSON, 1000, false);
+        sender.sendCollectedData(server, contentFormat, 1000, false);
         listener.waitForData(1, TimeUnit.SECONDS);
 
         // Verify SendListener data received
