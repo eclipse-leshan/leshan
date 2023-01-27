@@ -15,9 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
@@ -27,7 +27,7 @@ import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.registration.Registration;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * tests the implementation of {@link PresenceService}
