@@ -18,7 +18,7 @@ package org.eclipse.leshan.core.model;
 import java.io.IOException;
 
 import org.eclipse.leshan.core.util.TestObjectLoader;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ValidateModelsTest {
 

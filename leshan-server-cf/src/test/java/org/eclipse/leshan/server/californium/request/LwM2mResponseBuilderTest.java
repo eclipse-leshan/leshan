@@ -16,8 +16,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.request;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Arrays;
 import java.util.List;
@@ -38,7 +38,7 @@ import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.californium.DummyDecoder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class LwM2mResponseBuilderTest {
 

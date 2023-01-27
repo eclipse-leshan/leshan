@@ -18,10 +18,11 @@ package org.eclipse.leshan.integration.tests.read;
 import static org.eclipse.leshan.core.ResponseCode.BAD_REQUEST;
 import static org.eclipse.leshan.core.ResponseCode.CONTENT;
 import static org.eclipse.leshan.integration.tests.util.TestUtil.assertContentFormat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.stream.Stream;
 
 import org.eclipse.leshan.client.object.LwM2mTestObject;
 import org.eclipse.leshan.core.node.LwM2mResource;
@@ -31,35 +32,32 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class ReadSingleValueTest {
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("contentFormats")
+    @Retention(RetentionPolicy.RUNTIME)
+    private @interface TestAllContentFormat {
+    }
+
+    static Stream<ContentFormat> contentFormats() {
+        return Stream.of(//
+                ContentFormat.TEXT, //
+                ContentFormat.TLV, //
+                ContentFormat.CBOR, //
+                ContentFormat.JSON, //
+                ContentFormat.SENML_JSON, //
+                ContentFormat.SENML_CBOR);
+    }
+
     protected IntegrationTestHelper helper = new IntegrationTestHelper();
 
-    @Parameters(name = "{0}")
-    public static Collection<?> contentFormats() {
-        return Arrays.asList(new Object[][] { //
-                { ContentFormat.TEXT }, //
-                { ContentFormat.TLV }, //
-                { ContentFormat.CBOR }, //
-                { ContentFormat.JSON }, //
-                { ContentFormat.SENML_JSON }, //
-                { ContentFormat.SENML_CBOR } });
-    }
-
-    private ContentFormat contentFormat;
-
-    public ReadSingleValueTest(ContentFormat contentFormat) {
-        this.contentFormat = contentFormat;
-    }
-
-    @Before
+    @BeforeEach
     public void start() {
         helper.initialize();
         helper.createServer();
@@ -69,15 +67,15 @@ public class ReadSingleValueTest {
         helper.waitForRegistrationAtServerSide(1);
     }
 
-    @After
+    @AfterEach
     public void stop() {
         helper.client.destroy(false);
         helper.server.destroy();
         helper.dispose();
     }
 
-    @Test
-    public void can_read_resource() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_read_resource(ContentFormat contentFormat) throws InterruptedException {
         // read device model number
         ReadResponse response = helper.server.send(helper.getCurrentRegistration(),
                 new ReadRequest(contentFormat, 3, 0, 1));
@@ -92,8 +90,8 @@ public class ReadSingleValueTest {
 
     }
 
-    @Test
-    public void can_read_resource_instance() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_read_resource_instance(ContentFormat contentFormat) throws InterruptedException {
         // read resource instance
         ReadResponse response = helper.server.send(helper.getCurrentRegistration(),
                 new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_STRING_VALUE, 0));
@@ -107,8 +105,8 @@ public class ReadSingleValueTest {
         assertEquals(LwM2mTestObject.INITIAL_STRING_VALUE, resourceInstance.getValue());
     }
 
-    @Test
-    public void cannot_read_non_multiple_resource_instance() throws InterruptedException {
+    @TestAllContentFormat
+    public void cannot_read_non_multiple_resource_instance(ContentFormat contentFormat) throws InterruptedException {
         // read single instance resource
         ReadResponse response = helper.server.send(helper.getCurrentRegistration(),
                 new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.INTEGER_VALUE, 0));

@@ -15,12 +15,13 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request.argument;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ArgumentsParsingTest {
 
@@ -44,9 +45,11 @@ public class ArgumentsParsingTest {
         assertEquals(new Argument(4, null), arguments.get(4));
     }
 
-    @Test(expected = InvalidArgumentException.class)
-    public void should_not_parse_arguments_with_same_digits() throws InvalidArgumentException {
-        Arguments.parse("4,4");
+    @Test
+    public void should_not_parse_arguments_with_same_digits() {
+        assertThrowsExactly(InvalidArgumentException.class, () -> {
+            Arguments.parse("4,4");
+        });
     }
 
     @Test
@@ -101,24 +104,32 @@ public class ArgumentsParsingTest {
         assertNull(arguments.get(4).getValue());
     }
 
-    @Test(expected = InvalidArgumentException.class)
+    @Test
     public void should_not_parse_non_digit_into_argument() throws InvalidArgumentException {
-        Arguments.parse("a='hello'");
+        assertThrowsExactly(InvalidArgumentException.class, () -> {
+            Arguments.parse("a='hello'");
+        });
     }
 
-    @Test(expected = InvalidArgumentException.class)
+    @Test
     public void should_not_parse_text_into_argument_with_value_without_equal() throws InvalidArgumentException {
-        Arguments.parse("3'hello'");
+        assertThrowsExactly(InvalidArgumentException.class, () -> {
+            Arguments.parse("3'hello'");
+        });
     }
 
-    @Test(expected = InvalidArgumentException.class)
+    @Test
     public void should_not_parse_text_into_argument_with_value_without_quotes() throws InvalidArgumentException {
-        Arguments.parse("3=hello");
+        assertThrowsExactly(InvalidArgumentException.class, () -> {
+            Arguments.parse("3=hello");
+        });
     }
 
-    @Test(expected = InvalidArgumentException.class)
+    @Test
     public void should_not_parse_unquoted_value() throws InvalidArgumentException {
-        Arguments.parse("3=string,4='Value'");
+        assertThrowsExactly(InvalidArgumentException.class, () -> {
+            Arguments.parse("3=string,4='Value'");
+        });
     }
 
 }

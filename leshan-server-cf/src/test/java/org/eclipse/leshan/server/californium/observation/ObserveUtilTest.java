@@ -16,10 +16,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.observation;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -35,8 +35,7 @@ import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
-import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
+import org.junit.jupiter.api.Test;
 
 public class ObserveUtilTest {
 
@@ -108,12 +107,10 @@ public class ObserveUtilTest {
         final Request coapRequest = new Request(null);
 
         // when / then
-        assertThrows(IllegalStateException.class, new ThrowingRunnable() {
-            @Override
-            public void run() {
-                ObserveUtil.createLwM2mObservation(coapRequest);
-            }
+        assertThrowsExactly(IllegalStateException.class, () -> {
+            ObserveUtil.createLwM2mObservation(coapRequest);
         });
+
     }
 
     @Test
@@ -125,11 +122,8 @@ public class ObserveUtilTest {
         coapRequest.setUserContext(userContext);
 
         // when / then
-        assertThrows(IllegalStateException.class, new ThrowingRunnable() {
-            @Override
-            public void run() {
-                ObserveUtil.createLwM2mObservation(coapRequest);
-            }
+        assertThrowsExactly(IllegalStateException.class, () -> {
+            ObserveUtil.createLwM2mObservation(coapRequest);
         });
     }
 }

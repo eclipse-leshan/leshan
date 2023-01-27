@@ -17,7 +17,10 @@
 package org.eclipse.leshan.integration.tests.lockstep;
 
 import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.linkParser;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.EnumSet;
 import java.util.concurrent.Callable;
@@ -41,10 +44,9 @@ import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.integration.tests.util.Callback;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointsProvider.Builder;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class LockStepTest {
 
@@ -66,14 +68,14 @@ public class LockStepTest {
         }
     };
 
-    @Before
+    @BeforeEach
     public void start() {
         helper.initialize();
         helper.createServer();
         helper.server.start();
     }
 
-    @After
+    @AfterEach
     public void stop() {
         helper.server.destroy();
         helper.dispose();
@@ -187,7 +189,7 @@ public class LockStepTest {
         });
         // Request should timedout in ~1s we don't send ACK
         ReadResponse response = future.get(1500, TimeUnit.MILLISECONDS);
-        Assert.assertNull("we should timeout", response);
+        assertNull(response, "we should timeout");
     }
 
     @Test
@@ -215,9 +217,9 @@ public class LockStepTest {
 
         // Request should timedout in ~3s as we send the ACK
         Thread.sleep(1500);
-        Assert.assertFalse("we should still wait for response", future.isDone());
+        assertFalse(future.isDone(), "we should still wait for response");
         ReadResponse response = future.get(2000, TimeUnit.MILLISECONDS);
-        Assert.assertNull("we should timeout", response);
+        assertNull(response, "we should timeout");
     }
 
     @Test
@@ -236,7 +238,7 @@ public class LockStepTest {
 
         // Request should timedout in ~1s we don't send ACK
         callback.waitForResponse(1500);
-        Assert.assertTrue("we should timeout", callback.getException() instanceof TimeoutException);
+        assertTrue(callback.getException() instanceof TimeoutException, "we should timeout");
         assertEquals(TimeoutException.Type.COAP_TIMEOUT, ((TimeoutException) callback.getException()).getType());
     }
 
@@ -260,9 +262,9 @@ public class LockStepTest {
 
         // Request should timedout in ~3s as we send a ack
         Thread.sleep(1500);
-        Assert.assertTrue("we should still wait for response", callback.getException() == null);
+        assertTrue(callback.getException() == null, "we should still wait for response");
         callback.waitForResponse(2000);
-        Assert.assertTrue("we should timeout", callback.getException() instanceof TimeoutException);
+        assertTrue(callback.getException() instanceof TimeoutException, "we should timeout");
         assertEquals(TimeoutException.Type.RESPONSE_TIMEOUT, ((TimeoutException) callback.getException()).getType());
     }
 }

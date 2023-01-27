@@ -23,13 +23,13 @@ import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.li
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -65,15 +65,15 @@ import org.eclipse.leshan.integration.tests.util.Callback;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class RegistrationTest {
 
     protected IntegrationTestHelper helper = new IntegrationTestHelper();
 
-    @Before
+    @BeforeEach
     public void start() {
         helper.initialize();
         helper.createServer();
@@ -81,7 +81,7 @@ public class RegistrationTest {
         helper.createClient();
     }
 
-    @After
+    @AfterEach
     public void stop() throws InterruptedException {
         helper.client.destroy(true);
         helper.server.destroy();
@@ -150,10 +150,10 @@ public class RegistrationTest {
         int index = 0;
         for (Callback<ReadResponse> callback : callbacks) {
             boolean timedout = !callback.waitForResponse(1000);
-            assertFalse("Response or Error expected, no timeout, call " + index, timedout);
-            assertTrue("Response or Error expected, call " + index, callback.isCalled().get());
-            assertNull("No response expected, call " + index, callback.getResponse());
-            assertNotNull("Exception expected, call " + index, callback.getException());
+            assertFalse(timedout, "Response or Error expected, no timeout, call " + index);
+            assertTrue(callback.isCalled().get(), "Response or Error expected, call " + index);
+            assertNull(callback.getResponse(), "No response expected, call " + index);
+            assertNotNull(callback.getException(), "Exception expected, call " + index);
             ++index;
         }
     }

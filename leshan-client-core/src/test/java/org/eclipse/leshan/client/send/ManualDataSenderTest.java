@@ -14,6 +14,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.send;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.time.Instant;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -35,9 +37,8 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.response.SendResponse;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ManualDataSenderTest {
     private ManualDataSender manualDataSender;
@@ -47,7 +48,7 @@ public class ManualDataSenderTest {
     private final List<LwM2mPath> givenPaths = Arrays.asList(new LwM2mPath(1, 2, 3), new LwM2mPath(4, 5, 6),
             new LwM2mPath(7, 8, 9));
 
-    @Before
+    @BeforeEach
     public void prepareDataSender() {
         manualDataSender = new ManualDataSender();
         fakeDataSenderManager = new FakeDataSenderManager(manualDataSender);
@@ -67,7 +68,7 @@ public class ManualDataSenderTest {
 
         // ensure that sent values equals collected ones.
         TimestampedLwM2mNodes lastValuesSent = fakeDataSenderManager.getLastValuesSent();
-        Assert.assertEquals(currentValues, lastValuesSent.getNodes());
+        assertEquals(currentValues, lastValuesSent.getNodes());
 
         // re send to ensure data was flushed (we do not resent same data)
         Map<LwM2mPath, LwM2mNode> newValue = fakeDataSenderManager.changeCurrentValues(givenServer, givenPaths);
@@ -75,8 +76,8 @@ public class ManualDataSenderTest {
         manualDataSender.sendCollectedData(givenServer, ContentFormat.SENML_CBOR, 0, false);
         lastValuesSent = fakeDataSenderManager.getLastValuesSent();
 
-        Assert.assertEquals(1, lastValuesSent.getTimestamps().size());
-        Assert.assertEquals(newValue, lastValuesSent.getNodes());
+        assertEquals(1, lastValuesSent.getTimestamps().size());
+        assertEquals(newValue, lastValuesSent.getNodes());
     }
 
     @Test
@@ -102,10 +103,10 @@ public class ManualDataSenderTest {
         // ensure that sent values equals collected ones.
         TimestampedLwM2mNodes lastValuesSent = fakeDataSenderManager.getLastValuesSent();
         List<Instant> timestamps = new ArrayList<>(lastValuesSent.getTimestamps());
-        Assert.assertEquals(3, timestamps.size());
-        Assert.assertEquals(firstValue, lastValuesSent.getNodesAt(timestamps.get(0)));
-        Assert.assertEquals(secondValue, lastValuesSent.getNodesAt(timestamps.get(1)));
-        Assert.assertEquals(thirdValue, lastValuesSent.getNodesAt(timestamps.get(2)));
+        assertEquals(3, timestamps.size());
+        assertEquals(firstValue, lastValuesSent.getNodesAt(timestamps.get(0)));
+        assertEquals(secondValue, lastValuesSent.getNodesAt(timestamps.get(1)));
+        assertEquals(thirdValue, lastValuesSent.getNodesAt(timestamps.get(2)));
     }
 
     @Test
@@ -125,7 +126,7 @@ public class ManualDataSenderTest {
 
         // ensure that sent values equals collected ones.
         TimestampedLwM2mNodes lastValuesSent = fakeDataSenderManager.getLastValuesSent();
-        Assert.assertEquals(currentValues, lastValuesSent.getNodes());
+        assertEquals(currentValues, lastValuesSent.getNodes());
     }
 
     @Test
@@ -145,7 +146,7 @@ public class ManualDataSenderTest {
 
         // ensure that sent values equals collected ones.
         TimestampedLwM2mNodes lastValuesSent = fakeDataSenderManager.getLastValuesSent();
-        Assert.assertEquals(currentValues, lastValuesSent.getNodes());
+        assertEquals(currentValues, lastValuesSent.getNodes());
     }
 
     @Test
@@ -162,13 +163,13 @@ public class ManualDataSenderTest {
 
         // ensure that sent values equals collected ones.
         TimestampedLwM2mNodes lastValuesSent = fakeDataSenderManager.getLastValuesSent();
-        Assert.assertEquals(currentValues, lastValuesSent.getNodes());
+        assertEquals(currentValues, lastValuesSent.getNodes());
 
         // re send to ensure data was not flushed
         manualDataSender.sendCollectedData(givenServer, ContentFormat.SENML_CBOR, 0, false);
 
         lastValuesSent = fakeDataSenderManager.getLastValuesSent();
-        Assert.assertEquals(currentValues, lastValuesSent.getNodes());
+        assertEquals(currentValues, lastValuesSent.getNodes());
     }
 
     static class FakeDataSenderManager extends DataSenderManager {

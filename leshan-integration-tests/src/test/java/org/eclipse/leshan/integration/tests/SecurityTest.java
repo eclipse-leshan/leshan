@@ -23,13 +23,13 @@ import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHel
 import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.GOOD_PSK_ID;
 import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.GOOD_PSK_KEY;
 import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.getServerOscoreSetting;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.URI;
@@ -50,7 +50,6 @@ import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.RawData;
 import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.exception.EndpointMismatchException;
-import org.eclipse.californium.elements.util.SimpleMessageCallback;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.dtls.DTLSSession;
 import org.eclipse.leshan.core.CertificateUsage;
@@ -62,24 +61,25 @@ import org.eclipse.leshan.core.request.exception.UnconnectedPeerException;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.integration.tests.util.Callback;
 import org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper;
+import org.eclipse.leshan.integration.tests.util.cf.SimpleMessageCallback;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class SecurityTest {
 
     protected SecureIntegrationTestHelper helper = new SecureIntegrationTestHelper();
 
-    @Before
+    @BeforeEach
     public void start() {
         helper.initialize();
     }
 
-    @After
+    @AfterEach
     public void stop() {
         if (helper.client != null)
             helper.client.destroy(true);
@@ -269,8 +269,8 @@ public class SecurityTest {
             helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 1000);
             fail("send must failed");
         } catch (SendFailedException e) {
-            assertTrue("must be caused by an EndpointMismatchException",
-                    e.getCause() instanceof EndpointMismatchException);
+            assertTrue(e.getCause() instanceof EndpointMismatchException,
+                    "must be caused by an EndpointMismatchException");
         } finally {
             connector.stop();
             helper.client.destroy(false);
@@ -458,7 +458,7 @@ public class SecurityTest {
             fail("Read request SHOULD have failed");
         } catch (UnconnectedPeerException e) {
             // expected result
-            assertFalse("client is still awake", helper.server.getPresenceService().isClientAwake(registration));
+            assertFalse(helper.server.getPresenceService().isClientAwake(registration), "client is still awake");
         }
     }
 

@@ -23,23 +23,23 @@ import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.li
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.response.DiscoverResponse;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class DiscoverTest {
 
     private final IntegrationTestHelper helper = new IntegrationTestHelper();
 
-    @Before
+    @BeforeEach
     public void start() {
         helper.initialize();
         helper.createServer();
@@ -49,7 +49,7 @@ public class DiscoverTest {
         helper.waitForRegistrationAtServerSide(1);
     }
 
-    @After
+    @AfterEach
     public void stop() {
         helper.client.destroy(false);
         helper.server.destroy();

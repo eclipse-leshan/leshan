@@ -19,13 +19,15 @@ import static org.eclipse.leshan.core.ResponseCode.CHANGED;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Date;
+import java.util.stream.Stream;
 
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.LwM2m;
@@ -52,37 +54,34 @@ import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class WriteSingleValueTest {
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("contentFormats")
+    @Retention(RetentionPolicy.RUNTIME)
+    private @interface TestAllContentFormat {
+    }
+
+    static Stream<ContentFormat> contentFormats() {
+        return Stream.of(//
+                ContentFormat.TEXT, //
+                ContentFormat.CBOR, //
+                ContentFormat.TLV, //
+                ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE), //
+                ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE), //
+                ContentFormat.JSON, //
+                ContentFormat.SENML_JSON, //
+                ContentFormat.SENML_CBOR);
+    }
+
     protected IntegrationTestHelper helper = new IntegrationTestHelper();
 
-    @Parameters(name = "{0}")
-    public static Collection<?> contentFormats() {
-        return Arrays.asList(new Object[][] { //
-                { ContentFormat.TEXT }, //
-                { ContentFormat.TLV }, //
-                { ContentFormat.CBOR }, //
-                { ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE) }, //
-                { ContentFormat.JSON }, //
-                { ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE) }, //
-                { ContentFormat.SENML_JSON }, //
-                { ContentFormat.SENML_CBOR } });
-    }
-
-    private ContentFormat contentFormat;
-
-    public WriteSingleValueTest(ContentFormat contentFormat) {
-        this.contentFormat = contentFormat;
-    }
-
-    @Before
+    @BeforeEach
     public void start() {
         helper.initialize();
         helper.createServer();
@@ -92,15 +91,15 @@ public class WriteSingleValueTest {
         helper.waitForRegistrationAtServerSide(1);
     }
 
-    @After
+    @AfterEach
     public void stop() {
         helper.client.destroy(false);
         helper.server.destroy();
         helper.dispose();
     }
 
-    @Test
-    public void write_string_resource() throws InterruptedException {
+    @TestAllContentFormat
+    public void write_string_resource(ContentFormat contentFormat) throws InterruptedException {
         // write resource
         String expectedvalue = "stringvalue";
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
@@ -118,8 +117,8 @@ public class WriteSingleValueTest {
         assertEquals(expectedvalue, resource.getValue());
     }
 
-    @Test
-    public void write_boolean_resource() throws InterruptedException {
+    @TestAllContentFormat
+    public void write_boolean_resource(ContentFormat contentFormat) throws InterruptedException {
         // write resource
         boolean expectedvalue = true;
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
@@ -137,8 +136,8 @@ public class WriteSingleValueTest {
         assertEquals(expectedvalue, resource.getValue());
     }
 
-    @Test
-    public void write_integer_resource() throws InterruptedException {
+    @TestAllContentFormat
+    public void write_integer_resource(ContentFormat contentFormat) throws InterruptedException {
         // write resource
         long expectedvalue = -999l;
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
@@ -156,8 +155,8 @@ public class WriteSingleValueTest {
         assertEquals(expectedvalue, resource.getValue());
     }
 
-    @Test
-    public void can_write_string_resource_instance() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_write_string_resource_instance(ContentFormat contentFormat) throws InterruptedException {
         write_string_resource_instance(contentFormat, 0);
     }
 
@@ -183,8 +182,8 @@ public class WriteSingleValueTest {
         assertEquals(valueToWrite, resource.getValue());
     }
 
-    @Test
-    public void write_float_resource() throws InterruptedException {
+    @TestAllContentFormat
+    public void write_float_resource(ContentFormat contentFormat) throws InterruptedException {
         // write resource
         double expectedvalue = 999.99;
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
@@ -202,8 +201,8 @@ public class WriteSingleValueTest {
         assertEquals(expectedvalue, resource.getValue());
     }
 
-    @Test
-    public void write_time_resource() throws InterruptedException {
+    @TestAllContentFormat
+    public void write_time_resource(ContentFormat contentFormat) throws InterruptedException {
         // write resource
         Date expectedvalue = new Date(946681000l); // second accuracy
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
@@ -221,8 +220,8 @@ public class WriteSingleValueTest {
         assertEquals(expectedvalue, resource.getValue());
     }
 
-    @Test
-    public void write_corelnk_resource() throws InterruptedException {
+    @TestAllContentFormat
+    public void write_corelnk_resource(ContentFormat contentFormat) throws InterruptedException {
         // write resource
         Link[] expectedvalue = new Link[3];
         expectedvalue[0] = new MixedLwM2mLink(null, new LwM2mPath(3),
@@ -246,8 +245,8 @@ public class WriteSingleValueTest {
         assertArrayEquals(expectedvalue, (Link[]) resource.getValue());
     }
 
-    @Test
-    public void write_unsigned_integer_resource() throws InterruptedException {
+    @TestAllContentFormat
+    public void write_unsigned_integer_resource(ContentFormat contentFormat) throws InterruptedException {
         // write resource
         ULong expectedvalue = ULong.valueOf("18446744073709551615"); // this unsigned integer can not be stored in a
 
@@ -266,8 +265,8 @@ public class WriteSingleValueTest {
         assertEquals(expectedvalue, resource.getValue());
     }
 
-    @Test
-    public void can_write_single_instance_objlnk_resource() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_write_single_instance_objlnk_resource(ContentFormat contentFormat) throws InterruptedException {
 
         ObjectLink data = new ObjectLink(10245, 1);
 
@@ -290,25 +289,31 @@ public class WriteSingleValueTest {
         assertEquals(((ObjectLink) resource.getValue()).getObjectInstanceId(), 1);
     }
 
-    @Test(expected = CodecException.class)
-    public void send_writerequest_synchronously_with_bad_payload_raises_codeexception() throws InterruptedException {
-        helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(contentFormat, 3, 0, 13, "a string instead of timestamp for currenttime resource"));
+    @TestAllContentFormat
+    public void send_writerequest_synchronously_with_bad_payload_raises_codeexception(ContentFormat contentFormat)
+            throws InterruptedException {
+        assertThrowsExactly(CodecException.class, () -> {
+            helper.server.send(helper.getCurrentRegistration(), new WriteRequest(contentFormat, 3, 0, 13,
+                    "a string instead of timestamp for currenttime resource"));
+        });
 
     }
 
-    @Test(expected = CodecException.class)
-    public void send_writerequest_asynchronously_with_bad_payload_raises_codeexception() throws InterruptedException {
-        helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(contentFormat, 3, 0, 13, "a string instead of timestamp for currenttime resource"),
-                new ResponseCallback<WriteResponse>() {
-                    @Override
-                    public void onResponse(WriteResponse response) {
-                    }
-                }, new ErrorCallback() {
-                    @Override
-                    public void onError(Exception e) {
-                    }
-                });
+    @TestAllContentFormat
+    public void send_writerequest_asynchronously_with_bad_payload_raises_codeexception(ContentFormat contentFormat)
+            throws InterruptedException {
+        assertThrowsExactly(CodecException.class, () -> {
+            helper.server.send(helper.getCurrentRegistration(),
+                    new WriteRequest(contentFormat, 3, 0, 13, "a string instead of timestamp for currenttime resource"),
+                    new ResponseCallback<WriteResponse>() {
+                        @Override
+                        public void onResponse(WriteResponse response) {
+                        }
+                    }, new ErrorCallback() {
+                        @Override
+                        public void onError(Exception e) {
+                        }
+                    });
+        });
     }
 }

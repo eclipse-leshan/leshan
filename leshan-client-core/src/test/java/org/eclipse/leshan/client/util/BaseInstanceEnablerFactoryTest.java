@@ -15,8 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.util;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,17 +30,16 @@ import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.StaticModel;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class BaseInstanceEnablerFactoryTest {
 
     public static final LwM2mModel model = new StaticModel(ObjectLoader.loadDefault());
     public static List<Integer> emptyList = Collections.emptyList();
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void create_instance_with_unexpected_id() {
         final int id = 2;
-
         BaseInstanceEnablerFactory badInstanceEnablerFactory = new BaseInstanceEnablerFactory() {
 
             @Override
@@ -49,7 +49,9 @@ public class BaseInstanceEnablerFactoryTest {
             }
         };
 
-        badInstanceEnablerFactory.create(model.getObjectModel(LwM2mId.ACCESS_CONTROL), id, emptyList);
+        assertThrowsExactly(IllegalStateException.class, () -> {
+            badInstanceEnablerFactory.create(model.getObjectModel(LwM2mId.ACCESS_CONTROL), id, emptyList);
+        });
     }
 
     @Test
@@ -65,7 +67,7 @@ public class BaseInstanceEnablerFactoryTest {
         List<Integer> alreadyUsedIds = Arrays.asList(2, 3, 5, 6);
         LwM2mInstanceEnabler instance = instanceEnablerFactory.create(model.getObjectModel(LwM2mId.ACCESS_CONTROL),
                 null, alreadyUsedIds);
-        assertNotNull("instance id is not set", instance.getId());
-        assertFalse("new id must not be already used", alreadyUsedIds.contains(instance.getId()));
+        assertNotNull(instance.getId(), "instance id is not set");
+        assertFalse(alreadyUsedIds.contains(instance.getId()), "new id must not be already used");
     }
 }

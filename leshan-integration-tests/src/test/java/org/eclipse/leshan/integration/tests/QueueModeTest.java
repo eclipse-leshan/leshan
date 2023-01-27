@@ -18,23 +18,23 @@
 package org.eclipse.leshan.integration.tests;
 
 import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.linkParser;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.integration.tests.util.QueueModeIntegrationTestHelper;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class QueueModeTest {
 
     protected QueueModeIntegrationTestHelper queueModeHelper = new QueueModeIntegrationTestHelper();
     private final long awaketime = 1; // seconds
 
-    @Before
+    @BeforeEach
     public void start() {
         queueModeHelper.initialize();
         queueModeHelper.createServer((int) awaketime * 1000);
@@ -42,7 +42,7 @@ public class QueueModeTest {
         queueModeHelper.createClient();
     }
 
-    @After
+    @AfterEach
     public void stop() throws InterruptedException {
         queueModeHelper.client.destroy(true);
         queueModeHelper.server.destroy();
@@ -103,7 +103,7 @@ public class QueueModeTest {
         // Check that client is awake and only one awake notification
         queueModeHelper.waitToGetAwake(1000);
         queueModeHelper.ensureClientAwake();
-        assertEquals("Only one awake event should be received", 1, queueModeHelper.presenceCounter.getNbAwake());
+        assertEquals(1, queueModeHelper.presenceCounter.getNbAwake(), "Only one awake event should be received");
 
         // Check client is well registered
         queueModeHelper.assertClientRegisterered();
@@ -114,7 +114,7 @@ public class QueueModeTest {
         queueModeHelper.waitForUpdateAtClientSide(1);
 
         // Check only one notification
-        assertEquals("Only one awake event should be received", 1, queueModeHelper.presenceCounter.getNbAwake());
+        assertEquals(1, queueModeHelper.presenceCounter.getNbAwake(), "Only one awake event should be received");
 
         // Wait for client awake time expiration (20% margin)
         queueModeHelper.ensureAwakeFor(awaketime, 200);
@@ -138,7 +138,7 @@ public class QueueModeTest {
         queueModeHelper.waitForUpdateAtClientSide(1);
 
         // Check only one notification
-        assertEquals("Only one awake event should be received", 1, queueModeHelper.presenceCounter.getNbAwake());
+        assertEquals(1, queueModeHelper.presenceCounter.getNbAwake(), "Only one awake event should be received");
 
     }
 

@@ -18,62 +18,54 @@ package org.eclipse.leshan.core.response;
 import static org.eclipse.leshan.core.ResponseCode.CHANGED;
 import static org.eclipse.leshan.core.ResponseCode.CONTENT;
 import static org.eclipse.leshan.core.node.LwM2mSingleResource.newResource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
-import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class ObserveResponseTest {
 
-    @Parameters(name = "{0}")
-    public static Collection<?> responseCodes() {
-        return Arrays.asList(CONTENT, CHANGED);
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("responseCodes")
+    @Retention(RetentionPolicy.RUNTIME)
+    private @interface TestAllResponseCode {
     }
 
-    private final ResponseCode responseCode;
-
-    public ObserveResponseTest(ResponseCode responseCode) {
-        this.responseCode = responseCode;
+    static Stream<ResponseCode> responseCodes() {
+        return Stream.of(CONTENT, CHANGED);
     }
 
-    @Test
-    public void should_throw_invalid_response_exception_if_no_content() {
-        assertThrows(InvalidResponseException.class, new ThrowingRunnable() {
-            @Override
-            public void run() {
-                new ObserveResponse(responseCode, null, null, null, null);
-            }
+    @TestAllResponseCode
+    public void should_throw_invalid_response_exception_if_no_content(ResponseCode responseCode) {
+        assertThrowsExactly(InvalidResponseException.class, () -> {
+            new ObserveResponse(responseCode, null, null, null, null);
         });
     }
 
-    @Test
-    public void should_throw_invalid_response_exception_if_no_content_and_empty_timestamped_values() {
-        assertThrows(InvalidResponseException.class, new ThrowingRunnable() {
-            @Override
-            public void run() {
-                new ObserveResponse(responseCode, null, Collections.<TimestampedLwM2mNode> emptyList(), null, null);
-            }
+    @TestAllResponseCode
+    public void should_throw_invalid_response_exception_if_no_content_and_empty_timestamped_values(
+            ResponseCode responseCode) {
+        assertThrowsExactly(InvalidResponseException.class, () -> {
+            new ObserveResponse(responseCode, null, Collections.<TimestampedLwM2mNode> emptyList(), null, null);
         });
     }
 
-    @Test
-    public void should_not_throw_exception_if_has_content() {
+    @TestAllResponseCode
+    public void should_not_throw_exception_if_has_content(ResponseCode responseCode) {
         // given
         LwM2mSingleResource exampleResource = newResource(15, "example");
 
@@ -85,8 +77,8 @@ public class ObserveResponseTest {
         assertNull(response.getTimestampedLwM2mNode());
     }
 
-    @Test
-    public void should_get_content_from_first_of_timestamped_values() {
+    @TestAllResponseCode
+    public void should_get_content_from_first_of_timestamped_values(ResponseCode responseCode) {
         // given
         List<TimestampedLwM2mNode> timestampedValues = Arrays.asList(
                 new TimestampedLwM2mNode(Instant.ofEpochSecond(123), newResource(15, "example 1")),

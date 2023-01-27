@@ -14,10 +14,7 @@
 
 package org.eclipse.leshan.core.senml.cbor;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.Arrays;
-import java.util.Collection;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.senml.SenMLDecoder;
@@ -26,28 +23,17 @@ import org.eclipse.leshan.senml.SenMLException;
 import org.eclipse.leshan.senml.SenMLPack;
 import org.eclipse.leshan.senml.SenMLRecord;
 import org.eclipse.leshan.senml.cbor.upokecenter.SenMLCborUpokecenterEncoderDecoder;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
 
-@RunWith(Parameterized.class)
 public class SenMLCborSerializerTest extends AbstractSenMLTest {
 
-    @Parameterized.Parameters(name = "{2}")
-    public static Collection<?> senMLJsonencoderDecoder() {
+    private final SenMLEncoder encoder;
+    private final SenMLDecoder decoder;
+
+    public SenMLCborSerializerTest() {
         SenMLCborUpokecenterEncoderDecoder cborJava = new SenMLCborUpokecenterEncoderDecoder(true, false);
-        return Arrays.asList(new Object[][] { //
-                { cborJava, cborJava, "cbor-java" }, //
-        });
-    }
-
-    private SenMLEncoder encoder;
-    private SenMLDecoder decoder;
-
-    public SenMLCborSerializerTest(SenMLEncoder encoder, SenMLDecoder decoder, String encoderDecoderName) {
-        this.encoder = encoder;
-        this.decoder = decoder;
+        this.encoder = cborJava;
+        this.decoder = cborJava;
     }
 
     @Test
@@ -60,7 +46,7 @@ public class SenMLCborSerializerTest extends AbstractSenMLTest {
     @Test
     public void serialize_device_object() throws Exception {
         byte[] cbor = encoder.toSenML(givenDeviceObjectInstance());
-        Assert.assertEquals(givenSenMLCborExample(), Hex.encodeHexString(cbor));
+        assertEquals(givenSenMLCborExample(), Hex.encodeHexString(cbor));
     }
 
     @Test
@@ -86,7 +72,7 @@ public class SenMLCborSerializerTest extends AbstractSenMLTest {
 
         // value : [{-2: "/0/0/3", 8: h'ABCDEF'}]
         String expected = "81a221662f302f302f330843abcdef";
-        Assert.assertEquals(expected, Hex.encodeHexString(cbor));
+        assertEquals(expected, Hex.encodeHexString(cbor));
     }
 
     @Test

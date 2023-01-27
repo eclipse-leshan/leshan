@@ -17,12 +17,10 @@ package org.eclipse.leshan.integration.tests.send;
 
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.model.StaticModel;
-import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.integration.tests.util.RedisIntegrationTestHelper;
 
 public class RedisSendTest extends SendTest {
-    public RedisSendTest(ContentFormat format) {
-        super(format);
+    public RedisSendTest() {
         helper = new RedisIntegrationTestHelper() {
             @Override
             protected ObjectsInitializer createObjectsInitializer() {

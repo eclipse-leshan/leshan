@@ -17,7 +17,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -27,9 +30,8 @@ import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.Identity;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class InMemoryRegistrationStoreTest {
 
@@ -45,7 +47,7 @@ public class InMemoryRegistrationStoreTest {
     InetAddress address;
     Registration registration;
 
-    @Before
+    @BeforeEach
     public void setUp() throws UnknownHostException {
         address = InetAddress.getLocalHost();
         store = new InMemoryRegistrationStore();
@@ -60,14 +62,14 @@ public class InMemoryRegistrationStoreTest {
                 null, null, null, null);
         UpdatedRegistration updatedRegistration = store.updateRegistration(update);
         assertEquals(lifetime, updatedRegistration.getUpdatedRegistration().getLifeTimeInSec());
-        Assert.assertSame(binding, updatedRegistration.getUpdatedRegistration().getBindingMode());
+        assertSame(binding, updatedRegistration.getUpdatedRegistration().getBindingMode());
         assertEquals(sms, updatedRegistration.getUpdatedRegistration().getSmsNumber());
 
         assertEquals(registration, updatedRegistration.getPreviousRegistration());
 
         Registration reg = store.getRegistrationByEndpoint(ep);
         assertEquals(lifetime, reg.getLifeTimeInSec());
-        Assert.assertSame(binding, reg.getBindingMode());
+        assertSame(binding, reg.getBindingMode());
         assertEquals(sms, reg.getSmsNumber());
     }
 
@@ -75,22 +77,22 @@ public class InMemoryRegistrationStoreTest {
     public void client_registration_sets_time_to_live() {
         givenASimpleRegistration(lifetime);
         store.addRegistration(registration);
-        Assert.assertTrue(registration.isAlive());
+        assertTrue(registration.isAlive());
     }
 
     @Test
     public void update_registration_to_extend_time_to_live() {
         givenASimpleRegistration(0L);
         store.addRegistration(registration);
-        Assert.assertFalse(registration.isAlive());
+        assertFalse(registration.isAlive());
 
         RegistrationUpdate update = new RegistrationUpdate(registrationId, Identity.unsecure(address, port), lifetime,
                 null, null, null, null, null);
         UpdatedRegistration updatedRegistration = store.updateRegistration(update);
-        Assert.assertTrue(updatedRegistration.getUpdatedRegistration().isAlive());
+        assertTrue(updatedRegistration.getUpdatedRegistration().isAlive());
 
         Registration reg = store.getRegistrationByEndpoint(ep);
-        Assert.assertTrue(reg.isAlive());
+        assertTrue(reg.isAlive());
     }
 
     private void givenASimpleRegistration(Long lifetime) {

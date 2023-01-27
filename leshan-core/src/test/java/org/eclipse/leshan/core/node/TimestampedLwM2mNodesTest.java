@@ -15,11 +15,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -28,7 +28,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class TimestampedLwM2mNodesTest {
 
@@ -170,21 +170,21 @@ public class TimestampedLwM2mNodesTest {
         builder.put(timestamp_1E9_ms, new LwM2mPath("/0/0/1"), LwM2mSingleResource.newIntegerResource(1, 112L));
 
         // when
-        assertThrows(IllegalArgumentException.class, () -> builder.build());
+        assertThrowsExactly(IllegalArgumentException.class, () -> builder.build());
     }
 
     @Test
     public void should_raise_exception_id_path_does_not_match_node() {
         TimestampedLwM2mNodes.Builder builder = TimestampedLwM2mNodes.builder().put(timestamp_2E9_ms,
                 new LwM2mPath("/0/0/2"), LwM2mResourceInstance.newIntegerInstance(0, 222L));
-        assertThrows(IllegalArgumentException.class, () -> builder.build());
+        assertThrowsExactly(IllegalArgumentException.class, () -> builder.build());
     }
 
     @Test
     public void should_raise_exception_path_does_not_match_id() {
         TimestampedLwM2mNodes.Builder builder = TimestampedLwM2mNodes.builder().put(timestamp_2E9_ms,
                 new LwM2mPath("/0/0/2"), LwM2mSingleResource.newIntegerResource(1, 222L));
-        assertThrows(IllegalArgumentException.class, () -> builder.build());
+        assertThrowsExactly(IllegalArgumentException.class, () -> builder.build());
     }
 
     @Test

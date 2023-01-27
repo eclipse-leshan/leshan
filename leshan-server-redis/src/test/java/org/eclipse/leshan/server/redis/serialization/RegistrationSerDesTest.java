@@ -16,7 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.redis.serialization;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.Inet4Address;
 import java.util.Date;
@@ -34,7 +34,7 @@ import org.eclipse.leshan.core.link.attributes.ValuelessAttribute;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.registration.Registration;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class RegistrationSerDesTest {
 

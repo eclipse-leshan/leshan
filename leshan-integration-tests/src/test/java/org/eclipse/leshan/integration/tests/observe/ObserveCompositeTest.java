@@ -18,10 +18,10 @@ package org.eclipse.leshan.integration.tests.observe;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,9 +47,9 @@ import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteCompositeResponse;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.eclipse.leshan.server.registration.Registration;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ObserveCompositeTest {
 
@@ -57,7 +57,7 @@ public class ObserveCompositeTest {
     private Registration currentRegistration;
     private TestObservationListener listener;
 
-    @Before
+    @BeforeEach
     public void start() {
         helper.initialize();
         helper.createServer();
@@ -71,7 +71,7 @@ public class ObserveCompositeTest {
         helper.server.getObservationService().addListener(listener);
     }
 
-    @After
+    @AfterEach
     public void stop() {
         helper.client.destroy(false);
         helper.server.destroy();
@@ -100,8 +100,8 @@ public class ObserveCompositeTest {
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
         Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
-        assertEquals("We should have only one observation", 1, observations.size());
-        assertTrue("New observation is not there", observations.contains(observation));
+        assertEquals(1, observations.size(), "We should have only one observation");
+        assertTrue(observations.contains(observation), "New observation is not there");
 
         // Write single example value
         LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
@@ -145,8 +145,8 @@ public class ObserveCompositeTest {
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
         Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
-        assertEquals("We should have only one observation", 1, observations.size());
-        assertTrue("New observation is not there", observations.contains(observation));
+        assertEquals(1, observations.size(), "We should have only one observation");
+        assertTrue(observations.contains(observation), "New observation is not there");
 
         // Write single example value
         LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
@@ -183,8 +183,8 @@ public class ObserveCompositeTest {
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
         Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
-        assertEquals("We should have only one observation", 1, observations.size());
-        assertTrue("New observation is not there", observations.contains(observation));
+        assertEquals(1, observations.size(), "We should have only one observation");
+        assertTrue(observations.contains(observation), "New observation is not there");
 
         // Write single example value
         LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
@@ -232,8 +232,8 @@ public class ObserveCompositeTest {
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
         Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
-        assertEquals("We should have only one observation", 1, observations.size());
-        assertTrue("New observation is not there", observations.contains(observation));
+        assertEquals(1, observations.size(), "We should have only one observation");
+        assertTrue(observations.contains(observation), "New observation is not there");
 
         // Write example composite values
         Map<String, Object> nodes = new HashMap<>();
@@ -284,8 +284,8 @@ public class ObserveCompositeTest {
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
         Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
-        assertEquals("We should have only one observation", 1, observations.size());
-        assertTrue("New observation is not there", observations.contains(observation));
+        assertEquals(1, observations.size(), "We should have only one observation");
+        assertTrue(observations.contains(observation), "New observation is not there");
 
         // Write single example value
         LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
@@ -327,8 +327,8 @@ public class ObserveCompositeTest {
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
         Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
-        assertEquals("We should have only one observation", 1, observations.size());
-        assertTrue("New observation is not there", observations.contains(observation));
+        assertEquals(1, observations.size(), "We should have only one observation");
+        assertTrue(observations.contains(observation), "New observation is not there");
 
         // Write single example value
         LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
@@ -366,7 +366,7 @@ public class ObserveCompositeTest {
         helper.server.getObservationService().cancelObservation(observation);
         Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
-        assertTrue("Observation should be removed", observations.isEmpty());
+        assertTrue(observations.isEmpty(), "Observation should be removed");
 
         // write device timezone
         listener.reset();
@@ -377,7 +377,7 @@ public class ObserveCompositeTest {
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
 
-        assertFalse("Observation should be cancelled", listener.receivedNotify().get());
+        assertFalse(listener.receivedNotify().get(), "Observation should be cancelled");
     }
 
     @Test
@@ -417,8 +417,8 @@ public class ObserveCompositeTest {
         assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
         Set<Observation> observations = helper.server.getObservationService()
                 .getObservations(helper.getCurrentRegistration());
-        assertEquals("We should have only one observation", 1, observations.size());
-        assertTrue("New observation is not there", observations.contains(observation));
+        assertEquals(1, observations.size(), "We should have only one observation");
+        assertTrue(observations.contains(observation), "New observation is not there");
 
         // Write device timezone
         listener.reset();
@@ -428,7 +428,7 @@ public class ObserveCompositeTest {
         listener.waitForNotification(2000);
         assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
 
-        assertFalse("Observation should be cancelled", listener.receivedNotify().get());
+        assertFalse(listener.receivedNotify().get(), "Observation should be cancelled");
     }
 
 }

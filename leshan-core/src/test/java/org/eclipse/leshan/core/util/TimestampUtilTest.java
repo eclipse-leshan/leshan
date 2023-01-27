@@ -15,8 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class TimestampUtilTest {
 
@@ -59,7 +59,7 @@ public class TimestampUtilTest {
     public void test_too_precise_big_decimal_to_instant_conversion() {
         BigDecimal tooPreciseValue = new BigDecimal("1664832119.112233445566");
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        IllegalArgumentException exception = assertThrowsExactly(IllegalArgumentException.class,
                 () -> TimestampUtil.fromSeconds(tooPreciseValue));
         assertEquals(
                 String.format("Provided timestamp value: %s is too precise - maximum allowed precision is nanoseconds",
@@ -71,7 +71,7 @@ public class TimestampUtilTest {
     public void test_big_decimal_to_instant_conversion_overflow() {
         BigDecimal invalidValue = BigDecimal.valueOf(Double.MAX_VALUE).add(BigDecimal.valueOf(1));
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        IllegalArgumentException exception = assertThrowsExactly(IllegalArgumentException.class,
                 () -> TimestampUtil.fromSeconds(invalidValue));
         assertEquals(String.format("Provided timestamp value: %s is too large or too small to be converted to Double",
                 invalidValue), exception.getMessage());
@@ -84,7 +84,7 @@ public class TimestampUtilTest {
                 BigDecimal.valueOf(Instant.MIN.getEpochSecond()).subtract(BigDecimal.valueOf(2)));
 
         invalidValues.forEach(invalidValue -> {
-            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            IllegalArgumentException exception = assertThrowsExactly(IllegalArgumentException.class,
                     () -> TimestampUtil.fromSeconds(invalidValue));
             assertEquals(
                     String.format("Provided timestamp value: %s is too large or too small to be converted to Instant",

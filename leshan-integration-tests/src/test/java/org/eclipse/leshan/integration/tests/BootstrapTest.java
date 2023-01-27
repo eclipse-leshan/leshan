@@ -20,12 +20,12 @@ import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.li
 import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.GOOD_PSK_ID;
 import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.GOOD_PSK_KEY;
 import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.getServerOscoreSetting;
-import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.hasItems;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,20 +58,20 @@ import org.eclipse.leshan.integration.tests.util.TestObjectsInitializer;
 import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class BootstrapTest {
 
     private final BootstrapIntegrationTestHelper helper = new BootstrapIntegrationTestHelper();
 
-    @Before
+    @BeforeEach
     public void start() {
         helper.initialize();
     }
 
-    @After
+    @AfterEach
     public void stop() {
         helper.client.destroy(true);
         helper.bootstrapServer.destroy();
@@ -122,7 +122,7 @@ public class BootstrapTest {
         // Start it and wait for registration
         helper.client.start();
         helper.waitForRegistrationAtServerSide(1);
-        assertTrue("not expected content format used", contentFormatChecker.isValid());
+        assertTrue(contentFormatChecker.isValid(), "not expected content format used");
 
         // check the client is registered
         helper.assertClientRegisterered();
@@ -150,7 +150,7 @@ public class BootstrapTest {
         // Start it and wait for registration
         helper.client.start();
         helper.waitForRegistrationAtServerSide(1);
-        assertTrue("not expected content format used", contentFormatChecker.isValid());
+        assertTrue(contentFormatChecker.isValid(), "not expected content format used");
 
         // check the client is registered
         helper.assertClientRegisterered();
@@ -177,7 +177,7 @@ public class BootstrapTest {
         // Start it and wait for registration
         helper.client.start();
         helper.waitForRegistrationAtServerSide(1);
-        assertTrue("not expected content format used", contentFormatChecker.isValid());
+        assertTrue(contentFormatChecker.isValid(), "not expected content format used");
 
         // check the client is registered
         helper.assertClientRegisterered();
@@ -456,25 +456,25 @@ public class BootstrapTest {
         // ensure instances are deleted
         ReadResponse response = helper.client.getObjectTree().getObjectEnabler(LwM2mId.ACCESS_CONTROL)
                 .read(ServerIdentity.SYSTEM, new ReadRequest(LwM2mId.ACCESS_CONTROL));
-        assertTrue("ACL instance is not deleted", ((LwM2mObject) response.getContent()).getInstances().isEmpty());
+        assertTrue(((LwM2mObject) response.getContent()).getInstances().isEmpty(), "ACL instance is not deleted");
 
         response = helper.client.getObjectTree().getObjectEnabler(LwM2mId.CONNECTIVITY_STATISTICS)
                 .read(ServerIdentity.SYSTEM, new ReadRequest(LwM2mId.CONNECTIVITY_STATISTICS));
-        assertTrue("Connectvity instance is not deleted",
-                ((LwM2mObject) response.getContent()).getInstances().isEmpty());
+        assertTrue(((LwM2mObject) response.getContent()).getInstances().isEmpty(),
+                "Connectvity instance is not deleted");
 
         // ensure other instances are not deleted.
         response = helper.client.getObjectTree().getObjectEnabler(LwM2mId.DEVICE).read(ServerIdentity.SYSTEM,
                 new ReadRequest(LwM2mId.DEVICE));
-        assertFalse("Device instance is deleted", ((LwM2mObject) response.getContent()).getInstances().isEmpty());
+        assertFalse(((LwM2mObject) response.getContent()).getInstances().isEmpty(), "Device instance is deleted");
 
         response = helper.client.getObjectTree().getObjectEnabler(LwM2mId.SECURITY).read(ServerIdentity.SYSTEM,
                 new ReadRequest(LwM2mId.SECURITY));
-        assertFalse("Security instance is deleted", ((LwM2mObject) response.getContent()).getInstances().isEmpty());
+        assertFalse(((LwM2mObject) response.getContent()).getInstances().isEmpty(), "Security instance is deleted");
 
         response = helper.client.getObjectTree().getObjectEnabler(LwM2mId.LOCATION).read(ServerIdentity.SYSTEM,
                 new ReadRequest(LwM2mId.LOCATION));
-        assertFalse("Location instance is deleted", ((LwM2mObject) response.getContent()).getInstances().isEmpty());
+        assertFalse(((LwM2mObject) response.getContent()).getInstances().isEmpty(), "Location instance is deleted");
     }
 
     @Test
@@ -503,16 +503,16 @@ public class BootstrapTest {
             ReadResponse response = enabler.read(ServerIdentity.SYSTEM, new ReadRequest(enabler.getId()));
             LwM2mObject responseValue = (LwM2mObject) response.getContent();
             if (enabler.getId() == LwM2mId.DEVICE) {
-                assertTrue("The Device instance should still be here", responseValue.getInstances().size() == 1);
+                assertTrue(responseValue.getInstances().size() == 1, "The Device instance should still be here");
             } else if (enabler.getId() == LwM2mId.SECURITY) {
-                assertTrue("Only bootstrap security instance should be here",
-                        ((LwM2mObject) response.getContent()).getInstances().size() == 1);
+                assertTrue(((LwM2mObject) response.getContent()).getInstances().size() == 1,
+                        "Only bootstrap security instance should be here");
                 LwM2mObjectInstance securityInstance = responseValue.getInstances().values().iterator().next();
-                assertTrue("Only bootstrap security instance should be here",
-                        securityInstance.getResource(1).getValue() == Boolean.TRUE);
+                assertTrue(securityInstance.getResource(1).getValue() == Boolean.TRUE,
+                        "Only bootstrap security instance should be here");
             } else {
-                assertTrue(enabler.getObjectModel().name + " instance is not deleted",
-                        responseValue.getInstances().isEmpty());
+                assertTrue(responseValue.getInstances().isEmpty(),
+                        enabler.getObjectModel().name + " instance is not deleted");
             }
         }
     }

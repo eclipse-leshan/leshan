@@ -16,13 +16,14 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node.codec;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -60,9 +61,8 @@ import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.core.util.TestObjectLoader;
 import org.eclipse.leshan.core.util.datatype.ULong;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link LwM2mDecoder}
@@ -72,7 +72,7 @@ public class LwM2mNodeDecoderTest {
     private static LwM2mModel model;
     private static LwM2mDecoder decoder;
 
-    @BeforeClass
+    @BeforeAll
     public static void loadModel() {
         // load default object
         List<ObjectModel> objects = TestObjectLoader.loadAllDefault();
@@ -264,10 +264,12 @@ public class LwM2mNodeDecoderTest {
         assertEquals(value, resource.getValue());
     }
 
-    @Test(expected = CodecException.class)
+    @Test()
     public void content_format_is_mandatory() throws CodecException {
-        String value = "MyManufacturer";
-        decoder.decode(value.getBytes(StandardCharsets.UTF_8), null, new LwM2mPath(666, 0, 0), model);
+        assertThrowsExactly(CodecException.class, () -> {
+            String value = "MyManufacturer";
+            decoder.decode(value.getBytes(StandardCharsets.UTF_8), null, new LwM2mPath(666, 0, 0), model);
+        });
     }
 
     @Test
@@ -295,11 +297,13 @@ public class LwM2mNodeDecoderTest {
         assertArrayEquals(expectedValue, ((byte[]) resource.getValue()));
     }
 
-    @Test(expected = CodecException.class)
+    @Test()
     public void text_decode_should_throw_an_exception_for_invalid_base64() throws CodecException {
-        // Using Firmware Update/Package
-        decoder.decode("!,-INVALID$_'".getBytes(StandardCharsets.UTF_8), ContentFormat.TEXT, new LwM2mPath(5, 0, 0),
-                model);
+        assertThrowsExactly(CodecException.class, () -> {
+            // Using Firmware Update/Package
+            decoder.decode("!,-INVALID$_'".getBytes(StandardCharsets.UTF_8), ContentFormat.TEXT, new LwM2mPath(5, 0, 0),
+                    model);
+        });
     }
 
     @Test
@@ -352,22 +356,28 @@ public class LwM2mNodeDecoderTest {
         assertAclInstances(oObject);
     }
 
-    @Test(expected = CodecException.class)
+    @Test()
     public void tlv_invalid_object_2_instances_with_the_same_id() {
         Tlv objInstance1 = new Tlv(TlvType.OBJECT_INSTANCE, new Tlv[0], null, 1);
         Tlv objInstance2 = new Tlv(TlvType.OBJECT_INSTANCE, new Tlv[0], null, 1);
         byte[] content = TlvEncoder.encode(new Tlv[] { objInstance1, objInstance2 }).array();
 
-        decoder.decode(content, ContentFormat.TLV, new LwM2mPath(2), model);
+        assertThrowsExactly(CodecException.class, () -> {
+            decoder.decode(content, ContentFormat.TLV, new LwM2mPath(2), model);
+        });
+
     }
 
-    @Test(expected = CodecException.class)
+    @Test()
     public void tlv_invalid_object__instance_2_resources_with_the_same_id() {
         Tlv resource1 = new Tlv(TlvType.RESOURCE_VALUE, null, new byte[0], 1);
         Tlv resource2 = new Tlv(TlvType.RESOURCE_VALUE, null, new byte[0], 1);
         byte[] content = TlvEncoder.encode(new Tlv[] { resource1, resource2 }).array();
 
-        decoder.decode(content, ContentFormat.TLV, new LwM2mPath(3, 0), model);
+        assertThrowsExactly(CodecException.class, () -> {
+            decoder.decode(content, ContentFormat.TLV, new LwM2mPath(3, 0), model);
+        });
+
     }
 
     @Test
@@ -450,14 +460,16 @@ public class LwM2mNodeDecoderTest {
         assertEquals("client", res.getValue());
     }
 
-    @Test(expected = CodecException.class)
+    @Test()
     public void tlv_resource_with_undesired_invalid_object_instance() throws CodecException {
 
         Tlv resInstance1 = new Tlv(TlvType.RESOURCE_VALUE, null, "client".getBytes(), 1);
         Tlv objInstance = new Tlv(TlvType.OBJECT_INSTANCE, new Tlv[] { resInstance1 }, null, 1);
         byte[] content = TlvEncoder.encode(new Tlv[] { objInstance }).array();
 
-        decoder.decode(content, ContentFormat.TLV, new LwM2mPath(3, 0, 1), model);
+        assertThrowsExactly(CodecException.class, () -> {
+            decoder.decode(content, ContentFormat.TLV, new LwM2mPath(3, 0, 1), model);
+        });
     }
 
     @Test
@@ -483,11 +495,14 @@ public class LwM2mNodeDecoderTest {
         assertTrue(instance.getResources().isEmpty());
     }
 
-    @Test(expected = CodecException.class)
+    @Test()
     public void tlv_empty_single_resource() {
         byte[] content = TlvEncoder.encode(new Tlv[] {}).array();
 
-        decoder.decode(content, ContentFormat.TLV, new LwM2mPath(2, 0, 0), model);
+        assertThrowsExactly(CodecException.class, () -> {
+            decoder.decode(content, ContentFormat.TLV, new LwM2mPath(2, 0, 0), model);
+        });
+
     }
 
     @Test
@@ -503,14 +518,16 @@ public class LwM2mNodeDecoderTest {
         assertTrue(resource.getInstances().isEmpty());
     }
 
-    @Test(expected = CodecException.class)
+    @Test()
     public void tlv_invalid_multi_resource_2_instance_with_the_same_id() {
         Tlv resInstance1 = new Tlv(TlvType.RESOURCE_INSTANCE, null, TlvEncoder.encodeObjlnk(new ObjectLink(100, 1)), 0);
         Tlv resInstance2 = new Tlv(TlvType.RESOURCE_INSTANCE, null, TlvEncoder.encodeObjlnk(new ObjectLink(101, 2)), 0);
         Tlv multiResource = new Tlv(TlvType.MULTIPLE_RESOURCE, new Tlv[] { resInstance1, resInstance2 }, null, 22);
         byte[] content = TlvEncoder.encode(new Tlv[] { multiResource }).array();
 
-        decoder.decode(content, ContentFormat.TLV, new LwM2mPath(3, 0, 22), model);
+        assertThrowsExactly(CodecException.class, () -> {
+            decoder.decode(content, ContentFormat.TLV, new LwM2mPath(3, 0, 22), model);
+        });
     }
 
     @Test
@@ -717,7 +734,7 @@ public class LwM2mNodeDecoderTest {
             assertTrue(e.getCause() instanceof LwM2mJsonException);
             failedWithCodecException = true;
         }
-        assertTrue("Should failed with codec exception", failedWithCodecException);
+        assertTrue(failedWithCodecException, "Should failed with codec exception");
 
         // with empty resource list
         b = new StringBuilder();
@@ -750,7 +767,7 @@ public class LwM2mNodeDecoderTest {
             assertTrue(e.getCause() instanceof LwM2mJsonException);
             failedWithCodecException = true;
         }
-        assertTrue("Should failed with codec exception", failedWithCodecException);
+        assertTrue(failedWithCodecException, "Should failed with codec exception");
 
         // with empty resource list
         b = new StringBuilder();
@@ -771,12 +788,14 @@ public class LwM2mNodeDecoderTest {
         assertTrue(instance.getResources().isEmpty());
     }
 
-    @Test(expected = CodecException.class)
+    @Test()
     public void json_empty_single_resource() {
         StringBuilder b = new StringBuilder();
         b.append("{\"bn\":\"2/0/0\", \"e\":[]}");
 
-        decoder.decode(b.toString().getBytes(), ContentFormat.JSON, new LwM2mPath(2, 0, 0), model);
+        assertThrowsExactly(CodecException.class, () -> {
+            decoder.decode(b.toString().getBytes(), ContentFormat.JSON, new LwM2mPath(2, 0, 0), model);
+        });
     }
 
     @Test
@@ -793,7 +812,7 @@ public class LwM2mNodeDecoderTest {
             assertTrue(e.getCause() instanceof LwM2mJsonException);
             failedWithCodecException = true;
         }
-        assertTrue("Should failed with codec exception", failedWithCodecException);
+        assertTrue(failedWithCodecException, "Should failed with codec exception");
 
         // with empty resource list
         b = new StringBuilder();
@@ -831,7 +850,7 @@ public class LwM2mNodeDecoderTest {
         }
     }
 
-    @Test(expected = CodecException.class)
+    @Test()
     public void json_invalid_instance_2_resources_with_the_same_id() {
         StringBuilder b = new StringBuilder();
         b.append("{\"bn\":\"3/0/\",\"e\":[");
@@ -839,10 +858,12 @@ public class LwM2mNodeDecoderTest {
         b.append("{\"n\":\"1\",\"sv\":\"client2\"}");
         b.append("]}");
 
-        decoder.decode(b.toString().getBytes(), ContentFormat.JSON, new LwM2mPath(3, 0), model);
+        assertThrowsExactly(CodecException.class, () -> {
+            decoder.decode(b.toString().getBytes(), ContentFormat.JSON, new LwM2mPath(3, 0), model);
+        });
     }
 
-    @Test(expected = CodecException.class)
+    @Test()
     public void json_invalid_multi_resource_2_instances_with_the_same_id() {
         StringBuilder b = new StringBuilder();
         b.append("{\"bn\":\"3/0/11/\",\"e\":[");
@@ -850,7 +871,9 @@ public class LwM2mNodeDecoderTest {
         b.append("{\"n\":\"1\",\"v\":0}");
         b.append("]}");
 
-        decoder.decode(b.toString().getBytes(), ContentFormat.JSON, new LwM2mPath(3, 0, 11), model);
+        assertThrowsExactly(CodecException.class, () -> {
+            decoder.decode(b.toString().getBytes(), ContentFormat.JSON, new LwM2mPath(3, 0, 11), model);
+        });
     }
 
     @Test
@@ -1143,7 +1166,7 @@ public class LwM2mNodeDecoderTest {
         nodes.put(new LwM2mPath("3/0/9"), LwM2mSingleResource.newIntegerResource(9, 95));
         nodes.put(new LwM2mPath("1/0/1"), LwM2mSingleResource.newIntegerResource(1, 86400));
 
-        Assert.assertEquals(nodes, res);
+        assertEquals(nodes, res);
     }
 
     @Test
@@ -1174,7 +1197,7 @@ public class LwM2mNodeDecoderTest {
                         LwM2mSingleResource.newFloatResource(1, 2.351149),
                         LwM2mSingleResource.newDateResource(5, new Date(1610029880000l))));
 
-        Assert.assertEquals(nodes, res);
+        assertEquals(nodes, res);
     }
 
     @Test
@@ -1201,7 +1224,7 @@ public class LwM2mNodeDecoderTest {
         nodes.put(new LwM2mPath("6/0/1"), LwM2mSingleResource.newFloatResource(1, 2.351149));
         nodes.put(new LwM2mPath("6/0/5"), LwM2mSingleResource.newDateResource(5, new Date(1610029880000l)));
 
-        Assert.assertEquals(nodes, res);
+        assertEquals(nodes, res);
     }
 
     @Test
@@ -1221,7 +1244,7 @@ public class LwM2mNodeDecoderTest {
                 new LwM2mPath("4/0/1"), //
                 new LwM2mPath("4/0/2"));
 
-        Assert.assertEquals(paths, res);
+        assertEquals(paths, res);
     }
 
     @Test
@@ -1241,10 +1264,10 @@ public class LwM2mNodeDecoderTest {
                 new LwM2mPath("4/0/1"), //
                 new LwM2mPath("4/0/2"));
 
-        Assert.assertEquals(paths, res);
+        assertEquals(paths, res);
     }
 
-    @Test(expected = CodecException.class)
+    @Test
     public void senml_json_decode_invalid_path_with_value() {
         // Prepare data to decode
         StringBuilder b = new StringBuilder();
@@ -1253,10 +1276,12 @@ public class LwM2mNodeDecoderTest {
         b.append("{\"n\":\"2\"}]");
 
         // Decode
-        decoder.decodePaths(b.toString().getBytes(), ContentFormat.SENML_JSON);
+        assertThrowsExactly(CodecException.class, () -> {
+            decoder.decodePaths(b.toString().getBytes(), ContentFormat.SENML_JSON);
+        });
     }
 
-    @Test(expected = CodecException.class)
+    @Test
     public void senml_json_decode_invalid_path_with_timestamp() {
         // Prepare data to decode
         StringBuilder b = new StringBuilder();
@@ -1265,7 +1290,9 @@ public class LwM2mNodeDecoderTest {
         b.append("{\"n\":\"2\"}]");
 
         // Decode
-        decoder.decodePaths(b.toString().getBytes(), ContentFormat.SENML_JSON);
+        assertThrowsExactly(CodecException.class, () -> {
+            decoder.decodePaths(b.toString().getBytes(), ContentFormat.SENML_JSON);
+        });
     }
 
     @Test
@@ -1277,7 +1304,7 @@ public class LwM2mNodeDecoderTest {
         byte[] bytes = Hex.decodeHex("ABCDEF".toCharArray());
         LwM2mResource expected = LwM2mSingleResource.newBinaryResource(3, bytes);
 
-        Assert.assertEquals(expected, oResource);
+        assertEquals(expected, oResource);
     }
 
     @Test
@@ -1290,7 +1317,7 @@ public class LwM2mNodeDecoderTest {
         byte[] bytes = Hex.decodeHex("ABCDEF".toCharArray());
         LwM2mResource expected = LwM2mSingleResource.newBinaryResource(3, bytes);
 
-        Assert.assertEquals(expected, oResource);
+        assertEquals(expected, oResource);
     }
 
     @Test

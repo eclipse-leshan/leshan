@@ -15,14 +15,15 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.lwm2m.attributes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class DefaultLwM2mAttributeParserTest {
 
-    private DefaultLwM2mAttributeParser parser = new DefaultLwM2mAttributeParser();
+    private final DefaultLwM2mAttributeParser parser = new DefaultLwM2mAttributeParser();
 
     @Test
     public void check_attribute_with_no_value_failed() throws LinkParseException, InvalidAttributeException {
@@ -33,7 +34,6 @@ public class DefaultLwM2mAttributeParserTest {
                 LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, 60l), //
                 LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN, 2d));
 
-        Assert.assertEquals(attResult, parsed);
-
+        assertEquals(attResult, parsed);
     }
 }

@@ -20,14 +20,15 @@ import static org.eclipse.leshan.integration.tests.util.TestUtil.assertContentFo
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.ResponseCode;
@@ -45,35 +46,32 @@ import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class WriteMultiValueTest {
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("contentFormats")
+    @Retention(RetentionPolicy.RUNTIME)
+    private @interface TestAllContentFormat {
+    }
+
+    static Stream<ContentFormat> contentFormats() {
+        return Stream.of(//
+                ContentFormat.TLV, //
+                ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE), //
+                ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE), //
+                ContentFormat.JSON, //
+                ContentFormat.SENML_JSON, //
+                ContentFormat.SENML_CBOR);
+    }
+
     protected IntegrationTestHelper helper = new IntegrationTestHelper();
 
-    @Parameters(name = "{0}")
-    public static Collection<?> contentFormats() {
-        return Arrays.asList(new Object[][] { //
-                { ContentFormat.TLV }, //
-                { ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE) }, //
-                { ContentFormat.JSON }, //
-                { ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE) }, //
-                { ContentFormat.SENML_JSON }, //
-                { ContentFormat.SENML_CBOR } });
-    }
-
-    private final ContentFormat contentFormat;
-
-    public WriteMultiValueTest(ContentFormat contentFormat) {
-        this.contentFormat = contentFormat;
-    }
-
-    @Before
+    @BeforeEach
     public void start() {
         helper.initialize();
         helper.createServer();
@@ -83,15 +81,15 @@ public class WriteMultiValueTest {
         helper.waitForRegistrationAtServerSide(1);
     }
 
-    @After
+    @AfterEach
     public void stop() {
         helper.client.destroy(false);
         helper.server.destroy();
         helper.dispose();
     }
 
-    @Test
-    public void can_write_object_instance() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_write_object_instance(ContentFormat contentFormat) throws InterruptedException {
         // write device timezone and offset
         LwM2mResource utcOffset = LwM2mSingleResource.newStringResource(14, "+02");
         LwM2mResource timeZone = LwM2mSingleResource.newStringResource(15, "Europe/Paris");
@@ -110,8 +108,8 @@ public class WriteMultiValueTest {
         assertEquals(timeZone, instance.getResource(15));
     }
 
-    @Test
-    public void can_write_replacing_object_instance() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_write_replacing_object_instance(ContentFormat contentFormat) throws InterruptedException {
         // setup server object
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
                 new WriteRequest(contentFormat, 1, 0, 3, 60));
@@ -144,8 +142,8 @@ public class WriteMultiValueTest {
         assertNull(instance.getResource(3)); // removed not contained optional writable resource
     }
 
-    @Test
-    public void can_write_updating_object_instance() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_write_updating_object_instance(ContentFormat contentFormat) throws InterruptedException {
         // setup server object
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
                 new WriteRequest(contentFormat, 1, 0, 3, 60));
@@ -176,8 +174,8 @@ public class WriteMultiValueTest {
         assertNotNull(instance.getResource(7));
     }
 
-    @Test
-    public void can_write_multi_instance_objlnk_resource() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_write_multi_instance_objlnk_resource(ContentFormat contentFormat) throws InterruptedException {
 
         Map<Integer, ObjectLink> neighbourCellReport = new HashMap<>();
         neighbourCellReport.put(0, new ObjectLink(10245, 1));
@@ -207,8 +205,9 @@ public class WriteMultiValueTest {
         assertEquals(((ObjectLink) resource.getValue(2)).getObjectInstanceId(), 3);
     }
 
-    @Test
-    public void can_write_object_instance_with_empty_multi_resource() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_write_object_instance_with_empty_multi_resource(ContentFormat contentFormat)
+            throws InterruptedException {
 
         // =============== Try to write ==================
         // /3442/0/1110 : { 0 = "string1", 1 = "string2" }
@@ -271,8 +270,8 @@ public class WriteMultiValueTest {
         assertNull(instance.getResource(TestLwM2mId.MULTIPLE_INTEGER_VALUE));
     }
 
-    @Test
-    public void can_write_object_resource_instance() throws InterruptedException {
+    @TestAllContentFormat
+    public void can_write_object_resource_instance(ContentFormat contentFormat) throws InterruptedException {
 
         // --------------------------------
         // write (replace) multi instance

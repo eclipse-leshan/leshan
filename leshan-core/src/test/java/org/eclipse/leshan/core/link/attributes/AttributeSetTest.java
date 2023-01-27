@@ -16,7 +16,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.attributes;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 import java.util.Collection;
 import java.util.Map;
@@ -27,7 +28,7 @@ import org.eclipse.leshan.core.link.lwm2m.attributes.DefaultLwM2mAttributeParser
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class AttributeSetTest {
     private static LwM2mAttributeParser parser = new DefaultLwM2mAttributeParser();
@@ -109,11 +110,13 @@ public class AttributeSetTest {
         assertEquals("ver=1.1&pmin=5&pmax=60&epmin=30&epmax=45", sut.toString());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void should_throw_on_duplicates() {
-        new LwM2mAttributeSet(LwM2mAttributes.create(LwM2mAttributes.OBJECT_VERSION, new Version("1.1")),
-                LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 5L),
-                LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 60L));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            new LwM2mAttributeSet(LwM2mAttributes.create(LwM2mAttributes.OBJECT_VERSION, new Version("1.1")),
+                    LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 5L),
+                    LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 60L));
+        });
     }
 
     @Test
@@ -125,14 +128,16 @@ public class AttributeSetTest {
         sut.validate(AssignationLevel.RESOURCE);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void should_throw_on_invalid_assignation_level() {
-        LwM2mAttributeSet sut = new LwM2mAttributeSet(
-                LwM2mAttributes.create(LwM2mAttributes.OBJECT_VERSION, new Version("1.1")),
-                LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 5L),
-                LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, 60L));
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            LwM2mAttributeSet sut = new LwM2mAttributeSet(
+                    LwM2mAttributes.create(LwM2mAttributes.OBJECT_VERSION, new Version("1.1")),
+                    LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 5L),
+                    LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, 60L));
 
-        // OBJECT_VERSION cannot be assigned on resource level
-        sut.validate(AssignationLevel.RESOURCE);
+            // OBJECT_VERSION cannot be assigned on resource level
+            sut.validate(AssignationLevel.RESOURCE);
+        });
     }
 }

@@ -16,19 +16,20 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.json;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.ArrayList;
 
 import org.eclipse.leshan.core.json.jackson.LwM2mJsonJacksonEncoderDecoder;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class JsonSerializerTest {
 
-    private static Logger LOG = LoggerFactory.getLogger(JsonSerializerTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JsonSerializerTest.class);
 
-    private static final LwM2mJsonJacksonEncoderDecoder LwM2mJson = new LwM2mJsonJacksonEncoderDecoder();
+    private static final LwM2mJsonJacksonEncoderDecoder LWM2M_JSON_ENCODER_DECODER = new LwM2mJsonJacksonEncoderDecoder();
 
     @Test
     public void serialize_device_object() throws LwM2mJsonException {
@@ -97,14 +98,14 @@ public class JsonSerializerTest {
 
         JsonRootObject element = new JsonRootObject();
         element.setResourceList(elements);
-        String json = LwM2mJson.toJsonLwM2m(element);
+        String json = LWM2M_JSON_ENCODER_DECODER.toJsonLwM2m(element);
         LOG.debug(" JSON String: " + json);
 
-        JsonRootObject elementFromJson = LwM2mJson.fromJsonLwM2m(json);
-        String backAgainToJson = LwM2mJson.toJsonLwM2m(elementFromJson);
+        JsonRootObject elementFromJson = LWM2M_JSON_ENCODER_DECODER.fromJsonLwM2m(json);
+        String backAgainToJson = LWM2M_JSON_ENCODER_DECODER.toJsonLwM2m(elementFromJson);
         LOG.debug(" Back again to JSON String: " + backAgainToJson);
 
-        Assert.assertTrue(json.equals(backAgainToJson));
+        assertTrue(json.equals(backAgainToJson));
 
     }
 

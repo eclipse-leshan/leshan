@@ -15,11 +15,11 @@
 
 package org.eclipse.leshan.core.util.base64;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.eclipse.leshan.core.util.base64.DefaultBase64Encoder.EncoderAlphabet;
 import org.eclipse.leshan.core.util.base64.DefaultBase64Encoder.EncoderPadding;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class DefaultBase64EncoderTest {
     @Test

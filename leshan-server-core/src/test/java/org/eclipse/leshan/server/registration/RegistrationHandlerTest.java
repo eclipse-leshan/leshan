@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -34,8 +34,8 @@ import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.server.security.Authorization;
 import org.eclipse.leshan.server.security.Authorizer;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class RegistrationHandlerTest {
 
@@ -43,7 +43,7 @@ public class RegistrationHandlerTest {
     private RegistrationStore registrationStore;
     private TestAuthorizer authorizer;
 
-    @Before
+    @BeforeEach
     public void setUp() throws UnknownHostException {
         authorizer = new TestAuthorizer();
         registrationStore = new InMemoryRegistrationStore();

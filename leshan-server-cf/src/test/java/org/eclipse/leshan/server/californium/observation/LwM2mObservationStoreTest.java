@@ -15,10 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.observation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -54,8 +54,8 @@ import org.eclipse.leshan.server.profile.ClientProfile;
 import org.eclipse.leshan.server.registration.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class LwM2mObservationStoreTest {
     private final String ep = "urn:endpoint";
@@ -74,7 +74,7 @@ public class LwM2mObservationStoreTest {
     InetAddress address;
     Registration registration;
 
-    @Before
+    @BeforeEach
     public void setUp() throws UnknownHostException {
         address = InetAddress.getLocalHost();
         store = new InMemoryRegistrationStore();

@@ -16,7 +16,7 @@
 package org.eclipse.leshan.integration.tests.send;
 
 import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.linkParser;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -40,9 +40,9 @@ import org.eclipse.leshan.integration.tests.lockstep.LockStepLwM2mClient;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
 import org.eclipse.leshan.integration.tests.util.SynchronousSendListener;
 import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointsProvider.Builder;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class LockStepSendTest {
 
@@ -64,14 +64,14 @@ public class LockStepSendTest {
         }
     };
 
-    @Before
+    @BeforeEach
     public void start() {
         helper.initialize();
         helper.createServer();
         helper.server.start();
     }
 
-    @After
+    @AfterEach
     public void stop() {
         helper.server.destroy();
         helper.dispose();

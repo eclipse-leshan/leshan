@@ -16,9 +16,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -34,7 +35,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.registration.Registration.Builder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class RegistrationTest {
 
@@ -234,10 +235,12 @@ public class RegistrationTest {
         assertTrue(availableInstances.containsAll(Arrays.asList(new LwM2mPath(3, 0))));
     }
 
-    @Test(expected = LinkParseException.class)
+    @Test
     public void test_object_links_with_text_in_lwm2m_path() throws LinkParseException {
-        given_a_registration_with_object_link_like(
-                "<text>,</1/text/0/in/path>,empty,</2/O/test/in/path>,</3/0>;ver=1.1,</4/0/0/>");
+        assertThrowsExactly(LinkParseException.class, () -> {
+            given_a_registration_with_object_link_like(
+                    "<text>,</1/text/0/in/path>,empty,</2/O/test/in/path>,</3/0>;ver=1.1,</4/0/0/>");
+        });
     }
 
     private Registration given_a_registration_with_object_link_like(String objectLinks) throws LinkParseException {

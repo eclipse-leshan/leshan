@@ -14,10 +14,7 @@
 
 package org.eclipse.leshan.core.senml.cbor;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.Arrays;
-import java.util.Collection;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.senml.SenMLDecoder;
@@ -25,26 +22,17 @@ import org.eclipse.leshan.senml.SenMLEncoder;
 import org.eclipse.leshan.senml.SenMLException;
 import org.eclipse.leshan.senml.SenMLPack;
 import org.eclipse.leshan.senml.json.jackson.SenMLJsonJacksonEncoderDecoder;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
 
-@RunWith(Parameterized.class)
 public class SenMLJsonSerDesTest extends AbstractSenMLTest {
 
-    @Parameterized.Parameters(name = "{2}")
-    public static Collection<?> senMLJsonencoderDecoder() {
+    private final SenMLEncoder encoder;
+    private final SenMLDecoder decoder;
+
+    public SenMLJsonSerDesTest() {
         SenMLJsonJacksonEncoderDecoder jackson = new SenMLJsonJacksonEncoderDecoder();
-        return Arrays.asList(new Object[][] { //
-                { jackson, jackson, "jackson" } });
-    }
-
-    private SenMLEncoder encoder;
-    private SenMLDecoder decoder;
-
-    public SenMLJsonSerDesTest(SenMLEncoder encoder, SenMLDecoder decoder, String encoderDecoderName) {
-        this.encoder = encoder;
-        this.decoder = decoder;
+        this.encoder = jackson;
+        this.decoder = jackson;
     }
 
     @Test

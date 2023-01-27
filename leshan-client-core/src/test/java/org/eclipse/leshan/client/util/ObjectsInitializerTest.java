@@ -15,7 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.util;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,16 +26,18 @@ import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.core.LwM2mId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ObjectsInitializerTest {
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void set_single_instance_with_not_0_id() {
         int bad_id = 10; // single instance should have a 0 id
-
         ObjectsInitializer objectsInitializer = new ObjectsInitializer();
-        objectsInitializer.setInstancesForObject(LwM2mId.DEVICE, new BaseInstanceEnabler(bad_id));
+
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            objectsInitializer.setInstancesForObject(LwM2mId.DEVICE, new BaseInstanceEnabler(bad_id));
+        });
     }
 
     @Test
@@ -52,6 +55,6 @@ public class ObjectsInitializerTest {
         LwM2mObjectEnabler AclObject = objectsInitializer.create(LwM2mId.ACCESS_CONTROL);
 
         List<Integer> availableInstanceIds = AclObject.getAvailableInstanceIds();
-        assertTrue("Bad instance id", availableInstanceIds.containsAll(expectedIds));
+        assertTrue(availableInstanceIds.containsAll(expectedIds), "Bad instance id");
     }
 }

@@ -18,14 +18,15 @@ package org.eclipse.leshan.integration.tests.write;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.ResponseCode;
@@ -39,38 +40,35 @@ import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class WriteOpaqueValueTest {
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("contentFormats")
+    @Retention(RetentionPolicy.RUNTIME)
+    private @interface TestAllContentFormat {
+    }
+
+    static Stream<ContentFormat> contentFormats() {
+        return Stream.of(//
+                ContentFormat.OPAQUE, //
+                ContentFormat.TEXT, //
+                ContentFormat.CBOR, //
+                ContentFormat.TLV, //
+                ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE), //
+                ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE), //
+                ContentFormat.JSON, //
+                ContentFormat.SENML_JSON, //
+                ContentFormat.SENML_CBOR);
+    }
+
     protected IntegrationTestHelper helper = new IntegrationTestHelper();
 
-    @Parameters(name = "{0}")
-    public static Collection<?> contentFormats() {
-        return Arrays.asList(new Object[][] { //
-                { ContentFormat.OPAQUE }, //
-                { ContentFormat.TEXT }, //
-                { ContentFormat.TLV }, //
-                { ContentFormat.CBOR }, //
-                { ContentFormat.fromCode(ContentFormat.OLD_TLV_CODE) }, //
-                { ContentFormat.JSON }, //
-                { ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE) }, //
-                { ContentFormat.SENML_JSON }, //
-                { ContentFormat.SENML_CBOR } });
-    }
-
-    private ContentFormat contentFormat;
-
-    public WriteOpaqueValueTest(ContentFormat contentFormat) {
-        this.contentFormat = contentFormat;
-    }
-
-    @Before
+    @BeforeEach
     public void start() {
         helper.initialize();
         helper.createServer();
@@ -80,15 +78,15 @@ public class WriteOpaqueValueTest {
         helper.waitForRegistrationAtServerSide(1);
     }
 
-    @After
+    @AfterEach
     public void stop() {
         helper.client.destroy(false);
         helper.server.destroy();
         helper.dispose();
     }
 
-    @Test
-    public void write_opaque_resource() throws InterruptedException {
+    @TestAllContentFormat
+    public void write_opaque_resource(ContentFormat contentFormat) throws InterruptedException {
         // write resource
         byte[] expectedvalue = new byte[] { 1, 2, 3 };
         WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
@@ -106,8 +104,8 @@ public class WriteOpaqueValueTest {
         assertArrayEquals(expectedvalue, (byte[]) resource.getValue());
     }
 
-    @Test
-    public void write_opaque_resource_instance() throws InterruptedException {
+    @TestAllContentFormat
+    public void write_opaque_resource_instance(ContentFormat contentFormat) throws InterruptedException {
         // write 2 resource instances using TLV
         Map<Integer, byte[]> values = new HashMap<>();
         byte[] firstExpectedvalue = new byte[] { 1, 2, 3 };

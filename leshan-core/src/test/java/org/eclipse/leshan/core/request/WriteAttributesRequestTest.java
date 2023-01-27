@@ -15,30 +15,36 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class WriteAttributesRequestTest {
 
-    @Test(expected = InvalidRequestException.class)
+    @Test()
     public void should_throw_on_invalid_pmin_pmax() {
         LwM2mAttributeSet sut = new LwM2mAttributeSet(LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 50L),
                 LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, 49L));
 
         // pmin cannot be greater then pmax
-        new WriteAttributesRequest(3, 0, 9, sut);
+        assertThrowsExactly(InvalidRequestException.class, () -> {
+            new WriteAttributesRequest(3, 0, 9, sut);
+        });
     }
 
-    @Test(expected = InvalidRequestException.class)
+    @Test
     public void should_throw_on_invalid_epmin_epmax() {
         LwM2mAttributeSet sut = new LwM2mAttributeSet(
                 LwM2mAttributes.create(LwM2mAttributes.EVALUATE_MINIMUM_PERIOD, 50L),
                 LwM2mAttributes.create(LwM2mAttributes.EVALUATE_MAXIMUM_PERIOD, 49L));
 
         // pmin cannot be greater then pmax
-        new WriteAttributesRequest(3, 0, 9, sut);
+        assertThrowsExactly(InvalidRequestException.class, () -> {
+            new WriteAttributesRequest(3, 0, 9, sut);
+        });
     }
 
 }

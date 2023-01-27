@@ -15,61 +15,48 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request.argument;
 
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.stream.Stream;
 
-import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class ArgumentValidationTest {
 
-    private final int digit;
-    private final String value;
-    private final Class<? extends Throwable> exception;
-
-    public ArgumentValidationTest(int digit, String value, Class<? extends Throwable> exception) {
-        this.digit = digit;
-        this.value = value;
-        this.exception = exception;
-    }
-
-    @Parameterized.Parameters(name = "{index} : digit: {0}, value: {1}, expected exception: {2}")
-    public static Collection<?> linkValueListProvider() {
-        return Arrays.asList(new Object[][] { //
-                { 0, "hello", null }, //
-                { 9, "hello", null }, //
-                { -1, "hello", InvalidArgumentException.class }, //
-                { 10, "hello", InvalidArgumentException.class }, //
-                { 1, null, null }, //
-                { 1, "", null }, //
-                { 1, "!" + new String(new byte[] { 0x23, 0x26, 0x28, 0x5B, 0x5D, 0x7E }, StandardCharsets.UTF_8),
-                        null }, //
-                { 1, new String(new byte[] { 0x22 }, StandardCharsets.UTF_8), InvalidArgumentException.class },
+    static Stream<org.junit.jupiter.params.provider.Arguments> linkValueList() {
+        return Stream.of(//
+                arguments(0, "hello", null), //
+                arguments(9, "hello", null), //
+                arguments(-1, "hello", InvalidArgumentException.class), //
+                arguments(10, "hello", InvalidArgumentException.class), //
+                arguments(1, null, null), //
+                arguments(1, "", null), //
+                arguments(1,
+                        "!" + new String(new byte[] { 0x23, 0x26, 0x28, 0x5B, 0x5D, 0x7E }, StandardCharsets.UTF_8),
+                        null), //
+                arguments(1, new String(new byte[] { 0x22 }, StandardCharsets.UTF_8), InvalidArgumentException.class),
                 // " character
-                { 1, new String(new byte[] { 0x27 }, StandardCharsets.UTF_8), InvalidArgumentException.class },
+                arguments(1, new String(new byte[] { 0x27 }, StandardCharsets.UTF_8), InvalidArgumentException.class),
                 // ' character
-                { 1, new String(new byte[] { 0x5C }, StandardCharsets.UTF_8), InvalidArgumentException.class },
+                arguments(1, new String(new byte[] { 0x5C }, StandardCharsets.UTF_8), InvalidArgumentException.class),
                 // \ character
-                { 1, new String(new byte[] { 0x7F }, StandardCharsets.UTF_8), InvalidArgumentException.class },
+                arguments(1, new String(new byte[] { 0x7F }, StandardCharsets.UTF_8), InvalidArgumentException.class),
                 // DEL character
-                { 1, "`aAzZ190-=~!@#$%^&*()_+[]{}|;:<>/?,.", null } // more visualized character rules above
-        });
+                arguments(1, "`aAzZ190-=~!@#$%^&*()_+[]{}|;:<>/?,.", null) // more visualized character rules above
+        );
+
     }
 
-    @Test
-    public void perform_tests() throws InvalidArgumentException {
+    @ParameterizedTest(name = "{index} : digit: {0}, value: {1}, expected exception: {2}")
+    @MethodSource("linkValueList")
+    public void perform_tests(int digit, String value, Class<? extends Throwable> exception)
+            throws InvalidArgumentException {
         if (exception != null) {
-            assertThrows(exception, new ThrowingRunnable() {
-                @Override
-                public void run() throws InvalidArgumentException {
-                    new Argument(digit, value);
-                }
+            assertThrowsExactly(InvalidArgumentException.class, () -> {
+                new Argument(digit, value);
             });
         } else {
             new Argument(digit, value);
