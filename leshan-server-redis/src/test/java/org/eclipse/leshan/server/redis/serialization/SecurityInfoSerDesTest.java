@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.redis.serialization;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigInteger;
 import java.security.AlgorithmParameters;
@@ -28,7 +28,7 @@ import java.security.spec.KeySpec;
 
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.security.SecurityInfo;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class SecurityInfoSerDesTest {
 
