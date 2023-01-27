@@ -17,7 +17,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.util;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -28,7 +28,7 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.request.DeleteRequest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ObjectEnablerTest {
 
@@ -40,7 +40,7 @@ public class ObjectEnablerTest {
         LwM2mObjectEnabler objectEnabler = initializer.create(LwM2mId.ACCESS_CONTROL);
 
         objectEnabler.delete(ServerIdentity.SYSTEM, new DeleteRequest(LwM2mId.ACCESS_CONTROL, instanceEnabler.getId()));
-        assertTrue("callback delete should have been called", instanceEnabler.waitForDelete(2, TimeUnit.SECONDS));
+        assertTrue(instanceEnabler.waitForDelete(2, TimeUnit.SECONDS), "callback delete should have been called");
     }
 
     public static class TestInstanceEnabler extends BaseInstanceEnabler {
