@@ -40,22 +40,28 @@ import redis.clients.jedis.util.Pool;
  */
 public class RedisSecurityStore implements EditableSecurityStore {
 
-    private static final String SEC_EP = "SEC#EP#";
+    private final String securityInfoByEndpointPrefix;
 
-    private static final String PSKID_SEC = "PSKID#SEC";
+    private final String endpointByPskIdKey;
 
     private final Pool<Jedis> pool;
 
     private final List<SecurityStoreListener> listeners = new CopyOnWriteArrayList<>();
 
     public RedisSecurityStore(Pool<Jedis> pool) {
+        this(pool, "SEC#EP#", "PSKID#SEC");
+    }
+
+    public RedisSecurityStore(Pool<Jedis> pool, String securityInfoByEndpointPrefix, String endpointByPskIdKey) {
         this.pool = pool;
+        this.securityInfoByEndpointPrefix = securityInfoByEndpointPrefix;
+        this.endpointByPskIdKey = endpointByPskIdKey;
     }
 
     @Override
     public SecurityInfo getByEndpoint(String endpoint) {
         try (Jedis j = pool.getResource()) {
-            byte[] data = j.get((SEC_EP + endpoint).getBytes());
+            byte[] data = j.get((securityInfoByEndpointPrefix + endpoint).getBytes());
             if (data == null) {
                 return null;
             } else {
@@ -67,11 +73,11 @@ public class RedisSecurityStore implements EditableSecurityStore {
     @Override
     public SecurityInfo getByIdentity(String identity) {
         try (Jedis j = pool.getResource()) {
-            String ep = j.hget(PSKID_SEC, identity);
+            String ep = j.hget(endpointByPskIdKey, identity);
             if (ep == null) {
                 return null;
             } else {
-                byte[] data = j.get((SEC_EP + ep).getBytes());
+                byte[] data = j.get((securityInfoByEndpointPrefix + ep).getBytes());
                 if (data == null) {
                     return null;
                 } else {
@@ -90,7 +96,7 @@ public class RedisSecurityStore implements EditableSecurityStore {
     @Override
     public Collection<SecurityInfo> getAll() {
         try (Jedis j = pool.getResource()) {
-            ScanParams params = new ScanParams().match(SEC_EP + "*").count(100);
+            ScanParams params = new ScanParams().match(securityInfoByEndpointPrefix + "*").count(100);
             Collection<SecurityInfo> list = new LinkedList<>();
             String cursor = "0";
             do {
@@ -111,19 +117,19 @@ public class RedisSecurityStore implements EditableSecurityStore {
         try (Jedis j = pool.getResource()) {
             if (info.getPskIdentity() != null) {
                 // populate the secondary index (security info by PSK id)
-                String oldEndpoint = j.hget(PSKID_SEC, info.getPskIdentity());
+                String oldEndpoint = j.hget(endpointByPskIdKey, info.getPskIdentity());
                 if (oldEndpoint != null && !oldEndpoint.equals(info.getEndpoint())) {
                     throw new NonUniqueSecurityInfoException(
                             "PSK Identity " + info.getPskIdentity() + " is already used");
                 }
-                j.hset(PSKID_SEC.getBytes(), info.getPskIdentity().getBytes(), info.getEndpoint().getBytes());
+                j.hset(endpointByPskIdKey.getBytes(), info.getPskIdentity().getBytes(), info.getEndpoint().getBytes());
             }
 
-            byte[] previousData = j.getSet((SEC_EP + info.getEndpoint()).getBytes(), data);
+            byte[] previousData = j.getSet((securityInfoByEndpointPrefix + info.getEndpoint()).getBytes(), data);
             SecurityInfo previous = previousData == null ? null : deserialize(previousData);
             String previousIdentity = previous == null ? null : previous.getPskIdentity();
             if (previousIdentity != null && !previousIdentity.equals(info.getPskIdentity())) {
-                j.hdel(PSKID_SEC, previousIdentity);
+                j.hdel(endpointByPskIdKey, previousIdentity);
             }
 
             return previous;
@@ -133,14 +139,14 @@ public class RedisSecurityStore implements EditableSecurityStore {
     @Override
     public SecurityInfo remove(String endpoint, boolean infosAreCompromised) {
         try (Jedis j = pool.getResource()) {
-            byte[] data = j.get((SEC_EP + endpoint).getBytes());
+            byte[] data = j.get((securityInfoByEndpointPrefix + endpoint).getBytes());
 
             if (data != null) {
                 SecurityInfo info = deserialize(data);
                 if (info.getPskIdentity() != null) {
-                    j.hdel(PSKID_SEC.getBytes(), info.getPskIdentity().getBytes());
+                    j.hdel(endpointByPskIdKey.getBytes(), info.getPskIdentity().getBytes());
                 }
-                j.del((SEC_EP + endpoint).getBytes());
+                j.del((securityInfoByEndpointPrefix + endpoint).getBytes());
                 for (SecurityStoreListener listener : listeners) {
                     listener.securityInfoRemoved(infosAreCompromised, info);
                 }
