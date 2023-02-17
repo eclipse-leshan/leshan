@@ -269,8 +269,10 @@ public class LeshanServerDemo {
         // Create LWM2M server
         // builder.setEndpointsProvider(endpointsBuilder.build());
 
-        JavaCoapServerEndpointsProvider endpointsProvider = new JavaCoapServerEndpointsProvider(cli.main.localPort);
+        // TODO temporary code to test java-coap instead of californium
+        JavaCoapServerEndpointsProvider endpointsProvider = new JavaCoapServerEndpointsProvider(coapAddr);
         builder.setEndpointsProvider(endpointsProvider);
+
         return builder.build();
     }
 

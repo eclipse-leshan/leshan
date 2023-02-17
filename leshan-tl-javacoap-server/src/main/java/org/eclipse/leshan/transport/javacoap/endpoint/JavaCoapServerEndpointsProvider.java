@@ -16,12 +16,13 @@
 package org.eclipse.leshan.transport.javacoap.endpoint;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
@@ -34,39 +35,41 @@ import org.eclipse.leshan.transport.javacoap.resource.ResourcesService;
 import org.eclipse.leshan.transport.javacoap.resource.SendResource;
 
 import com.mbed.coap.server.CoapServer;
+import com.mbed.coap.transport.udp.DatagramSocketTransport;
 
 public class JavaCoapServerEndpointsProvider implements LwM2mServerEndpointsProvider {
 
     private CoapServer coapServer;
-    private final int coapPort;
-
+    private final InetSocketAddress localAddress;
     private JavaCoapServerEndpoint lwm2mEndpoint;
 
-    public JavaCoapServerEndpointsProvider(int coapPort) {
-        this.coapPort = coapPort;
+    public JavaCoapServerEndpointsProvider(InetSocketAddress localAddress) {
+        this.localAddress = localAddress;
     }
 
     @Override
     public void createEndpoints(UplinkRequestReceiver requestReceiver, LwM2mNotificationReceiver notificationReceiver,
             ServerEndpointToolbox toolbox, ServerSecurityInfo serverSecurityInfo, LeshanServer server) {
 
-        // TODO we should get endpoint URI dynamically in Resources
-        URI endpointURI = EndpointUriUtil.createUri("coap", "0.0.0.0", coapPort);
+        // HACK to be able to get local URI in resource, need to discuss about it with java-coap.
+        EndpointUriProvider endpointUriProvider = new EndpointUriProvider(Protocol.COAP);
 
         // create Resources / Routes
         RegistrationResource registerResource = new RegistrationResource(requestReceiver, toolbox.getLinkParser(),
-                endpointURI);
+                endpointUriProvider);
         ResourcesService resources = ResourcesService.builder() //
                 .add("/rd/*", registerResource) //
                 .add("/rd", registerResource)//
                 .add("/dp",
                         new SendResource(requestReceiver, toolbox.getDecoder(), toolbox.getProfileProvider(),
-                                endpointURI))//
+                                endpointUriProvider))//
                 .build();
-        coapServer = CoapServer.builder().transport(coapPort).route(resources).build();
+        coapServer = CoapServer.builder().transport(new DatagramSocketTransport(localAddress)).route(resources).build();
+        endpointUriProvider.setCoapServer(coapServer);
 
-        lwm2mEndpoint = new JavaCoapServerEndpoint(endpointURI, coapServer, new ServerCoapMessageTranslator(), toolbox,
+        lwm2mEndpoint = new JavaCoapServerEndpoint(coapServer, new ServerCoapMessageTranslator(), toolbox,
                 notificationReceiver, server.getRegistrationStore());
+
     }
 
     @Override

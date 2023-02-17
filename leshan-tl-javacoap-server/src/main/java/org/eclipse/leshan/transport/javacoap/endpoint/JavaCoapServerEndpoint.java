@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
@@ -49,17 +50,15 @@ import com.mbed.coap.server.CoapServer;
 
 public class JavaCoapServerEndpoint implements LwM2mServerEndpoint {
 
-    private final URI endpointUri;
     private final CoapServer coapServer;
     private final ServerCoapMessageTranslator translator;
     private final ServerEndpointToolbox toolbox;
     private final LwM2mNotificationReceiver notificationReceiver;
     private final RegistrationStore registrationStore;
 
-    public JavaCoapServerEndpoint(URI endpointUri, CoapServer coapServer, ServerCoapMessageTranslator translator,
+    public JavaCoapServerEndpoint(CoapServer coapServer, ServerCoapMessageTranslator translator,
             ServerEndpointToolbox toolbox, LwM2mNotificationReceiver notificationReceiver,
             RegistrationStore registrationStore) {
-        this.endpointUri = endpointUri;
         this.coapServer = coapServer;
         this.translator = translator;
         this.toolbox = toolbox;
@@ -75,7 +74,7 @@ public class JavaCoapServerEndpoint implements LwM2mServerEndpoint {
 
     @Override
     public URI getURI() {
-        return endpointUri;
+        return EndpointUriUtil.createUri(getProtocol().getUriScheme(), coapServer.getLocalSocketAddress());
     }
 
     @Override

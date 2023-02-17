@@ -17,7 +17,6 @@ package org.eclipse.leshan.transport.javacoap.resource;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
-import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.leshan.core.ResponseCode;
@@ -33,6 +32,7 @@ import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.server.profile.ClientProfile;
 import org.eclipse.leshan.server.profile.ClientProfileProvider;
 import org.eclipse.leshan.server.request.UplinkRequestReceiver;
+import org.eclipse.leshan.transport.javacoap.endpoint.EndpointUriProvider;
 import org.eclipse.leshan.transport.javacoap.request.ResponseCodeUtil;
 
 import com.mbed.coap.packet.CoapRequest;
@@ -52,15 +52,15 @@ public class SendResource extends LwM2mCoapResource {
     private final UplinkRequestReceiver receiver;
     private final ClientProfileProvider profileProvider;
 
-    private final URI endpointUsed;
+    private final EndpointUriProvider endpointUriProvider;
 
     public SendResource(UplinkRequestReceiver receiver, LwM2mDecoder decoder, ClientProfileProvider profileProvider,
-            URI endpointUsed) {
+            EndpointUriProvider endpointUriProvider) {
         super(RESOURCE_URI);
         this.decoder = decoder;
         this.receiver = receiver;
         this.profileProvider = profileProvider;
-        this.endpointUsed = endpointUsed;
+        this.endpointUriProvider = endpointUriProvider;
     }
 
     @Override
@@ -82,7 +82,7 @@ public class SendResource extends LwM2mCoapResource {
                 receiver.onError(sender, clientProfile,
                         new InvalidRequestException("Unsupported content format [%s] in [%s] from [%s]", contentFormat,
                                 coapRequest, sender),
-                        SendRequest.class, endpointUsed);
+                        SendRequest.class, endpointUriProvider.getEndpointUri());
                 return errorMessage(ResponseCode.BAD_REQUEST, "Unsupported content format");
             }
 
@@ -92,7 +92,7 @@ public class SendResource extends LwM2mCoapResource {
             // Handle "send op request
             SendRequest sendRequest = new SendRequest(contentFormat, data, coapRequest);
             SendableResponse<SendResponse> sendableResponse = receiver.requestReceived(sender, clientProfile,
-                    sendRequest, endpointUsed);
+                    sendRequest, endpointUriProvider.getEndpointUri());
             SendResponse response = sendableResponse.getResponse();
 
             // send response
@@ -107,10 +107,10 @@ public class SendResource extends LwM2mCoapResource {
             // TODO receiver call should maybe called after we send the response...
             receiver.onError(sender, clientProfile,
                     new InvalidRequestException(e, "Invalid payload in [%s] from [%s]", coapRequest, sender),
-                    SendRequest.class, endpointUsed);
+                    SendRequest.class, endpointUriProvider.getEndpointUri());
             return errorMessage(ResponseCode.BAD_REQUEST, "Invalid Payload");
         } catch (RuntimeException e) {
-            receiver.onError(sender, clientProfile, e, SendRequest.class, endpointUsed);
+            receiver.onError(sender, clientProfile, e, SendRequest.class, endpointUriProvider.getEndpointUri());
             throw e;
         }
     }
