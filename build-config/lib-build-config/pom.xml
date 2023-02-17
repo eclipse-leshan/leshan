@@ -97,6 +97,13 @@ Contributors:
                     <matcher>java-package</matcher>
                     <match>/org\.slf4j(\..*)?/</match>
                   </item>
+                  <item>
+                    <!-- HACK : we exclude com.mbed because of revapi bug. 
+                         See : https://github.com/revapi/revapi/issues/186
+                         This should be removed once it will be fixed in revapi. -->
+                    <matcher>java-package</matcher>
+                    <match>/com\.mbed\.coap(\..*)?/</match>
+                  </item>
                 </exclude>
               </elements>
             </revapi.filter>

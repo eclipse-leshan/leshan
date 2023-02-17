@@ -36,17 +36,12 @@ Contributors:
     </dependency>
 
     <dependency>
-    <groupId>io.github.open-coap</groupId>
-    <artifactId>coap-core</artifactId>
-    <version>6.8.0</version>
-</dependency>
+      <groupId>io.github.open-coap</groupId>
+      <artifactId>coap-core</artifactId>
+      <version>6.8.0</version>
+    </dependency>
 
     <!-- test dependencies -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
