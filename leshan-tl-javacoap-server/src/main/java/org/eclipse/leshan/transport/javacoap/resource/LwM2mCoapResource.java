@@ -111,7 +111,7 @@ public abstract class LwM2mCoapResource implements Service<CoapRequest, CoapResp
     /**
      * Handle an Invalid Request by sending a BAD_REQUEST response and logging the error using debug level.
      *
-     * @param CoapRequest The invalid CoAP request
+     * @param coapRequest The invalid CoAP request
      * @param message The error message describing why the request is invalid.
      */
     protected CompletableFuture<CoapResponse> handleInvalidRequest(CoapRequest coapRequest, String message) {
