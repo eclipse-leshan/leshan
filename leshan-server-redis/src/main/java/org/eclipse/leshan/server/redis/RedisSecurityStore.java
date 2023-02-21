@@ -35,8 +35,12 @@ import redis.clients.jedis.util.Pool;
 
 /**
  * A {@link SecurityStore} implementation based on Redis.
- *
- * Security info are stored using the endpoint as primary key and a secondary index is created for psk-identity lookup.
+ * <p>
+ * Security info are stored using the endpoint as primary key and a secondary index is created for endpoint lookup by
+ * PSK identity.
+ * <p>
+ * By default, uses {@code SEC#EP#} key prefix to find security info by endpoint and {@code EP#PSKID} key to get the
+ * endpoint by PSK ID. Leshan v1.x used {@code SEC#EP#} and {@code PSKID#SEC} keys for that accordingly.
  */
 public class RedisSecurityStore implements EditableSecurityStore {
 
@@ -49,7 +53,7 @@ public class RedisSecurityStore implements EditableSecurityStore {
     private final List<SecurityStoreListener> listeners = new CopyOnWriteArrayList<>();
 
     public RedisSecurityStore(Pool<Jedis> pool) {
-        this(pool, "SEC#EP#", "PSKID#SEC");
+        this(pool, "SEC#EP#", "EP#PSKID");
     }
 
     public RedisSecurityStore(Pool<Jedis> pool, String securityInfoByEndpointPrefix, String endpointByPskIdKey) {
