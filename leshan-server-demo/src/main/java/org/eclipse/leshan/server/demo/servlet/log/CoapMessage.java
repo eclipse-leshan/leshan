@@ -26,10 +26,11 @@ import org.apache.commons.lang.StringUtils;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.EmptyMessage;
 import org.eclipse.californium.core.coap.Option;
-import org.eclipse.californium.core.coap.OptionNumberRegistry;
 import org.eclipse.californium.core.coap.OptionSet;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.core.coap.option.OptionDefinition;
+import org.eclipse.californium.core.coap.option.StandardOptionRegistry;
 import org.eclipse.leshan.core.util.Hex;
 
 public class CoapMessage {
@@ -82,7 +83,7 @@ public class CoapMessage {
             if (!opts.isEmpty()) {
                 Map<String, List<String>> optMap = new HashMap<>();
                 for (Option opt : opts) {
-                    String strOption = OptionNumberRegistry.toString(opt.getNumber());
+                    String strOption = getOption(opt.getNumber());
                     List<String> values = optMap.get(strOption);
                     if (values == null) {
                         values = new ArrayList<>();
@@ -109,6 +110,16 @@ public class CoapMessage {
             } else {
                 this.payload = "Hex:" + Hex.encodeHexString(payload);
             }
+        }
+    }
+
+    private String getOption(int optionNumber) {
+        OptionDefinition definition = StandardOptionRegistry.getDefaultOptionRegistry()
+                .getDefinitionByNumber(optionNumber);
+        if (definition != null) {
+            return definition.toString();
+        } else {
+            return String.format("Unknown (%d)", optionNumber);
         }
     }
 }

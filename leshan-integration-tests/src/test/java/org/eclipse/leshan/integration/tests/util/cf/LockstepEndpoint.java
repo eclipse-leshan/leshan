@@ -51,10 +51,11 @@ import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.EmptyMessage;
 import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.core.coap.Option;
-import org.eclipse.californium.core.coap.OptionNumberRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.coap.Token;
+import org.eclipse.californium.core.coap.option.OptionDefinition;
+import org.eclipse.californium.core.coap.option.StandardOptionRegistry;
 import org.eclipse.californium.core.network.serialization.DataParser;
 import org.eclipse.californium.core.network.serialization.DataSerializer;
 import org.eclipse.californium.core.network.serialization.UdpDataParser;
@@ -718,12 +719,22 @@ public class LockstepEndpoint {
                         final int end = numbers.length - 1;
                         int index = 0;
                         for (; index < end; ++index) {
-                            result.append(OptionNumberRegistry.toString(numbers[index])).append(",");
+                            result.append(getOption(numbers[index])).append(",");
                         }
-                        result.append(OptionNumberRegistry.toString(numbers[index]));
+                        result.append(getOption(numbers[index]));
                     }
                     result.append(']');
                     return result.toString();
+                }
+
+                private String getOption(int optionNumber) {
+                    OptionDefinition definition = StandardOptionRegistry.getDefaultOptionRegistry()
+                            .getDefinitionByNumber(optionNumber);
+                    if (definition != null) {
+                        return definition.toString();
+                    } else {
+                        return String.format("Unknown (%d)", optionNumber);
+                    }
                 }
             });
             return this;
