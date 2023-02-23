@@ -15,13 +15,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.write;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.leshan.core.ResponseCode.CHANGED;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
+import static org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder.givenServerUsing;
+import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 import java.lang.annotation.Retention;
@@ -29,9 +27,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.Date;
 import java.util.stream.Stream;
 
-import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.LwM2m;
-import org.eclipse.leshan.core.ResponseCode;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
 import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
@@ -53,22 +50,37 @@ import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.core.util.datatype.ULong;
-import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
+import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
+import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
+import org.eclipse.leshan.integration.tests.util.junit5.extensions.ArgumentsUtil;
+import org.eclipse.leshan.integration.tests.util.junit5.extensions.BeforeEachParameterizedResolver;
+import org.eclipse.leshan.server.registration.Registration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+@ExtendWith(BeforeEachParameterizedResolver.class)
 public class WriteSingleValueTest {
 
-    @ParameterizedTest(name = "{0}")
-    @MethodSource("contentFormats")
+    /*---------------------------------/
+     *  Parameterized Tests
+     * -------------------------------*/
+    @ParameterizedTest(name = "{0} over {1} - Client using {2} - Server using {3}")
+    @MethodSource("transports")
     @Retention(RetentionPolicy.RUNTIME)
-    private @interface TestAllContentFormat {
+    private @interface TestAllCases {
     }
 
-    static Stream<ContentFormat> contentFormats() {
-        return Stream.of(//
+    static Stream<Arguments> transports() {
+
+        Object[][] transports = new Object[][] {
+                // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider
+                { Protocol.COAP, "Californium", "Californium" } };
+
+        Object[] contentFormats = new Object[] { //
                 ContentFormat.TEXT, //
                 ContentFormat.CBOR, //
                 ContentFormat.TLV, //
@@ -76,234 +88,257 @@ public class WriteSingleValueTest {
                 ContentFormat.fromCode(ContentFormat.OLD_JSON_CODE), //
                 ContentFormat.JSON, //
                 ContentFormat.SENML_JSON, //
-                ContentFormat.SENML_CBOR);
+                ContentFormat.SENML_CBOR //
+        };
+
+        // for each transport, create 1 test by format.
+        return Stream.of(ArgumentsUtil.combine(contentFormats, transports));
     }
 
-    protected IntegrationTestHelper helper = new IntegrationTestHelper();
+    /*---------------------------------/
+     *  Set-up and Tear-down Tests
+     * -------------------------------*/
+
+    LeshanTestServer server;
+    LeshanTestClient client;
+    Registration currentRegistration;
 
     @BeforeEach
-    public void start() {
-        helper.initialize();
-        helper.createServer();
-        helper.server.start();
-        helper.createClient();
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
+    public void start(ContentFormat contentFormat, Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) {
+        server = givenServerUsing(givenProtocol).with(givenServerEndpointProvider).build();
+        server.start();
+        client = givenClientUsing(givenProtocol).with(givenClientEndpointProvider).connectingTo(server).build();
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        client.waitForRegistrationTo(server);
+
+        currentRegistration = server.getRegistrationFor(client);
+
     }
 
     @AfterEach
-    public void stop() {
-        helper.client.destroy(false);
-        helper.server.destroy();
-        helper.dispose();
+    public void stop() throws InterruptedException {
+        if (client != null)
+            client.destroy(false);
+        if (server != null)
+            server.destroy();
     }
 
-    @TestAllContentFormat
-    public void write_string_resource(ContentFormat contentFormat) throws InterruptedException {
+    /*---------------------------------/
+     *  Tests
+     * -------------------------------*/
+    @TestAllCases
+    public void write_string_resource(ContentFormat contentFormat, Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider) throws InterruptedException {
         // write resource
         String expectedvalue = "stringvalue";
-        WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
+        WriteResponse response = server.send(currentRegistration,
                 new WriteRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.STRING_VALUE, expectedvalue));
 
         // verify result
-        assertEquals(ResponseCode.CHANGED, response.getCode());
-        assertNotNull(response.getCoapResponse());
-        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+        assertThat(response) //
+                .hasCode(CHANGED) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
         // read resource to check the value changed
-        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
+        ReadResponse readResponse = server.send(currentRegistration,
                 new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.STRING_VALUE));
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
-        assertEquals(expectedvalue, resource.getValue());
+        assertThat(resource.getValue()).isEqualTo(expectedvalue);
     }
 
-    @TestAllContentFormat
-    public void write_boolean_resource(ContentFormat contentFormat) throws InterruptedException {
+    @TestAllCases
+    public void write_boolean_resource(ContentFormat contentFormat, Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider) throws InterruptedException {
         // write resource
         boolean expectedvalue = true;
-        WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
+        WriteResponse response = server.send(currentRegistration,
                 new WriteRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.BOOLEAN_VALUE, expectedvalue));
 
         // verify result
-        assertEquals(ResponseCode.CHANGED, response.getCode());
-        assertNotNull(response.getCoapResponse());
-        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+        assertThat(response) //
+                .hasCode(CHANGED) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
         // read resource to check the value changed
-        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
+        ReadResponse readResponse = server.send(currentRegistration,
                 new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.BOOLEAN_VALUE));
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
-        assertEquals(expectedvalue, resource.getValue());
+        assertThat(resource.getValue()).isEqualTo(expectedvalue);
     }
 
-    @TestAllContentFormat
-    public void write_integer_resource(ContentFormat contentFormat) throws InterruptedException {
+    @TestAllCases
+    public void write_integer_resource(ContentFormat contentFormat, Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider) throws InterruptedException {
         // write resource
         long expectedvalue = -999l;
-        WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
+        WriteResponse response = server.send(currentRegistration,
                 new WriteRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.INTEGER_VALUE, expectedvalue));
 
         // verify result
-        assertEquals(ResponseCode.CHANGED, response.getCode());
-        assertNotNull(response.getCoapResponse());
-        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+        assertThat(response) //
+                .hasCode(CHANGED) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
         // read resource to check the value changed
-        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
+        ReadResponse readResponse = server.send(currentRegistration,
                 new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.INTEGER_VALUE));
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
-        assertEquals(expectedvalue, resource.getValue());
+        assertThat(resource.getValue()).isEqualTo(expectedvalue);
     }
 
-    @TestAllContentFormat
-    public void can_write_string_resource_instance(ContentFormat contentFormat) throws InterruptedException {
-        write_string_resource_instance(contentFormat, 0);
-    }
+    @TestAllCases
+    public void can_write_string_resource_instance(ContentFormat contentFormat, Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider) throws InterruptedException {
 
-    private void write_string_resource_instance(ContentFormat format, int resourceInstance)
-            throws InterruptedException {
         // read device model number
-        String valueToWrite = "newValue";
-        WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(format, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_STRING_VALUE,
-                        resourceInstance, valueToWrite, Type.STRING));
+        int resourceInstance = 0;
+        String expectedValue = "newValue";
+        WriteResponse response = server.send(currentRegistration,
+                new WriteRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_STRING_VALUE,
+                        resourceInstance, expectedValue, Type.STRING));
 
         // verify result
-        assertEquals(CHANGED, response.getCode());
-        assertNotNull(response.getCoapResponse());
-        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+        assertThat(response) //
+                .hasCode(CHANGED) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
         // read resource to check the value changed
-        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(format,
+        ReadResponse readResponse = server.send(currentRegistration, new ReadRequest(contentFormat,
                 TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_STRING_VALUE, resourceInstance));
 
         // verify result
         LwM2mResourceInstance resource = (LwM2mResourceInstance) readResponse.getContent();
-        assertEquals(valueToWrite, resource.getValue());
+        assertThat(resource.getValue()).isEqualTo(expectedValue);
     }
 
-    @TestAllContentFormat
-    public void write_float_resource(ContentFormat contentFormat) throws InterruptedException {
+    @TestAllCases
+    public void write_float_resource(ContentFormat contentFormat, Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider) throws InterruptedException {
         // write resource
-        double expectedvalue = 999.99;
-        WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.FLOAT_VALUE, expectedvalue));
+        double expectedValue = 999.99;
+        WriteResponse response = server.send(currentRegistration,
+                new WriteRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.FLOAT_VALUE, expectedValue));
 
         // verify result
-        assertEquals(ResponseCode.CHANGED, response.getCode());
-        assertNotNull(response.getCoapResponse());
-        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+        assertThat(response) //
+                .hasCode(CHANGED) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
         // read resource to check the value changed
-        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
+        ReadResponse readResponse = server.send(currentRegistration,
                 new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.FLOAT_VALUE));
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
-        assertEquals(expectedvalue, resource.getValue());
+        assertThat(resource.getValue()).isEqualTo(expectedValue);
     }
 
-    @TestAllContentFormat
-    public void write_time_resource(ContentFormat contentFormat) throws InterruptedException {
+    @TestAllCases
+    public void write_time_resource(ContentFormat contentFormat, Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider) throws InterruptedException {
         // write resource
-        Date expectedvalue = new Date(946681000l); // second accuracy
-        WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.TIME_VALUE, expectedvalue));
+        Date expectedValue = new Date(946681000l); // second accuracy
+        WriteResponse response = server.send(currentRegistration,
+                new WriteRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.TIME_VALUE, expectedValue));
 
         // verify result
-        assertEquals(ResponseCode.CHANGED, response.getCode());
-        assertNotNull(response.getCoapResponse());
-        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+        assertThat(response) //
+                .hasCode(CHANGED) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
         // read resource to check the value changed
-        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
+        ReadResponse readResponse = server.send(currentRegistration,
                 new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.TIME_VALUE));
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
-        assertEquals(expectedvalue, resource.getValue());
+        assertThat(resource.getValue()).isEqualTo(expectedValue);
     }
 
-    @TestAllContentFormat
-    public void write_corelnk_resource(ContentFormat contentFormat) throws InterruptedException {
+    @TestAllCases
+    public void write_corelnk_resource(ContentFormat contentFormat, Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider) throws InterruptedException {
         // write resource
-        Link[] expectedvalue = new Link[3];
-        expectedvalue[0] = new MixedLwM2mLink(null, new LwM2mPath(3),
+        Link[] expectedValue = new Link[3];
+        expectedValue[0] = new MixedLwM2mLink(null, new LwM2mPath(3),
                 LwM2mAttributes.create(LwM2mAttributes.OBJECT_VERSION, new LwM2m.Version("1.2")));
-        expectedvalue[1] = new MixedLwM2mLink(null, new LwM2mPath(3, 1));
-        expectedvalue[2] = new MixedLwM2mLink(null, new LwM2mPath(3, 1, 0),
+        expectedValue[1] = new MixedLwM2mLink(null, new LwM2mPath(3, 1));
+        expectedValue[2] = new MixedLwM2mLink(null, new LwM2mPath(3, 1, 0),
                 new QuotedStringAttribute("attr1", "attr1Value"), new UnquotedStringAttribute("attr2", "attr2Value"));
 
-        WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.CORELNK_VALUE, expectedvalue));
+        WriteResponse response = server.send(currentRegistration,
+                new WriteRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.CORELNK_VALUE, expectedValue));
 
         // verify result
-        assertEquals(ResponseCode.CHANGED, response.getCode());
-        assertNotNull(response.getCoapResponse());
-        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+        assertThat(response) //
+                .hasCode(CHANGED) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
         // read resource to check the value changed
-        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
+        ReadResponse readResponse = server.send(currentRegistration,
                 new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.CORELNK_VALUE));
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
-        assertArrayEquals(expectedvalue, (Link[]) resource.getValue());
+        assertThat((Link[]) resource.getValue()).isEqualTo(expectedValue);
     }
 
-    @TestAllContentFormat
-    public void write_unsigned_integer_resource(ContentFormat contentFormat) throws InterruptedException {
+    @TestAllCases
+    public void write_unsigned_integer_resource(ContentFormat contentFormat, Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider) throws InterruptedException {
         // write resource
-        ULong expectedvalue = ULong.valueOf("18446744073709551615"); // this unsigned integer can not be stored in a
+        ULong expectedValue = ULong.valueOf("18446744073709551615"); // this unsigned integer can not be stored in a
 
-        WriteResponse response = helper.server.send(helper.getCurrentRegistration(), new WriteRequest(contentFormat,
-                TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.UNSIGNED_INTEGER_VALUE, expectedvalue));
+        WriteResponse response = server.send(currentRegistration, new WriteRequest(contentFormat,
+                TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.UNSIGNED_INTEGER_VALUE, expectedValue));
 
         // verify result
-        assertEquals(ResponseCode.CHANGED, response.getCode());
-        assertNotNull(response.getCoapResponse());
-        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+        assertThat(response) //
+                .hasCode(CHANGED) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
         // read resource to check the value changed
-        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
+        ReadResponse readResponse = server.send(currentRegistration,
                 new ReadRequest(TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.UNSIGNED_INTEGER_VALUE));
         LwM2mResource resource = (LwM2mResource) readResponse.getContent();
-        assertEquals(expectedvalue, resource.getValue());
+        assertThat(resource.getValue()).isEqualTo(expectedValue);
     }
 
-    @TestAllContentFormat
-    public void can_write_single_instance_objlnk_resource(ContentFormat contentFormat) throws InterruptedException {
+    @TestAllCases
+    public void can_write_single_instance_objlnk_resource(ContentFormat contentFormat, Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider) throws InterruptedException {
 
-        ObjectLink data = new ObjectLink(10245, 1);
+        ObjectLink expectedValue = new ObjectLink(10245, 1);
 
         // Write objlnk resource
-        WriteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_OBJLINK_VALUE, data));
+        WriteResponse response = server.send(currentRegistration, new WriteRequest(contentFormat,
+                TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_OBJLINK_VALUE, expectedValue));
 
         // Verify Write result
-        assertEquals(ResponseCode.CHANGED, response.getCode());
-        assertNotNull(response.getCoapResponse());
-        assertThat(response.getCoapResponse(), is(instanceOf(Response.class)));
+        assertThat(response) //
+                .hasCode(CHANGED) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
         // Reading back the written OBJLNK value
-        ReadResponse readResponse = helper.server.send(helper.getCurrentRegistration(),
+        ReadResponse readResponse = server.send(currentRegistration,
                 new ReadRequest(TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_OBJLINK_VALUE));
         LwM2mSingleResource resource = (LwM2mSingleResource) readResponse.getContent();
-
-        // verify read value
-        assertEquals(((ObjectLink) resource.getValue()).getObjectId(), 10245);
-        assertEquals(((ObjectLink) resource.getValue()).getObjectInstanceId(), 1);
+        assertThat(resource.getValue()).isEqualTo(expectedValue);
     }
 
-    @TestAllContentFormat
-    public void send_writerequest_synchronously_with_bad_payload_raises_codeexception(ContentFormat contentFormat)
+    @TestAllCases
+    public void send_writerequest_synchronously_with_bad_payload_raises_codeexception(ContentFormat contentFormat,
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws InterruptedException {
         assertThrowsExactly(CodecException.class, () -> {
-            helper.server.send(helper.getCurrentRegistration(), new WriteRequest(contentFormat, 3, 0, 13,
+            server.send(currentRegistration, new WriteRequest(contentFormat, 3, 0, 13,
                     "a string instead of timestamp for currenttime resource"));
         });
 
     }
 
-    @TestAllContentFormat
-    public void send_writerequest_asynchronously_with_bad_payload_raises_codeexception(ContentFormat contentFormat)
+    @TestAllCases
+    public void send_writerequest_asynchronously_with_bad_payload_raises_codeexception(ContentFormat contentFormat,
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws InterruptedException {
         assertThrowsExactly(CodecException.class, () -> {
-            helper.server.send(helper.getCurrentRegistration(),
+            server.send(currentRegistration,
                     new WriteRequest(contentFormat, 3, 0, 13, "a string instead of timestamp for currenttime resource"),
                     new ResponseCallback<WriteResponse>() {
                         @Override

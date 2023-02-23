@@ -15,15 +15,17 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.read;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.leshan.core.ResponseCode.CONTENT;
-import static org.eclipse.leshan.integration.tests.util.TestUtil.assertContentFormat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
+import static org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder.givenServerUsing;
+import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.stream.Stream;
 
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
@@ -32,103 +34,140 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
 import org.eclipse.leshan.core.response.ReadCompositeResponse;
 import org.eclipse.leshan.core.util.TestLwM2mId;
-import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
+import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
+import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
+import org.eclipse.leshan.integration.tests.util.junit5.extensions.ArgumentsUtil;
+import org.eclipse.leshan.integration.tests.util.junit5.extensions.BeforeEachParameterizedResolver;
+import org.eclipse.leshan.server.registration.Registration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+@ExtendWith(BeforeEachParameterizedResolver.class)
 public class ReadCompositeTest {
 
-    @ParameterizedTest(name = "{0} - {1}")
-    @MethodSource("contentFormats")
+    /*---------------------------------/
+     *  Parameterized Tests
+     * -------------------------------*/
+    @ParameterizedTest(name = "requested {0} response {1} over {2} - Client using {3} - Server using {4}")
+    @MethodSource("transports")
     @Retention(RetentionPolicy.RUNTIME)
-    private @interface TestAllContentFormat {
+    private @interface TestAllCases {
     }
 
-    static Stream<Arguments> contentFormats() {
-        return Stream.of(//
+    static Stream<Arguments> transports() {
+
+        Object[][] transports = new Object[][]
+        // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider
+        { { Protocol.COAP, "Californium", "Californium" } };
+
+        Object[][] contentFormats = new Object[][] { //
                 // {request content format, response content format}
-                arguments(ContentFormat.SENML_JSON, ContentFormat.SENML_JSON), //
-                arguments(ContentFormat.SENML_CBOR, ContentFormat.SENML_CBOR));
+                { ContentFormat.SENML_JSON, ContentFormat.SENML_JSON }, //
+                { ContentFormat.SENML_CBOR, ContentFormat.SENML_CBOR }, //
+        };
+
+        // for each transport, create 1 test by format.
+        return Stream.of(ArgumentsUtil.combine(contentFormats, transports));
     }
 
-    protected IntegrationTestHelper helper = new IntegrationTestHelper();
+    /*---------------------------------/
+     *  Set-up and Tear-down Tests
+     * -------------------------------*/
+
+    LeshanTestServer server;
+    LeshanTestClient client;
+    Registration currentRegistration;
 
     @BeforeEach
-    public void start() {
-        helper.initialize();
-        helper.createServer();
-        helper.server.start();
-        helper.createClient();
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
+    public void start(ContentFormat requestContentFormat, ContentFormat responseContentFormat, Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider) {
+        server = givenServerUsing(givenProtocol).with(givenServerEndpointProvider).build();
+        server.start();
+        client = givenClientUsing(givenProtocol).with(givenClientEndpointProvider).connectingTo(server).build();
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        client.waitForRegistrationTo(server);
+
+        currentRegistration = server.getRegistrationFor(client);
+
     }
 
     @AfterEach
-    public void stop() {
-        helper.client.destroy(false);
-        helper.server.destroy();
-        helper.dispose();
+    public void stop() throws InterruptedException {
+        if (client != null)
+            client.destroy(false);
+        if (server != null)
+            server.destroy();
     }
 
-    @TestAllContentFormat
-    public void can_read_resources(ContentFormat requestContentFormat, ContentFormat responseContentFormat)
+    /*---------------------------------/
+     *  Tests
+     * -------------------------------*/
+    @TestAllCases
+    public void can_read_resources(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws InterruptedException {
         // read device model number
-        ReadCompositeResponse response = helper.server.send(helper.getCurrentRegistration(),
+        ReadCompositeResponse response = server.send(currentRegistration,
                 new ReadCompositeRequest(requestContentFormat, responseContentFormat, "/3/0/0", "/1/0/1"));
 
         // verify result
-        assertEquals(CONTENT, response.getCode());
-        assertContentFormat(responseContentFormat, response);
+        assertThat(response) //
+                .hasCode(CONTENT) //
+                .hasContentFormat(responseContentFormat, givenServerEndpointProvider);
 
         LwM2mSingleResource resource = (LwM2mSingleResource) response.getContent("/3/0/0");
-        assertEquals(0, resource.getId());
-        assertEquals(Type.STRING, resource.getType());
+        assertThat(resource.getId()).isEqualTo(0);
+        assertThat(resource.getType()).isEqualTo(Type.STRING);
 
         resource = (LwM2mSingleResource) response.getContent("/1/0/1");
-        assertEquals(1, resource.getId());
-        assertEquals(Type.INTEGER, resource.getType());
-
+        assertThat(resource.getId()).isEqualTo(1);
+        assertThat(resource.getType()).isEqualTo(Type.INTEGER);
     }
 
-    @TestAllContentFormat
-    public void can_read_resource_instance(ContentFormat requestContentFormat, ContentFormat responseContentFormat)
+    @TestAllCases
+    public void can_read_resource_instance(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws InterruptedException {
         // read resource instance
         String path = "/" + TestLwM2mId.TEST_OBJECT + "/0/" + TestLwM2mId.MULTIPLE_STRING_VALUE + "/0";
-        ReadCompositeResponse response = helper.server.send(helper.getCurrentRegistration(),
+        ReadCompositeResponse response = server.send(currentRegistration,
                 new ReadCompositeRequest(requestContentFormat, responseContentFormat, path));
 
         // verify result
-        assertEquals(CONTENT, response.getCode());
-        assertContentFormat(responseContentFormat, response);
+        assertThat(response) //
+                .hasCode(CONTENT) //
+                .hasContentFormat(responseContentFormat, givenServerEndpointProvider);
 
         LwM2mResourceInstance resource = (LwM2mResourceInstance) response.getContent(path);
-        assertEquals(0, resource.getId());
-        assertEquals(Type.STRING, resource.getType());
+        assertThat(resource.getId()).isEqualTo(0);
+        assertThat(resource.getType()).isEqualTo(Type.STRING);
 
     }
 
-    @TestAllContentFormat
-    public void can_read_resource_and_instance(ContentFormat requestContentFormat, ContentFormat responseContentFormat)
+    @TestAllCases
+    public void can_read_resource_and_instance(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws InterruptedException {
         // read device model number
-        ReadCompositeResponse response = helper.server.send(helper.getCurrentRegistration(),
+        ReadCompositeResponse response = server.send(currentRegistration,
                 new ReadCompositeRequest(requestContentFormat, responseContentFormat, "/3/0/0", "/1"));
 
         // verify result
-        assertEquals(CONTENT, response.getCode());
-        assertContentFormat(responseContentFormat, response);
+        assertThat(response) //
+                .hasCode(CONTENT) //
+                .hasContentFormat(responseContentFormat, givenServerEndpointProvider);
 
         LwM2mSingleResource resource = (LwM2mSingleResource) response.getContent("/3/0/0");
-        assertEquals(0, resource.getId());
-        assertEquals(Type.STRING, resource.getType());
+        assertThat(resource.getId()).isEqualTo(0);
+        assertThat(resource.getType()).isEqualTo(Type.STRING);
 
         LwM2mObject object = (LwM2mObject) response.getContent("/1");
-        assertEquals(1, object.getId());
-        assertEquals(1, object.getInstances().size());
+        assertThat(object.getId()).isEqualTo(1);
+        assertThat(object.getInstances()).hasSize(1);
     }
 }

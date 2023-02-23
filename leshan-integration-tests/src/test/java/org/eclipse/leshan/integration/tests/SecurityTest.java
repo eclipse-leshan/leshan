@@ -15,813 +15,845 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.LIFETIME;
-import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.BAD_ENDPOINT;
-import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.BAD_PSK_ID;
-import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.BAD_PSK_KEY;
-import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.GOOD_ENDPOINT;
-import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.GOOD_PSK_ID;
-import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.GOOD_PSK_KEY;
-import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.getServerOscoreSetting;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.eclipse.leshan.core.CertificateUsage.CA_CONSTRAINT;
+import static org.eclipse.leshan.core.CertificateUsage.DOMAIN_ISSUER_CERTIFICATE;
+import static org.eclipse.leshan.core.CertificateUsage.SERVICE_CERTIFICATE_CONSTRAINT;
+import static org.eclipse.leshan.core.CertificateUsage.TRUST_ANCHOR_ASSERTION;
+import static org.eclipse.leshan.integration.tests.util.Credentials.BAD_ENDPOINT;
+import static org.eclipse.leshan.integration.tests.util.Credentials.BAD_PSK_ID;
+import static org.eclipse.leshan.integration.tests.util.Credentials.BAD_PSK_KEY;
+import static org.eclipse.leshan.integration.tests.util.Credentials.GOOD_PSK_ID;
+import static org.eclipse.leshan.integration.tests.util.Credentials.GOOD_PSK_KEY;
+import static org.eclipse.leshan.integration.tests.util.Credentials.clientPrivateKey;
+import static org.eclipse.leshan.integration.tests.util.Credentials.clientPrivateKeyFromCert;
+import static org.eclipse.leshan.integration.tests.util.Credentials.clientPublicKey;
+import static org.eclipse.leshan.integration.tests.util.Credentials.clientTrustStore;
+import static org.eclipse.leshan.integration.tests.util.Credentials.clientX509Cert;
+import static org.eclipse.leshan.integration.tests.util.Credentials.clientX509CertNotTrusted;
+import static org.eclipse.leshan.integration.tests.util.Credentials.clientX509CertWithBadCN;
+import static org.eclipse.leshan.integration.tests.util.Credentials.rootCAX509Cert;
+import static org.eclipse.leshan.integration.tests.util.Credentials.serverIntPrivateKeyFromCert;
+import static org.eclipse.leshan.integration.tests.util.Credentials.serverIntX509CertChain;
+import static org.eclipse.leshan.integration.tests.util.Credentials.serverIntX509CertSelfSigned;
+import static org.eclipse.leshan.integration.tests.util.Credentials.serverPrivateKey;
+import static org.eclipse.leshan.integration.tests.util.Credentials.serverPrivateKeyFromCert;
+import static org.eclipse.leshan.integration.tests.util.Credentials.serverPublicKey;
+import static org.eclipse.leshan.integration.tests.util.Credentials.serverX509Cert;
+import static org.eclipse.leshan.integration.tests.util.Credentials.serverX509CertSelfSigned;
+import static org.eclipse.leshan.integration.tests.util.Credentials.trustedCertificates;
+import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
+import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertArg;
+import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
-import java.net.URI;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
-import org.eclipse.californium.core.coap.CoAP.Type;
-import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.core.coap.Token;
-import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
-import org.eclipse.californium.elements.AddressEndpointContext;
-import org.eclipse.californium.elements.EndpointContext;
-import org.eclipse.californium.elements.RawData;
-import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
-import org.eclipse.californium.elements.exception.EndpointMismatchException;
-import org.eclipse.californium.scandium.DTLSConnector;
-import org.eclipse.californium.scandium.dtls.DTLSSession;
-import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.request.ReadRequest;
-import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
+import org.eclipse.leshan.core.request.exception.TimeoutException.Type;
 import org.eclipse.leshan.core.request.exception.UnconnectedPeerException;
+import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.ReadResponse;
-import org.eclipse.leshan.integration.tests.util.Callback;
-import org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper;
-import org.eclipse.leshan.integration.tests.util.cf.SimpleMessageCallback;
+import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.integration.tests.util.Credentials;
+import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
+import org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder;
+import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
+import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
+import org.eclipse.leshan.integration.tests.util.junit5.extensions.BeforeEachParameterizedResolver;
 import org.eclipse.leshan.server.registration.Registration;
-import org.eclipse.leshan.server.security.EditableSecurityStore;
+import org.eclipse.leshan.server.security.InMemorySecurityStore;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
+@ExtendWith(BeforeEachParameterizedResolver.class)
 public class SecurityTest {
 
-    protected SecureIntegrationTestHelper helper = new SecureIntegrationTestHelper();
+    private static final long SHORT_LIFETIME = 2; // seconds
+
+    /*---------------------------------/
+     *  Parameterized Tests
+     * -------------------------------*/
+    @ParameterizedTest(name = "{0} - Client using {1} - Server using {2}")
+    @MethodSource("transports")
+    @Retention(RetentionPolicy.RUNTIME)
+    private @interface TestAllTransportLayer {
+    }
+
+    static Stream<org.junit.jupiter.params.provider.Arguments> transports() {
+        return Stream.of(//
+                // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider
+                arguments(Protocol.COAPS, "Californium", "Californium"));
+    }
+
+    /*---------------------------------/
+     *  Set-up and Tear-down Tests
+     * -------------------------------*/
+    LeshanTestServerBuilder givenServer;
+    LeshanTestServer server;
+    LeshanTestClientBuilder givenClient;
+    LeshanTestClient client;
 
     @BeforeEach
-    public void start() {
-        helper.initialize();
+    public void start(Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider) {
+        givenServer = givenServerUsing(givenProtocol).with(givenServerEndpointProvider);
+        givenClient = givenClientUsing(givenProtocol).with(givenClientEndpointProvider);
     }
 
     @AfterEach
-    public void stop() {
-        if (helper.client != null)
-            helper.client.destroy(true);
-        helper.server.destroy();
-        helper.dispose();
+    public void stop() throws InterruptedException {
+        if (client != null)
+            client.destroy(false);
+        if (server != null)
+            server.destroy();
     }
 
-    @Test
-    public void registered_device_with_psk_to_server_with_psk()
+    protected LeshanTestServerBuilder givenServerUsing(Protocol givenProtocol) {
+        return new LeshanTestServerBuilder(givenProtocol).with(new InMemorySecurityStore());
+    }
+
+    /*---------------------------------/
+     *  Tests
+     * -------------------------------*/
+    @TestAllTransportLayer
+    public void registered_device_with_psk_to_server_with_psk(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, InterruptedException {
         // Create PSK server & start it
-        helper.createServer(); // default server support PSK
-        helper.server.start();
+        server = givenServer.build(); // default server support PSK
+        server.start();
 
         // Create PSK Client
-        helper.createPSKClient();
+        client = givenClient.connectingTo(server).usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY).build();
 
         // Add client credentials to the server
-        helper.getSecurityStore()
-                .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), GOOD_PSK_ID, GOOD_PSK_KEY));
+        server.getSecurityStore()
+                .add(SecurityInfo.newPreSharedKeyInfo(client.getEndpointName(), GOOD_PSK_ID, GOOD_PSK_KEY));
 
         // Check client is not registered
-        helper.assertClientNotRegisterered();
+        assertThat(client).isNotRegisteredAt(server);
 
         // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
+        client.start();
+        server.waitForNewRegistrationOf(client);
 
         // Check client is well registered
-        helper.assertClientRegisterered();
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
 
         // check we can send request to client.
-        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
-        assertTrue(response.isSuccess());
+        ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
+        assertThat(response.isSuccess()).isTrue();
     }
 
-    @Test
-    public void registered_device_with_oscore_to_server_with_oscore()
-            throws NonUniqueSecurityInfoException, InterruptedException {
-
-        helper.createOscoreServer();
-        helper.server.start();
-
-        helper.createOscoreClient();
-
-        helper.getSecurityStore()
-                .add(SecurityInfo.newOscoreInfo(helper.getCurrentEndpoint(), getServerOscoreSetting()));
-
-        // Check client is not registered
-        helper.assertClientNotRegisterered();
-
-        // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-
-        // Check client is well registered
-        helper.assertClientRegisterered();
-
-        // check we can send request to client.
-        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
-        assertTrue(response.isSuccess());
-    }
-
-    @Test
-    public void registered_device_with_oscore_to_server_with_oscore_then_removed_security_info_then_server_fails_to_send_request()
-            throws NonUniqueSecurityInfoException, InterruptedException {
-
-        helper.createOscoreServer();
-        helper.server.start();
-
-        helper.createOscoreClient();
-        helper.getSecurityStore()
-                .add(SecurityInfo.newOscoreInfo(helper.getCurrentEndpoint(), getServerOscoreSetting()));
-
-        // Check client is not registered
-        helper.assertClientNotRegisterered();
-
-        // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-
-        // Check client is well registered
-        helper.assertClientRegisterered();
-
-        // check we can send request to client.
-        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
-        assertTrue(response.isSuccess());
-
-        // Remove securityInfo
-        helper.getSecurityStore().remove(helper.getCurrentEndpoint(), true);
-
-        // check we can send request to client.
-        response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
-        assertNull(response);
-        // TODO OSCORE we must defined the expected behavior here.
-    }
-
-    // TODO OSCORE should failed but does not because context by URI is not removed.
-    @Test
-    public void registered_device_with_oscore_to_server_with_oscore_then_removed_security_info_then_client_fails_to_update()
-            throws NonUniqueSecurityInfoException, InterruptedException {
-
-        helper.createOscoreServer();
-        helper.server.start();
-
-        helper.createOscoreClient();
-        helper.getSecurityStore()
-                .add(SecurityInfo.newOscoreInfo(helper.getCurrentEndpoint(), getServerOscoreSetting()));
-
-        // Check client is not registered
-        helper.assertClientNotRegisterered();
-
-        // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-
-        // Check client is well registered
-        helper.assertClientRegisterered();
-
-        // check we can send request to client.
-        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
-        assertTrue(response.isSuccess());
-
-        // Remove securityInfo
-        helper.getSecurityStore().remove(helper.getCurrentEndpoint(), true);
-
-        // check that next update will failed.
-        helper.client.triggerRegistrationUpdate();
-        helper.waitForUpdateFailureAtClientSide(500);
-
-    }
-
-    @Test
-    public void dont_sent_request_if_identity_change()
-            throws NonUniqueSecurityInfoException, InterruptedException, IOException {
-        // Create PSK server & start it
-        helper.createServer(); // default server support PSK
-        helper.server.start();
-
-        // Create PSK Client
-        helper.createPSKClient();
-
-        // Add client credentials to the server
-        helper.getSecurityStore()
-                .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), GOOD_PSK_ID, GOOD_PSK_KEY));
-
-        // Check client is not registered
-        helper.assertClientNotRegisterered();
-
-        // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-
-        // Check client is well registered
-        helper.assertClientRegisterered();
-
-        // Ensure we can send a read request
-        helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1));
-
-        // Add new credential to the server
-        helper.getSecurityStore().add(SecurityInfo.newPreSharedKeyInfo(GOOD_ENDPOINT, "anotherPSK", GOOD_PSK_KEY));
-
-        // Create new session with new credentials at client side.
-        // Get connector
-        DTLSConnector connector = (DTLSConnector) helper.getClientConnector(helper.getCurrentRegisteredServer());
-        // Clear DTLS session to force new handshake
-        connector.clearConnectionState();
-        // Change PSK id
-        helper.setNewPsk("anotherPSK", GOOD_PSK_KEY);
-        // send and empty message to force a new handshake with new credentials
-        SimpleMessageCallback callback = new SimpleMessageCallback();
-        // create a ping message
-        Request request = new Request(null, Type.CON);
-        request.setToken(Token.EMPTY);
-        request.setMID(0);
-        byte[] ping = new UdpDataSerializer().getByteArray(request);
-        // sent it
-        URI destinationUri = helper.server.getEndpoint(Protocol.COAPS).getURI();
-        connector.send(RawData.outbound(ping,
-                new AddressEndpointContext(destinationUri.getHost(), destinationUri.getPort()), callback, false));
-        // Wait until new handshake DTLS is done
-        EndpointContext endpointContext = callback.getEndpointContext(1000);
-        assertEquals(((PreSharedKeyIdentity) endpointContext.getPeerIdentity()).getIdentity(), "anotherPSK");
-
-        // Try to send a read request this should failed with an SendFailedException.
-        try {
-            helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 1000);
-            fail("send must failed");
-        } catch (SendFailedException e) {
-            assertTrue(e.getCause() instanceof EndpointMismatchException,
-                    "must be caused by an EndpointMismatchException");
-        } finally {
-            connector.stop();
-            helper.client.destroy(false);
-            helper.client = null;
-        }
-    }
-
-    @Test
-    public void register_update_deregister_reregister_device_with_psk_to_server_with_psk()
+    @TestAllTransportLayer
+    public void register_update_deregister_reregister_device_with_psk_to_server_with_psk(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException {
         // Create PSK server & start it
-        helper.createServer(); // default server support PSK
-        helper.server.start();
+        server = givenServer.build(); // default server support PSK
+        server.start();
 
         // Create PSK Client
-        helper.createPSKClient();
+        client = givenClient.connectingTo(server) //
+                .usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY) //
+                .usingLifeTimeOf(SHORT_LIFETIME, TimeUnit.SECONDS).build();
 
         // Add client credentials to the server
-        helper.getSecurityStore()
-                .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), GOOD_PSK_ID, GOOD_PSK_KEY));
+        server.getSecurityStore()
+                .add(SecurityInfo.newPreSharedKeyInfo(client.getEndpointName(), GOOD_PSK_ID, GOOD_PSK_KEY));
 
         // Check client is not registered
-        helper.assertClientNotRegisterered();
+        assertThat(client).isNotRegisteredAt(server);
 
-        // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
+        // Start it.
+        client.start();
 
-        // Check client is well registered
-        helper.assertClientRegisterered();
+        // Check for register
+        server.waitForNewRegistrationOf(client);
+        client.waitForRegistrationTo(server);
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
 
         // Check for update
-        helper.waitForUpdateAtClientSide(LIFETIME);
-        helper.assertClientRegisterered();
+        client.waitForUpdateTo(server, SHORT_LIFETIME, TimeUnit.SECONDS);
+        server.waitForUpdateOf(registration);
+        assertThat(client).isRegisteredAt(server);
 
         // Check de-registration
-        helper.client.stop(true);
-        helper.waitForDeregistrationAtServerSide(1);
-        helper.assertClientNotRegisterered();
+        client.stop(true);
+        server.waitForDeregistrationOf(registration);
+        client.waitForDeregistrationTo(server);
+        assertThat(client).isNotRegisteredAt(server);
 
         // check new registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-        helper.assertClientRegisterered();
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        client.waitForRegistrationTo(server);
+        assertThat(client).isRegisteredAt(server);
     }
 
-    @Test
-    public void register_update_reregister_device_with_psk_to_server_with_psk() throws NonUniqueSecurityInfoException {
+    @TestAllTransportLayer
+    public void register_update_reregister_device_with_psk_to_server_with_psk(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws NonUniqueSecurityInfoException {
         // Create PSK server & start it
-        helper.createServer(); // default server support PSK
-        helper.server.start();
+        server = givenServer.build(); // default server support PSK
+        server.start();
 
         // Create PSK Client
-        helper.createPSKClient();
+        client = givenClient.connectingTo(server) //
+                .usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY) //
+                .usingLifeTimeOf(SHORT_LIFETIME, TimeUnit.SECONDS).build();
 
         // Add client credentials to the server
-        helper.getSecurityStore()
-                .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), GOOD_PSK_ID, GOOD_PSK_KEY));
-
-        // Check for registration
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-        Registration registration = helper.getCurrentRegistration();
-        helper.assertClientRegisterered();
-
-        // Check for update
-        helper.waitForUpdateAtClientSide(LIFETIME);
-        helper.assertClientRegisterered();
-
-        // Check stop do not de-register
-        helper.client.stop(false);
-        helper.ensureNoDeregistration(1);
-        helper.assertClientRegisterered();
-
-        // Check new registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-        helper.assertClientRegisterered();
-        Registration newRegistration = helper.getCurrentRegistration();
-        assertNotEquals(registration.getId(), newRegistration.getId());
-
-    }
-
-    @Test
-    public void server_initiates_dtls_handshake() throws NonUniqueSecurityInfoException, InterruptedException {
-        // Create PSK server & start it
-        helper.createServer(); // default server support PSK
-        helper.server.start();
-
-        // Create PSK Client
-        helper.createPSKClient();
-
-        // Add client credentials to the server
-        helper.getSecurityStore()
-                .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), GOOD_PSK_ID, GOOD_PSK_KEY));
-
-        // Check for registration
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-        Registration registration = helper.getCurrentRegistration();
-        helper.assertClientRegisterered();
-
-        // Remove DTLS connection at server side.
-        DTLSConnector dtlsServerConnector = helper.getServerDTLSConnector();
-        dtlsServerConnector.clearConnectionState();
-
-        // try to send request
-        ReadResponse readResponse = helper.server.send(registration, new ReadRequest(3), 1000);
-        assertTrue(readResponse.isSuccess());
-
-        // ensure we have a new session for it
-        DTLSSession session = dtlsServerConnector.getSessionByAddress(registration.getSocketAddress());
-        assertNotNull(session);
-    }
-
-    @Test
-    public void server_initiates_dtls_handshake_timeout() throws NonUniqueSecurityInfoException, InterruptedException {
-        // Create PSK server & start it
-        helper.createServer(); // default server support PSK
-        helper.server.start();
-
-        // Create PSK Client
-        helper.createPSKClient();
-
-        // Add client credentials to the server
-        helper.getSecurityStore()
-                .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), GOOD_PSK_ID, GOOD_PSK_KEY));
-
-        // Check for registration
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-        Registration registration = helper.getCurrentRegistration();
-        helper.assertClientRegisterered();
-
-        // Remove DTLS connection at server side.
-        helper.getServerDTLSConnector().clearConnectionState();
-
-        // stop client
-        helper.client.stop(false);
-
-        // try to send request synchronously
-        ReadResponse readResponse = helper.server.send(registration, new ReadRequest(3), 1000);
-        assertNull(readResponse);
-
-        // try to send request asynchronously
-        Callback<ReadResponse> callback = new Callback<>();
-        helper.server.send(registration, new ReadRequest(3), 1000, callback, callback);
-        callback.waitForResponse(1100);
-        assertTrue(callback.getException() instanceof TimeoutException);
-        assertEquals(TimeoutException.Type.DTLS_HANDSHAKE_TIMEOUT,
-                ((TimeoutException) callback.getException()).getType());
-
-    }
-
-    @Test
-    public void server_does_not_initiate_dtls_handshake_with_queue_mode()
-            throws NonUniqueSecurityInfoException, InterruptedException {
-        // Create PSK server & start it
-        helper.createServer(); // default server support PSK
-        helper.server.start();
-
-        // Create PSK Client
-        helper.createPSKClientUsingQueueMode();
-
-        // Add client credentials to the server
-        helper.getSecurityStore()
-                .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), GOOD_PSK_ID, GOOD_PSK_KEY));
-
-        // Check for registration
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-        Registration registration = helper.getCurrentRegistration();
-        helper.assertClientRegisterered();
-
-        // Remove DTLS connection at server side.
-        helper.getServerDTLSConnector().clearConnectionState();
-
-        // try to send request
-        try {
-            helper.server.send(registration, new ReadRequest(3), 1000);
-            fail("Read request SHOULD have failed");
-        } catch (UnconnectedPeerException e) {
-            // expected result
-            assertFalse(helper.server.getPresenceService().isClientAwake(registration), "client is still awake");
-        }
-    }
-
-    @Test
-    public void registered_device_with_bad_psk_identity_to_server_with_psk() throws NonUniqueSecurityInfoException {
-        // Create PSK server & start it
-        helper.createServer(); // default server support PSK
-        helper.server.start();
-
-        // Create PSK Client
-        helper.createPSKClient();
-
-        // Add client credentials with BAD PSK ID to the server
-        helper.getSecurityStore()
-                .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), BAD_PSK_ID, GOOD_PSK_KEY));
-
-        // Check client can not register
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
-    }
-
-    @Test
-    public void registered_device_with_bad_psk_key_to_server_with_psk() throws NonUniqueSecurityInfoException {
-        // Create PSK server & start it
-        helper.createServer(); // default server support PSK
-        helper.server.start();
-
-        // Create PSK Client
-        helper.createPSKClient();
-
-        // Add client credentials with BAD PSK KEY to the server
-        helper.getSecurityStore()
-                .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), GOOD_PSK_ID, BAD_PSK_KEY));
-
-        // Check client can not register
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
-    }
-
-    @Test
-    public void registered_device_with_psk_and_bad_endpoint_to_server_with_psk() throws NonUniqueSecurityInfoException {
-        // Create PSK server & start it
-        helper.createServer(); // default server support PSK
-        helper.server.start();
-
-        // Create PSK Client
-        helper.createPSKClient();
-
-        // Add client credentials for another endpoint to the server
-        helper.getSecurityStore().add(SecurityInfo.newPreSharedKeyInfo(BAD_ENDPOINT, GOOD_PSK_ID, GOOD_PSK_KEY));
-
-        // Check client can not register
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
-    }
-
-    @Test
-    public void registered_device_with_psk_identity_to_server_with_psk_then_remove_security_info()
-            throws NonUniqueSecurityInfoException, InterruptedException {
-        // Create PSK server & start it
-        helper.createServer(); // default server support PSK
-        helper.server.start();
-
-        // Create PSK Client
-        helper.createPSKClient();
-
-        // Add client credentials to the server
-        helper.getSecurityStore()
-                .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), GOOD_PSK_ID, GOOD_PSK_KEY));
+        server.getSecurityStore()
+                .add(SecurityInfo.newPreSharedKeyInfo(client.getEndpointName(), GOOD_PSK_ID, GOOD_PSK_KEY));
 
         // Check client is not registered
-        helper.assertClientNotRegisterered();
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Start it.
+        client.start();
+
+        // Check for register
+        server.waitForNewRegistrationOf(client);
+        client.waitForRegistrationTo(server);
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
+
+        // Check for update
+        client.waitForUpdateTo(server, SHORT_LIFETIME, TimeUnit.SECONDS);
+        server.waitForUpdateOf(registration);
+        assertThat(client).isRegisteredAt(server);
+
+        // Check de-registration
+        client.stop(false);
+        assertThat(client).after(500, TimeUnit.MILLISECONDS).isRegisteredAt(server);
+
+        // check new registration
+        client.start();
+        server.waitForReRegistrationOf(registration);
+        client.waitForRegistrationTo(server);
+        assertThat(client).isRegisteredAt(server);
+    }
+
+    @TestAllTransportLayer
+    public void server_initiates_dtls_handshake(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws NonUniqueSecurityInfoException, InterruptedException {
+        // Create PSK server & start it
+        server = givenServer.build(); // default server support PSK
+        server.start();
+
+        // Create PSK Client
+        client = givenClient.connectingTo(server).usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY).build();
+
+        // Add client credentials to the server
+        server.getSecurityStore()
+                .add(SecurityInfo.newPreSharedKeyInfo(client.getEndpointName(), GOOD_PSK_ID, GOOD_PSK_KEY));
+
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Start it.
+        client.start();
+
+        // Check for register
+        server.waitForNewRegistrationOf(client);
+        client.waitForRegistrationTo(server);
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
+
+        // Remove Client Security info
+        server.clearSecurityContextFor(givenProtocol);
+
+        // try to send request
+        ReadResponse readResponse = server.send(registration, new ReadRequest(3), 1000);
+        assertThat(readResponse.isSuccess()).isTrue();
+    }
+
+    @TestAllTransportLayer
+    public void server_initiates_dtls_handshake_timeout(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws NonUniqueSecurityInfoException, InterruptedException {
+        // Create PSK server & start it
+        server = givenServer.build(); // default server support PSK
+        server.start();
+
+        // Create PSK Client
+        client = givenClient.connectingTo(server).usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY).build();
+
+        // Add client credentials to the server
+        server.getSecurityStore()
+                .add(SecurityInfo.newPreSharedKeyInfo(client.getEndpointName(), GOOD_PSK_ID, GOOD_PSK_KEY));
+
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Start it.
+        client.start();
+
+        // Check for register
+        server.waitForNewRegistrationOf(client);
+        client.waitForRegistrationTo(server);
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
+
+        // Remove Client Security info
+        server.clearSecurityContextFor(givenProtocol);
+
+        // stop client
+        client.stop(false);
+
+        // try to send request asynchronously, it should fail with security layer timeout
+        @SuppressWarnings("unchecked")
+        ResponseCallback<ReadResponse> responseCallback = mock(ResponseCallback.class);
+        ErrorCallback errorCallback = mock(ErrorCallback.class);
+        server.send(registration, new ReadRequest(3), 1000, responseCallback, errorCallback);
+
+        verify(errorCallback, timeout(1100).times(1)) //
+                .onError(assertArg(e -> {
+                    assertThat(e).isInstanceOfSatisfying(TimeoutException.class, timeout -> {
+                        assertThat(timeout.getType()).isEqualTo(Type.DTLS_HANDSHAKE_TIMEOUT);
+                    });
+                }));
+        verify(responseCallback, never()).onResponse(any());
+    }
+
+    @TestAllTransportLayer
+    public void server_does_not_initiate_dtls_handshake_with_queue_mode(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws NonUniqueSecurityInfoException, InterruptedException {
+
+        // Create PSK server & start it
+        server = givenServer.build(); // default server support PSK
+        server.start();
+
+        // Create PSK Client
+        client = givenClient.connectingTo(server) //
+                .usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY) //
+                .usingQueueMode() //
+                .build();
+
+        // Add client credentials to the server
+        server.getSecurityStore()
+                .add(SecurityInfo.newPreSharedKeyInfo(client.getEndpointName(), GOOD_PSK_ID, GOOD_PSK_KEY));
+
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Start it.
+        client.start();
+
+        // Check for register
+        server.waitForNewRegistrationOf(client);
+        client.waitForRegistrationTo(server);
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
+
+        // Remove Client Security info
+        server.clearSecurityContextFor(givenProtocol);
+
+        // try to send request
+        assertThrowsExactly(UnconnectedPeerException.class, () -> {
+            server.send(registration, new ReadRequest(3), 1000);
+        });
+        assertThat(client).isSleepingOn(server);
+    }
+
+    @TestAllTransportLayer
+    public void registered_device_with_bad_psk_identity_to_server_with_psk(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws NonUniqueSecurityInfoException {
+        // Create PSK server & start it
+        server = givenServer.build(); // default server support PSK
+        server.start();
+
+        // Create PSK Client
+        client = givenClient.connectingTo(server).usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY).build();
+
+        // Add client credentials with BAD PSK ID to the server
+        server.getSecurityStore()
+                .add(SecurityInfo.newPreSharedKeyInfo(client.getEndpointName(), BAD_PSK_ID, GOOD_PSK_KEY));
+
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Start it.
+        client.start();
+
+        // Check client can not register
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
+    }
+
+    @TestAllTransportLayer
+    public void registered_device_with_bad_psk_key_to_server_with_psk(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws NonUniqueSecurityInfoException {
+        // Create PSK server & start it
+        server = givenServer.build(); // default server support PSK
+        server.start();
+
+        // Create PSK Client
+        client = givenClient.connectingTo(server).usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY).build();
+
+        // Add client credentials with BAD PSK KEY to the server
+        server.getSecurityStore()
+                .add(SecurityInfo.newPreSharedKeyInfo(client.getEndpointName(), BAD_PSK_ID, BAD_PSK_KEY));
+
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Start it.
+        client.start();
+
+        // Check client can not register
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
+    }
+
+    @TestAllTransportLayer
+    public void registered_device_with_psk_and_bad_endpoint_to_server_with_psk(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws NonUniqueSecurityInfoException {
+
+        // Create PSK server & start it
+        server = givenServer.build(); // default server support PSK
+        server.start();
+
+        // Create PSK Client
+        client = givenClient.connectingTo(server).usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY).build();
+
+        // Add client credentials for another endpoint to the server
+        server.getSecurityStore().add(SecurityInfo.newPreSharedKeyInfo(BAD_ENDPOINT, GOOD_PSK_ID, GOOD_PSK_KEY));
+
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Start it.
+        client.start();
+
+        // Check client can not register
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
+    }
+
+    @TestAllTransportLayer
+    public void registered_device_with_psk_identity_to_server_with_psk_then_remove_security_info(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws NonUniqueSecurityInfoException, InterruptedException {
+        // Create PSK server & start it
+        server = givenServer.build(); // default server support PSK
+        server.start();
+
+        // Create PSK Client
+        client = givenClient.connectingTo(server).usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY).build();
+
+        // Add client credentials to the server
+        server.getSecurityStore()
+                .add(SecurityInfo.newPreSharedKeyInfo(client.getEndpointName(), GOOD_PSK_ID, GOOD_PSK_KEY));
+
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Start it.
+        client.start();
+        client.waitForRegistrationTo(server);
+
+        // Check client is well registered
+        assertThat(client).isRegisteredAt(server);
+
+        // remove compromised credentials
+        boolean credentialsCompromised = true;
+        server.getSecurityStore().remove(client.getEndpointName(), credentialsCompromised);
+
+        // try to update
+        client.triggerRegistrationUpdate();
+        client.waitForUpdateTimeoutTo(server);
+    }
+
+    @TestAllTransportLayer
+    public void registered_device_with_rpk_to_server_with_rpk(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws NonUniqueSecurityInfoException, InterruptedException {
+        // Create RPK server & start it
+        server = givenServer.using(serverPublicKey, serverPrivateKey).build();
+        server.start();
+
+        // Create RPK Client
+        client = givenClient.connectingTo(server) //
+                .using(clientPublicKey, clientPrivateKey)//
+                .trusting(serverPublicKey).build();
+
+        // Add client credentials to the server
+        server.getSecurityStore().add(SecurityInfo.newRawPublicKeyInfo(client.getEndpointName(), clientPublicKey));
+
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
 
         // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtClientSide(1);
+        client.start();
+        server.waitForNewRegistrationOf(client);
 
         // Check client is well registered
-        helper.assertClientRegisterered();
-
-        // remove compromised credentials
-        helper.getSecurityStore().remove(helper.getCurrentEndpoint(), true);
-
-        // try to update
-        helper.client.triggerRegistrationUpdate();
-        helper.ensureNoUpdate(1);
-    }
-
-    @Test
-    public void nonunique_psk_identity() throws NonUniqueSecurityInfoException {
-        helper.createServer();
-        helper.server.start();
-
-        EditableSecurityStore ess = helper.getSecurityStore();
-
-        ess.add(SecurityInfo.newPreSharedKeyInfo(GOOD_ENDPOINT, GOOD_PSK_ID, GOOD_PSK_KEY));
-        try {
-            ess.add(SecurityInfo.newPreSharedKeyInfo(BAD_ENDPOINT, GOOD_PSK_ID, GOOD_PSK_KEY));
-            fail("Non-unique PSK identity should throw exception on add");
-        } catch (NonUniqueSecurityInfoException e) {
-        }
-    }
-
-    @Test
-    public void change_psk_identity_cleanup() throws NonUniqueSecurityInfoException {
-        helper.createServer();
-        helper.server.start();
-
-        EditableSecurityStore ess = helper.getSecurityStore();
-
-        ess.add(SecurityInfo.newPreSharedKeyInfo(GOOD_ENDPOINT, BAD_PSK_ID, BAD_PSK_KEY));
-        // Change PSK id for endpoint
-        ess.add(SecurityInfo.newPreSharedKeyInfo(GOOD_ENDPOINT, GOOD_PSK_ID, GOOD_PSK_KEY));
-        // Original/old PSK id should not be reserved any more
-        try {
-            ess.add(SecurityInfo.newPreSharedKeyInfo(BAD_ENDPOINT, BAD_PSK_ID, BAD_PSK_KEY));
-        } catch (NonUniqueSecurityInfoException e) {
-            fail("PSK identity change for existing endpoint should have cleaned up old PSK identity");
-        }
-    }
-
-    @Test
-    public void registered_device_with_rpk_to_server_with_rpk()
-            throws NonUniqueSecurityInfoException, InterruptedException {
-        helper.createServerWithRPK();
-        helper.server.start();
-
-        helper.createRPKClient();
-
-        helper.getSecurityStore()
-                .add(SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(), helper.clientPublicKey));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-
-        assertNotNull(helper.getCurrentRegistration());
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
 
         // check we can send request to client.
-        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
-        assertTrue(response.isSuccess());
+        ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
+        assertThat(response.isSuccess()).isTrue();
     }
 
-    @Test
-    public void registered_device_with_bad_rpk_to_server_with_rpk_() throws NonUniqueSecurityInfoException {
-        helper.createServerWithRPK();
-        helper.server.start();
-
-        helper.createRPKClient();
-
-        // as it is complex to create a public key, I use the server one :p as bad client public key
-        PublicKey bad_client_public_key = helper.getServerPublicKey();
-        helper.getSecurityStore()
-                .add(SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(), bad_client_public_key));
-
-        helper.client.start();
-        helper.ensureNoRegistration(1);
-    }
-
-    @Test
-    public void registered_device_with_rpk_to_server_with_rpk_then_remove_security_info()
+    @TestAllTransportLayer
+    public void registered_device_with_bad_rpk_to_server_with_rpk(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException {
-        helper.createServerWithRPK();
-        helper.server.start();
+        // Create RPK server & start it
+        server = givenServer.using(serverPublicKey, serverPrivateKey).build();
+        server.start();
 
-        helper.createRPKClient();
+        // Create RPK Client
+        client = givenClient.connectingTo(server) //
+                .using(clientPublicKey, clientPrivateKey)//
+                .trusting(serverPublicKey).build();
 
-        helper.getSecurityStore()
-                .add(SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(), helper.clientPublicKey));
+        // We use the server public key as bad client public key
+        PublicKey bad_client_public_key = serverPublicKey;
+        server.getSecurityStore()
+                .add(SecurityInfo.newRawPublicKeyInfo(client.getEndpointName(), bad_client_public_key));
 
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.waitForRegistrationAtClientSide(1);
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Start it and wait for registration
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
+    }
+
+    @TestAllTransportLayer
+    public void registered_device_with_rpk_to_server_with_rpk_then_remove_security_info(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws NonUniqueSecurityInfoException {
+        // Create RPK server & start it
+        server = givenServer.using(serverPublicKey, serverPrivateKey).build();
+        server.start();
+
+        // Create RPK Client
+        client = givenClient.connectingTo(server) //
+                .using(clientPublicKey, clientPrivateKey)//
+                .trusting(serverPublicKey).build();
+
+        // Add client credentials to the server
+        server.getSecurityStore().add(SecurityInfo.newRawPublicKeyInfo(client.getEndpointName(), clientPublicKey));
+
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Start it and wait for registration
+        client.start();
+        server.waitForNewRegistrationOf(client);
 
         // Check client is well registered
-        helper.assertClientRegisterered();
+        assertThat(client).isRegisteredAt(server);
 
         // remove compromised credentials
-        helper.getSecurityStore().remove(helper.getCurrentEndpoint(), true);
+        server.getSecurityStore().remove(client.getEndpointName(), true);
 
         // try to update
-        helper.client.triggerRegistrationUpdate();
-        helper.ensureNoUpdate(1);
+        client.triggerRegistrationUpdate();
+        client.waitForUpdateTimeoutTo(server);
     }
 
-    @Test
-    public void registered_device_with_rpk_and_bad_endpoint_to_server_with_rpk() throws NonUniqueSecurityInfoException {
-        helper.createServerWithRPK();
-        helper.server.start();
+    @TestAllTransportLayer
+    public void registered_device_with_rpk_and_bad_endpoint_to_server_with_rpk(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws NonUniqueSecurityInfoException {
 
-        helper.createRPKClient();
+        // Create RPK server & start it
+        server = givenServer.using(serverPublicKey, serverPrivateKey).build();
+        server.start();
 
-        helper.getSecurityStore().add(SecurityInfo.newRawPublicKeyInfo(BAD_ENDPOINT, helper.clientPublicKey));
+        // Create RPK Client
+        client = givenClient.connectingTo(server) //
+                .using(clientPublicKey, clientPrivateKey)//
+                .trusting(serverPublicKey).build();
 
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        // We use the server public key as bad client public key
+        server.getSecurityStore().add(SecurityInfo.newRawPublicKeyInfo(BAD_ENDPOINT, clientPublicKey));
+
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Start it and wait for registration
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_then_remove_security_info()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_then_remove_security_info(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert();
-        helper.server.start();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        // Create X509 server & start it
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverX509Cert, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.createX509CertClient();
+        // Create X509 Client
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverX509Cert).build();
 
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+        // Add client credentials to the server
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.waitForRegistrationAtClientSide(1);
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Start it and wait for registration
+        client.start();
+        server.waitForNewRegistrationOf(client);
 
         // Check client is well registered
-        helper.assertClientRegisterered();
+        assertThat(client).isRegisteredAt(server);
 
         // remove compromised credentials
-        helper.getSecurityStore().remove(helper.getCurrentEndpoint(), true);
+        server.getSecurityStore().remove(client.getEndpointName(), true);
 
         // try to update
-        helper.client.triggerRegistrationUpdate();
-        helper.ensureNoUpdate(1);
+        client.triggerRegistrationUpdate();
+        client.waitForUpdateTimeoutTo(server);
     }
 
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
-        helper.createServerWithX509Cert();
-        helper.server.start();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        // Create X509 server & start it
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverX509Cert, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.createX509CertClient();
+        // Create X509 Client
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverX509Cert).build();
 
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+        // Add client credentials to the server
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
 
-        assertNotNull(helper.getCurrentRegistration());
+        // Start it and wait for registration
+        client.start();
+        server.waitForNewRegistrationOf(client);
+
+        // Check client is well registered
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
 
         // check we can send request to client.
-        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
-        assertTrue(response.isSuccess());
+        ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
+        assertThat(response.isSuccess()).isTrue();
     }
 
-    @Test
-    public void registered_device_with_x509cert_to_server_with_self_signed_x509cert()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_self_signed_x509cert(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
-        helper.createServerWithX509Cert(helper.serverX509CertSelfSigned, helper.serverPrivateKeyFromCert, true);
-        helper.server.start();
+        // Create X509 server & start it
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverX509CertSelfSigned, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        // Create X509 Client
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertSelfSigned).build();
 
-        helper.createX509CertClient(helper.clientX509Cert, helper.clientPrivateKeyFromCert,
-                helper.serverX509CertSelfSigned);
+        // Add client credentials to the server
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
 
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
+        // Start it and wait for registration
+        client.start();
+        server.waitForNewRegistrationOf(client);
 
-        assertNotNull(helper.getCurrentRegistration());
+        // Check client is well registered
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
 
         // check we can send request to client.
-        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
-        assertTrue(response.isSuccess());
-
+        ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
+        assertThat(response.isSuccess()).isTrue();
     }
 
-    @Test
-    public void registered_device_with_x509cert_and_bad_endpoint_to_server_with_x509cert()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_and_bad_endpoint_to_server_with_x509cert(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert();
-        helper.server.start();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        // Create X509 server & start it
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverX509Cert, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.createX509CertClient();
+        // Create X509 Client
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverX509Cert).build();
 
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(BAD_ENDPOINT));
+        // Add client credentials to the server
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(BAD_ENDPOINT));
 
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Start it and check we can not register
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
-    @Test
-    public void registered_device_with_x509cert_and_bad_cn_certificate_to_server_with_x509cert()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_and_bad_cn_certificate_to_server_with_x509cert(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert();
-        helper.server.start();
+        // Create X509 server & start it
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverX509Cert, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.setEndpointNameFromX509(helper.clientX509CertWithBadCN);
+        // Create X509 Client
+        client = givenClient.connectingTo(server) //
+                .named(BAD_ENDPOINT)//
+                .using(clientX509CertWithBadCN, clientPrivateKeyFromCert)//
+                .trusting(serverX509Cert).build();
 
-        helper.createX509CertClient(helper.clientX509CertWithBadCN);
+        // Add client credentials to the server
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(GOOD_ENDPOINT));
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
 
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        // Start it and check we can not register
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
-    @Test
-    public void registered_device_with_x509cert_and_bad_private_key_to_server_with_x509cert()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_and_bad_private_key_to_server_with_x509cert(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert();
-        helper.server.start();
 
+        // Create X509 server & start it
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverX509Cert, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificates).build();
+        server.start();
+
+        // Create X509 Client
         // we use the RPK private key as bad key, this key will not be compatible with the client certificate
-        PrivateKey badPrivateKey = helper.clientPrivateKey;
+        PrivateKey badPrivateKey = clientPrivateKey;
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, badPrivateKey)//
+                .trusting(serverX509Cert).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        // Add client credentials to the server
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(helper.clientX509Cert, badPrivateKey);
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
 
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        // Start it and check we can not register
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
-    @Test
-    public void registered_device_with_untrusted_x509cert_to_server_with_x509cert()
+    @TestAllTransportLayer
+    public void registered_device_with_untrusted_x509cert_to_server_with_x509cert(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        // the server will not trust the client Certificate authority
-        helper.createServerWithX509Cert();
-        helper.server.start();
 
-        helper.setEndpointNameFromX509(helper.clientX509CertNotTrusted);
+        // Create X509 server & start it
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverX509Cert, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.createX509CertClient(helper.clientX509CertNotTrusted);
+        // Create X509 Client
+        client = givenClient.connectingTo(server) //
+                .using(clientX509CertNotTrusted, clientPrivateKeyFromCert)//
+                .trusting(serverX509Cert).build();
 
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+        // Add client credentials to the server
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Start it and check we can not register
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
-    @Test
-    public void registered_device_with_selfsigned_x509cert_to_server_with_x509cert()
+    @TestAllTransportLayer
+    public void registered_device_with_selfsigned_x509cert_to_server_with_x509cert(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        // the server will not trust the client Certificate authority
-        helper.createServerWithX509Cert();
-        helper.server.start();
+        // Create X509 server & start it
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverX509Cert, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.setEndpointNameFromX509(helper.clientX509CertSelfSigned);
+        // Create X509 Client
+        client = givenClient.connectingTo(server) //
+                .using(Credentials.clientX509CertSelfSigned, clientPrivateKeyFromCert)//
+                .trusting(serverX509Cert).build();
 
-        helper.createX509CertClient(helper.clientX509CertSelfSigned);
+        // Add client credentials to the server
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
 
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        // Start it and check we can not register
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
     /* ---- CA_CONSTRAINT ---- */
@@ -839,24 +871,25 @@ public class SecurityTest {
      * - Client denied the connection  (direct trust is not allowed with "CA constraint" usage)
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_ca()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_ca(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
-                helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverIntX509CertChain[0], CA_CONSTRAINT, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverIntX509CertChain[0], CertificateUsage.CA_CONSTRAINT);
-
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
     /**
@@ -872,31 +905,31 @@ public class SecurityTest {
      * - Client is able to connect (intermediate CA cert is part of the chain)
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_ca_intca_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_ca_intca_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
-        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
-                helper.trustedCertificates, true);
 
-        helper.server.start();
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverIntX509CertChain[1], CA_CONSTRAINT, clientTrustStore).build();
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverIntX509CertChain[1], CertificateUsage.CA_CONSTRAINT);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
 
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-
-        assertNotNull(helper.getCurrentRegistration());
-
-        // check we can send request to client.
-        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
-        assertTrue(response.isSuccess());
-
+        ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
+        assertThat(response.isSuccess()).isTrue();
     }
 
     /**
@@ -912,69 +945,73 @@ public class SecurityTest {
      * - Client is not able to connect as our CaConstraintCertificateVerifier does not support trust anchor mode.
      * </pre>
      */
-    @Test
-    public void registered_device_with_empty_truststore_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_ca_intca_given()
+    @TestAllTransportLayer
+    public void registered_device_with_empty_truststore_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_ca_intca_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
-        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
-                helper.trustedCertificates, true);
-
-        helper.server.start();
-
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
         // create a not empty trustore which does not contains any certificate of server certchain.
-        List<Certificate> truststore = new ArrayList<>();
-        truststore.add(helper.serverIntX509CertSelfSigned); // e.g. we use a selfsigned certificate not used in
-                                                            // certchain of this test.
+        X509Certificate[] truststore = new X509Certificate[] { serverIntX509CertSelfSigned };
+        // e.g. we use a selfsigned certificate not used in certchain of this test.
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                truststore, helper.serverIntX509CertChain[1], CertificateUsage.CA_CONSTRAINT);
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverIntX509CertChain[1], CA_CONSTRAINT, truststore).build();
 
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
-
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
     /**
-     * <pre>
-     * Test scenario:
-     * - Certificate Usage = CA constraint
-     * - Server Certificate = root CA certificate (not end-entity certificate)
-     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
-     * - Server accepts client
-     * - Client Trust Store = root CA
+     * // *
      *
-     * Expected outcome:
-     * - Client is able to connect (root CA cert is part of the chain)
+     * <pre>
+     * //     * Test scenario:
+     * //     * - Certificate Usage = CA constraint
+     * //     * - Server Certificate = root CA certificate (not end-entity certificate)
+     * //     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
+     * //     * - Server accepts client
+     * //     * - Client Trust Store = root CA
+     * //     *
+     * //     * Expected outcome:
+     * //     * - Client is able to connect (root CA cert is part of the chain)
+     * //     *
      * </pre>
+     *
+     * //
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_ca_domain_root_ca_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_ca_domain_root_ca_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
-        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
-                helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(rootCAX509Cert, CA_CONSTRAINT, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.rootCAX509Cert, CertificateUsage.CA_CONSTRAINT);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
 
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-
-        assertNotNull(helper.getCurrentRegistration());
-
-        // check we can send request to client.
-        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
-        assertTrue(response.isSuccess());
+        ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
+        assertThat(response.isSuccess()).isTrue();
     }
 
     /**
@@ -990,24 +1027,25 @@ public class SecurityTest {
      * - Client denied the connection
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_ca_other_server_cert_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_ca_other_server_cert_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
-                helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverX509Cert, CA_CONSTRAINT, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverX509Cert, CertificateUsage.CA_CONSTRAINT);
-
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
     /**
@@ -1023,24 +1061,25 @@ public class SecurityTest {
      * - Client denied the connection
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_ca_selfsigned_server_cert_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_ca_selfsigned_server_cert_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
-                helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverIntX509CertSelfSigned, CA_CONSTRAINT, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverIntX509CertSelfSigned, CertificateUsage.CA_CONSTRAINT);
-
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
     /**
@@ -1056,24 +1095,25 @@ public class SecurityTest {
      * - Client denied the connection  (direct trust is not allowed with "CA constraint" usage)
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_selfsigned_certificate_usage_ca_selfsigned_server_cert_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_selfsigned_certificate_usage_ca_selfsigned_server_cert_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert(new X509Certificate[] { helper.serverIntX509CertSelfSigned },
-                helper.serverIntPrivateKeyFromCert, helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertSelfSigned)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverIntX509CertSelfSigned, CA_CONSTRAINT, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverIntX509CertSelfSigned, CertificateUsage.CA_CONSTRAINT);
-
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
     /**
@@ -1089,24 +1129,25 @@ public class SecurityTest {
      * - Client denied the connection  (direct trust is not allowed with "CA constraint" usage)
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_server_certificate_usage_ca_server_cert_wo_chain_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_server_certificate_usage_ca_server_cert_wo_chain_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert(new X509Certificate[] { helper.serverIntX509CertChain[0] },
-                helper.serverIntPrivateKeyFromCert, helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain[0])//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverIntX509CertChain[0], CA_CONSTRAINT, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverIntX509CertChain[0], CertificateUsage.CA_CONSTRAINT);
-
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
     /* ---- SERVICE_CERTIFICATE_CONSTRAINT ---- */
@@ -1124,32 +1165,30 @@ public class SecurityTest {
      * - Client is able to connect
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_service()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_service(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
-        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
-                helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverIntX509CertChain[0], SERVICE_CERTIFICATE_CONSTRAINT, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverIntX509CertChain[0],
-                CertificateUsage.SERVICE_CERTIFICATE_CONSTRAINT);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
 
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-
-        assertNotNull(helper.getCurrentRegistration());
-
-        // check we can send request to client.
-        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
-        assertTrue(response.isSuccess());
-
+        ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
+        assertThat(response.isSuccess()).isTrue();
     }
 
     /**
@@ -1165,24 +1204,25 @@ public class SecurityTest {
      * - Client denied the connection
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_service_domain_root_ca_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_service_domain_root_ca_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
-                helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(rootCAX509Cert, SERVICE_CERTIFICATE_CONSTRAINT, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.rootCAX509Cert, CertificateUsage.SERVICE_CERTIFICATE_CONSTRAINT);
-
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
     /**
@@ -1198,24 +1238,25 @@ public class SecurityTest {
      * - Client denied the connection
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_service_other_server_cert_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_service_other_server_cert_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
-                helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverX509Cert, SERVICE_CERTIFICATE_CONSTRAINT, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverX509Cert, CertificateUsage.SERVICE_CERTIFICATE_CONSTRAINT);
-
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
     /**
@@ -1231,25 +1272,25 @@ public class SecurityTest {
      * - Client denied the connection
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_service_selfsigned_server_cert_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_service_selfsigned_server_cert_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
-                helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverIntX509CertSelfSigned, SERVICE_CERTIFICATE_CONSTRAINT, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverIntX509CertSelfSigned,
-                CertificateUsage.SERVICE_CERTIFICATE_CONSTRAINT);
-
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
     /**
@@ -1265,25 +1306,25 @@ public class SecurityTest {
      * - Client denied the connection (self-signed is not PKIX chainable)
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_selfsigned_certificate_usage_service_selfsigned_server_cert_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_selfsigned_certificate_usage_service_selfsigned_server_cert_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert(new X509Certificate[] { helper.serverIntX509CertSelfSigned },
-                helper.serverIntPrivateKeyFromCert, helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertSelfSigned)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverIntX509CertSelfSigned, SERVICE_CERTIFICATE_CONSTRAINT, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverIntX509CertSelfSigned,
-                CertificateUsage.SERVICE_CERTIFICATE_CONSTRAINT);
-
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
     /**
@@ -1299,25 +1340,26 @@ public class SecurityTest {
      * - Client denied the connection (missing intermediate CA aka. "server chain configuration problem")
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_server_certificate_usage_service_server_cert_wo_chain_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_server_certificate_usage_service_server_cert_wo_chain_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert(new X509Certificate[] { helper.serverIntX509CertChain[0] },
-                helper.serverIntPrivateKeyFromCert, helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain[0])//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverIntX509CertChain[0], SERVICE_CERTIFICATE_CONSTRAINT, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverIntX509CertChain[0],
-                CertificateUsage.SERVICE_CERTIFICATE_CONSTRAINT);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
 
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
     }
 
     /* ---- TRUST_ANCHOR_ASSERTION ---- */
@@ -1335,24 +1377,25 @@ public class SecurityTest {
      * - Client denied the connection  (direct trust is not allowed with "trust constraint" usage)
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_taa()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_taa(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
-                helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverIntX509CertChain[0], TRUST_ANCHOR_ASSERTION, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverIntX509CertChain[0], CertificateUsage.TRUST_ANCHOR_ASSERTION);
-
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
     /**
@@ -1368,30 +1411,30 @@ public class SecurityTest {
      * - Client is able to connect (pkix path terminates in intermediate CA (TA), root CA is not available as client trust store not in use)
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_taa_intca_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_taa_intca_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
-        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
-                helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverIntX509CertChain[1], TRUST_ANCHOR_ASSERTION, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverIntX509CertChain[1], CertificateUsage.TRUST_ANCHOR_ASSERTION);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
 
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-
-        assertNotNull(helper.getCurrentRegistration());
-
-        // check we can send request to client.
-        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
-        assertTrue(response.isSuccess());
+        ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
+        assertThat(response.isSuccess()).isTrue();
     }
 
     /**
@@ -1407,30 +1450,30 @@ public class SecurityTest {
      * - Client is able to connect (root CA cert is part of the chain)
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_taa_domain_root_ca_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_taa_domain_root_ca_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
-        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
-                helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(rootCAX509Cert, TRUST_ANCHOR_ASSERTION, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.rootCAX509Cert, CertificateUsage.TRUST_ANCHOR_ASSERTION);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
 
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-
-        assertNotNull(helper.getCurrentRegistration());
-
-        // check we can send request to client.
-        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
-        assertTrue(response.isSuccess());
+        ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
+        assertThat(response.isSuccess()).isTrue();
     }
 
     /**
@@ -1446,24 +1489,25 @@ public class SecurityTest {
      * - Client denied the connection
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_taa_other_server_cert_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_taa_other_server_cert_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
-                helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverX509Cert, TRUST_ANCHOR_ASSERTION, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverX509Cert, CertificateUsage.TRUST_ANCHOR_ASSERTION);
-
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
     /**
@@ -1479,24 +1523,25 @@ public class SecurityTest {
      * - Client denied the connection
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_taa_selfsigned_server_cert_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_taa_selfsigned_server_cert_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
-                helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverIntX509CertSelfSigned, TRUST_ANCHOR_ASSERTION, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverIntX509CertSelfSigned, CertificateUsage.TRUST_ANCHOR_ASSERTION);
-
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
     /**
@@ -1512,24 +1557,25 @@ public class SecurityTest {
      * - Client denied the connection  (direct trust is not allowed with "trust anchor" usage)
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_selfsigned_certificate_usage_taa_selfsigned_server_cert_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_selfsigned_certificate_usage_taa_selfsigned_server_cert_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert(new X509Certificate[] { helper.serverIntX509CertSelfSigned },
-                helper.serverIntPrivateKeyFromCert, helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertSelfSigned)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverIntX509CertSelfSigned, TRUST_ANCHOR_ASSERTION, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverIntX509CertSelfSigned, CertificateUsage.TRUST_ANCHOR_ASSERTION);
-
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
     /**
@@ -1545,24 +1591,25 @@ public class SecurityTest {
      * - Client denied the connection  (direct trust is not allowed with "trust anchor" usage)
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_server_certificate_usage_taa_server_cert_wo_chain_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_server_certificate_usage_taa_server_cert_wo_chain_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert(new X509Certificate[] { helper.serverIntX509CertChain[0] },
-                helper.serverIntPrivateKeyFromCert, helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain[0])//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverIntX509CertChain[0], TRUST_ANCHOR_ASSERTION, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverIntX509CertChain[0], CertificateUsage.TRUST_ANCHOR_ASSERTION);
-
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
     /* ---- DOMAIN_ISSUER_CERTIFICATE ---- */
@@ -1580,30 +1627,30 @@ public class SecurityTest {
      * - Client is able to connect
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_domain()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_domain(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
-        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
-                helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverIntX509CertChain[0], DOMAIN_ISSUER_CERTIFICATE, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverIntX509CertChain[0], CertificateUsage.DOMAIN_ISSUER_CERTIFICATE);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
 
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-
-        assertNotNull(helper.getCurrentRegistration());
-
-        // check we can send request to client.
-        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
-        assertTrue(response.isSuccess());
+        ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
+        assertThat(response.isSuccess()).isTrue();
     }
 
     /**
@@ -1619,24 +1666,25 @@ public class SecurityTest {
      * - Client denied the connection (no end-entity certificate given)
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_domain_root_ca_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_domain_root_ca_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
-                helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(rootCAX509Cert, DOMAIN_ISSUER_CERTIFICATE, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.rootCAX509Cert, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE);
-
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
     /**
@@ -1652,24 +1700,25 @@ public class SecurityTest {
      * - Client denied the connection (different server cert given even thou hostname matches)
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_domain_other_server_cert_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_domain_other_server_cert_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
-                helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverX509Cert, DOMAIN_ISSUER_CERTIFICATE, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverX509Cert, CertificateUsage.DOMAIN_ISSUER_CERTIFICATE);
-
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
     /**
@@ -1685,25 +1734,25 @@ public class SecurityTest {
      * - Client denied the connection (different certificate self-signed vs. signed -- even thou the public key is same)
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_domain_selfsigned_server_cert_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_domain_selfsigned_server_cert_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithX509Cert(helper.serverIntX509CertChain, helper.serverIntPrivateKeyFromCert,
-                helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverIntX509CertSelfSigned, DOMAIN_ISSUER_CERTIFICATE, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverIntX509CertSelfSigned,
-                CertificateUsage.DOMAIN_ISSUER_CERTIFICATE);
-
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
     /**
@@ -1719,32 +1768,30 @@ public class SecurityTest {
      * - Client is able to connect
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_selfsigned_certificate_usage_domain_selfsigned_server_cert_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_selfsigned_certificate_usage_domain_selfsigned_server_cert_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
-        helper.createServerWithX509Cert(new X509Certificate[] { helper.serverIntX509CertSelfSigned },
-                helper.serverIntPrivateKeyFromCert, helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertSelfSigned)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverIntX509CertSelfSigned, DOMAIN_ISSUER_CERTIFICATE, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverIntX509CertSelfSigned,
-                CertificateUsage.DOMAIN_ISSUER_CERTIFICATE);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
 
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-
-        assertNotNull(helper.getCurrentRegistration());
-
-        // check we can send request to client.
-        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
-        assertTrue(response.isSuccess());
-
+        ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
+        assertThat(response.isSuccess()).isTrue();
     }
 
     /**
@@ -1760,72 +1807,77 @@ public class SecurityTest {
      * - Client is able to connect
      * </pre>
      */
-    @Test
-    public void registered_device_with_x509cert_to_server_with_x509cert_server_certificate_usage_domain_server_cert_wo_chain_given()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_server_certificate_usage_domain_server_cert_wo_chain_given(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
-        helper.createServerWithX509Cert(new X509Certificate[] { helper.serverIntX509CertChain[0] },
-                helper.serverIntPrivateKeyFromCert, helper.trustedCertificates, true);
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain[0])//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        helper.server.start();
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverIntX509CertChain[0], DOMAIN_ISSUER_CERTIFICATE, clientTrustStore).build();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
-        helper.createX509CertClient(new X509Certificate[] { helper.clientX509Cert }, helper.clientPrivateKeyFromCert,
-                helper.clientTrustStore, helper.serverIntX509CertChain[0], CertificateUsage.DOMAIN_ISSUER_CERTIFICATE);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
 
-        helper.getSecurityStore().add(SecurityInfo.newX509CertInfo(helper.getCurrentEndpoint()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-
-        assertNotNull(helper.getCurrentRegistration());
-
-        // check we can send request to client.
-        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
-        assertTrue(response.isSuccess());
+        ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
+        assertThat(response.isSuccess()).isTrue();
     }
 
     /* ---- */
 
-    @Test
-    public void registered_device_with_x509cert_to_server_with_rpk()
+    @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_rpk(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        helper.createServerWithRPK();
-        helper.server.start();
+        server = givenServer.using(serverX509Cert.getPublicKey(), serverPrivateKeyFromCert).build();
+        server.start();
 
-        helper.setEndpointNameFromX509(helper.clientX509Cert);
+        client = givenClient.connectingTo(server) //
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverX509Cert).build();
 
-        helper.createX509CertClient(helper.clientX509Cert);
+        server.getSecurityStore()
+                .add(SecurityInfo.newRawPublicKeyInfo(client.getEndpointName(), clientX509Cert.getPublicKey()));
 
-        helper.getSecurityStore().add(
-                SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(), helper.clientX509Cert.getPublicKey()));
-
-        helper.assertClientNotRegisterered();
-        helper.client.start();
-        helper.ensureNoRegistration(1);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
     }
 
-    @Test
-    public void registered_device_with_rpk_to_server_with_x509cert()
+    @TestAllTransportLayer
+    public void registered_device_with_rpk_to_server_with_x509cert(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, InterruptedException {
-        helper.createServerWithX509Cert();
-        helper.server.start();
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverX509Cert, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificates).build();
+        server.start();
 
-        boolean useServerCertifcatePublicKey = true;
-        helper.createRPKClient(useServerCertifcatePublicKey);
+        client = givenClient.connectingTo(server) //
+                .using(clientPublicKey, clientPrivateKey)//
+                .trusting(serverX509Cert.getPublicKey()).build();
 
-        helper.getSecurityStore()
-                .add(SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(), helper.clientPublicKey));
+        server.getSecurityStore().add(SecurityInfo.newRawPublicKeyInfo(client.getEndpointName(), clientPublicKey));
 
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
+        assertThat(client).isNotRegisteredAt(server);
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
 
-        assertNotNull(helper.getCurrentRegistration());
-
-        // check we can send request to client.
-        ReadResponse response = helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), 500);
-        assertTrue(response.isSuccess());
+        ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
+        assertThat(response.isSuccess()).isTrue();
 
     }
 }

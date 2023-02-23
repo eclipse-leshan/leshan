@@ -15,20 +15,24 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.observe;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
+import static org.eclipse.leshan.core.ResponseCode.CHANGED;
+import static org.eclipse.leshan.core.ResponseCode.CONTENT;
+import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
+import static org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder.givenServerUsing;
+import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
-import org.eclipse.californium.core.coap.Response;
-import org.eclipse.leshan.core.ResponseCode;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
@@ -45,390 +49,341 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteCompositeResponse;
-import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
+import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
+import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
+import org.eclipse.leshan.integration.tests.util.junit5.extensions.BeforeEachParameterizedResolver;
 import org.eclipse.leshan.server.registration.Registration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
+@ExtendWith(BeforeEachParameterizedResolver.class)
 public class ObserveCompositeTest {
 
-    protected IntegrationTestHelper helper = new IntegrationTestHelper();
-    private Registration currentRegistration;
-    private TestObservationListener listener;
+    /*---------------------------------/
+     *  Parameterized Tests
+     * -------------------------------*/
+    @ParameterizedTest(name = "{0} - Client using {1} - Server using {2}")
+    @MethodSource("transports")
+    @Retention(RetentionPolicy.RUNTIME)
+    private @interface TestAllTransportLayer {
+    }
+
+    static Stream<org.junit.jupiter.params.provider.Arguments> transports() {
+        return Stream.of(//
+                // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider
+                arguments(Protocol.COAP, "Californium", "Californium"));
+    }
+
+    /*---------------------------------/
+     *  Set-up and Tear-down Tests
+     * -------------------------------*/
+
+    LeshanTestServer server;
+    LeshanTestClient client;
+    Registration currentRegistration;
 
     @BeforeEach
-    public void start() {
-        helper.initialize();
-        helper.createServer();
-        helper.server.start();
-        helper.createClient();
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
+    public void start(Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider) {
+        server = givenServerUsing(givenProtocol).with(givenServerEndpointProvider).build();
+        server.start();
+        client = givenClientUsing(givenProtocol).with(givenClientEndpointProvider).connectingTo(server).build();
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        client.waitForRegistrationTo(server);
 
-        currentRegistration = helper.getCurrentRegistration();
-        listener = new TestObservationListener();
-        helper.server.getObservationService().addListener(listener);
+        currentRegistration = server.getRegistrationFor(client);
+
     }
 
     @AfterEach
-    public void stop() {
-        helper.client.destroy(false);
-        helper.server.destroy();
-        helper.dispose();
+    public void stop() throws InterruptedException {
+        if (client != null)
+            client.destroy(false);
+        if (server != null)
+            server.destroy();
     }
 
-    @Test
-    public void can_composite_observe_on_single_resource() throws InterruptedException {
+    /*---------------------------------/
+     *  Tests
+     * -------------------------------*/
+    @TestAllTransportLayer
+    public void can_composite_observe_on_single_resource(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InterruptedException {
         // Send ObserveCompositeRequest
-        ObserveCompositeResponse observeResponse = helper.server.send(currentRegistration,
+        ObserveCompositeResponse observeResponse = server.send(currentRegistration,
                 new ObserveCompositeRequest(ContentFormat.SENML_JSON, ContentFormat.SENML_JSON, "/3/0/15"));
 
         // Assert that ObserveCompositeResponse is valid
-        assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
-        assertNotNull(observeResponse.getCoapResponse());
-        assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
-
-        CompositeObservation observation = observeResponse.getObservation();
+        assertThat(observeResponse) //
+                .hasCode(CONTENT) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
         // Assert that CompositeObservation contains expected paths
-        assertNotNull(observation);
-        assertEquals(1, observation.getPaths().size());
-        assertEquals("/3/0/15", observation.getPaths().get(0).toString());
+        CompositeObservation observation = observeResponse.getObservation();
+        assertThat(observation).isNotNull();
+        assertThat(observation.getPaths()).containsOnly(new LwM2mPath("/3/0/15"));
 
         // Assert that there is one valid observation
-        assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<Observation> observations = helper.server.getObservationService()
-                .getObservations(helper.getCurrentRegistration());
-        assertEquals(1, observations.size(), "We should have only one observation");
-        assertTrue(observations.contains(observation), "New observation is not there");
+        server.waitForNewObservation(observation);
+        assertThat(observation.getRegistrationId()).isEqualTo(currentRegistration.getId());
+        Set<Observation> observations = server.getObservationService().getObservations(currentRegistration);
+        assertThat(observations).containsExactly(observation);
 
         // Write single example value
-        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(3, 0, 15, "Europe/Paris"));
-        listener.waitForNotification(2000);
-        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+        LwM2mResponse writeResponse = server.send(currentRegistration, new WriteRequest(3, 0, 15, "Europe/Paris"));
+        assertThat(writeResponse).hasCode(CHANGED);
 
         // Assert that response contains expected paths
-        assertTrue(listener.receivedNotify().get());
-        Map<LwM2mPath, LwM2mNode> content = listener.getObserveCompositeResponse().getContent();
-        assertEquals(1, content.size());
-        assertTrue(content.containsKey(new LwM2mPath("/3/0/15")));
-
-        // Assert that listener response contains expected values
-        assertEquals(LwM2mSingleResource.newStringResource(15, "Europe/Paris"), content.get(new LwM2mPath("/3/0/15")));
-
-        // Assert that listener has Response
-        assertNotNull(listener.getObserveCompositeResponse().getCoapResponse());
-        assertThat(listener.getObserveCompositeResponse().getCoapResponse(), is(instanceOf(Response.class)));
+        ObserveCompositeResponse response = server.waitForNotificationOf(observation);
+        assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
+        assertThat(response.getContent()).containsOnly(
+                entry(new LwM2mPath("/3/0/15"), LwM2mSingleResource.newStringResource(15, "Europe/Paris")));
     }
 
-    @Test
-    public void should_not_get_response_if_modified_other_resource_than_observed() throws InterruptedException {
+    @TestAllTransportLayer
+    public void should_not_get_response_if_modified_other_resource_than_observed(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider) throws InterruptedException {
         // Send ObserveCompositeRequest
-        ObserveCompositeResponse observeResponse = helper.server.send(currentRegistration,
+        ObserveCompositeResponse observeResponse = server.send(currentRegistration,
                 new ObserveCompositeRequest(ContentFormat.SENML_JSON, ContentFormat.SENML_JSON, "/3/0/14"));
 
         // Assert that ObserveCompositeResponse is valid
-        assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
-        assertNotNull(observeResponse.getCoapResponse());
-        assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
-
-        CompositeObservation observation = observeResponse.getObservation();
+        assertThat(observeResponse) //
+                .hasCode(CONTENT) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
         // Assert that CompositeObservation contains expected paths
-        assertNotNull(observation);
-        assertEquals(1, observation.getPaths().size());
-        assertEquals("/3/0/14", observation.getPaths().get(0).toString());
+        CompositeObservation observation = observeResponse.getObservation();
+        assertThat(observation).isNotNull();
+        assertThat(observation.getPaths()).containsOnly(new LwM2mPath("/3/0/14"));
 
         // Assert that there is one valid observation
-        assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<Observation> observations = helper.server.getObservationService()
-                .getObservations(helper.getCurrentRegistration());
-        assertEquals(1, observations.size(), "We should have only one observation");
-        assertTrue(observations.contains(observation), "New observation is not there");
+        server.waitForNewObservation(observation);
+        assertThat(observation.getRegistrationId()).isEqualTo(currentRegistration.getId());
+        Set<Observation> observations = server.getObservationService().getObservations(currentRegistration);
+        assertThat(observations).containsExactly(observation);
 
         // Write single example value
-        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(3, 0, 15, "Europe/Paris"));
-        listener.waitForNotification(2000);
-        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+        LwM2mResponse writeResponse = server.send(currentRegistration, new WriteRequest(3, 0, 15, "Europe/Paris"));
+        assertThat(writeResponse).hasCode(CHANGED);
 
         // Assert that listener has no response
-        assertFalse(listener.receivedNotify().get());
+        server.ensureNoNotification(observation, 1, TimeUnit.SECONDS);
     }
 
-    @Test
-    public void can_composite_observe_on_multiple_resources() throws InterruptedException {
+    @TestAllTransportLayer
+    public void can_composite_observe_on_multiple_resources(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InterruptedException {
         // Send ObserveCompositeRequest
-        ObserveCompositeResponse observeResponse = helper.server.send(currentRegistration,
+        ObserveCompositeResponse observeResponse = server.send(currentRegistration,
                 new ObserveCompositeRequest(ContentFormat.SENML_JSON, ContentFormat.SENML_JSON, "/3/0/15", "/3/0/14"));
 
         // Assert that ObserveCompositeResponse is valid
-        assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
-        assertNotNull(observeResponse.getCoapResponse());
-        assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
+        assertThat(observeResponse) //
+                .hasCode(CONTENT) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
         LwM2mNode previousOffset = observeResponse.getContent("/3/0/14");
 
-        CompositeObservation observation = observeResponse.getObservation();
-
         // Assert that CompositeObservation contains expected paths
-        assertNotNull(observation);
-        assertEquals(2, observation.getPaths().size());
-        assertEquals("/3/0/15", observation.getPaths().get(0).toString());
-        assertEquals("/3/0/14", observation.getPaths().get(1).toString());
+        CompositeObservation observation = observeResponse.getObservation();
+        assertThat(observation).isNotNull();
+        assertThat(observation.getPaths()).containsOnly(new LwM2mPath("/3/0/15"), new LwM2mPath("/3/0/14"));
 
         // Assert that there is one valid observation
-        assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<Observation> observations = helper.server.getObservationService()
-                .getObservations(helper.getCurrentRegistration());
-        assertEquals(1, observations.size(), "We should have only one observation");
-        assertTrue(observations.contains(observation), "New observation is not there");
+        server.waitForNewObservation(observation);
+        assertThat(observation.getRegistrationId()).isEqualTo(currentRegistration.getId());
+        Set<Observation> observations = server.getObservationService().getObservations(currentRegistration);
+        assertThat(observations).containsExactly(observation);
 
         // Write single example value
-        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(3, 0, 15, "Europe/Paris"));
-        listener.waitForNotification(2000);
-        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+        LwM2mResponse writeResponse = server.send(currentRegistration, new WriteRequest(3, 0, 15, "Europe/Paris"));
+        assertThat(writeResponse).hasCode(CHANGED);
 
         // Assert that response contains exactly the same paths
-        assertTrue(listener.receivedNotify().get());
-        Map<LwM2mPath, LwM2mNode> content = listener.getObserveCompositeResponse().getContent();
-        assertEquals(2, content.size());
-        assertTrue(content.containsKey(new LwM2mPath("/3/0/15")));
-        assertTrue(content.containsKey(new LwM2mPath("/3/0/14")));
-
-        // Assert that listener response contains expected values
-        assertEquals(LwM2mSingleResource.newStringResource(new LwM2mPath("/3/0/15").getResourceId(), "Europe/Paris"),
-                content.get(new LwM2mPath("/3/0/15")));
-        assertEquals(previousOffset, content.get(new LwM2mPath("/3/0/14")));
-
-        // Assert that listener has Response
-        assertNotNull(listener.getObserveCompositeResponse().getCoapResponse());
-        assertThat(listener.getObserveCompositeResponse().getCoapResponse(), is(instanceOf(Response.class)));
+        ObserveCompositeResponse response = server.waitForNotificationOf(observation);
+        assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
+        assertThat(response.getContent()).containsOnly(
+                entry(new LwM2mPath("/3/0/15"), LwM2mSingleResource.newStringResource(15, "Europe/Paris")),
+                entry(new LwM2mPath("/3/0/14"), previousOffset));
     }
 
-    @Test
-    public void can_composite_observe_on_multiple_resources_with_write_composite() throws InterruptedException {
+    @TestAllTransportLayer
+    public void can_composite_observe_on_multiple_resources_with_write_composite(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider) throws InterruptedException {
         // Send ObserveCompositeRequest
-        ObserveCompositeResponse observeResponse = helper.server.send(currentRegistration,
+        ObserveCompositeResponse observeResponse = server.send(currentRegistration,
                 new ObserveCompositeRequest(ContentFormat.SENML_JSON, ContentFormat.SENML_JSON, "/3/0/15", "/3/0/14"));
 
         // Assert that ObserveCompositeResponse is valid
-        assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
-        assertNotNull(observeResponse.getCoapResponse());
-        assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
-
-        CompositeObservation observation = observeResponse.getObservation();
+        assertThat(observeResponse) //
+                .hasCode(CONTENT) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
         // Assert that CompositeObservation contains expected paths
-        assertNotNull(observation);
-        assertEquals(2, observation.getPaths().size());
-        assertEquals("/3/0/15", observation.getPaths().get(0).toString());
-        assertEquals("/3/0/14", observation.getPaths().get(1).toString());
+        CompositeObservation observation = observeResponse.getObservation();
+        assertThat(observation).isNotNull();
+        assertThat(observation.getPaths()).containsOnly(new LwM2mPath("/3/0/15"), new LwM2mPath("/3/0/14"));
 
         // Assert that there is one valid observation
-        assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<Observation> observations = helper.server.getObservationService()
-                .getObservations(helper.getCurrentRegistration());
-        assertEquals(1, observations.size(), "We should have only one observation");
-        assertTrue(observations.contains(observation), "New observation is not there");
+        server.waitForNewObservation(observation);
+        assertThat(observation.getRegistrationId()).isEqualTo(currentRegistration.getId());
+        Set<Observation> observations = server.getObservationService().getObservations(currentRegistration);
+        assertThat(observations).containsExactly(observation);
 
         // Write example composite values
         Map<String, Object> nodes = new HashMap<>();
         nodes.put("/3/0/15", "Europe/Paris");
         nodes.put("/3/0/14", "+11");
-        WriteCompositeResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
+        WriteCompositeResponse writeResponse = server.send(currentRegistration,
                 new WriteCompositeRequest(ContentFormat.SENML_JSON, nodes));
-        listener.waitForNotification(2000);
-        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+        assertThat(writeResponse).hasCode(CHANGED);
 
         // Assert that response contains expected paths
-        assertTrue(listener.receivedNotify().get());
-        Map<LwM2mPath, LwM2mNode> content = listener.getObserveCompositeResponse().getContent();
-        assertEquals(2, content.size());
-        assertTrue(content.containsKey(new LwM2mPath("/3/0/15")));
-        assertTrue(content.containsKey(new LwM2mPath("/3/0/14")));
-
-        // Assert that listener response contains expected values
-        assertEquals(LwM2mSingleResource.newStringResource(new LwM2mPath("/3/0/15").getResourceId(), "Europe/Paris"),
-                content.get(new LwM2mPath("/3/0/15")));
-        assertEquals(LwM2mSingleResource.newStringResource(new LwM2mPath("/3/0/14").getResourceId(), "+11"),
-                content.get(new LwM2mPath("/3/0/14")));
-
-        // Assert that listener has Response
-        assertNotNull(listener.getObserveCompositeResponse().getCoapResponse());
-        assertThat(listener.getObserveCompositeResponse().getCoapResponse(), is(instanceOf(Response.class)));
+        ObserveCompositeResponse response = server.waitForNotificationOf(observation);
+        assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
+        assertThat(response.getContent()).containsOnly(
+                entry(new LwM2mPath("/3/0/15"), LwM2mSingleResource.newStringResource(15, "Europe/Paris")),
+                entry(new LwM2mPath("/3/0/14"), LwM2mSingleResource.newStringResource(14, "+11")));
     }
 
-    @Test
-    public void can_observe_instance() throws InterruptedException {
+    @TestAllTransportLayer
+    public void can_observe_instance(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InterruptedException {
         // Send ObserveCompositeRequest
-        ObserveCompositeResponse observeResponse = helper.server.send(currentRegistration,
+        ObserveCompositeResponse observeResponse = server.send(currentRegistration,
                 new ObserveCompositeRequest(ContentFormat.SENML_JSON, ContentFormat.SENML_JSON, "/3/0"));
 
         // Assert that ObserveCompositeResponse is valid
-        assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
-        assertNotNull(observeResponse.getCoapResponse());
-        assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
-
-        CompositeObservation observation = observeResponse.getObservation();
+        assertThat(observeResponse) //
+                .hasCode(CONTENT) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
         // Assert that CompositeObservation contains expected paths
-        assertNotNull(observation);
-        assertEquals(1, observation.getPaths().size());
-        assertEquals("/3/0", observation.getPaths().get(0).toString());
+        CompositeObservation observation = observeResponse.getObservation();
+        assertThat(observation).isNotNull();
+        assertThat(observation.getPaths()).containsOnly(new LwM2mPath("/3/0"));
 
         // Assert that there is one valid observation
-        assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<Observation> observations = helper.server.getObservationService()
-                .getObservations(helper.getCurrentRegistration());
-        assertEquals(1, observations.size(), "We should have only one observation");
-        assertTrue(observations.contains(observation), "New observation is not there");
+        server.waitForNewObservation(observation);
+        assertThat(observation.getRegistrationId()).isEqualTo(currentRegistration.getId());
+        Set<Observation> observations = server.getObservationService().getObservations(currentRegistration);
+        assertThat(observations).containsExactly(observation);
 
         // Write single example value
-        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(3, 0, 15, "Europe/Paris"));
-        listener.waitForNotification(2000);
-        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+        LwM2mResponse writeResponse = server.send(currentRegistration, new WriteRequest(3, 0, 15, "Europe/Paris"));
+        assertThat(writeResponse).hasCode(CHANGED);
 
         // Assert that response contains expected paths
-        assertTrue(listener.receivedNotify().get());
-        Map<LwM2mPath, LwM2mNode> content = listener.getObserveCompositeResponse().getContent();
-        assertEquals(1, content.size());
-        assertTrue(content.containsKey(new LwM2mPath("/3/0")));
+        ObserveCompositeResponse response = server.waitForNotificationOf(observation);
+        assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
-        // Assert that listener response equals to ReadResponse
-        ReadResponse readResp = helper.server.send(helper.getCurrentRegistration(),
-                new ReadRequest(ContentFormat.SENML_JSON, "/3/0"));
-        assertEquals(readResp.getContent(), content.get(new LwM2mPath("/3/0")));
+        ReadResponse readResp = server.send(currentRegistration, new ReadRequest(ContentFormat.SENML_JSON, "/3/0"));
+        assertThat(response.getContent()).containsOnly(entry(new LwM2mPath("/3/0"), readResp.getContent()));
     }
 
-    @Test
-    public void can_observe_object() throws InterruptedException {
+    @TestAllTransportLayer
+    public void can_observe_object(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InterruptedException {
         // Send ObserveCompositeRequest
-        ObserveCompositeResponse observeResponse = helper.server.send(currentRegistration,
+        ObserveCompositeResponse observeResponse = server.send(currentRegistration,
                 new ObserveCompositeRequest(ContentFormat.SENML_JSON, ContentFormat.SENML_JSON, "/3"));
 
         // Assert that ObserveCompositeResponse is valid
-        assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
-        assertNotNull(observeResponse.getCoapResponse());
-        assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
-
-        CompositeObservation observation = observeResponse.getObservation();
+        assertThat(observeResponse) //
+                .hasCode(CONTENT) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
         // Assert that CompositeObservation contains expected paths
-        assertNotNull(observation);
-        assertEquals(1, observation.getPaths().size());
-        assertEquals("/3", observation.getPaths().get(0).toString());
+        CompositeObservation observation = observeResponse.getObservation();
+        assertThat(observation).isNotNull();
+        assertThat(observation.getPaths()).containsOnly(new LwM2mPath("/3"));
 
         // Assert that there is one valid observation
-        assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<Observation> observations = helper.server.getObservationService()
-                .getObservations(helper.getCurrentRegistration());
-        assertEquals(1, observations.size(), "We should have only one observation");
-        assertTrue(observations.contains(observation), "New observation is not there");
+        server.waitForNewObservation(observation);
+        assertThat(observation.getRegistrationId()).isEqualTo(currentRegistration.getId());
+        Set<Observation> observations = server.getObservationService().getObservations(currentRegistration);
+        assertThat(observations).containsExactly(observation);
 
         // Write single example value
-        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(3, 0, 15, "Europe/Paris"));
-        listener.waitForNotification(2000);
-        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+        LwM2mResponse writeResponse = server.send(currentRegistration, new WriteRequest(3, 0, 15, "Europe/Paris"));
+        assertThat(writeResponse).hasCode(CHANGED);
 
         // Assert that response contains expected paths
-        assertTrue(listener.receivedNotify().get());
-        Map<LwM2mPath, LwM2mNode> content = listener.getObserveCompositeResponse().getContent();
-        assertEquals(1, content.size());
-        assertTrue(content.containsKey(new LwM2mPath("/3")));
+        ObserveCompositeResponse response = server.waitForNotificationOf(observation);
+        assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
-        // Assert that listener response equals to ReadResponse
-        ReadResponse readResp = helper.server.send(helper.getCurrentRegistration(),
-                new ReadRequest(ContentFormat.SENML_JSON, "/3"));
-        assertEquals(readResp.getContent(), content.get(new LwM2mPath("/3")));
+        ReadResponse readResp = server.send(currentRegistration, new ReadRequest(ContentFormat.SENML_JSON, "/3"));
+        assertThat(response.getContent()).containsOnly(entry(new LwM2mPath("/3"), readResp.getContent()));
     }
 
-    @Test
-    public void can_passive_cancel_composite_observation() throws InterruptedException {
+    @TestAllTransportLayer
+    public void can_passive_cancel_composite_observation(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InterruptedException {
         // Send ObserveCompositeRequest
-        ObserveCompositeResponse observeCompositeResponse = helper.server.send(currentRegistration,
+        ObserveCompositeResponse observeCompositeResponse = server.send(currentRegistration,
                 new ObserveCompositeRequest(ContentFormat.SENML_JSON, ContentFormat.SENML_JSON, "/3/0/15"));
-
         CompositeObservation observation = observeCompositeResponse.getObservation();
+        server.waitForNewObservation(observation);
 
         // Write single example value
-        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(3, 0, 15, "Europe/Paris"));
-        listener.waitForNotification(2000);
-        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+        LwM2mResponse writeResponse = server.send(currentRegistration, new WriteRequest(3, 0, 15, "Europe/Paris"));
+        assertThat(writeResponse).hasCode(CHANGED);
+        server.waitForNotificationOf(observation);
 
         // cancel observation : passive way
-        helper.server.getObservationService().cancelObservation(observation);
-        Set<Observation> observations = helper.server.getObservationService()
-                .getObservations(helper.getCurrentRegistration());
-        assertTrue(observations.isEmpty(), "Observation should be removed");
-
-        // write device timezone
-        listener.reset();
+        server.getObservationService().cancelObservation(observation);
+        Set<Observation> observations = server.getObservationService().getObservations(currentRegistration);
+        assertThat(observations).isEmpty();
+        server.waitForCancellationOf(observation, 500, TimeUnit.MILLISECONDS);
 
         // Write single value
-        writeResponse = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(3, 0, 15, "Europe/London"));
-        listener.waitForNotification(2000);
-        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
+        writeResponse = server.send(currentRegistration, new WriteRequest(3, 0, 15, "Europe/London"));
+        assertThat(writeResponse).hasCode(CHANGED);
 
-        assertFalse(listener.receivedNotify().get(), "Observation should be cancelled");
+        server.ensureNoNotification(observation, 500, TimeUnit.MILLISECONDS);
     }
 
-    @Test
-    public void can_active_cancel_composite_observation() throws InterruptedException {
+    @TestAllTransportLayer
+    public void can_active_cancel_composite_observation(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InterruptedException {
         // Send ObserveCompositeRequest
-        ObserveCompositeResponse observeCompositeResponse = helper.server.send(currentRegistration,
+        ObserveCompositeResponse observeCompositeResponse = server.send(currentRegistration,
                 new ObserveCompositeRequest(ContentFormat.SENML_JSON, ContentFormat.SENML_JSON, "/3/0/15"));
-
         CompositeObservation observation = observeCompositeResponse.getObservation();
+        server.waitForNewObservation(observation);
 
         // Write single example value
-        LwM2mResponse writeResponse = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(3, 0, 15, "Europe/Paris"));
-        listener.waitForNotification(2000);
-        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
-
-        // cancel observation : active way
-        CancelCompositeObservationResponse response = helper.server.send(helper.getCurrentRegistration(),
-                new CancelCompositeObservationRequest(observation));
-        assertTrue(response.isSuccess());
-        assertEquals(ResponseCode.CONTENT, response.getCode());
+        LwM2mResponse writeResponse = server.send(currentRegistration, new WriteRequest(3, 0, 15, "Europe/Paris"));
+        assertThat(writeResponse).hasCode(CHANGED);
 
         // Assert that response contains exactly the same paths
-        assertTrue(listener.receivedNotify().get());
-        Map<LwM2mPath, LwM2mNode> content = listener.getObserveCompositeResponse().getContent();
-        assertEquals(1, content.size());
-        assertTrue(content.containsKey(new LwM2mPath("/3/0/15")));
+        ObserveCompositeResponse response = server.waitForNotificationOf(observation);
+        assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
+        assertThat(response.getContent()).containsOnly(
+                entry(new LwM2mPath("/3/0/15"), LwM2mSingleResource.newStringResource(15, "Europe/Paris")));
 
-        // Assert that listener response contains exact values
-        assertEquals(LwM2mSingleResource.newStringResource(new LwM2mPath("/3/0/15").getResourceId(), "Europe/Paris"),
-                content.get(new LwM2mPath("/3/0/15")));
+        // cancel observation : active way
+        CancelCompositeObservationResponse cancelResponse = server.send(currentRegistration,
+                new CancelCompositeObservationRequest(observation));
+        assertThat(cancelResponse.isSuccess()).isTrue();
+        assertThat(cancelResponse).hasCode(CONTENT);
 
         // active cancellation does not remove observation from store : it should be done manually using
         // ObservationService().cancelObservation(observation)
 
         // Assert that there is one valid observation
-        assertEquals(helper.getCurrentRegistration().getId(), observation.getRegistrationId());
-        Set<Observation> observations = helper.server.getObservationService()
-                .getObservations(helper.getCurrentRegistration());
-        assertEquals(1, observations.size(), "We should have only one observation");
-        assertTrue(observations.contains(observation), "New observation is not there");
+        assertThat(observation.getRegistrationId()).isEqualTo(currentRegistration.getId());
+        Set<Observation> observations = server.getObservationService().getObservations(currentRegistration);
+        assertThat(observations).containsExactly(observation);
 
-        // Write device timezone
-        listener.reset();
+        writeResponse = server.send(currentRegistration, new WriteRequest(3, 0, 15, "Europe/London"));
+        assertThat(writeResponse).hasCode(CHANGED);
 
-        writeResponse = helper.server.send(helper.getCurrentRegistration(),
-                new WriteRequest(3, 0, 15, "Europe/London"));
-        listener.waitForNotification(2000);
-        assertEquals(ResponseCode.CHANGED, writeResponse.getCode());
-
-        assertFalse(listener.receivedNotify().get(), "Observation should be cancelled");
+        server.ensureNoNotification(observation, 500, TimeUnit.MILLISECONDS);
     }
 
 }

@@ -15,15 +15,17 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.read;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.leshan.core.ResponseCode.CONTENT;
-import static org.eclipse.leshan.integration.tests.util.TestUtil.assertContentFormat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
+import static org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder.givenServerUsing;
+import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.stream.Stream;
 
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -32,67 +34,101 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.util.TestLwM2mId;
-import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
+import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
+import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
+import org.eclipse.leshan.integration.tests.util.junit5.extensions.ArgumentsUtil;
+import org.eclipse.leshan.integration.tests.util.junit5.extensions.BeforeEachParameterizedResolver;
+import org.eclipse.leshan.server.registration.Registration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+@ExtendWith(BeforeEachParameterizedResolver.class)
 public class ReadOpaqueValueTest {
 
-    @ParameterizedTest(name = "{0}")
-    @MethodSource("contentFormats")
+    /*---------------------------------/
+     *  Parameterized Tests
+     * -------------------------------*/
+    @ParameterizedTest(name = "{0} over {1} - Client using {2} - Server using {3}")
+    @MethodSource("transports")
     @Retention(RetentionPolicy.RUNTIME)
-    private @interface TestAllContentFormat {
+    private @interface TestAllCases {
     }
 
-    static Stream<ContentFormat> contentFormats() {
-        return Stream.of(//
+    static Stream<Arguments> transports() {
+
+        Object[][] transports = new Object[][] {
+                // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider
+                { Protocol.COAP, "Californium", "Californium" } };
+
+        Object[] contentFormats = new Object[] { //
                 ContentFormat.OPAQUE, //
                 ContentFormat.TEXT, //
                 ContentFormat.TLV, //
                 ContentFormat.CBOR, //
                 ContentFormat.JSON, //
                 ContentFormat.SENML_JSON, //
-                ContentFormat.SENML_CBOR);
+                ContentFormat.SENML_CBOR };
+
+        // for each transport, create 1 test by format.
+        return Stream.of(ArgumentsUtil.combine(contentFormats, transports));
     }
 
-    protected IntegrationTestHelper helper = new IntegrationTestHelper();
+    /*---------------------------------/
+     *  Set-up and Tear-down Tests
+     * -------------------------------*/
+
+    LeshanTestServer server;
+    LeshanTestClient client;
+    Registration currentRegistration;
 
     @BeforeEach
-    public void start() {
-        helper.initialize();
-        helper.createServer();
-        helper.server.start();
-        helper.createClient();
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
+    public void start(ContentFormat format, Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) {
+        server = givenServerUsing(givenProtocol).with(givenServerEndpointProvider).build();
+        server.start();
+        client = givenClientUsing(givenProtocol).with(givenClientEndpointProvider).connectingTo(server).build();
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        client.waitForRegistrationTo(server);
+
+        currentRegistration = server.getRegistrationFor(client);
+
     }
 
     @AfterEach
-    public void stop() {
-        helper.client.destroy(false);
-        helper.server.destroy();
-        helper.dispose();
+    public void stop() throws InterruptedException {
+        if (client != null)
+            client.destroy(false);
+        if (server != null)
+            server.destroy();
     }
 
-    @TestAllContentFormat
-    public void can_read_empty_opaque_resource(ContentFormat contentFormat) throws InterruptedException {
+    /*---------------------------------/
+     *  Tests
+     * -------------------------------*/
+    @TestAllCases
+    public void can_read_empty_opaque_resource(ContentFormat contentFormat, Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider) throws InterruptedException {
         // clear value of TEST object
-        ExecuteResponse clearResponse = helper.server.send(helper.getCurrentRegistration(),
+        ExecuteResponse clearResponse = server.send(currentRegistration,
                 new ExecuteRequest(TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.CLEAR_VALUES));
-        assertTrue(clearResponse.isSuccess());
+        assertThat(clearResponse.isSuccess()).isTrue();
 
         // read device model number
-        ReadResponse response = helper.server.send(helper.getCurrentRegistration(),
+        ReadResponse response = server.send(currentRegistration,
                 new ReadRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.OPAQUE_VALUE));
 
         // verify result
-        assertEquals(CONTENT, response.getCode());
-        assertContentFormat(contentFormat, response);
+        assertThat(response) //
+                .hasCode(CONTENT) //
+                .hasContentFormat(contentFormat, givenServerEndpointProvider);
 
         LwM2mResource resource = (LwM2mResource) response.getContent();
-        assertEquals(Type.OPAQUE, resource.getType());
-        assertEquals(0, ((byte[]) resource.getValue()).length);
+        assertThat(resource.getType()).isEqualTo(Type.OPAQUE);
+        assertThat((byte[]) resource.getValue()).isEmpty();
     }
 }

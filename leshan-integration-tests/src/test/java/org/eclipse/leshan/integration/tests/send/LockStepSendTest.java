@@ -15,13 +15,16 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.send;
 
-import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.linkParser;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.Request;
@@ -29,6 +32,8 @@ import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.leshan.core.endpoint.Protocol;
+import org.eclipse.leshan.core.link.LinkParser;
+import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
@@ -37,59 +42,85 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.integration.tests.lockstep.LockStepLwM2mClient;
-import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
-import org.eclipse.leshan.integration.tests.util.SynchronousSendListener;
-import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointsProvider.Builder;
+import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
+import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
+import org.eclipse.leshan.integration.tests.util.junit5.extensions.BeforeEachParameterizedResolver;
+import org.eclipse.leshan.server.californium.endpoint.ServerProtocolProvider;
+import org.eclipse.leshan.server.californium.endpoint.coap.CoapServerProtocolProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
+@ExtendWith(BeforeEachParameterizedResolver.class)
 public class LockStepSendTest {
+    public static final LinkParser linkParser = new DefaultLwM2mLinkParser();
 
-    public IntegrationTestHelper helper = new IntegrationTestHelper() {
+    /*---------------------------------/
+     *  Parameterized Tests
+     * -------------------------------*/
+    @ParameterizedTest(name = "COAP - Server using {0}")
+    @MethodSource("transports")
+    @Retention(RetentionPolicy.RUNTIME)
+    private @interface TestAllTransportLayer {
+    }
 
-        @Override
-        protected Builder createEndpointsProviderBuilder() {
-            Builder builder = super.createEndpointsProviderBuilder();
-            Configuration coapConfig = builder.createDefaultConfiguration();
+    static Stream<org.junit.jupiter.params.provider.Arguments> transports() {
+        return Stream.of(//
+                // ProtocolUsed - Server Endpoint Provider
+                arguments("Californium"));
+    }
 
-            // configure retransmission, with this configuration a request without ACK should timeout in ~200*5ms
-            coapConfig.set(CoapConfig.ACK_TIMEOUT, 200, TimeUnit.MILLISECONDS) //
-                    .set(CoapConfig.ACK_INIT_RANDOM, 1f) //
-                    .set(CoapConfig.ACK_TIMEOUT_SCALE, 1f) //
-                    .set(CoapConfig.MAX_RETRANSMIT, 4);
+    /*---------------------------------/
+     *  Set-up and Tear-down Tests
+     * -------------------------------*/
+    public LeshanTestServerBuilder givenServer() {
+        return new LeshanTestServerBuilder() {
+            @Override
+            protected ServerProtocolProvider getCaliforniumProtocolProvider(Protocol protocol) {
+                return new CoapServerProtocolProvider() {
+                    @Override
+                    public void applyDefaultValue(Configuration configuration) {
+                        super.applyDefaultValue(configuration);
+                        // configure retransmission, with this configuration a request without ACK should timeout in
+                        // ~200*5ms
+                        configuration.set(CoapConfig.ACK_TIMEOUT, 200, TimeUnit.MILLISECONDS) //
+                                .set(CoapConfig.ACK_INIT_RANDOM, 1f) //
+                                .set(CoapConfig.ACK_TIMEOUT_SCALE, 1f) //
+                                .set(CoapConfig.MAX_RETRANSMIT, 4);
+                    }
+                };
+            }
+        };
+    }
 
-            builder.setConfiguration(coapConfig);
-            return builder;
-        }
-    };
+    LeshanTestServer server;
 
     @BeforeEach
-    public void start() {
-        helper.initialize();
-        helper.createServer();
-        helper.server.start();
+    public void start(String givenServerEndpointProvider) {
+        server = givenServer().using(Protocol.COAP).with(givenServerEndpointProvider).build();
+        server.start();
     }
 
     @AfterEach
-    public void stop() {
-        helper.server.destroy();
-        helper.dispose();
+    public void stop() throws InterruptedException {
+        if (server != null)
+            server.destroy();
     }
 
-    @Test
-    public void register_send_with_invalid_payload() throws Exception {
+    /*---------------------------------/
+     *  Tests
+     * -------------------------------*/
+    @TestAllTransportLayer
+    public void register_send_with_invalid_payload(String givenServerEndpointProvider) throws Exception {
         // Register client
-        LockStepLwM2mClient client = new LockStepLwM2mClient(helper.server.getEndpoint(Protocol.COAP).getURI());
-        Token token = client.sendLwM2mRequest(
-                new RegisterRequest(helper.getCurrentEndpoint(), 60l, "1.1", EnumSet.of(BindingMode.U), null, null,
-                        linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null));
+        LockStepLwM2mClient client = new LockStepLwM2mClient(server.getEndpoint(Protocol.COAP).getURI());
+        Token token = client
+                .sendLwM2mRequest(new RegisterRequest(client.getEndpointName(), 60l, "1.1", EnumSet.of(BindingMode.U),
+                        null, null, linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().token(token).code(ResponseCode.CREATED).go();
-        helper.waitForRegistrationAtServerSide(1);
-
-        // Define send listener
-        SynchronousSendListener listener = new SynchronousSendListener();
-        helper.server.getSendService().addListener(listener);
+        server.waitForNewRegistrationOf(client.getEndpointName());
 
         // Send "Send Request" with invalid payload
         Map<LwM2mPath, LwM2mNode> nodes = new HashMap<>();
@@ -99,7 +130,7 @@ public class LockStepSendTest {
         client.sendCoapRequest(sendRequest);
 
         // wait for error
-        listener.waitForError(1, TimeUnit.SECONDS);
-        assertNotNull(listener.getError());
+        Exception exception = server.waitForSendDataError(client.getEndpointName(), 1, TimeUnit.SECONDS);
+        assertThat(exception).isNotNull();
     }
 }

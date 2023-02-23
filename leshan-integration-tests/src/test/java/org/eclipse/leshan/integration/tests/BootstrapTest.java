@@ -16,268 +16,399 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.linkSerializer;
-import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.GOOD_PSK_ID;
-import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.GOOD_PSK_KEY;
-import static org.eclipse.leshan.integration.tests.util.SecureIntegrationTestHelper.getServerOscoreSetting;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItems;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.eclipse.leshan.integration.tests.BootstrapConfigTestBuilder.givenBootstrapConfig;
+import static org.eclipse.leshan.integration.tests.util.LeshanTestBootstrapServerBuilder.givenBootstrapServerUsing;
+import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
+import static org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder.givenServerUsing;
+import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
-import org.eclipse.californium.oscore.OSException;
+import org.eclipse.leshan.client.bootstrap.InvalidStateException;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
-import org.eclipse.leshan.client.resource.ObjectsInitializer;
-import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.ResponseCode;
-import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
-import org.eclipse.leshan.core.request.BootstrapReadRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
-import org.eclipse.leshan.core.response.BootstrapReadResponse;
 import org.eclipse.leshan.core.response.ExecuteResponse;
+import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
-import org.eclipse.leshan.integration.tests.util.BootstrapIntegrationTestHelper;
+import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.integration.tests.util.BootstrapRequestChecker;
-import org.eclipse.leshan.integration.tests.util.TestObjectsInitializer;
+import org.eclipse.leshan.integration.tests.util.LeshanTestBootstrapServer;
+import org.eclipse.leshan.integration.tests.util.LeshanTestBootstrapServerBuilder;
+import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
+import org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder;
+import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
+import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
+import org.eclipse.leshan.integration.tests.util.junit5.extensions.BeforeEachParameterizedResolver;
+import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ACLConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
-import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
-import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.server.bootstrap.BootstrapSession;
+import org.eclipse.leshan.server.bootstrap.InvalidConfigurationException;
+import org.eclipse.leshan.server.registration.Registration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
+@ExtendWith(BeforeEachParameterizedResolver.class)
 public class BootstrapTest {
 
-    private final BootstrapIntegrationTestHelper helper = new BootstrapIntegrationTestHelper();
+    /*---------------------------------/
+     *  Parameterized Tests
+     * -------------------------------*/
+    @ParameterizedTest(name = "{0} - Client using {1} - Server using {2}- BS Server using {3}")
+    @MethodSource("transports")
+    @Retention(RetentionPolicy.RUNTIME)
+    private @interface TestAllTransportLayer {
+    }
+
+    static Stream<org.junit.jupiter.params.provider.Arguments> transports() {
+        return Stream.of(//
+                // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider - BS Server Endpoint Provider
+                arguments(Protocol.COAP, "Californium", "Californium", "Californium"));
+    }
+
+    /*---------------------------------/
+     *  Set-up and Tear-down Tests
+     * -------------------------------*/
+    LeshanTestBootstrapServerBuilder givenBootstrapServer;
+    LeshanTestBootstrapServer bootstrapServer;
+    LeshanTestServerBuilder givenServer;
+    LeshanTestServer server;
+    LeshanTestClientBuilder givenClient;
+    LeshanTestClient client;
 
     @BeforeEach
-    public void start() {
-        helper.initialize();
+    public void start(Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider,
+            String givenBootstrapServerEndpointProvider) {
+        givenServer = givenServerUsing(givenProtocol).with(givenServerEndpointProvider);
+        givenBootstrapServer = givenBootstrapServerUsing(givenProtocol).with(givenBootstrapServerEndpointProvider);
+        givenClient = givenClientUsing(givenProtocol).with(givenClientEndpointProvider);
     }
 
     @AfterEach
-    public void stop() {
-        helper.client.destroy(true);
-        helper.bootstrapServer.destroy();
-        helper.server.destroy();
-        helper.dispose();
+    public void stop() throws InterruptedException {
+        if (client != null)
+            client.destroy(false);
+        if (server != null)
+            server.destroy();
+        if (bootstrapServer != null)
+            bootstrapServer.destroy();
     }
 
-    @Test
-    public void bootstrap() {
+    /*---------------------------------/
+     *  Tests
+     * -------------------------------*/
+
+    @TestAllTransportLayer
+    public void bootstrap(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider, String givenBootstrapServerEndpointProvider)
+            throws InvalidConfigurationException {
         // Create DM Server without security & start it
-        helper.createServer();
-        helper.server.start();
+        server = givenServer.build();
+        server.start();
 
         // Create and start bootstrap server
-        helper.createBootstrapServer(null);
-        helper.bootstrapServer.start();
+        bootstrapServer = givenBootstrapServer.build();
+        bootstrapServer.start();
 
         // Create Client and check it is not already registered
-        helper.createClient();
-        helper.assertClientNotRegisterered();
+        client = givenClient.connectingTo(bootstrapServer).build();
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Add config for this client
+        bootstrapServer.getConfigStore().add(client.getEndpointName(), //
+                givenBootstrapConfig() //
+                        .adding(givenProtocol, bootstrapServer) //
+                        .adding(givenProtocol, server) //
+                        .build());
 
         // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
+        client.start();
+        server.waitForNewRegistrationOf(client);
 
         // check the client is registered
-        helper.assertClientRegisterered();
+        assertThat(client).isRegisteredAt(server);
     }
 
-    @Test
-    public void bootstrap_tlv_only() {
+    @TestAllTransportLayer
+    public void bootstrap_tlv_only(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider, String givenBootstrapServerEndpointProvider)
+            throws InvalidConfigurationException {
         // Create DM Server without security & start it
-        helper.createServer();
-        helper.server.start();
+        server = givenServer.build();
+        server.start();
 
         // Create and start bootstrap server
-        helper.createBootstrapServer(null);
-        helper.bootstrapServer.start();
+        bootstrapServer = givenBootstrapServer.build();
+        bootstrapServer.start();
+
+        // Create Client and check it is not already registered
+        client = givenClient.connectingTo(bootstrapServer)//
+                // if no preferred content format server should use TLV
+                .preferring(null)//
+                .supporting(ContentFormat.TLV) //
+                .build();
+        assertThat(client).isNotRegisteredAt(server);
+
+        // TODO this should be replace by mockito ArgumentCaptor
         BootstrapRequestChecker contentFormatChecker = BootstrapRequestChecker.contentFormatChecker(ContentFormat.TLV);
-        helper.bootstrapServer.addListener(contentFormatChecker);
+        bootstrapServer.addListener(contentFormatChecker);
 
-        // Create Client and check it is not already registered
-        ContentFormat noPreferredFormat = null; // if no preferred content format server should use TLV
-        ContentFormat supportedFormat = ContentFormat.TLV;
-        helper.createClient(noPreferredFormat, supportedFormat);
-        helper.assertClientNotRegisterered();
+        // Add config for this client
+        bootstrapServer.getConfigStore().add(client.getEndpointName(), //
+                givenBootstrapConfig() //
+                        .adding(givenProtocol, bootstrapServer) //
+                        .adding(givenProtocol, server) //
+                        .build());
 
         // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-        assertTrue(contentFormatChecker.isValid(), "not expected content format used");
+        client.start();
+        server.waitForNewRegistrationOf(client);
 
         // check the client is registered
-        helper.assertClientRegisterered();
+        assertThat(client).isRegisteredAt(server);
+        assertTrue(contentFormatChecker.isValid(), "not expected content format used");
     }
 
-    @Test
-    public void bootstrap_senmlcbor_only() {
+    @TestAllTransportLayer
+    public void bootstrap_senmlcbor_only(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider, String givenBootstrapServerEndpointProvider)
+            throws InvalidConfigurationException {
         // Create DM Server without security & start it
-        helper.createServer();
-        helper.server.start();
+        server = givenServer.build();
+        server.start();
 
         // Create and start bootstrap server
-        helper.createBootstrapServer(null);
-        helper.bootstrapServer.start();
+        bootstrapServer = givenBootstrapServer.build();
+        bootstrapServer.start();
+
+        // Create Client and check it is not already registered
+        client = givenClient.connectingTo(bootstrapServer)//
+                // if no preferred content format server should use TLV
+                .preferring(ContentFormat.SENML_CBOR)//
+                .supporting(ContentFormat.SENML_CBOR) //
+                .build();
+        assertThat(client).isNotRegisteredAt(server);
+
+        // TODO this should be replace by mockito ArgumentCaptor
         BootstrapRequestChecker contentFormatChecker = BootstrapRequestChecker
                 .contentFormatChecker(ContentFormat.SENML_CBOR);
-        helper.bootstrapServer.addListener(contentFormatChecker);
+        bootstrapServer.addListener(contentFormatChecker);
 
-        // Create Client and check it is not already registered
-        ContentFormat preferredFormat = ContentFormat.SENML_CBOR;
-        ContentFormat supportedFormat = ContentFormat.SENML_CBOR;
-        helper.createClient(preferredFormat, supportedFormat);
-        helper.assertClientNotRegisterered();
+        // Add config for this client
+        bootstrapServer.getConfigStore().add(client.getEndpointName(), //
+                givenBootstrapConfig() //
+                        .adding(givenProtocol, bootstrapServer) //
+                        .adding(givenProtocol, server) //
+                        .build());
 
         // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-        assertTrue(contentFormatChecker.isValid(), "not expected content format used");
+        client.start();
+        server.waitForNewRegistrationOf(client);
 
         // check the client is registered
-        helper.assertClientRegisterered();
+        assertThat(client).isRegisteredAt(server);
+        assertTrue(contentFormatChecker.isValid(), "not expected content format used");
     }
 
-    @Test
-    public void bootstrap_contentformat_from_config() {
+    @TestAllTransportLayer
+    public void bootstrap_contentformat_from_config(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider, String givenBootstrapServerEndpointProvider)
+            throws InvalidConfigurationException {
         // Create DM Server without security & start it
-        helper.createServer();
-        helper.server.start();
+        server = givenServer.build();
+        server.start();
 
         // Create and start bootstrap server
-        helper.createBootstrapServer(null, helper.unsecuredBootstrap(ContentFormat.SENML_JSON));
-        helper.bootstrapServer.start();
+        bootstrapServer = givenBootstrapServer.build();
+        bootstrapServer.start();
+
+        // Create Client and check it is not already registered
+        client = givenClient.connectingTo(bootstrapServer)//
+                // if no preferred content format server should use TLV
+                .preferring(ContentFormat.SENML_CBOR)//
+                .build();
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Add config for this client
+        bootstrapServer.getConfigStore().add(client.getEndpointName(), //
+                givenBootstrapConfig() //
+                        .adding(givenProtocol, bootstrapServer) //
+                        .adding(givenProtocol, server) //
+                        .using(ContentFormat.SENML_JSON) //
+                        .build());
+
+        // TODO this should be replace by mockito ArgumentCaptor
         BootstrapRequestChecker contentFormatChecker = BootstrapRequestChecker
                 .contentFormatChecker(ContentFormat.SENML_JSON);
-        helper.bootstrapServer.addListener(contentFormatChecker);
-
-        // Create Client and check it is not already registered
-        ContentFormat preferredFormat = ContentFormat.SENML_CBOR;
-        helper.createClient(preferredFormat);
-        helper.assertClientNotRegisterered();
+        bootstrapServer.addListener(contentFormatChecker);
 
         // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-        assertTrue(contentFormatChecker.isValid(), "not expected content format used");
+        client.start();
+        server.waitForNewRegistrationOf(client);
 
         // check the client is registered
-        helper.assertClientRegisterered();
+        assertThat(client).isRegisteredAt(server);
+        assertTrue(contentFormatChecker.isValid(), "not expected content format used");
     }
 
-    @Test
-    public void bootstrapWithAdditionalAttributes() {
+    @TestAllTransportLayer
+    public void bootstrapWithAdditionalAttributes(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider, String givenBootstrapServerEndpointProvider)
+            throws InvalidConfigurationException {
         // Create DM Server without security & start it
-        helper.createServer();
-        helper.server.start();
+        server = givenServer.build();
+        server.start();
 
         // Create and start bootstrap server
-        helper.createBootstrapServer(null);
-        helper.bootstrapServer.start();
+        bootstrapServer = givenBootstrapServer.build();
+        bootstrapServer.start();
 
-        // Create Client with additional attributes
-        // and check it is not already registered
+        // Create Client with additional attributes and check it is not already registered
         Map<String, String> additionalAttributes = new HashMap<>();
         additionalAttributes.put("key1", "value1");
         additionalAttributes.put("imei", "2136872368");
-        helper.createClient(additionalAttributes);
-        helper.assertClientNotRegisterered();
+
+        client = givenClient.connectingTo(bootstrapServer)//
+                .withBootstrap(additionalAttributes)//
+                .build();
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Add config for this client
+        bootstrapServer.getConfigStore().add(client.getEndpointName(), //
+                givenBootstrapConfig() //
+                        .adding(givenProtocol, bootstrapServer) //
+                        .adding(givenProtocol, server) //
+                        .build());
 
         // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
+        client.start();
+        server.waitForNewRegistrationOf(client);
 
         // check the client is registered
-        helper.assertClientRegisterered();
+        assertThat(client).isRegisteredAt(server);
 
         // assert session contains additional attributes
-        assertEquals(additionalAttributes,
-                helper.getLastBootstrapSession().getBootstrapRequest().getAdditionalAttributes());
+        BootstrapSession bootstrapSession = bootstrapServer.verifyForSuccessfullBootstrap();
+
+        assertThat(bootstrapSession.getBootstrapRequest().getAdditionalAttributes())
+                .containsAllEntriesOf(additionalAttributes);
     }
 
-    @Test
-    public void bootstrapWithDiscoverOnRoot() {
+    @TestAllTransportLayer
+    public void bootstrapWithDiscoverOnRoot(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider, String givenBootstrapServerEndpointProvider)
+            throws InvalidConfigurationException {
         // Create DM Server without security & start it
-        helper.createServer();
-        helper.server.start();
+        server = givenServer.build();
+        server.start();
 
         // Create and start bootstrap server
-        helper.createBootstrapServer(null, null, new BootstrapDiscoverRequest());
-        helper.bootstrapServer.start();
+        BootstrapDiscoverRequest firstRequest = new BootstrapDiscoverRequest();
+        bootstrapServer = givenBootstrapServer.startingSessionWith(firstRequest).build();
+        bootstrapServer.start();
 
         // Create Client and check it is not already registered
-        helper.createClient();
-        helper.assertClientNotRegisterered();
+        client = givenClient.connectingTo(bootstrapServer).build();
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Add config for this client
+        bootstrapServer.getConfigStore().add(client.getEndpointName(), //
+                givenBootstrapConfig() //
+                        .adding(givenProtocol, bootstrapServer) //
+                        .adding(givenProtocol, server) //
+                        .build());
 
         // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
+        client.start();
+        server.waitForNewRegistrationOf(client);
 
         // check the client is registered
-        helper.assertClientRegisterered();
-        assertNotNull(helper.lastCustomResponse);
-        assertTrue(helper.lastCustomResponse instanceof BootstrapDiscoverResponse);
-        BootstrapDiscoverResponse lastDiscoverAnswer = (BootstrapDiscoverResponse) helper.lastCustomResponse;
-        assertEquals(ResponseCode.CONTENT, lastDiscoverAnswer.getCode());
-        assertEquals(String.format(
-                "</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</3>;ver=1.1,</3/0>,</21>;ver=2.0",
-                helper.bootstrapServer.getEndpoint(Protocol.COAP).getURI().getHost(),
-                helper.bootstrapServer.getEndpoint(Protocol.COAP).getURI().getPort()),
-                linkSerializer.serializeCoreLinkFormat(lastDiscoverAnswer.getObjectLinks()));
+        assertThat(client).isRegisteredAt(server);
+
+        // check response
+        BootstrapSession bootstrapSession = bootstrapServer.verifyForSuccessfullBootstrap();
+        LwM2mResponse firstResponse = bootstrapServer.getFirstResponseFor(bootstrapSession, firstRequest);
+        assertThat(firstResponse).isInstanceOfSatisfying(BootstrapDiscoverResponse.class, r -> {
+            assertThat(r).hasCode(ResponseCode.CONTENT);
+            assertThat(r.getObjectLinks()).isLikeLwM2mLinks(String.format(
+                    "</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</2>,</3442/0>,</3>;ver=1.1,</3/0>",
+                    bootstrapServer.getEndpoint(givenProtocol).getURI().getHost(),
+                    bootstrapServer.getEndpoint(givenProtocol).getURI().getPort()));
+        });
     }
 
-    @Test
-    public void bootstrapWithDiscoverOnRootThenRebootstrap() throws InvalidRequestException, InterruptedException {
+    @TestAllTransportLayer
+    public void bootstrapWithDiscoverOnRootThenRebootstrap(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider, String givenBootstrapServerEndpointProvider)
+            throws InvalidRequestException, InterruptedException, InvalidConfigurationException {
         // Create DM Server without security & start it
-        helper.createServer();
-        helper.server.start();
+        server = givenServer.build();
+        server.start();
 
         // Create and start bootstrap server
-        helper.createBootstrapServer(null, null, new BootstrapDiscoverRequest());
-        helper.bootstrapServer.start();
+        BootstrapDiscoverRequest firstRequest = new BootstrapDiscoverRequest();
+        bootstrapServer = givenBootstrapServer.startingSessionWith(firstRequest).build();
+        bootstrapServer.start();
 
         // Create Client and check it is not already registered
-        helper.createClient();
-        helper.assertClientNotRegisterered();
+        client = givenClient.connectingTo(bootstrapServer).build();
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Add config for this client
+        bootstrapServer.getConfigStore().add(client.getEndpointName(), //
+                givenBootstrapConfig() //
+                        .adding(givenProtocol, bootstrapServer) //
+                        .adding(givenProtocol, server) //
+                        .build());
 
         // Start it and wait for registration
-        helper.client.start();
-        helper.waitForBootstrapFinishedAtClientSide(1);
-        helper.waitForRegistrationAtServerSide(1);
+        client.start();
+        server.waitForNewRegistrationOf(client);
 
         // check the client is registered
-        helper.assertClientRegisterered();
-        assertTrue(helper.lastCustomResponse instanceof BootstrapDiscoverResponse);
-        BootstrapDiscoverResponse lastDiscoverAnswer = (BootstrapDiscoverResponse) helper.lastCustomResponse;
-        assertEquals(ResponseCode.CONTENT, lastDiscoverAnswer.getCode());
-        assertEquals(String.format(
-                "</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</3>;ver=1.1,</3/0>,</21>;ver=2.0",
-                helper.bootstrapServer.getEndpoint(Protocol.COAP).getURI().getHost(),
-                helper.bootstrapServer.getEndpoint(Protocol.COAP).getURI().getPort()),
-                linkSerializer.serializeCoreLinkFormat(lastDiscoverAnswer.getObjectLinks()));
+        assertThat(client).isRegisteredAt(server);
+
+        // check response
+        BootstrapSession bootstrapSession = bootstrapServer.verifyForSuccessfullBootstrap();
+        LwM2mResponse firstResponse = bootstrapServer.getFirstResponseFor(bootstrapSession, firstRequest);
+        assertThat(firstResponse).isInstanceOfSatisfying(BootstrapDiscoverResponse.class, r -> {
+            assertThat(r).hasCode(ResponseCode.CONTENT);
+            assertThat(r.getObjectLinks()).isLikeLwM2mLinks(String.format(
+                    "</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</2>,</3442/0>,</3>;ver=1.1,</3/0>",
+                    bootstrapServer.getEndpoint(givenProtocol).getURI().getHost(),
+                    bootstrapServer.getEndpoint(givenProtocol).getURI().getPort()));
+        });
 
         // re-bootstrap
+        bootstrapServer.resetInvocations();
         try {
-            ExecuteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                    new ExecuteRequest("/1/0/9"));
+            Registration registration = server.getRegistrationFor(client);
+            ExecuteResponse response = server.send(registration, new ExecuteRequest("/1/0/9"));
             assertTrue(response.isSuccess());
         } catch (RequestCanceledException e) {
             // request can be cancelled if server does not received the execute response before the de-registration
@@ -285,463 +416,298 @@ public class BootstrapTest {
         }
 
         // wait bootstrap finished
-        helper.waitForBootstrapFinishedAtClientSide(1);
+        bootstrapSession = bootstrapServer.waitForSuccessfullBootstrap(1, TimeUnit.SECONDS);
 
-        // check last discover response
-        assertTrue(helper.lastCustomResponse instanceof BootstrapDiscoverResponse);
-        lastDiscoverAnswer = (BootstrapDiscoverResponse) helper.lastCustomResponse;
-        assertEquals(ResponseCode.CONTENT, lastDiscoverAnswer.getCode());
-        assertEquals(String.format(
-                "</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</0/1>;ssid=2222;uri=\"coap://%s:%d\",</1>;ver=1.1,</1/0>;ssid=2222,</3>;ver=1.1,</3/0>,</21>;ver=2.0",
-                helper.bootstrapServer.getEndpoint(Protocol.COAP).getURI().getHost(),
-                helper.bootstrapServer.getEndpoint(Protocol.COAP).getURI().getPort(),
-                helper.server.getEndpoint(Protocol.COAP).getURI().getHost(),
-                helper.server.getEndpoint(Protocol.COAP).getURI().getPort()),
-                linkSerializer.serializeCoreLinkFormat(lastDiscoverAnswer.getObjectLinks()));
-
+        // check response
+        LwM2mResponse secondResponse = bootstrapServer.getFirstResponseFor(bootstrapSession, firstRequest);
+        assertThat(secondResponse).isInstanceOfSatisfying(BootstrapDiscoverResponse.class, r -> {
+            assertThat(r).hasCode(ResponseCode.CONTENT);
+            assertThat(r.getObjectLinks()).isLikeLwM2mLinks(String.format(
+                    "</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</0/1>;ssid=2222;uri=\"coap://%s:%d\",</1>;ver=1.1,</1/0>;ssid=2222,</2>,</3442/0>,</3>;ver=1.1,</3/0>",
+                    bootstrapServer.getEndpoint(givenProtocol).getURI().getHost(),
+                    bootstrapServer.getEndpoint(givenProtocol).getURI().getPort(),
+                    server.getEndpoint(givenProtocol).getURI().getHost(),
+                    server.getEndpoint(givenProtocol).getURI().getPort()));
+        });
     }
 
-    @Test
-    public void bootstrapWithDiscoverOnDevice() {
+    @TestAllTransportLayer
+    public void bootstrapWithDiscoverOnDevice(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider, String givenBootstrapServerEndpointProvider)
+            throws InvalidConfigurationException {
         // Create DM Server without security & start it
-        helper.createServer();
-        helper.server.start();
+        server = givenServer.build();
+        server.start();
 
         // Create and start bootstrap server
-        helper.createBootstrapServer(null, null, new BootstrapDiscoverRequest(3));
-        helper.bootstrapServer.start();
+        BootstrapDiscoverRequest firstRequest = new BootstrapDiscoverRequest(3);
+        bootstrapServer = givenBootstrapServer.startingSessionWith(firstRequest).build();
+        bootstrapServer.start();
 
         // Create Client and check it is not already registered
-        helper.createClient();
-        helper.assertClientNotRegisterered();
+        client = givenClient.connectingTo(bootstrapServer).build();
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Add config for this client
+        bootstrapServer.getConfigStore().add(client.getEndpointName(), //
+                givenBootstrapConfig() //
+                        .adding(givenProtocol, bootstrapServer) //
+                        .adding(givenProtocol, server) //
+                        .build());
 
         // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
+        client.start();
+        server.waitForNewRegistrationOf(client);
 
         // check the client is registered
-        helper.assertClientRegisterered();
-        assertTrue(helper.lastCustomResponse instanceof BootstrapDiscoverResponse);
-        BootstrapDiscoverResponse lastDiscoverAnswer = (BootstrapDiscoverResponse) helper.lastCustomResponse;
-        assertEquals(ResponseCode.CONTENT, lastDiscoverAnswer.getCode());
-        assertEquals("</>;lwm2m=1.0,</3>;ver=1.1,</3/0>",
-                linkSerializer.serializeCoreLinkFormat(lastDiscoverAnswer.getObjectLinks()));
+        assertThat(client).isRegisteredAt(server);
+
+        // check response
+        BootstrapSession bootstrapSession = bootstrapServer.verifyForSuccessfullBootstrap();
+        LwM2mResponse firstResponse = bootstrapServer.getFirstResponseFor(bootstrapSession, firstRequest);
+        assertThat(firstResponse).isInstanceOfSatisfying(BootstrapDiscoverResponse.class, r -> {
+            assertThat(r).hasCode(ResponseCode.CONTENT);
+            assertThat(r.getObjectLinks()).isLikeLwM2mLinks("</>;lwm2m=1.0,</3>;ver=1.1,</3/0>");
+        });
     }
 
-    @Test
-    public void bootstrapWithReadOnServerThenRebootstrap() throws InvalidRequestException, InterruptedException {
+    @TestAllTransportLayer
+    public void bootstrap_create_2_bsserver(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider, String givenBootstrapServerEndpointProvider)
+            throws InvalidConfigurationException {
         // Create DM Server without security & start it
-        helper.createServer();
-        helper.server.start();
+        server = givenServer.build();
+        server.start();
 
         // Create and start bootstrap server
-        helper.createBootstrapServer(null, null, new BootstrapReadRequest(1));
-        helper.bootstrapServer.start();
-
-        // Create Client and check it is not already registered
-        helper.createClient();
-        helper.assertClientNotRegisterered();
-
-        // Start it and wait for registration
-        helper.client.start();
-        helper.waitForBootstrapFinishedAtClientSide(1);
-        helper.waitForRegistrationAtServerSide(1);
-
-        // check the client is registered
-        helper.assertClientRegisterered();
-        assertTrue(helper.lastCustomResponse instanceof BootstrapReadResponse);
-        BootstrapReadResponse lastReadResponse = (BootstrapReadResponse) helper.lastCustomResponse;
-        assertEquals(ResponseCode.CONTENT, lastReadResponse.getCode());
-        assertEquals(new LwM2mObject(1), lastReadResponse.getContent());
-
-        // re-bootstrap
-        try {
-            ExecuteResponse response = helper.server.send(helper.getCurrentRegistration(),
-                    new ExecuteRequest("/1/0/9"));
-            assertTrue(response.isSuccess());
-        } catch (RequestCanceledException e) {
-            // request can be cancelled if server does not received the execute response before the de-registration
-            // so we just ignore this error.
-        }
-
-        // wait bootstrap finished
-        helper.waitForBootstrapFinishedAtClientSide(5);
-
-        // check last discover response
-        assertTrue(helper.lastCustomResponse instanceof BootstrapReadResponse);
-        lastReadResponse = (BootstrapReadResponse) helper.lastCustomResponse;
-        assertEquals(ResponseCode.CONTENT, lastReadResponse.getCode());
-    }
-
-    @Test
-    public void bootstrap_create_2_bsserver() {
-        // Create DM Server without security & start it
-        helper.createServer();
-        helper.server.start();
-
-        // Create and start bootstrap server
-        helper.createBootstrapServer(null, helper.unsecuredBootstrapStoreWithBsSecurityInstanceIdAt(0));
-        helper.bootstrapServer.start();
+        bootstrapServer = givenBootstrapServer.build();
+        bootstrapServer.start();
 
         // Create Client with bootstrap server config at /0/10
-        helper.createClient(helper.withoutSecurityAndInstanceId(10), null);
-        helper.assertClientNotRegisterered();
+        client = givenClient.connectingTo(bootstrapServer).usingBootstrapServerId(10).build();
+        assertThat(client).isNotRegisteredAt(server);
 
-        // Start BS.
-        // Server will delete /0 but Client will not delete /0/10 instance (because bs server is not deletable)
-        // Then a new BS server will be written at /0/0
-        //
-        // So bootstrap should failed because 2 bs server in Security Object is not a valid state.
-        // see https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/523
-        helper.client.start();
+        // Add config for this client
+        bootstrapServer.getConfigStore().add(client.getEndpointName(), //
+                givenBootstrapConfig() //
+                        .adding(givenProtocol, bootstrapServer, 0) // with bootstrap server ID = 0
+                        .adding(givenProtocol, server) //
+                        .build());
+
+        // Start it and wait for registration
+        client.start();
 
         // ensure bootstrap session failed because of invalid state
-        helper.waitForInconsistentStateAtClientSide(1);
-        helper.waitForBootstrapFailureAtServerSide(1);
-        assertEquals(BootstrapFailureCause.FINISH_FAILED, helper.getLastCauseOfBootstrapFailure());
+        Exception cause = client.waitForBootstrapFailure(bootstrapServer, 2, TimeUnit.SECONDS);
+        assertThat(cause).isExactlyInstanceOf(InvalidStateException.class);
+        BootstrapFailureCause failure = bootstrapServer.waitForBootstrapFailure(1, TimeUnit.SECONDS);
+        assertThat(failure).isEqualTo(BootstrapFailureCause.FINISH_FAILED);
     }
 
-    @Test
-    public void bootstrap_with_auto_id_for_security_object() {
+    @TestAllTransportLayer
+    public void bootstrap_with_auto_id_for_security_object(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider, String givenBootstrapServerEndpointProvider)
+            throws InvalidConfigurationException {
         // Create DM Server without security & start it
-        helper.createServer();
-        helper.server.start();
+        server = givenServer.build();
+        server.start();
 
         // Create and start bootstrap server
-        helper.createBootstrapServer(null, helper.unsecuredBootstrapWithAutoID());
-        helper.bootstrapServer.start();
+        bootstrapServer = givenBootstrapServer.build();
+        bootstrapServer.start();
 
         // Create Client with bootstrap server config at /0/10
-        helper.createClient(helper.withoutSecurityAndInstanceId(10), null);
-        helper.assertClientNotRegisterered();
+        client = givenClient.connectingTo(bootstrapServer).usingBootstrapServerId(10).build();
+        assertThat(client).isNotRegisteredAt(server);
 
-        // Start BS.
-        // Server will delete /0 but Client will not delete /0/10 instance (because bs server is not deletable)
-        // Then a new BS server will be written at /0/0
-        //
-        // So bootstrap should failed because 2 bs server in Security Object is not a valid state.
-        // see https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/523
-        helper.client.start();
+        // Add config for this client
+        bootstrapServer.getConfigStore().add(client.getEndpointName(), //
+                givenBootstrapConfig() //
+                        .adding(givenProtocol, bootstrapServer, 0) // with bootstrap server ID = 0
+                        .adding(givenProtocol, server) //
+                        .usingAutoIdForSecurityObject() //
+                        .build());
+
+        // Start it and wait for registration
+        client.start();
 
         // ensure bootstrap session succeed
-        helper.waitForBootstrapFinishedAtClientSide(1);
-        helper.waitForBootstrapSuccessAtServerSide(1);
-        helper.waitForRegistrationAtServerSide(1);
-        helper.assertClientRegisterered();
+        server.waitForNewRegistrationOf(client);
+        client.waitForBootstrapSuccess(bootstrapServer, 1, TimeUnit.SECONDS);
+        bootstrapServer.verifyForSuccessfullBootstrap();
+        assertThat(client).isRegisteredAt(server);
     }
 
-    @Test
-    public void bootstrap_delete_access_control_and_connectivity_statistics() {
+    @TestAllTransportLayer
+    public void bootstrap_delete_access_control_and_connectivity_statistics(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider,
+            String givenBootstrapServerEndpointProvider) throws InvalidConfigurationException {
+
         // Create DM Server without security & start it
-        helper.createServer();
-        helper.server.start();
+        server = givenServer.build();
+        server.start();
 
         // Create and start bootstrap server
-        helper.createBootstrapServer(null,
-                helper.deleteSecurityStore(LwM2mId.ACCESS_CONTROL, LwM2mId.CONNECTIVITY_STATISTICS));
-        helper.bootstrapServer.start();
+        bootstrapServer = givenBootstrapServer.build();
+        bootstrapServer.start();
 
-        // Create Client and check it is not already registered
-        ObjectsInitializer initializer = new TestObjectsInitializer();
-        initializer.setInstancesForObject(LwM2mId.ACCESS_CONTROL, new SimpleInstanceEnabler());
-        initializer.setInstancesForObject(LwM2mId.CONNECTIVITY_STATISTICS, new SimpleInstanceEnabler());
-        initializer.setInstancesForObject(LwM2mId.LOCATION, new SimpleInstanceEnabler());
-        helper.createClient(helper.withoutSecurity(), initializer);
-        helper.assertClientNotRegisterered();
+        // Create Client
+        client = givenClient.connectingTo(bootstrapServer) //
+                .withOneSimpleInstancesForObjects(LwM2mId.LOCATION).build();
 
-        // Start it and wait for bootstrap finished
-        helper.client.start();
-        helper.waitForBootstrapFinishedAtClientSide(1);
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Add config for this client
+        bootstrapServer.getConfigStore().add(client.getEndpointName(), //
+                givenBootstrapConfig() //
+                        .deleting(LwM2mId.ACCESS_CONTROL, TestLwM2mId.TEST_OBJECT) //
+                        .adding(givenProtocol, bootstrapServer) //
+                        .adding(givenProtocol, server) //
+                        .build());
+
+        // Start it and wait for registration
+        client.start();
+
+        // ensure bootstrap session succeed
+        server.waitForNewRegistrationOf(client);
+        client.waitForBootstrapSuccess(bootstrapServer, 1, TimeUnit.SECONDS);
+        bootstrapServer.verifyForSuccessfullBootstrap();
+        assertThat(client).isRegisteredAt(server);
 
         // ensure instances are deleted
-        ReadResponse response = helper.client.getObjectTree().getObjectEnabler(LwM2mId.ACCESS_CONTROL)
+        ReadResponse response = client.getObjectTree().getObjectEnabler(LwM2mId.ACCESS_CONTROL)
                 .read(ServerIdentity.SYSTEM, new ReadRequest(LwM2mId.ACCESS_CONTROL));
-        assertTrue(((LwM2mObject) response.getContent()).getInstances().isEmpty(), "ACL instance is not deleted");
+        assertThat(((LwM2mObject) response.getContent()).getInstances()).as("ACL instances").isEmpty();
 
-        response = helper.client.getObjectTree().getObjectEnabler(LwM2mId.CONNECTIVITY_STATISTICS)
-                .read(ServerIdentity.SYSTEM, new ReadRequest(LwM2mId.CONNECTIVITY_STATISTICS));
-        assertTrue(((LwM2mObject) response.getContent()).getInstances().isEmpty(),
-                "Connectvity instance is not deleted");
+        response = client.getObjectTree().getObjectEnabler(TestLwM2mId.TEST_OBJECT).read(ServerIdentity.SYSTEM,
+                new ReadRequest(TestLwM2mId.TEST_OBJECT));
+        assertThat(((LwM2mObject) response.getContent()).getInstances()).as("Test Object instances").isEmpty();
 
         // ensure other instances are not deleted.
-        response = helper.client.getObjectTree().getObjectEnabler(LwM2mId.DEVICE).read(ServerIdentity.SYSTEM,
+        response = client.getObjectTree().getObjectEnabler(LwM2mId.DEVICE).read(ServerIdentity.SYSTEM,
                 new ReadRequest(LwM2mId.DEVICE));
-        assertFalse(((LwM2mObject) response.getContent()).getInstances().isEmpty(), "Device instance is deleted");
+        assertThat(((LwM2mObject) response.getContent()).getInstances()).as("DEVICE instances").isNotEmpty();
 
-        response = helper.client.getObjectTree().getObjectEnabler(LwM2mId.SECURITY).read(ServerIdentity.SYSTEM,
+        response = client.getObjectTree().getObjectEnabler(LwM2mId.SECURITY).read(ServerIdentity.SYSTEM,
                 new ReadRequest(LwM2mId.SECURITY));
-        assertFalse(((LwM2mObject) response.getContent()).getInstances().isEmpty(), "Security instance is deleted");
+        assertThat(((LwM2mObject) response.getContent()).getInstances()).as("SECURITY instances").isNotEmpty();
 
-        response = helper.client.getObjectTree().getObjectEnabler(LwM2mId.LOCATION).read(ServerIdentity.SYSTEM,
+        response = client.getObjectTree().getObjectEnabler(LwM2mId.LOCATION).read(ServerIdentity.SYSTEM,
                 new ReadRequest(LwM2mId.LOCATION));
-        assertFalse(((LwM2mObject) response.getContent()).getInstances().isEmpty(), "Location instance is deleted");
+        assertThat(((LwM2mObject) response.getContent()).getInstances()).as("LOCATION instances").isNotEmpty();
     }
 
-    @Test
-    public void bootstrapDeleteAll() {
+    @TestAllTransportLayer
+    public void bootstrapDeleteAll(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider, String givenBootstrapServerEndpointProvider)
+            throws InvalidConfigurationException {
         // Create DM Server without security & start it
-        helper.createServer();
-        helper.server.start();
+        server = givenServer.build();
+        server.start();
 
         // Create and start bootstrap server
-        helper.createBootstrapServer(null, helper.deleteSecurityStore("/"));
-        helper.bootstrapServer.start();
+        bootstrapServer = givenBootstrapServer.build();
+        bootstrapServer.start();
 
-        // Create Client and check it is not already registered
-        ObjectsInitializer initializer = new TestObjectsInitializer();
-        initializer.setInstancesForObject(LwM2mId.ACCESS_CONTROL, new SimpleInstanceEnabler());
-        initializer.setInstancesForObject(LwM2mId.CONNECTIVITY_STATISTICS, new SimpleInstanceEnabler());
-        helper.createClient(helper.withoutSecurity(), initializer);
-        helper.assertClientNotRegisterered();
+        // Create Client
+        client = givenClient.connectingTo(bootstrapServer) //
+                .withOneSimpleInstancesForObjects(LwM2mId.LOCATION).build();
 
-        // Start it and wait for bootstrap finished
-        helper.client.start();
-        helper.waitForBootstrapFinishedAtClientSide(1);
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Add config for this client
+        bootstrapServer.getConfigStore().add(client.getEndpointName(), //
+                givenBootstrapConfig() //
+                        .deletingAll() //
+                        .build());
+
+        // Start it and wait for registration
+        client.start();
+
+        // ensure bootstrap session succeed
+        client.waitForBootstrapSuccess(bootstrapServer, 1, TimeUnit.SECONDS);
 
         // ensure instances are deleted except device instance and bootstrap server
-        for (LwM2mObjectEnabler enabler : helper.client.getObjectTree().getObjectEnablers().values()) {
+        for (LwM2mObjectEnabler enabler : client.getObjectTree().getObjectEnablers().values()) {
             ReadResponse response = enabler.read(ServerIdentity.SYSTEM, new ReadRequest(enabler.getId()));
             LwM2mObject responseValue = (LwM2mObject) response.getContent();
             if (enabler.getId() == LwM2mId.DEVICE) {
-                assertTrue(responseValue.getInstances().size() == 1, "The Device instance should still be here");
+                assertThat(responseValue.getInstances()).as("Devices instances").hasSize(1);
             } else if (enabler.getId() == LwM2mId.SECURITY) {
-                assertTrue(((LwM2mObject) response.getContent()).getInstances().size() == 1,
-                        "Only bootstrap security instance should be here");
+                assertThat(responseValue.getInstances()).as("Security instances").hasSize(1);
                 LwM2mObjectInstance securityInstance = responseValue.getInstances().values().iterator().next();
-                assertTrue(securityInstance.getResource(1).getValue() == Boolean.TRUE,
-                        "Only bootstrap security instance should be here");
+                assertThat(securityInstance.getResource(1).getValue()).isEqualTo(Boolean.TRUE);
             } else {
-                assertTrue(responseValue.getInstances().isEmpty(),
-                        enabler.getObjectModel().name + " instance is not deleted");
+                assertThat(responseValue.getInstances()).as(enabler.getObjectModel().name + " instances").isEmpty();
             }
         }
     }
 
-    @Test
-    public void bootstrapWithAcl() {
+    @TestAllTransportLayer
+    public void bootstrapWithAcl(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider, String givenBootstrapServerEndpointProvider)
+            throws InvalidConfigurationException {
         // Create DM Server without security & start it
-        helper.createServer();
-        helper.server.start();
+        server = givenServer.build();
+        server.start();
 
         // Create and start bootstrap server
-        helper.createBootstrapServer(null, helper.unsecuredWithAclBootstrapStore());
-        helper.bootstrapServer.start();
+        bootstrapServer = givenBootstrapServer.build();
+        bootstrapServer.start();
 
-        // Create Client and check it is not already registered
-        ObjectsInitializer initializer = new TestObjectsInitializer();
-        initializer.setInstancesForObject(LwM2mId.ACCESS_CONTROL, new SimpleInstanceEnabler());
-        helper.createClient(helper.withoutSecurity(), initializer);
-        helper.assertClientNotRegisterered();
+        // Create Client
+        client = givenClient.connectingTo(bootstrapServer) //
+                .withOneSimpleInstancesForObjects(LwM2mId.ACCESS_CONTROL).build();
+
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Define ACL
+        List<ACLConfig> acls = new ArrayList<>();
+        ACLConfig aclConfig = new ACLConfig();
+        aclConfig.objectId = 3;
+        aclConfig.objectInstanceId = 0;
+        HashMap<Integer, Long> acl = new HashMap<Integer, Long>();
+        acl.put(3333, 1l); // server with short id 3333 has just read(1) right on device object (3/0)
+        aclConfig.acls = acl;
+        aclConfig.AccessControlOwner = 2222;
+        acls.add(aclConfig);
+
+        aclConfig = new ACLConfig();
+        aclConfig.objectId = 4;
+        aclConfig.objectInstanceId = 0;
+        aclConfig.AccessControlOwner = 2222;
+        acls.add(aclConfig);
+
+        // Add config for this client
+        bootstrapServer.getConfigStore().add(client.getEndpointName(), //
+                givenBootstrapConfig() //
+                        .adding(givenProtocol, bootstrapServer) // with bootstrap server ID = 0
+                        .adding(givenProtocol, server) //
+                        .adding(acls) //
+                        .build());
 
         // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
+        client.start();
 
-        // check the client is registered
-        helper.assertClientRegisterered();
+        // ensure bootstrap session succeed
+        client.waitForBootstrapSuccess(bootstrapServer, 1, TimeUnit.SECONDS);
 
         // ensure ACL is correctly set
-        ReadResponse response = helper.client.getObjectTree().getObjectEnabler(2).read(ServerIdentity.SYSTEM,
+        ReadResponse response = client.getObjectTree().getObjectEnabler(2).read(ServerIdentity.SYSTEM,
                 new ReadRequest(2));
-        LwM2mObject acl = (LwM2mObject) response.getContent();
-        assertThat(acl.getInstances().keySet(), hasItems(0, 1));
-        LwM2mObjectInstance instance = acl.getInstance(0);
-        assertEquals(3l, instance.getResource(0).getValue());
-        assertEquals(0l, instance.getResource(1).getValue());
-        assertEquals(1l, instance.getResource(2).getValue(3333));
-        assertEquals(2222l, instance.getResource(3).getValue());
-        instance = acl.getInstance(1);
-        assertEquals(4l, instance.getResource(0).getValue());
-        assertEquals(0l, instance.getResource(1).getValue());
-        assertEquals(2222l, instance.getResource(3).getValue());
-    }
+        LwM2mObject aclObject = (LwM2mObject) response.getContent();
 
-    @Test
-    public void bootstrapSecureWithPSK() {
-        // Create DM Server without security & start it
-        helper.createServer();
-        helper.server.start();
+        assertThat(aclObject.getInstances()).allSatisfy((i, instance) -> {
+            ACLConfig expectedACL = acls.get(i);
+            assertThat(instance.getResource(0).getValue()).isEqualTo((long) expectedACL.objectId);
+            assertThat(instance.getResource(1).getValue()).isEqualTo((long) expectedACL.objectInstanceId);
+            assertThat(instance.getResource(3).getValue()).isEqualTo((long) expectedACL.AccessControlOwner);
 
-        // Create and start bootstrap server
-        helper.createBootstrapServer(helper.bsSecurityStore(SecurityMode.PSK));
-        helper.bootstrapServer.start();
-
-        // Create PSK Client and check it is not already registered
-        helper.createPSKClient(GOOD_PSK_ID, GOOD_PSK_KEY);
-        helper.assertClientNotRegisterered();
-
-        // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-
-        // check the client is registered
-        helper.assertClientRegisterered();
-    }
-
-    @Test
-    public void bootstrapSecureWithBadPSKKey() {
-        // Create DM Server without security & start it
-        helper.createServer();
-        helper.server.start();
-
-        // Create and start bootstrap server
-        helper.createBootstrapServer(helper.bsSecurityStore(SecurityMode.PSK));
-        helper.bootstrapServer.start();
-
-        // Create PSK Client with bad credentials and check it is not already registered
-        helper.createRPKClient();
-        helper.assertClientNotRegisterered();
-
-        // Start it and wait for registration
-        helper.client.start();
-        helper.ensureNoRegistration(1);
-
-        // check the client is not registered
-        helper.assertClientNotRegisterered();
-    }
-
-    @Test
-    public void bootstrapSecureWithRPK() {
-        // Create DM Server without security & start it
-        helper.createServer();
-        helper.server.start();
-
-        // Create and start bootstrap server
-        helper.createBootstrapServer(helper.bsSecurityStore(SecurityMode.RPK));
-        helper.bootstrapServer.start();
-
-        // Create RPK Client and check it is not already registered
-        helper.createRPKClient();
-        helper.assertClientNotRegisterered();
-
-        // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-
-        // check the client is registered
-        helper.assertClientRegisterered();
-    }
-
-    @Test
-    public void bootstrapToPSKServer() throws NonUniqueSecurityInfoException {
-        // Create DM Server & start it
-        helper.createServer(); // default server support PSK
-        helper.server.start();
-
-        // Create and start bootstrap server
-        helper.createBootstrapServer(null, helper.pskBootstrapStore());
-        helper.bootstrapServer.start();
-
-        // Create Client and check it is not already registered
-        helper.createClient();
-        helper.assertClientNotRegisterered();
-
-        // Add client credentials to the server
-        helper.getSecurityStore()
-                .add(SecurityInfo.newPreSharedKeyInfo(helper.getCurrentEndpoint(), GOOD_PSK_ID, GOOD_PSK_KEY));
-
-        // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-
-        // check the client is registered
-        helper.assertClientRegisterered();
-    }
-
-    @Test
-    public void bootstrapToRPKServer() throws NonUniqueSecurityInfoException {
-        // Create DM Server with RPK support & start it
-        helper.createServerWithRPK();
-        helper.server.start();
-
-        // Create and start bootstrap server
-        helper.createBootstrapServer(null, helper.rpkBootstrapStore());
-        helper.bootstrapServer.start();
-
-        // Create Client and check it is not already registered
-        helper.createClient();
-        helper.assertClientNotRegisterered();
-
-        // Add client credentials to the server
-        helper.getSecurityStore()
-                .add(SecurityInfo.newRawPublicKeyInfo(helper.getCurrentEndpoint(), helper.clientPublicKey));
-
-        // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-
-        // check the client is registered
-        helper.assertClientRegisterered();
-    }
-
-    @Test
-    public void bootstrapUnsecuredToServerWithOscore() throws NonUniqueSecurityInfoException {
-        helper.createOscoreServer();
-        helper.server.start();
-
-        helper.createBootstrapServer(null, helper.unsecuredBootstrapStoreWithOscoreServer());
-        helper.bootstrapServer.start();
-
-        // Check client is not registered
-        helper.createClient();
-        helper.assertClientNotRegisterered();
-
-        helper.getSecurityStore()
-                .add(SecurityInfo.newOscoreInfo(helper.getCurrentEndpoint(), getServerOscoreSetting()));
-
-        // Start it and wait for registration
-        helper.client.start();
-
-        helper.waitForRegistrationAtServerSide(1);
-
-        // Check client is well registered
-        helper.assertClientRegisterered();
-    }
-
-    @Test
-    public void bootstrapViaOscoreToServerWithOscore() throws NonUniqueSecurityInfoException {
-        helper.createOscoreServer();
-        helper.server.start();
-
-        helper.createOscoreBootstrapServer(helper.bsOscoreSecurityStore(),
-                helper.oscoreBootstrapStoreWithOscoreServer());
-        helper.bootstrapServer.start();
-
-        // Check client is not registered
-        helper.createOscoreOnlyBootstrapClient();
-        helper.assertClientNotRegisterered();
-
-        helper.getSecurityStore()
-                .add(SecurityInfo.newOscoreInfo(helper.getCurrentEndpoint(), getServerOscoreSetting()));
-
-        // Start it and wait for registration
-        helper.client.start();
-
-        helper.waitForRegistrationAtServerSide(1);
-
-        // Check client is well registered
-        helper.assertClientRegisterered();
-    }
-
-    @Test
-    public void bootstrapViaOscoreToUnsecuredServer() throws OSException {
-        helper.createServer();
-        helper.server.start();
-
-        helper.createOscoreBootstrapServer(helper.bsOscoreSecurityStore(),
-                helper.oscoreBootstrapStoreWithUnsecuredServer());
-        helper.bootstrapServer.start();
-
-        // Check client is not registered
-        helper.createOscoreOnlyBootstrapClient();
-        helper.assertClientNotRegisterered();
-
-        // Start it and wait for registration
-        helper.client.start();
-
-        helper.waitForRegistrationAtServerSide(1);
-
-        // Check client is well registered
-        helper.assertClientRegisterered();
+            if (expectedACL.acls != null) {
+                for (Entry<Integer, Long> entry : expectedACL.acls.entrySet()) {
+                    assertThat(instance.getResource(2).getValue(entry.getKey())).isEqualTo((long) entry.getValue());
+                }
+            }
+        });
     }
 }

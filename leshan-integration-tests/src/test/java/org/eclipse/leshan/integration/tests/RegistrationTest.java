@@ -18,20 +18,23 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.LIFETIME;
-import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.linkParser;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.eclipse.leshan.core.ResponseCode.CONTENT;
+import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
+import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertArg;
+import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.ArrayList;
@@ -39,6 +42,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.coap.Request;
@@ -49,7 +54,6 @@ import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
-import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -58,243 +62,311 @@ import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
+import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
+import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
-import org.eclipse.leshan.integration.tests.util.Callback;
-import org.eclipse.leshan.integration.tests.util.IntegrationTestHelper;
+import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
+import org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder;
+import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
+import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
+import org.eclipse.leshan.integration.tests.util.junit5.extensions.BeforeEachParameterizedResolver;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
+@ExtendWith(BeforeEachParameterizedResolver.class)
 public class RegistrationTest {
 
-    protected IntegrationTestHelper helper = new IntegrationTestHelper();
+    private static final long SHORT_LIFETIME = 2; // seconds
+
+    /*---------------------------------/
+     *  Parameterized Tests
+     * -------------------------------*/
+    @ParameterizedTest(name = "{0} - Client using {1} - Server using {2}")
+    @MethodSource("transports")
+    @Retention(RetentionPolicy.RUNTIME)
+    private @interface TestAllTransportLayer {
+    }
+
+    static Stream<org.junit.jupiter.params.provider.Arguments> transports() {
+        return Stream.of(//
+                // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider
+                arguments(Protocol.COAP, "Californium", "Californium"));
+    }
+
+    /*---------------------------------/
+     *  Set-up and Tear-down Tests
+     * -------------------------------*/
+
+    LeshanTestServer server;
+    LeshanTestClientBuilder givenClient;
+    LeshanTestClient client;
 
     @BeforeEach
-    public void start() {
-        helper.initialize();
-        helper.createServer();
-        helper.server.start();
-        helper.createClient();
+    public void start(Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider) {
+        server = givenServerUsing(givenProtocol).with(givenServerEndpointProvider).build();
+        server.start();
+        givenClient = givenClientUsing(givenProtocol).with(givenClientEndpointProvider).connectingTo(server);
     }
 
     @AfterEach
     public void stop() throws InterruptedException {
-        helper.client.destroy(true);
-        helper.server.destroy();
-        helper.dispose();
+        if (client != null)
+            client.destroy(false);
+        if (server != null)
+            server.destroy();
     }
 
-    @Test
-    public void register_update_deregister() throws LinkParseException {
+    protected LeshanTestServerBuilder givenServerUsing(Protocol givenProtocol) {
+        return new LeshanTestServerBuilder(givenProtocol);
+    }
+
+    /*---------------------------------/
+     *  Tests
+     * -------------------------------*/
+    @TestAllTransportLayer
+    public void register_update_deregister(Protocol protocol, String clientEndpointProvider,
+            String serverEndpointProvider) throws LinkParseException {
+
         // Check client is not registered
-        helper.assertClientNotRegisterered();
+        client = givenClient.usingLifeTimeOf(SHORT_LIFETIME, TimeUnit.SECONDS).build();
+        assertThat(client).isNotRegisteredAt(server);
 
         // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        client.waitForRegistrationTo(server);
 
         // Check client is well registered
-        helper.assertClientRegisterered();
-        assertArrayEquals(linkParser.parseCoreLinkFormat(
-                "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1>;ver=1.1,</1/0>,</2>,</3>;ver=1.1,</3/0>,</3442/0>"
-                        .getBytes()),
-                helper.getCurrentRegistration().getObjectLinks());
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
+        assertThat(registration.getObjectLinks()).isLikeLinks(
+                "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1>;ver=1.1,</1/0>,</2>,</3>;ver=1.1,</3/0>,</3442/0>");
 
         // Check for update
-        helper.waitForUpdateAtClientSide(LIFETIME);
-        helper.assertClientRegisterered();
+        client.waitForUpdateTo(server, SHORT_LIFETIME, TimeUnit.SECONDS);
+        server.waitForUpdateOf(registration);
+        assertThat(client).isRegisteredAt(server);
 
         // Check deregistration
-        helper.client.stop(true);
-        helper.waitForDeregistrationAtServerSide(1);
-        helper.assertClientNotRegisterered();
+        client.stop(true);
+        server.waitForDeregistrationOf(registration);
+        assertThat(client).isNotRegisteredAt(server);
     }
 
-    @Test
-    public void deregister_cancel_multiple_pending_request() throws InterruptedException, LinkParseException {
+    @TestAllTransportLayer
+    public void deregister_cancel_multiple_pending_request(Protocol protocol, String clientEndpointProvider,
+            String serverEndpointProvider) throws InterruptedException, LinkParseException {
         // Check client is not registered
-        helper.assertClientNotRegisterered();
+        client = givenClient.build();
+        assertThat(client).isNotRegisteredAt(server);
 
         // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        client.waitForRegistrationTo(server);
 
         // Check client is well registered
-        helper.assertClientRegisterered();
-        assertArrayEquals(linkParser.parseCoreLinkFormat(
-                "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1>;ver=1.1,</1/0>,</2>,</3>;ver=1.1,</3/0>,</3442/0>"
-                        .getBytes()),
-                helper.getCurrentRegistration().getObjectLinks());
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
 
         // Stop client with out de-registration
-        helper.waitForRegistrationAtClientSide(1);
-        helper.client.stop(false);
+        client.stop(false);
 
         // Send multiple reads which should be retransmitted.
-        List<Callback<ReadResponse>> callbacks = new ArrayList<>();
+        int numberOfRequests = 4;
+        List<ResponseCallback<ReadResponse>> responseCallbacks = new ArrayList<>(numberOfRequests);
+        List<ErrorCallback> errorCallbacks = new ArrayList<>(numberOfRequests);
 
-        for (int index = 0; index < 4; ++index) {
-            Callback<ReadResponse> callback = new Callback<>();
-            helper.server.send(helper.getCurrentRegistration(), new ReadRequest(3, 0, 1), callback, callback);
-            callbacks.add(callback);
+        for (int index = 0; index < numberOfRequests; ++index) {
+            // create mock and store it
+            @SuppressWarnings("unchecked")
+            ResponseCallback<ReadResponse> responseCallback = mock(ResponseCallback.class);
+            ErrorCallback errorCallback = mock(ErrorCallback.class);
+            responseCallbacks.add(responseCallback);
+            errorCallbacks.add(errorCallback);
+
+            // send request
+            server.send(registration, new ReadRequest(3, 0, 1), responseCallback, errorCallback);
         }
 
         // Restart client (de-registration/re-registration)
-        helper.client.start();
+        client.start();
 
         // Check the request was cancelled.
-        int index = 0;
-        for (Callback<ReadResponse> callback : callbacks) {
-            boolean timedout = !callback.waitForResponse(1000);
-            assertFalse(timedout, "Response or Error expected, no timeout, call " + index);
-            assertTrue(callback.isCalled().get(), "Response or Error expected, call " + index);
-            assertNull(callback.getResponse(), "No response expected, call " + index);
-            assertNotNull(callback.getException(), "Exception expected, call " + index);
-            ++index;
+        for (int index = 0; index < numberOfRequests; ++index) {
+            verify(errorCallbacks.get(index), timeout(1000).times(1)) //
+                    .onError(assertArg(e -> assertThat(e).isExactlyInstanceOf(RequestCanceledException.class)));
         }
+        // and we don't receive any response.
+        for (int index = 0; index < numberOfRequests; ++index) {
+            verify(responseCallbacks.get(index), never()).onResponse(any());
+        }
+
     }
 
-    @Test
-    public void register_update_deregister_reregister() throws NonUniqueSecurityInfoException, InterruptedException {
+    @TestAllTransportLayer
+    public void register_update_deregister_reregister(Protocol protocol, String clientEndpointProvider,
+            String serverEndpointProvider) throws NonUniqueSecurityInfoException, InterruptedException {
         // Check client is not registered
-        helper.assertClientNotRegisterered();
+        client = givenClient.usingLifeTimeOf(SHORT_LIFETIME, TimeUnit.SECONDS).build();
+        assertThat(client).isNotRegisteredAt(server);
 
         // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        client.waitForRegistrationTo(server);
 
         // Check client is well registered
-        helper.assertClientRegisterered();
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
 
         // Check for update
-        helper.waitForUpdateAtClientSide(LIFETIME);
-        helper.assertClientRegisterered();
+        client.waitForUpdateTo(server, SHORT_LIFETIME, TimeUnit.SECONDS);
+        server.waitForUpdateOf(registration);
+        assertThat(client).isRegisteredAt(server);
 
-        // Check de-registration
-        helper.client.stop(true);
-        helper.waitForDeregistrationAtServerSide(1);
-        helper.assertClientNotRegisterered();
+        // Check deregistration
+        client.stop(true);
+        server.waitForDeregistrationOf(registration);
+        client.waitForDeregistrationTo(server);
+        assertThat(client).isNotRegisteredAt(server);
 
         // Check new registration
-        helper.waitForDeregistrationAtClientSide(1);
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-        helper.assertClientRegisterered();
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        client.waitForRegistrationTo(server);
+        assertThat(client).isRegisteredAt(server);
     }
 
-    @Test
-    public void register_update_reregister() throws NonUniqueSecurityInfoException, InterruptedException {
+    @TestAllTransportLayer
+    public void register_update_reregister(Protocol protocol, String clientEndpointProvider,
+            String serverEndpointProvider) throws NonUniqueSecurityInfoException, InterruptedException {
         // Check client is not registered
-        helper.assertClientNotRegisterered();
+        client = givenClient.usingLifeTimeOf(SHORT_LIFETIME, TimeUnit.SECONDS).build();
+        assertThat(client).isNotRegisteredAt(server);
 
         // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        client.waitForRegistrationTo(server);
 
         // Check client is well registered
-        helper.assertClientRegisterered();
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
 
         // Check for update
-        helper.waitForUpdateAtClientSide(LIFETIME);
-        helper.assertClientRegisterered();
+        client.waitForUpdateTo(server, SHORT_LIFETIME, TimeUnit.SECONDS);
+        server.waitForUpdateOf(registration);
+        assertThat(client).isRegisteredAt(server);
 
         // check stop do not de-register
-        helper.client.stop(false);
-        helper.ensureNoDeregistration(1);
-        helper.assertClientRegisterered();
+        client.stop(false);
+        server.ensureNoDeregistration();
+        assertThat(client).isRegisteredAt(server);
 
         // check new registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
-        helper.assertClientRegisterered();
+        client.start();
+        server.waitForReRegistrationOf(registration);
+        assertThat(client).isRegisteredAt(server);
     }
 
-    @Test
-    public void register_observe_deregister_observe() throws NonUniqueSecurityInfoException, InterruptedException {
+    @TestAllTransportLayer
+    public void register_observe_deregister_observe(Protocol protocol, String clientEndpointProvider,
+            String serverEndpointProvider) throws NonUniqueSecurityInfoException, InterruptedException {
+        // TODO java-coap does not raise expected SendFailedException at the end of this tests
+        // But not sure what should be the right behavior.
+        // Waiting for https://github.com/open-coap/java-coap/issues/36 before to move forward on this.
+        assumeTrue(serverEndpointProvider.equals("Californium"));
+
         // Check client is not registered
-        helper.assertClientNotRegisterered();
+        client = givenClient.build();
+        assertThat(client).isNotRegisteredAt(server);
 
         // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        client.waitForRegistrationTo(server);
 
         // Check client is well registered
-        helper.assertClientRegisterered();
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
 
         // observe device timezone
-        ObserveResponse observeResponse = helper.server.send(helper.getCurrentRegistration(), new ObserveRequest(3, 0));
-        assertEquals(ResponseCode.CONTENT, observeResponse.getCode());
-        assertNotNull(observeResponse.getCoapResponse());
-        assertThat(observeResponse.getCoapResponse(), is(instanceOf(Response.class)));
+        ObserveResponse observeResponse = server.send(registration, new ObserveRequest(3, 0));
+        assertThat(observeResponse) //
+                .hasCode(CONTENT) //
+                .hasValidUnderlyingResponseFor(serverEndpointProvider);
 
         // check observation registry is not null
-        Registration currentRegistration = helper.getCurrentRegistration();
-        Set<Observation> observations = helper.server.getObservationService().getObservations(currentRegistration);
-        assertEquals(1, observations.size());
-        SingleObservation obs = (SingleObservation) observations.iterator().next();
-        assertEquals(currentRegistration.getId(), obs.getRegistrationId());
-        assertEquals(new LwM2mPath(3, 0), obs.getPath());
+        Set<Observation> observations = server.getObservationService().getObservations(registration);
+        assertThat(observations) //
+                .hasSize(1) //
+                .first().isInstanceOfSatisfying(SingleObservation.class, obs -> {
+                    assertThat(obs.getRegistrationId()).isEqualTo(registration.getId());
+                    assertThat(obs.getPath()).isEqualTo(new LwM2mPath(3, 0));
+                });
 
         // Check de-registration
-        helper.waitForRegistrationAtClientSide(1);
-        helper.client.stop(true);
-        helper.waitForDeregistrationAtServerSide(1);
-        helper.assertClientNotRegisterered();
-        helper.waitForDeregistrationAtClientSide(1);
-        observations = helper.server.getObservationService().getObservations(currentRegistration);
-        assertTrue(observations.isEmpty());
+        client.stop(true);
+        server.waitForDeregistrationOf(registration, observations);
+        assertThat(client).isNotRegisteredAt(server);
+        client.waitForDeregistrationTo(server);
+        observations = server.getObservationService().getObservations(registration);
+        assertThat(observations).isEmpty();
 
         // try to send a new observation
-        try {
-            observeResponse = helper.server.send(currentRegistration, new ObserveRequest(3, 0), 50);
-        } catch (SendFailedException e) {
-            return;
-        }
-        fail("Observe request should NOT be sent");
+        assertThrowsExactly(SendFailedException.class, () -> server.send(registration, new ObserveRequest(3, 0), 50));
     }
 
-    @Test
-    public void register_with_additional_attributes() throws InterruptedException, LinkParseException {
-        // Create client with additional attributes
-        Map<String, String> additionalAttributes = new HashMap<>();
-        additionalAttributes.put("key1", "value1");
-        additionalAttributes.put("imei", "2136872368");
-        helper.createClient(additionalAttributes);
+    @TestAllTransportLayer
+    public void register_with_additional_attributes(Protocol protocol, String clientEndpointProvider,
+            String serverEndpointProvider) throws InterruptedException, LinkParseException {
 
-        // Check registration
-        helper.assertClientNotRegisterered();
+        // Create client with additional attributes
+        Map<String, String> expectedAdditionalAttributes = new HashMap<>();
+        expectedAdditionalAttributes.put("key1", "value1");
+        expectedAdditionalAttributes.put("imei", "2136872368");
+        client = givenClient.withAdditiontalAttributes(expectedAdditionalAttributes).build();
+
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
 
         // Start it and wait for registration
-        helper.client.start();
-        helper.waitForRegistrationAtServerSide(1);
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        client.waitForRegistrationTo(server);
 
         // Check we are registered with the expected attributes
-        helper.assertClientRegisterered();
-        assertNotNull(helper.getLastRegistration());
-        assertEquals(additionalAttributes, helper.getLastRegistration().getAdditionalRegistrationAttributes());
-        assertArrayEquals(linkParser.parseCoreLinkFormat(
-                "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1>;ver=1.1,</1/0>,</2>,</3>;ver=1.1,</3/0>,</3442/0>"
-                        .getBytes()),
-                helper.getCurrentRegistration().getObjectLinks());
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
+        assertThat(registration.getAdditionalRegistrationAttributes())
+                .containsExactlyEntriesOf(expectedAdditionalAttributes);
     }
 
-    @Test
-    public void register_with_invalid_request() throws InterruptedException, IOException {
-        // Check registration
-        helper.assertClientNotRegisterered();
+    // TODO should maybe moved as it only tests server
+    @TestAllTransportLayer
+    public void register_with_invalid_request(Protocol protocol, String clientEndpointProvider,
+            String serverEndpointProvider) throws InterruptedException, IOException {
+        // Check client is not registered
+        client = givenClient.build();
+        assertThat(client).isNotRegisteredAt(server);
 
         // create a register request without the list of supported object
         Request coapRequest = new Request(Code.POST);
-        URI destinationURI = helper.server.getEndpoint(Protocol.COAP).getURI();
+        URI destinationURI = server.getEndpoint(Protocol.COAP).getURI();
         coapRequest
                 .setDestinationContext(new AddressEndpointContext(destinationURI.getHost(), destinationURI.getPort()));
         coapRequest.getOptions().setContentFormat(ContentFormat.LINK.getCode());
         coapRequest.getOptions().addUriPath("rd");
-        coapRequest.getOptions().addUriQuery("ep=" + helper.currentEndpointIdentifier);
+        coapRequest.getOptions().addUriQuery("ep=" + client.getEndpointName());
 
         // send request
         CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
@@ -307,7 +379,7 @@ public class RegistrationTest {
 
         // check response
         Response response = coapRequest.waitForResponse(1000);
-        assertEquals(response.getCode(), org.eclipse.californium.core.coap.CoAP.ResponseCode.BAD_REQUEST);
+        assertThat(response.getCode()).isEqualTo(org.eclipse.californium.core.coap.CoAP.ResponseCode.BAD_REQUEST);
         coapEndpoint.stop();
     }
 }

@@ -17,192 +17,235 @@
 
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.util.IntegrationTestHelper.linkParser;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
+import static org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder.givenServerUsing;
+import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
-import org.eclipse.leshan.integration.tests.util.QueueModeIntegrationTestHelper;
+import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
+import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
+import org.eclipse.leshan.integration.tests.util.junit5.extensions.BeforeEachParameterizedResolver;
+import org.eclipse.leshan.server.registration.Registration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
+@ExtendWith(BeforeEachParameterizedResolver.class)
 public class QueueModeTest {
 
-    protected QueueModeIntegrationTestHelper queueModeHelper = new QueueModeIntegrationTestHelper();
-    private final long awaketime = 1; // seconds
+    private static final int AWAKETIME = 1000; // milliseconds
+
+    /*---------------------------------/
+     *  Parameterized Tests
+     * -------------------------------*/
+    @ParameterizedTest(name = "{0} - Client using {1} - Server using {2}")
+    @MethodSource("transports")
+    @Retention(RetentionPolicy.RUNTIME)
+    private @interface TestAllTransportLayer {
+    }
+
+    static Stream<org.junit.jupiter.params.provider.Arguments> transports() {
+        return Stream.of(//
+                // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider
+                arguments(Protocol.COAP, "Californium", "Californium"));
+    }
+
+    /*---------------------------------/
+     *  Set-up and Tear-down Tests
+     * -------------------------------*/
+    LeshanTestServer server;
+    LeshanTestClient client;
 
     @BeforeEach
-    public void start() {
-        queueModeHelper.initialize();
-        queueModeHelper.createServer((int) awaketime * 1000);
-        queueModeHelper.server.start();
-        queueModeHelper.createClient();
+    public void start(Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider) {
+        server = givenServerUsing(givenProtocol).with(givenServerEndpointProvider) //
+                .withAwakeTime(AWAKETIME, TimeUnit.MILLISECONDS).build();
+        server.start();
+        client = givenClientUsing(givenProtocol).with(givenClientEndpointProvider) //
+                .connectingTo(server)//
+                .usingQueueMode().build();
     }
 
     @AfterEach
     public void stop() throws InterruptedException {
-        queueModeHelper.client.destroy(true);
-        queueModeHelper.server.destroy();
-        queueModeHelper.dispose();
+        if (client != null)
+            client.destroy(false);
+        if (server != null)
+            server.destroy();
     }
 
-    @Test
-    public void awake_sleeping_awake_sleeping() throws LinkParseException {
+    /*---------------------------------/
+     *  Tests
+     * -------------------------------*/
+    @TestAllTransportLayer
+    public void awake_sleeping_awake_sleeping(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws LinkParseException {
         // Check client is not registered
-        queueModeHelper.assertClientNotRegisterered();
+        assertThat(client).isNotRegisteredAt(server);
 
-        // Start it and wait for registration
-        queueModeHelper.client.start();
+        // Start it
+        client.start();
 
         // Check that client is awake
-        queueModeHelper.waitToGetAwake(1000);
-        queueModeHelper.ensureClientAwake();
+        server.waitWakingOf(client);
+        assertThat(client).isAwakeOn(server);
 
         // Check client is well registered
-        queueModeHelper.assertClientRegisterered();
-        assertArrayEquals(linkParser.parseCoreLinkFormat(
-                "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 11542 11543\",</1>;ver=1.1,</1/0>,</2>,</3>;ver=1.1,</3/0>,</3442/0>"
-                        .getBytes()),
-                queueModeHelper.getCurrentRegistration().getObjectLinks());
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
+        assertThat(registration.getObjectLinks()).isLikeLinks(
+                "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1>;ver=1.1,</1/0>,</2>,</3>;ver=1.1,</3/0>,</3442/0>");
 
         // Wait for client awake time expiration (20% margin)
-        queueModeHelper.ensureAwakeFor(awaketime, 200);
+        assertThat(client).after((long) (AWAKETIME * 0.8), TimeUnit.MILLISECONDS).isAwakeOn(server);
 
         // Check that client is sleeping
-        queueModeHelper.ensureClientSleeping();
+        server.waitSleepingOf(client);
 
         // Trigger update manually for waking up
-        queueModeHelper.waitForRegistrationAtClientSide(1);
-        queueModeHelper.client.triggerRegistrationUpdate();
+        client.waitForRegistrationTo(server);
+        client.triggerRegistrationUpdate();
 
         // Check that client is awake
-        queueModeHelper.waitToGetAwake(1000);
-        queueModeHelper.ensureClientAwake();
+        server.waitWakingOf(client);
+        assertThat(client).isAwakeOn(server);
 
         // Wait for client awake time expiration (20% margin)
-        queueModeHelper.ensureAwakeFor(awaketime, 200);
+        assertThat(client).after((long) (AWAKETIME * 0.8), TimeUnit.MILLISECONDS).isAwakeOn(server);
 
         // Check that client is sleeping
-        queueModeHelper.ensureClientSleeping();
+        server.waitSleepingOf(client);
 
         // Stop client with out de-registration
-        queueModeHelper.client.stop(false);
+        client.stop(false);
     }
 
-    @Test
-    public void one_awake_notification() {
+    @TestAllTransportLayer
+    public void one_awake_notification(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) {
         // Check client is not registered
-        queueModeHelper.assertClientNotRegisterered();
+        assertThat(client).isNotRegisteredAt(server);
 
-        // Start it and wait for registration
-        queueModeHelper.client.start();
-
-        // Check that client is awake and only one awake notification
-        queueModeHelper.waitToGetAwake(1000);
-        queueModeHelper.ensureClientAwake();
-        assertEquals(1, queueModeHelper.presenceCounter.getNbAwake(), "Only one awake event should be received");
-
-        // Check client is well registered
-        queueModeHelper.assertClientRegisterered();
-
-        // Triggers one update
-        queueModeHelper.waitForRegistrationAtClientSide(1);
-        queueModeHelper.client.triggerRegistrationUpdate();
-        queueModeHelper.waitForUpdateAtClientSide(1);
-
-        // Check only one notification
-        assertEquals(1, queueModeHelper.presenceCounter.getNbAwake(), "Only one awake event should be received");
-
-        // Wait for client awake time expiration (20% margin)
-        queueModeHelper.ensureAwakeFor(awaketime, 200);
-
-        // Check that client is sleeping
-        queueModeHelper.ensureClientSleeping();
-
-        // Trigger update manually for waking up
-        queueModeHelper.presenceCounter.resetCounter();
-        queueModeHelper.client.triggerRegistrationUpdate();
-        queueModeHelper.waitForUpdateAtClientSide(1);
+        // Start it
+        client.start();
 
         // Check that client is awake
-        queueModeHelper.waitToGetAwake(500);
-        queueModeHelper.ensureClientAwake();
+        server.waitWakingOf(client);
+        assertThat(client).isAwakeOn(server);
+
+        // Check client is well registered
+        assertThat(client).isRegisteredAt(server);
+
+        // Triggers one update
+        client.waitForRegistrationTo(server);
+        client.triggerRegistrationUpdate();
+        client.waitForUpdateTo(server, 1, TimeUnit.SECONDS);
+
+        // Wait for client awake time expiration (20% margin)
+        assertThat(client).after((long) (AWAKETIME * 0.8), TimeUnit.MILLISECONDS).isAwakeOn(server);
+
+        // Check that client is sleeping
+        server.waitSleepingOf(client);
+        assertThat(client).isSleepingOn(server);
+
+        // Trigger update manually for waking up
+        client.triggerRegistrationUpdate();
+        client.waitForUpdateTo(server, 1, TimeUnit.SECONDS);
+
+        // Check that client is awake
+        server.waitWakingOf(client);
 
         // Triggers two updates
-        queueModeHelper.client.triggerRegistrationUpdate();
-        queueModeHelper.waitForUpdateAtClientSide(1);
-        queueModeHelper.client.triggerRegistrationUpdate();
-        queueModeHelper.waitForUpdateAtClientSide(1);
+        client.triggerRegistrationUpdate();
+        client.waitForUpdateTo(server, 1, TimeUnit.SECONDS);
+        client.triggerRegistrationUpdate();
+        client.waitForUpdateTo(server, 1, TimeUnit.SECONDS);
 
         // Check only one notification
-        assertEquals(1, queueModeHelper.presenceCounter.getNbAwake(), "Only one awake event should be received");
-
+        server.ensureNoMoreAwakeSleepingEvent(AWAKETIME / 2, TimeUnit.MILLISECONDS);
     }
 
-    @Test
-    public void sleeping_if_timeout() throws InterruptedException {
+    @TestAllTransportLayer
+    public void sleeping_if_timeout(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InterruptedException {
         // Check client is not registered
-        queueModeHelper.assertClientNotRegisterered();
+        assertThat(client).isNotRegisteredAt(server);
 
-        // Start it and wait for registration
-        queueModeHelper.client.start();
+        // Start it
+        client.start();
 
-        // Check client is well registered and awake
-        queueModeHelper.waitToGetAwake(1000);
-        queueModeHelper.ensureClientAwake();
-        queueModeHelper.assertClientRegisterered();
+        // Check that client is awake
+        server.waitWakingOf(client);
+        assertThat(client).isAwakeOn(server);
+
+        // Check client is well registered
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
 
         // Stop the client to ensure that TimeOut exception is thrown
-        queueModeHelper.client.stop(false);
+        client.stop(false);
         // Send a response with very short timeout
-        ReadResponse response = queueModeHelper.server.send(queueModeHelper.getCurrentRegistration(),
-                new ReadRequest(3, 0, 1), 1);
+        ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 1);
 
         // Check that a timeout occurs
-        queueModeHelper.ensureTimeoutException(response);
+        assertThat(response).isNull();
 
         // Check that the client is sleeping
-        queueModeHelper.ensureClientSleeping();
+        assertThat(client).isSleepingOn(server);
     }
 
-    @Test
-    public void correct_sending_when_awake() throws InterruptedException {
+    @TestAllTransportLayer
+    public void correct_sending_when_awake(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InterruptedException {
         ReadResponse response;
 
         // Check client is not registered
-        queueModeHelper.assertClientNotRegisterered();
+        assertThat(client).isNotRegisteredAt(server);
 
-        // Start it and wait for registration
-        queueModeHelper.client.start();
-
-        // Check client is well registered and awake
-        queueModeHelper.waitToGetAwake(1000);
-        queueModeHelper.ensureClientAwake();
-        queueModeHelper.assertClientRegisterered();
-
-        // Send a response a check that it is received correctly
-        response = queueModeHelper.server.send(queueModeHelper.getCurrentRegistration(), new ReadRequest(3, 0, 1));
-        queueModeHelper.ensureReceivedRequest(response);
-
-        // Wait for client awake time expiration (20% margin)
-        queueModeHelper.ensureAwakeFor(awaketime, 200);
-
-        // Check that client is sleeping
-        queueModeHelper.ensureClientSleeping();
-
-        // Trigger update manually for waking up
-        queueModeHelper.client.triggerRegistrationUpdate();
-        queueModeHelper.waitForUpdateAtClientSide(1);
+        // Start it
+        client.start();
 
         // Check that client is awake
-        queueModeHelper.waitToGetAwake(500);
-        queueModeHelper.ensureClientAwake();
+        server.waitWakingOf(client);
+        assertThat(client).isAwakeOn(server);
+
+        // Check client is well registered
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
+
+        // Send a response a check that it is received correctly
+        response = server.send(registration, new ReadRequest(3, 0, 1));
+        assertThat(response).isNotNull();
+
+        // Wait for client awake time expiration (20% margin)
+        assertThat(client).after((long) (AWAKETIME * 0.8), TimeUnit.MILLISECONDS).isAwakeOn(server);
+
+        // Check that client is sleeping
+        server.waitSleepingOf(client);
+        assertThat(client).isSleepingOn(server);
+
+        // Trigger update manually for waking up
+        client.waitForRegistrationTo(server);
+        client.triggerRegistrationUpdate();
+        client.waitForUpdateTo(server, 1, TimeUnit.SECONDS);
+
+        // Check that client is awake
+        server.waitWakingOf(client);
+        assertThat(client).isAwakeOn(server);
 
         // Send request and check that it is received correctly
-        response = queueModeHelper.server.send(queueModeHelper.getCurrentRegistration(), new ReadRequest(3, 0, 1));
-        queueModeHelper.ensureReceivedRequest(response);
+        response = server.send(registration, new ReadRequest(3, 0, 1));
+        assertThat(response).isNotNull();
     }
 }

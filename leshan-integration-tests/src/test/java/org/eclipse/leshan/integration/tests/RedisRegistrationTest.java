@@ -15,11 +15,25 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
-import org.eclipse.leshan.integration.tests.util.RedisIntegrationTestHelper;
+import org.eclipse.leshan.core.endpoint.Protocol;
+import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
+import org.eclipse.leshan.integration.tests.util.RedisTestUtil;
+import org.eclipse.leshan.server.redis.RedisRegistrationStore;
+
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.util.Pool;
 
 public class RedisRegistrationTest extends RegistrationTest {
 
-    public RedisRegistrationTest() {
-        helper = new RedisIntegrationTestHelper();
+    @Override
+    protected LeshanTestServerBuilder givenServerUsing(Protocol givenProtocol) {
+        LeshanTestServerBuilder builder = super.givenServerUsing(givenProtocol);
+
+        // Create redis store
+        Pool<Jedis> jedis = RedisTestUtil.createJedisPool();
+        // TODO use custom key when https://github.com/eclipse/leshan/issues/1249 will be available
+        builder.setRegistrationStore(new RedisRegistrationStore(jedis));
+
+        return builder;
     }
 }

@@ -50,7 +50,7 @@ import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
-import org.eclipse.leshan.integration.tests.util.RedisIntegrationTestHelper;
+import org.eclipse.leshan.integration.tests.util.RedisTestUtil;
 import org.eclipse.leshan.server.californium.observation.LwM2mObservationStore;
 import org.eclipse.leshan.server.californium.observation.ObservationSerDes;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
@@ -79,13 +79,10 @@ public class RedisRegistrationStoreTest {
     InetAddress address;
     Registration registration;
 
-    RedisIntegrationTestHelper helper;
-
     @BeforeEach
     public void setUp() throws UnknownHostException {
-        helper = new RedisIntegrationTestHelper();
         address = InetAddress.getLocalHost();
-        store = new RedisRegistrationStore(helper.createJedisPool());
+        store = new RedisRegistrationStore(RedisTestUtil.createJedisPool());
         observationStore = new LwM2mObservationStore(store, new LwM2mNotificationReceiver() {
 
             @Override

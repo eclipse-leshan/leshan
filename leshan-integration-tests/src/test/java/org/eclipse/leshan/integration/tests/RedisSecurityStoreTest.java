@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021 Sierra Wireless and others.
+ * Copyright (c) 2023 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -13,35 +13,29 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.integration.tests.send;
+package org.eclipse.leshan.integration.tests;
 
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
-import org.eclipse.leshan.server.redis.RedisRegistrationStore;
+import org.eclipse.leshan.integration.tests.util.RedisTestUtil;
+import org.eclipse.leshan.server.redis.RedisSecurityStore;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.util.Pool;
 
-public class RedisSendTest extends SendTest {
+public class RedisSecurityStoreTest extends SecurityStoreTest {
+
     @Override
     protected LeshanTestServerBuilder givenServerUsing(Protocol givenProtocol) {
         LeshanTestServerBuilder builder = super.givenServerUsing(givenProtocol);
 
         // Create redis store
-        Pool<Jedis> jedis = createJedisPool();
+        Pool<Jedis> jedis = RedisTestUtil.createJedisPool();
         // TODO use custom key when https://github.com/eclipse/leshan/issues/1249 will be available
-        builder.setRegistrationStore(new RedisRegistrationStore(jedis));
 
+        // TODO should we also use RedisRegistrationStore ?
+        // builder.setRegistrationStore(new RedisRegistrationStore(jedis));
+        builder.setSecurityStore(new RedisSecurityStore(jedis));
         return builder;
-    }
-
-    private Pool<Jedis> createJedisPool() {
-        String redisURI = System.getenv("REDIS_URI");
-        if (redisURI != null && !redisURI.isEmpty()) {
-            return new JedisPool(redisURI);
-        } else {
-            return new JedisPool();
-        }
     }
 }

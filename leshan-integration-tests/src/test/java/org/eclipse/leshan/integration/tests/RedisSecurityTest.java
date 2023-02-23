@@ -15,40 +15,27 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
-import org.eclipse.leshan.integration.tests.util.RedisSecureIntegrationTestHelper;
-import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.eclipse.leshan.core.endpoint.Protocol;
+import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
+import org.eclipse.leshan.integration.tests.util.RedisTestUtil;
+import org.eclipse.leshan.server.redis.RedisSecurityStore;
+
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.util.Pool;
 
 public class RedisSecurityTest extends SecurityTest {
-    public RedisSecurityTest() {
-        helper = new RedisSecureIntegrationTestHelper();
-    }
 
-    @Test
-    @Disabled
     @Override
-    public void registered_device_with_oscore_to_server_with_oscore()
-            throws NonUniqueSecurityInfoException, InterruptedException {
-        // TODO OSCORE : https://github.com/eclipse/leshan/pull/1180#issuecomment-1007587985
-        // Redis security store does support oscore for now.
-    }
+    protected LeshanTestServerBuilder givenServerUsing(Protocol givenProtocol) {
+        LeshanTestServerBuilder builder = super.givenServerUsing(givenProtocol);
 
-    @Test
-    @Disabled
-    @Override
-    public void registered_device_with_oscore_to_server_with_oscore_then_removed_security_info_then_server_fails_to_send_request()
-            throws NonUniqueSecurityInfoException, InterruptedException {
-        // TODO OSCORE : https://github.com/eclipse/leshan/pull/1180#issuecomment-1007587985
-        // Redis security store does support oscore for now.
-    }
+        // Create redis store
+        Pool<Jedis> jedis = RedisTestUtil.createJedisPool();
+        // TODO use custom key when https://github.com/eclipse/leshan/issues/1249 will be available
 
-    @Test
-    @Disabled
-    @Override
-    public void registered_device_with_oscore_to_server_with_oscore_then_removed_security_info_then_client_fails_to_update()
-            throws NonUniqueSecurityInfoException, InterruptedException {
-        // TODO OSCORE : https://github.com/eclipse/leshan/pull/1180#issuecomment-1007587985
-        // Redis security store does support oscore for now.
+        // TODO should we also use RedisRegistrationStore ?
+        // builder.setRegistrationStore(new RedisRegistrationStore(jedis));
+        builder.setSecurityStore(new RedisSecurityStore(jedis));
+        return builder;
     }
 }

@@ -54,6 +54,8 @@ public class LockStepLwM2mClient extends LockstepEndpoint {
     private final LwM2mModel model;
     private final LinkSerializer linkSerializer;
 
+    private final String endpointName;
+
     public LockStepLwM2mClient(final URI destination) {
         this(EndpointUriUtil.getSocketAddr(destination));
     }
@@ -66,6 +68,7 @@ public class LockStepLwM2mClient extends LockstepEndpoint {
         List<ObjectModel> models = ObjectLoader.loadDefault();
         this.model = new StaticModel(models);
         this.linkSerializer = new DefaultLinkSerializer();
+        endpointName = "leshan_test_client_" + r.nextInt();
     }
 
     public Request createCoapRequest(UplinkRequest<? extends LwM2mResponse> lwm2mReq) {
@@ -93,5 +96,9 @@ public class LockStepLwM2mClient extends LockstepEndpoint {
         // send it
         super.send(raw);
         return coapReq.getToken();
+    }
+
+    public String getEndpointName() {
+        return endpointName;
     }
 }

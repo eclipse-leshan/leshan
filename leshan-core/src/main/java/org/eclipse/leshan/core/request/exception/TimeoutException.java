@@ -17,13 +17,14 @@ package org.eclipse.leshan.core.request.exception;
 
 public class TimeoutException extends Exception {
 
+    // TODO COAP and DTLS handshake are maybe not so good abstraction.
     public enum Type {
         RESPONSE_TIMEOUT, COAP_TIMEOUT, DTLS_HANDSHAKE_TIMEOUT
     }
 
     private static final long serialVersionUID = -8966041387554358975L;
 
-    private Type type;
+    private final Type type;
 
     public TimeoutException(Type type, String message, Object... args) {
         super(String.format(message, args));
