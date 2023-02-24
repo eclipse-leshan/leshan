@@ -71,35 +71,27 @@ public class BootstrapConfig {
      */
     public ContentFormat contentFormat = null;
 
-    /**
-     * List of LWM2M path to delete.
-     */
+    /** List of LWM2M path to delete. */
     public List<String> toDelete = new ArrayList<>();
 
-    /**
-     * Map indexed by Server Instance Id. Key is the Server Instance to write.
-     */
+    /** Map indexed by Server Instance Id. Key is the Server Instance to write. */
     public Map<Integer, ServerConfig> servers = new HashMap<>();
 
-    /**
-     * Map indexed by Security Instance Id. Key is the Server Instance to write.
-     */
+    /** Map indexed by Security Instance Id. Key is the Server Instance to write. */
     public Map<Integer, ServerSecurity> security = new HashMap<>();
 
-    /**
-     * Map indexed by ACL Instance Id. Key is the ACL Instance to write.
-     */
+    /** Map indexed by ACL Instance Id. Key is the ACL Instance to write. */
     public Map<Integer, ACLConfig> acls = new HashMap<>();
 
-    /**
-     * Map indexed by OSCORE Object Instance Id. Key is the OSCORE Object Instance to write.
-     */
+    /** Map indexed by OSCORE Object Instance Id. Key is the OSCORE Object Instance to write. */
     public Map<Integer, OscoreObject> oscore = new HashMap<>();
 
     /** Server Configuration (object 1) as defined in LWM2M 1.0.x TS. */
     public static class ServerConfig {
 
-        /** Used as link to associate server Object Instance. */
+        /**
+         * Used as link to associate server Object Instance.
+         */
         public int shortId;
         /** Specify the lifetime of the registration in seconds (see Section 5.3 Registration). */
         public int lifetime = 86400;
@@ -291,7 +283,6 @@ public class BootstrapConfig {
         /**
          * The Object ID of the OSCORE Object Instance that holds the OSCORE configuration to be used by the LWM2M
          * Client to the LWM2M Server associated with this Security object.
-         *
          */
         public Integer oscoreSecurityMode;
 
@@ -341,7 +332,7 @@ public class BootstrapConfig {
          * <p>
          * Since Security v1.1
          */
-        public ULong cipherSuite = null;
+        public List<CipherSuiteId> cipherSuite = null;
 
         @Override
         public String toString() {
@@ -462,6 +453,55 @@ public class BootstrapConfig {
                     "OscoreObject [oscoreSenderId=%s, oscoreRecipientId=%s, oscoreAeadAlgorithm=%s, oscoreHmacAlgorithm=%s]",
                     Hex.encodeHexString(oscoreSenderId), Hex.encodeHexString(oscoreRecipientId), oscoreAeadAlgorithm,
                     oscoreHmacAlgorithm);
+        }
+    }
+
+    public static class CipherSuiteId {
+
+        private final byte firstByte;
+        private final byte secondByte;
+
+        /**
+         * Ciphersuite is created with 2 bytes. Possible values are described in the
+         * <a href="https://iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-4"> registry</a>.
+         *
+         * @param firstByte first byte of ciphersuite (for example 0xC0)
+         * @param secondByte second byte of ciphersuite (for example 0xA8)
+         */
+        public CipherSuiteId(byte firstByte, byte secondByte) {
+            this.firstByte = firstByte;
+            this.secondByte = secondByte;
+        }
+
+        /**
+         * Integer is split into 2 bytes for example 49320 (0xc0a8 in hex) will be split into "0xC0,0xA8". This format
+         * is used by Security Object, resource 16.
+         *
+         * @param valueFromSecurityObject Integer representing ciphersuite id
+         */
+        public CipherSuiteId(ULong valueFromSecurityObject) {
+            if (valueFromSecurityObject.intValue() < 0 || valueFromSecurityObject.intValue() > 65535)
+                throw new IllegalArgumentException("ULong value have to be between <0, 65535>");
+            this.firstByte = (byte) ((valueFromSecurityObject.intValue() >> 8) & 0xFF);
+            this.secondByte = (byte) ((valueFromSecurityObject.intValue()) & 0xFF);
+        }
+
+        /**
+         * Two bytes of ciphersuite id are concatenated into integer value. As an example bytes "0xC0,0xA8" will be
+         * concatenated into 0xc0a8 which in decimal notation is 49320.
+         *
+         * @return Integer number concatenated from 2 bytes.
+         */
+        public ULong getValueForSecurityObject() {
+            return ULong.valueOf((Byte.toUnsignedInt(firstByte) << 8) | Byte.toUnsignedInt(secondByte));
+        }
+
+        /**
+         * @return String representing hex value of concatenated two bytes.
+         */
+        @Override
+        public String toString() {
+            return String.format("%x,%x", firstByte, secondByte);
         }
     }
 
