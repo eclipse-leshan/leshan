@@ -291,7 +291,6 @@ public class BootstrapConfig {
         /**
          * The Object ID of the OSCORE Object Instance that holds the OSCORE configuration to be used by the LWM2M
          * Client to the LWM2M Server associated with this Security object.
-         *
          */
         public Integer oscoreSecurityMode;
 
@@ -341,7 +340,7 @@ public class BootstrapConfig {
          * <p>
          * Since Security v1.1
          */
-        public ULong cipherSuite = null;
+        public List<CipherSuiteId> cipherSuite = null;
 
         @Override
         public String toString() {
@@ -462,6 +461,62 @@ public class BootstrapConfig {
                     "OscoreObject [oscoreSenderId=%s, oscoreRecipientId=%s, oscoreAeadAlgorithm=%s, oscoreHmacAlgorithm=%s]",
                     Hex.encodeHexString(oscoreSenderId), Hex.encodeHexString(oscoreRecipientId), oscoreAeadAlgorithm,
                     oscoreHmacAlgorithm);
+        }
+    }
+
+    public static class CipherSuiteId {
+
+        private final byte firstByte;
+        private final byte secondByte;
+
+        /**
+         * Create {@link CipherSuiteId} from Cipher Suite value defined at IANA.
+         * <p>
+         * Possible values are described in the
+         * <a href="https://iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-4"> registry</a>.
+         * <p>
+         * This doesn't mean that Leshan supports all IANA registered Cipher Suites.
+         *
+         * @param firstByte of Cipher Suite (e.g. {@code 0xC0} for {@code TLS_PSK_WITH_AES_128_CCM_8})
+         * @param secondByte of Cipher Suite (e.g. {@code 0xA8} for {@code TLS_PSK_WITH_AES_128_CCM_8})
+         */
+        public CipherSuiteId(byte firstByte, byte secondByte) {
+            this.firstByte = firstByte;
+            this.secondByte = secondByte;
+        }
+
+        /**
+         * Create {@link CipherSuiteId} from ULong value of "DTLS/TLS Ciphersuite" resource (Id:16) from "Security"
+         * Object (Id:0).
+         * <p>
+         * As an example, the {@code TLS_PSK_WITH_AES_128_CCM_8} Cipher Suite is represented with the following string
+         * "{@code 0xC0,0xA8}". To form an integer value the two values are concatenated. In this example, the value is
+         * {@code 0xc0a8} for {@code 49320}.
+         */
+        public CipherSuiteId(ULong valueFromSecurityObject) {
+            if (valueFromSecurityObject.intValue() < 0 || valueFromSecurityObject.intValue() > 65535)
+                throw new IllegalArgumentException("ULong value MUST be a 16-bit unsigned integer (max value : 65535)");
+            this.firstByte = (byte) ((valueFromSecurityObject.intValue() >> 8) & 0xFF);
+            this.secondByte = (byte) ((valueFromSecurityObject.intValue()) & 0xFF);
+        }
+
+        /**
+         * @return Value used in "DTLS/TLS Ciphersuite" resource (Id:16) from "Security" Object (Id:0).
+         *         <p>
+         *         The two bytes from Cipher Suite id are concatenated into integer value. As an example bytes
+         *         "{@code 0xC0,0xA8}" will be concatenated into {@code 0xc0a8} which in decimal notation is
+         *         {@code 49320}.
+         */
+        public ULong getValueForSecurityObject() {
+            return ULong.valueOf((Byte.toUnsignedInt(firstByte) << 8) | Byte.toUnsignedInt(secondByte));
+        }
+
+        /**
+         * @return String representing IANA Cipher Suite Value.
+         */
+        @Override
+        public String toString() {
+            return String.format("0x%02X,0x%02X", firstByte, secondByte);
         }
     }
 
