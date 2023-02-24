@@ -352,7 +352,7 @@ public class BootstrapConfig {
          * <p>
          * Since Security v1.1
          */
-        public CipherSuiteId cipherSuite = null;
+        public CipherSuiteIds cipherSuite = null;
 
         @Override
         public String toString() {
@@ -480,36 +480,63 @@ public class BootstrapConfig {
         }
     }
 
-    public class CipherSuiteId {
+    public class CipherSuiteIds {
+        private CipherSuiteId[] values;
 
-        private final byte firstByte;
-        private final byte secondByte;
-
-        public CipherSuiteId(byte firstByte, byte secondByte) {
-            this.firstByte = firstByte;
-            this.secondByte = secondByte;
+        public CipherSuiteIds(byte[] firstBytes, byte[] secondBytes) {
+            values = new CipherSuiteId[firstBytes.length];
+            for (int i = 0; i < firstBytes.length; i++) {
+                values[i] = new CipherSuiteId(firstBytes[i], secondBytes[i]);
+            }
         }
 
-        /**
-         * The IANA TLS ciphersuite registry is maintained at
-         * https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml. As an example, the
-         * TLS_PSK_WITH_AES_128_CCM_8 ciphersuite is represented with the following string "0xC0,0xA8"
-         */
-
-        public CipherSuiteId(ULong valueFromSecurityObject) {
-            String binaryString = Long.toBinaryString(valueFromSecurityObject.longValue());
-            this.firstByte = (byte) Integer.parseInt(binaryString.substring(0, 8), 2);
-            this.secondByte = (byte) Integer.parseInt(binaryString.substring(9, 17), 2);
-
+        public CipherSuiteIds(ULong[] valuesFromSecurityObject) {
+            values = new CipherSuiteId[valuesFromSecurityObject.length];
+            for (int i = 0; i < valuesFromSecurityObject.length; i++) {
+                values[i] = new CipherSuiteId(valuesFromSecurityObject[i]);
+            }
         }
 
-        /**
-         * As an example, the TLS_PSK_WITH_AES_128_CCM_8 ciphersuite is represented with the following string
-         * "0xC0,0xA8". To form an integer value the two values are concatenated. In this example, the value is 0xc0a8
-         * or 49320.
-         */
-        public ULong getValueForSecurityObject() {
-            return ULong.valueOf(Byte.toUnsignedInt(firstByte) * 256 + Byte.toUnsignedInt(secondByte));
+        public ULong[] getULongArray() {
+            ULong[] out = new ULong[values.length];
+            for (int i = 0; i < values.length; i++) {
+                out[i] = values[i].getValueForSecurityObject();
+            }
+
+            return out;
+        }
+
+        private class CipherSuiteId {
+
+            private final byte firstByte;
+            private final byte secondByte;
+
+            public CipherSuiteId(byte firstByte, byte secondByte) {
+                this.firstByte = firstByte;
+                this.secondByte = secondByte;
+            }
+
+            /**
+             * The IANA TLS ciphersuite registry is maintained at
+             * https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml. As an example, the
+             * TLS_PSK_WITH_AES_128_CCM_8 ciphersuite is represented with the following string "0xC0,0xA8"
+             */
+
+            public CipherSuiteId(ULong valueFromSecurityObject) {
+                String binaryString = Long.toBinaryString(valueFromSecurityObject.longValue());
+                this.firstByte = (byte) Integer.parseInt(binaryString.substring(0, 8), 2);
+                this.secondByte = (byte) Integer.parseInt(binaryString.substring(9, 17), 2);
+
+            }
+
+            /**
+             * As an example, the TLS_PSK_WITH_AES_128_CCM_8 ciphersuite is represented with the following string
+             * "0xC0,0xA8". To form an integer value the two values are concatenated. In this example, the value is
+             * 0xc0a8 or 49320.
+             */
+            public ULong getValueForSecurityObject() {
+                return ULong.valueOf(Byte.toUnsignedInt(firstByte) * 256 + Byte.toUnsignedInt(secondByte));
+            }
         }
     }
 }

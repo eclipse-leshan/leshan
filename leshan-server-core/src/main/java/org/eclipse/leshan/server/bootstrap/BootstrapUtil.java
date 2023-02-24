@@ -80,8 +80,7 @@ public class BootstrapUtil {
         if (securityConfig.certificateUsage != null)
             resources.add(LwM2mSingleResource.newUnsignedIntegerResource(15, securityConfig.certificateUsage.code));
         if (securityConfig.cipherSuite != null)
-            resources.add(LwM2mSingleResource.newUnsignedIntegerResource(16,
-                    securityConfig.cipherSuite.getValueForSecurityObject()));
+            resources.add(LwM2mSingleResource.newULongArray(16, securityConfig.cipherSuite.getULongArray()));
         if (securityConfig.oscoreSecurityMode != null) {
             resources.add(LwM2mSingleResource.newObjectLinkResource(17,
                     new ObjectLink(21, securityConfig.oscoreSecurityMode)));

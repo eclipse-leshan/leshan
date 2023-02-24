@@ -181,6 +181,10 @@ public class LwM2mSingleResource implements LwM2mResource {
             throw new LwM2mNodeException("Invalid value : positive value expected for UNSIGNED_INTEGER");
     }
 
+    public static LwM2mSingleResource newULongArray(int id, ULong[] value) {
+        return new LwM2mSingleResource(id, value, Type.OPAQUE);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -206,7 +210,7 @@ public class LwM2mSingleResource implements LwM2mResource {
     }
 
     /**
-     * @exception NoSuchElementException use {@link #getValue()} instead.
+     * @throws NoSuchElementException use {@link #getValue()} instead.
      */
     @Override
     public Object getValue(int id) {
@@ -214,7 +218,7 @@ public class LwM2mSingleResource implements LwM2mResource {
     }
 
     /**
-     * @exception NoSuchElementException use {@link #getValue()} instead.
+     * @throws NoSuchElementException use {@link #getValue()} instead.
      */
     @Override
     public LwM2mResourceInstance getInstance(int id) {
@@ -222,7 +226,7 @@ public class LwM2mSingleResource implements LwM2mResource {
     }
 
     /**
-     * @exception NoSuchElementException use {@link #getValue()} instead.
+     * @throws NoSuchElementException use {@link #getValue()} instead.
      */
     @Override
     public Map<Integer, LwM2mResourceInstance> getInstances() {
