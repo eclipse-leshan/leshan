@@ -36,6 +36,7 @@ import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.core.util.datatype.ULong;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ACLConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.OscoreObject;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
@@ -79,8 +80,13 @@ public class BootstrapUtil {
             resources.add(LwM2mSingleResource.newStringResource(14, securityConfig.sni));
         if (securityConfig.certificateUsage != null)
             resources.add(LwM2mSingleResource.newUnsignedIntegerResource(15, securityConfig.certificateUsage.code));
-        if (securityConfig.cipherSuite != null)
-            resources.add(LwM2mSingleResource.newULongArray(16, securityConfig.cipherSuite.getULongArray()));
+        if (securityConfig.cipherSuite != null) {
+            List<ULong> ciperSuiteULong = new ArrayList<>();
+            for (BootstrapConfig.CipherSuiteId cipherSuiteId : securityConfig.cipherSuite) {
+                ciperSuiteULong.add(cipherSuiteId.getValueForSecurityObject());
+            }
+            resources.add(LwM2mSingleResource.newULongArray(16, (ULong[]) ciperSuiteULong.toArray()));
+        }
         if (securityConfig.oscoreSecurityMode != null) {
             resources.add(LwM2mSingleResource.newObjectLinkResource(17,
                     new ObjectLink(21, securityConfig.oscoreSecurityMode)));
