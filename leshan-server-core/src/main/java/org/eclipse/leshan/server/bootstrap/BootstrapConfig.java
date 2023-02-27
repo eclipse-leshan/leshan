@@ -96,12 +96,6 @@ public class BootstrapConfig {
      */
     public Map<Integer, OscoreObject> oscore = new HashMap<>();
 
-    @Override
-    public String toString() {
-        return String.format("BootstrapConfig [servers=%s, security=%s, acls=%s, oscore=%s]", servers, security, acls,
-                oscore);
-    }
-
     /** Server Configuration (object 1) as defined in LWM2M 1.0.x TS. */
     public static class ServerConfig {
 
@@ -500,5 +494,11 @@ public class BootstrapConfig {
         public ULong getValueForSecurityObject() {
             return ULong.valueOf(Byte.toUnsignedInt(firstByte) * 256 + Byte.toUnsignedInt(secondByte));
         }
+    }
+
+    @Override
+    public String toString() {
+        return String.format("BootstrapConfig [servers=%s, security=%s, acls=%s, oscore=%s]", servers, security, acls,
+                oscore);
     }
 }
