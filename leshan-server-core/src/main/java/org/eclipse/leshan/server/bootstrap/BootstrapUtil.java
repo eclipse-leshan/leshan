@@ -18,7 +18,9 @@ package org.eclipse.leshan.server.bootstrap;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
@@ -81,11 +83,12 @@ public class BootstrapUtil {
         if (securityConfig.certificateUsage != null)
             resources.add(LwM2mSingleResource.newUnsignedIntegerResource(15, securityConfig.certificateUsage.code));
         if (securityConfig.cipherSuite != null) {
-            List<ULong> ciperSuiteULong = new ArrayList<>();
+            Map<Integer, ULong> ciperSuiteULong = new HashMap<>();
+            int i = 0;
             for (BootstrapConfig.CipherSuiteId cipherSuiteId : securityConfig.cipherSuite) {
-                ciperSuiteULong.add(cipherSuiteId.getValueForSecurityObject());
+                ciperSuiteULong.put(i++, cipherSuiteId.getValueForSecurityObject());
             }
-            resources.add(LwM2mSingleResource.newULongArray(16, (ULong[]) ciperSuiteULong.toArray()));
+            resources.add(LwM2mMultipleResource.newUnsignedIntegerResource(16, ciperSuiteULong));
         }
         if (securityConfig.oscoreSecurityMode != null) {
             resources.add(LwM2mSingleResource.newObjectLinkResource(17,
