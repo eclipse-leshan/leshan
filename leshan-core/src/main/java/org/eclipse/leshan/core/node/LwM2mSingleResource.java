@@ -25,9 +25,7 @@ import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.util.datatype.LwM2mValueUtil;
 import org.eclipse.leshan.core.util.datatype.ULong;
 
-/**
- * A resource with a single value.
- */
+/** A resource with a single value. */
 public class LwM2mSingleResource implements LwM2mResource {
 
     private final int id;
@@ -181,61 +179,43 @@ public class LwM2mSingleResource implements LwM2mResource {
             throw new LwM2mNodeException("Invalid value : positive value expected for UNSIGNED_INTEGER");
     }
 
-    public static LwM2mSingleResource newULongArray(int id, ULong[] value) {
-        return new LwM2mSingleResource(id, value, Type.OPAQUE);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public int getId() {
         return id;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public Type getType() {
         return type;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public Object getValue() {
         return value;
     }
 
-    /**
-     * @throws NoSuchElementException use {@link #getValue()} instead.
-     */
+    /** @exception NoSuchElementException use {@link #getValue()} instead. */
     @Override
     public Object getValue(int id) {
         throw new NoSuchElementException("There is no 'values' on single resources, use getValue() instead.");
     }
 
-    /**
-     * @throws NoSuchElementException use {@link #getValue()} instead.
-     */
+    /** @exception NoSuchElementException use {@link #getValue()} instead. */
     @Override
     public LwM2mResourceInstance getInstance(int id) {
         throw new NoSuchElementException("There is no 'instance' on single resources, use getValue() instead.");
     }
 
-    /**
-     * @throws NoSuchElementException use {@link #getValue()} instead.
-     */
+    /** @exception NoSuchElementException use {@link #getValue()} instead. */
     @Override
     public Map<Integer, LwM2mResourceInstance> getInstances() {
         throw new NoSuchElementException("There is no 'instances' on single resources, use getValue() instead.");
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** * {@inheritDoc} */
     @Override
     public boolean isMultiInstances() {
         return false;

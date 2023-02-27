@@ -102,18 +102,12 @@ public class BootstrapConfig {
                 oscore);
     }
 
-    /**
-     * Server Configuration (object 1) as defined in LWM2M 1.0.x TS.
-     */
+    /** Server Configuration (object 1) as defined in LWM2M 1.0.x TS. */
     public static class ServerConfig {
 
-        /**
-         * Used as link to associate server Object Instance.
-         */
+        /** Used as link to associate server Object Instance. */
         public int shortId;
-        /**
-         * Specify the lifetime of the registration in seconds (see Section 5.3 Registration).
-         */
+        /** Specify the lifetime of the registration in seconds (see Section 5.3 Registration). */
         public int lifetime = 86400;
         /**
          * The default value the LwM2M Client should use for the Minimum Period of an Observation in the absence of this
@@ -373,13 +367,9 @@ public class BootstrapConfig {
      */
     public static class ACLConfig {
 
-        /**
-         * The Object ID of the Object Instance for which ACL are applied.
-         */
+        /** The Object ID of the Object Instance for which ACL are applied. */
         public int objectId;
-        /**
-         * The Object instance ID of the Object Instance for which ACL are applied.
-         */
+        /** The Object instance ID of the Object Instance for which ACL are applied. */
         public int objectInstanceId;
 
         /**
@@ -485,16 +475,15 @@ public class BootstrapConfig {
         private final byte firstByte;
         private final byte secondByte;
 
-        public CipherSuiteId(byte firstByte, byte secondByte) {
-            this.firstByte = firstByte;
-            this.secondByte = secondByte;
-        }
-
         /**
          * The IANA TLS ciphersuite registry is maintained at
          * https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml. As an example, the
          * TLS_PSK_WITH_AES_128_CCM_8 ciphersuite is represented with the following string "0xC0,0xA8"
          */
+        public CipherSuiteId(byte firstByte, byte secondByte) {
+            this.firstByte = firstByte;
+            this.secondByte = secondByte;
+        }
 
         public CipherSuiteId(ULong valueFromSecurityObject) {
             String binaryString = Long.toBinaryString(valueFromSecurityObject.longValue());
