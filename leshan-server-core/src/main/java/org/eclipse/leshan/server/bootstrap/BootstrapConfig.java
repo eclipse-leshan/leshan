@@ -481,9 +481,8 @@ public class BootstrapConfig {
          * @param valueFromSecurityObject Integer representing ciphersuite id
          */
         public CipherSuiteId(ULong valueFromSecurityObject) {
-            String binaryString = Long.toBinaryString(valueFromSecurityObject.longValue());
-            this.firstByte = (byte) Integer.parseInt(binaryString.substring(0, 8), 2);
-            this.secondByte = (byte) Integer.parseInt(binaryString.substring(9, 17), 2);
+            this.firstByte = (byte) ((valueFromSecurityObject.intValue() >> 8) & 0xFF);
+            this.secondByte = (byte) ((valueFromSecurityObject.intValue()) & 0xFF);
         }
 
         /**
@@ -493,7 +492,7 @@ public class BootstrapConfig {
          * @return Integer number concatenated from 2 bytes.
          */
         public ULong getValueForSecurityObject() {
-            return ULong.valueOf(Byte.toUnsignedInt(firstByte) * 256 + Byte.toUnsignedInt(secondByte));
+            return ULong.valueOf(((int) firstByte << 8) | secondByte);
         }
 
 
@@ -502,7 +501,7 @@ public class BootstrapConfig {
          */
         @Override
         public String toString() {
-            return Integer.toHexString(getValueForSecurityObject().intValue());
+            return String.format("%x,%x", firstByte, secondByte);
         }
     }
 
