@@ -96,12 +96,18 @@ public class BootstrapConfig {
      */
     public Map<Integer, OscoreObject> oscore = new HashMap<>();
 
-    /** Server Configuration (object 1) as defined in LWM2M 1.0.x TS. */
+    /**
+     * Server Configuration (object 1) as defined in LWM2M 1.0.x TS.
+     */
     public static class ServerConfig {
 
-        /** Used as link to associate server Object Instance. */
+        /**
+         * Used as link to associate server Object Instance.
+         */
         public int shortId;
-        /** Specify the lifetime of the registration in seconds (see Section 5.3 Registration). */
+        /**
+         * Specify the lifetime of the registration in seconds (see Section 5.3 Registration).
+         */
         public int lifetime = 86400;
         /**
          * The default value the LwM2M Client should use for the Minimum Period of an Observation in the absence of this
@@ -361,9 +367,13 @@ public class BootstrapConfig {
      */
     public static class ACLConfig {
 
-        /** The Object ID of the Object Instance for which ACL are applied. */
+        /**
+         * The Object ID of the Object Instance for which ACL are applied.
+         */
         public int objectId;
-        /** The Object instance ID of the Object Instance for which ACL are applied. */
+        /**
+         * The Object instance ID of the Object Instance for which ACL are applied.
+         */
         public int objectInstanceId;
 
         /**
@@ -470,26 +480,32 @@ public class BootstrapConfig {
         private final byte secondByte;
 
         /**
-         * The IANA TLS ciphersuite registry is maintained at
-         * https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml. As an example, the
-         * TLS_PSK_WITH_AES_128_CCM_8 ciphersuite is represented with the following string "0xC0,0xA8"
+         * Ciphersuite is created with 2 bytes.
+         *
+         * @param firstByte first byte of ciphersuite (for example 0xC0)
+         * @param secondByte second byte of ciphersuite (for example 0xA8)
          */
         public CipherSuiteId(byte firstByte, byte secondByte) {
             this.firstByte = firstByte;
             this.secondByte = secondByte;
         }
 
+        /**
+         * Integer is split into 2 bytes for example 49320 (0xc0a8 in hex) will be split into "0xC0,0xA8".
+         *
+         * @param valueFromSecurityObject Integer representing ciphersuite id
+         */
         public CipherSuiteId(ULong valueFromSecurityObject) {
             String binaryString = Long.toBinaryString(valueFromSecurityObject.longValue());
             this.firstByte = (byte) Integer.parseInt(binaryString.substring(0, 8), 2);
             this.secondByte = (byte) Integer.parseInt(binaryString.substring(9, 17), 2);
-
         }
 
         /**
-         * As an example, the TLS_PSK_WITH_AES_128_CCM_8 ciphersuite is represented with the following string
-         * "0xC0,0xA8". To form an integer value the two values are concatenated. In this example, the value is 0xc0a8
-         * or 49320.
+         * Two bytes of ciphersuite id are concatenated into integer value. As an example bytes "0xC0,0xA8" will be
+         * concatenated into 0xc0a8 which in decimal notation is 49320.
+         *
+         * @return Integer number concatenated from 2 bytes.
          */
         public ULong getValueForSecurityObject() {
             return ULong.valueOf(Byte.toUnsignedInt(firstByte) * 256 + Byte.toUnsignedInt(secondByte));
