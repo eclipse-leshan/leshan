@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
@@ -45,6 +46,7 @@ import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpoint
 import org.eclipse.leshan.server.bootstrap.request.BootstrapUplinkRequestReceiver;
 import org.eclipse.leshan.server.californium.RootResource;
 import org.eclipse.leshan.server.californium.bootstrap.endpoint.coap.CoapBootstrapServerProtocolProvider;
+import org.eclipse.leshan.server.californium.endpoint.ServerProtocolProvider;
 import org.eclipse.leshan.server.security.ServerSecurityInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -175,7 +177,23 @@ public class CaliforniumBootstrapServerEndpointsProvider implements LwM2mBootstr
         }
 
         /**
-         * create Default CoAP Server Configuration.
+         * Create Californium {@link Configuration} with all Module Definitions needed for protocols provided by this
+         * endpointProvider.
+         * <p>
+         * Once, you create the configuration you should use {@link #setConfiguration(Configuration)}
+         *
+         * <pre>
+         * // Create Builder
+         * CaliforniumBootstrapServerEndpointsProvider.Builder builder = new CaliforniumBootstrapServerEndpointsProvider.Builder(
+         *         new CoapBootstrapServerProtocolProvider(), //
+         *         new CoapsBootstrapServerProtocolProvider());
+         *
+         * // Set custom Californium Configuration :
+         * Configuration c = builder.createDefaultConfiguration();
+         * c.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, true);
+         * c.set(CoapConfig.ACK_TIMEOUT, 1, TimeUnit.SECONDS);
+         * builder.setConfiguration(c);
+         * </pre>
          */
         public Configuration createDefaultConfiguration() {
             // Get all Californium modules
@@ -197,10 +215,46 @@ public class CaliforniumBootstrapServerEndpointsProvider implements LwM2mBootstr
         }
 
         /**
-         * @param serverConfiguration the @{link Configuration} used by the {@link CoapServer}.
+         * Set {@link Configuration} used by the {@link CoapServer}. It will be shared by all endpoints created by this
+         * endpoints provider.
+         * <p>
+         * {@link Configuration} provided SHOULD be created with {@link #createDefaultConfiguration()}.
+         * <p>
+         * It should generally not be used with {@link #setConfiguration(Consumer)}
          */
         public Builder setConfiguration(Configuration serverConfiguration) {
             this.serverConfiguration = serverConfiguration;
+            return this;
+        }
+
+        /**
+         * Create Californium {@link Configuration} with all needed Module Definitions for protocol provided by
+         * {@link ServerProtocolProvider}s, then apply given consumer to it.
+         *
+         * <pre>
+         * {@code
+         * endpointsBuilder.setConfiguration(c -> {
+         *     c.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, true);
+         *     c.set(CoapConfig.ACK_TIMEOUT, 1, TimeUnit.SECONDS);
+         * });
+         * }
+         * </pre>
+         *
+         * This is like doing :
+         *
+         * <pre>
+         * Configuration c = endpointsBuilder.createDefaultConfiguration();
+         * c.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, true);
+         * c.set(CoapConfig.ACK_TIMEOUT, 1, TimeUnit.SECONDS);
+         * endpointsBuilder.setConfiguration(c);
+         * </pre>
+         */
+        public Builder setConfiguration(Consumer<Configuration> configurationSetter) {
+            Configuration cfg = createDefaultConfiguration();
+            configurationSetter.accept(cfg);
+
+            // we set config once all is done without exception.
+            this.serverConfiguration = cfg;
             return this;
         }
 
