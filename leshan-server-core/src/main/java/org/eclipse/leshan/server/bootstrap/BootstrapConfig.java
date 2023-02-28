@@ -480,7 +480,9 @@ public class BootstrapConfig {
         private final byte secondByte;
 
         /**
-         * Ciphersuite is created with 2 bytes.
+         * Ciphersuite is created with 2 bytes. Possible values are described
+         * in the <a href="https://iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-4">
+         *     registry</a>.
          *
          * @param firstByte first byte of ciphersuite (for example 0xC0)
          * @param secondByte second byte of ciphersuite (for example 0xA8)
@@ -492,6 +494,7 @@ public class BootstrapConfig {
 
         /**
          * Integer is split into 2 bytes for example 49320 (0xc0a8 in hex) will be split into "0xC0,0xA8".
+         * This format is used by Security Object, resource 16.
          *
          * @param valueFromSecurityObject Integer representing ciphersuite id
          */
@@ -509,6 +512,15 @@ public class BootstrapConfig {
          */
         public ULong getValueForSecurityObject() {
             return ULong.valueOf(Byte.toUnsignedInt(firstByte) * 256 + Byte.toUnsignedInt(secondByte));
+        }
+
+
+        /**
+         * @return String representing hex value of concatenated two bytes.
+         */
+        @Override
+        public String toString() {
+            return Integer.toHexString(getValueForSecurityObject().intValue());
         }
     }
 
