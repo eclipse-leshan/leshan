@@ -465,7 +465,7 @@ public class BootstrapConfig {
          * Ciphersuite is created with 2 bytes. Possible values are described in the
          * <a href="https://iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-4"> registry</a>.
          *
-         * @param firstByte  first byte of ciphersuite (for example 0xC0)
+         * @param firstByte first byte of ciphersuite (for example 0xC0)
          * @param secondByte second byte of ciphersuite (for example 0xA8)
          */
         public CipherSuiteId(byte firstByte, byte secondByte) {
