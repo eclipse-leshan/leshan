@@ -55,15 +55,15 @@ public class EndpointUriUtil {
         Validate.notNull(uri);
 
         if (uri.getScheme() == null) {
-            throw new IllegalArgumentException("URI Scheme MUST NOT be null");
+            throw new IllegalArgumentException(String.format("Invalid URI[%s]: Scheme MUST NOT be null", uri));
         }
 
         if (uri.getHost() == null) {
-            throw new IllegalArgumentException("URI Host MUST NOT be null");
+            throw new IllegalArgumentException(String.format("Invalid URI[%s]: Host MUST NOT be null", uri));
         }
 
         if (uri.getPort() == -1) {
-            throw new IllegalArgumentException("URI Post MUST NOT be undefined");
+            throw new IllegalArgumentException(String.format("Invalid URI[%s]: Post MUST NOT be undefined", uri));
         }
     }
 }
