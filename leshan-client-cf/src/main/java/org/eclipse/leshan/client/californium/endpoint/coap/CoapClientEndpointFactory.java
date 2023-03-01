@@ -60,7 +60,7 @@ public class CoapClientEndpointFactory implements CaliforniumClientEndpointFacto
         if (loggingTagPrefix != null) {
             return String.format("[%s-%s]", loggingTagPrefix, uri);
         } else {
-            return String.format("[%s-%s]", uri);
+            return String.format("[%s]", uri);
         }
     }
 

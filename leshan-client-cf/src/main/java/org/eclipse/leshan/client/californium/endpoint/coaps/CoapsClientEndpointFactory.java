@@ -103,7 +103,7 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
         if (loggingTagPrefix != null) {
             return String.format("[%s-%s]", loggingTagPrefix, uri);
         } else {
-            return String.format("[%s-%s]", uri);
+            return String.format("[%s]", uri);
         }
     }
 

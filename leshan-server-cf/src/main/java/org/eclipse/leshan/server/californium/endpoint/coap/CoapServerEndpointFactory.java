@@ -66,7 +66,7 @@ public class CoapServerEndpointFactory implements CaliforniumServerEndpointFacto
         if (loggingTagPrefix != null) {
             return String.format("[%s-%s]", loggingTagPrefix, getUri().toString());
         } else {
-            return String.format("[%s-%s]", getUri().toString());
+            return String.format("[%s]", getUri().toString());
         }
     }
 

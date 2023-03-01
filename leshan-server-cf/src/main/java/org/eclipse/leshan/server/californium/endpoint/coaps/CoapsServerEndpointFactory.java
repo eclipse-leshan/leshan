@@ -104,7 +104,7 @@ public class CoapsServerEndpointFactory implements CaliforniumServerEndpointFact
         if (loggingTagPrefix != null) {
             return String.format("[%s-%s]", loggingTagPrefix, getUri().toString());
         } else {
-            return String.format("[%s-%s]", getUri().toString());
+            return String.format("[%s]", getUri().toString());
         }
     }
 
