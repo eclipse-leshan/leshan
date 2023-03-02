@@ -34,7 +34,7 @@ public class RedisSecureIntegrationTestHelper extends SecureIntegrationTestHelpe
         } else {
             jedis = new JedisPool();
         }
-        securityStore = new RedisSecurityStore.Builder(jedis).build();
+        securityStore = new RedisSecurityStore(jedis);
         return securityStore;
     }
 }

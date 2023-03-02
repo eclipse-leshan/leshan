@@ -49,7 +49,11 @@ public class RedisSecurityStore implements EditableSecurityStore {
 
     private final List<SecurityStoreListener> listeners = new CopyOnWriteArrayList<>();
 
-    private RedisSecurityStore(Builder builder) {
+    public RedisSecurityStore(Pool<Jedis> pool) {
+        this(new Builder(pool));
+    }
+
+    protected RedisSecurityStore(Builder builder) {
         this.pool = builder.pool;
         this.securityInfoByEndpointPrefix = builder.securityInfoByEndpointPrefix;
         this.endpointByPskIdKey = builder.endpointByPskIdKey;
@@ -187,28 +191,23 @@ public class RedisSecurityStore implements EditableSecurityStore {
         private String prefix;
 
         /**
-         * Set the Redis connection pool for the {@link RedisSecurityStore}.
-         */
-        public void setPool(Pool<Jedis> pool) {
-            this.pool = pool;
-        }
-
-        /**
          * Set the key prefix for security info lookup by endpoint.
          * <p>
-         * Default value is {@literal SEC#EP#}.
+         * Default value is {@literal SEC#EP#}. Should not be {@code null} or empty.
          */
-        public void setSecurityInfoByEndpointPrefix(String securityInfoByEndpointPrefix) {
+        public Builder setSecurityInfoByEndpointPrefix(String securityInfoByEndpointPrefix) {
             this.securityInfoByEndpointPrefix = securityInfoByEndpointPrefix;
+            return this;
         }
 
         /**
          * Set the key for endpoint lookup by PSK identity.
          * <p>
-         * Default value is {@literal EP#PSKID}.
+         * Default value is {@literal EP#PSKID}. Should not be {@code null} or empty.
          */
-        public void setEndpointByPskIdKey(String endpointByPskIdKey) {
+        public Builder setEndpointByPskIdKey(String endpointByPskIdKey) {
             this.endpointByPskIdKey = endpointByPskIdKey;
+            return this;
         }
 
         /**
@@ -217,8 +216,9 @@ public class RedisSecurityStore implements EditableSecurityStore {
          * <p>
          * Default value is {@literal SECSTORE#}.
          */
-        public void setPrefix(String prefix) {
+        public Builder setPrefix(String prefix) {
             this.prefix = prefix;
+            return this;
         }
 
         public Builder(Pool<Jedis> pool) {
@@ -231,11 +231,27 @@ public class RedisSecurityStore implements EditableSecurityStore {
         /**
          * Create the {@link RedisSecurityStore}.
          * <p>
-         * @return the Redis security store.
+         * Throws {@link IllegalArgumentException} when {@link #securityInfoByEndpointPrefix} or
+         * {@link #endpointByPskIdKey} are not set or are equal to each other.
          */
-        public RedisSecurityStore build() {
-            this.securityInfoByEndpointPrefix = this.prefix + this.securityInfoByEndpointPrefix;
-            this.endpointByPskIdKey = this.prefix + this.endpointByPskIdKey;
+        public RedisSecurityStore build() throws IllegalArgumentException {
+            if (this.securityInfoByEndpointPrefix == null || this.securityInfoByEndpointPrefix.isEmpty()) {
+                throw new IllegalArgumentException("securityInfoByEndpointPrefix should not be empty");
+            }
+
+            if (this.endpointByPskIdKey == null || this.endpointByPskIdKey.isEmpty()) {
+                throw new IllegalArgumentException("endpointByPskIdKey should not be empty");
+            }
+
+            if (this.securityInfoByEndpointPrefix.equals(this.endpointByPskIdKey)) {
+                throw new IllegalArgumentException(
+                        "securityInfoByEndpointPrefix should not be equal to endpointByPskIdKey");
+            }
+
+            if (this.prefix != null) {
+                this.securityInfoByEndpointPrefix = this.prefix + this.securityInfoByEndpointPrefix;
+                this.endpointByPskIdKey = this.prefix + this.endpointByPskIdKey;
+            }
 
             return new RedisSecurityStore(this);
         }
