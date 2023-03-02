@@ -456,7 +456,7 @@ public class BootstrapConfig {
         }
     }
 
-    public class CipherSuiteId {
+    public static class CipherSuiteId {
 
         private final byte firstByte;
         private final byte secondByte;
@@ -480,6 +480,8 @@ public class BootstrapConfig {
          * @param valueFromSecurityObject Integer representing ciphersuite id
          */
         public CipherSuiteId(ULong valueFromSecurityObject) {
+            if (valueFromSecurityObject.intValue() < 0 || valueFromSecurityObject.intValue() > 65535)
+                throw new IllegalArgumentException("ULong value have to be between <0, 65535>");
             this.firstByte = (byte) ((valueFromSecurityObject.intValue() >> 8) & 0xFF);
             this.secondByte = (byte) ((valueFromSecurityObject.intValue()) & 0xFF);
         }
@@ -491,7 +493,7 @@ public class BootstrapConfig {
          * @return Integer number concatenated from 2 bytes.
          */
         public ULong getValueForSecurityObject() {
-            return ULong.valueOf(((int) firstByte << 8) | secondByte);
+            return ULong.valueOf((Byte.toUnsignedInt(firstByte) << 8) | Byte.toUnsignedInt(secondByte));
         }
 
         /**
