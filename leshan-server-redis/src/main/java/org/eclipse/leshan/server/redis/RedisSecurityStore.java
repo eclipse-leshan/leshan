@@ -38,9 +38,6 @@ import redis.clients.jedis.util.Pool;
  * <p>
  * Security info are stored using the endpoint as primary key and a secondary index is created for endpoint lookup by
  * PSK identity.
- * <p>
- * By default, uses {@code SEC#EP#} key prefix to find security info by endpoint and {@code EP#PSKID} key to get the
- * endpoint by PSK ID. Leshan v1.x used {@code SEC#EP#} and {@code PSKID#SEC} keys for that accordingly.
  */
 public class RedisSecurityStore implements EditableSecurityStore {
 
@@ -52,14 +49,10 @@ public class RedisSecurityStore implements EditableSecurityStore {
 
     private final List<SecurityStoreListener> listeners = new CopyOnWriteArrayList<>();
 
-    public RedisSecurityStore(Pool<Jedis> pool) {
-        this(pool, "SEC#EP#", "EP#PSKID");
-    }
-
-    public RedisSecurityStore(Pool<Jedis> pool, String securityInfoByEndpointPrefix, String endpointByPskIdKey) {
-        this.pool = pool;
-        this.securityInfoByEndpointPrefix = securityInfoByEndpointPrefix;
-        this.endpointByPskIdKey = endpointByPskIdKey;
+    private RedisSecurityStore(Builder builder) {
+        this.pool = builder.pool;
+        this.securityInfoByEndpointPrefix = builder.securityInfoByEndpointPrefix;
+        this.endpointByPskIdKey = builder.endpointByPskIdKey;
     }
 
     @Override
@@ -176,5 +169,75 @@ public class RedisSecurityStore implements EditableSecurityStore {
     @Override
     public void removeListener(SecurityStoreListener listener) {
         listeners.remove(listener);
+    }
+
+    /**
+     * Class helping to build and configure a {@link RedisSecurityStore}.
+     * <p>
+     * By default, uses {@code SECSTORE#} prefix for all keys, {@code SEC#EP#} key prefix to find security info by
+     * endpoint and {@code EP#PSKID} key to get the endpoint by PSK ID. Leshan v1.x used {@code SEC#EP#} and
+     * {@code PSKID#SEC} keys for that accordingly.
+     */
+    public static class Builder {
+        private Pool<Jedis> pool;
+        private String securityInfoByEndpointPrefix;
+
+        private String endpointByPskIdKey;
+
+        private String prefix;
+
+        /**
+         * Set the Redis connection pool for the {@link RedisSecurityStore}.
+         */
+        public void setPool(Pool<Jedis> pool) {
+            this.pool = pool;
+        }
+
+        /**
+         * Set the key prefix for security info lookup by endpoint.
+         * <p>
+         * Default value is {@literal SEC#EP#}.
+         */
+        public void setSecurityInfoByEndpointPrefix(String securityInfoByEndpointPrefix) {
+            this.securityInfoByEndpointPrefix = securityInfoByEndpointPrefix;
+        }
+
+        /**
+         * Set the key for endpoint lookup by PSK identity.
+         * <p>
+         * Default value is {@literal EP#PSKID}.
+         */
+        public void setEndpointByPskIdKey(String endpointByPskIdKey) {
+            this.endpointByPskIdKey = endpointByPskIdKey;
+        }
+
+        /**
+         * Set the prefix for all keys and prefixes including {@link #securityInfoByEndpointPrefix} and
+         * {@link #endpointByPskIdKey}.
+         * <p>
+         * Default value is {@literal SECSTORE#}.
+         */
+        public void setPrefix(String prefix) {
+            this.prefix = prefix;
+        }
+
+        public Builder(Pool<Jedis> pool) {
+            this.pool = pool;
+            this.prefix = "SECSTORE#";
+            this.securityInfoByEndpointPrefix = "SEC#EP#";
+            this.endpointByPskIdKey = "EP#PSKID";
+        }
+
+        /**
+         * Create the {@link RedisSecurityStore}.
+         * <p>
+         * @return the Redis security store.
+         */
+        public RedisSecurityStore build() {
+            this.securityInfoByEndpointPrefix = this.prefix + this.securityInfoByEndpointPrefix;
+            this.endpointByPskIdKey = this.prefix + this.endpointByPskIdKey;
+
+            return new RedisSecurityStore(this);
+        }
     }
 }

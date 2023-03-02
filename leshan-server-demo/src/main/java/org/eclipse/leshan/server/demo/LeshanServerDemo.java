@@ -34,7 +34,7 @@ import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.util.CertPathUtil;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
-import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -162,7 +162,7 @@ public class LeshanServerDemo {
             securityStore = new FileSecurityStore();
         } else {
             // use Redis Store
-            securityStore = new RedisSecurityStore(cli.main.redis);
+            securityStore = new RedisSecurityStore.Builder(cli.main.redis).build();
             builder.setRegistrationStore(new RedisRegistrationStore(cli.main.redis));
         }
         builder.setSecurityStore(securityStore);
@@ -190,8 +190,10 @@ public class LeshanServerDemo {
                 return new CoapsServerEndpointFactory(uri) {
 
                     @Override
-                    protected Builder createDtlsConnectorConfigBuilder(Configuration endpointConfiguration) {
-                        Builder dtlsConfigBuilder = super.createDtlsConnectorConfigBuilder(endpointConfiguration);
+                    protected DtlsConnectorConfig.Builder createDtlsConnectorConfigBuilder(
+                            Configuration endpointConfiguration) {
+                        DtlsConnectorConfig.Builder dtlsConfigBuilder = super.createDtlsConnectorConfigBuilder(
+                                endpointConfiguration);
 
                         // Add MDC for connection logs
                         if (cli.helpsOptions.getVerboseLevel() > 0)
