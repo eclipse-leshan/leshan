@@ -18,16 +18,27 @@ package org.eclipse.leshan.server.californium.bootstrap.endpoint.coaps;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.server.californium.bootstrap.endpoint.BootstrapServerProtocolProvider;
 import org.eclipse.leshan.server.californium.bootstrap.endpoint.CaliforniumBootstrapServerEndpointFactory;
 
 public class CoapsBootstrapServerProtocolProvider implements BootstrapServerProtocolProvider {
+
+    protected Consumer<DtlsConnectorConfig.Builder> dtlsConnectorConfigInitializer;
+
+    public CoapsBootstrapServerProtocolProvider() {
+    }
+
+    public CoapsBootstrapServerProtocolProvider(Consumer<DtlsConnectorConfig.Builder> dtlsConnectorConfigInitializer) {
+        this.dtlsConnectorConfigInitializer = dtlsConnectorConfigInitializer;
+    }
 
     @Override
     public Protocol getProtocol() {
@@ -46,7 +57,8 @@ public class CoapsBootstrapServerProtocolProvider implements BootstrapServerProt
 
     @Override
     public CaliforniumBootstrapServerEndpointFactory createDefaultEndpointFactory(URI uri) {
-        return new CoapsBootstrapServerEndpointFactory(uri);
+        return new CoapsBootstrapServerEndpointFactoryBuilder().setURI(uri)
+                .setDtlsConnectorConfig(dtlsConnectorConfigInitializer).build();
     }
 
     @Override
