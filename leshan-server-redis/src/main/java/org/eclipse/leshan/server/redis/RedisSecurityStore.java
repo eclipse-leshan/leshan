@@ -35,27 +35,32 @@ import redis.clients.jedis.util.Pool;
 
 /**
  * A {@link SecurityStore} implementation based on Redis.
- *
- * Security info are stored using the endpoint as primary key and a secondary index is created for psk-identity lookup.
+ * <p>
+ * Security info are stored using the endpoint as primary key and a secondary index is created for endpoint lookup by
+ * PSK identity.
  */
 public class RedisSecurityStore implements EditableSecurityStore {
 
-    private static final String SEC_EP = "SEC#EP#";
-
-    private static final String PSKID_SEC = "PSKID#SEC";
-
+    private final String securityInfoByEndpointPrefix;
+    private final String endpointByPskIdKey;
     private final Pool<Jedis> pool;
 
     private final List<SecurityStoreListener> listeners = new CopyOnWriteArrayList<>();
 
     public RedisSecurityStore(Pool<Jedis> pool) {
-        this.pool = pool;
+        this(new Builder(pool));
+    }
+
+    protected RedisSecurityStore(Builder builder) {
+        this.pool = builder.pool;
+        this.securityInfoByEndpointPrefix = builder.securityInfoByEndpointPrefix;
+        this.endpointByPskIdKey = builder.endpointByPskIdKey;
     }
 
     @Override
     public SecurityInfo getByEndpoint(String endpoint) {
         try (Jedis j = pool.getResource()) {
-            byte[] data = j.get((SEC_EP + endpoint).getBytes());
+            byte[] data = j.get((securityInfoByEndpointPrefix + endpoint).getBytes());
             if (data == null) {
                 return null;
             } else {
@@ -67,11 +72,11 @@ public class RedisSecurityStore implements EditableSecurityStore {
     @Override
     public SecurityInfo getByIdentity(String identity) {
         try (Jedis j = pool.getResource()) {
-            String ep = j.hget(PSKID_SEC, identity);
+            String ep = j.hget(endpointByPskIdKey, identity);
             if (ep == null) {
                 return null;
             } else {
-                byte[] data = j.get((SEC_EP + ep).getBytes());
+                byte[] data = j.get((securityInfoByEndpointPrefix + ep).getBytes());
                 if (data == null) {
                     return null;
                 } else {
@@ -90,7 +95,7 @@ public class RedisSecurityStore implements EditableSecurityStore {
     @Override
     public Collection<SecurityInfo> getAll() {
         try (Jedis j = pool.getResource()) {
-            ScanParams params = new ScanParams().match(SEC_EP + "*").count(100);
+            ScanParams params = new ScanParams().match(securityInfoByEndpointPrefix + "*").count(100);
             Collection<SecurityInfo> list = new LinkedList<>();
             String cursor = "0";
             do {
@@ -111,19 +116,19 @@ public class RedisSecurityStore implements EditableSecurityStore {
         try (Jedis j = pool.getResource()) {
             if (info.getPskIdentity() != null) {
                 // populate the secondary index (security info by PSK id)
-                String oldEndpoint = j.hget(PSKID_SEC, info.getPskIdentity());
+                String oldEndpoint = j.hget(endpointByPskIdKey, info.getPskIdentity());
                 if (oldEndpoint != null && !oldEndpoint.equals(info.getEndpoint())) {
                     throw new NonUniqueSecurityInfoException(
                             "PSK Identity " + info.getPskIdentity() + " is already used");
                 }
-                j.hset(PSKID_SEC.getBytes(), info.getPskIdentity().getBytes(), info.getEndpoint().getBytes());
+                j.hset(endpointByPskIdKey.getBytes(), info.getPskIdentity().getBytes(), info.getEndpoint().getBytes());
             }
 
-            byte[] previousData = j.getSet((SEC_EP + info.getEndpoint()).getBytes(), data);
+            byte[] previousData = j.getSet((securityInfoByEndpointPrefix + info.getEndpoint()).getBytes(), data);
             SecurityInfo previous = previousData == null ? null : deserialize(previousData);
             String previousIdentity = previous == null ? null : previous.getPskIdentity();
             if (previousIdentity != null && !previousIdentity.equals(info.getPskIdentity())) {
-                j.hdel(PSKID_SEC, previousIdentity);
+                j.hdel(endpointByPskIdKey, previousIdentity);
             }
 
             return previous;
@@ -133,14 +138,14 @@ public class RedisSecurityStore implements EditableSecurityStore {
     @Override
     public SecurityInfo remove(String endpoint, boolean infosAreCompromised) {
         try (Jedis j = pool.getResource()) {
-            byte[] data = j.get((SEC_EP + endpoint).getBytes());
+            byte[] data = j.get((securityInfoByEndpointPrefix + endpoint).getBytes());
 
             if (data != null) {
                 SecurityInfo info = deserialize(data);
                 if (info.getPskIdentity() != null) {
-                    j.hdel(PSKID_SEC.getBytes(), info.getPskIdentity().getBytes());
+                    j.hdel(endpointByPskIdKey.getBytes(), info.getPskIdentity().getBytes());
                 }
-                j.del((SEC_EP + endpoint).getBytes());
+                j.del((securityInfoByEndpointPrefix + endpoint).getBytes());
                 for (SecurityStoreListener listener : listeners) {
                     listener.securityInfoRemoved(infosAreCompromised, info);
                 }
@@ -166,5 +171,86 @@ public class RedisSecurityStore implements EditableSecurityStore {
     @Override
     public void removeListener(SecurityStoreListener listener) {
         listeners.remove(listener);
+    }
+
+    /**
+     * Class helping to build and configure a {@link RedisSecurityStore}.
+     * <p>
+     * By default, uses {@code SECSTORE#} prefix for all keys, {@code SEC#EP#} key prefix to find security info by
+     * endpoint and {@code EP#PSKID} key to get the endpoint by PSK ID. Leshan v1.x used {@code SEC#EP#} and
+     * {@code PSKID#SEC} keys for that accordingly.
+     */
+    public static class Builder {
+
+        private final Pool<Jedis> pool;
+        private String securityInfoByEndpointPrefix;
+        private String endpointByPskIdKey;
+        private String prefix;
+
+        /**
+         * Set the key prefix for security info lookup by endpoint.
+         * <p>
+         * Default value is {@literal SEC#EP#}. Should not be {@code null} or empty.
+         */
+        public Builder setSecurityInfoByEndpointPrefix(String securityInfoByEndpointPrefix) {
+            this.securityInfoByEndpointPrefix = securityInfoByEndpointPrefix;
+            return this;
+        }
+
+        /**
+         * Set the key for endpoint lookup by PSK identity.
+         * <p>
+         * Default value is {@literal EP#PSKID}. Should not be {@code null} or empty.
+         */
+        public Builder setEndpointByPskIdKey(String endpointByPskIdKey) {
+            this.endpointByPskIdKey = endpointByPskIdKey;
+            return this;
+        }
+
+        /**
+         * Set the prefix for all keys and prefixes including {@link #securityInfoByEndpointPrefix} and
+         * {@link #endpointByPskIdKey}.
+         * <p>
+         * Default value is {@literal SECSTORE#}.
+         */
+        public Builder setPrefix(String prefix) {
+            this.prefix = prefix;
+            return this;
+        }
+
+        public Builder(Pool<Jedis> pool) {
+            this.pool = pool;
+            this.prefix = "SECSTORE#";
+            this.securityInfoByEndpointPrefix = "SEC#EP#";
+            this.endpointByPskIdKey = "EP#PSKID";
+        }
+
+        /**
+         * Create the {@link RedisSecurityStore}.
+         * <p>
+         * Throws {@link IllegalArgumentException} when {@link #securityInfoByEndpointPrefix} or
+         * {@link #endpointByPskIdKey} are not set or are equal to each other.
+         */
+        public RedisSecurityStore build() throws IllegalArgumentException {
+            if (this.securityInfoByEndpointPrefix == null || this.securityInfoByEndpointPrefix.isEmpty()) {
+                throw new IllegalArgumentException("securityInfoByEndpointPrefix should not be empty");
+            }
+
+            if (this.endpointByPskIdKey == null || this.endpointByPskIdKey.isEmpty()) {
+                throw new IllegalArgumentException("endpointByPskIdKey should not be empty");
+            }
+
+            if (this.securityInfoByEndpointPrefix.equals(this.endpointByPskIdKey)) {
+                throw new IllegalArgumentException(
+                        "securityInfoByEndpointPrefix should not be equal to endpointByPskIdKey");
+            }
+
+            if (this.prefix != null) {
+                this.securityInfoByEndpointPrefix = this.prefix + this.securityInfoByEndpointPrefix;
+                this.endpointByPskIdKey = this.prefix + this.endpointByPskIdKey;
+            }
+
+            return new RedisSecurityStore(this);
+        }
     }
 }
