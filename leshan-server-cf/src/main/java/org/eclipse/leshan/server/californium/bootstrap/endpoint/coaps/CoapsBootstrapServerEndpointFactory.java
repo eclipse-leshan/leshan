@@ -19,12 +19,16 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.security.Principal;
 import java.security.PublicKey;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.security.auth.x500.X500Principal;
 
 import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.config.CoapConfig;
+import org.eclipse.californium.core.config.CoapConfig.TrackerMode;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.CoapEndpoint.Builder;
 import org.eclipse.californium.elements.AddressEndpointContext;
@@ -39,8 +43,12 @@ import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.auth.X509CertPath;
 import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
+import org.eclipse.californium.elements.config.SystemConfig;
+import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConfig;
+import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.dtls.CertificateType;
 import org.eclipse.californium.scandium.dtls.DtlsHandshakeTimeoutException;
@@ -68,21 +76,45 @@ public class CoapsBootstrapServerEndpointFactory implements CaliforniumBootstrap
 
     private static final Logger LOG = LoggerFactory.getLogger(CoapsBootstrapServerEndpointFactory.class);
 
-    protected final String loggingTagPrefix;
-    protected URI endpointUri = null;
-
-    public CoapsBootstrapServerEndpointFactory(URI uri) {
-        this(uri, "Bootstrap Server");
+    public static Protocol getSupportedProtocol() {
+        return Protocol.COAPS;
     }
 
-    public CoapsBootstrapServerEndpointFactory(URI uri, String loggingTagPrefix) {
+    public static void applyDefaultValue(Configuration configuration) {
+        configuration.set(CoapConfig.MID_TRACKER, TrackerMode.NULL);
+        configuration.set(DtlsConfig.DTLS_ROLE, DtlsRole.SERVER_ONLY);
+    }
+
+    public static List<ModuleDefinitionsProvider> getModuleDefinitionsProviders() {
+        return Arrays.asList(SystemConfig.DEFINITIONS, CoapConfig.DEFINITIONS, UdpConfig.DEFINITIONS,
+                DtlsConfig.DEFINITIONS);
+    }
+
+    protected final URI endpointUri;
+    protected final String loggingTagPrefix;
+    protected final Configuration configuration;
+    protected final Consumer<DtlsConnectorConfig.Builder> dtlsConnectorConfigInitializer;
+    protected final Consumer<CoapEndpoint.Builder> coapEndpointConfigInitializer;
+
+    public CoapsBootstrapServerEndpointFactory(URI uri) {
+        this(uri, null, null, null, null);
+    }
+
+    public CoapsBootstrapServerEndpointFactory(URI uri, String loggingTagPrefix, Configuration configuration,
+            Consumer<org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder> dtlsConnectorConfigInitializer,
+            Consumer<Builder> coapEndpointConfigInitializer) {
+        EndpointUriUtil.validateURI(uri);
+
         this.endpointUri = uri;
-        this.loggingTagPrefix = loggingTagPrefix;
+        this.loggingTagPrefix = loggingTagPrefix == null ? "Bootstrap Server" : loggingTagPrefix;
+        this.configuration = configuration;
+        this.dtlsConnectorConfigInitializer = dtlsConnectorConfigInitializer;
+        this.coapEndpointConfigInitializer = coapEndpointConfigInitializer;
     }
 
     @Override
     public Protocol getProtocol() {
-        return Protocol.COAPS;
+        return getSupportedProtocol();
     }
 
     @Override
@@ -106,8 +138,18 @@ public class CoapsBootstrapServerEndpointFactory implements CaliforniumBootstrap
             return null;
         }
 
+        // defined Configuration to use
+        Configuration configurationToUse;
+        if (configuration == null) {
+            // if specific configuration for this endpoint is null, used the default one which is the coapServer
+            // Configuration shared with all endpoints by default.
+            configurationToUse = defaultConfiguration;
+        } else {
+            configurationToUse = configuration;
+        }
+
         // create DTLS connector Config
-        DtlsConnectorConfig.Builder dtlsConfigBuilder = createDtlsConnectorConfigBuilder(defaultConfiguration);
+        DtlsConnectorConfig.Builder dtlsConfigBuilder = createDtlsConnectorConfigBuilder(configurationToUse);
         setUpDtlsConfig(dtlsConfigBuilder, EndpointUriUtil.getSocketAddr(endpointUri), serverSecurityInfo, server);
         DtlsConnectorConfig dtlsConfig;
         try {
@@ -118,13 +160,16 @@ public class CoapsBootstrapServerEndpointFactory implements CaliforniumBootstrap
         }
 
         // create CoAP endpoint
-        CoapEndpoint endpoint = createEndpointBuilder(dtlsConfig, defaultConfiguration).build();
+        CoapEndpoint endpoint = createEndpointBuilder(dtlsConfig, configurationToUse).build();
 
         return endpoint;
     }
 
     protected DtlsConnectorConfig.Builder createDtlsConnectorConfigBuilder(Configuration configuration) {
-        return new DtlsConnectorConfig.Builder(configuration);
+        DtlsConnectorConfig.Builder builder = new DtlsConnectorConfig.Builder(configuration);
+        if (dtlsConnectorConfigInitializer != null)
+            dtlsConnectorConfigInitializer.accept(builder);
+        return builder;
     }
 
     protected void setUpDtlsConfig(DtlsConnectorConfig.Builder dtlsConfigBuilder, InetSocketAddress address,
@@ -215,6 +260,9 @@ public class CoapsBootstrapServerEndpointFactory implements CaliforniumBootstrap
         builder.setConfiguration(coapConfig);
         builder.setLoggingTag(getLoggingTag());
         builder.setEndpointContextMatcher(createEndpointContextMatcher());
+
+        if (coapEndpointConfigInitializer != null)
+            coapEndpointConfigInitializer.accept(builder);
         return builder;
     }
 

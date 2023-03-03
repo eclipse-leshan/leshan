@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 Sierra Wireless and others.
+ * Copyright (c) 2023 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -15,28 +15,25 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.endpoint.coap;
 
-import java.net.InetSocketAddress;
-import java.net.URI;
 import java.util.List;
 
-import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
-import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointFactory;
-import org.eclipse.leshan.server.californium.endpoint.ServerProtocolProvider;
+import org.eclipse.leshan.server.californium.endpoint.AbstractEndpointFactoryBuilder;
 
-public class CoapServerProtocolProvider implements ServerProtocolProvider {
+public class CoapServerEndpointFactoryBuilder
+        extends AbstractEndpointFactoryBuilder<CoapServerEndpointFactoryBuilder, CoapServerEndpointFactory> {
 
     @Override
-    public Protocol getProtocol() {
+    protected Protocol getSupportedProtocol() {
         return CoapServerEndpointFactory.getSupportedProtocol();
     }
 
     @Override
     public void applyDefaultValue(Configuration configuration) {
         CoapServerEndpointFactory.applyDefaultValue(configuration);
+
     }
 
     @Override
@@ -45,13 +42,7 @@ public class CoapServerProtocolProvider implements ServerProtocolProvider {
     }
 
     @Override
-    public CaliforniumServerEndpointFactory createDefaultEndpointFactory(URI uri) {
-        return new CoapServerEndpointFactory(uri);
-    }
-
-    @Override
-    public URI getDefaultUri(Configuration configuration) {
-        return EndpointUriUtil.createUri(getProtocol().getUriScheme(),
-                new InetSocketAddress(configuration.get(CoapConfig.COAP_PORT)));
+    public CoapServerEndpointFactory build() {
+        return new CoapServerEndpointFactory(uri, loggingTagPrefix, configuration, coapEndpointConfigInitializer);
     }
 }

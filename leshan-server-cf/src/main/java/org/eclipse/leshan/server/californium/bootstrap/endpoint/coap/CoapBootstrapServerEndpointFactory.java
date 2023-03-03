@@ -17,12 +17,20 @@ package org.eclipse.leshan.server.californium.bootstrap.endpoint.coap;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
 
+import org.eclipse.californium.core.config.CoapConfig;
+import org.eclipse.californium.core.config.CoapConfig.TrackerMode;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.CoapEndpoint.Builder;
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
+import org.eclipse.californium.elements.config.SystemConfig;
+import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.leshan.core.californium.DefaultExceptionTranslator;
 import org.eclipse.leshan.core.californium.ExceptionTranslator;
 import org.eclipse.leshan.core.californium.identity.DefaultCoapIdentityHandler;
@@ -35,21 +43,41 @@ import org.eclipse.leshan.server.security.ServerSecurityInfo;
 
 public class CoapBootstrapServerEndpointFactory implements CaliforniumBootstrapServerEndpointFactory {
 
-    protected final String loggingTagPrefix;
-    protected URI endpointUri = null;
-
-    public CoapBootstrapServerEndpointFactory(URI uri) {
-        this(uri, "Bootstrap Server");
+    public static Protocol getSupportedProtocol() {
+        return Protocol.COAP;
     }
 
-    public CoapBootstrapServerEndpointFactory(URI uri, String loggingTagPrefix) {
+    public static void applyDefaultValue(Configuration configuration) {
+        configuration.set(CoapConfig.MID_TRACKER, TrackerMode.NULL);
+    }
+
+    public static List<ModuleDefinitionsProvider> getModuleDefinitionsProviders() {
+        return Arrays.asList(SystemConfig.DEFINITIONS, CoapConfig.DEFINITIONS, UdpConfig.DEFINITIONS);
+    }
+
+    protected final URI endpointUri;
+    protected final String loggingTagPrefix;
+    protected final Configuration configuration;
+    protected final Consumer<CoapEndpoint.Builder> coapEndpointConfigInitializer;
+
+    public CoapBootstrapServerEndpointFactory(URI uri) {
+        this(uri, null, null, null);
+    }
+
+    public CoapBootstrapServerEndpointFactory(URI uri, String loggingTagPrefix, Configuration configuration,
+            Consumer<Builder> coapEndpointConfigInitializer) {
+        EndpointUriUtil.validateURI(uri);
+
         this.endpointUri = uri;
-        this.loggingTagPrefix = loggingTagPrefix;
+        this.loggingTagPrefix = loggingTagPrefix == null ? "Bootstrap Server" : loggingTagPrefix;
+        this.configuration = configuration;
+        this.coapEndpointConfigInitializer = coapEndpointConfigInitializer;
+
     }
 
     @Override
     public Protocol getProtocol() {
-        return Protocol.COAP;
+        return getSupportedProtocol();
     }
 
     @Override
@@ -68,7 +96,18 @@ public class CoapBootstrapServerEndpointFactory implements CaliforniumBootstrapS
     @Override
     public CoapEndpoint createCoapEndpoint(Configuration defaultConfiguration, ServerSecurityInfo serverSecurityInfo,
             LeshanBootstrapServer server) {
-        return createEndpointBuilder(EndpointUriUtil.getSocketAddr(endpointUri), defaultConfiguration, server).build();
+
+        // defined Configuration to use
+        Configuration configurationToUse;
+        if (configuration == null) {
+            // if specific configuration for this endpoint is null, used the default one which is the coapServer
+            // Configuration shared with all endpoints by default.
+            configurationToUse = defaultConfiguration;
+        } else {
+            configurationToUse = configuration;
+        }
+
+        return createEndpointBuilder(EndpointUriUtil.getSocketAddr(endpointUri), configurationToUse, server).build();
     }
 
     /**
@@ -85,6 +124,10 @@ public class CoapBootstrapServerEndpointFactory implements CaliforniumBootstrapS
         builder.setConnector(createConnector(address, coapConfig));
         builder.setConfiguration(coapConfig);
         builder.setLoggingTag(getLoggingTag());
+
+        if (coapEndpointConfigInitializer != null)
+            coapEndpointConfigInitializer.accept(builder);
+
         return builder;
     }
 

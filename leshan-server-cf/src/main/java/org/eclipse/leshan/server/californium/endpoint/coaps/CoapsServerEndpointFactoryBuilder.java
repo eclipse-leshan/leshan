@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 Sierra Wireless and others.
+ * Copyright (c) 2023 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -15,28 +15,29 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.californium.endpoint.coaps;
 
-import java.net.InetSocketAddress;
-import java.net.URI;
 import java.util.List;
+import java.util.function.Consumer;
 
-import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
+import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.leshan.core.endpoint.Protocol;
-import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointFactory;
-import org.eclipse.leshan.server.californium.endpoint.ServerProtocolProvider;
+import org.eclipse.leshan.server.californium.endpoint.AbstractEndpointFactoryBuilder;
 
-public class CoapsServerProtocolProvider implements ServerProtocolProvider {
+public class CoapsServerEndpointFactoryBuilder
+        extends AbstractEndpointFactoryBuilder<CoapsServerEndpointFactoryBuilder, CoapsServerEndpointFactory> {
+
+    protected Consumer<DtlsConnectorConfig.Builder> dtlsConnectorConfigInitializer;
 
     @Override
-    public Protocol getProtocol() {
+    protected Protocol getSupportedProtocol() {
         return CoapsServerEndpointFactory.getSupportedProtocol();
     }
 
     @Override
     public void applyDefaultValue(Configuration configuration) {
         CoapsServerEndpointFactory.applyDefaultValue(configuration);
+
     }
 
     @Override
@@ -44,14 +45,15 @@ public class CoapsServerProtocolProvider implements ServerProtocolProvider {
         return CoapsServerEndpointFactory.getModuleDefinitionsProviders();
     }
 
-    @Override
-    public CaliforniumServerEndpointFactory createDefaultEndpointFactory(URI uri) {
-        return new CoapsServerEndpointFactory(uri);
+    public CoapsServerEndpointFactoryBuilder setDtlsConnectorConfig(
+            Consumer<DtlsConnectorConfig.Builder> dtlsConnectorConfigInitializer) {
+        this.dtlsConnectorConfigInitializer = dtlsConnectorConfigInitializer;
+        return this;
     }
 
     @Override
-    public URI getDefaultUri(Configuration configuration) {
-        return EndpointUriUtil.createUri(getProtocol().getUriScheme(),
-                new InetSocketAddress(configuration.get(CoapConfig.COAP_SECURE_PORT)));
+    public CoapsServerEndpointFactory build() {
+        return new CoapsServerEndpointFactory(uri, loggingTagPrefix, configuration, dtlsConnectorConfigInitializer,
+                coapEndpointConfigInitializer);
     }
 }

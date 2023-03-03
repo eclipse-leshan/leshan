@@ -17,15 +17,11 @@ package org.eclipse.leshan.server.californium.bootstrap.endpoint.coap;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.californium.core.config.CoapConfig;
-import org.eclipse.californium.core.config.CoapConfig.TrackerMode;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
-import org.eclipse.californium.elements.config.SystemConfig;
-import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.server.californium.bootstrap.endpoint.BootstrapServerProtocolProvider;
@@ -35,17 +31,17 @@ public class CoapBootstrapServerProtocolProvider implements BootstrapServerProto
 
     @Override
     public Protocol getProtocol() {
-        return Protocol.COAP;
+        return CoapBootstrapServerEndpointFactory.getSupportedProtocol();
     }
 
     @Override
     public void applyDefaultValue(Configuration configuration) {
-        configuration.set(CoapConfig.MID_TRACKER, TrackerMode.NULL);
+        CoapBootstrapServerEndpointFactory.applyDefaultValue(configuration);
     }
 
     @Override
     public List<ModuleDefinitionsProvider> getModuleDefinitionsProviders() {
-        return Arrays.asList(SystemConfig.DEFINITIONS, CoapConfig.DEFINITIONS, UdpConfig.DEFINITIONS);
+        return CoapBootstrapServerEndpointFactory.getModuleDefinitionsProviders();
     }
 
     @Override
