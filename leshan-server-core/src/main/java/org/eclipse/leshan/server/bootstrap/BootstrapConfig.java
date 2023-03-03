@@ -495,7 +495,7 @@ public class BootstrapConfig {
          */
         public CipherSuiteId(ULong valueFromSecurityObject) {
             if (valueFromSecurityObject.intValue() < 0 || valueFromSecurityObject.intValue() > 65535)
-                throw new IllegalArgumentException("ULong value have to be between <0, 65535>");
+                throw new IllegalArgumentException("ULong value MUST be a 16-bit unsigned integer (max value : 65535)");
             this.firstByte = (byte) ((valueFromSecurityObject.intValue() >> 8) & 0xFF);
             this.secondByte = (byte) ((valueFromSecurityObject.intValue()) & 0xFF);
         }
