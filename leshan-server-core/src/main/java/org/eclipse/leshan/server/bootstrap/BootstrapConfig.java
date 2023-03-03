@@ -71,27 +71,35 @@ public class BootstrapConfig {
      */
     public ContentFormat contentFormat = null;
 
-    /** List of LWM2M path to delete. */
+    /**
+     * List of LWM2M path to delete.
+     */
     public List<String> toDelete = new ArrayList<>();
 
-    /** Map indexed by Server Instance Id. Key is the Server Instance to write. */
+    /**
+     * Map indexed by Server Instance Id. Key is the Server Instance to write.
+     */
     public Map<Integer, ServerConfig> servers = new HashMap<>();
 
-    /** Map indexed by Security Instance Id. Key is the Server Instance to write. */
+    /**
+     * Map indexed by Security Instance Id. Key is the Server Instance to write.
+     */
     public Map<Integer, ServerSecurity> security = new HashMap<>();
 
-    /** Map indexed by ACL Instance Id. Key is the ACL Instance to write. */
+    /**
+     * Map indexed by ACL Instance Id. Key is the ACL Instance to write.
+     */
     public Map<Integer, ACLConfig> acls = new HashMap<>();
 
-    /** Map indexed by OSCORE Object Instance Id. Key is the OSCORE Object Instance to write. */
+    /**
+     * Map indexed by OSCORE Object Instance Id. Key is the OSCORE Object Instance to write.
+     */
     public Map<Integer, OscoreObject> oscore = new HashMap<>();
 
     /** Server Configuration (object 1) as defined in LWM2M 1.0.x TS. */
     public static class ServerConfig {
 
-        /**
-         * Used as link to associate server Object Instance.
-         */
+        /** Used as link to associate server Object Instance. */
         public int shortId;
         /** Specify the lifetime of the registration in seconds (see Section 5.3 Registration). */
         public int lifetime = 86400;
