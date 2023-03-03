@@ -17,6 +17,7 @@
 package org.eclipse.leshan.server.bootstrap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.datatype.ULong;
@@ -25,21 +26,19 @@ import org.junit.jupiter.api.Test;
 class BootstrapConfigTest {
 
     @Test
-    public void CipherSuiteId_encode_from_two_bytes() {
-        // Create 2 bytes
+    public void test_toString() {
+        // Given 2 bytes
         byte[] decoded = Hex.decodeHex("C0A8".toCharArray());
-        Byte firstByte = decoded[0];
-        Byte secoundByte = decoded[1];
 
-        // Create CipherSuiteId with two bytes
-        BootstrapConfig.CipherSuiteId cipherSuiteId = new BootstrapConfig.CipherSuiteId(firstByte, secoundByte);
+        // Create CipherSuiteId
+        BootstrapConfig.CipherSuiteId cipherSuiteId = new BootstrapConfig.CipherSuiteId(decoded[0], decoded[1]);
 
         // Assert if bytes were correctly phrased
         assertEquals("c0,a8", cipherSuiteId.toString());
     }
 
     @Test
-    public void CipherSuiteId_encode_from_ULong() {
+    public void test_create_new_CipherSuiteId_from_ULong() {
         // Create CipherSuiteId with ULong
         BootstrapConfig.CipherSuiteId cipherSuiteId = new BootstrapConfig.CipherSuiteId(ULong.valueOf(49320));
 
@@ -48,7 +47,7 @@ class BootstrapConfigTest {
     }
 
     @Test
-    public void getValueForSecurityObject() {
+    public void test_getValueForSecurityObject() {
         // Create example ULong
         ULong testValue = ULong.valueOf(49320);
 
@@ -60,17 +59,11 @@ class BootstrapConfigTest {
     }
 
     @Test
-    public void is_error_thrown_for_too_big_values() {
-        // Create ULong with value bigger than 65535
+    public void test_error_thrown_for_invalid_ulong() {
+        // Create ULong from String
         ULong testValue = ULong.valueOf(65536);
 
         // Try to create CipherSuiteId with ULong outside of range
-        try {
-            new BootstrapConfig.CipherSuiteId(testValue);
-            assert (false);
-        } catch (IllegalArgumentException e) {
-            // If IllegalArgumentException is caught pass the test
-            assert (true);
-        }
+        assertThrowsExactly(IllegalArgumentException.class, () -> new BootstrapConfig.CipherSuiteId(testValue));
     }
 }
