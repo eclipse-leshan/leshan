@@ -30,8 +30,8 @@ class BootstrapConfigTest {
 
     @ParameterizedTest
     @CsvSource(value = { // given 2 bytes, expected ToString()
-            "C0A8 | c0,a8", // TLS_PSK_WITH_AES_128_CCM_8
-            "0003 | 00,03", // TLS_RSA_EXPORT_WITH_RC4_40_MD5
+            "C0A8 | 0xC0,0xA8", // TLS_PSK_WITH_AES_128_CCM_8
+            "0003 | 0x00,0x03", // TLS_RSA_EXPORT_WITH_RC4_40_MD5
     }, delimiter = '|')
     public void test_toString(String input, String expectedResult) {
         // Given 2 bytes
@@ -50,7 +50,7 @@ class BootstrapConfigTest {
         BootstrapConfig.CipherSuiteId cipherSuiteId = new BootstrapConfig.CipherSuiteId(ULong.valueOf(49320));
 
         // Assert if ULong was correctly phrased
-        assertEquals("c0,a8", cipherSuiteId.toString());
+        assertEquals("0xC0,0xA8", cipherSuiteId.toString());
     }
 
     @Test

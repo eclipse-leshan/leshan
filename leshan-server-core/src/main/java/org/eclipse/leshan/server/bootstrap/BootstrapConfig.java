@@ -509,7 +509,7 @@ public class BootstrapConfig {
          */
         @Override
         public String toString() {
-            return String.format("%02x,%02x", firstByte, secondByte);
+            return String.format("0x%02X,0x%02X", firstByte, secondByte);
         }
     }
 
