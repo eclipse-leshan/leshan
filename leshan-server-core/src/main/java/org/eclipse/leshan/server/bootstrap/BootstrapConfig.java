@@ -470,11 +470,15 @@ public class BootstrapConfig {
         private final byte secondByte;
 
         /**
-         * Ciphersuite is created with 2 bytes. Possible values are described in the
+         * Create {@link CipherSuiteId} from Cipher Suite value defined at IANA.
+         * <p>
+         * Possible values are described in the
          * <a href="https://iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-4"> registry</a>.
+         * <p>
+         * This doesn't mean that Leshan supports all IANA registered Cipher Suites.
          *
-         * @param firstByte first byte of ciphersuite (for example 0xC0)
-         * @param secondByte second byte of ciphersuite (for example 0xA8)
+         * @param firstByte of Cipher Suite (e.g. {@code 0xC0} for {@code TLS_PSK_WITH_AES_128_CCM_8})
+         * @param secondByte of Cipher Suite (e.g. {@code 0xA8} for {@code TLS_PSK_WITH_AES_128_CCM_8})
          */
         public CipherSuiteId(byte firstByte, byte secondByte) {
             this.firstByte = firstByte;
@@ -482,10 +486,12 @@ public class BootstrapConfig {
         }
 
         /**
-         * Integer is split into 2 bytes for example 49320 (0xc0a8 in hex) will be split into "0xC0,0xA8". This format
-         * is used by Security Object, resource 16.
-         *
-         * @param valueFromSecurityObject Integer representing ciphersuite id
+         * Create {@link CipherSuiteId} from ULong value of "DTLS/TLS Ciphersuite" resource (Id:16) from "Security"
+         * Object (Id:0).
+         * <p>
+         * As an example, the {@code TLS_PSK_WITH_AES_128_CCM_8} Cipher Suite is represented with the following string
+         * "{@code 0xC0,0xA8}". To form an integer value the two values are concatenated. In this example, the value is
+         * {@code 0xc0a8} for {@code 49320}.
          */
         public CipherSuiteId(ULong valueFromSecurityObject) {
             if (valueFromSecurityObject.intValue() < 0 || valueFromSecurityObject.intValue() > 65535)
@@ -495,17 +501,18 @@ public class BootstrapConfig {
         }
 
         /**
-         * Two bytes of ciphersuite id are concatenated into integer value. As an example bytes "0xC0,0xA8" will be
-         * concatenated into 0xc0a8 which in decimal notation is 49320.
-         *
-         * @return Integer number concatenated from 2 bytes.
+         * @return Value used in "DTLS/TLS Ciphersuite" resource (Id:16) from "Security" Object (Id:0).
+         *         <p>
+         *         The two bytes from Cipher Suite id are concatenated into integer value. As an example bytes
+         *         "{@code 0xC0,0xA8}" will be concatenated into {@code 0xc0a8} which in decimal notation is
+         *         {@code 49320}.
          */
         public ULong getValueForSecurityObject() {
             return ULong.valueOf((Byte.toUnsignedInt(firstByte) << 8) | Byte.toUnsignedInt(secondByte));
         }
 
         /**
-         * @return String representing hex value of concatenated two bytes.
+         * @return String representing IANA Cipher Suite Value.
          */
         @Override
         public String toString() {
