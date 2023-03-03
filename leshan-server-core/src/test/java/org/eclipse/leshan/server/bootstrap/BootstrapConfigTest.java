@@ -22,6 +22,8 @@ import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class BootstrapConfigTest {
 
@@ -58,10 +60,15 @@ class BootstrapConfigTest {
         assertEquals(testValue, cipherSuiteId.getValueForSecurityObject());
     }
 
-    @Test
-    public void test_error_thrown_for_invalid_ulong() {
+    @ParameterizedTest
+    @ValueSource(strings = { //
+            "2147483647", // max 32-bit signed Integer
+            "2147483648", // max 32-bit signed Integer + 1
+            "65536"// max 16-bit signed Integer +1
+    })
+    public void test_error_thrown_for_invalid_ulong(String invalidULong) {
         // Create ULong from String
-        ULong testValue = ULong.valueOf(65536);
+        ULong testValue = ULong.valueOf(invalidULong);
 
         // Try to create CipherSuiteId with ULong outside of range
         assertThrowsExactly(IllegalArgumentException.class, () -> new BootstrapConfig.CipherSuiteId(testValue));
