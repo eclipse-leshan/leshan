@@ -47,6 +47,10 @@ Contributors:
       <groupId>org.eclipse.californium</groupId>
       <artifactId>scandium</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.eclipse.californium</groupId>
+      <artifactId>element-connector-tcp-netty</artifactId>
+    </dependency>
 
     <!-- test dependencies -->
     <dependency>

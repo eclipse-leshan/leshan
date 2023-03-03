@@ -298,7 +298,7 @@ public class LeshanClientDemoCLI implements Runnable {
         int indexOf = main.url.indexOf("://");
         String scheme = main.url.substring(0, indexOf);
         // we support only coap and coaps
-        if (!"coap".equals(scheme) && !"coaps".equals(scheme)) {
+        if (!"coap".equals(scheme) && !"coaps".equals(scheme) && !"coap+tcp".equals(scheme)) {
             throw new MultiParameterException(spec.commandLine(),
                     String.format("Invalid URL %s : unknown scheme '%s', we support only 'coap' or 'coaps' for now",
                             main.url, scheme),
@@ -312,7 +312,7 @@ public class LeshanClientDemoCLI implements Runnable {
                         main.url, scheme), "-u");
             }
         } else {
-            if (!scheme.equals("coap")) {
+            if (!scheme.equals("coap") && !scheme.equals("coap+tcp")) {
                 throw new MultiParameterException(spec.commandLine(), String.format(
                         "Invalid URL %s : '%s' scheme must be used with PSK, RPK or x509 option. Do you mean 'coap' ? ",
                         main.url, scheme), "-u");
