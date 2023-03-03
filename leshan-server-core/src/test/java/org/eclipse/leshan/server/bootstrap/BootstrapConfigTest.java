@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.datatype.ULong;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -44,19 +43,31 @@ class BootstrapConfigTest {
         assertEquals(expectedResult, cipherSuiteId.toString());
     }
 
-    @Test
-    public void test_create_new_CipherSuiteId_from_ULong() {
+    @ParameterizedTest
+    @CsvSource(value = { // given ulong, expected ToString()
+            "49320 | 0xC0,0xA8", // TLS_PSK_WITH_AES_128_CCM_8
+            "    0 | 0x00,0x00", // test to lower limit
+            "65535 | 0xFF,0xFF", // test to upper limit
+
+    }, delimiter = '|')
+
+    public void test_create_new_CipherSuiteId_from_ULong(String input, String expectedResult) {
         // Create CipherSuiteId with ULong
-        BootstrapConfig.CipherSuiteId cipherSuiteId = new BootstrapConfig.CipherSuiteId(ULong.valueOf(49320));
+        BootstrapConfig.CipherSuiteId cipherSuiteId = new BootstrapConfig.CipherSuiteId(ULong.valueOf(input));
 
         // Assert if ULong was correctly phrased
-        assertEquals("0xC0,0xA8", cipherSuiteId.toString());
+        assertEquals(expectedResult, cipherSuiteId.toString());
     }
 
-    @Test
-    public void test_getValueForSecurityObject() {
+    @ParameterizedTest
+    @ValueSource(strings = { //
+            "49320", // TLS_PSK_WITH_AES_128_CCM_8
+            "0", // test to lower limit
+            "65535", // test to upper limit
+    })
+    public void test_getValueForSecurityObject(String input) {
         // Create example ULong
-        ULong testValue = ULong.valueOf(49320);
+        ULong testValue = ULong.valueOf(input);
 
         // Create cipherSuiteId from ULong
         BootstrapConfig.CipherSuiteId cipherSuiteId = new BootstrapConfig.CipherSuiteId(testValue);
