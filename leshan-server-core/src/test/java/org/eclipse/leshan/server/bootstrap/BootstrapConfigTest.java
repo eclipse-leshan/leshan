@@ -23,20 +23,25 @@ import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class BootstrapConfigTest {
 
-    @Test
-    public void test_toString() {
+    @ParameterizedTest
+    @CsvSource(value = { // given 2 bytes, expected ToString()
+            "C0A8 | c0,a8", // TLS_PSK_WITH_AES_128_CCM_8
+            "0003 | 00,03", // TLS_RSA_EXPORT_WITH_RC4_40_MD5
+    }, delimiter = '|')
+    public void test_toString(String input, String expectedResult) {
         // Given 2 bytes
-        byte[] decoded = Hex.decodeHex("C0A8".toCharArray());
+        byte[] decoded = Hex.decodeHex(input.toCharArray());
 
         // Create CipherSuiteId
         BootstrapConfig.CipherSuiteId cipherSuiteId = new BootstrapConfig.CipherSuiteId(decoded[0], decoded[1]);
 
         // Assert if bytes were correctly phrased
-        assertEquals("c0,a8", cipherSuiteId.toString());
+        assertEquals(expectedResult, cipherSuiteId.toString());
     }
 
     @Test
