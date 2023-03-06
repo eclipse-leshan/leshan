@@ -60,7 +60,7 @@ public class ObservationSerDes {
     private static final String KIND_SINGLE = "single";
     private static final String KIND_COMPOSITE = "composite";
 
-    public static byte[] serialize(Observation obs) {
+    public byte[] serialize(Observation obs) {
         ObjectNode n = JsonNodeFactory.instance.objectNode();
         n.put(OBS_ID, obs.getId().getAsHexString());
         n.put(OBS_REGID, obs.getRegistrationId());
@@ -106,7 +106,7 @@ public class ObservationSerDes {
         return n.toString().getBytes();
     }
 
-    public static Observation deserialize(byte[] data) {
+    public Observation deserialize(byte[] data) {
         String json = new String(data);
         try {
             JsonNode n = new ObjectMapper().readTree(json);
