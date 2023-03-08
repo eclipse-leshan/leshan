@@ -35,7 +35,6 @@ import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
 import java.util.Iterator;
 
-import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.leshan.core.endpoint.Protocol;
@@ -186,9 +185,9 @@ public class LeshanBootstrapServerBuilderTest {
     public void create_server_without_psk_cipher() {
         Builder endpointsBuilder = new CaliforniumBootstrapServerEndpointsProvider.Builder(
                 new CoapsBootstrapServerProtocolProvider());
-        Configuration coapConfiguration = endpointsBuilder.createDefaultConfiguration();
-        coapConfiguration.setAsList(DtlsConfig.DTLS_CIPHER_SUITES, CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8);
-        endpointsBuilder.setConfiguration(coapConfiguration);
+        endpointsBuilder.setConfiguration(c -> {
+            c.setAsList(DtlsConfig.DTLS_CIPHER_SUITES, CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8);
+        });
         builder.setEndpointsProvider(endpointsBuilder.build());
 
         builder.setPrivateKey(privateKey);

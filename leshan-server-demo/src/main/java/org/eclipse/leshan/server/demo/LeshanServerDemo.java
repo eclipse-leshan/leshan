@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.List;
@@ -34,7 +33,6 @@ import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.util.CertPathUtil;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
-import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -47,12 +45,9 @@ import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.LeshanServerBuilder;
-import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointFactory;
 import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointsProvider;
-import org.eclipse.leshan.server.californium.endpoint.ServerProtocolProvider;
 import org.eclipse.leshan.server.californium.endpoint.coap.CoapOscoreServerEndpointFactory;
 import org.eclipse.leshan.server.californium.endpoint.coap.CoapServerProtocolProvider;
-import org.eclipse.leshan.server.californium.endpoint.coaps.CoapsServerEndpointFactory;
 import org.eclipse.leshan.server.californium.endpoint.coaps.CoapsServerProtocolProvider;
 import org.eclipse.leshan.server.core.demo.json.servlet.SecurityServlet;
 import org.eclipse.leshan.server.demo.cli.LeshanServerDemoCLI;
@@ -183,29 +178,18 @@ public class LeshanServerDemo {
 
         // Create Californium Endpoints Provider:
         // ------------------
-        // Create Custom CoAPS protocol provider to add MDC logger :
-        ServerProtocolProvider coapsProtocolProvider = new CoapsServerProtocolProvider() {
-            @Override
-            public CaliforniumServerEndpointFactory createDefaultEndpointFactory(URI uri) {
-                return new CoapsServerEndpointFactory(uri) {
-
-                    @Override
-                    protected Builder createDtlsConnectorConfigBuilder(Configuration endpointConfiguration) {
-                        Builder dtlsConfigBuilder = super.createDtlsConnectorConfigBuilder(endpointConfiguration);
-
-                        // Add MDC for connection logs
-                        if (cli.helpsOptions.getVerboseLevel() > 0)
-                            dtlsConfigBuilder.setConnectionListener(new PrincipalMdcConnectionListener());
-
-                        return dtlsConfigBuilder;
-                    }
-                };
-            }
-        };
-
         // Create Server Endpoints Provider
         CaliforniumServerEndpointsProvider.Builder endpointsBuilder = new CaliforniumServerEndpointsProvider.Builder(
-                new CoapServerProtocolProvider(), coapsProtocolProvider);
+                // Add coap Protocol support
+                new CoapServerProtocolProvider(),
+
+                // Add coaps protocol support
+                new CoapsServerProtocolProvider(c -> {
+                    // Add MDC for connection logs
+                    if (cli.helpsOptions.getVerboseLevel() > 0)
+                        c.setConnectionListener(new PrincipalMdcConnectionListener());
+
+                }));
 
         // Create Californium Configuration
         Configuration serverCoapConfig = endpointsBuilder.createDefaultConfiguration();
