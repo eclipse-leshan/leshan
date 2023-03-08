@@ -97,6 +97,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
 
     private final JedisLock lock;
     private final RegistrationSerDes registrationSerDes;
+    private final ObservationSerDes observationSerDes;
 
     public RedisRegistrationStore(Pool<Jedis> p) {
         this(new Builder(p).generateDefaultValue());
@@ -118,6 +119,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
         this.schedExecutor = builder.schedExecutor;
         this.lock = builder.lock;
         this.registrationSerDes = builder.registrationSerDes;
+        this.observationSerDes = builder.observationSerDes;
     }
 
     /* *************** Redis Key utility function **************** */
@@ -675,11 +677,11 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
     }
 
     private byte[] serializeObs(Observation obs) {
-        return ObservationSerDes.serialize(obs);
+        return observationSerDes.serialize(obs);
     }
 
     private Observation deserializeObs(byte[] data) {
-        return ObservationSerDes.deserialize(data);
+        return observationSerDes.deserialize(data);
     }
 
     /* *************** Expiration handling **************** */
@@ -780,6 +782,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
         private ScheduledExecutorService schedExecutor;
         private JedisLock lock;
         private RegistrationSerDes registrationSerDes;
+        private ObservationSerDes observationSerDes;
 
         /**
          * Set the prefix for all keys and prefixes.
@@ -936,6 +939,14 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
             return this;
         }
 
+        /**
+         * Set {@link ObservationSerDes} instance used to serialize/de-serialize {@link Observation} to/from this store.
+         */
+        public Builder setObservationSerDes(ObservationSerDes observationSerDes) {
+            this.observationSerDes = observationSerDes;
+            return this;
+        }
+
         public Builder(Pool<Jedis> pool) {
             this.pool = pool;
             this.prefix = "REGSTORE#";
@@ -964,6 +975,10 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
 
             if (this.registrationSerDes == null) {
                 this.registrationSerDes = new RegistrationSerDes();
+            }
+
+            if (this.observationSerDes == null) {
+                this.observationSerDes = new ObservationSerDes();
             }
 
             return this;
