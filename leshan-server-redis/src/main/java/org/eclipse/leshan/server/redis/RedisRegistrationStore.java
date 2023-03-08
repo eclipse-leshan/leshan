@@ -759,11 +759,6 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
      * Class helping to build and configure a {@link RedisRegistrationStore}.
      */
     public static class Builder {
-        /** Default time in seconds between 2 cleaning tasks (used to remove expired registration) */
-        public static final long DEFAULT_CLEAN_PERIOD = 60;
-        public static final int DEFAULT_CLEAN_LIMIT = 500;
-        /** Default extra time for registration lifetime in seconds */
-        public static final long DEFAULT_GRACE_PERIOD = 0;
 
         private final Pool<Jedis> pool;
         private String prefix;
@@ -776,8 +771,10 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
         private String observationTokensByRegistrationIdPrefix;
         private String endpointExpirationKey;
 
+        /** Time in seconds between 2 cleaning tasks (used to remove expired registration) */
         private long cleanPeriod;
         private int cleanLimit;
+        /** extra time for registration lifetime in seconds */
         private long gracePeriod;
 
         private ScheduledExecutorService schedExecutor;
@@ -938,9 +935,9 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
             this.observationTokenPrefix = "OBS#TKN#";
             this.observationTokensByRegistrationIdPrefix = "TKNS#REGID#";
             this.endpointExpirationKey = "EXP#EP";
-            this.cleanPeriod = DEFAULT_CLEAN_PERIOD;
-            this.cleanLimit = DEFAULT_CLEAN_LIMIT;
-            this.gracePeriod = DEFAULT_GRACE_PERIOD;
+            this.cleanPeriod = 60;
+            this.cleanLimit = 500;
+            this.gracePeriod = 0;
         }
 
         /**
