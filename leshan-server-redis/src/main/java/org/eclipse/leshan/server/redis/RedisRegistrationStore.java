@@ -880,7 +880,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
         }
 
         /**
-         * Set the clean period in seconds.
+         * Set time between 2 periodic task about cleaning expired registration.
          * <p>
          * Default value is {@literal 60 seconds}.
          */
@@ -890,7 +890,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
         }
 
         /**
-         * Set the maximum number to clean in a clean period.
+         * Set maximum number of expired registration removed by clean period
          * <p>
          * Default value is {@literal 500}.
          */
@@ -900,7 +900,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
         }
 
         /**
-         * Set the grace period in seconds.
+         * Set some extra time added to registration lifetime when calculating if a registration expired.
          * <p>
          * Default value is {@literal 0 seconds}.
          */
@@ -909,16 +909,28 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
             return this;
         }
 
+        /**
+         * Set {@link ScheduledExecutorService} used to launch period task about cleaning expired registration.
+         */
         public Builder setSchedExecutor(ScheduledExecutorService schedExecutor) {
             this.schedExecutor = schedExecutor;
             return this;
         }
 
+        /**
+         * Set {@link JedisLock} implementation used to handle concurrent access to this store.
+         * <p>
+         * Default implementation used is {@link SingleInstanceJedisLock}
+         */
         public Builder setLock(JedisLock lock) {
             this.lock = lock;
             return this;
         }
 
+        /**
+         * Set {@link RegistrationSerDes} instance used to serialize/de-serialize {@link Registration} to/from this
+         * store.
+         */
         public Builder setRegistrationSerDes(RegistrationSerDes registrationSerDes) {
             this.registrationSerDes = registrationSerDes;
             return this;
