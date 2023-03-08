@@ -99,7 +99,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
     private final RegistrationSerDes registrationSerDes;
 
     public RedisRegistrationStore(Pool<Jedis> p) {
-        this(new Builder(p));
+        this(new Builder(p).generateDefaultValue());
     }
 
     public RedisRegistrationStore(Builder builder) {
@@ -940,6 +940,23 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
             this.gracePeriod = 0;
         }
 
+        protected Builder generateDefaultValue() {
+            if (this.schedExecutor == null) {
+                this.schedExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory(
+                        String.format("RedisRegistrationStore Cleaner (%ds)", this.cleanPeriod)));
+            }
+
+            if (this.lock == null) {
+                this.lock = new SingleInstanceJedisLock();
+            }
+
+            if (this.registrationSerDes == null) {
+                this.registrationSerDes = new RegistrationSerDes();
+            }
+
+            return this;
+        }
+
         /**
          * Create the {@link RedisRegistrationStore}.
          * <p>
@@ -1004,18 +1021,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
                 this.endpointExpirationKey = this.prefix + this.endpointExpirationKey;
             }
 
-            if (this.schedExecutor == null) {
-                this.schedExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory(
-                        String.format("RedisRegistrationStore Cleaner (%ds)", this.cleanPeriod)));
-            }
-
-            if (this.lock == null) {
-                this.lock = new SingleInstanceJedisLock();
-            }
-
-            if (this.registrationSerDes == null) {
-                this.registrationSerDes = new RegistrationSerDes();
-            }
+            generateDefaultValue();
 
             return new RedisRegistrationStore(this);
         }
