@@ -347,6 +347,11 @@ public class Registration {
         return applicationData;
     }
 
+    /**
+     * @return URI of the server endpoint used by client to register.
+     *         <p>
+     *         This can be changed in next milestones : https://github.com/eclipse/leshan/issues/1415
+     */
     public URI getLastEndpointUsed() {
         return lastEndpointUsed;
     }
