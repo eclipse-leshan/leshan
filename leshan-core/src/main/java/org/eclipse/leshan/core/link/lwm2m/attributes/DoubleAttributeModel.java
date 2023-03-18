@@ -43,6 +43,7 @@ public class DoubleAttributeModel extends LwM2mAttributeModel<Double> {
             parser.consumeNextChar();
         }
         if (parser.nextCharIs('.')) {
+            parser.consumeNextChar();
             parser.consumeDIGIT();
             while (parser.nextCharIsDIGIT()) {
                 parser.consumeNextChar();
