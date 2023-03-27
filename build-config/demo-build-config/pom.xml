@@ -63,8 +63,6 @@ Contributors:
             <workingDirectory>webapp</workingDirectory>
             <nodeVersion>v12.22.5</nodeVersion>
             <yarnVersion>v1.22.19</yarnVersion>
-            <!-- See why we use a mirror : https://gitlab.eclipse.org/eclipsefdn/helpdesk/-/issues/1032 -->
-            <yarnDownloadRoot>https://sourceforge.net/projects/yarn.mirror/files/</yarnDownloadRoot>
           </configuration>
           <executions>
             <execution>
@@ -103,4 +101,24 @@ Contributors:
       </plugins>
     </pluginManagement>
   </build>
+
+  <profiles>
+    <profile>
+      <id>eclipseJenkins</id>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>com.github.eirslett</groupId>
+              <artifactId>frontend-maven-plugin</artifactId>
+              <configuration>
+                <!-- See why we use a mirror : https://gitlab.eclipse.org/eclipsefdn/helpdesk/-/issues/1032 -->
+                <yarnDownloadRoot>https://sourceforge.net/projects/yarn.mirror/files/</yarnDownloadRoot>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+  </profiles>
 </project>
