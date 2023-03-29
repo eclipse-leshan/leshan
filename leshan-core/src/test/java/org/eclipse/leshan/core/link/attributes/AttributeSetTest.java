@@ -40,8 +40,10 @@ public class AttributeSetTest {
                 LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 5L),
                 LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, 60L),
                 LwM2mAttributes.create(LwM2mAttributes.EVALUATE_MINIMUM_PERIOD, 30L),
-                LwM2mAttributes.create(LwM2mAttributes.EVALUATE_MAXIMUM_PERIOD, 45L));
-        assertEquals("ver=1.1&pmin=5&pmax=60&epmin=30&epmax=45", sut.toString());
+                LwM2mAttributes.create(LwM2mAttributes.EVALUATE_MAXIMUM_PERIOD, 45L),
+                LwM2mAttributes.create(LwM2mAttributes.LESSER_THAN, 10D),
+                LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN, 20.10D));
+        assertEquals("ver=1.1&pmin=5&pmax=60&epmin=30&epmax=45&lt=10.0&gt=20.1", sut.toString());
 
         LwM2mAttributeSet res = new LwM2mAttributeSet(parser.parseUriQuery(sut.toString()));
         assertEquals(sut, res);
