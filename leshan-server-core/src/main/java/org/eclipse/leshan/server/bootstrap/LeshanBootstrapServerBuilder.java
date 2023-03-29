@@ -51,6 +51,7 @@ public class LeshanBootstrapServerBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(LeshanBootstrapServerBuilder.class);
 
     private BootstrapConfigStore configStore;
+    private BootstrapTaskProvider taskProvider;
     private BootstrapSecurityStore securityStore;
     private BootstrapSessionManager sessionManager;
     private BootstrapHandlerFactory bootstrapHandlerFactory;
@@ -127,7 +128,22 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
-     * Set the {@link BootstrapConfigStore} containing bootstrap configuration to apply to each devices.
+     * Set the {@link BootstrapTaskProvider} which should return task to do during a bootstrap session to each clients.
+     * <p>
+     * By default an {@link BootstrapConfigStoreTaskProvider} is used with given {@link BootstrapConfigStore}. See
+     * {@link #setConfigStore(BootstrapConfigStore)}.
+     *
+     * @param taskProvider the bootstrap tasks provider.
+     * @return the builder for fluent Bootstrap Server creation.
+     *
+     */
+    public LeshanBootstrapServerBuilder setTaskProvider(BootstrapTaskProvider taskProvider) {
+        this.taskProvider = taskProvider;
+        return this;
+    }
+
+    /**
+     * Set the {@link BootstrapConfigStore} containing bootstrap configuration to apply to each clients.
      * <p>
      * By default an {@link InMemoryBootstrapConfigStore} is used.
      * <p>
@@ -261,24 +277,7 @@ public class LeshanBootstrapServerBuilder {
                     return new DefaultBootstrapHandler(sender, sessionManager, listener);
                 }
             };
-        if (configStore == null) {
-            configStore = new InMemoryBootstrapConfigStore();
-        } else if (sessionManager != null) {
-            LOG.warn("configStore is set but you also provide a custom SessionManager so this store will not be used");
-        }
-        if (modelProvider == null) {
-            modelProvider = new StandardBootstrapModelProvider();
-        } else if (sessionManager != null) {
-            LOG.warn(
-                    "modelProvider is set but you also provide a custom SessionManager so this provider will not be used");
-        }
-        if (sessionManager == null) {
-            SecurityChecker securityChecker = new SecurityChecker();
-            if (authorizer == null)
-                authorizer = new DefaultBootstrapAuthorizer(securityStore, securityChecker);
-            sessionManager = new DefaultBootstrapSessionManager(new BootstrapConfigStoreTaskProvider(configStore),
-                    modelProvider, authorizer);
-        }
+
         if (encoder == null)
             encoder = new DefaultLwM2mEncoder();
         if (decoder == null)
@@ -286,6 +285,47 @@ public class LeshanBootstrapServerBuilder {
         if (linkParser == null)
             linkParser = new DefaultLwM2mLinkParser();
 
+        // Handle class depending of Session Manager
+        if (sessionManager == null) {
+            if (modelProvider == null) {
+                modelProvider = new StandardBootstrapModelProvider();
+            }
+            if (authorizer == null) {
+                SecurityChecker securityChecker = new SecurityChecker();
+                authorizer = new DefaultBootstrapAuthorizer(securityStore, securityChecker);
+            }
+
+            // Handle class depending of Task Provider
+            if (taskProvider == null) {
+                if (configStore == null) {
+                    configStore = new InMemoryBootstrapConfigStore();
+                }
+                taskProvider = new BootstrapConfigStoreTaskProvider(configStore);
+            } else {
+                if (configStore != null) {
+                    LOG.warn(
+                            "configStore is set but you also provide a custom TaskProvider so this store will not be used");
+                }
+            }
+            sessionManager = new DefaultBootstrapSessionManager(taskProvider, modelProvider, authorizer);
+        } else {
+            if (taskProvider != null) {
+                LOG.warn(
+                        "taskProvider is set but you also provide a custom SessionManager so this provider will not be used");
+            }
+            if (configStore != null) {
+                LOG.warn(
+                        "configStore is set but you also provide a custom SessionManager so this store will not be used");
+            }
+            if (modelProvider != null) {
+                LOG.warn(
+                        "modelProvider is set but you also provide a custom SessionManager so this provider will not be used");
+            }
+            if (authorizer != null) {
+                LOG.warn(
+                        "authorizer is set but you also provide a custom SessionManager so this authorizer will not be used");
+            }
+        }
         return createBootstrapServer(endpointsProvider, sessionManager, bootstrapHandlerFactory, encoder, decoder,
                 linkParser, securityStore,
                 new ServerSecurityInfo(privateKey, publicKey, certificateChain, trustedCertificates));
