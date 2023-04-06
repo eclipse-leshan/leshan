@@ -129,6 +129,24 @@ public class BootstrapUtil {
         // resources since v1.1
         if (serverConfig.apnLink != null)
             resources.add(LwM2mSingleResource.newObjectLinkResource(10, new ObjectLink(11, serverConfig.apnLink)));
+
+        if (serverConfig.registrationPriority != null)
+            resources.add(LwM2mSingleResource.newUnsignedIntegerResource(13, serverConfig.registrationPriority));
+        if (serverConfig.initialDelay != null)
+            resources.add(LwM2mSingleResource.newUnsignedIntegerResource(14, serverConfig.initialDelay));
+        if (serverConfig.registrationFailure != null)
+            resources.add(LwM2mSingleResource.newBooleanResource(15, serverConfig.registrationFailure));
+        if (serverConfig.bootstrapOnRegistrationFailure != null)
+            resources.add(LwM2mSingleResource.newBooleanResource(16, serverConfig.bootstrapOnRegistrationFailure));
+        if (serverConfig.communicationRetryCount != null)
+            resources.add(LwM2mSingleResource.newUnsignedIntegerResource(17, serverConfig.communicationRetryCount));
+        if (serverConfig.CommunicationRetryTimer != null)
+            resources.add(LwM2mSingleResource.newUnsignedIntegerResource(18, serverConfig.CommunicationRetryTimer));
+        if (serverConfig.SequenceDelayTimer != null)
+            resources.add(LwM2mSingleResource.newUnsignedIntegerResource(19, serverConfig.SequenceDelayTimer));
+        if (serverConfig.SequenceRetryCount != null)
+            resources.add(LwM2mSingleResource.newUnsignedIntegerResource(20, serverConfig.SequenceRetryCount));
+
         if (serverConfig.trigger != null)
             resources.add(LwM2mSingleResource.newBooleanResource(21, serverConfig.trigger));
         if (serverConfig.preferredTransport != null)
