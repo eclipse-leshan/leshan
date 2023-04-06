@@ -171,6 +171,59 @@ public class BootstrapConfig {
          */
         public Boolean muteSend = null;
 
+        /**
+         * The LwM2M Client sequences the LwM2M Server registrations in increasing order of this value. If this value is
+         * not defined, registration attempts to this server are not impacted by other server registrations.
+         */
+        public ULong registrationPriority = null;
+
+        /**
+         * The delay before registration is attempted for this LwM2M Server based upon the completion of registration of
+         * the previous LwM2M Server in the registration order. This is only applied until the first successful
+         * registration after a successful bootstrapping sequence.
+         */
+        public ULong initialDelay = null;
+
+        /**
+         * When set to true and registration to this LwM2M server fails, the LwM2M Client blocks registration to other
+         * servers in the order. When set to false, the LwM2M Client proceeds with registration to the next server in
+         * the order.
+         */
+        public Boolean registrationFailure = null;
+
+        /**
+         * If set to true, this indicates that the LwM2M Client should re-bootstrap when either registration is
+         * explicitly rejected by the LwM2M Server or registration is considered as failing as dictated by the other
+         * resource settings. If set to false, the LwM2M Client will continue with the registration attempts as dictated
+         * by the other resource settings.
+         */
+        public Boolean bootstrapOnRegistrationFailure = null;
+
+        /**
+         * The number of successive communication attempts before which a communication sequence is considered as failed
+         */
+        public ULong communicationRetryCount = null;
+
+        /**
+         * The delay between successive communication attempts in a communication sequence. This value is multiplied by
+         * two to the power of the communication retry attempt minus one (2**(retry attempt-1)) to create an exponential
+         * back-off.
+         */
+        public ULong CommunicationRetryTimer = null;
+
+        /**
+         * The delay between successive communication sequences. A communication sequence is defined as the exhaustion
+         * of the Communication Retry Count and Communication Retry Timer values. A communication sequence can be
+         * applied to server registrations or bootstrapping attempts. MAX_VALUE means do not perform another
+         * communication sequence.
+         */
+        public ULong SequenceDelayTimer = null;
+
+        /**
+         * The number of successive communication sequences before which a registration attempt is considered as failed.
+         */
+        public ULong SequenceRetryCount = null;
+
         @Override
         public String toString() {
             return String.format(
