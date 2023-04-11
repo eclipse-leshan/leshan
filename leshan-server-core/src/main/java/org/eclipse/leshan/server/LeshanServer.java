@@ -154,8 +154,8 @@ public class LeshanServer {
         this.sendService = createSendHandler();
 
         // create endpoints
-        ServerEndpointToolbox toolbox = new ServerEndpointToolbox(decoder, encoder, linkParser,
-                new DefaultClientProfileProvider(registrationStore, modelProvider));
+        ServerEndpointToolbox toolbox = createServerEndpointToolbox(decoder, encoder, linkParser, registrationStore,
+                modelProvider);
         RegistrationHandler registrationHandler = new RegistrationHandler(registrationService, authorizer,
                 registrationIdProvider);
         DefaultUplinkRequestReceiver requestReceiver = new DefaultUplinkRequestReceiver(registrationHandler,
@@ -166,6 +166,12 @@ public class LeshanServer {
         requestSender = createRequestSender(endpointsProvider, registrationService, this.modelProvider,
                 presenceService);
 
+    }
+
+    protected ServerEndpointToolbox createServerEndpointToolbox(LwM2mDecoder decoder, LwM2mEncoder encoder,
+            LwM2mLinkParser linkParser, RegistrationStore registrationStore, LwM2mModelProvider modelProvider) {
+        return new ServerEndpointToolbox(decoder, encoder, linkParser,
+                new DefaultClientProfileProvider(registrationStore, modelProvider));
     }
 
     protected RegistrationServiceImpl createRegistrationService(RegistrationStore registrationStore) {
