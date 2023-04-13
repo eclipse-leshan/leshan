@@ -91,6 +91,9 @@ Contributors:
     <module>leshan-server-redis</module>
     <module>leshan-client-core</module>
     <module>leshan-client-cf</module>
+    <!-- transport layer based on java-coap -->
+    <module>leshan-tl-javacoap-core</module>
+    <module>leshan-tl-javacoap-server</module>
 
     <!--  integration tests -->
     <module>leshan-integration-tests</module>
@@ -174,6 +177,18 @@ Contributors:
         <artifactId>leshan-server-redis</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <!-- transport layer based on java-coap -->
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-tl-javacoap-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-tl-javacoap-server</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <!-- demo -->
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>leshan-core-demo</artifactId>
@@ -186,11 +201,29 @@ Contributors:
       </dependency>
 
       <!-- Leshan library dependencies -->
+      <!-- core -->
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
         <version>${slf4j.api.version}</version>
       </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.upokecenter</groupId>
+        <artifactId>cbor</artifactId>
+        <version>4.5.2</version>
+      </dependency>
+      <!-- redis -->
+      <dependency>
+        <groupId>redis.clients</groupId>
+        <artifactId>jedis</artifactId>
+        <version>4.4.3</version>
+      </dependency>
+      <!-- californium -->
       <dependency>
         <groupId>org.eclipse.californium</groupId>
         <artifactId>californium-core</artifactId>
@@ -206,20 +239,11 @@ Contributors:
         <artifactId>scandium</artifactId>
         <version>${californium.version}</version>
       </dependency>
+      <!-- java-coap -->
       <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
-        <version>${jackson.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.upokecenter</groupId>
-        <artifactId>cbor</artifactId>
-        <version>4.5.2</version>
-      </dependency>
-      <dependency>
-        <groupId>redis.clients</groupId>
-        <artifactId>jedis</artifactId>
-        <version>4.4.3</version>
+        <groupId>io.github.open-coap</groupId>
+        <artifactId>coap-core</artifactId>
+        <version>6.18.0</version>
       </dependency>
 
       <!-- Demos, examples and tests dependencies -->
