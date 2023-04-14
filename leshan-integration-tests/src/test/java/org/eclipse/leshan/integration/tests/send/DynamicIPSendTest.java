@@ -77,7 +77,8 @@ public class DynamicIPSendTest {
     static Stream<Arguments> noTlsTransports() {
         return Stream.of(//
                 // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider
-                arguments(Protocol.COAP, "Californium", "Californium"));
+                arguments(Protocol.COAP, "Californium", "Californium"), //
+                arguments(Protocol.COAP, "Californium", "java-coap"));
     }
 
     @ParameterizedTest(name = "{0} - Client using {1} - Server using {2}")

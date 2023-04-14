@@ -68,7 +68,8 @@ public class ObserveServerOnlyTest {
     static Stream<org.junit.jupiter.params.provider.Arguments> transports() {
         return Stream.of(//
                 // Server Endpoint Provider
-                arguments("Californium"));
+                arguments("Californium"), //
+                arguments("java-coap"));
     }
 
     /*---------------------------------/

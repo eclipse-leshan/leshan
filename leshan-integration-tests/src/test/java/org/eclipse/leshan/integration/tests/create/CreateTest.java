@@ -72,7 +72,8 @@ public class CreateTest {
 
         Object[][] transports = new Object[][] {
                 // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider
-                { Protocol.COAP, "Californium", "Californium" } };
+                { Protocol.COAP, "Californium", "Californium" }, //
+                { Protocol.COAP, "Californium", "java-coap" } };
 
         Object[] contentFormats = new Object[] { //
                 ContentFormat.TLV, //

@@ -19,12 +19,9 @@
 package org.eclipse.leshan.integration.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.eclipse.leshan.core.ResponseCode.CONTENT;
 import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertArg;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -41,7 +38,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -56,16 +52,10 @@ import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.LinkParseException;
-import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
-import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.core.response.ErrorCallback;
-import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
@@ -98,7 +88,8 @@ public class RegistrationTest {
     static Stream<org.junit.jupiter.params.provider.Arguments> transports() {
         return Stream.of(//
                 // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider
-                arguments(Protocol.COAP, "Californium", "Californium"));
+                arguments(Protocol.COAP, "Californium", "Californium"), //
+                arguments(Protocol.COAP, "Californium", "java-coap"));
     }
 
     /*---------------------------------/
@@ -276,54 +267,6 @@ public class RegistrationTest {
         client.start();
         server.waitForReRegistrationOf(registration);
         assertThat(client).isRegisteredAt(server);
-    }
-
-    @TestAllTransportLayer
-    public void register_observe_deregister_observe(Protocol protocol, String clientEndpointProvider,
-            String serverEndpointProvider) throws NonUniqueSecurityInfoException, InterruptedException {
-        // TODO java-coap does not raise expected SendFailedException at the end of this tests
-        // But not sure what should be the right behavior.
-        // Waiting for https://github.com/open-coap/java-coap/issues/36 before to move forward on this.
-        assumeTrue(serverEndpointProvider.equals("Californium"));
-
-        // Check client is not registered
-        client = givenClient.build();
-        assertThat(client).isNotRegisteredAt(server);
-
-        // Start it and wait for registration
-        client.start();
-        server.waitForNewRegistrationOf(client);
-        client.waitForRegistrationTo(server);
-
-        // Check client is well registered
-        assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
-
-        // observe device timezone
-        ObserveResponse observeResponse = server.send(registration, new ObserveRequest(3, 0));
-        assertThat(observeResponse) //
-                .hasCode(CONTENT) //
-                .hasValidUnderlyingResponseFor(serverEndpointProvider);
-
-        // check observation registry is not null
-        Set<Observation> observations = server.getObservationService().getObservations(registration);
-        assertThat(observations) //
-                .hasSize(1) //
-                .first().isInstanceOfSatisfying(SingleObservation.class, obs -> {
-                    assertThat(obs.getRegistrationId()).isEqualTo(registration.getId());
-                    assertThat(obs.getPath()).isEqualTo(new LwM2mPath(3, 0));
-                });
-
-        // Check de-registration
-        client.stop(true);
-        server.waitForDeregistrationOf(registration, observations);
-        assertThat(client).isNotRegisteredAt(server);
-        client.waitForDeregistrationTo(server);
-        observations = server.getObservationService().getObservations(registration);
-        assertThat(observations).isEmpty();
-
-        // try to send a new observation
-        assertThrowsExactly(SendFailedException.class, () -> server.send(registration, new ObserveRequest(3, 0), 50));
     }
 
     @TestAllTransportLayer

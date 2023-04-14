@@ -70,7 +70,8 @@ public class ObserveTimeStampTest {
 
         Object[][] transports = new Object[][] {
                 // Server Endpoint Provider
-                { "Californium" } };
+                { "Californium" }, //
+                { "java-coap" } };
 
         Object[] contentFormats = new Object[] { //
                 ContentFormat.JSON, //

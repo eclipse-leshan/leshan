@@ -22,6 +22,8 @@ import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
+import com.mbed.coap.packet.CoapResponse;
+
 public abstract class AbstractLwM2mResponseAssert<SELF extends AbstractLwM2mResponseAssert<SELF, ACTUAL>, ACTUAL extends LwM2mResponse>
         extends AbstractObjectAssert<SELF, ACTUAL> {
 
@@ -54,6 +56,9 @@ public abstract class AbstractLwM2mResponseAssert<SELF extends AbstractLwM2mResp
         case "Californium-OSCORE":
             assertThatUnderlyingResponse.isExactlyInstanceOf(Response.class);
             break;
+        case "java-coap":
+            assertThatUnderlyingResponse.isExactlyInstanceOf(CoapResponse.class);
+            break;
         default:
             throw new IllegalStateException(String.format("Unsupported endpoint provider : %s", givenEndpointProvider));
         }
@@ -70,6 +75,12 @@ public abstract class AbstractLwM2mResponseAssert<SELF extends AbstractLwM2mResp
                 Assertions.assertThat(r.getOptions().hasContentFormat());
                 Assertions.assertThat(r.getOptions().getContentFormat()).as("Content Format")
                         .isEqualTo(format.getCode());
+            });
+            break;
+        case "java-coap":
+            assertThatUnderlyingResponse.isInstanceOfSatisfying(CoapResponse.class, r -> {
+                Assertions.assertThat(r.options().getContentFormat()).as("Content Format")//
+                        .isNotNull().isEqualTo((short) format.getCode());
             });
             break;
         default:

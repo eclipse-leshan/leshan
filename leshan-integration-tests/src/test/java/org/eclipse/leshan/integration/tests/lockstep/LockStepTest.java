@@ -27,10 +27,15 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.util.EnumSet;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -46,12 +51,18 @@ import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
+import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.request.DeregisterRequest;
+import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
+import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.ErrorCallback;
+import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
@@ -59,12 +70,17 @@ import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
 import org.eclipse.leshan.integration.tests.util.junit5.extensions.BeforeEachParameterizedResolver;
 import org.eclipse.leshan.server.californium.endpoint.ServerProtocolProvider;
 import org.eclipse.leshan.server.californium.endpoint.coap.CoapServerProtocolProvider;
+import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.transport.javacoap.server.endpoint.JavaCoapServerEndpointsProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import com.mbed.coap.server.CoapServerBuilder;
+import com.mbed.coap.transmission.RetransmissionBackOff;
 
 @ExtendWith(BeforeEachParameterizedResolver.class)
 public class LockStepTest {
@@ -82,7 +98,8 @@ public class LockStepTest {
     static Stream<org.junit.jupiter.params.provider.Arguments> transports() {
         return Stream.of(//
                 // Server Endpoint Provider
-                arguments("Californium"));
+                arguments("Californium"), //
+                arguments("java-coap"));
     }
 
     /*---------------------------------/
@@ -97,11 +114,25 @@ public class LockStepTest {
                     public void applyDefaultValue(Configuration configuration) {
                         super.applyDefaultValue(configuration);
                         // configure retransmission, with this configuration a request without ACK should timeout in
-                        // ~200*5ms
+                        // ~200*5ms = 1s
                         configuration.set(CoapConfig.ACK_TIMEOUT, 200, TimeUnit.MILLISECONDS) //
                                 .set(CoapConfig.ACK_INIT_RANDOM, 1f) //
                                 .set(CoapConfig.ACK_TIMEOUT_SCALE, 1f) //
                                 .set(CoapConfig.MAX_RETRANSMIT, 4);
+                    }
+                };
+            }
+
+            @Override
+            protected LwM2mServerEndpointsProvider getJavaCoapProtocolProvider(Protocol protocol) {
+                return new JavaCoapServerEndpointsProvider(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0)) {
+                    @Override
+                    protected CoapServerBuilder createCoapServer() {
+                        return super.createCoapServer()
+                                // configure retransmission, with this configuration a request without ACK should
+                                // timeout in
+                                // 140 + 2*140 + 4*140 = ~1s
+                                .retransmission(RetransmissionBackOff.ofExponential(Duration.ofMillis(140), 2, 1));
                     }
                 };
             }
@@ -328,5 +359,51 @@ public class LockStepTest {
                             ex -> assertThat(ex.getType()).isEqualTo(TimeoutException.Type.RESPONSE_TIMEOUT));
                 }));
         verify(responseCallback, never()).onResponse(any());
+    }
+
+    @TestAllTransportLayer
+    public void register_deregister_observe(String givenServerEndpointProvider) throws Exception {
+        // register client
+        LockStepLwM2mClient client = new LockStepLwM2mClient(server.getEndpoint(Protocol.COAP).getURI());
+        Token token = client
+                .sendLwM2mRequest(new RegisterRequest(client.getEndpointName(), 60l, "1.1", EnumSet.of(BindingMode.U),
+                        null, null, linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null));
+        client.expectResponse().token(token).go();
+        server.waitForNewRegistrationOf(client.getEndpointName());
+        Registration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
+
+        // deregister client
+        token = client.sendLwM2mRequest(new DeregisterRequest("rd/" + registration.getId()));
+        client.expectResponse().token(token).go();
+        server.waitForDeregistrationOf(registration);
+
+        // send read
+        @SuppressWarnings("unchecked")
+        ResponseCallback<ObserveResponse> responseCallback = mock(ResponseCallback.class);
+        ErrorCallback errorCallback = mock(ErrorCallback.class);
+
+        server.send(registration, new ObserveRequest(ContentFormat.TEXT_CODE, 3, 0), 500l, responseCallback,
+                errorCallback);
+
+        if (givenServerEndpointProvider.equals("Californium")) {
+            // with californium endpoint provider "SendFailedException" is raised because,
+            // we try to add the relation in store before to send the request and registration doesn't exist anymorev
+            verify(errorCallback, timeout(200).times(1)) //
+                    .onError(assertArg(e -> {
+                        assertThat(e).isInstanceOf(SendFailedException.class);
+                    }));
+        } else {
+            // with java-coap it failed transparently at response reception.
+            // TODO I don't know if this is the right behavior.
+            client.expectRequest().storeMID("R").storeToken("T").go();
+            client.sendResponse(Type.ACK, ResponseCode.CONTENT).payload("aaa").observe(2).loadMID("R").loadToken("T")
+                    .go();
+        }
+
+        // ensure we don't get answer and there is no observation in store.
+        verifyNoMoreInteractions(responseCallback, errorCallback);
+        assertThat(server.getRegistrationService().getAllRegistrations().hasNext() == false);
+        Set<Observation> observations = server.getObservationService().getObservations(registration);
+        assertThat(observations).isEmpty();
     }
 }

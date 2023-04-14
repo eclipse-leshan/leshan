@@ -20,6 +20,9 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,11 +50,16 @@ import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
 import org.eclipse.leshan.integration.tests.util.junit5.extensions.BeforeEachParameterizedResolver;
 import org.eclipse.leshan.server.californium.endpoint.ServerProtocolProvider;
 import org.eclipse.leshan.server.californium.endpoint.coap.CoapServerProtocolProvider;
+import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
+import org.eclipse.leshan.transport.javacoap.server.endpoint.JavaCoapServerEndpointsProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import com.mbed.coap.server.CoapServerBuilder;
+import com.mbed.coap.transmission.RetransmissionBackOff;
 
 @ExtendWith(BeforeEachParameterizedResolver.class)
 public class LockStepSendTest {
@@ -69,7 +77,8 @@ public class LockStepSendTest {
     static Stream<org.junit.jupiter.params.provider.Arguments> transports() {
         return Stream.of(//
                 // ProtocolUsed - Server Endpoint Provider
-                arguments("Californium"));
+                arguments("Californium"), //
+                arguments("java-coap"));
     }
 
     /*---------------------------------/
@@ -84,11 +93,25 @@ public class LockStepSendTest {
                     public void applyDefaultValue(Configuration configuration) {
                         super.applyDefaultValue(configuration);
                         // configure retransmission, with this configuration a request without ACK should timeout in
-                        // ~200*5ms
+                        // ~200*5ms = 1s
                         configuration.set(CoapConfig.ACK_TIMEOUT, 200, TimeUnit.MILLISECONDS) //
                                 .set(CoapConfig.ACK_INIT_RANDOM, 1f) //
                                 .set(CoapConfig.ACK_TIMEOUT_SCALE, 1f) //
                                 .set(CoapConfig.MAX_RETRANSMIT, 4);
+                    }
+                };
+            }
+
+            @Override
+            protected LwM2mServerEndpointsProvider getJavaCoapProtocolProvider(Protocol protocol) {
+                return new JavaCoapServerEndpointsProvider(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0)) {
+                    @Override
+                    protected CoapServerBuilder createCoapServer() {
+                        return super.createCoapServer()
+                                // configure retransmission, with this configuration a request without ACK should
+                                // timeout in
+                                // 140 + 2*140 + 4*140 = ~1s
+                                .retransmission(RetransmissionBackOff.ofExponential(Duration.ofMillis(140), 2, 1));
                     }
                 };
             }

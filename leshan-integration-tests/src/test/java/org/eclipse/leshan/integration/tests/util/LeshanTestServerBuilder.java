@@ -52,6 +52,7 @@ import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.SecurityStore;
 import org.eclipse.leshan.server.security.ServerSecurityInfo;
+import org.eclipse.leshan.transport.javacoap.server.endpoint.JavaCoapServerEndpointsProvider;
 
 public class LeshanTestServerBuilder extends LeshanServerBuilder {
 
@@ -98,6 +99,9 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
                         getCaliforniumProtocolProviderSupportingOscore(protocolToUse));
                 builder.addEndpoint(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), protocolToUse);
                 endpointsProvider = builder.build();
+                break;
+            case "java-coap":
+                endpointsProvider = getJavaCoapProtocolProvider(protocolToUse);
                 break;
             default:
                 throw new IllegalStateException(
@@ -205,5 +209,12 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
         }
         throw new IllegalStateException(
                 String.format("No Californium Protocol Provider supporting OSCORE for protocol %s", protocol));
+    }
+
+    protected LwM2mServerEndpointsProvider getJavaCoapProtocolProvider(Protocol protocol) {
+        if (protocolToUse.equals(Protocol.COAP)) {
+            return new JavaCoapServerEndpointsProvider(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+        }
+        throw new IllegalStateException(String.format("No Californium Protocol Provider for protocol %s", protocol));
     }
 }

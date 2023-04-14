@@ -58,7 +58,8 @@ public class QueueModeTest {
     static Stream<org.junit.jupiter.params.provider.Arguments> transports() {
         return Stream.of(//
                 // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider
-                arguments(Protocol.COAP, "Californium", "Californium"));
+                arguments(Protocol.COAP, "Californium", "Californium"), //
+                arguments(Protocol.COAP, "Californium", "java-coap"));
     }
 
     /*---------------------------------/
