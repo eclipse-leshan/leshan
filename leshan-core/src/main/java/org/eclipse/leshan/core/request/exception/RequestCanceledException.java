@@ -23,6 +23,9 @@ public class RequestCanceledException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
+    public RequestCanceledException() {
+    }
+
     public RequestCanceledException(String message, Object... args) {
         super(String.format(message, args));
     }
