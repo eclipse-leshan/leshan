@@ -97,6 +97,7 @@ public class ServerCoapMessageTranslator {
         if (coapResponse.getOptions().hasContentFormat()) {
             contentFormat = ContentFormat.fromCode(coapResponse.getOptions().getContentFormat());
         }
+        // TODO should we check that content format is the same than observation
 
         // decode response
         try {
