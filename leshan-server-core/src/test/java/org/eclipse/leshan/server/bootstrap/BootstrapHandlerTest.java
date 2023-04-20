@@ -34,7 +34,8 @@ import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
+import org.eclipse.leshan.core.request.PskIdentity;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.core.response.BootstrapFinishResponse;
@@ -64,8 +65,10 @@ public class BootstrapHandlerTest {
                 bsSessionManager, new BootstrapSessionDispatcher());
 
         // Try to bootstrap
-        BootstrapResponse response = bsHandler.bootstrap(Identity.psk(new InetSocketAddress(4242), "pskdentity"),
-                new BootstrapRequest("endpoint"), endpointUsed).getResponse();
+        BootstrapResponse response = bsHandler
+                .bootstrap(new IpPeer(new InetSocketAddress(4242), new PskIdentity("pskdentity")),
+                        new BootstrapRequest("endpoint"), endpointUsed)
+                .getResponse();
 
         // Ensure bootstrap session is refused
         assertEquals(ResponseCode.BAD_REQUEST, response.getCode());
@@ -86,8 +89,8 @@ public class BootstrapHandlerTest {
 
         // Try to bootstrap
         SendableResponse<BootstrapResponse> sendableResponse = bsHandler.bootstrap(
-                Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("endpoint"),
-                endpointUsed);
+                new IpPeer(new InetSocketAddress(4242), new PskIdentity("pskdentity")),
+                new BootstrapRequest("endpoint"), endpointUsed);
         sendableResponse.sent();
 
         // Ensure bootstrap finished
@@ -109,8 +112,8 @@ public class BootstrapHandlerTest {
 
         // Try to bootstrap
         SendableResponse<BootstrapResponse> sendableResponse = bsHandler.bootstrap(
-                Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("endpoint"),
-                endpointUsed);
+                new IpPeer(new InetSocketAddress(4242), new PskIdentity("pskdentity")),
+                new BootstrapRequest("endpoint"), endpointUsed);
         sendableResponse.sent();
 
         // Ensure bootstrap failed
@@ -134,8 +137,8 @@ public class BootstrapHandlerTest {
 
         // First bootstrap : which will not end (because of sender)
         SendableResponse<BootstrapResponse> first_response = bsHandler.bootstrap(
-                Identity.psk(new InetSocketAddress(4242), "pskdentity"), new BootstrapRequest("endpoint"),
-                endpointUsed);
+                new IpPeer(new InetSocketAddress(4242), new PskIdentity("pskdentity")),
+                new BootstrapRequest("endpoint"), endpointUsed);
         first_response.sent();
         // Ensure bootstrap is accepted and not finished
         BootstrapSession firstSession = bsSessionManager.lastSession;
@@ -148,8 +151,8 @@ public class BootstrapHandlerTest {
         bsSessionManager.reset();
         requestSender.setMode(Mode.ALWAYS_SUCCESS);
         SendableResponse<BootstrapResponse> second_response = bsHandler.bootstrap(
-                Identity.psk(new InetSocketAddress(4243), "pskdentity"), new BootstrapRequest("endpoint"),
-                endpointUsed);
+                new IpPeer(new InetSocketAddress(4243), new PskIdentity("pskdentity")),
+                new BootstrapRequest("endpoint"), endpointUsed);
         second_response.sent();
         // ensure last session is accepted
         assertTrue(second_response.getResponse().isSuccess());
@@ -238,7 +241,7 @@ public class BootstrapHandlerTest {
         }
 
         @Override
-        public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity, URI endpointUsed) {
+        public BootstrapSession begin(BootstrapRequest request, IpPeer clientIdentity, URI endpointUsed) {
             lastSession = new DefaultBootstrapSession(request, clientIdentity, authorized, null, endpointUsed);
             return lastSession;
         }

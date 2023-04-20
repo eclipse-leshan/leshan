@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 
 /**
  * A store containing the bootstrap information to be sent to the devices.
@@ -27,9 +27,9 @@ public interface BootstrapConfigStore {
      * Get the bootstrap configuration to apply to the device identified by the given parameters.
      *
      * @param endpoint the endpoint of the device.
-     * @param deviceIdentity the {@link Identity} the device.
+     * @param deviceIdentity the {@link IpPeer} the device.
      * @param session the current {@link BootstrapSession}.
      * @return the {@link BootstrapConfig} to apply.
      */
-    BootstrapConfig get(String endpoint, Identity deviceIdentity, BootstrapSession session);
+    BootstrapConfig get(String endpoint, IpPeer deviceIdentity, BootstrapSession session);
 }

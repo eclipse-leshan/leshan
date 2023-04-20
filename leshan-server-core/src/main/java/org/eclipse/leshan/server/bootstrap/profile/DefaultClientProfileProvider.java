@@ -16,7 +16,7 @@
 package org.eclipse.leshan.server.bootstrap.profile;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
@@ -32,7 +32,7 @@ public class DefaultClientProfileProvider implements ClientProfileProvider {
     }
 
     @Override
-    public ClientProfile getProfile(Identity identity) {
+    public ClientProfile getProfile(IpPeer identity) {
         Registration registration = registrationStore.getRegistrationByIdentity(identity);
         LwM2mModel model = modelProvider.getObjectModel(registration);
         return new ClientProfile(registration, model);

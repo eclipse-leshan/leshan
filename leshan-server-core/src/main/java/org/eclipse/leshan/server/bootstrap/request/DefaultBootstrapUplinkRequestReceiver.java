@@ -19,7 +19,7 @@ import java.net.URI;
 
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DeregisterRequest;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
@@ -38,12 +38,12 @@ public class DefaultBootstrapUplinkRequestReceiver implements BootstrapUplinkReq
     }
 
     @Override
-    public void onError(Identity senderIdentity, Exception exception,
+    public void onError(IpPeer senderIdentity, Exception exception,
             Class<? extends UplinkRequest<? extends LwM2mResponse>> requestType, URI serverEndpointUri) {
     }
 
     @Override
-    public <T extends LwM2mResponse> SendableResponse<T> requestReceived(Identity senderIdentity,
+    public <T extends LwM2mResponse> SendableResponse<T> requestReceived(IpPeer senderIdentity,
             UplinkRequest<T> request, URI serverEndpointUri) {
 
         RequestHandler<T> requestHandler = new RequestHandler<T>(senderIdentity, serverEndpointUri);
@@ -53,11 +53,11 @@ public class DefaultBootstrapUplinkRequestReceiver implements BootstrapUplinkReq
 
     public class RequestHandler<T extends LwM2mResponse> implements UplinkRequestVisitor {
 
-        private final Identity senderIdentity;
+        private final IpPeer senderIdentity;
         private final URI serverEndpointUri;
         private SendableResponse<? extends LwM2mResponse> response;
 
-        public RequestHandler(Identity senderIdentity, URI serverEndpointUri) {
+        public RequestHandler(IpPeer senderIdentity, URI serverEndpointUri) {
             this.senderIdentity = senderIdentity;
             this.serverEndpointUri = serverEndpointUri;
         }

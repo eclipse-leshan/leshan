@@ -15,9 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap.profile;
 
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 
 public interface ClientProfileProvider {
 
-    ClientProfile getProfile(Identity identity);
+    ClientProfile getProfile(IpPeer identity);
 }

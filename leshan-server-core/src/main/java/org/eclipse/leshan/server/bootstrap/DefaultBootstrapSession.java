@@ -25,7 +25,7 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.util.RandomStringUtils;
 import org.eclipse.leshan.core.util.Validate;
@@ -37,7 +37,7 @@ public class DefaultBootstrapSession implements BootstrapSession {
 
     private final String id;
     private final String endpoint;
-    private final Identity identity;
+    private final IpPeer identity;
     private final boolean authorized;
     private final ContentFormat contentFormat;
     private final Map<String, String> applicationData;
@@ -61,7 +61,7 @@ public class DefaultBootstrapSession implements BootstrapSession {
      * @param authorized True if device is authorized to bootstrap.
      * @param applicationData Data that could be attached to a session.
      */
-    public DefaultBootstrapSession(BootstrapRequest request, Identity identity, boolean authorized,
+    public DefaultBootstrapSession(BootstrapRequest request, IpPeer identity, boolean authorized,
             Map<String, String> applicationData, URI endpointUsed) {
         this(request, identity, authorized, null, applicationData, endpointUsed);
     }
@@ -75,7 +75,7 @@ public class DefaultBootstrapSession implements BootstrapSession {
      * @param contentFormat The content format to use to write object.
      * @param applicationData Data that could be attached to a session.
      */
-    public DefaultBootstrapSession(BootstrapRequest request, Identity identity, boolean authorized,
+    public DefaultBootstrapSession(BootstrapRequest request, IpPeer identity, boolean authorized,
             ContentFormat contentFormat, Map<String, String> applicationData, URI endpointUsed) {
         this(request, identity, authorized, contentFormat, applicationData, System.currentTimeMillis(), endpointUsed);
     }
@@ -90,7 +90,7 @@ public class DefaultBootstrapSession implements BootstrapSession {
      * @param applicationData Data that could be attached to a session.
      * @param creationTime The creation time of this session in ms.
      */
-    public DefaultBootstrapSession(BootstrapRequest request, Identity identity, boolean authorized,
+    public DefaultBootstrapSession(BootstrapRequest request, IpPeer identity, boolean authorized,
             ContentFormat contentFormat, Map<String, String> applicationData, long creationTime, URI endpointUsed) {
         Validate.notNull(request);
         this.id = RandomStringUtils.random(10, true, true);
@@ -127,7 +127,7 @@ public class DefaultBootstrapSession implements BootstrapSession {
     }
 
     @Override
-    public Identity getIdentity() {
+    public IpPeer getIdentity() {
         return identity;
     }
 

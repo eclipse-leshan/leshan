@@ -17,17 +17,17 @@ package org.eclipse.leshan.server.bootstrap;
 
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
 public class BootstrapSessionAdapter implements BootstrapSessionListener {
 
     @Override
-    public void sessionInitiated(BootstrapRequest request, Identity clientIdentity) {
+    public void sessionInitiated(BootstrapRequest request, IpPeer clientIdentity) {
     }
 
     @Override
-    public void unAuthorized(BootstrapRequest request, Identity clientIdentity) {
+    public void unAuthorized(BootstrapRequest request, IpPeer clientIdentity) {
     }
 
     @Override

@@ -32,7 +32,7 @@ import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.util.Validate;
 
 /**
@@ -42,7 +42,7 @@ public class RegistrationUpdate {
 
     private final String registrationId;
 
-    private final Identity identity;
+    private final IpPeer identity;
     private final Long lifeTimeInSec;
     private final String smsNumber;
     private final EnumSet<BindingMode> bindingMode;
@@ -58,7 +58,7 @@ public class RegistrationUpdate {
     private final Map<String, String> additionalAttributes;
     private final Map<String, String> applicationData;
 
-    public RegistrationUpdate(String registrationId, Identity identity, Long lifeTimeInSec, String smsNumber,
+    public RegistrationUpdate(String registrationId, IpPeer identity, Long lifeTimeInSec, String smsNumber,
             EnumSet<BindingMode> bindingMode, Link[] objectLinks, String alternatePath,
             Set<ContentFormat> supportedContentFormats, Map<Integer, Version> supportedObjects,
             Set<LwM2mPath> availableInstances, Map<String, String> additionalAttributes,
@@ -100,7 +100,7 @@ public class RegistrationUpdate {
      * @return the updated registration
      */
     public Registration update(Registration registration) {
-        Identity identity = this.identity != null ? this.identity : registration.getIdentity();
+        IpPeer identity = this.identity != null ? this.identity : registration.getIdentity();
         long lifeTimeInSec = this.lifeTimeInSec != null ? this.lifeTimeInSec : registration.getLifeTimeInSec();
         EnumSet<BindingMode> bindingMode = this.bindingMode != null ? this.bindingMode : registration.getBindingMode();
         String smsNumber = this.smsNumber != null ? this.smsNumber : registration.getSmsNumber();
@@ -154,16 +154,16 @@ public class RegistrationUpdate {
         return registrationId;
     }
 
-    public Identity getIdentity() {
+    public IpPeer getIdentity() {
         return identity;
     }
 
     public InetAddress getAddress() {
-        return identity.getPeerAddress().getAddress();
+        return identity.getSocketAddress().getAddress();
     }
 
     public Integer getPort() {
-        return identity.getPeerAddress().getPort();
+        return identity.getSocketAddress().getPort();
     }
 
     public Long getLifeTimeInSec() {

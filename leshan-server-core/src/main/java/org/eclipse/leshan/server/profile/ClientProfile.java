@@ -16,7 +16,7 @@
 package org.eclipse.leshan.server.profile;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.server.registration.Registration;
 
 public class ClientProfile {
@@ -29,7 +29,7 @@ public class ClientProfile {
         this.model = model;
     }
 
-    public Identity getIdentity() {
+    public IpPeer getIdentity() {
         return registration.getIdentity();
     }
 

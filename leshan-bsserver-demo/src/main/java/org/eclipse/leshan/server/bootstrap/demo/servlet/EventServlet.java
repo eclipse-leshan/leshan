@@ -30,7 +30,7 @@ import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
@@ -73,12 +73,12 @@ public class EventServlet extends EventSourceServlet {
     private final BootstrapSessionListener sessionListener = new BootstrapSessionListener() {
 
         @Override
-        public void sessionInitiated(BootstrapRequest request, Identity clientIdentity) {
+        public void sessionInitiated(BootstrapRequest request, IpPeer clientIdentity) {
             try {
                 String endpointName = request.getEndpointName();
                 StringBuilder b = new StringBuilder();
                 b.append("Bootstrap Request from ");
-                b.append(clientIdentity.getPeerAddress());
+                b.append(clientIdentity.getSocketAddress());
                 if (request.getPreferredContentFormat() != null) {
                     b.append("\n");
                     b.append("Preferred Content Format:  ");
@@ -99,7 +99,7 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void unAuthorized(BootstrapRequest request, Identity clientIdentity) {
+        public void unAuthorized(BootstrapRequest request, IpPeer clientIdentity) {
             try {
                 String endpointName = request.getEndpointName();
                 StringBuilder b = new StringBuilder();

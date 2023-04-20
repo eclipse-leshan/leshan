@@ -22,7 +22,7 @@ import java.net.URI;
 
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.request.BootstrapRequest;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.response.BootstrapResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
@@ -57,7 +57,7 @@ public class LeshanBootstrapServerTest {
         builder.setConfigStore(new BootstrapConfigStore() {
 
             @Override
-            public BootstrapConfig get(String endpoint, Identity deviceIdentity, BootstrapSession session) {
+            public BootstrapConfig get(String endpoint, IpPeer deviceIdentity, BootstrapSession session) {
                 BootstrapConfig config = new BootstrapConfig();
                 config.toDelete.add("/");
                 return config;
@@ -118,8 +118,8 @@ public class LeshanBootstrapServerTest {
     }
 
     private void forceThreadsCreation(URI endpointURI) {
-        SendableResponse<BootstrapResponse> bootstrap = bsHandler
-                .bootstrap(Identity.unsecure(new InetSocketAddress(5683)), new BootstrapRequest("test"), endpointURI);
+        SendableResponse<BootstrapResponse> bootstrap = bsHandler.bootstrap(new IpPeer(new InetSocketAddress(5683)),
+                new BootstrapRequest("test"), endpointURI);
         bootstrap.sent();
     }
 }

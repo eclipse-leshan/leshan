@@ -17,8 +17,8 @@ package org.eclipse.leshan.client.californium.endpoint;
 
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.leshan.client.servers.ServerIdentity;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 
 public interface ServerIdentityExtractor {
-    ServerIdentity extractIdentity(Exchange exchange, Identity foreignPeerIdentity);
+    ServerIdentity extractIdentity(Exchange exchange, IpPeer foreignPeerIdentity);
 }

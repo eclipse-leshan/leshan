@@ -48,8 +48,11 @@ import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.endpoint.Protocol;
-import org.eclipse.leshan.core.oscore.OscoreIdentity;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
+import org.eclipse.leshan.core.request.OscoreIdentity;
+import org.eclipse.leshan.core.request.PskIdentity;
+import org.eclipse.leshan.core.request.RpkIdentity;
+import org.eclipse.leshan.core.request.X509Identity;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,7 +98,7 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
         identityExtrator = new ServerIdentityExtractor() {
 
             @Override
-            public ServerIdentity extractIdentity(Exchange exchange, Identity foreignPeerIdentity) {
+            public ServerIdentity extractIdentity(Exchange exchange, IpPeer foreignPeerIdentity) {
                 // TODO support multi server
                 Endpoint currentCoapEndpoint = endpoint.getCoapEndpoint();
 
@@ -110,8 +113,8 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
                         && currentCoapEndpoint.isStarted()) {
                     // For UDP (not secure) endpoint we also check socket address as anybody send data to this kind of
                     // endpoint.
-                    if (endpoint.getProtocol().equals(Protocol.COAP) && !currentServer.getIdentity().getPeerAddress()
-                            .equals(foreignPeerIdentity.getPeerAddress())) {
+                    if (endpoint.getProtocol().equals(Protocol.COAP) && !currentServer.getIdentity().getSocketAddress()
+                            .equals(foreignPeerIdentity.getSocketAddress())) {
                         return null;
                     }
                     // For OSCORE, be sure OSCORE is used.
@@ -122,8 +125,7 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
                                 // so if the request was successfully decrypted and OSCORE is used, this MUST be the
                                 // right
                                 // server.
-                                || !foreignPeerIdentity.getOscoreIdentity()
-                                        .equals(currentServer.getIdentity().getOscoreIdentity())) {
+                                || !foreignPeerIdentity.getIdentity().equals(currentServer.getIdentity())) {
                             return null;
                         }
                     }
@@ -199,27 +201,27 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
     }
 
     private ServerIdentity extractIdentity(ServerInfo serverInfo) {
-        Identity serverIdentity;
+        IpPeer serverIdentity;
         if (serverInfo.isSecure()) {
             // Support PSK
             if (serverInfo.secureMode == SecurityMode.PSK) {
-                serverIdentity = Identity.psk(serverInfo.getAddress(), serverInfo.pskId);
+                serverIdentity = new IpPeer(serverInfo.getAddress(), new PskIdentity(serverInfo.pskId));
             } else if (serverInfo.secureMode == SecurityMode.RPK) {
-                serverIdentity = Identity.rpk(serverInfo.getAddress(), serverInfo.serverPublicKey);
+                serverIdentity = new IpPeer(serverInfo.getAddress(), new RpkIdentity(serverInfo.serverPublicKey));
             } else if (serverInfo.secureMode == SecurityMode.X509) {
                 // TODO We set CN with '*' as we are not able to know the CN for some certificate usage and so this is
                 // not used anymore to identify a server with x509.
                 // See : https://github.com/eclipse/leshan/issues/992
-                serverIdentity = Identity.x509(serverInfo.getAddress(), "*");
+                serverIdentity = new IpPeer(serverInfo.getAddress(), new X509Identity("*"));
             } else {
                 throw new RuntimeException("Unable to create connector : unsupported security mode");
             }
         } else if (serverInfo.useOscore) {
             // Build server identity for OSCORE
-            serverIdentity = Identity.oscoreOnly(serverInfo.getAddress(),
+            serverIdentity = new IpPeer(serverInfo.getAddress(),
                     new OscoreIdentity(serverInfo.oscoreSetting.getRecipientId()));
         } else {
-            serverIdentity = Identity.unsecure(serverInfo.getAddress());
+            serverIdentity = new IpPeer((serverInfo.getAddress()));
         }
 
         if (serverInfo.bootstrap) {

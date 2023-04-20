@@ -20,13 +20,16 @@ import java.security.PublicKey;
 import java.util.Iterator;
 
 import org.eclipse.leshan.core.oscore.OscoreIdentity;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
+import org.eclipse.leshan.core.request.PskIdentity;
+import org.eclipse.leshan.core.request.RpkIdentity;
+import org.eclipse.leshan.core.request.X509Identity;
 import org.eclipse.leshan.core.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Ensure that client with given endpoint name and {@link Identity} authenticated itself in an expected way.
+ * Ensure that client with given endpoint name and {@link IpPeer} authenticated itself in an expected way.
  */
 public class SecurityChecker {
 
@@ -42,7 +45,7 @@ public class SecurityChecker {
      * @return true if client is correctly authenticated.
      * @see SecurityInfo
      */
-    public boolean checkSecurityInfos(String endpoint, Identity clientIdentity, Iterator<SecurityInfo> securityInfos) {
+    public boolean checkSecurityInfos(String endpoint, IpPeer clientIdentity, Iterator<SecurityInfo> securityInfos) {
         // if this is a secure end-point, we must check that the registering client is using the right identity.
         if (clientIdentity.isSecure()) {
             if (securityInfos == null || !securityInfos.hasNext()) {
@@ -88,7 +91,7 @@ public class SecurityChecker {
      * @return true if client is correctly authenticated.
      * @see SecurityInfo
      */
-    public boolean checkSecurityInfo(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
+    public boolean checkSecurityInfo(String endpoint, IpPeer clientIdentity, SecurityInfo securityInfo) {
         // if this is a secure end-point, we must check that the registering client is using the right identity.
         if (clientIdentity.isSecure()) {
             if (securityInfo == null) {
@@ -128,7 +131,7 @@ public class SecurityChecker {
         return true;
     }
 
-    protected boolean checkPskIdentity(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
+    protected boolean checkPskIdentity(String endpoint, IpPeer clientIdentity, SecurityInfo securityInfo) {
         // Manage PSK authentication
         // ----------------------------------------------------
         if (!securityInfo.usePSK()) {
@@ -136,7 +139,8 @@ public class SecurityChecker {
             return false;
         }
 
-        if (!matchPskIdentity(endpoint, clientIdentity.getPskIdentity(), securityInfo.getPskIdentity())) {
+        if (!matchPskIdentity(endpoint, ((PskIdentity) clientIdentity.getIdentity()).getpskIdentity(),
+                securityInfo.getPskIdentity())) {
             return false;
         }
 
@@ -153,7 +157,7 @@ public class SecurityChecker {
         return true;
     }
 
-    protected boolean checkRpkIdentity(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
+    protected boolean checkRpkIdentity(String endpoint, IpPeer clientIdentity, SecurityInfo securityInfo) {
         // Manage RPK authentication
         // ----------------------------------------------------
         if (!securityInfo.useRPK()) {
@@ -161,7 +165,8 @@ public class SecurityChecker {
             return false;
         }
 
-        if (!matchRpkIdenity(endpoint, clientIdentity.getRawPublicKey(), securityInfo.getRawPublicKey())) {
+        if (!matchRpkIdenity(endpoint, ((RpkIdentity) clientIdentity.getIdentity()).getPublicKey(),
+                securityInfo.getRawPublicKey())) {
             return false;
         }
 
@@ -181,7 +186,7 @@ public class SecurityChecker {
         return true;
     }
 
-    protected boolean checkX509Identity(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
+    protected boolean checkX509Identity(String endpoint, IpPeer clientIdentity, SecurityInfo securityInfo) {
         // Manage X509 certificate authentication
         // ----------------------------------------------------
         if (!securityInfo.useX509Cert()) {
@@ -189,7 +194,7 @@ public class SecurityChecker {
             return false;
         }
 
-        if (!matchX509Identity(endpoint, clientIdentity.getX509CommonName(), endpoint)) {
+        if (!matchX509Identity(endpoint, ((X509Identity) clientIdentity.getIdentity()).getX509CommonName(), endpoint)) {
             return false;
         }
 
@@ -206,7 +211,7 @@ public class SecurityChecker {
         return true;
     }
 
-    protected boolean checkOscoreIdentity(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
+    protected boolean checkOscoreIdentity(String endpoint, IpPeer clientIdentity, SecurityInfo securityInfo) {
         // Manage OSCORE authentication
         // ----------------------------------------------------
         if (!securityInfo.useOSCORE()) {
@@ -214,7 +219,7 @@ public class SecurityChecker {
             return false;
         }
 
-        if (!matchOscoreIdentity(endpoint, clientIdentity.getOscoreIdentity(),
+        if (!matchOscoreIdentity(endpoint, ((OscoreIdentity) clientIdentity.getIdentity()),
                 securityInfo.getOscoreSetting().getOscoreIdentity())) {
             return false;
         }

@@ -30,7 +30,7 @@ public class OscoreBootstrapListener extends BootstrapSessionAdapter {
 
     @Override
     public void authorized(BootstrapSession session) {
-        addrToSession.put(session.getIdentity().getPeerAddress(), session);
+        addrToSession.put(session.getIdentity().getSocketAddress(), session);
     }
 
     @Override

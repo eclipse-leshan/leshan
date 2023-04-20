@@ -17,11 +17,12 @@ package org.eclipse.leshan.core.californium.identity;
 
 import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.elements.EndpointContext;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 
 public interface IdentityHandler {
 
-    Identity getIdentity(Message receivedMessage);
+    IpPeer getIdentity(Message receivedMessage);
+    // Identity getIdentity(Message receivedMessage);
 
-    EndpointContext createEndpointContext(Identity identity, boolean allowConnectionInitiation);
+    EndpointContext createEndpointContext(IpPeer identity, boolean allowConnectionInitiation);
 }

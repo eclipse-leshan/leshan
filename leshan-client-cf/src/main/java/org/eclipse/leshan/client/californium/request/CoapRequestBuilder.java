@@ -32,7 +32,7 @@ import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.DeregisterRequest;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
@@ -47,13 +47,13 @@ import org.eclipse.leshan.core.request.UplinkRequestVisitor;
 public class CoapRequestBuilder implements UplinkRequestVisitor {
 
     protected Request coapRequest;
-    protected final Identity server;
+    protected final IpPeer server;
     protected final LwM2mEncoder encoder;
     protected final LwM2mModel model;
     protected final LinkSerializer linkSerializer;
     protected final IdentityHandler identityHandler;
 
-    public CoapRequestBuilder(Identity server, LwM2mEncoder encoder, LwM2mModel model, LinkSerializer linkSerializer,
+    public CoapRequestBuilder(IpPeer server, LwM2mEncoder encoder, LwM2mModel model, LinkSerializer linkSerializer,
             IdentityHandler identityHandler) {
         this.server = server;
         this.encoder = encoder;
