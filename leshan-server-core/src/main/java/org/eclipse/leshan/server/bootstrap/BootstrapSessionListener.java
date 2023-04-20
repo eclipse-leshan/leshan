@@ -15,9 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
-import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
 public interface BootstrapSessionListener {
@@ -25,12 +25,12 @@ public interface BootstrapSessionListener {
     /**
      * Called when a client try to initiate a session
      */
-    void sessionInitiated(BootstrapRequest request, Identity clientIdentity);
+    void sessionInitiated(BootstrapRequest request, LwM2mPeer client);
 
     /**
      * Called if client is not authorized to start a bootstrap session
      */
-    void unAuthorized(BootstrapRequest request, Identity clientIdentity);
+    void unAuthorized(BootstrapRequest request, LwM2mPeer client);
 
     /**
      * Called if client is authorized to start a bootstrap session

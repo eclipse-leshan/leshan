@@ -17,9 +17,9 @@ package org.eclipse.leshan.server.bootstrap;
 
 import java.net.URI;
 
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
-import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.util.Validate;
 
@@ -98,14 +98,14 @@ public interface BootstrapSessionManager {
      * if applicable.
      *
      * @param request the bootstrap request which initiates the session.
-     * @param clientIdentity the {@link Identity} of the client.
+     * @param client the transport information about the client.
      *
      * @return a BootstrapSession, possibly authorized.
      */
-    public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity, URI endpointUsed);
+    public BootstrapSession begin(BootstrapRequest request, LwM2mPeer client, URI endpointUsed);
 
     /**
-     * Generally called after {@link #begin(BootstrapRequest, Identity, URI)} to know if there is something to do on
+     * Generally called after {@link #begin(BootstrapRequest, LwM2mPeer, URI)} to know if there is something to do on
      * this device.
      *
      * @param bsSession the bootstrap session concerned.

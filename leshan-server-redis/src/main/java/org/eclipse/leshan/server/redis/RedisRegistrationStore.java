@@ -44,10 +44,10 @@ import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.ObservationIdentifier;
 import org.eclipse.leshan.core.observation.SingleObservation;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.peer.LwM2mIdentity;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.eclipse.leshan.core.util.Validate;
-import org.eclipse.leshan.server.redis.serialization.IdentitySerDes;
+import org.eclipse.leshan.server.redis.serialization.LwM2mIdentitySerDes;
 import org.eclipse.leshan.server.redis.serialization.ObservationSerDes;
 import org.eclipse.leshan.server.redis.serialization.RegistrationSerDes;
 import org.eclipse.leshan.server.registration.Deregistration;
@@ -98,6 +98,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
     private final JedisLock lock;
     private final RegistrationSerDes registrationSerDes;
     private final ObservationSerDes observationSerDes;
+    private final LwM2mIdentitySerDes identitySerDes = new LwM2mIdentitySerDes(); // TODO add it to builder ?
 
     public RedisRegistrationStore(Pool<Jedis> p) {
         this(new Builder(p).generateDefaultValue());
@@ -163,7 +164,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
                 j.set(regid_idx, registration.getEndpoint().getBytes(UTF_8));
                 byte[] addr_idx = toRegAddrKey(registration.getSocketAddress());
                 j.set(addr_idx, registration.getEndpoint().getBytes(UTF_8));
-                byte[] identity_idx = toRegIdentityKey(registration.getIdentity());
+                byte[] identity_idx = toRegIdentityKey(registration.getClientTransportData().getIdentity());
                 j.set(identity_idx, registration.getEndpoint().getBytes(UTF_8));
 
                 // Add or update expiration
@@ -177,7 +178,8 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
                     if (!oldRegistration.getSocketAddress().equals(registration.getSocketAddress())) {
                         removeAddrIndex(j, oldRegistration);
                     }
-                    if (!oldRegistration.getIdentity().equals(registration.getIdentity())) {
+                    if (!oldRegistration.getClientTransportData().getIdentity()
+                            .equals(registration.getClientTransportData().getIdentity())) {
                         removeIdentityIndex(j, oldRegistration);
                     }
                     // remove old observation
@@ -233,9 +235,10 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
                     removeAddrIndex(j, r);
                 }
                 // update secondary index :
-                byte[] identity_idx = toRegIdentityKey(updatedRegistration.getIdentity());
+                byte[] identity_idx = toRegIdentityKey(updatedRegistration.getClientTransportData().getIdentity());
                 j.set(identity_idx, updatedRegistration.getEndpoint().getBytes(UTF_8));
-                if (!r.getIdentity().equals(updatedRegistration.getIdentity())) {
+                if (!r.getClientTransportData().getIdentity()
+                        .equals(updatedRegistration.getClientTransportData().getIdentity())) {
                     removeIdentityIndex(j, r);
                 }
 
@@ -283,7 +286,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
     }
 
     @Override
-    public Registration getRegistrationByIdentity(Identity identity) {
+    public Registration getRegistrationByIdentity(LwM2mIdentity identity) {
         Validate.notNull(identity);
         try (Jedis j = pool.getResource()) {
             byte[] ep = j.get(toRegIdentityKey(identity));
@@ -414,7 +417,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
     }
 
     private void removeIdentityIndex(Jedis j, Registration r) {
-        removeSecondaryIndex(j, toRegIdentityKey(r.getIdentity()), r.getEndpoint());
+        removeSecondaryIndex(j, toRegIdentityKey(r.getClientTransportData().getIdentity()), r.getEndpoint());
     }
 
     private void removeSecondaryIndex(Jedis j, byte[] indexKey, String endpointName) {
@@ -453,8 +456,8 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
         return toKey(endpointBySocketAddressPrefix, addr.getAddress().toString() + ":" + addr.getPort());
     }
 
-    private byte[] toRegIdentityKey(Identity identity) {
-        return toKey(endpointByIdentityPrefix, IdentitySerDes.serialize(identity).toString());
+    private byte[] toRegIdentityKey(LwM2mIdentity identity) {
+        return toKey(endpointByIdentityPrefix, identitySerDes.serialize(identity).toString());
     }
 
     private byte[] toEndpointKey(String endpoint) {

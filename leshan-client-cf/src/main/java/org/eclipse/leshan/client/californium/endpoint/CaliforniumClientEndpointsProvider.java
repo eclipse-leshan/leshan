@@ -42,14 +42,16 @@ import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.servers.ServerIdentity;
-import org.eclipse.leshan.client.servers.ServerIdentity.Role;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.endpoint.Protocol;
-import org.eclipse.leshan.core.oscore.OscoreIdentity;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.OscoreIdentity;
+import org.eclipse.leshan.core.peer.PskIdentity;
+import org.eclipse.leshan.core.peer.RpkIdentity;
+import org.eclipse.leshan.core.peer.X509Identity;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,7 +97,7 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
         identityExtrator = new ServerIdentityExtractor() {
 
             @Override
-            public ServerIdentity extractIdentity(Exchange exchange, Identity foreignPeerIdentity) {
+            public ServerIdentity extractIdentity(Exchange exchange, IpPeer foreignPeerIdentity) {
                 // TODO support multi server
                 Endpoint currentCoapEndpoint = endpoint.getCoapEndpoint();
 
@@ -110,20 +112,28 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
                         && currentCoapEndpoint.isStarted()) {
                     // For UDP (not secure) endpoint we also check socket address as anybody send data to this kind of
                     // endpoint.
-                    if (endpoint.getProtocol().equals(Protocol.COAP) && !currentServer.getIdentity().getPeerAddress()
-                            .equals(foreignPeerIdentity.getPeerAddress())) {
-                        return null;
+                    if (endpoint.getProtocol().equals(Protocol.COAP)) {
+                        if (currentServer.getTransportData() instanceof IpPeer) {
+                            IpPeer currentIpServer = (IpPeer) currentServer.getTransportData();
+                            if (!(currentIpServer.getSocketAddress().equals(foreignPeerIdentity.getSocketAddress()))) {
+                                return null;
+                            }
+                        } else {
+                            throw new IllegalStateException(
+                                    String.format("%s is not a LwM2mPeer supported by this class",
+                                            currentServer.getTransportData().getClass().getSimpleName()));
+                        }
                     }
                     // For OSCORE, be sure OSCORE is used.
-                    if (currentServer.getIdentity().isOSCORE()) {
-                        if (!foreignPeerIdentity.isOSCORE() //
+                    if (currentServer.getTransportData().getIdentity() instanceof OscoreIdentity) {
+                        if (!(foreignPeerIdentity.getIdentity() instanceof OscoreIdentity) //
                                 // we also check OscoreIdentity but this is probably not useful
                                 // because we are using static OSCOREstore which holds only 1 OscoreParameter,
                                 // so if the request was successfully decrypted and OSCORE is used, this MUST be the
                                 // right
                                 // server.
-                                || !foreignPeerIdentity.getOscoreIdentity()
-                                        .equals(currentServer.getIdentity().getOscoreIdentity())) {
+                                || !foreignPeerIdentity.getIdentity()
+                                        .equals(currentServer.getTransportData().getIdentity())) {
                             return null;
                         }
                     }
@@ -199,32 +209,31 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
     }
 
     private ServerIdentity extractIdentity(ServerInfo serverInfo) {
-        Identity serverIdentity;
+        IpPeer serverIdentity;
         if (serverInfo.isSecure()) {
             // Support PSK
             if (serverInfo.secureMode == SecurityMode.PSK) {
-                serverIdentity = Identity.psk(serverInfo.getAddress(), serverInfo.pskId);
+                serverIdentity = new IpPeer(serverInfo.getAddress(), new PskIdentity(serverInfo.pskId));
             } else if (serverInfo.secureMode == SecurityMode.RPK) {
-                serverIdentity = Identity.rpk(serverInfo.getAddress(), serverInfo.serverPublicKey);
+                serverIdentity = new IpPeer(serverInfo.getAddress(), new RpkIdentity(serverInfo.serverPublicKey));
             } else if (serverInfo.secureMode == SecurityMode.X509) {
                 // TODO We set CN with '*' as we are not able to know the CN for some certificate usage and so this is
                 // not used anymore to identify a server with x509.
                 // See : https://github.com/eclipse/leshan/issues/992
-                serverIdentity = Identity.x509(serverInfo.getAddress(), "*");
+                serverIdentity = new IpPeer(serverInfo.getAddress(), new X509Identity("*"));
             } else {
                 throw new RuntimeException("Unable to create connector : unsupported security mode");
             }
         } else if (serverInfo.useOscore) {
             // Build server identity for OSCORE
-            serverIdentity = Identity.oscoreOnly(serverInfo.getAddress(),
+            serverIdentity = new IpPeer(serverInfo.getAddress(),
                     new OscoreIdentity(serverInfo.oscoreSetting.getRecipientId()));
         } else {
-            serverIdentity = Identity.unsecure(serverInfo.getAddress());
+            serverIdentity = new IpPeer((serverInfo.getAddress()));
         }
 
         if (serverInfo.bootstrap) {
-            return new ServerIdentity(serverIdentity, serverInfo.serverId, Role.LWM2M_BOOTSTRAP_SERVER,
-                    serverInfo.serverUri);
+            return new ServerIdentity(serverIdentity, serverInfo.serverUri);
         } else {
             return new ServerIdentity(serverIdentity, serverInfo.serverId, serverInfo.serverUri);
         }

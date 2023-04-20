@@ -18,14 +18,14 @@ package org.eclipse.leshan.server.bootstrap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
-import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
 public class BootstrapSessionDispatcher implements BootstrapSessionListener {
 
-    private List<BootstrapSessionListener> listeners = new CopyOnWriteArrayList<>();
+    private final List<BootstrapSessionListener> listeners = new CopyOnWriteArrayList<>();
 
     public void addListener(BootstrapSessionListener listener) {
         listeners.add(listener);
@@ -36,16 +36,16 @@ public class BootstrapSessionDispatcher implements BootstrapSessionListener {
     }
 
     @Override
-    public void sessionInitiated(BootstrapRequest request, Identity clientIdentity) {
+    public void sessionInitiated(BootstrapRequest request, LwM2mPeer client) {
         for (BootstrapSessionListener listener : listeners) {
-            listener.sessionInitiated(request, clientIdentity);
+            listener.sessionInitiated(request, client);
         }
     }
 
     @Override
-    public void unAuthorized(BootstrapRequest request, Identity clientIdentity) {
+    public void unAuthorized(BootstrapRequest request, LwM2mPeer client) {
         for (BootstrapSessionListener listener : listeners) {
-            listener.unAuthorized(request, clientIdentity);
+            listener.unAuthorized(request, client);
         }
     }
 

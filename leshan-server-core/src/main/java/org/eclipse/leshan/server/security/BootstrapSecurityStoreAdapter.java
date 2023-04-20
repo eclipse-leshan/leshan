@@ -18,11 +18,11 @@ package org.eclipse.leshan.server.security;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.eclipse.leshan.core.oscore.OscoreIdentity;
+import org.eclipse.leshan.core.peer.OscoreIdentity;
 
 public class BootstrapSecurityStoreAdapter implements BootstrapSecurityStore {
 
-    private SecurityStore store;
+    private final SecurityStore store;
 
     public BootstrapSecurityStoreAdapter(SecurityStore store) {
         this.store = store;

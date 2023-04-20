@@ -19,11 +19,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.Inet4Address;
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.server.queue.PresenceService;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +37,8 @@ public class RegistrationUpdateTest {
     @Test
     public void testAdditionalAttributesUpdate() throws Exception {
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
-                Identity.unsecure(Inet4Address.getLocalHost(), 1), EndpointUriUtil.createUri("coap://localhost:5683"));
+                new IpPeer(new InetSocketAddress(Inet4Address.getLocalHost(), 1)),
+                EndpointUriUtil.createUri("coap://localhost:5683"));
 
         Map<String, String> additionalAttributes = new HashMap<String, String>();
         additionalAttributes.put("x", "1");
@@ -52,8 +54,8 @@ public class RegistrationUpdateTest {
         updateAdditionalAttributes.put("z", "101");
         updateAdditionalAttributes.put("h", "hello");
 
-        RegistrationUpdate updateReg = new RegistrationUpdate(r.getId(), r.getIdentity(), null, null, null, null, null,
-                null, null, null, updateAdditionalAttributes, null);
+        RegistrationUpdate updateReg = new RegistrationUpdate(r.getId(), r.getClientTransportData(), null, null, null,
+                null, null, null, null, null, updateAdditionalAttributes, null);
 
         r = updateReg.update(r);
 
@@ -70,7 +72,8 @@ public class RegistrationUpdateTest {
     public void testApplicationDataUpdate() throws Exception {
 
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
-                Identity.unsecure(Inet4Address.getLocalHost(), 1), EndpointUriUtil.createUri("coap://localhost:5683"));
+                new IpPeer(new InetSocketAddress(Inet4Address.getLocalHost(), 1)),
+                EndpointUriUtil.createUri("coap://localhost:5683"));
         Map<String, String> appData = new HashMap<String, String>();
         appData.put("x", "1");
         appData.put("y", "10");
@@ -78,8 +81,8 @@ public class RegistrationUpdateTest {
         builder.applicationData(appData);
         Registration r = builder.build();
 
-        RegistrationUpdate updateReg = new RegistrationUpdate(r.getId(), r.getIdentity(), null, null, null, null, null,
-                null, null, null, null, null);
+        RegistrationUpdate updateReg = new RegistrationUpdate(r.getId(), r.getClientTransportData(), null, null, null,
+                null, null, null, null, null, null, null);
 
         r = updateReg.update(r);
 

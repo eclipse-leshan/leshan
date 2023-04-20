@@ -15,10 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.servers;
 
-import java.net.InetSocketAddress;
 import java.net.URI;
 
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 
 /**
  * A Bean which identify a LWM2M Server.
@@ -28,8 +27,7 @@ public class ServerIdentity {
     /**
      * Identity for system calls.
      */
-    public final static ServerIdentity SYSTEM = new ServerIdentity(
-            Identity.unsecure(InetSocketAddress.createUnresolved(Role.SYSTEM.toString(), 1)), null, Role.SYSTEM, null);
+    public final static ServerIdentity SYSTEM = new ServerIdentity(null, null, Role.SYSTEM, null);
 
     public enum Role {
         /**
@@ -47,24 +45,28 @@ public class ServerIdentity {
         LWM2M_BOOTSTRAP_SERVER
     }
 
-    private final Identity identity;
+    private final LwM2mPeer peer;
     private final Long id;
     private final Role role;
     private final URI uri;
 
-    public ServerIdentity(Identity identity, Long id, URI uri) {
-        this(identity, id, Role.LWM2M_SERVER, uri);
+    public ServerIdentity(LwM2mPeer peer, Long id, URI uri) {
+        this(peer, id, Role.LWM2M_SERVER, uri);
     }
 
-    public ServerIdentity(Identity identity, Long id, Role role, URI uri) {
-        this.identity = identity;
+    public ServerIdentity(LwM2mPeer peer, URI uri) {
+        this(peer, null, Role.LWM2M_BOOTSTRAP_SERVER, uri);
+    }
+
+    public ServerIdentity(LwM2mPeer peer, Long id, Role role, URI uri) {
+        this.peer = peer;
         this.id = id;
         this.role = role;
         this.uri = uri;
     }
 
-    public Identity getIdentity() {
-        return identity;
+    public LwM2mPeer getTransportData() {
+        return peer;
     }
 
     public Long getId() {
@@ -128,7 +130,7 @@ public class ServerIdentity {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((identity == null) ? 0 : identity.hashCode());
+        result = prime * result + ((peer == null) ? 0 : peer.hashCode());
         result = prime * result + ((role == null) ? 0 : role.hashCode());
         return result;
     }
@@ -147,10 +149,10 @@ public class ServerIdentity {
                 return false;
         } else if (!id.equals(other.id))
             return false;
-        if (identity == null) {
-            if (other.identity != null)
+        if (peer == null) {
+            if (other.peer != null)
                 return false;
-        } else if (!identity.equals(other.identity))
+        } else if (!peer.equals(other.peer))
             return false;
         if (role != other.role)
             return false;

@@ -41,7 +41,7 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.integration.tests.util.cf.LockstepEndpoint;
@@ -73,7 +73,7 @@ public class LockStepLwM2mClient extends LockstepEndpoint {
 
     public Request createCoapRequest(UplinkRequest<? extends LwM2mResponse> lwm2mReq) {
         // create CoAP request
-        CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(Identity.unsecure(destination), encoder, model,
+        CoapRequestBuilder coapRequestBuilder = new CoapRequestBuilder(new IpPeer(destination), encoder, model,
                 linkSerializer, new DefaultCoapIdentityHandler());
         lwm2mReq.accept(coapRequestBuilder);
         Request coapReq = coapRequestBuilder.getRequest();

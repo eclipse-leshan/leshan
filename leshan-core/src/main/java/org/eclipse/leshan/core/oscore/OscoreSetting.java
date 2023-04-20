@@ -90,10 +90,6 @@ public class OscoreSetting implements Serializable {
         return masterSalt;
     }
 
-    public OscoreIdentity getOscoreIdentity() {
-        return new OscoreIdentity(recipientId);
-    }
-
     @Override
     public String toString() {
         // Note : oscoreMasterSecret and oscoreMasterSalt are explicitly excluded from the display for security

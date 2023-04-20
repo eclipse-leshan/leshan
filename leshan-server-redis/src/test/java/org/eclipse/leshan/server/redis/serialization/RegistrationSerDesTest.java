@@ -19,6 +19,7 @@ package org.eclipse.leshan.server.redis.serialization;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.Inet4Address;
+import java.net.InetSocketAddress;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,8 +33,8 @@ import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
 import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
 import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
 import org.eclipse.leshan.core.link.attributes.ValuelessAttribute;
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.registration.DefaultRegistrationDataExtractor;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationDataExtractor.RegistrationData;
@@ -56,7 +57,7 @@ public class RegistrationSerDesTest {
         objs[1] = new Link("/0/2");
 
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
-                Identity.unsecure(Inet4Address.getLoopbackAddress(), 1),
+                new IpPeer(new InetSocketAddress(Inet4Address.getLoopbackAddress(), 1)),
                 EndpointUriUtil.createUri("coap://localhost:5683")).objectLinks(objs).rootPath("/")
                         .supportedContentFormats(ContentFormat.TLV, ContentFormat.TEXT);
         builder.registrationDate(new Date(100L));
@@ -94,7 +95,7 @@ public class RegistrationSerDesTest {
         appData.put("null", null);
 
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
-                Identity.unsecure(Inet4Address.getLoopbackAddress(), 1),
+                new IpPeer(new InetSocketAddress(Inet4Address.getLoopbackAddress(), 1)),
                 EndpointUriUtil.createUri("coap://localhost:5683")).objectLinks(objs).rootPath("/")
                         .supportedContentFormats(ContentFormat.TLV, ContentFormat.TEXT).applicationData(appData);
 

@@ -15,21 +15,17 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
-import org.eclipse.leshan.core.request.Identity;
-
 /**
- * A store containing the bootstrap information to be sent to the devices.
+ * A store containing the bootstrap information to be sent to the clients.
  *
  */
 public interface BootstrapConfigStore {
 
     /**
-     * Get the bootstrap configuration to apply to the device identified by the given parameters.
+     * Get the bootstrap configuration to apply to the client which opened the given BootstrapSession.
      *
-     * @param endpoint the endpoint of the device.
-     * @param deviceIdentity the {@link Identity} the device.
      * @param session the current {@link BootstrapSession}.
      * @return the {@link BootstrapConfig} to apply.
      */
-    BootstrapConfig get(String endpoint, Identity deviceIdentity, BootstrapSession session);
+    BootstrapConfig get(BootstrapSession session);
 }

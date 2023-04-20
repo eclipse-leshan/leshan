@@ -17,16 +17,21 @@
 package org.eclipse.leshan.server.security;
 
 import java.security.PublicKey;
+import java.util.Arrays;
 import java.util.Iterator;
 
-import org.eclipse.leshan.core.oscore.OscoreIdentity;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.peer.LwM2mIdentity;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
+import org.eclipse.leshan.core.peer.OscoreIdentity;
+import org.eclipse.leshan.core.peer.PskIdentity;
+import org.eclipse.leshan.core.peer.RpkIdentity;
+import org.eclipse.leshan.core.peer.X509Identity;
 import org.eclipse.leshan.core.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Ensure that client with given endpoint name and {@link Identity} authenticated itself in an expected way.
+ * Ensure that client with given endpoint name and {@link LwM2mPeer} authenticated itself in an expected way.
  */
 public class SecurityChecker {
 
@@ -36,43 +41,33 @@ public class SecurityChecker {
      * Return true if client authenticated itself with any of the expected way.
      *
      * @param endpoint the client endpoint name.
-     * @param clientIdentity the client identity.
+     * @param client the transport information about client.
      * @param securityInfos the expected ways to authenticate.
      *
      * @return true if client is correctly authenticated.
      * @see SecurityInfo
      */
-    public boolean checkSecurityInfos(String endpoint, Identity clientIdentity, Iterator<SecurityInfo> securityInfos) {
-        // if this is a secure end-point, we must check that the registering client is using the right identity.
+    public boolean checkSecurityInfos(String endpoint, LwM2mPeer client, Iterator<SecurityInfo> securityInfos) {
+        LwM2mIdentity clientIdentity = client.getIdentity();
         if (clientIdentity.isSecure()) {
+            // if client has secure identity, we must check that the registering client is using the expected one.
             if (securityInfos == null || !securityInfos.hasNext()) {
-                LOG.debug("Client '{}' without security info try to connect through the secure endpoint", endpoint);
+
+                LOG.debug("Client '{}' without security info try to connect using secured way", endpoint);
                 return false;
+
             } else {
                 // check of one expected security info matches client identity
                 do {
                     SecurityInfo securityInfo = securityInfos.next();
-                    if (checkSecurityInfo(endpoint, clientIdentity, securityInfo)) {
+                    if (checkSecurityInfo(endpoint, client, securityInfo)) {
                         return true;
                     }
                 } while (securityInfos.hasNext());
                 return false;
-            }
-        } else if (clientIdentity.isOSCORE()) {
-            if (securityInfos == null || !securityInfos.hasNext()) {
-                LOG.debug("Client '{}' without security info trying to connect using OSCORE", endpoint);
-                return false;
-            } else {
-                // check if one expected security info matches OSCORE client identity
-                do {
-                    SecurityInfo securityInfo = securityInfos.next();
-                    if (checkSecurityInfo(endpoint, clientIdentity, securityInfo)) {
-                        return true;
-                    }
-                } while (securityInfos.hasNext());
             }
         } else if (securityInfos != null && securityInfos.hasNext()) {
-            LOG.debug("Client '{}' must connect using DTLS or/and OSCORE", endpoint);
+            LOG.debug("Client '{}' must use a secured way to connect", endpoint);
             return false;
         }
         return true;
@@ -82,53 +77,51 @@ public class SecurityChecker {
      * Return true if client authenticated itself with the expected way.
      *
      * @param endpoint the client endpoint name.
-     * @param clientIdentity the client identity.
+     * @param client the transport information about client.
      * @param securityInfo the expected way to authenticate.
      *
      * @return true if client is correctly authenticated.
      * @see SecurityInfo
      */
-    public boolean checkSecurityInfo(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
-        // if this is a secure end-point, we must check that the registering client is using the right identity.
+    public boolean checkSecurityInfo(String endpoint, LwM2mPeer client, SecurityInfo securityInfo) {
+        LwM2mIdentity clientIdentity = client.getIdentity();
         if (clientIdentity.isSecure()) {
+            // if client has secure identity, we must check that the registering client is using the expected one.
             if (securityInfo == null) {
 
-                LOG.debug("Client '{}' without security info try to connect through the secure endpoint", endpoint);
+                LOG.debug("Client '{}' without security info try to connect using secured way", endpoint);
                 return false;
 
-            } else if (clientIdentity.isPSK()) {
+            } else if (clientIdentity instanceof PskIdentity) {
 
-                return checkPskIdentity(endpoint, clientIdentity, securityInfo);
+                return checkPskIdentity(endpoint, (PskIdentity) clientIdentity, securityInfo);
 
-            } else if (clientIdentity.isRPK()) {
+            } else if (clientIdentity instanceof RpkIdentity) {
 
-                return checkRpkIdentity(endpoint, clientIdentity, securityInfo);
+                return checkRpkIdentity(endpoint, (RpkIdentity) clientIdentity, securityInfo);
 
-            } else if (clientIdentity.isX509()) {
+            } else if (clientIdentity instanceof X509Identity) {
 
-                return checkX509Identity(endpoint, clientIdentity, securityInfo);
+                return checkX509Identity(endpoint, (X509Identity) clientIdentity, securityInfo);
+
+            } else if (clientIdentity instanceof OscoreIdentity) {
+
+                return checkOscoreIdentity(endpoint, (OscoreIdentity) clientIdentity, securityInfo);
 
             } else {
                 LOG.debug("Unable to authenticate client '{}': unknown authentication mode", endpoint);
                 return false;
             }
-        } else if (clientIdentity.isOSCORE()) {
-            if (securityInfo == null) {
-                LOG.debug("Client '{}' without security info trying to connect using OSCORE", endpoint);
-                return false;
-            } else {
-                return checkOscoreIdentity(endpoint, clientIdentity, securityInfo);
-            }
         } else {
             if (securityInfo != null) {
-                LOG.debug("Client '{}' must connect using DTLS or/and OSCORE", endpoint);
+                LOG.debug("Client '{}' must use a secured way to connect", endpoint);
                 return false;
             }
         }
         return true;
     }
 
-    protected boolean checkPskIdentity(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
+    protected boolean checkPskIdentity(String endpoint, PskIdentity clientIdentity, SecurityInfo securityInfo) {
         // Manage PSK authentication
         // ----------------------------------------------------
         if (!securityInfo.usePSK()) {
@@ -153,7 +146,7 @@ public class SecurityChecker {
         return true;
     }
 
-    protected boolean checkRpkIdentity(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
+    protected boolean checkRpkIdentity(String endpoint, RpkIdentity clientIdentity, SecurityInfo securityInfo) {
         // Manage RPK authentication
         // ----------------------------------------------------
         if (!securityInfo.useRPK()) {
@@ -161,7 +154,7 @@ public class SecurityChecker {
             return false;
         }
 
-        if (!matchRpkIdenity(endpoint, clientIdentity.getRawPublicKey(), securityInfo.getRawPublicKey())) {
+        if (!matchRpkIdenity(endpoint, clientIdentity.getPublicKey(), securityInfo.getRawPublicKey())) {
             return false;
         }
 
@@ -181,7 +174,7 @@ public class SecurityChecker {
         return true;
     }
 
-    protected boolean checkX509Identity(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
+    protected boolean checkX509Identity(String endpoint, X509Identity clientIdentity, SecurityInfo securityInfo) {
         // Manage X509 certificate authentication
         // ----------------------------------------------------
         if (!securityInfo.useX509Cert()) {
@@ -206,7 +199,7 @@ public class SecurityChecker {
         return true;
     }
 
-    protected boolean checkOscoreIdentity(String endpoint, Identity clientIdentity, SecurityInfo securityInfo) {
+    protected boolean checkOscoreIdentity(String endpoint, OscoreIdentity clientIdentity, SecurityInfo securityInfo) {
         // Manage OSCORE authentication
         // ----------------------------------------------------
         if (!securityInfo.useOSCORE()) {
@@ -214,8 +207,8 @@ public class SecurityChecker {
             return false;
         }
 
-        if (!matchOscoreIdentity(endpoint, clientIdentity.getOscoreIdentity(),
-                securityInfo.getOscoreSetting().getOscoreIdentity())) {
+        if (!matchOscoreIdentity(endpoint, clientIdentity.getRecipientId(),
+                securityInfo.getOscoreSetting().getRecipientId())) {
             return false;
         }
 
@@ -223,11 +216,10 @@ public class SecurityChecker {
         return true;
     }
 
-    protected boolean matchOscoreIdentity(String endpoint, OscoreIdentity receivedOscoreIdentity,
-            OscoreIdentity expectedOscoreIdentity) {
-        if (!receivedOscoreIdentity.equals(expectedOscoreIdentity)) {
-            LOG.debug("Invalid identity for client '{}': expected '{}' but was '{}'", endpoint, expectedOscoreIdentity,
-                    receivedOscoreIdentity);
+    protected boolean matchOscoreIdentity(String endpoint, byte[] receivedRecipientId, byte[] expectedRecipientId) {
+        if (!Arrays.equals(receivedRecipientId, expectedRecipientId)) {
+            LOG.debug("Invalid OSCORE identity for client '{}': expected '{}' but was '{}'", endpoint,
+                    Hex.encodeHexString(expectedRecipientId), Hex.encodeHexString(receivedRecipientId));
             return false;
         }
         return true;

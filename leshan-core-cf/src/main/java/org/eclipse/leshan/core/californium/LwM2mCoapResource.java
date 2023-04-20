@@ -26,7 +26,8 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,20 +106,25 @@ public class LwM2mCoapResource extends CoapResource {
         exchange.sendResponse(response);
     }
 
-    protected Identity getForeignPeerIdentity(Exchange exchange, Message receivedMessage) {
+    protected IpPeer getForeignPeerIdentity(Exchange exchange, Message receivedMessage) {
         IdentityHandler identityHandler = identityHandlerProvider.getIdentityHandler(exchange.getEndpoint());
         if (identityHandler != null) {
-            return identityHandler.getIdentity(receivedMessage);
+            LwM2mPeer peer = identityHandler.getIdentity(receivedMessage);
+            if (peer instanceof IpPeer) {
+                return (IpPeer) peer;
+            } else {
+                throw new IllegalStateException(String.format("Unsupported peer %s", peer));
+            }
         }
         return null;
     }
 
     /**
-     * Create Leshan {@link Identity} from Californium {@link EndpointContext}.
+     * Create Leshan {@link IpPeer} from Californium {@link EndpointContext}.
      *
-     * @return The corresponding Leshan {@link Identity} or <code>null</code> if we didn't succeed to extract Identity.
+     * @return The corresponding Leshan {@link IpPeer} or <code>null</code> if we didn't succeed to extract Identity.
      */
-    protected Identity extractIdentitySafely(Exchange exchange, Message receivedMessage) {
+    protected IpPeer extractIdentitySafely(Exchange exchange, Message receivedMessage) {
         try {
             return getForeignPeerIdentity(exchange, receivedMessage);
         } catch (RuntimeException e) {

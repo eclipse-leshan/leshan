@@ -32,6 +32,8 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
+import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
@@ -46,7 +48,6 @@ import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.DownlinkRequestVisitor;
 import org.eclipse.leshan.core.request.ExecuteRequest;
-import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
@@ -67,7 +68,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     private Request coapRequest;
 
     // client information
-    private final Identity destination;
+    private final LwM2mPeer destination;
     private final String rootPath;
     private final String registrationId;
     private final String endpoint;
@@ -80,7 +81,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
 
     private final IdentityHandler identityHandler;
 
-    public CoapRequestBuilder(Identity destination, String rootPath, String registrationId, String endpoint,
+    public CoapRequestBuilder(LwM2mPeer destination, String rootPath, String registrationId, String endpoint,
             LwM2mModel model, LwM2mEncoder encoder, boolean allowConnectionInitiation,
             LowerLayerConfig lowerLayerConfig, IdentityHandler identityHandler) {
         this.destination = destination;
@@ -356,7 +357,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     protected void setSecurityContext(Request coapRequest) {
         EndpointContext context = identityHandler.createEndpointContext(destination, allowConnectionInitiation);
         coapRequest.setDestinationContext(context);
-        if (destination.isOSCORE()) {
+        if (destination.getIdentity() instanceof OscoreIdentity) {
             coapRequest.getOptions().setOscore(Bytes.EMPTY);
         }
     }

@@ -17,16 +17,16 @@ package org.eclipse.leshan.server.bootstrap.request;
 
 import java.net.URI;
 
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
 
 public interface BootstrapUplinkRequestReceiver {
 
-    <T extends LwM2mResponse> SendableResponse<T> requestReceived(Identity senderIdentity, UplinkRequest<T> request,
+    <T extends LwM2mResponse> SendableResponse<T> requestReceived(LwM2mPeer sender, UplinkRequest<T> request,
             URI serverEndpointUri);
 
-    void onError(Identity senderIdentity, Exception exception,
+    void onError(LwM2mPeer sender, Exception exception,
             Class<? extends UplinkRequest<? extends LwM2mResponse>> requestType, URI serverEndpointUri);
 }

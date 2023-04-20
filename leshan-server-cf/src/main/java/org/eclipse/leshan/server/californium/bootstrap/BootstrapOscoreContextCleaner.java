@@ -17,6 +17,8 @@ package org.eclipse.leshan.server.californium.bootstrap;
 
 import org.eclipse.californium.oscore.OSCoreCtx;
 import org.eclipse.californium.oscore.OSCoreCtxDB;
+import org.eclipse.leshan.core.peer.LwM2mIdentity;
+import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionAdapter;
@@ -46,16 +48,17 @@ public class BootstrapOscoreContextCleaner extends BootstrapSessionAdapter {
 
     @Override
     public void end(BootstrapSession session) {
-        if (session.getIdentity().isOSCORE()) {
-            removeContext(session.getIdentity().getOscoreIdentity().getRecipientId());
+        LwM2mIdentity clientIdentity = session.getClientTransportData().getIdentity();
+        if (clientIdentity instanceof OscoreIdentity) {
+            removeContext(((OscoreIdentity) clientIdentity).getRecipientId());
         }
-
     }
 
     @Override
     public void failed(BootstrapSession session, BootstrapFailureCause cause) {
-        if (session.getIdentity().isOSCORE()) {
-            removeContext(session.getIdentity().getOscoreIdentity().getRecipientId());
+        LwM2mIdentity clientIdentity = session.getClientTransportData().getIdentity();
+        if (clientIdentity instanceof OscoreIdentity) {
+            removeContext(((OscoreIdentity) clientIdentity).getRecipientId());
         }
     }
 }

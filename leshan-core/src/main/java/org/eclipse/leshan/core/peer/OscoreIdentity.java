@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022    Sierra Wireless and others.
+ * Copyright (c) 2023 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -11,47 +11,44 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  *
  * Contributors:
- *     Sierra Wireless - initial API and implementation
+ *     Sierra Wireless, Orange Polska S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.oscore;
+package org.eclipse.leshan.core.peer;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
-import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.Validate;
 
-/**
- * An OSCORE Object identifying a foreign peer.
- *
- */
-public class OscoreIdentity implements Serializable {
+public class OscoreIdentity implements LwM2mIdentity {
 
-    private static final long serialVersionUID = 1L;
-    protected final byte[] recipientId;
+    private final byte[] RecipientId;
 
     public OscoreIdentity(byte[] recipientId) {
         Validate.notNull(recipientId);
-        if (recipientId.length == 0) {
-            throw new IllegalArgumentException("recipient can not be empty");
-        }
-        this.recipientId = recipientId;
+        if (recipientId.length == 0)
+            throw new IllegalArgumentException("recipient Id MUST NOT be empty");
+        this.RecipientId = recipientId;
     }
 
     public byte[] getRecipientId() {
-        return recipientId;
+        return RecipientId;
+    }
+
+    @Override
+    public boolean isSecure() {
+        return true;
     }
 
     @Override
     public String toString() {
-        return String.format("OscoreIdentity [%s]", Hex.encodeHexString(recipientId));
+        return String.format("Identity [oscore=%s]", RecipientId);
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + Arrays.hashCode(recipientId);
+        result = prime * result + Arrays.hashCode(RecipientId);
         return result;
     }
 
@@ -64,8 +61,7 @@ public class OscoreIdentity implements Serializable {
         if (getClass() != obj.getClass())
             return false;
         OscoreIdentity other = (OscoreIdentity) obj;
-        if (!Arrays.equals(recipientId, other.recipientId))
-            return false;
-        return true;
+        return Arrays.equals(RecipientId, other.RecipientId);
     }
+
 }

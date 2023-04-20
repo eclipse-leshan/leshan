@@ -17,8 +17,8 @@ package org.eclipse.leshan.server.bootstrap;
 
 import java.util.Iterator;
 
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BootstrapRequest;
-import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.security.Authorization;
 import org.eclipse.leshan.server.security.BootstrapAuthorizer;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
@@ -40,10 +40,10 @@ public class DefaultBootstrapAuthorizer implements BootstrapAuthorizer {
     }
 
     @Override
-    public Authorization isAuthorized(BootstrapRequest request, Identity clientIdentity) {
+    public Authorization isAuthorized(BootstrapRequest request, LwM2mPeer client) {
         if (bsSecurityStore != null && securityChecker != null) {
             Iterator<SecurityInfo> securityInfos = bsSecurityStore.getAllByEndpoint(request.getEndpointName());
-            if (securityChecker.checkSecurityInfos(request.getEndpointName(), clientIdentity, securityInfos)) {
+            if (securityChecker.checkSecurityInfos(request.getEndpointName(), client, securityInfos)) {
                 return Authorization.approved();
             } else {
                 return Authorization.declined();

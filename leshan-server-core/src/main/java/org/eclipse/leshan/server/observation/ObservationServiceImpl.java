@@ -28,7 +28,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
@@ -202,9 +202,9 @@ public class ObservationServiceImpl implements ObservationService, LwM2mNotifica
 
     private void updateRegistrationOnRegistration(Observation observation, ClientProfile profile) {
         if (updateRegistrationOnNotification) {
-            Identity obsIdentity = profile.getIdentity();
-            RegistrationUpdate regUpdate = new RegistrationUpdate(observation.getRegistrationId(), obsIdentity, null,
-                    null, null, null, null, null, null, null, null, null);
+            LwM2mPeer peerData = profile.getTransportData();
+            RegistrationUpdate regUpdate = new RegistrationUpdate(observation.getRegistrationId(), peerData, null, null,
+                    null, null, null, null, null, null, null, null);
             UpdatedRegistration updatedRegistration = registrationStore.updateRegistration(regUpdate);
             if (updatedRegistration == null || updatedRegistration.getUpdatedRegistration() == null) {
                 LOG.error("Unexpected error: There is no registration with id {} for this observation {}",
