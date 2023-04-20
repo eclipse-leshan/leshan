@@ -81,6 +81,7 @@ public class IotDevicesRegistrationHandler implements RegistrationListener, Gate
         Map<String, String> appData = new HashMap<>();
         appData.put(GatewayAppData.GATEWAY_REGID, gatewayRegistration.getId());
         appData.put(GatewayAppData.IOT_DEVICE_PREFIX, prefix);
+        builder.applicationData(appData);
 
         final Registration registration = builder.build();
 
