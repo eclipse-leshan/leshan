@@ -35,14 +35,14 @@ public class CoapMessageTracer implements MessageInterceptor {
     public void addListener(String endpoint, CoapMessageListener listener) {
         Registration registration = registry.getByEndpoint(endpoint);
         if (registration != null) {
-            listeners.put(toStringAddress(registration.getIdentity().getPeerAddress()), listener);
+            listeners.put(toStringAddress(registration.getIdentity().getSocketAddress()), listener);
         }
     }
 
     public void removeListener(String endpoint) {
         Registration registration = registry.getByEndpoint(endpoint);
         if (registration != null) {
-            listeners.remove(toStringAddress(registration.getIdentity().getPeerAddress()));
+            listeners.remove(toStringAddress(registration.getIdentity().getSocketAddress()));
         }
     }
 

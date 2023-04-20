@@ -26,7 +26,7 @@ import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.SendResponse;
@@ -56,7 +56,7 @@ public class SendResource extends LwM2mCoapResource {
     @Override
     public void handlePOST(CoapExchange exchange) {
         Request coapRequest = exchange.advanced().getRequest();
-        Identity sender = getForeignPeerIdentity(exchange.advanced(), coapRequest);
+        IpPeer sender = getForeignPeerIdentity(exchange.advanced(), coapRequest);
         ClientProfile clientProfile = profileProvider.getProfile(sender);
 
         // check we have a registration for this identity

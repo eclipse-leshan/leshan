@@ -19,7 +19,7 @@ import java.net.URI;
 
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DeregisterRequest;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
@@ -42,7 +42,7 @@ public class DefaultUplinkRequestReceiver implements UplinkRequestReceiver {
     }
 
     @Override
-    public void onError(Identity senderIdentity, ClientProfile senderProfile, Exception exception,
+    public void onError(IpPeer senderIdentity, ClientProfile senderProfile, Exception exception,
             Class<? extends UplinkRequest<? extends LwM2mResponse>> requestType, URI serverEndpointUri) {
         if (requestType.equals(SendRequest.class)) {
             sendHandler.onError(senderProfile.getRegistration(), exception);
@@ -50,7 +50,7 @@ public class DefaultUplinkRequestReceiver implements UplinkRequestReceiver {
     }
 
     @Override
-    public <T extends LwM2mResponse> SendableResponse<T> requestReceived(Identity senderIdentity,
+    public <T extends LwM2mResponse> SendableResponse<T> requestReceived(IpPeer senderIdentity,
             ClientProfile senderProfile, UplinkRequest<T> request, URI serverEndpointUri) {
 
         RequestHandler<T> requestHandler = new RequestHandler<T>(senderIdentity, senderProfile, serverEndpointUri);
@@ -60,12 +60,12 @@ public class DefaultUplinkRequestReceiver implements UplinkRequestReceiver {
 
     public class RequestHandler<T extends LwM2mResponse> implements UplinkRequestVisitor {
 
-        private final Identity senderIdentity;
+        private final IpPeer senderIdentity;
         private final ClientProfile senderProfile;
         private final URI endpoint;
         private SendableResponse<? extends LwM2mResponse> response;
 
-        public RequestHandler(Identity senderIdentity, ClientProfile clientProfile, URI serverEndpointUri) {
+        public RequestHandler(IpPeer senderIdentity, ClientProfile clientProfile, URI serverEndpointUri) {
             this.senderIdentity = senderIdentity;
             this.senderProfile = clientProfile;
             this.endpoint = serverEndpointUri;

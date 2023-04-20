@@ -23,7 +23,10 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
+import org.eclipse.leshan.core.request.PskIdentity;
+import org.eclipse.leshan.core.request.RpkIdentity;
+import org.eclipse.leshan.core.request.X509Identity;
 import org.eclipse.leshan.core.util.Hex;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -38,28 +41,29 @@ public class IdentitySerDes {
     private static final String KEY_CN = "cn";
     private static final String KEY_RPK = "rpk";
 
-    public static JsonNode serialize(Identity identity) {
+    public static JsonNode serialize(IpPeer identity) {
         ObjectNode o = JsonNodeFactory.instance.objectNode();
-        o.put(KEY_ADDRESS, identity.getPeerAddress().getHostString());
-        o.put(KEY_PORT, identity.getPeerAddress().getPort());
+        o.put(KEY_ADDRESS, identity.getSocketAddress().getHostString());
+        o.put(KEY_PORT, identity.getSocketAddress().getPort());
         if (identity.isPSK()) {
-            o.put(KEY_ID, identity.getPskIdentity());
+            o.put(KEY_ID, ((PskIdentity) identity.getIdentity()).getpskIdentity());
         } else if (identity.isRPK()) {
-            PublicKey publicKey = identity.getRawPublicKey();
+            PublicKey publicKey = ((RpkIdentity) identity.getIdentity()).getPublicKey();
             o.put(KEY_RPK, Hex.encodeHexString(publicKey.getEncoded()));
         } else if (identity.isX509()) {
-            o.put(KEY_CN, identity.getX509CommonName());
+            o.put(KEY_CN, ((X509Identity) identity.getIdentity()).getX509CommonName());
         }
         return o;
     }
 
-    public static Identity deserialize(JsonNode peer) {
+    public static IpPeer deserialize(JsonNode peer) {
         String address = peer.get(KEY_ADDRESS).asText();
         int port = peer.get(KEY_PORT).asInt();
 
         JsonNode jpsk = peer.get(KEY_ID);
         if (jpsk != null) {
-            return Identity.psk(new InetSocketAddress(address, port), jpsk.asText());
+            return new IpPeer(new InetSocketAddress(address, port), new PskIdentity(jpsk.asText()));
+            // return Identity.psk(new InetSocketAddress(address, port), jpsk.asText());
         }
 
         JsonNode jrpk = peer.get(KEY_RPK);
@@ -68,7 +72,8 @@ public class IdentitySerDes {
                 byte[] rpk = Hex.decodeHex(jrpk.asText().toCharArray());
                 X509EncodedKeySpec spec = new X509EncodedKeySpec(rpk);
                 PublicKey publicKey = KeyFactory.getInstance("EC").generatePublic(spec);
-                return Identity.rpk(new InetSocketAddress(address, port), publicKey);
+                return new IpPeer(new InetSocketAddress(address, port), new RpkIdentity(publicKey));
+                // return Identity.rpk(new InetSocketAddress(address, port), publicKey);
             } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
                 throw new IllegalStateException("Invalid security info content", e);
             }
@@ -76,9 +81,10 @@ public class IdentitySerDes {
 
         JsonNode jcn = peer.get(KEY_CN);
         if (jcn != null) {
-            return Identity.x509(new InetSocketAddress(address, port), jcn.asText());
+            return new IpPeer(new InetSocketAddress(address, port), new X509Identity(jcn.asText()));
+            // return Identity.x509(new InetSocketAddress(address, port), jcn.asText());
         }
-
-        return Identity.unsecure(new InetSocketAddress(address, port));
+        return new IpPeer(new InetSocketAddress(address, port));
+        // return Identity.unsecure(new InetSocketAddress(address, port));
     }
 }

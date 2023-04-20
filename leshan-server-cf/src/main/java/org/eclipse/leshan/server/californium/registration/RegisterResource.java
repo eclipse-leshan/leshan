@@ -35,7 +35,7 @@ import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.DeregisterRequest;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.response.DeregisterResponse;
@@ -129,7 +129,7 @@ public class RegisterResource extends LwM2mCoapResource {
     protected void handleRegister(CoapExchange exchange, Request request) {
         // Get identity
         // --------------------------------
-        Identity sender = getForeignPeerIdentity(exchange.advanced(), request);
+        IpPeer sender = getForeignPeerIdentity(exchange.advanced(), request);
 
         // Create LwM2m request from CoAP request
         // --------------------------------
@@ -198,7 +198,7 @@ public class RegisterResource extends LwM2mCoapResource {
 
     protected void handleUpdate(CoapExchange exchange, Request request, String registrationId) {
         // Get identity
-        Identity sender = getForeignPeerIdentity(exchange.advanced(), request);
+        IpPeer sender = getForeignPeerIdentity(exchange.advanced(), request);
 
         // Create LwM2m request from CoAP request
         Long lifetime = null;
@@ -250,7 +250,7 @@ public class RegisterResource extends LwM2mCoapResource {
     protected void handleDeregister(CoapExchange exchange, String registrationId) {
         // Get identity
         Request coapRequest = exchange.advanced().getRequest();
-        Identity sender = getForeignPeerIdentity(exchange.advanced(), coapRequest);
+        IpPeer sender = getForeignPeerIdentity(exchange.advanced(), coapRequest);
 
         // Create request
         DeregisterRequest deregisterRequest = new DeregisterRequest(registrationId, coapRequest);

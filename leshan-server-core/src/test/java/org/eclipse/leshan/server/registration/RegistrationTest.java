@@ -33,7 +33,7 @@ import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.server.registration.Registration.Builder;
 import org.junit.jupiter.api.Test;
 
@@ -245,7 +245,7 @@ public class RegistrationTest {
 
     private Registration given_a_registration_with_object_link_like(String objectLinks) throws LinkParseException {
         Builder builder = new Registration.Builder("id", "endpoint",
-                Identity.unsecure(InetSocketAddress.createUnresolved("localhost", 0)),
+                new IpPeer(InetSocketAddress.createUnresolved("localhost", 0)),
                 EndpointUriUtil.createUri("coap://localhost:5683"));
         builder.extractDataFromObjectLink(true);
         builder.objectLinks(linkParser.parseCoreLinkFormat(objectLinks.getBytes()));

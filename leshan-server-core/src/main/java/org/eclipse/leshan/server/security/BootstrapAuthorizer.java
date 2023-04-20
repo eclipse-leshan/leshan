@@ -17,7 +17,7 @@ package org.eclipse.leshan.server.security;
 
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.request.BootstrapRequest;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 
 public interface BootstrapAuthorizer {
 
@@ -33,8 +33,8 @@ public interface BootstrapAuthorizer {
      * </pre>
      *
      * @param request the request received
-     * @param clientIdentity the {@link Identity} of the client that sent the request.
+     * @param clientIdentity the {@link IpPeer} of the client that sent the request.
      * @return an {@link Authorization} status.
      */
-    Authorization isAuthorized(BootstrapRequest request, Identity clientIdentity);
+    Authorization isAuthorized(BootstrapRequest request, IpPeer clientIdentity);
 }

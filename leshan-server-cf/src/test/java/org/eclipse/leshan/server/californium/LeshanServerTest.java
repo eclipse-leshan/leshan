@@ -22,7 +22,7 @@ import java.util.EnumSet;
 
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.request.BindingMode;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -118,7 +118,7 @@ public class LeshanServerTest {
     }
 
     private void forceThreadsCreation(LeshanServer server) {
-        Registration reg = new Registration.Builder("id", "endpoint", Identity.unsecure(new InetSocketAddress(5555)),
+        Registration reg = new Registration.Builder("id", "endpoint", new IpPeer(new InetSocketAddress(5555)),
                 server.getEndpoint(Protocol.COAP).getURI()).bindingMode(EnumSet.of(BindingMode.U, BindingMode.Q))
                         .build();
         // Force timer thread creation of preference service.

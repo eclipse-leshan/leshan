@@ -46,7 +46,7 @@ import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.DownlinkRequestVisitor;
 import org.eclipse.leshan.core.request.ExecuteRequest;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
@@ -67,7 +67,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     private Request coapRequest;
 
     // client information
-    private final Identity destination;
+    private final IpPeer destination;
     private final String rootPath;
     private final String registrationId;
     private final String endpoint;
@@ -80,7 +80,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
 
     private final IdentityHandler identityHandler;
 
-    public CoapRequestBuilder(Identity destination, String rootPath, String registrationId, String endpoint,
+    public CoapRequestBuilder(IpPeer destination, String rootPath, String registrationId, String endpoint,
             LwM2mModel model, LwM2mEncoder encoder, boolean allowConnectionInitiation,
             LowerLayerConfig lowerLayerConfig, IdentityHandler identityHandler) {
         this.destination = destination;

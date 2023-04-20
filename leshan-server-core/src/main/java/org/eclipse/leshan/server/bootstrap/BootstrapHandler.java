@@ -18,7 +18,7 @@ package org.eclipse.leshan.server.bootstrap;
 import java.net.URI;
 
 import org.eclipse.leshan.core.request.BootstrapRequest;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.response.BootstrapResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
 
@@ -28,7 +28,8 @@ import org.eclipse.leshan.core.response.SendableResponse;
  *
  * @see DefaultBootstrapHandler
  */
+
 public interface BootstrapHandler {
 
-    SendableResponse<BootstrapResponse> bootstrap(Identity sender, BootstrapRequest request, URI serverEndpointUri);
+    SendableResponse<BootstrapResponse> bootstrap(IpPeer sender, BootstrapRequest request, URI serverEndpointUri);
 }

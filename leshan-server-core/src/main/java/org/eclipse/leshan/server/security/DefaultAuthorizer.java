@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.security;
 
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.server.registration.Registration;
 
@@ -41,7 +41,7 @@ public class DefaultAuthorizer implements Authorizer {
     }
 
     @Override
-    public Authorization isAuthorized(UplinkRequest<?> request, Registration registration, Identity senderIdentity) {
+    public Authorization isAuthorized(UplinkRequest<?> request, Registration registration, IpPeer senderIdentity) {
 
         // do we have security information for this client?
         SecurityInfo expectedSecurityInfo = null;

@@ -16,7 +16,7 @@
 package org.eclipse.leshan.server.security;
 
 import org.eclipse.leshan.core.ResponseCode;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.server.registration.Registration;
 
@@ -40,9 +40,9 @@ public interface Authorizer {
      * @param registration the registration linked to the received request.<br>
      *        For register request this is the registration which will be created<br>
      *        For update request this is the registration before the update was done.
-     * @param senderIdentity the {@link Identity} used to send the request.
+     * @param senderIdentity the {@link IpPeer} used to send the request.
      *
      * @return an {@link Authorization} status.
      */
-    Authorization isAuthorized(UplinkRequest<?> request, Registration registration, Identity senderIdentity);
+    Authorization isAuthorized(UplinkRequest<?> request, Registration registration, IpPeer senderIdentity);
 }

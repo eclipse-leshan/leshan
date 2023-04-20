@@ -46,7 +46,7 @@ import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.ObservationIdentifier;
 import org.eclipse.leshan.core.observation.SingleObservation;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.response.AbstractLwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
@@ -156,7 +156,7 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
                             return;
                         }
                         // Get profile
-                        Identity identity = identityHandler.getIdentity(coapResponse);
+                        IpPeer identity = identityHandler.getIdentity(coapResponse);
                         ClientProfile profile = toolbox.getProfileProvider().getProfile(identity);
 
                         // create Observe Response

@@ -28,7 +28,7 @@ import org.eclipse.leshan.core.californium.LwM2mCoapResource;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.response.BootstrapResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.server.bootstrap.request.BootstrapUplinkRequestReceiver;
@@ -88,7 +88,7 @@ public class BootstrapResource extends LwM2mCoapResource {
         }
 
         // Extract client identity
-        Identity clientIdentity = getForeignPeerIdentity(exchange.advanced(), request);
+        IpPeer clientIdentity = getForeignPeerIdentity(exchange.advanced(), request);
 
         // handle bootstrap request
         Request coapRequest = exchange.advanced().getRequest();

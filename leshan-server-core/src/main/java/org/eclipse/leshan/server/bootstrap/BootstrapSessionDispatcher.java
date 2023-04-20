@@ -20,7 +20,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
 public class BootstrapSessionDispatcher implements BootstrapSessionListener {
@@ -36,14 +36,14 @@ public class BootstrapSessionDispatcher implements BootstrapSessionListener {
     }
 
     @Override
-    public void sessionInitiated(BootstrapRequest request, Identity clientIdentity) {
+    public void sessionInitiated(BootstrapRequest request, IpPeer clientIdentity) {
         for (BootstrapSessionListener listener : listeners) {
             listener.sessionInitiated(request, clientIdentity);
         }
     }
 
     @Override
-    public void unAuthorized(BootstrapRequest request, Identity clientIdentity) {
+    public void unAuthorized(BootstrapRequest request, IpPeer clientIdentity) {
         for (BootstrapSessionListener listener : listeners) {
             listener.unAuthorized(request, clientIdentity);
         }

@@ -28,7 +28,7 @@ import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.DefaultLinkParser;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.request.BindingMode;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.UplinkRequest;
@@ -110,8 +110,8 @@ public class RegistrationHandlerTest {
         assertEquals(appData, registration.getApplicationData());
     }
 
-    private Identity givenIdentity() {
-        return Identity.unsecure(new InetSocketAddress(0));
+    private IpPeer givenIdentity() {
+        return new IpPeer(new InetSocketAddress(0));
     }
 
     private URI givenServerEndpointUri() {
@@ -140,8 +140,7 @@ public class RegistrationHandlerTest {
         }
 
         @Override
-        public Authorization isAuthorized(UplinkRequest<?> request, Registration registration,
-                Identity senderIdentity) {
+        public Authorization isAuthorized(UplinkRequest<?> request, Registration registration, IpPeer senderIdentity) {
             return autorization;
         }
     }

@@ -1,6 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 Sierra Wireless and others.
- *
+ * Copyright (c) 2022    Sierra Wireless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
@@ -11,13 +10,12 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  *
  * Contributors:
- *     Sierra Wireless - initial API and implementation
+ *     Sierra Wireless, Orange Polska S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.profile;
 
-import org.eclipse.leshan.core.request.IpPeer;
+package org.eclipse.leshan.core.request;
 
-public interface ClientProfileProvider {
+public interface Peer {
+    LwM2MIdentity getIdentity();
 
-    ClientProfile getProfile(IpPeer identity);
 }

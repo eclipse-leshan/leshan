@@ -45,7 +45,7 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.util.StringUtils;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.security.Authorizer;
@@ -59,7 +59,7 @@ public class Registration {
 
     private final Date registrationDate;
 
-    private final Identity identity;
+    private final IpPeer identity;
 
     private final long lifeTimeInSec;
 
@@ -139,7 +139,7 @@ public class Registration {
      *
      * @return identity from client's most recent registration or registration update.
      */
-    public Identity getIdentity() {
+    public IpPeer getIdentity() {
         return identity;
     }
 
@@ -149,7 +149,7 @@ public class Registration {
      * @return the source address from the client's most recent CoAP message.
      */
     public InetSocketAddress getSocketAddress() {
-        return identity.getPeerAddress();
+        return identity.getSocketAddress();
     }
 
     /**
@@ -158,7 +158,7 @@ public class Registration {
      * @return the source address from the client's most recent CoAP message.
      */
     public InetAddress getAddress() {
-        return identity.getPeerAddress().getAddress();
+        return identity.getSocketAddress().getAddress();
     }
 
     /**
@@ -167,7 +167,7 @@ public class Registration {
      * @return the source port from the client's most recent CoAP message.
      */
     public int getPort() {
-        return identity.getPeerAddress().getPort();
+        return identity.getSocketAddress().getPort();
     }
 
     public Link[] getObjectLinks() {
@@ -484,7 +484,7 @@ public class Registration {
     public static class Builder {
         private final String registrationId;
         private final String endpoint;
-        private final Identity identity;
+        private final IpPeer identity;
         private final URI lastEndpointUsed;
 
         private Date registrationDate;
@@ -533,7 +533,7 @@ public class Registration {
             applicationData = registration.applicationData;
         }
 
-        public Builder(String registrationId, String endpoint, Identity identity, URI lastEndpointUsed) {
+        public Builder(String registrationId, String endpoint, IpPeer identity, URI lastEndpointUsed) {
 
             Validate.notNull(registrationId);
             Validate.notEmpty(endpoint);

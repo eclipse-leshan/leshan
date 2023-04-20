@@ -22,7 +22,7 @@ import java.util.List;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.bootstrap.BootstrapTaskProvider.Tasks;
@@ -73,7 +73,7 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
     }
 
     @Override
-    public BootstrapSession begin(BootstrapRequest request, Identity clientIdentity, URI endpointUsed) {
+    public BootstrapSession begin(BootstrapRequest request, IpPeer clientIdentity, URI endpointUsed) {
         Authorization authorization = authorizer.isAuthorized(request, clientIdentity);
         DefaultBootstrapSession session = new DefaultBootstrapSession(request, clientIdentity,
                 authorization.isApproved(), authorization.getApplicationData(), endpointUsed);

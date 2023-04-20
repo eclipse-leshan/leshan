@@ -21,23 +21,23 @@ import java.security.Principal;
 import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.californium.elements.EndpointContext;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 
 public class DefaultCoapIdentityHandler implements IdentityHandler {
 
     @Override
-    public Identity getIdentity(Message receivedMessage) {
+    public IpPeer getIdentity(Message receivedMessage) {
         EndpointContext context = receivedMessage.getSourceContext();
         InetSocketAddress peerAddress = context.getPeerAddress();
         Principal senderIdentity = context.getPeerIdentity();
         if (senderIdentity == null) {
-            return Identity.unsecure(peerAddress);
+            return new IpPeer(peerAddress);
         }
         return null;
     }
 
     @Override
-    public EndpointContext createEndpointContext(Identity identity, boolean allowConnectionInitiation) {
-        return new AddressEndpointContext(identity.getPeerAddress());
+    public EndpointContext createEndpointContext(IpPeer identity, boolean allowConnectionInitiation) {
+        return new AddressEndpointContext(identity.getSocketAddress());
     }
 }

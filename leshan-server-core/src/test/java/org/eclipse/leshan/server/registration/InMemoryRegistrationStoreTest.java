@@ -23,13 +23,14 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.EnumSet;
 
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.request.BindingMode;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -58,8 +59,8 @@ public class InMemoryRegistrationStoreTest {
         givenASimpleRegistration(lifetime);
         store.addRegistration(registration);
 
-        RegistrationUpdate update = new RegistrationUpdate(registrationId, Identity.unsecure(address, port), null, null,
-                null, null, null, null);
+        RegistrationUpdate update = new RegistrationUpdate(registrationId,
+                new IpPeer(new InetSocketAddress(address, port)), null, null, null, null, null, null);
         UpdatedRegistration updatedRegistration = store.updateRegistration(update);
         assertEquals(lifetime, updatedRegistration.getUpdatedRegistration().getLifeTimeInSec());
         assertSame(binding, updatedRegistration.getUpdatedRegistration().getBindingMode());
@@ -86,8 +87,8 @@ public class InMemoryRegistrationStoreTest {
         store.addRegistration(registration);
         assertFalse(registration.isAlive());
 
-        RegistrationUpdate update = new RegistrationUpdate(registrationId, Identity.unsecure(address, port), lifetime,
-                null, null, null, null, null);
+        RegistrationUpdate update = new RegistrationUpdate(registrationId,
+                new IpPeer(new InetSocketAddress(address, port)), lifetime, null, null, null, null, null);
         UpdatedRegistration updatedRegistration = store.updateRegistration(update);
         assertTrue(updatedRegistration.getUpdatedRegistration().isAlive());
 
@@ -97,8 +98,8 @@ public class InMemoryRegistrationStoreTest {
 
     private void givenASimpleRegistration(Long lifetime) {
 
-        Registration.Builder builder = new Registration.Builder(registrationId, ep, Identity.unsecure(address, port),
-                EndpointUriUtil.createUri("coap://localhost:5683"));
+        Registration.Builder builder = new Registration.Builder(registrationId, ep,
+                new IpPeer(new InetSocketAddress(address, port)), EndpointUriUtil.createUri("coap://localhost:5683"));
 
         registration = builder.lifeTimeInSec(lifetime).smsNumber(sms).bindingMode(binding).objectLinks(objectLinks)
                 .build();

@@ -44,7 +44,7 @@ import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.ObservationIdentifier;
 import org.eclipse.leshan.core.observation.SingleObservation;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.redis.serialization.IdentitySerDes;
@@ -283,7 +283,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
     }
 
     @Override
-    public Registration getRegistrationByIdentity(Identity identity) {
+    public Registration getRegistrationByIdentity(IpPeer identity) {
         Validate.notNull(identity);
         try (Jedis j = pool.getResource()) {
             byte[] ep = j.get(toRegIdentityKey(identity));
@@ -453,7 +453,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
         return toKey(endpointBySocketAddressPrefix, addr.getAddress().toString() + ":" + addr.getPort());
     }
 
-    private byte[] toRegIdentityKey(Identity identity) {
+    private byte[] toRegIdentityKey(IpPeer identity) {
         return toKey(endpointByIdentityPrefix, IdentitySerDes.serialize(identity).toString());
     }
 

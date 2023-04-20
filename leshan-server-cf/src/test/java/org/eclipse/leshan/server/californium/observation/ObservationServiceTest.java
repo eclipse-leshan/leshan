@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -38,7 +39,7 @@ import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.DownlinkRequest;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -74,7 +75,7 @@ public class ObservationServiceTest {
 
     private Registration givenASimpleRegistration() throws UnknownHostException {
         Registration.Builder builder = new Registration.Builder("4711", "urn:endpoint",
-                Identity.unsecure(InetAddress.getLocalHost(), 23452),
+                new IpPeer(new InetSocketAddress(InetAddress.getLocalHost(), 23452)),
                 EndpointUriUtil.createUri("coap://localhost:5683"));
         return builder.lifeTimeInSec(10000L).bindingMode(EnumSet.of(BindingMode.U))
                 .objectLinks(new Link[] { new Link("/3") }).build();
@@ -185,7 +186,7 @@ public class ObservationServiceTest {
         Registration.Builder builder;
         try {
             builder = new Registration.Builder(registrationId, registrationId + "_ep",
-                    Identity.unsecure(InetAddress.getLocalHost(), 10000),
+                    new IpPeer(new InetSocketAddress(InetAddress.getLocalHost(), 10000)),
                     EndpointUriUtil.createUri("coap://localhost:5683"));
             return builder.build();
         } catch (UnknownHostException e) {

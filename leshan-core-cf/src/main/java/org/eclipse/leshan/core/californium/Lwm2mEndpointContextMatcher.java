@@ -20,7 +20,6 @@ import java.security.Principal;
 import javax.security.auth.x500.X500Principal;
 
 import org.eclipse.californium.elements.PrincipalEndpointContextMatcher;
-import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.util.X509CertUtil;
 
 // TODO TL: to be move in californium.identity package
@@ -31,7 +30,7 @@ import org.eclipse.leshan.core.util.X509CertUtil;
  * Matches DTLS based on the used principal. Requires unique credentials.
  *
  * For x.509, only the CN is checked, because the other parts of the distinguished names are removed when converting it
- * into a {@link Identity}.
+ * into a {@link org.eclipse.leshan.core.request.IpPeer}.
  *
  * For more detailed about why this is needed, see
  * <a href="https://github.com/eclipse/leshan/wiki/LWM2M-Observe#for-dtls">LWM2M-Observe wiki page</a>

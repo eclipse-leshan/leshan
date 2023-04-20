@@ -24,7 +24,7 @@ import org.eclipse.leshan.client.californium.endpoint.ServerIdentityExtractor;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.californium.LwM2mCoapResource;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
 
 /**
  * A Common {@link CoapResource} used to handle LWM2M request with some specific method for LWM2M client.
@@ -61,7 +61,7 @@ public class LwM2mClientCoapResource extends LwM2mCoapResource {
      * @throws IllegalStateException if we are not able to extract {@link ServerIdentity}.
      */
     protected ServerIdentity extractIdentity(Exchange exchange, Message receivedMessage) {
-        Identity foreignPeerIdentity = getForeignPeerIdentity(exchange, receivedMessage);
+        IpPeer foreignPeerIdentity = getForeignPeerIdentity(exchange, receivedMessage);
         if (foreignPeerIdentity == null)
             return null;
         return serverIdentityExtractor.extractIdentity(exchange, foreignPeerIdentity);

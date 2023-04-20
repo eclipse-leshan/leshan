@@ -30,8 +30,8 @@ import org.eclipse.californium.oscore.OSCoreCtxDB;
 import org.eclipse.californium.oscore.OSCoreEndpointContextInfo;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.californium.oscore.cf.InMemoryOscoreContextDB;
-import org.eclipse.leshan.core.oscore.OscoreIdentity;
-import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.core.request.IpPeer;
+import org.eclipse.leshan.core.request.OscoreIdentity;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
 import org.eclipse.leshan.server.californium.bootstrap.BootstrapOscoreContextCleaner;
@@ -88,7 +88,7 @@ public class CoapOscoreBootstrapServerEndpointFactory extends CoapBootstrapServe
         return new IdentityHandler() {
 
             @Override
-            public Identity getIdentity(Message receivedMessage) {
+            public IpPeer getIdentity(Message receivedMessage) {
                 EndpointContext context = receivedMessage.getSourceContext();
                 InetSocketAddress peerAddress = context.getPeerAddress();
                 Principal senderIdentity = context.getPeerIdentity();
@@ -96,19 +96,19 @@ public class CoapOscoreBootstrapServerEndpointFactory extends CoapBootstrapServe
                     // Build identity for OSCORE if it is used
                     if (context.get(OSCoreEndpointContextInfo.OSCORE_RECIPIENT_ID) != null) {
                         String recipient = context.get(OSCoreEndpointContextInfo.OSCORE_RECIPIENT_ID);
-                        return Identity.oscoreOnly(peerAddress,
-                                new OscoreIdentity(Hex.decodeHex(recipient.toCharArray())));
+                        return new IpPeer(peerAddress, new OscoreIdentity(Hex.decodeHex(recipient.toCharArray())));
+
                     }
-                    return Identity.unsecure(peerAddress);
+                    return new IpPeer(peerAddress);
                 } else {
                     return null;
                 }
             }
 
             @Override
-            public EndpointContext createEndpointContext(Identity identity, boolean allowConnectionInitiation) {
+            public EndpointContext createEndpointContext(IpPeer identity, boolean allowConnectionInitiation) {
                 // TODO OSCORE : should we add properties to endpoint context ?
-                return new AddressEndpointContext(identity.getPeerAddress());
+                return new AddressEndpointContext(identity.getSocketAddress());
             }
         };
     }
