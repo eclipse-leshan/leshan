@@ -67,7 +67,9 @@ public class IotDevicesRegistrationHandler implements RegistrationListener, Gate
                 gatewayRegistration.getQueueMode(), gatewayRegistration.getSmsNumber(), objectLinks, null);
 
         Registration.Builder builder = new Registration.Builder(
-                registrationIdProvider.getRegistrationId(registerRequest), endpoint, gatewayRegistration.getIdentity(),
+                registrationIdProvider.getRegistrationId(registerRequest), endpoint,
+                // TODO here this will be problematic for RegistrationStore.getRegistrationByIdentity ?
+                gatewayRegistration.getIdentity(), //
                 gatewayRegistration.getLastEndpointUsed());
 
         builder.lwM2mVersion(gatewayRegistration.getLwM2mVersion());
@@ -83,7 +85,14 @@ public class IotDevicesRegistrationHandler implements RegistrationListener, Gate
         appData.put(GatewayAppData.IOT_DEVICE_PREFIX, prefix);
         builder.applicationData(appData);
 
-        final Registration registration = builder.build();
+        Registration registration = builder.build();
+
+        // HACK because object links in obj 25 are not prepended by prefix ...
+        // This will also fix supported content format.
+        registration = new Registration.Builder(registration) //
+                .extractDataFromObjectLink(false) //
+                .rootPath(gatewayRegistration.getRootPath() + prefix) //
+                .supportedContentFormats(gatewayRegistration.getSupportedContentFormats()).build();
 
         // TODO: how to handle identity with gateways ??
         // we probably need a service which can authorize a given gateway to manage a list of end devices

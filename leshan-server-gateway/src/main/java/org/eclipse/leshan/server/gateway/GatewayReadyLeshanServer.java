@@ -20,14 +20,11 @@ import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
-import org.eclipse.leshan.server.endpoint.ServerEndpointToolbox;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.queue.ClientAwakeTimeProvider;
-import org.eclipse.leshan.server.queue.PresenceServiceImpl;
 import org.eclipse.leshan.server.registration.RegistrationIdProvider;
 import org.eclipse.leshan.server.registration.RegistrationServiceImpl;
 import org.eclipse.leshan.server.registration.RegistrationStore;
-import org.eclipse.leshan.server.request.DownlinkRequestSender;
 import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.server.security.SecurityStore;
 import org.eclipse.leshan.server.security.ServerSecurityInfo;
@@ -47,21 +44,6 @@ public class GatewayReadyLeshanServer extends LeshanServer {
 
         gatewayService = new IotDevicesRegistrationHandler((RegistrationServiceImpl) getRegistrationService(),
                 registrationIdProvider);
-    }
-
-    @Override
-    protected ServerEndpointToolbox createServerEndpointToolbox(LwM2mDecoder decoder, LwM2mEncoder encoder,
-            LwM2mLinkParser linkParser, RegistrationStore registrationStore, LwM2mModelProvider modelProvider) {
-        return new ServerEndpointToolbox(decoder, encoder, linkParser,
-                new GatewayReadyClientProfileProvider(registrationStore, modelProvider));
-    }
-
-    @Override
-    protected DownlinkRequestSender createRequestSender(LwM2mServerEndpointsProvider endpointsProvider,
-            RegistrationServiceImpl registrationService, LwM2mModelProvider modelProvider,
-            PresenceServiceImpl presenceService) {
-        // TODO we should also create a GatewayReady sender.
-        return super.createRequestSender(endpointsProvider, registrationService, modelProvider, presenceService);
     }
 
     public GatewayService getGatewayService() {
