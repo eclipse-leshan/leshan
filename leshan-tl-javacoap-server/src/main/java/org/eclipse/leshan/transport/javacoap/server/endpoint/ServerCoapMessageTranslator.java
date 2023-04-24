@@ -28,8 +28,7 @@ import com.mbed.coap.packet.CoapResponse;
 public class ServerCoapMessageTranslator {
 
     public CoapRequest createCoapRequest(ClientProfile clientProfile,
-            DownlinkRequest<? extends LwM2mResponse> lwm2mRequest,
-            ServerEndpointToolbox toolbox /* , IdentityHandler identityHandler */) {
+            DownlinkRequest<? extends LwM2mResponse> lwm2mRequest, ServerEndpointToolbox toolbox) {
 
         CoapRequestBuilder builder = new CoapRequestBuilder(clientProfile.getRegistration(),
                 clientProfile.getTransportData(), clientProfile.getRootPath(), clientProfile.getModel(),

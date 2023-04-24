@@ -94,6 +94,7 @@ Contributors:
     <!-- transport layer based on java-coap -->
     <module>leshan-tl-javacoap-core</module>
     <module>leshan-tl-javacoap-server</module>
+    <module>leshan-tl-javacoap-client</module>
 
     <!--  integration tests -->
     <module>leshan-integration-tests</module>
@@ -186,6 +187,11 @@ Contributors:
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>leshan-tl-javacoap-server</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-tl-javacoap-client</artifactId>
         <version>${project.version}</version>
       </dependency>
       <!-- demo -->
