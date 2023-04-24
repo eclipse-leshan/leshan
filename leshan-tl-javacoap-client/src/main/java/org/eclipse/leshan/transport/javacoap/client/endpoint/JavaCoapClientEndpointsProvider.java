@@ -29,6 +29,7 @@ import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.SecurityMode;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.OscoreIdentity;
@@ -131,6 +132,10 @@ public class JavaCoapClientEndpointsProvider implements LwM2mClientEndpointsProv
     @Override
     public synchronized LwM2mServer createEndpoint(ServerInfo serverInfo, boolean clientInitiatedOnly,
             List<Certificate> trustStore, ClientEndpointToolbox toolbox) {
+        if (!Protocol.COAP.getUriScheme().equals(serverInfo.getFullUri().getScheme())) {
+            return null;
+        }
+
         // As we support only 1 server destroy previous one first
         destroyEndpoints();
 
