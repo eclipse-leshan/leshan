@@ -23,6 +23,8 @@ import java.util.Map;
 
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
+import org.eclipse.leshan.client.demo.cli.transport.TransportCommand;
+import org.eclipse.leshan.client.demo.cli.transport.californium.CaliforniumCommand;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.demo.cli.MultiParameterException;
 import org.eclipse.leshan.core.demo.cli.StandardHelpOptions;
@@ -34,6 +36,7 @@ import org.eclipse.leshan.core.util.StringUtils;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.HelpCommand;
 import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Model.CommandSpec;
@@ -49,11 +52,16 @@ import picocli.CommandLine.Spec;
                  + "@|italic " //
                  + "This is a LWM2M client demo implemented with Leshan library.%n" //
                  + "You can launch it without any option and it will try to register to a LWM2M server at " + "coap://"
-                 + LeshanClientDemoCLI.DEFAULT_COAP_URL + ".%n" //
+                 + LeshanClientDemoCLI.DEFAULT_COAP_URL + ".|@%n" //
                  + "%n" //
-                 + "Californium is used as CoAP library and some CoAP parameters can be tweaked in 'Californium.properties' file." //
-                 + "|@%n%n",
-         versionProvider = VersionProvider.class)
+                 + CaliforniumCommand.DEFAULT_DESCRIPTION //
+                 + "%n" //
+                 + "You can use @|bold transport|@ command to use different transport layer.%n"
+                 + "Launch @|bold transport -h|@ for more details.%n" //
+                 + "%n",
+         versionProvider = VersionProvider.class,
+         subcommands = { HelpCommand.class, TransportCommand.class })
+
 public class LeshanClientDemoCLI implements Runnable {
 
     public static final String DEFAULT_COAP_URL = "localhost:" + CoAP.DEFAULT_COAP_PORT;

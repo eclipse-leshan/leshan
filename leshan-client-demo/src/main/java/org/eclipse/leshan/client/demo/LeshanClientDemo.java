@@ -31,25 +31,14 @@ import static org.eclipse.leshan.core.LwM2mId.OSCORE;
 import static org.eclipse.leshan.core.LwM2mId.SECURITY;
 import static org.eclipse.leshan.core.LwM2mId.SERVER;
 
-import java.io.File;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.californium.elements.config.Configuration;
-import org.eclipse.californium.scandium.config.DtlsConfig;
-import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
-import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.client.LeshanClient;
 import org.eclipse.leshan.client.LeshanClientBuilder;
-import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpointFactory;
-import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpointsProvider;
-import org.eclipse.leshan.client.californium.endpoint.ClientProtocolProvider;
-import org.eclipse.leshan.client.californium.endpoint.coap.CoapOscoreProtocolProvider;
-import org.eclipse.leshan.client.californium.endpoint.coaps.CoapsClientEndpointFactory;
-import org.eclipse.leshan.client.californium.endpoint.coaps.CoapsClientProtocolProvider;
 import org.eclipse.leshan.client.demo.cli.LeshanClientDemoCLI;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands;
+import org.eclipse.leshan.client.demo.cli.transport.TransportCommand;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.LwM2mTestObject;
@@ -59,8 +48,8 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.send.ManualDataSender;
-import org.eclipse.leshan.core.californium.PrincipalMdcConnectionListener;
 import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
+import org.eclipse.leshan.core.demo.cli.PicocliUtil;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.core.demo.cli.interactive.InteractiveCLI;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
@@ -68,11 +57,11 @@ import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
-import org.eclipse.leshan.transport.javacoap.client.endpoint.JavaCoapClientEndpointsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import picocli.CommandLine;
+import picocli.CommandLine.RunAll;
 
 public class LeshanClientDemo {
 
@@ -87,26 +76,27 @@ public class LeshanClientDemo {
     private static final Logger LOG = LoggerFactory.getLogger(LeshanClientDemo.class);
     private static final int OBJECT_ID_TEMPERATURE_SENSOR = 3303;
     private static final int OBJECT_ID_LWM2M_TEST_OBJECT = 3442;
-    private static final String CF_CONFIGURATION_FILENAME = "Californium3.client.properties";
-    private static final String CF_CONFIGURATION_HEADER = "Leshan Client Demo - " + Configuration.DEFAULT_HEADER;
 
     public static void main(String[] args) {
 
         // Parse command line
         LeshanClientDemoCLI cli = new LeshanClientDemoCLI();
-        CommandLine command = new CommandLine(cli).setParameterExceptionHandler(new ShortErrorMessageHandler());
+        CommandLine command = new CommandLine(cli) //
+                .setExecutionStrategy(new RunAll()).setParameterExceptionHandler(new ShortErrorMessageHandler());
+
         // Handle exit code error
         int exitCode = command.execute(args);
         if (exitCode != 0)
             System.exit(exitCode);
         // Handle help or version command
-        if (command.isUsageHelpRequested() || command.isVersionHelpRequested())
+        if (command.isUsageHelpRequested() || command.isVersionHelpRequested() || PicocliUtil.isHelpRequested(command))
             System.exit(0);
 
         try {
             // Create Client
             LwM2mModelRepository repository = createModel(cli);
-            final LeshanClient client = createClient(cli, repository);
+            List<LwM2mClientEndpointsProvider> endpointProviders = createEndpointsProviders(cli, command);
+            final LeshanClient client = createClient(cli, repository, endpointProviders);
 
             // Print commands help
             InteractiveCLI console = new InteractiveCLI(new InteractiveCommands(client, repository));
@@ -149,7 +139,18 @@ public class LeshanClientDemo {
         return new LwM2mModelRepository(models);
     }
 
-    public static LeshanClient createClient(LeshanClientDemoCLI cli, LwM2mModelRepository repository) throws Exception {
+    private static List<LwM2mClientEndpointsProvider> createEndpointsProviders(LeshanClientDemoCLI cli,
+            CommandLine commandLine) {
+        // Get transport command
+        CommandLine transportCommand = commandLine.getSubcommands().get("transport");
+        List<LwM2mClientEndpointsProvider> providers = ((TransportCommand) transportCommand.getCommandSpec()
+                .userObject()).createEndpointsProviders(cli, transportCommand);
+
+        return providers;
+    }
+
+    public static LeshanClient createClient(LeshanClientDemoCLI cli, LwM2mModelRepository repository,
+            List<LwM2mClientEndpointsProvider> endpointProviders) throws Exception {
         // create Leshan client from command line option
         final MyLocation locationInstance = new MyLocation(cli.location.position.latitude,
                 cli.location.position.longitude, cli.location.scaleFactor);
@@ -237,77 +238,10 @@ public class LeshanClientDemo {
         engineFactory.setResumeOnConnect(!cli.dtls.forceFullhandshake);
         engineFactory.setQueueMode(cli.main.queueMode);
 
-        // Create Californium Endpoints Provider:
-        // --------------------------------------
-        // Define Custom CoAPS protocol provider
-        CoapsClientProtocolProvider customCoapsProtocolProvider = new CoapsClientProtocolProvider() {
-            @Override
-            public CaliforniumClientEndpointFactory createDefaultEndpointFactory() {
-                return new CoapsClientEndpointFactory() {
-
-                    @Override
-                    protected DtlsConnectorConfig.Builder createRootDtlsConnectorConfigBuilder(
-                            Configuration configuration) {
-                        Builder builder = super.createRootDtlsConnectorConfigBuilder(configuration);
-
-                        // Add DTLS Session lifecycle logger
-                        builder.setSessionListener(new DtlsSessionLogger());
-
-                        // Add MDC for connection logs
-                        if (cli.helpsOptions.getVerboseLevel() > 0)
-                            builder.setConnectionListener(new PrincipalMdcConnectionListener());
-                        return builder;
-                    };
-                };
-            }
-        };
-
-        // Create client endpoints Provider
-        List<ClientProtocolProvider> protocolProvider = new ArrayList<>();
-        if (!cli.main.useJavaCoap) {
-            protocolProvider.add(new CoapOscoreProtocolProvider());
-        }
-        protocolProvider.add(customCoapsProtocolProvider);
-        CaliforniumClientEndpointsProvider.Builder endpointsBuilder = new CaliforniumClientEndpointsProvider.Builder(
-                protocolProvider.toArray(new ClientProtocolProvider[protocolProvider.size()]));
-
-        // Create Californium Configuration
-        Configuration clientCoapConfig = endpointsBuilder.createDefaultConfiguration();
-
-        // Set some DTLS stuff
-        // These configuration values are always overwritten by CLI therefore set them to transient.
-        clientCoapConfig.setTransient(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY);
-        clientCoapConfig.setTransient(DtlsConfig.DTLS_CONNECTION_ID_LENGTH);
-        clientCoapConfig.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, !cli.dtls.supportDeprecatedCiphers);
-        clientCoapConfig.set(DtlsConfig.DTLS_CONNECTION_ID_LENGTH, cli.dtls.cid);
-        if (cli.dtls.ciphers != null) {
-            clientCoapConfig.set(DtlsConfig.DTLS_CIPHER_SUITES, cli.dtls.ciphers);
-        }
-
-        // Persist configuration
-        File configFile = new File(CF_CONFIGURATION_FILENAME);
-        if (configFile.isFile()) {
-            clientCoapConfig.load(configFile);
-        } else {
-            clientCoapConfig.store(configFile, CF_CONFIGURATION_HEADER);
-        }
-
-        // Set Californium Configuration
-        endpointsBuilder.setConfiguration(clientCoapConfig);
-        endpointsBuilder.setClientAddress(cli.main.localAddress);
-
-        // creates EndpointsProvider
-        List<LwM2mClientEndpointsProvider> endpointsProvider = new ArrayList<>();
-        endpointsProvider.add(endpointsBuilder.build());
-        if (cli.main.useJavaCoap) {
-            endpointsProvider.add(new JavaCoapClientEndpointsProvider());
-        }
-
         // Create client
         LeshanClientBuilder builder = new LeshanClientBuilder(cli.main.endpoint);
         builder.setObjects(enablers);
-        builder.setEndpointsProviders(
-                endpointsProvider.toArray(new LwM2mClientEndpointsProvider[endpointsProvider.size()]));
+        builder.setEndpointsProviders(endpointProviders);
         builder.setDataSenders(new ManualDataSender());
         if (cli.identity.isx509())
             builder.setTrustStore(cli.identity.getX509().trustStore);
