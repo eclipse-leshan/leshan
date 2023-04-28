@@ -93,7 +93,7 @@ export default {
       return this.resourcedef.operations.includes("W");
     },
     executable() {
-      return this.resourcedef.operations.includes("E");
+      return this.resourcedef.operations === "E";
     },
   },
   methods: {
