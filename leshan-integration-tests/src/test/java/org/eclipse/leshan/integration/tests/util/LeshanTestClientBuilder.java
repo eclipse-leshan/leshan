@@ -81,6 +81,7 @@ import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
 import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpoint;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
+import org.eclipse.leshan.transport.javacoap.client.endpoint.JavaCoapClientEndpointsProvider;
 
 public class LeshanTestClientBuilder extends LeshanClientBuilder {
 
@@ -261,6 +262,8 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
         } else if (endpointProvider.equals("Californium-OSCORE")) {
             setEndpointsProviders(new CaliforniumClientEndpointsProvider.Builder(
                     getCaliforniumProtocolProviderSupportingOscore(protocolToUse)).build());
+        } else if (endpointProvider.equals("java-coap")) {
+            setEndpointsProviders(new JavaCoapClientEndpointsProvider());
         }
         return this;
     }

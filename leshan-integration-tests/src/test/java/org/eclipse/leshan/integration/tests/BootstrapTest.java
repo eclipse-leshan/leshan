@@ -88,7 +88,10 @@ public class BootstrapTest {
     static Stream<org.junit.jupiter.params.provider.Arguments> transports() {
         return Stream.of(//
                 // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider - BS Server Endpoint Provider
-                arguments(Protocol.COAP, "Californium", "Californium", "Californium"));
+                arguments(Protocol.COAP, "Californium", "Californium", "Californium"), //
+                arguments(Protocol.COAP, "Californium", "java-coap", "Californium"), //
+                arguments(Protocol.COAP, "java-coap", "Californium", "Californium"), //
+                arguments(Protocol.COAP, "java-coap", "java-coap", "Californium"));
     }
 
     /*---------------------------------/

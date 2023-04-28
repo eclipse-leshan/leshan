@@ -77,7 +77,9 @@ public class ObserveTest {
         return Stream.of(//
                 // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider
                 arguments(Protocol.COAP, "Californium", "Californium"), //
-                arguments(Protocol.COAP, "Californium", "java-coap"));
+                arguments(Protocol.COAP, "java-coap", "Californium"), //
+                arguments(Protocol.COAP, "Californium", "java-coap"), //
+                arguments(Protocol.COAP, "java-coap", "java-coap"));
     }
 
     /*---------------------------------/
@@ -304,6 +306,10 @@ public class ObserveTest {
 
         // verify result
         server.ensureNoNotification(observation, 1, TimeUnit.SECONDS);
+
+        // write device timezone
+        writeResponse = server.send(currentRegistration, new WriteRequest(3, 0, 15, "Europe/London"));
+        assertThat(writeResponse).hasCode(CHANGED);
     }
 
     @TestAllTransportLayer
