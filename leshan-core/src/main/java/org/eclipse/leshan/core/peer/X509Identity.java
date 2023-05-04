@@ -28,12 +28,6 @@ public class X509Identity implements LwM2mIdentity {
         this.x509CommonName = x509CommonName;
     }
 
-    @Override
-    public String getKeyIdentifier() {
-        return null;
-
-    }
-
     public String getX509CommonName() {
         return x509CommonName;
     }

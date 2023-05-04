@@ -28,11 +28,6 @@ public class PskIdentity implements LwM2mIdentity {
         this.pskIdentity = pskIdentity;
     }
 
-    @Override
-    public String getKeyIdentifier() {
-        return null;
-    }
-
     public String getpskIdentity() {
         return pskIdentity;
     }
