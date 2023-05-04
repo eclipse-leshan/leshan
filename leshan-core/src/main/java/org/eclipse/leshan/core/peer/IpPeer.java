@@ -17,7 +17,7 @@ package org.eclipse.leshan.core.peer;
 import java.net.InetSocketAddress;
 import java.util.Objects;
 
-public class IpPeer implements Peer {
+public class IpPeer implements LwM2mPeer {
 
     private final InetSocketAddress peerAddress;
     private final LwM2mIdentity identity;
