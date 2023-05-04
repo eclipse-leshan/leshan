@@ -23,9 +23,11 @@ public class OscoreIdentity implements LwM2mIdentity {
 
     private final byte[] RecipientId;
 
-    public OscoreIdentity(byte[] RecipientId) {
-        Validate.notNull(RecipientId);
-        this.RecipientId = RecipientId;
+    public OscoreIdentity(byte[] recipientId) {
+        Validate.notNull(recipientId);
+        if (recipientId.length == 0)
+            throw new IllegalArgumentException("recipient Id MUST NOT be empty");
+        this.RecipientId = recipientId;
     }
 
     public byte[] getRecipientId() {
@@ -41,17 +43,20 @@ public class OscoreIdentity implements LwM2mIdentity {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((RecipientId == null) ? 0 : RecipientId.hashCode());
+        result = prime * result + Arrays.hashCode(RecipientId);
         return result;
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o)
+    public boolean equals(Object obj) {
+        if (this == obj)
             return true;
-        if (o == null || getClass() != o.getClass())
+        if (obj == null)
             return false;
-        OscoreIdentity that = (OscoreIdentity) o;
-        return Arrays.equals(RecipientId, that.RecipientId);
+        if (getClass() != obj.getClass())
+            return false;
+        OscoreIdentity other = (OscoreIdentity) obj;
+        return Arrays.equals(RecipientId, other.RecipientId);
     }
+
 }

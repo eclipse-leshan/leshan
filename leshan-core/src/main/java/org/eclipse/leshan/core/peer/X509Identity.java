@@ -25,6 +25,7 @@ public class X509Identity implements LwM2mIdentity {
 
     public X509Identity(String x509CommonName) {
         Validate.notNull(x509CommonName);
+        Validate.notEmpty(x509CommonName);
         this.x509CommonName = x509CommonName;
     }
 

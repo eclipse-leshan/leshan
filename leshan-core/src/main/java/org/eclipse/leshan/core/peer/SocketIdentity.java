@@ -23,13 +23,10 @@ import org.eclipse.leshan.core.util.Validate;
 public class SocketIdentity implements LwM2mIdentity {
 
     private final InetSocketAddress peerAddress;
-    // private final String KeyIdentifier ;
 
     private SocketIdentity(InetSocketAddress peerAddress) {
-
         Validate.notNull(peerAddress);
         this.peerAddress = peerAddress;
-
     }
 
     public InetSocketAddress getSocketsAddress() {
@@ -38,7 +35,7 @@ public class SocketIdentity implements LwM2mIdentity {
 
     @Override
     public String toString() {
-        return String.format("Identity [unsecure]", peerAddress);
+        return String.format("Identity [unsecure=%s]", peerAddress);
     }
 
     @Override

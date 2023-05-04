@@ -25,6 +25,7 @@ public class PskIdentity implements LwM2mIdentity {
 
     public PskIdentity(String pskIdentity) {
         Validate.notNull(pskIdentity);
+        Validate.notEmpty(pskIdentity);
         this.pskIdentity = pskIdentity;
     }
 
