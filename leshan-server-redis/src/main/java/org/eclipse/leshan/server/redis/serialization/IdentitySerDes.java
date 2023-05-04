@@ -46,7 +46,7 @@ public class IdentitySerDes {
         o.put(KEY_ADDRESS, identity.getSocketAddress().getHostString());
         o.put(KEY_PORT, identity.getSocketAddress().getPort());
         if (identity.isPSK()) {
-            o.put(KEY_ID, ((PskIdentity) identity.getIdentity()).getpskIdentity());
+            o.put(KEY_ID, ((PskIdentity) identity.getIdentity()).getPskIdentity());
         } else if (identity.isRPK()) {
             PublicKey publicKey = ((RpkIdentity) identity.getIdentity()).getPublicKey();
             o.put(KEY_RPK, Hex.encodeHexString(publicKey.getEncoded()));

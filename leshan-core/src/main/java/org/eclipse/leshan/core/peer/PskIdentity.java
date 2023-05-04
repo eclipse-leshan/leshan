@@ -29,7 +29,7 @@ public class PskIdentity implements LwM2mIdentity {
         this.pskIdentity = pskIdentity;
     }
 
-    public String getpskIdentity() {
+    public String getPskIdentity() {
         return pskIdentity;
     }
 

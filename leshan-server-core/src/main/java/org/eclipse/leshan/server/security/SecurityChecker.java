@@ -139,7 +139,7 @@ public class SecurityChecker {
             return false;
         }
 
-        if (!matchPskIdentity(endpoint, ((PskIdentity) clientIdentity.getIdentity()).getpskIdentity(),
+        if (!matchPskIdentity(endpoint, ((PskIdentity) clientIdentity.getIdentity()).getPskIdentity(),
                 securityInfo.getPskIdentity())) {
             return false;
         }
