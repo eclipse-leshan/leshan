@@ -19,7 +19,7 @@ import java.util.Objects;
 
 import org.eclipse.leshan.core.util.Validate;
 
-public class X509Identity implements LwM2MIdentity {
+public class X509Identity implements LwM2mIdentity {
 
     private final String x509CommonName;
 

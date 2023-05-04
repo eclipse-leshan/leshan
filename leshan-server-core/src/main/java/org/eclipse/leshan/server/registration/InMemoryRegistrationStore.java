@@ -40,7 +40,7 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.ObservationIdentifier;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.peer.IpPeer;
-import org.eclipse.leshan.core.peer.LwM2MIdentity;
+import org.eclipse.leshan.core.peer.LwM2mIdentity;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +55,7 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
     private final Map<String /* end-point */, Registration> regsByEp = new HashMap<>();
     private final Map<InetSocketAddress, Registration> regsByAddr = new HashMap<>();
     private final Map<String /* reg-id */, Registration> regsByRegId = new HashMap<>();
-    private final Map<LwM2MIdentity, Registration> regsByIdentity = new HashMap<>();
+    private final Map<LwM2mIdentity, Registration> regsByIdentity = new HashMap<>();
     private final Map<ObservationIdentifier, Observation> obsByToken = new HashMap<>();
     private final Map<String, Set<ObservationIdentifier>> tokensByRegId = new HashMap<>();
 

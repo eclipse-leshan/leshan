@@ -20,7 +20,7 @@ import java.util.Objects;
 
 import org.eclipse.leshan.core.util.Validate;
 
-public class SocketIdentity implements LwM2MIdentity {
+public class SocketIdentity implements LwM2mIdentity {
 
     private final InetSocketAddress peerAddress;
     // private final String KeyIdentifier ;

@@ -19,7 +19,7 @@ import java.util.Objects;
 
 import org.eclipse.leshan.core.util.Validate;
 
-public class PskIdentity implements LwM2MIdentity {
+public class PskIdentity implements LwM2mIdentity {
 
     private final String pskIdentity;
 

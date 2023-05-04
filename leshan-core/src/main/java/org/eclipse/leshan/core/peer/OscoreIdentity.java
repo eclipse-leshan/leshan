@@ -19,7 +19,7 @@ import java.util.Arrays;
 
 import org.eclipse.leshan.core.util.Validate;
 
-public class OscoreIdentity implements LwM2MIdentity {
+public class OscoreIdentity implements LwM2mIdentity {
 
     private final byte[] RecipientId;
 

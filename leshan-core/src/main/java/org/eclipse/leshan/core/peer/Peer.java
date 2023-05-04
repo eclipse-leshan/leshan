@@ -16,5 +16,5 @@
 package org.eclipse.leshan.core.peer;
 
 public interface Peer {
-    LwM2MIdentity getIdentity();
+    LwM2mIdentity getIdentity();
 }
