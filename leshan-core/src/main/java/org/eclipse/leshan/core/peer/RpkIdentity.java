@@ -20,7 +20,7 @@ import java.util.Objects;
 
 import org.eclipse.leshan.core.util.Validate;
 
-public class RpkIdentity implements LwM2MIdentity {
+public class RpkIdentity implements LwM2mIdentity {
 
     private final PublicKey rawPublicKey;
 

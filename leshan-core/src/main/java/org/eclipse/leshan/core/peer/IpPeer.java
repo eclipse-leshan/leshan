@@ -20,7 +20,7 @@ import java.util.Objects;
 public class IpPeer implements Peer {
 
     private final InetSocketAddress peerAddress;
-    private final LwM2MIdentity identity;
+    private final LwM2mIdentity identity;
 
     public IpPeer(InetSocketAddress peerAddress) {
         this.peerAddress = peerAddress;
@@ -68,7 +68,7 @@ public class IpPeer implements Peer {
     }
 
     @Override
-    public LwM2MIdentity getIdentity() {
+    public LwM2mIdentity getIdentity() {
         return identity;
     }
 
