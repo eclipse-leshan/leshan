@@ -13,41 +13,44 @@
  *     Sierra Wireless, Orange Polska S.A. - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.leshan.core.request;
+package org.eclipse.leshan.core.peer;
 
+import java.net.InetSocketAddress;
 import java.util.Objects;
 
 import org.eclipse.leshan.core.util.Validate;
 
-public class X509Identity implements LwM2MIdentity {
+public class SocketIdentity implements LwM2MIdentity {
 
-    private final String x509CommonName;
+    private final InetSocketAddress peerAddress;
+    // private final String KeyIdentifier ;
 
-    public X509Identity(String x509CommonName) {
-        Validate.notNull(x509CommonName);
-        this.x509CommonName = x509CommonName;
+    private SocketIdentity(InetSocketAddress peerAddress) {
+
+        Validate.notNull(peerAddress);
+        this.peerAddress = peerAddress;
+
+    }
+
+    public InetSocketAddress getSocketsAddress() {
+        return peerAddress;
     }
 
     @Override
     public String getKeyIdentifier() {
         return null;
-
-    }
-
-    public String getX509CommonName() {
-        return x509CommonName;
     }
 
     @Override
     public String toString() {
-        return String.format("Identity [x509=%s]", x509CommonName);
+        return String.format("Identity [unsecure]", peerAddress);
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((x509CommonName == null) ? 0 : x509CommonName.hashCode());
+        result = prime * result + ((peerAddress == null) ? 0 : peerAddress.hashCode());
         return result;
     }
 
@@ -57,8 +60,7 @@ public class X509Identity implements LwM2MIdentity {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        X509Identity that = (X509Identity) o;
-        return Objects.equals(x509CommonName, that.x509CommonName);
+        SocketIdentity that = (SocketIdentity) o;
+        return Objects.equals(peerAddress, that.peerAddress);
     }
-
 }

@@ -24,7 +24,7 @@ import org.eclipse.californium.cose.CoseException;
 import org.eclipse.leshan.core.californium.oscore.cf.OscoreParameters;
 import org.eclipse.leshan.core.californium.oscore.cf.OscoreStore;
 import org.eclipse.leshan.core.oscore.OscoreIdentity;
-import org.eclipse.leshan.core.request.IpPeer;
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;

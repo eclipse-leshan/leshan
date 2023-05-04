@@ -30,9 +30,9 @@ import java.util.Set;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.util.Validate;
 
 /**

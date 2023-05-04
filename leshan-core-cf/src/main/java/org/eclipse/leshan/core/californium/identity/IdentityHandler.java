@@ -17,7 +17,7 @@ package org.eclipse.leshan.core.californium.identity;
 
 import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.elements.EndpointContext;
-import org.eclipse.leshan.core.request.IpPeer;
+import org.eclipse.leshan.core.peer.IpPeer;
 
 public interface IdentityHandler {
 

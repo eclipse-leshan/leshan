@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
-import org.eclipse.leshan.core.request.IpPeer;
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.server.queue.PresenceService;
 import org.junit.jupiter.api.Test;
 

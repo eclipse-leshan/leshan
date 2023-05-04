@@ -29,8 +29,8 @@ import java.util.EnumSet;
 
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.BindingMode;
-import org.eclipse.leshan.core.request.IpPeer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

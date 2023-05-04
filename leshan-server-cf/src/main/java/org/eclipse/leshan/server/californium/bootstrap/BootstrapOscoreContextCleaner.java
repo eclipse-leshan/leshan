@@ -17,7 +17,7 @@ package org.eclipse.leshan.server.californium.bootstrap;
 
 import org.eclipse.californium.oscore.OSCoreCtx;
 import org.eclipse.californium.oscore.OSCoreCtxDB;
-import org.eclipse.leshan.core.request.OscoreIdentity;
+import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionAdapter;

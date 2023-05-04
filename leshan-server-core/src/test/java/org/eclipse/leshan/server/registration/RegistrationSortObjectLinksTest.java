@@ -26,7 +26,7 @@ import java.net.UnknownHostException;
 
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
-import org.eclipse.leshan.core.request.IpPeer;
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.junit.jupiter.api.Test;
 
 public class RegistrationSortObjectLinksTest {

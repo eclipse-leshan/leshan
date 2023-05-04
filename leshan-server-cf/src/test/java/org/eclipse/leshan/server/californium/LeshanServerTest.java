@@ -21,8 +21,8 @@ import java.net.InetSocketAddress;
 import java.util.EnumSet;
 
 import org.eclipse.leshan.core.endpoint.Protocol;
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.BindingMode;
-import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.ReadResponse;

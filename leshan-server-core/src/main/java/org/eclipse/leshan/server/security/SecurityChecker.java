@@ -20,10 +20,10 @@ import java.security.PublicKey;
 import java.util.Iterator;
 
 import org.eclipse.leshan.core.oscore.OscoreIdentity;
-import org.eclipse.leshan.core.request.IpPeer;
-import org.eclipse.leshan.core.request.PskIdentity;
-import org.eclipse.leshan.core.request.RpkIdentity;
-import org.eclipse.leshan.core.request.X509Identity;
+import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.PskIdentity;
+import org.eclipse.leshan.core.peer.RpkIdentity;
+import org.eclipse.leshan.core.peer.X509Identity;
 import org.eclipse.leshan.core.util.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

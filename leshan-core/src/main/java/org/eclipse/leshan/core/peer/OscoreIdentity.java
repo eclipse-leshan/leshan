@@ -13,27 +13,19 @@
  *     Sierra Wireless, Orange Polska S.A. - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.leshan.core.request;
+package org.eclipse.leshan.core.peer;
 
-import java.net.InetSocketAddress;
-import java.util.Objects;
+import java.util.Arrays;
 
 import org.eclipse.leshan.core.util.Validate;
 
-public class SocketIdentity implements LwM2MIdentity {
+public class OscoreIdentity implements LwM2MIdentity {
 
-    private final InetSocketAddress peerAddress;
-    // private final String KeyIdentifier ;
+    private final byte[] RecipientId;
 
-    private SocketIdentity(InetSocketAddress peerAddress) {
-
-        Validate.notNull(peerAddress);
-        this.peerAddress = peerAddress;
-
-    }
-
-    public InetSocketAddress getSocketsAddress() {
-        return peerAddress;
+    public OscoreIdentity(byte[] RecipientId) {
+        Validate.notNull(RecipientId);
+        this.RecipientId = RecipientId;
     }
 
     @Override
@@ -41,16 +33,20 @@ public class SocketIdentity implements LwM2MIdentity {
         return null;
     }
 
+    public byte[] getRecipientId() {
+        return RecipientId;
+    }
+
     @Override
     public String toString() {
-        return String.format("Identity [unsecure]", peerAddress);
+        return String.format("Identity [oscore=%s]", RecipientId);
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((peerAddress == null) ? 0 : peerAddress.hashCode());
+        result = prime * result + ((RecipientId == null) ? 0 : RecipientId.hashCode());
         return result;
     }
 
@@ -60,7 +56,7 @@ public class SocketIdentity implements LwM2MIdentity {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        SocketIdentity that = (SocketIdentity) o;
-        return Objects.equals(peerAddress, that.peerAddress);
+        OscoreIdentity that = (OscoreIdentity) o;
+        return Arrays.equals(RecipientId, that.RecipientId);
     }
 }

@@ -19,9 +19,9 @@ import java.net.URI;
 import java.util.Map;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.server.security.BootstrapAuthorizer;
 
 /**

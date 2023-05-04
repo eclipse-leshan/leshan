@@ -21,8 +21,8 @@ import java.net.URI;
 import java.util.Date;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.DeregisterRequest;
-import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.response.DeregisterResponse;

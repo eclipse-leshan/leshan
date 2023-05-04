@@ -13,40 +13,41 @@
  *     Sierra Wireless, Orange Polska S.A. - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.leshan.core.request;
+package org.eclipse.leshan.core.peer;
 
-import java.util.Arrays;
+import java.util.Objects;
 
 import org.eclipse.leshan.core.util.Validate;
 
-public class OscoreIdentity implements LwM2MIdentity {
+public class X509Identity implements LwM2MIdentity {
 
-    private final byte[] RecipientId;
+    private final String x509CommonName;
 
-    public OscoreIdentity(byte[] RecipientId) {
-        Validate.notNull(RecipientId);
-        this.RecipientId = RecipientId;
+    public X509Identity(String x509CommonName) {
+        Validate.notNull(x509CommonName);
+        this.x509CommonName = x509CommonName;
     }
 
     @Override
     public String getKeyIdentifier() {
         return null;
+
     }
 
-    public byte[] getRecipientId() {
-        return RecipientId;
+    public String getX509CommonName() {
+        return x509CommonName;
     }
 
     @Override
     public String toString() {
-        return String.format("Identity [oscore=%s]", RecipientId);
+        return String.format("Identity [x509=%s]", x509CommonName);
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((RecipientId == null) ? 0 : RecipientId.hashCode());
+        result = prime * result + ((x509CommonName == null) ? 0 : x509CommonName.hashCode());
         return result;
     }
 
@@ -56,7 +57,8 @@ public class OscoreIdentity implements LwM2MIdentity {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        OscoreIdentity that = (OscoreIdentity) o;
-        return Arrays.equals(RecipientId, that.RecipientId);
+        X509Identity that = (X509Identity) o;
+        return Objects.equals(x509CommonName, that.x509CommonName);
     }
+
 }

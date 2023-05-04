@@ -21,7 +21,7 @@ import java.util.Iterator;
 
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.ObservationIdentifier;
-import org.eclipse.leshan.core.request.IpPeer;
+import org.eclipse.leshan.core.peer.IpPeer;
 
 /**
  * A store for registrations and observations. This interface is also responsible to handle registration expiration.

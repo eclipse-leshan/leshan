@@ -25,10 +25,10 @@ import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.UNAUTHOR
 import java.net.URI;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
-import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.response.BootstrapResponse;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;

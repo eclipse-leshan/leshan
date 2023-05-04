@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.security;
 
-import org.eclipse.leshan.core.request.IpPeer;
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.server.registration.Registration;
 

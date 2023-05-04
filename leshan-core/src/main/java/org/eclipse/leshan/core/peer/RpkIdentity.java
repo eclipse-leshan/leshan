@@ -13,7 +13,7 @@
  *     Sierra Wireless, Orange Polska S.A. - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.leshan.core.request;
+package org.eclipse.leshan.core.peer;
 
 import java.security.PublicKey;
 import java.util.Objects;

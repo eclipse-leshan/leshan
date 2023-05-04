@@ -21,7 +21,7 @@ import java.security.Principal;
 import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.californium.elements.EndpointContext;
-import org.eclipse.leshan.core.request.IpPeer;
+import org.eclipse.leshan.core.peer.IpPeer;
 
 public class DefaultCoapIdentityHandler implements IdentityHandler {
 

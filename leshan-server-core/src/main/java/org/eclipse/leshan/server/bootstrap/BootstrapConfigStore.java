@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
-import org.eclipse.leshan.core.request.IpPeer;
+import org.eclipse.leshan.core.peer.IpPeer;
 
 /**
  * A store containing the bootstrap information to be sent to the devices.
