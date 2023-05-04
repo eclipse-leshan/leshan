@@ -27,22 +27,7 @@ public class IpPeer implements LwM2mPeer {
         this.identity = null;
     }
 
-    public IpPeer(InetSocketAddress peerAddress, PskIdentity pskidentity) {
-        this.peerAddress = peerAddress;
-        this.identity = pskidentity;
-    }
-
-    public IpPeer(InetSocketAddress peerAddress, RpkIdentity identity) {
-        this.peerAddress = peerAddress;
-        this.identity = identity;
-    }
-
-    public IpPeer(InetSocketAddress peerAddress, X509Identity identity) {
-        this.peerAddress = peerAddress;
-        this.identity = identity;
-    }
-
-    public IpPeer(InetSocketAddress peerAddress, OscoreIdentity identity) {
+    public IpPeer(InetSocketAddress peerAddress, LwM2mIdentity identity) {
         this.peerAddress = peerAddress;
         this.identity = identity;
     }
@@ -78,17 +63,7 @@ public class IpPeer implements LwM2mPeer {
 
     @Override
     public String toString() {
-        if (isPSK()) {
-            return "IpPeer{" + "peerAddress=" + peerAddress + ", identity=" + ((PskIdentity) identity).getPskIdentity()
-                    + '}';
-        } else if (isRPK()) {
-            return "IpPeer{" + "peerAddress=" + peerAddress + ", identity=" + ((RpkIdentity) identity).getPublicKey()
-                    + '}';
-        } else if (isX509()) {
-            return "IpPeer{" + "peerAddress=" + peerAddress + ", identity="
-                    + ((X509Identity) identity).getX509CommonName() + '}';
-        } else
-            return "IpPeer{" + "peerAddress=" + peerAddress + ", identity=" + identity + '}';
+        return String.format("IpPeer [peerAddress=%s, identity=%s]", peerAddress, identity);
     }
 
     @Override
