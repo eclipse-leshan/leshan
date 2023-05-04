@@ -28,11 +28,6 @@ public class OscoreIdentity implements LwM2mIdentity {
         this.RecipientId = RecipientId;
     }
 
-    @Override
-    public String getKeyIdentifier() {
-        return null;
-    }
-
     public byte[] getRecipientId() {
         return RecipientId;
     }

@@ -29,11 +29,6 @@ public class RpkIdentity implements LwM2mIdentity {
         this.rawPublicKey = rawPublicKey;
     }
 
-    @Override
-    public String getKeyIdentifier() {
-        return null;
-    }
-
     public PublicKey getPublicKey() {
         return rawPublicKey;
     }
