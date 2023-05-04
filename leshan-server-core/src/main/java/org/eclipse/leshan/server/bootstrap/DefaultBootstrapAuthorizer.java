@@ -17,8 +17,8 @@ package org.eclipse.leshan.server.bootstrap;
 
 import java.util.Iterator;
 
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.BootstrapRequest;
-import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.server.security.Authorization;
 import org.eclipse.leshan.server.security.BootstrapAuthorizer;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;

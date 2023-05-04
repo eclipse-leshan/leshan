@@ -16,8 +16,8 @@
 package org.eclipse.leshan.server.security;
 
 import org.eclipse.leshan.core.ResponseCode;
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.BootstrapRequest;
-import org.eclipse.leshan.core.request.IpPeer;
 
 public interface BootstrapAuthorizer {
 

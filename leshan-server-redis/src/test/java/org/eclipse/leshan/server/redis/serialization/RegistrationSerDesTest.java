@@ -32,8 +32,8 @@ import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
 import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
 import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
 import org.eclipse.leshan.core.link.attributes.ValuelessAttribute;
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.server.registration.Registration;
 import org.junit.jupiter.api.Test;
 

@@ -17,9 +17,9 @@ package org.eclipse.leshan.server.bootstrap;
 
 import java.net.URI;
 
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
-import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.util.Validate;
 

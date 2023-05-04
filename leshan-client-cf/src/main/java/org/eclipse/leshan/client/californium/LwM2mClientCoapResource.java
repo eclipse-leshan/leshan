@@ -24,7 +24,7 @@ import org.eclipse.leshan.client.californium.endpoint.ServerIdentityExtractor;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.core.californium.LwM2mCoapResource;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
-import org.eclipse.leshan.core.request.IpPeer;
+import org.eclipse.leshan.core.peer.IpPeer;
 
 /**
  * A Common {@link CoapResource} used to handle LWM2M request with some specific method for LWM2M client.

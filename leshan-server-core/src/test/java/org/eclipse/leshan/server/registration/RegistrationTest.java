@@ -32,8 +32,8 @@ import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.server.registration.Registration.Builder;
 import org.junit.jupiter.api.Test;
 

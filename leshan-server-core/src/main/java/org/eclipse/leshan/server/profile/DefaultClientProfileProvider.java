@@ -16,7 +16,7 @@
 package org.eclipse.leshan.server.profile;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
-import org.eclipse.leshan.core.request.IpPeer;
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;

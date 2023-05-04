@@ -13,14 +13,8 @@
  *     Sierra Wireless, Orange Polska S.A. - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.leshan.core.request;
+package org.eclipse.leshan.core.peer;
 
-public interface LwM2MIdentity {
-    String getKeyIdentifier(); // TODO I don't know if we really need this.
-
-    String toString();
-
-    boolean equals(Object obj);
-
-    int hashCode();
+public interface Peer {
+    LwM2MIdentity getIdentity();
 }

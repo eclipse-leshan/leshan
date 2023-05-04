@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.BindingMode;
-import org.eclipse.leshan.core.request.IpPeer;
 import org.eclipse.leshan.core.util.Validate;
 
 /**

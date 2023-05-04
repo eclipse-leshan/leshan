@@ -23,10 +23,10 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
-import org.eclipse.leshan.core.request.IpPeer;
-import org.eclipse.leshan.core.request.PskIdentity;
-import org.eclipse.leshan.core.request.RpkIdentity;
-import org.eclipse.leshan.core.request.X509Identity;
+import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.PskIdentity;
+import org.eclipse.leshan.core.peer.RpkIdentity;
+import org.eclipse.leshan.core.peer.X509Identity;
 import org.eclipse.leshan.core.util.Hex;
 
 import com.fasterxml.jackson.databind.JsonNode;

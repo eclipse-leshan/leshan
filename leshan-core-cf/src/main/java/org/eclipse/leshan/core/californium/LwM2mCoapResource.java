@@ -26,7 +26,7 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
-import org.eclipse.leshan.core.request.IpPeer;
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

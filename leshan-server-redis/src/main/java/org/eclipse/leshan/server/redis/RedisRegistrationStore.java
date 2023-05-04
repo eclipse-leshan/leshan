@@ -44,7 +44,7 @@ import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.ObservationIdentifier;
 import org.eclipse.leshan.core.observation.SingleObservation;
-import org.eclipse.leshan.core.request.IpPeer;
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.redis.serialization.IdentitySerDes;

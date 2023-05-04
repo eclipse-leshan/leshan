@@ -18,7 +18,7 @@ package org.eclipse.leshan.client.servers;
 import java.net.InetSocketAddress;
 import java.net.URI;
 
-import org.eclipse.leshan.core.request.IpPeer;
+import org.eclipse.leshan.core.peer.IpPeer;
 
 /**
  * A Bean which identify a LWM2M Server.
