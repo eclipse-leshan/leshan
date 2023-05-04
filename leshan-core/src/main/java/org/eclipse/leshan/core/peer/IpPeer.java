@@ -79,7 +79,7 @@ public class IpPeer implements LwM2mPeer {
     @Override
     public String toString() {
         if (isPSK()) {
-            return "IpPeer{" + "peerAddress=" + peerAddress + ", identity=" + ((PskIdentity) identity).getpskIdentity()
+            return "IpPeer{" + "peerAddress=" + peerAddress + ", identity=" + ((PskIdentity) identity).getPskIdentity()
                     + '}';
         } else if (isRPK()) {
             return "IpPeer{" + "peerAddress=" + peerAddress + ", identity=" + ((RpkIdentity) identity).getPublicKey()

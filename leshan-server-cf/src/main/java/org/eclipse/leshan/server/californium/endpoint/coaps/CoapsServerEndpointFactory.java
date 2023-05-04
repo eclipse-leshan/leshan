@@ -339,7 +339,7 @@ public class CoapsServerEndpointFactory implements CaliforniumServerEndpointFact
                 if (identity != null) {
                     if (identity.isPSK()) {
                         peerIdentity = new PreSharedKeyIdentity(
-                                ((PskIdentity) identity.getIdentity()).getpskIdentity());
+                                ((PskIdentity) identity.getIdentity()).getPskIdentity());
                     } else if (identity.isRPK()) {
                         peerIdentity = new RawPublicKeyIdentity(((RpkIdentity) identity.getIdentity()).getPublicKey());
                     } else if (identity.isX509()) {
