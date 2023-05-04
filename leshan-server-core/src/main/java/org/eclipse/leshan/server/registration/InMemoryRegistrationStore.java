@@ -181,7 +181,7 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
     public Registration getRegistrationByIdentity(IpPeer identity) {
         try {
             lock.readLock().lock();
-            return regsByIdentity.get(identity);
+            return regsByIdentity.get(identity.getIdentity());
         } finally {
             lock.readLock().unlock();
         }
