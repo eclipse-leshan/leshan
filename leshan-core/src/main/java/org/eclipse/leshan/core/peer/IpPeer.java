@@ -17,17 +17,20 @@ package org.eclipse.leshan.core.peer;
 import java.net.InetSocketAddress;
 import java.util.Objects;
 
+import org.eclipse.leshan.core.util.Validate;
+
 public class IpPeer implements LwM2mPeer {
 
     private final InetSocketAddress peerAddress;
     private final LwM2mIdentity identity;
 
     public IpPeer(InetSocketAddress peerAddress) {
-        this.peerAddress = peerAddress;
-        this.identity = new SocketIdentity(peerAddress);
+        this(peerAddress, new SocketIdentity(peerAddress));
     }
 
     public IpPeer(InetSocketAddress peerAddress, LwM2mIdentity identity) {
+        Validate.notNull(peerAddress);
+        Validate.notNull(identity);
         this.peerAddress = peerAddress;
         this.identity = identity;
     }
