@@ -24,7 +24,7 @@ public class IpPeer implements LwM2mPeer {
 
     public IpPeer(InetSocketAddress peerAddress) {
         this.peerAddress = peerAddress;
-        this.identity = null;
+        this.identity = new SocketIdentity(peerAddress);
     }
 
     public IpPeer(InetSocketAddress peerAddress, LwM2mIdentity identity) {
