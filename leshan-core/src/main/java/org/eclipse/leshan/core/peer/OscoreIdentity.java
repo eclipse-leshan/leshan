@@ -35,6 +35,12 @@ public class OscoreIdentity implements LwM2mIdentity {
     }
 
     @Override
+    public boolean isSecure() {
+        // TODO should be turn to true when rewrite SecurityChecker
+        return false;
+    }
+
+    @Override
     public String toString() {
         return String.format("Identity [oscore=%s]", RecipientId);
     }

@@ -20,7 +20,8 @@ import java.security.PublicKey;
 import java.util.Iterator;
 
 import org.eclipse.leshan.core.oscore.OscoreIdentity;
-import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mIdentity;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.peer.PskIdentity;
 import org.eclipse.leshan.core.peer.RpkIdentity;
 import org.eclipse.leshan.core.peer.X509Identity;
@@ -29,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Ensure that client with given endpoint name and {@link IpPeer} authenticated itself in an expected way.
+ * Ensure that client with given endpoint name and {@link LwM2mPeer} authenticated itself in an expected way.
  */
 public class SecurityChecker {
 
@@ -39,14 +40,15 @@ public class SecurityChecker {
      * Return true if client authenticated itself with any of the expected way.
      *
      * @param endpoint the client endpoint name.
-     * @param clientIdentity the client identity.
+     * @param client the transport information about client.
      * @param securityInfos the expected ways to authenticate.
      *
      * @return true if client is correctly authenticated.
      * @see SecurityInfo
      */
-    public boolean checkSecurityInfos(String endpoint, IpPeer clientIdentity, Iterator<SecurityInfo> securityInfos) {
+    public boolean checkSecurityInfos(String endpoint, LwM2mPeer client, Iterator<SecurityInfo> securityInfos) {
         // if this is a secure end-point, we must check that the registering client is using the right identity.
+        LwM2mIdentity clientIdentity = client.getIdentity();
         if (clientIdentity.isSecure()) {
             if (securityInfos == null || !securityInfos.hasNext()) {
                 LOG.debug("Client '{}' without security info try to connect through the secure endpoint", endpoint);
@@ -55,13 +57,13 @@ public class SecurityChecker {
                 // check of one expected security info matches client identity
                 do {
                     SecurityInfo securityInfo = securityInfos.next();
-                    if (checkSecurityInfo(endpoint, clientIdentity, securityInfo)) {
+                    if (checkSecurityInfo(endpoint, client, securityInfo)) {
                         return true;
                     }
                 } while (securityInfos.hasNext());
                 return false;
             }
-        } else if (clientIdentity.isOSCORE()) {
+        } else if (clientIdentity instanceof org.eclipse.leshan.core.peer.OscoreIdentity) {
             if (securityInfos == null || !securityInfos.hasNext()) {
                 LOG.debug("Client '{}' without security info trying to connect using OSCORE", endpoint);
                 return false;
@@ -69,7 +71,7 @@ public class SecurityChecker {
                 // check if one expected security info matches OSCORE client identity
                 do {
                     SecurityInfo securityInfo = securityInfos.next();
-                    if (checkSecurityInfo(endpoint, clientIdentity, securityInfo)) {
+                    if (checkSecurityInfo(endpoint, client, securityInfo)) {
                         return true;
                     }
                 } while (securityInfos.hasNext());
@@ -85,42 +87,44 @@ public class SecurityChecker {
      * Return true if client authenticated itself with the expected way.
      *
      * @param endpoint the client endpoint name.
-     * @param clientIdentity the client identity.
+     * @param client the transport information about client.
      * @param securityInfo the expected way to authenticate.
      *
      * @return true if client is correctly authenticated.
      * @see SecurityInfo
      */
-    public boolean checkSecurityInfo(String endpoint, IpPeer clientIdentity, SecurityInfo securityInfo) {
+    public boolean checkSecurityInfo(String endpoint, LwM2mPeer client, SecurityInfo securityInfo) {
         // if this is a secure end-point, we must check that the registering client is using the right identity.
+        LwM2mIdentity clientIdentity = client.getIdentity();
         if (clientIdentity.isSecure()) {
             if (securityInfo == null) {
 
                 LOG.debug("Client '{}' without security info try to connect through the secure endpoint", endpoint);
                 return false;
 
-            } else if (clientIdentity.isPSK()) {
+            } else if (clientIdentity instanceof PskIdentity) {
 
-                return checkPskIdentity(endpoint, clientIdentity, securityInfo);
+                return checkPskIdentity(endpoint, (PskIdentity) clientIdentity, securityInfo);
 
-            } else if (clientIdentity.isRPK()) {
+            } else if (clientIdentity instanceof RpkIdentity) {
 
-                return checkRpkIdentity(endpoint, clientIdentity, securityInfo);
+                return checkRpkIdentity(endpoint, (RpkIdentity) clientIdentity, securityInfo);
 
-            } else if (clientIdentity.isX509()) {
+            } else if (clientIdentity instanceof X509Identity) {
 
-                return checkX509Identity(endpoint, clientIdentity, securityInfo);
+                return checkX509Identity(endpoint, (X509Identity) clientIdentity, securityInfo);
 
             } else {
                 LOG.debug("Unable to authenticate client '{}': unknown authentication mode", endpoint);
                 return false;
             }
-        } else if (clientIdentity.isOSCORE()) {
+        } else if (clientIdentity instanceof org.eclipse.leshan.core.peer.OscoreIdentity) {
             if (securityInfo == null) {
                 LOG.debug("Client '{}' without security info trying to connect using OSCORE", endpoint);
                 return false;
             } else {
-                return checkOscoreIdentity(endpoint, clientIdentity, securityInfo);
+                return checkOscoreIdentity(endpoint, (org.eclipse.leshan.core.peer.OscoreIdentity) clientIdentity,
+                        securityInfo);
             }
         } else {
             if (securityInfo != null) {
@@ -131,7 +135,7 @@ public class SecurityChecker {
         return true;
     }
 
-    protected boolean checkPskIdentity(String endpoint, IpPeer clientIdentity, SecurityInfo securityInfo) {
+    protected boolean checkPskIdentity(String endpoint, PskIdentity clientIdentity, SecurityInfo securityInfo) {
         // Manage PSK authentication
         // ----------------------------------------------------
         if (!securityInfo.usePSK()) {
@@ -139,8 +143,7 @@ public class SecurityChecker {
             return false;
         }
 
-        if (!matchPskIdentity(endpoint, ((PskIdentity) clientIdentity.getIdentity()).getPskIdentity(),
-                securityInfo.getPskIdentity())) {
+        if (!matchPskIdentity(endpoint, clientIdentity.getPskIdentity(), securityInfo.getPskIdentity())) {
             return false;
         }
 
@@ -157,7 +160,7 @@ public class SecurityChecker {
         return true;
     }
 
-    protected boolean checkRpkIdentity(String endpoint, IpPeer clientIdentity, SecurityInfo securityInfo) {
+    protected boolean checkRpkIdentity(String endpoint, RpkIdentity clientIdentity, SecurityInfo securityInfo) {
         // Manage RPK authentication
         // ----------------------------------------------------
         if (!securityInfo.useRPK()) {
@@ -165,8 +168,7 @@ public class SecurityChecker {
             return false;
         }
 
-        if (!matchRpkIdenity(endpoint, ((RpkIdentity) clientIdentity.getIdentity()).getPublicKey(),
-                securityInfo.getRawPublicKey())) {
+        if (!matchRpkIdenity(endpoint, clientIdentity.getPublicKey(), securityInfo.getRawPublicKey())) {
             return false;
         }
 
@@ -186,7 +188,7 @@ public class SecurityChecker {
         return true;
     }
 
-    protected boolean checkX509Identity(String endpoint, IpPeer clientIdentity, SecurityInfo securityInfo) {
+    protected boolean checkX509Identity(String endpoint, X509Identity clientIdentity, SecurityInfo securityInfo) {
         // Manage X509 certificate authentication
         // ----------------------------------------------------
         if (!securityInfo.useX509Cert()) {
@@ -194,7 +196,7 @@ public class SecurityChecker {
             return false;
         }
 
-        if (!matchX509Identity(endpoint, ((X509Identity) clientIdentity.getIdentity()).getX509CommonName(), endpoint)) {
+        if (!matchX509Identity(endpoint, clientIdentity.getX509CommonName(), endpoint)) {
             return false;
         }
 
@@ -211,7 +213,8 @@ public class SecurityChecker {
         return true;
     }
 
-    protected boolean checkOscoreIdentity(String endpoint, IpPeer clientIdentity, SecurityInfo securityInfo) {
+    protected boolean checkOscoreIdentity(String endpoint, org.eclipse.leshan.core.peer.OscoreIdentity clientIdentity,
+            SecurityInfo securityInfo) {
         // Manage OSCORE authentication
         // ----------------------------------------------------
         if (!securityInfo.useOSCORE()) {
@@ -219,7 +222,7 @@ public class SecurityChecker {
             return false;
         }
 
-        if (!matchOscoreIdentity(endpoint, ((OscoreIdentity) clientIdentity.getIdentity()),
+        if (!matchOscoreIdentity(endpoint, new OscoreIdentity(clientIdentity.getRecipientId()),
                 securityInfo.getOscoreSetting().getOscoreIdentity())) {
             return false;
         }

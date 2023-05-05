@@ -30,6 +30,7 @@ import java.util.Map;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.peer.PskIdentity;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
@@ -241,8 +242,8 @@ public class BootstrapHandlerTest {
         }
 
         @Override
-        public BootstrapSession begin(BootstrapRequest request, IpPeer clientIdentity, URI endpointUsed) {
-            lastSession = new DefaultBootstrapSession(request, clientIdentity, authorized, null, endpointUsed);
+        public BootstrapSession begin(BootstrapRequest request, LwM2mPeer sender, URI endpointUsed) {
+            lastSession = new DefaultBootstrapSession(request, sender, authorized, null, endpointUsed);
             return lastSession;
         }
 

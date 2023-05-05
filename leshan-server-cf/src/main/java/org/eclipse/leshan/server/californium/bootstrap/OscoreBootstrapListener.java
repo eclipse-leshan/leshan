@@ -18,6 +18,8 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionAdapter;
@@ -30,18 +32,26 @@ public class OscoreBootstrapListener extends BootstrapSessionAdapter {
 
     @Override
     public void authorized(BootstrapSession session) {
-        addrToSession.put(session.getIdentity().getSocketAddress(), session);
+        LwM2mPeer client = session.getClientTransportData();
+        if (client instanceof IpPeer) {
+            addrToSession.put(((IpPeer) client).getSocketAddress(), session);
+        }
     }
 
     @Override
     public void end(BootstrapSession session) {
-        addrToSession.remove(session.getIdentity(), session);
-
+        LwM2mPeer client = session.getClientTransportData();
+        if (client instanceof IpPeer) {
+            addrToSession.remove(((IpPeer) client).getSocketAddress(), session);
+        }
     }
 
     @Override
     public void failed(BootstrapSession session, BootstrapFailureCause cause) {
-        addrToSession.remove(session.getIdentity(), session);
+        LwM2mPeer client = session.getClientTransportData();
+        if (client instanceof IpPeer) {
+            addrToSession.remove(((IpPeer) client).getSocketAddress(), session);
+        }
     }
 
     public BootstrapSession getSessionByAddr(InetSocketAddress addr) {

@@ -22,6 +22,7 @@ import java.net.URI;
 
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.response.BootstrapResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
@@ -57,7 +58,7 @@ public class LeshanBootstrapServerTest {
         builder.setConfigStore(new BootstrapConfigStore() {
 
             @Override
-            public BootstrapConfig get(String endpoint, IpPeer deviceIdentity, BootstrapSession session) {
+            public BootstrapConfig get(String endpoint, LwM2mPeer deviceIdentity, BootstrapSession session) {
                 BootstrapConfig config = new BootstrapConfig();
                 config.toDelete.add("/");
                 return config;

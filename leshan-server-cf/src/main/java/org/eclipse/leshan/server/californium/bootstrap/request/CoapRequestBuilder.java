@@ -28,7 +28,8 @@ import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
-import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
+import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
@@ -61,12 +62,12 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
     private Request coapRequest;
 
     // client information
-    private final IpPeer destination;
+    private final LwM2mPeer destination;
     private final LwM2mModel model;
     private final LwM2mEncoder encoder;
     private final IdentityHandler identityHandler;
 
-    public CoapRequestBuilder(IpPeer destination, LwM2mModel model, LwM2mEncoder encoder,
+    public CoapRequestBuilder(LwM2mPeer destination, LwM2mModel model, LwM2mEncoder encoder,
             IdentityHandler identityHandler) {
         this.destination = destination;
         this.model = model;
@@ -201,7 +202,7 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
             EndpointContext context = identityHandler.createEndpointContext(destination, false);
             coapRequest.setDestinationContext(context);
         }
-        if (destination.isOSCORE()) {
+        if (destination.getIdentity() instanceof OscoreIdentity) {
             coapRequest.getOptions().setOscore(Bytes.EMPTY);
         }
     }

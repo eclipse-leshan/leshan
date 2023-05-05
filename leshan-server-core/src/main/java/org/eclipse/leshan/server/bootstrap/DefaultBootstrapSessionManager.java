@@ -19,7 +19,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
@@ -73,10 +73,10 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
     }
 
     @Override
-    public BootstrapSession begin(BootstrapRequest request, IpPeer clientIdentity, URI endpointUsed) {
-        Authorization authorization = authorizer.isAuthorized(request, clientIdentity);
-        DefaultBootstrapSession session = new DefaultBootstrapSession(request, clientIdentity,
-                authorization.isApproved(), authorization.getApplicationData(), endpointUsed);
+    public BootstrapSession begin(BootstrapRequest request, LwM2mPeer client, URI endpointUsed) {
+        Authorization authorization = authorizer.isAuthorized(request, client);
+        DefaultBootstrapSession session = new DefaultBootstrapSession(request, client, authorization.isApproved(),
+                authorization.getApplicationData(), endpointUsed);
         LOG.trace("Bootstrap session started : {}", session);
 
         return session;

@@ -40,6 +40,8 @@ import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
@@ -49,7 +51,13 @@ public class ClientCoapMessageTranslator {
             ClientEndpointToolbox toolbox, LwM2mModel model, IdentityHandler identityHandler) {
 
         // create CoAP Request
-        CoapRequestBuilder builder = new CoapRequestBuilder(serverIdentity.getIdentity(), toolbox.getEncoder(), model,
+        LwM2mPeer server = serverIdentity.getIdentity();
+        if (!(server instanceof IpPeer)) {
+            throw new IllegalStateException(
+                    String.format("%s is not a LwM2mPeer supported by this class", server.getClass().getSimpleName()));
+        }
+
+        CoapRequestBuilder builder = new CoapRequestBuilder((IpPeer) server, toolbox.getEncoder(), model,
                 toolbox.getLinkSerializer(), identityHandler);
         lwm2mRequest.accept(builder);
         return builder.getRequest();

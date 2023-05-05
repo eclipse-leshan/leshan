@@ -34,6 +34,11 @@ public class SocketIdentity implements LwM2mIdentity {
     }
 
     @Override
+    public boolean isSecure() {
+        return false;
+    }
+
+    @Override
     public String toString() {
         return String.format("Identity [unsecure=%s]", peerAddress);
     }

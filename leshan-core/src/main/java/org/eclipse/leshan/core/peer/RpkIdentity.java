@@ -34,6 +34,11 @@ public class RpkIdentity implements LwM2mIdentity {
     }
 
     @Override
+    public boolean isSecure() {
+        return true;
+    }
+
+    @Override
     public String toString() {
         return String.format("Identity rpk=%s]", rawPublicKey);
     }

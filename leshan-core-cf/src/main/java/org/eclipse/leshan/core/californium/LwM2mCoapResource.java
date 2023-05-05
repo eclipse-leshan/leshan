@@ -27,6 +27,7 @@ import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,7 +109,12 @@ public class LwM2mCoapResource extends CoapResource {
     protected IpPeer getForeignPeerIdentity(Exchange exchange, Message receivedMessage) {
         IdentityHandler identityHandler = identityHandlerProvider.getIdentityHandler(exchange.getEndpoint());
         if (identityHandler != null) {
-            return identityHandler.getIdentity(receivedMessage);
+            LwM2mPeer peer = identityHandler.getIdentity(receivedMessage);
+            if (peer instanceof IpPeer) {
+                return (IpPeer) peer;
+            } else {
+                throw new IllegalStateException(String.format("Unsupported peer %s", peer));
+            }
         }
         return null;
     }

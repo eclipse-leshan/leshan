@@ -22,11 +22,12 @@ import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 
 public class DefaultCoapIdentityHandler implements IdentityHandler {
 
     @Override
-    public IpPeer getIdentity(Message receivedMessage) {
+    public LwM2mPeer getIdentity(Message receivedMessage) {
         EndpointContext context = receivedMessage.getSourceContext();
         InetSocketAddress peerAddress = context.getPeerAddress();
         Principal senderIdentity = context.getPeerIdentity();
@@ -37,7 +38,11 @@ public class DefaultCoapIdentityHandler implements IdentityHandler {
     }
 
     @Override
-    public EndpointContext createEndpointContext(IpPeer identity, boolean allowConnectionInitiation) {
-        return new AddressEndpointContext(identity.getSocketAddress());
+    public EndpointContext createEndpointContext(LwM2mPeer client, boolean allowConnectionInitiation) {
+        if (client instanceof IpPeer) {
+            return new AddressEndpointContext(((IpPeer) client).getSocketAddress());
+        } else {
+            throw new IllegalStateException(String.format("Unsupported Peer : %s", client));
+        }
     }
 }

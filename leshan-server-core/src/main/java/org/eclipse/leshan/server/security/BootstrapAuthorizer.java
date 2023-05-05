@@ -16,7 +16,7 @@
 package org.eclipse.leshan.server.security;
 
 import org.eclipse.leshan.core.ResponseCode;
-import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 
 public interface BootstrapAuthorizer {
@@ -33,8 +33,8 @@ public interface BootstrapAuthorizer {
      * </pre>
      *
      * @param request the request received
-     * @param clientIdentity the {@link IpPeer} of the client that sent the request.
+     * @param client the transport information about client which sent the request.
      * @return an {@link Authorization} status.
      */
-    Authorization isAuthorized(BootstrapRequest request, IpPeer clientIdentity);
+    Authorization isAuthorized(BootstrapRequest request, LwM2mPeer client);
 }

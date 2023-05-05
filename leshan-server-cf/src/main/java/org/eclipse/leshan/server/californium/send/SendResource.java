@@ -57,7 +57,7 @@ public class SendResource extends LwM2mCoapResource {
     public void handlePOST(CoapExchange exchange) {
         Request coapRequest = exchange.advanced().getRequest();
         IpPeer sender = getForeignPeerIdentity(exchange.advanced(), coapRequest);
-        ClientProfile clientProfile = profileProvider.getProfile(sender);
+        ClientProfile clientProfile = profileProvider.getProfile(sender.getIdentity());
 
         // check we have a registration for this identity
         if (clientProfile == null) {

@@ -59,6 +59,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class RegistrationSerDes {
 
     private final AttributeParser attributeParser;
+    private final LwM2mPeerSerDes peerSerDes = new LwM2mPeerSerDes();
 
     public RegistrationSerDes() {
         // Define all supported Attributes
@@ -77,7 +78,9 @@ public class RegistrationSerDes {
     public JsonNode jSerialize(Registration r) {
         ObjectNode o = JsonNodeFactory.instance.objectNode();
         o.put("regDate", r.getRegistrationDate().getTime());
-        o.set("identity", IdentitySerDes.serialize(r.getIdentity()));
+        // TODO handle backward compatibility ?
+        // o.set("identity", IdentitySerDes.serialize(r.getIdentity()));
+        o.set("transportdata", peerSerDes.serialize(r.getClientTransportData()));
         o.put("lt", r.getLifeTimeInSec());
         if (r.getSmsNumber() != null) {
             o.put("sms", r.getSmsNumber());
@@ -164,8 +167,11 @@ public class RegistrationSerDes {
                             jObj.get("epUri").asText(), jObj.get("regId").asText(), jObj.get("ep").asText()));
         }
 
+// TODO handle backward compatibility ?
+//        Registration.Builder b = new Registration.Builder(jObj.get("regId").asText(), jObj.get("ep").asText(),
+//                IdentitySerDes.deserialize(jObj.get("identity")), lastEndpointUsed);
         Registration.Builder b = new Registration.Builder(jObj.get("regId").asText(), jObj.get("ep").asText(),
-                IdentitySerDes.deserialize(jObj.get("identity")), lastEndpointUsed);
+                peerSerDes.deserialize(jObj.get("transportdata")), lastEndpointUsed);
 
         b.bindingMode(BindingMode.parse(jObj.get("bnd").asText()));
         if (jObj.get("qm") != null)

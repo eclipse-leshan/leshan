@@ -73,6 +73,7 @@ import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.peer.PskIdentity;
 import org.eclipse.leshan.core.peer.RpkIdentity;
 import org.eclipse.leshan.core.peer.X509Identity;
@@ -349,13 +350,12 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
         return new IdentityHandler() {
 
             @Override
-            public IpPeer getIdentity(Message receivedMessage) {
+            public LwM2mPeer getIdentity(Message receivedMessage) {
                 EndpointContext context = receivedMessage.getSourceContext();
                 InetSocketAddress peerAddress = context.getPeerAddress();
                 Principal senderIdentity = context.getPeerIdentity();
                 if (senderIdentity != null) {
                     if (senderIdentity instanceof PreSharedKeyIdentity) {
-                        // return Identity.psk(peerAddress, ((PreSharedKeyIdentity) senderIdentity).getIdentity());
                         return new IpPeer(peerAddress,
                                 new PskIdentity(((PreSharedKeyIdentity) senderIdentity).getIdentity()));
                     } else if (senderIdentity instanceof RawPublicKeyIdentity) {
@@ -374,27 +374,31 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
             }
 
             @Override
-            public EndpointContext createEndpointContext(IpPeer identity, boolean allowConnectionInitiation) {
+            public EndpointContext createEndpointContext(LwM2mPeer client, boolean allowConnectionInitiation) {
                 Principal peerIdentity = null;
-                if (identity != null) {
-                    if (identity.isPSK()) {
-                        peerIdentity = new PreSharedKeyIdentity(
-                                ((PskIdentity) identity.getIdentity()).getPskIdentity());
-                    } else if (identity.isRPK()) {
-                        peerIdentity = new RawPublicKeyIdentity(((RpkIdentity) identity.getIdentity()).getPublicKey());
-                    } else if (identity.isX509()) {
-                        /* simplify distinguished name to CN= part */
-                        peerIdentity = new X500Principal(
-                                "CN=" + ((X509Identity) identity.getIdentity()).getX509CommonName());
+                if (client.getIdentity() instanceof PskIdentity) {
+                    peerIdentity = new PreSharedKeyIdentity(((PskIdentity) client.getIdentity()).getPskIdentity());
+                } else if (client.getIdentity() instanceof RpkIdentity) {
+                    peerIdentity = new RawPublicKeyIdentity(((RpkIdentity) client.getIdentity()).getPublicKey());
+                } else if (client.getIdentity() instanceof X509Identity) {
+                    /* simplify distinguished name to CN= part */
+                    peerIdentity = new X500Principal("CN=" + ((X509Identity) client.getIdentity()).getX509CommonName());
+                } else {
+                    throw new IllegalStateException(String.format("Unsupported Identity : %s", client.getIdentity()));
+                }
+                if (client instanceof IpPeer) {
+                    IpPeer ipClient = (IpPeer) client;
+                    if (peerIdentity != null && allowConnectionInitiation) {
+                        return new MapBasedEndpointContext(ipClient.getSocketAddress(), peerIdentity, new Attributes()
+                                .add(DtlsEndpointContext.KEY_HANDSHAKE_MODE, DtlsEndpointContext.HANDSHAKE_MODE_AUTO));
                     }
+                    return new AddressEndpointContext(ipClient.getSocketAddress(), peerIdentity);
+                } else {
+                    throw new IllegalStateException(String.format("Unsupported peer : %s", client));
                 }
-                if (peerIdentity != null && allowConnectionInitiation) {
-                    return new MapBasedEndpointContext(identity.getSocketAddress(), peerIdentity, new Attributes()
-                            .add(DtlsEndpointContext.KEY_HANDSHAKE_MODE, DtlsEndpointContext.HANDSHAKE_MODE_AUTO));
-                }
-                return new AddressEndpointContext(identity.getSocketAddress(), peerIdentity);
             }
         };
+
     }
 
     @Override

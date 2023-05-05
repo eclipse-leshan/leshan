@@ -17,7 +17,7 @@ package org.eclipse.leshan.server.request;
 
 import java.net.URI;
 
-import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
@@ -42,7 +42,7 @@ public class DefaultUplinkRequestReceiver implements UplinkRequestReceiver {
     }
 
     @Override
-    public void onError(IpPeer senderIdentity, ClientProfile senderProfile, Exception exception,
+    public void onError(LwM2mPeer sender, ClientProfile senderProfile, Exception exception,
             Class<? extends UplinkRequest<? extends LwM2mResponse>> requestType, URI serverEndpointUri) {
         if (requestType.equals(SendRequest.class)) {
             sendHandler.onError(senderProfile.getRegistration(), exception);
@@ -50,41 +50,41 @@ public class DefaultUplinkRequestReceiver implements UplinkRequestReceiver {
     }
 
     @Override
-    public <T extends LwM2mResponse> SendableResponse<T> requestReceived(IpPeer senderIdentity,
-            ClientProfile senderProfile, UplinkRequest<T> request, URI serverEndpointUri) {
+    public <T extends LwM2mResponse> SendableResponse<T> requestReceived(LwM2mPeer sender, ClientProfile senderProfile,
+            UplinkRequest<T> request, URI serverEndpointUri) {
 
-        RequestHandler<T> requestHandler = new RequestHandler<T>(senderIdentity, senderProfile, serverEndpointUri);
+        RequestHandler<T> requestHandler = new RequestHandler<T>(sender, senderProfile, serverEndpointUri);
         request.accept(requestHandler);
         return requestHandler.getResponse();
     }
 
     public class RequestHandler<T extends LwM2mResponse> implements UplinkRequestVisitor {
 
-        private final IpPeer senderIdentity;
+        private final LwM2mPeer sender;
         private final ClientProfile senderProfile;
         private final URI endpoint;
         private SendableResponse<? extends LwM2mResponse> response;
 
-        public RequestHandler(IpPeer senderIdentity, ClientProfile clientProfile, URI serverEndpointUri) {
-            this.senderIdentity = senderIdentity;
+        public RequestHandler(LwM2mPeer sender, ClientProfile clientProfile, URI serverEndpointUri) {
+            this.sender = sender;
             this.senderProfile = clientProfile;
             this.endpoint = serverEndpointUri;
         }
 
         @Override
         public void visit(RegisterRequest request) {
-            response = registrationHandler.register(senderIdentity, request, endpoint);
+            response = registrationHandler.register(sender, request, endpoint);
         }
 
         @Override
         public void visit(UpdateRequest request) {
-            response = registrationHandler.update(senderIdentity, request);
+            response = registrationHandler.update(sender, request);
 
         }
 
         @Override
         public void visit(DeregisterRequest request) {
-            response = registrationHandler.deregister(senderIdentity, request);
+            response = registrationHandler.deregister(sender, request);
         }
 
         @Override

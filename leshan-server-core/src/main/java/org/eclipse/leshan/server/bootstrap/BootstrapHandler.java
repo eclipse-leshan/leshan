@@ -17,7 +17,7 @@ package org.eclipse.leshan.server.bootstrap;
 
 import java.net.URI;
 
-import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.response.BootstrapResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
@@ -31,5 +31,5 @@ import org.eclipse.leshan.core.response.SendableResponse;
 
 public interface BootstrapHandler {
 
-    SendableResponse<BootstrapResponse> bootstrap(IpPeer sender, BootstrapRequest request, URI serverEndpointUri);
+    SendableResponse<BootstrapResponse> bootstrap(LwM2mPeer sender, BootstrapRequest request, URI serverEndpointUri);
 }

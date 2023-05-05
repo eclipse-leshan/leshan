@@ -25,6 +25,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.queue.PresenceService;
 import org.eclipse.leshan.server.registration.Registration;
@@ -67,7 +68,9 @@ public class JacksonRegistrationSerializer extends StdSerializer<Registration> {
 
         map.put("rootPath", src.getRootPath());
         map.put("objectLinks", src.getObjectLinks());
-        map.put("secure", src.getIdentity().isSecure());
+        // TODO secure means over TLS (not OSCORE) but this is not clear so maybe we need to change this.
+        map.put("secure", src.getClientTransportData().getIdentity().isSecure()
+                && !(src.getClientTransportData().getIdentity() instanceof OscoreIdentity));
         map.put("additionalRegistrationAttributes", src.getAdditionalRegistrationAttributes());
         map.put("queuemode", src.usesQueueMode());
         map.put("availableInstances", serializeAvailableInstances(src.getAvailableInstances()));

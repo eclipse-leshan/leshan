@@ -54,8 +54,8 @@ public class RegistrationUpdateTest {
         updateAdditionalAttributes.put("z", "101");
         updateAdditionalAttributes.put("h", "hello");
 
-        RegistrationUpdate updateReg = new RegistrationUpdate(r.getId(), r.getIdentity(), null, null, null, null, null,
-                null, null, null, updateAdditionalAttributes, null);
+        RegistrationUpdate updateReg = new RegistrationUpdate(r.getId(), r.getClientTransportData(), null, null, null,
+                null, null, null, null, null, updateAdditionalAttributes, null);
 
         r = updateReg.update(r);
 
@@ -81,8 +81,8 @@ public class RegistrationUpdateTest {
         builder.applicationData(appData);
         Registration r = builder.build();
 
-        RegistrationUpdate updateReg = new RegistrationUpdate(r.getId(), r.getIdentity(), null, null, null, null, null,
-                null, null, null, null, null);
+        RegistrationUpdate updateReg = new RegistrationUpdate(r.getId(), r.getClientTransportData(), null, null, null,
+                null, null, null, null, null, null, null);
 
         r = updateReg.update(r);
 

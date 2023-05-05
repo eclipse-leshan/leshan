@@ -37,8 +37,8 @@ public class BootstrapServerCoapMessageTranslator {
     public Request createCoapRequest(BootstrapSession destination,
             BootstrapDownlinkRequest<? extends LwM2mResponse> lwm2mRequest, BootstrapServerEndpointToolbox toolbox,
             IdentityHandler identityHandler) {
-        CoapRequestBuilder builder = new CoapRequestBuilder(destination.getIdentity(), destination.getModel(),
-                toolbox.getEncoder(), identityHandler);
+        CoapRequestBuilder builder = new CoapRequestBuilder(destination.getClientTransportData(),
+                destination.getModel(), toolbox.getEncoder(), identityHandler);
         lwm2mRequest.accept(builder);
         return builder.getRequest();
     }

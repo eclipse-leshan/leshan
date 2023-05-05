@@ -39,7 +39,6 @@ import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.ObservationIdentifier;
 import org.eclipse.leshan.core.observation.SingleObservation;
-import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.LwM2mIdentity;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.slf4j.Logger;
@@ -93,7 +92,7 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
 
             Registration registrationRemoved = regsByEp.put(registration.getEndpoint(), registration);
             regsByRegId.put(registration.getId(), registration);
-            regsByIdentity.put(registration.getIdentity().getIdentity(), registration);
+            regsByIdentity.put(registration.getClientTransportData().getIdentity(), registration);
             // If a registration is already associated to this address we don't care as we only want to keep the most
             // recent binding.
             regsByAddr.put(registration.getSocketAddress(), registration);
@@ -105,8 +104,10 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
                 if (!registrationRemoved.getId().equals(registration.getId())) {
                     removeFromMap(regsByRegId, registrationRemoved.getId(), registrationRemoved);
                 }
-                if (!registrationRemoved.getIdentity().getIdentity().equals(registration.getIdentity().getIdentity())) {
-                    removeFromMap(regsByIdentity, registrationRemoved.getIdentity().getIdentity(), registrationRemoved);
+                if (!registrationRemoved.getClientTransportData().getIdentity()
+                        .equals(registration.getClientTransportData().getIdentity())) {
+                    removeFromMap(regsByIdentity, registrationRemoved.getClientTransportData().getIdentity(),
+                            registrationRemoved);
                 }
                 return new Deregistration(registrationRemoved, observationsRemoved);
             }
@@ -133,9 +134,10 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
                 if (!registration.getSocketAddress().equals(updatedRegistration.getSocketAddress())) {
                     removeFromMap(regsByAddr, registration.getSocketAddress(), registration);
                 }
-                regsByIdentity.put(updatedRegistration.getIdentity().getIdentity(), updatedRegistration);
-                if (!registration.getIdentity().equals(updatedRegistration.getIdentity())) {
-                    removeFromMap(regsByIdentity, registration.getIdentity().getIdentity(), registration);
+                regsByIdentity.put(updatedRegistration.getClientTransportData().getIdentity(), updatedRegistration);
+                if (!registration.getClientTransportData().getIdentity()
+                        .equals(updatedRegistration.getClientTransportData().getIdentity())) {
+                    removeFromMap(regsByIdentity, registration.getClientTransportData().getIdentity(), registration);
                 }
 
                 regsByRegId.put(updatedRegistration.getId(), updatedRegistration);
@@ -178,10 +180,10 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
     }
 
     @Override
-    public Registration getRegistrationByIdentity(IpPeer identity) {
+    public Registration getRegistrationByIdentity(LwM2mIdentity identity) {
         try {
             lock.readLock().lock();
-            return regsByIdentity.get(identity.getIdentity());
+            return regsByIdentity.get(identity);
         } finally {
             lock.readLock().unlock();
         }
@@ -208,7 +210,7 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
                 regsByEp.remove(registration.getEndpoint());
                 removeFromMap(regsByAddr, registration.getSocketAddress(), registration);
                 removeFromMap(regsByRegId, registration.getId(), registration);
-                removeFromMap(regsByIdentity, registration.getIdentity().getIdentity(), registration);
+                removeFromMap(regsByIdentity, registration.getClientTransportData().getIdentity(), registration);
                 return new Deregistration(registration, observationsRemoved);
             }
             return null;
