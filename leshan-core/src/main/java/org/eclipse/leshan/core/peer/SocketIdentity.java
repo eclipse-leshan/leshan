@@ -24,7 +24,7 @@ public class SocketIdentity implements LwM2mIdentity {
 
     private final InetSocketAddress peerAddress;
 
-    private SocketIdentity(InetSocketAddress peerAddress) {
+    public SocketIdentity(InetSocketAddress peerAddress) {
         Validate.notNull(peerAddress);
         this.peerAddress = peerAddress;
     }
