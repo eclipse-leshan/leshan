@@ -19,7 +19,7 @@ import java.net.URI;
 import java.util.Map;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
-import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.server.security.BootstrapAuthorizer;
@@ -28,7 +28,7 @@ import org.eclipse.leshan.server.security.BootstrapAuthorizer;
  * Represent a single Bootstrapping session.
  *
  * Should be created by {@link BootstrapSessionManager} implementations in
- * {@link BootstrapSessionManager#begin(BootstrapRequest, IpPeer, URI)}.
+ * {@link BootstrapSessionManager#begin(BootstrapRequest, LwM2mPeer, URI)}.
  */
 public interface BootstrapSession {
 
@@ -48,9 +48,9 @@ public interface BootstrapSession {
     BootstrapRequest getBootstrapRequest();
 
     /**
-     * @return the network identity of the LwM2M client.
+     * @return the transport information about the LwM2M client.
      */
-    IpPeer getIdentity();
+    LwM2mPeer getClientTransportData();
 
     URI getEndpointUsed();
 

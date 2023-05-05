@@ -18,4 +18,6 @@ package org.eclipse.leshan.core.peer;
 
 public interface LwM2mIdentity {
     // String getKeyIdentifier(); // TODO I don't know if we really need this.
+
+    boolean isSecure();
 }

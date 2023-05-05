@@ -44,6 +44,7 @@ import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.util.StringUtils;
@@ -59,7 +60,7 @@ public class Registration {
 
     private final Date registrationDate;
 
-    private final IpPeer identity;
+    private final LwM2mPeer clientTransportData;
 
     private final long lifeTimeInSec;
 
@@ -102,7 +103,7 @@ public class Registration {
 
         // mandatory params
         id = builder.registrationId;
-        identity = builder.identity;
+        clientTransportData = builder.clientTransportData;
         endpoint = builder.endpoint;
         lastEndpointUsed = builder.lastEndpointUsed;
 
@@ -135,39 +136,51 @@ public class Registration {
     }
 
     /**
-     * Gets the clients identity.
+     * Gets the clients transport layer data.
      *
-     * @return identity from client's most recent registration or registration update.
+     * @return transport layer data from client's most recent registration or registration update.
      */
-    public IpPeer getIdentity() {
-        return identity;
+    public LwM2mPeer getClientTransportData() {
+        return clientTransportData;
     }
 
     /**
      * Gets the client's network socket address.
      *
-     * @return the source address from the client's most recent CoAP message.
+     * @return the source address from the client's most recent CoAP message. It could return {@code null} if client
+     *         does not communicate over IP.
      */
     public InetSocketAddress getSocketAddress() {
-        return identity.getSocketAddress();
+        if (clientTransportData instanceof IpPeer) {
+            return ((IpPeer) clientTransportData).getSocketAddress();
+        }
+        return null;
     }
 
     /**
      * Gets the client's network address.
      *
-     * @return the source address from the client's most recent CoAP message.
+     * @return the source address from the client's most recent CoAP message. It could return {@code null} if client
+     *         does not communicate over IP.
      */
     public InetAddress getAddress() {
-        return identity.getSocketAddress().getAddress();
+        if (clientTransportData instanceof IpPeer) {
+            return ((IpPeer) clientTransportData).getSocketAddress().getAddress();
+        }
+        return null;
     }
 
     /**
      * Gets the client's network port number.
      *
-     * @return the source port from the client's most recent CoAP message.
+     * @return the source port from the client's most recent CoAP message. It could return {@code null} if client does
+     *         not communicate over IP.
      */
-    public int getPort() {
-        return identity.getSocketAddress().getPort();
+    public Integer getPort() {
+        if (clientTransportData instanceof IpPeer) {
+            return ((IpPeer) clientTransportData).getSocketAddress().getPort();
+        }
+        return null;
     }
 
     public Link[] getObjectLinks() {
@@ -359,10 +372,10 @@ public class Registration {
     @Override
     public String toString() {
         return String.format(
-                "Registration [registrationDate=%s, identity=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, queueMode=%s, endpoint=%s, id=%s, objectLinks=%s, additionalRegistrationAttributes=%s, rootPath=%s, supportedContentFormats=%s, supportedObjects=%s, availableInstances=%s, lastUpdate=%s, applicationData=%s]",
-                registrationDate, identity, lifeTimeInSec, smsNumber, lwM2mVersion, bindingMode, queueMode, endpoint,
-                id, Arrays.toString(objectLinks), additionalRegistrationAttributes, rootPath, supportedContentFormats,
-                supportedObjects, availableInstances, lastUpdate, applicationData);
+                "Registration [registrationDate=%s, clientTransportData=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, queueMode=%s, endpoint=%s, id=%s, objectLinks=%s, additionalRegistrationAttributes=%s, rootPath=%s, supportedContentFormats=%s, supportedObjects=%s, availableInstances=%s, lastUpdate=%s, applicationData=%s]",
+                registrationDate, clientTransportData, lifeTimeInSec, smsNumber, lwM2mVersion, bindingMode, queueMode,
+                endpoint, id, Arrays.toString(objectLinks), additionalRegistrationAttributes, rootPath,
+                supportedContentFormats, supportedObjects, availableInstances, lastUpdate, applicationData);
     }
 
     @Override
@@ -376,7 +389,7 @@ public class Registration {
         result = prime * result + ((bindingMode == null) ? 0 : bindingMode.hashCode());
         result = prime * result + ((endpoint == null) ? 0 : endpoint.hashCode());
         result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((identity == null) ? 0 : identity.hashCode());
+        result = prime * result + ((clientTransportData == null) ? 0 : clientTransportData.hashCode());
         result = prime * result + ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
         result = prime * result + (int) (lifeTimeInSec ^ (lifeTimeInSec >>> 32));
         result = prime * result + ((lwM2mVersion == null) ? 0 : lwM2mVersion.hashCode());
@@ -429,10 +442,10 @@ public class Registration {
                 return false;
         } else if (!id.equals(other.id))
             return false;
-        if (identity == null) {
-            if (other.identity != null)
+        if (clientTransportData == null) {
+            if (other.clientTransportData != null)
                 return false;
-        } else if (!identity.equals(other.identity))
+        } else if (!clientTransportData.equals(other.clientTransportData))
             return false;
         if (lastUpdate == null) {
             if (other.lastUpdate != null)
@@ -484,7 +497,7 @@ public class Registration {
     public static class Builder {
         private final String registrationId;
         private final String endpoint;
-        private final IpPeer identity;
+        private final LwM2mPeer clientTransportData;
         private final URI lastEndpointUsed;
 
         private Date registrationDate;
@@ -509,7 +522,7 @@ public class Registration {
 
             // mandatory params
             registrationId = registration.id;
-            identity = registration.identity;
+            clientTransportData = registration.clientTransportData;
             endpoint = registration.endpoint;
             lastEndpointUsed = registration.lastEndpointUsed;
 
@@ -533,16 +546,16 @@ public class Registration {
             applicationData = registration.applicationData;
         }
 
-        public Builder(String registrationId, String endpoint, IpPeer identity, URI lastEndpointUsed) {
+        public Builder(String registrationId, String endpoint, LwM2mPeer clientTransportData, URI lastEndpointUsed) {
 
             Validate.notNull(registrationId);
             Validate.notEmpty(endpoint);
-            Validate.notNull(identity);
+            Validate.notNull(clientTransportData);
             EndpointUriUtil.validateURI(lastEndpointUsed);
 
             this.registrationId = registrationId;
             this.endpoint = endpoint;
-            this.identity = identity;
+            this.clientTransportData = clientTransportData;
             this.lastEndpointUsed = lastEndpointUsed;
         }
 

@@ -59,9 +59,10 @@ public class ServerCoapMessageTranslator {
 
     public Request createCoapRequest(ClientProfile clientProfile, DownlinkRequest<? extends LwM2mResponse> lwm2mRequest,
             ServerEndpointToolbox toolbox, IdentityHandler identityHandler) {
-        CoapRequestBuilder builder = new CoapRequestBuilder(clientProfile.getIdentity(), clientProfile.getRootPath(),
-                clientProfile.getRegistrationId(), clientProfile.getEndpoint(), clientProfile.getModel(),
-                toolbox.getEncoder(), clientProfile.canInitiateConnection(), null, identityHandler);
+        CoapRequestBuilder builder = new CoapRequestBuilder(clientProfile.getTransportData(),
+                clientProfile.getRootPath(), clientProfile.getRegistrationId(), clientProfile.getEndpoint(),
+                clientProfile.getModel(), toolbox.getEncoder(), clientProfile.canInitiateConnection(), null,
+                identityHandler);
         lwm2mRequest.accept(builder);
         return builder.getRequest();
     }

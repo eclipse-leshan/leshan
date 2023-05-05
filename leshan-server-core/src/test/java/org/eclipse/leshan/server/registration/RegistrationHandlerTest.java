@@ -28,6 +28,7 @@ import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.DefaultLinkParser;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
@@ -140,7 +141,7 @@ public class RegistrationHandlerTest {
         }
 
         @Override
-        public Authorization isAuthorized(UplinkRequest<?> request, Registration registration, IpPeer senderIdentity) {
+        public Authorization isAuthorized(UplinkRequest<?> request, Registration registration, LwM2mPeer sender) {
             return autorization;
         }
     }

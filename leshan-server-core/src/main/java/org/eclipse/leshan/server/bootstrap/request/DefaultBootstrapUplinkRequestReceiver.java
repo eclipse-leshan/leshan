@@ -17,7 +17,7 @@ package org.eclipse.leshan.server.bootstrap.request;
 
 import java.net.URI;
 
-import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
@@ -38,27 +38,27 @@ public class DefaultBootstrapUplinkRequestReceiver implements BootstrapUplinkReq
     }
 
     @Override
-    public void onError(IpPeer senderIdentity, Exception exception,
+    public void onError(LwM2mPeer sender, Exception exception,
             Class<? extends UplinkRequest<? extends LwM2mResponse>> requestType, URI serverEndpointUri) {
     }
 
     @Override
-    public <T extends LwM2mResponse> SendableResponse<T> requestReceived(IpPeer senderIdentity,
-            UplinkRequest<T> request, URI serverEndpointUri) {
+    public <T extends LwM2mResponse> SendableResponse<T> requestReceived(LwM2mPeer sender, UplinkRequest<T> request,
+            URI serverEndpointUri) {
 
-        RequestHandler<T> requestHandler = new RequestHandler<T>(senderIdentity, serverEndpointUri);
+        RequestHandler<T> requestHandler = new RequestHandler<T>(sender, serverEndpointUri);
         request.accept(requestHandler);
         return requestHandler.getResponse();
     }
 
     public class RequestHandler<T extends LwM2mResponse> implements UplinkRequestVisitor {
 
-        private final IpPeer senderIdentity;
+        private final LwM2mPeer sender;
         private final URI serverEndpointUri;
         private SendableResponse<? extends LwM2mResponse> response;
 
-        public RequestHandler(IpPeer senderIdentity, URI serverEndpointUri) {
-            this.senderIdentity = senderIdentity;
+        public RequestHandler(LwM2mPeer sender, URI serverEndpointUri) {
+            this.sender = sender;
             this.serverEndpointUri = serverEndpointUri;
         }
 
@@ -77,7 +77,7 @@ public class DefaultBootstrapUplinkRequestReceiver implements BootstrapUplinkReq
 
         @Override
         public void visit(BootstrapRequest request) {
-            response = bootstapHandler.bootstrap(senderIdentity, request, serverEndpointUri);
+            response = bootstapHandler.bootstrap(sender, request, serverEndpointUri);
         }
 
         @Override

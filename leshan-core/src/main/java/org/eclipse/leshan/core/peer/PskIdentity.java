@@ -34,6 +34,11 @@ public class PskIdentity implements LwM2mIdentity {
     }
 
     @Override
+    public boolean isSecure() {
+        return true;
+    }
+
+    @Override
     public String toString() {
         return String.format("Identity [psk=%s]", pskIdentity);
     }

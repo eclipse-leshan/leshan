@@ -31,6 +31,7 @@ import org.eclipse.californium.oscore.OSCoreEndpointContextInfo;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.californium.oscore.cf.InMemoryOscoreContextDB;
 import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
@@ -88,7 +89,7 @@ public class CoapOscoreBootstrapServerEndpointFactory extends CoapBootstrapServe
         return new IdentityHandler() {
 
             @Override
-            public IpPeer getIdentity(Message receivedMessage) {
+            public LwM2mPeer getIdentity(Message receivedMessage) {
                 EndpointContext context = receivedMessage.getSourceContext();
                 InetSocketAddress peerAddress = context.getPeerAddress();
                 Principal senderIdentity = context.getPeerIdentity();
@@ -106,9 +107,13 @@ public class CoapOscoreBootstrapServerEndpointFactory extends CoapBootstrapServe
             }
 
             @Override
-            public EndpointContext createEndpointContext(IpPeer identity, boolean allowConnectionInitiation) {
+            public EndpointContext createEndpointContext(LwM2mPeer client, boolean allowConnectionInitiation) {
                 // TODO OSCORE : should we add properties to endpoint context ?
-                return new AddressEndpointContext(identity.getSocketAddress());
+                if (client instanceof IpPeer) {
+                    return new AddressEndpointContext(((IpPeer) client).getSocketAddress());
+                } else {
+                    throw new IllegalStateException(String.format("Unsupported Peer : %s", client));
+                }
             }
         };
     }

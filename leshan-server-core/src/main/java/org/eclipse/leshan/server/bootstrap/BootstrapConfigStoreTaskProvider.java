@@ -36,7 +36,7 @@ public class BootstrapConfigStoreTaskProvider implements BootstrapTaskProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(BootstrapConfigStoreTaskProvider.class);
 
-    private BootstrapConfigStore store;
+    private final BootstrapConfigStore store;
 
     public BootstrapConfigStoreTaskProvider(BootstrapConfigStore store) {
         this.store = store;
@@ -45,7 +45,7 @@ public class BootstrapConfigStoreTaskProvider implements BootstrapTaskProvider {
     @Override
     public Tasks getTasks(BootstrapSession session, List<LwM2mResponse> previousResponse) {
 
-        BootstrapConfig config = store.get(session.getEndpoint(), session.getIdentity(), session);
+        BootstrapConfig config = store.get(session.getEndpoint(), session.getClientTransportData(), session);
         if (config == null)
             return null;
 

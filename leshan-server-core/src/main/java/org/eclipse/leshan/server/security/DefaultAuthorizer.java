@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.security;
 
-import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.server.registration.Registration;
 
@@ -41,14 +41,14 @@ public class DefaultAuthorizer implements Authorizer {
     }
 
     @Override
-    public Authorization isAuthorized(UplinkRequest<?> request, Registration registration, IpPeer senderIdentity) {
+    public Authorization isAuthorized(UplinkRequest<?> request, Registration registration, LwM2mPeer sender) {
 
         // do we have security information for this client?
         SecurityInfo expectedSecurityInfo = null;
         if (securityStore != null)
             expectedSecurityInfo = securityStore.getByEndpoint(registration.getEndpoint());
 
-        if (securityChecker.checkSecurityInfo(registration.getEndpoint(), senderIdentity, expectedSecurityInfo)) {
+        if (securityChecker.checkSecurityInfo(registration.getEndpoint(), sender, expectedSecurityInfo)) {
             return Authorization.approved();
         } else {
             return Authorization.declined();

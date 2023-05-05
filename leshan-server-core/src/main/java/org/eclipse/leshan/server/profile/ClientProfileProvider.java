@@ -15,9 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.profile;
 
-import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mIdentity;
 
 public interface ClientProfileProvider {
 
-    ClientProfile getProfile(IpPeer identity);
+    ClientProfile getProfile(LwM2mIdentity identity);
 }

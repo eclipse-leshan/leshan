@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
-import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -37,7 +37,7 @@ public class DefaultBootstrapSession implements BootstrapSession {
 
     private final String id;
     private final String endpoint;
-    private final IpPeer identity;
+    private final LwM2mPeer client;
     private final boolean authorized;
     private final ContentFormat contentFormat;
     private final Map<String, String> applicationData;
@@ -57,46 +57,46 @@ public class DefaultBootstrapSession implements BootstrapSession {
      * preferences and using <code>System.currentTimeMillis()</code> to set the creation time.
      *
      * @param request The bootstrap request which initiate the session.
-     * @param identity The transport layer identity of the device.
+     * @param client The transport layer information about client.
      * @param authorized True if device is authorized to bootstrap.
      * @param applicationData Data that could be attached to a session.
      */
-    public DefaultBootstrapSession(BootstrapRequest request, IpPeer identity, boolean authorized,
+    public DefaultBootstrapSession(BootstrapRequest request, LwM2mPeer client, boolean authorized,
             Map<String, String> applicationData, URI endpointUsed) {
-        this(request, identity, authorized, null, applicationData, endpointUsed);
+        this(request, client, authorized, null, applicationData, endpointUsed);
     }
 
     /**
      * Create a {@link DefaultBootstrapSession} using <code>System.currentTimeMillis()</code> to set the creation time.
      *
      * @param request The bootstrap request which initiate the session.
-     * @param identity The transport layer identity of the device.
+     * @param client The transport layer information about client.
      * @param authorized True if device is authorized to bootstrap.
      * @param contentFormat The content format to use to write object.
      * @param applicationData Data that could be attached to a session.
      */
-    public DefaultBootstrapSession(BootstrapRequest request, IpPeer identity, boolean authorized,
+    public DefaultBootstrapSession(BootstrapRequest request, LwM2mPeer client, boolean authorized,
             ContentFormat contentFormat, Map<String, String> applicationData, URI endpointUsed) {
-        this(request, identity, authorized, contentFormat, applicationData, System.currentTimeMillis(), endpointUsed);
+        this(request, client, authorized, contentFormat, applicationData, System.currentTimeMillis(), endpointUsed);
     }
 
     /**
      * Create a {@link DefaultBootstrapSession}.
      *
      * @param request The bootstrap request which initiate the session.
-     * @param identity The transport layer identity of the device.
+     * @param client The transport layer information about client.
      * @param authorized True if device is authorized to bootstrap.
      * @param contentFormat The content format to use to write object.
      * @param applicationData Data that could be attached to a session.
      * @param creationTime The creation time of this session in ms.
      */
-    public DefaultBootstrapSession(BootstrapRequest request, IpPeer identity, boolean authorized,
+    public DefaultBootstrapSession(BootstrapRequest request, LwM2mPeer client, boolean authorized,
             ContentFormat contentFormat, Map<String, String> applicationData, long creationTime, URI endpointUsed) {
         Validate.notNull(request);
         this.id = RandomStringUtils.random(10, true, true);
         this.request = request;
         this.endpoint = request.getEndpointName();
-        this.identity = identity;
+        this.client = client;
         this.endpointUsed = endpointUsed;
         this.authorized = authorized;
         if (contentFormat == null) {
@@ -127,8 +127,8 @@ public class DefaultBootstrapSession implements BootstrapSession {
     }
 
     @Override
-    public IpPeer getIdentity() {
-        return identity;
+    public LwM2mPeer getClientTransportData() {
+        return client;
     }
 
     @Override
@@ -208,7 +208,7 @@ public class DefaultBootstrapSession implements BootstrapSession {
     public String toString() {
         return String.format(
                 "DefaultBootstrapSession [id=%s, endpoint=%s, identity=%s, authorized=%s, contentFormat=%s, applicationData=%s, creationTime=%s, request=%s, cancelled=%s]",
-                id, endpoint, identity, authorized, contentFormat, applicationData, creationTime, request, cancelled);
+                id, endpoint, client, authorized, contentFormat, applicationData, creationTime, request, cancelled);
     }
 
 }

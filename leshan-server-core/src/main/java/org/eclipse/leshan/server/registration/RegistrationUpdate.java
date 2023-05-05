@@ -28,6 +28,7 @@ import java.util.Objects;
 
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.util.Validate;
 
@@ -38,7 +39,7 @@ public class RegistrationUpdate {
 
     private final String registrationId;
 
-    private final IpPeer identity;
+    private final LwM2mPeer clientTransportData;
     private final Long lifeTimeInSec;
     private final String smsNumber;
     private final EnumSet<BindingMode> bindingMode;
@@ -46,13 +47,13 @@ public class RegistrationUpdate {
     private final Map<String, String> additionalAttributes;
     private final Map<String, String> applicationData;
 
-    public RegistrationUpdate(String registrationId, IpPeer identity, Long lifeTimeInSec, String smsNumber,
-            EnumSet<BindingMode> bindingMode, Link[] objectLinks, Map<String, String> additionalAttributes,
-            Map<String, String> applicationData) {
+    public RegistrationUpdate(String registrationId, LwM2mPeer clientTransportData, Long lifeTimeInSec,
+            String smsNumber, EnumSet<BindingMode> bindingMode, Link[] objectLinks,
+            Map<String, String> additionalAttributes, Map<String, String> applicationData) {
         Validate.notNull(registrationId);
-        Validate.notNull(identity);
+        Validate.notNull(clientTransportData);
         this.registrationId = registrationId;
-        this.identity = identity;
+        this.clientTransportData = clientTransportData;
         this.lifeTimeInSec = lifeTimeInSec;
         this.smsNumber = smsNumber;
         this.bindingMode = bindingMode;
@@ -74,7 +75,8 @@ public class RegistrationUpdate {
      * @return the updated registration
      */
     public Registration update(Registration registration) {
-        IpPeer identity = this.identity != null ? this.identity : registration.getIdentity();
+        LwM2mPeer transportData = this.clientTransportData != null ? this.clientTransportData
+                : registration.getClientTransportData();
         Link[] linkObject = this.objectLinks != null ? this.objectLinks : registration.getObjectLinks();
         long lifeTimeInSec = this.lifeTimeInSec != null ? this.lifeTimeInSec : registration.getLifeTimeInSec();
         EnumSet<BindingMode> bindingMode = this.bindingMode != null ? this.bindingMode : registration.getBindingMode();
@@ -92,7 +94,7 @@ public class RegistrationUpdate {
         Date lastUpdate = new Date();
 
         Registration.Builder builder = new Registration.Builder(registration.getId(), registration.getEndpoint(),
-                identity, registration.getLastEndpointUsed());
+                transportData, registration.getLastEndpointUsed());
         builder.extractDataFromObjectLink(this.objectLinks != null); // we parse object link only if there was updated.
 
         builder.lwM2mVersion(registration.getLwM2mVersion()).lifeTimeInSec(lifeTimeInSec).smsNumber(smsNumber)
@@ -110,16 +112,22 @@ public class RegistrationUpdate {
         return registrationId;
     }
 
-    public IpPeer getIdentity() {
-        return identity;
+    public LwM2mPeer getClientTransportData() {
+        return clientTransportData;
     }
 
     public InetAddress getAddress() {
-        return identity.getSocketAddress().getAddress();
+        if (clientTransportData instanceof IpPeer) {
+            return ((IpPeer) clientTransportData).getSocketAddress().getAddress();
+        }
+        return null;
     }
 
     public Integer getPort() {
-        return identity.getSocketAddress().getPort();
+        if (clientTransportData instanceof IpPeer) {
+            return ((IpPeer) clientTransportData).getSocketAddress().getPort();
+        }
+        return null;
     }
 
     public Long getLifeTimeInSec() {
@@ -157,10 +165,10 @@ public class RegistrationUpdate {
 
     @Override
     public String toString() {
-        return "RegistrationUpdate [registrationId=" + registrationId + ", identity=" + identity + ", lifeTimeInSec="
-                + lifeTimeInSec + ", smsNumber=" + smsNumber + ", bindingMode=" + bindingMode + ", objectLinks="
-                + Arrays.toString(objectLinks) + ", additionalAttributes=" + additionalAttributes + ", applicationData="
-                + applicationData + "]";
+        return "RegistrationUpdate [registrationId=" + registrationId + ", clientTransportData=" + clientTransportData
+                + ", lifeTimeInSec=" + lifeTimeInSec + ", smsNumber=" + smsNumber + ", bindingMode=" + bindingMode
+                + ", objectLinks=" + Arrays.toString(objectLinks) + ", additionalAttributes=" + additionalAttributes
+                + ", applicationData=" + applicationData + "]";
     }
 
     @Override
@@ -168,7 +176,7 @@ public class RegistrationUpdate {
         final int prime = 31;
         int result = 1;
         result = prime * result + Arrays.hashCode(objectLinks);
-        result = prime * result + Objects.hash(additionalAttributes, applicationData, bindingMode, identity,
+        result = prime * result + Objects.hash(additionalAttributes, applicationData, bindingMode, clientTransportData,
                 lifeTimeInSec, registrationId, smsNumber);
         return result;
     }
@@ -184,7 +192,8 @@ public class RegistrationUpdate {
         RegistrationUpdate other = (RegistrationUpdate) obj;
         return Objects.equals(additionalAttributes, other.additionalAttributes)
                 && Objects.equals(applicationData, other.applicationData)
-                && Objects.equals(bindingMode, other.bindingMode) && Objects.equals(identity, other.identity)
+                && Objects.equals(bindingMode, other.bindingMode)
+                && Objects.equals(clientTransportData, other.clientTransportData)
                 && Objects.equals(lifeTimeInSec, other.lifeTimeInSec) && Arrays.equals(objectLinks, other.objectLinks)
                 && Objects.equals(registrationId, other.registrationId) && Objects.equals(smsNumber, other.smsNumber);
     }

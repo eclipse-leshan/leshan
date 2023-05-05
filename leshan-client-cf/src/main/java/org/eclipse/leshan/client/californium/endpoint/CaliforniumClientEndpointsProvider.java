@@ -113,19 +113,28 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
                         && currentCoapEndpoint.isStarted()) {
                     // For UDP (not secure) endpoint we also check socket address as anybody send data to this kind of
                     // endpoint.
-                    if (endpoint.getProtocol().equals(Protocol.COAP) && !currentServer.getIdentity().getSocketAddress()
-                            .equals(foreignPeerIdentity.getSocketAddress())) {
-                        return null;
+                    if (endpoint.getProtocol().equals(Protocol.COAP)) {
+                        if (currentServer.getIdentity() instanceof IpPeer) {
+                            IpPeer currentIpServer = (IpPeer) currentServer.getIdentity();
+                            if (!(currentIpServer.getSocketAddress().equals(foreignPeerIdentity.getSocketAddress()))) {
+                                return null;
+                            }
+                        } else {
+                            throw new IllegalStateException(
+                                    String.format("%s is not a LwM2mPeer supported by this class",
+                                            currentServer.getIdentity().getClass().getSimpleName()));
+                        }
                     }
                     // For OSCORE, be sure OSCORE is used.
-                    if (currentServer.getIdentity().isOSCORE()) {
-                        if (!foreignPeerIdentity.isOSCORE() //
+                    if (currentServer.getIdentity().getIdentity() instanceof OscoreIdentity) {
+                        if (!(foreignPeerIdentity.getIdentity() instanceof OscoreIdentity) //
                                 // we also check OscoreIdentity but this is probably not useful
                                 // because we are using static OSCOREstore which holds only 1 OscoreParameter,
                                 // so if the request was successfully decrypted and OSCORE is used, this MUST be the
                                 // right
                                 // server.
-                                || !foreignPeerIdentity.getIdentity().equals(currentServer.getIdentity())) {
+                                || !foreignPeerIdentity.getIdentity()
+                                        .equals(currentServer.getIdentity().getIdentity())) {
                             return null;
                         }
                     }
@@ -134,6 +143,7 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
                 return null;
             }
         };
+
     }
 
     @Override

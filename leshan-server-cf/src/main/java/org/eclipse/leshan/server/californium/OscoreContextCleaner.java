@@ -20,7 +20,7 @@ import java.util.Collection;
 import org.eclipse.californium.oscore.OSCoreCtx;
 import org.eclipse.californium.oscore.OSCoreCtxDB;
 import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.core.oscore.OscoreIdentity;
+import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationListener;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
@@ -58,8 +58,8 @@ public class OscoreContextCleaner implements RegistrationListener, SecurityStore
     @Override
     public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
             Registration newReg) {
-        if (registration.getIdentity().isOSCORE()) {
-            removeContext(((OscoreIdentity) registration.getIdentity().getIdentity()).getRecipientId());
+        if (registration.getClientTransportData().getIdentity() instanceof OscoreIdentity) {
+            removeContext(((OscoreIdentity) registration.getClientTransportData().getIdentity()).getRecipientId());
         }
     }
 

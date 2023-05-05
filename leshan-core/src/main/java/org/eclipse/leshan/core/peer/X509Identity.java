@@ -34,6 +34,11 @@ public class X509Identity implements LwM2mIdentity {
     }
 
     @Override
+    public boolean isSecure() {
+        return true;
+    }
+
+    @Override
     public String toString() {
         return String.format("Identity [x509=%s]", x509CommonName);
     }

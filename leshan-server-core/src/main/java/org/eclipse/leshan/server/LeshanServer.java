@@ -212,8 +212,8 @@ public class LeshanServer {
 
             @Override
             public void updated(RegistrationUpdate update, Registration updatedRegistration, Registration previousReg) {
-                if (!update.getAddress().equals(previousReg.getAddress())
-                        || update.getPort() != previousReg.getPort()) {
+                if ((previousReg.getAddress() != null && !previousReg.getAddress().equals(update.getAddress())) || //
+                (previousReg.getPort() != null && !previousReg.getPort().equals(update.getPort()))) {
                     requestSender.cancelOngoingRequests(previousReg);
                 }
             }

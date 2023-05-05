@@ -21,7 +21,7 @@ import java.net.URI;
 import java.util.Date;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
-import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
@@ -53,7 +53,7 @@ public class RegistrationHandler {
         this.registrationIdProvider = registrationIdProvider;
     }
 
-    public SendableResponse<RegisterResponse> register(IpPeer sender, RegisterRequest registerRequest,
+    public SendableResponse<RegisterResponse> register(LwM2mPeer sender, RegisterRequest registerRequest,
             URI endpointUsed) {
 
         // Create Registration from RegisterRequest
@@ -107,7 +107,7 @@ public class RegistrationHandler {
         return new SendableResponse<>(RegisterResponse.success(approvedRegistration.getId()), whenSent);
     }
 
-    public SendableResponse<UpdateResponse> update(IpPeer sender, UpdateRequest updateRequest) {
+    public SendableResponse<UpdateResponse> update(LwM2mPeer sender, UpdateRequest updateRequest) {
 
         // We check if there is a registration to update
         Registration currentRegistration = registrationService.getById(updateRequest.getRegistrationId());
@@ -149,7 +149,7 @@ public class RegistrationHandler {
         }
     }
 
-    public SendableResponse<DeregisterResponse> deregister(IpPeer sender, DeregisterRequest deregisterRequest) {
+    public SendableResponse<DeregisterResponse> deregister(LwM2mPeer sender, DeregisterRequest deregisterRequest) {
 
         // We check if there is a registration to remove
         Registration currentRegistration = registrationService.getById(deregisterRequest.getRegistrationId());
