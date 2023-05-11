@@ -45,7 +45,7 @@ public class BootstrapConfigStoreTaskProvider implements BootstrapTaskProvider {
     @Override
     public Tasks getTasks(BootstrapSession session, List<LwM2mResponse> previousResponse) {
 
-        BootstrapConfig config = store.get(session.getEndpoint(), session.getClientTransportData(), session);
+        BootstrapConfig config = store.get(session);
         if (config == null)
             return null;
 
