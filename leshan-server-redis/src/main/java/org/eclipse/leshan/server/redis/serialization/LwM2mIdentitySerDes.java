@@ -47,8 +47,8 @@ public class LwM2mIdentitySerDes {
         // TODO should we add a type field here ?
 
         if (identity.getClass() == SocketIdentity.class) {
-            o.put(KEY_ADDRESS, ((SocketIdentity) identity).getSocketsAddress().getHostString());
-            o.put(KEY_PORT, ((SocketIdentity) identity).getSocketsAddress().getPort());
+            o.put(KEY_ADDRESS, ((SocketIdentity) identity).getSocketAddress().getHostString());
+            o.put(KEY_PORT, ((SocketIdentity) identity).getSocketAddress().getPort());
         } else if (identity.getClass() == PskIdentity.class) {
             o.put(KEY_ID, ((PskIdentity) identity).getPskIdentity());
         } else if (identity.getClass() == RpkIdentity.class) {

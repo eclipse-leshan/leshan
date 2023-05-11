@@ -29,7 +29,7 @@ public class SocketIdentity implements LwM2mIdentity {
         this.peerAddress = peerAddress;
     }
 
-    public InetSocketAddress getSocketsAddress() {
+    public InetSocketAddress getSocketAddress() {
         return peerAddress;
     }
 
