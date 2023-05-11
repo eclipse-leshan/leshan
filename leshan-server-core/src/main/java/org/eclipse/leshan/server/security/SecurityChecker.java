@@ -48,12 +48,14 @@ public class SecurityChecker {
      * @see SecurityInfo
      */
     public boolean checkSecurityInfos(String endpoint, LwM2mPeer client, Iterator<SecurityInfo> securityInfos) {
-        // if this is a secure end-point, we must check that the registering client is using the right identity.
         LwM2mIdentity clientIdentity = client.getIdentity();
         if (clientIdentity.isSecure()) {
+            // if client has secure identity, we must check that the registering client is using the expected one.
             if (securityInfos == null || !securityInfos.hasNext()) {
-                LOG.debug("Client '{}' without security info try to connect through the secure endpoint", endpoint);
+
+                LOG.debug("Client '{}' without security info try to connect using secured way", endpoint);
                 return false;
+
             } else {
                 // check of one expected security info matches client identity
                 do {
@@ -64,21 +66,8 @@ public class SecurityChecker {
                 } while (securityInfos.hasNext());
                 return false;
             }
-        } else if (clientIdentity instanceof OscoreIdentity) {
-            if (securityInfos == null || !securityInfos.hasNext()) {
-                LOG.debug("Client '{}' without security info trying to connect using OSCORE", endpoint);
-                return false;
-            } else {
-                // check if one expected security info matches OSCORE client identity
-                do {
-                    SecurityInfo securityInfo = securityInfos.next();
-                    if (checkSecurityInfo(endpoint, client, securityInfo)) {
-                        return true;
-                    }
-                } while (securityInfos.hasNext());
-            }
         } else if (securityInfos != null && securityInfos.hasNext()) {
-            LOG.debug("Client '{}' must connect using DTLS or/and OSCORE", endpoint);
+            LOG.debug("Client '{}' must use a secured way to connect", endpoint);
             return false;
         }
         return true;
@@ -95,12 +84,12 @@ public class SecurityChecker {
      * @see SecurityInfo
      */
     public boolean checkSecurityInfo(String endpoint, LwM2mPeer client, SecurityInfo securityInfo) {
-        // if this is a secure end-point, we must check that the registering client is using the right identity.
         LwM2mIdentity clientIdentity = client.getIdentity();
         if (clientIdentity.isSecure()) {
+            // if client has secure identity, we must check that the registering client is using the expected one.
             if (securityInfo == null) {
 
-                LOG.debug("Client '{}' without security info try to connect through the secure endpoint", endpoint);
+                LOG.debug("Client '{}' without security info try to connect using secured way", endpoint);
                 return false;
 
             } else if (clientIdentity instanceof PskIdentity) {
@@ -115,20 +104,17 @@ public class SecurityChecker {
 
                 return checkX509Identity(endpoint, (X509Identity) clientIdentity, securityInfo);
 
+            } else if (clientIdentity instanceof OscoreIdentity) {
+
+                return checkOscoreIdentity(endpoint, (OscoreIdentity) clientIdentity, securityInfo);
+
             } else {
                 LOG.debug("Unable to authenticate client '{}': unknown authentication mode", endpoint);
                 return false;
             }
-        } else if (clientIdentity instanceof OscoreIdentity) {
-            if (securityInfo == null) {
-                LOG.debug("Client '{}' without security info trying to connect using OSCORE", endpoint);
-                return false;
-            } else {
-                return checkOscoreIdentity(endpoint, (OscoreIdentity) clientIdentity, securityInfo);
-            }
         } else {
             if (securityInfo != null) {
-                LOG.debug("Client '{}' must connect using DTLS or/and OSCORE", endpoint);
+                LOG.debug("Client '{}' must use a secured way to connect", endpoint);
                 return false;
             }
         }
