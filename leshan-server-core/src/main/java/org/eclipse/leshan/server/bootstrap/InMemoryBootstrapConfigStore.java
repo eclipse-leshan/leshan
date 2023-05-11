@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.leshan.core.SecurityMode;
-import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 
 /**
@@ -36,8 +35,8 @@ public class InMemoryBootstrapConfigStore implements EditableBootstrapConfigStor
     protected final ConcurrentHashMap<PskByServer, BootstrapConfig> bootstrapByPskId = new ConcurrentHashMap<>();
 
     @Override
-    public BootstrapConfig get(String endpoint, LwM2mPeer client, BootstrapSession session) {
-        return bootstrapByEndpoint.get(endpoint);
+    public BootstrapConfig get(BootstrapSession session) {
+        return bootstrapByEndpoint.get(session.getEndpoint());
     }
 
     @Override

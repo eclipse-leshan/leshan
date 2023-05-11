@@ -39,7 +39,6 @@ import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.oscore.OscoreIdentity;
-import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
@@ -97,7 +96,7 @@ public class LeshanBootstrapServerBuilderTest {
         builder.setConfigStore(new BootstrapConfigStore() {
 
             @Override
-            public BootstrapConfig get(String endpoint, LwM2mPeer deviceIdentity, BootstrapSession session) {
+            public BootstrapConfig get(BootstrapSession session) {
                 return null;
             }
         });
