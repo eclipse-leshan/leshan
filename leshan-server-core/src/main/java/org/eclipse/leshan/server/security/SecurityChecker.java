@@ -17,11 +17,12 @@
 package org.eclipse.leshan.server.security;
 
 import java.security.PublicKey;
+import java.util.Arrays;
 import java.util.Iterator;
 
-import org.eclipse.leshan.core.oscore.OscoreIdentity;
 import org.eclipse.leshan.core.peer.LwM2mIdentity;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
+import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.core.peer.PskIdentity;
 import org.eclipse.leshan.core.peer.RpkIdentity;
 import org.eclipse.leshan.core.peer.X509Identity;
@@ -63,7 +64,7 @@ public class SecurityChecker {
                 } while (securityInfos.hasNext());
                 return false;
             }
-        } else if (clientIdentity instanceof org.eclipse.leshan.core.peer.OscoreIdentity) {
+        } else if (clientIdentity instanceof OscoreIdentity) {
             if (securityInfos == null || !securityInfos.hasNext()) {
                 LOG.debug("Client '{}' without security info trying to connect using OSCORE", endpoint);
                 return false;
@@ -118,13 +119,12 @@ public class SecurityChecker {
                 LOG.debug("Unable to authenticate client '{}': unknown authentication mode", endpoint);
                 return false;
             }
-        } else if (clientIdentity instanceof org.eclipse.leshan.core.peer.OscoreIdentity) {
+        } else if (clientIdentity instanceof OscoreIdentity) {
             if (securityInfo == null) {
                 LOG.debug("Client '{}' without security info trying to connect using OSCORE", endpoint);
                 return false;
             } else {
-                return checkOscoreIdentity(endpoint, (org.eclipse.leshan.core.peer.OscoreIdentity) clientIdentity,
-                        securityInfo);
+                return checkOscoreIdentity(endpoint, (OscoreIdentity) clientIdentity, securityInfo);
             }
         } else {
             if (securityInfo != null) {
@@ -213,8 +213,7 @@ public class SecurityChecker {
         return true;
     }
 
-    protected boolean checkOscoreIdentity(String endpoint, org.eclipse.leshan.core.peer.OscoreIdentity clientIdentity,
-            SecurityInfo securityInfo) {
+    protected boolean checkOscoreIdentity(String endpoint, OscoreIdentity clientIdentity, SecurityInfo securityInfo) {
         // Manage OSCORE authentication
         // ----------------------------------------------------
         if (!securityInfo.useOSCORE()) {
@@ -222,8 +221,8 @@ public class SecurityChecker {
             return false;
         }
 
-        if (!matchOscoreIdentity(endpoint, new OscoreIdentity(clientIdentity.getRecipientId()),
-                securityInfo.getOscoreSetting().getOscoreIdentity())) {
+        if (!matchOscoreIdentity(endpoint, clientIdentity.getRecipientId(),
+                securityInfo.getOscoreSetting().getRecipientId())) {
             return false;
         }
 
@@ -231,11 +230,10 @@ public class SecurityChecker {
         return true;
     }
 
-    protected boolean matchOscoreIdentity(String endpoint, OscoreIdentity receivedOscoreIdentity,
-            OscoreIdentity expectedOscoreIdentity) {
-        if (!receivedOscoreIdentity.equals(expectedOscoreIdentity)) {
-            LOG.debug("Invalid identity for client '{}': expected '{}' but was '{}'", endpoint, expectedOscoreIdentity,
-                    receivedOscoreIdentity);
+    protected boolean matchOscoreIdentity(String endpoint, byte[] receivedRecipientId, byte[] expectedRecipientId) {
+        if (!Arrays.equals(receivedRecipientId, expectedRecipientId)) {
+            LOG.debug("Invalid OSCORE identity for client '{}': expected '{}' but was '{}'", endpoint,
+                    Hex.encodeHexString(expectedRecipientId), Hex.encodeHexString(receivedRecipientId));
             return false;
         }
         return true;

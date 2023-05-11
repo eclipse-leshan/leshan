@@ -23,8 +23,8 @@ import org.eclipse.californium.cose.AlgorithmID;
 import org.eclipse.californium.cose.CoseException;
 import org.eclipse.leshan.core.californium.oscore.cf.OscoreParameters;
 import org.eclipse.leshan.core.californium.oscore.cf.OscoreStore;
-import org.eclipse.leshan.core.oscore.OscoreIdentity;
 import org.eclipse.leshan.core.peer.LwM2mIdentity;
+import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
@@ -86,8 +86,8 @@ public class LwM2mBootstrapOscoreStore implements OscoreStore {
                     foreignPeerUri.getPort());
             BootstrapSession session = sessionHolder.getSessionByAddr(foreignPeerAddress);
             LwM2mIdentity identity = session.getClientTransportData().getIdentity();
-            if (identity instanceof org.eclipse.leshan.core.peer.OscoreIdentity) {
-                return ((org.eclipse.leshan.core.peer.OscoreIdentity) identity).getRecipientId();
+            if (identity instanceof OscoreIdentity) {
+                return ((OscoreIdentity) identity).getRecipientId();
             }
         } catch (URISyntaxException | SecurityException | IllegalArgumentException e) {
             LOG.error("Unable to extract InetScocketAddress from uri %s", uri, e);

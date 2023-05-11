@@ -26,7 +26,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.eclipse.leshan.core.oscore.OscoreIdentity;
+import org.eclipse.leshan.core.peer.OscoreIdentity;
 
 /**
  * A {@link SecurityStore} which store {@link SecurityInfo} in memory.
@@ -116,9 +116,7 @@ public class InMemorySecurityStore implements EditableSecurityStore {
             }
 
             // For OSCORE, check if Oscore identity is not already used.
-            OscoreIdentity oscoreIdentity = info.getOscoreSetting() != null
-                    ? info.getOscoreSetting().getOscoreIdentity()
-                    : null;
+            OscoreIdentity oscoreIdentity = getOscoreIdentity(info);
             if (oscoreIdentity != null) {
                 SecurityInfo infoByOscoreIdentity = securityByOscoreIdentity.get(oscoreIdentity);
                 if (infoByOscoreIdentity != null && !info.getEndpoint().equals(infoByOscoreIdentity.getEndpoint())) {
@@ -137,8 +135,7 @@ public class InMemorySecurityStore implements EditableSecurityStore {
             }
 
             // For OSCORE, remove index by OSCORE Identity if needed
-            OscoreIdentity previousOscoreIdentity = previous == null || previous.getOscoreSetting() == null ? null
-                    : previous.getOscoreSetting().getOscoreIdentity();
+            OscoreIdentity previousOscoreIdentity = getOscoreIdentity(previous);
             if (previousOscoreIdentity != null && !previousOscoreIdentity.equals(oscoreIdentity)) {
                 securityByOscoreIdentity.remove(previousOscoreIdentity);
             }
@@ -160,8 +157,9 @@ public class InMemorySecurityStore implements EditableSecurityStore {
                     securityByPskIdentity.remove(info.getPskIdentity());
                 }
                 // For OSCORE, remove index by OSCORE Identity if needed
-                if (info.getOscoreSetting() != null) {
-                    securityByOscoreIdentity.remove(info.getOscoreSetting().getOscoreIdentity());
+                OscoreIdentity oscoreIdentity = getOscoreIdentity(info);
+                if (oscoreIdentity != null) {
+                    securityByOscoreIdentity.remove(oscoreIdentity);
                 }
                 securityByEp.remove(endpoint);
                 for (SecurityStoreListener listener : listeners) {
@@ -172,6 +170,11 @@ public class InMemorySecurityStore implements EditableSecurityStore {
         } finally {
             writeLock.unlock();
         }
+    }
+
+    protected OscoreIdentity getOscoreIdentity(SecurityInfo info) {
+        return info == null || info.getOscoreSetting() == null ? null
+                : new OscoreIdentity(info.getOscoreSetting().getRecipientId());
     }
 
     @Override
