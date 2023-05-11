@@ -23,6 +23,7 @@ import java.util.Arrays;
 import org.eclipse.leshan.core.oscore.InvalidOscoreSettingException;
 import org.eclipse.leshan.core.oscore.OscoreSetting;
 import org.eclipse.leshan.core.oscore.OscoreValidator;
+import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.core.util.Validate;
 
 /**
@@ -251,7 +252,8 @@ public class SecurityInfo implements Serializable {
         // Note : preSharedKey is explicitly excluded from display for security purposes
         return String.format(
                 "SecurityInfo [endpoint=%s, identity=%s, rawPublicKey=%s, useX509Cert=%s, oscoreIdentity=%s]", endpoint,
-                pskIdentity, rawPublicKey, useX509Cert, useOSCORE() ? getOscoreSetting().getOscoreIdentity() : "");
+                pskIdentity, rawPublicKey, useX509Cert,
+                useOSCORE() ? new OscoreIdentity(getOscoreSetting().getRecipientId()) : "");
     }
 
 }

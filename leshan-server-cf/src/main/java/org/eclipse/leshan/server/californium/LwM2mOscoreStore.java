@@ -54,8 +54,7 @@ public class LwM2mOscoreStore implements OscoreStore {
 
     @Override
     public OscoreParameters getOscoreParameters(byte[] recipientID) {
-        org.eclipse.leshan.core.oscore.OscoreIdentity oscoreIdentity = new org.eclipse.leshan.core.oscore.OscoreIdentity(
-                recipientID);
+        OscoreIdentity oscoreIdentity = new OscoreIdentity(recipientID);
         SecurityInfo securityInfo = securityStore.getByOscoreIdentity(oscoreIdentity);
         if (securityInfo == null || !securityInfo.useOSCORE())
             return null;
