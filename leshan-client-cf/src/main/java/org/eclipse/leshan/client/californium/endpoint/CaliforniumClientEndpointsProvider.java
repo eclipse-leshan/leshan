@@ -42,7 +42,6 @@ import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.servers.ServerIdentity;
-import org.eclipse.leshan.client.servers.ServerIdentity.Role;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
@@ -235,8 +234,7 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
         }
 
         if (serverInfo.bootstrap) {
-            return new ServerIdentity(serverIdentity, serverInfo.serverId, Role.LWM2M_BOOTSTRAP_SERVER,
-                    serverInfo.serverUri);
+            return new ServerIdentity(serverIdentity, serverInfo.serverUri);
         } else {
             return new ServerIdentity(serverIdentity, serverInfo.serverId, serverInfo.serverUri);
         }

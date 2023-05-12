@@ -15,10 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.servers;
 
-import java.net.InetSocketAddress;
 import java.net.URI;
 
-import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 
 /**
@@ -29,8 +27,7 @@ public class ServerIdentity {
     /**
      * Identity for system calls.
      */
-    public final static ServerIdentity SYSTEM = new ServerIdentity(
-            new IpPeer(InetSocketAddress.createUnresolved(Role.SYSTEM.toString(), 1)), null, Role.SYSTEM, null);
+    public final static ServerIdentity SYSTEM = new ServerIdentity(null, null, Role.SYSTEM, null);
 
     public enum Role {
         /**
@@ -55,6 +52,10 @@ public class ServerIdentity {
 
     public ServerIdentity(LwM2mPeer peer, Long id, URI uri) {
         this(peer, id, Role.LWM2M_SERVER, uri);
+    }
+
+    public ServerIdentity(LwM2mPeer peer, URI uri) {
+        this(peer, null, Role.LWM2M_BOOTSTRAP_SERVER, uri);
     }
 
     public ServerIdentity(LwM2mPeer peer, Long id, Role role, URI uri) {
