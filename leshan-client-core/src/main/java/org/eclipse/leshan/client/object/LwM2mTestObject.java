@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Random;
 
 import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.link.attributes.QuotedStringAttribute;
@@ -176,7 +176,7 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
         fireResourcesChange(applyValues(newParams));
     }
 
-    private ExecuteResponse sendData(ServerIdentity server, Arguments arguments) {
+    private ExecuteResponse sendData(LwM2mServer server, Arguments arguments) {
         // get path of resources to send
         List<String> paths = new ArrayList<>();
         LwM2mResource lwM2mResource = resources.get(6);
@@ -245,7 +245,7 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
     }
 
     @Override
-    public ExecuteResponse execute(ServerIdentity identity, int resourceid, Arguments arguments) {
+    public ExecuteResponse execute(LwM2mServer identity, int resourceid, Arguments arguments) {
         switch (resourceid) {
         case 0:
             resetValues();

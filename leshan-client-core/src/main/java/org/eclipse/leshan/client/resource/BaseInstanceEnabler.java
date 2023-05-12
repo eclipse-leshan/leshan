@@ -25,7 +25,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.resource.listener.ResourceListener;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
@@ -145,7 +145,7 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
-    public ReadResponse read(ServerIdentity identity) {
+    public ReadResponse read(LwM2mServer identity) {
         List<LwM2mResource> resources = new ArrayList<>();
         for (ResourceModel resourceModel : model.resources.values()) {
             // check, if internal request (SYSTEM) or readable
@@ -159,12 +159,12 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
-    public ReadResponse read(ServerIdentity identity, int resourceid) {
+    public ReadResponse read(LwM2mServer identity, int resourceid) {
         return ReadResponse.notFound();
     }
 
     @Override
-    public ReadResponse read(ServerIdentity identity, int resourceId, int resourceInstance) {
+    public ReadResponse read(LwM2mServer identity, int resourceId, int resourceInstance) {
         ReadResponse response = read(identity, resourceId);
         if (response.isFailure())
             return response;
@@ -178,7 +178,7 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
-    public WriteResponse write(ServerIdentity identity, boolean replace, LwM2mObjectInstance value) {
+    public WriteResponse write(LwM2mServer identity, boolean replace, LwM2mObjectInstance value) {
         Map<Integer, LwM2mResource> resourcesToWrite = new HashMap<>(value.getResources());
 
         if (replace) {
@@ -219,17 +219,17 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
-    public WriteResponse write(ServerIdentity identity, boolean replace, int resourceid, LwM2mResource value) {
+    public WriteResponse write(LwM2mServer identity, boolean replace, int resourceid, LwM2mResource value) {
         return WriteResponse.notFound();
     }
 
     @Override
-    public WriteResponse write(ServerIdentity identity, boolean addIfAbsent, int resourceid, int resourceInstanceId,
+    public WriteResponse write(LwM2mServer identity, boolean addIfAbsent, int resourceid, int resourceInstanceId,
             LwM2mResourceInstance value) {
 
         // this is a sub-optimal default implementation
         if (!addIfAbsent) {
-            ReadResponse response = read(ServerIdentity.SYSTEM, resourceid, resourceInstanceId);
+            ReadResponse response = read(LwM2mServer.SYSTEM, resourceid, resourceInstanceId);
             if (!response.isSuccess()) {
                 return WriteResponse.notFound();
             }
@@ -238,12 +238,12 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
-    public ExecuteResponse execute(ServerIdentity identity, int resourceid, Arguments arguments) {
+    public ExecuteResponse execute(LwM2mServer identity, int resourceid, Arguments arguments) {
         return ExecuteResponse.notFound();
     }
 
     @Override
-    public ObserveResponse observe(ServerIdentity identity) {
+    public ObserveResponse observe(LwM2mServer identity) {
         // Perform a read by default
         ReadResponse readResponse = this.read(identity);
         return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null,
@@ -251,7 +251,7 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
-    public ObserveResponse observe(ServerIdentity identity, int resourceid) {
+    public ObserveResponse observe(LwM2mServer identity, int resourceid) {
         // Perform a read by default
         ReadResponse readResponse = this.read(identity, resourceid);
         return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null,
@@ -259,7 +259,7 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
-    public ObserveResponse observe(ServerIdentity identity, int resourceid, int resourceInstanceId) {
+    public ObserveResponse observe(LwM2mServer identity, int resourceid, int resourceInstanceId) {
         // Perform a read by default
         ReadResponse readResponse = this.read(identity, resourceid, resourceInstanceId);
         return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null,
@@ -267,7 +267,7 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
-    public void onDelete(ServerIdentity identity) {
+    public void onDelete(LwM2mServer identity) {
         // No default behavior
     }
 

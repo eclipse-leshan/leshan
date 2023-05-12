@@ -36,7 +36,7 @@ import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
@@ -96,7 +96,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
     @Override
     public void handleGET(CoapExchange exchange) {
         Request coapRequest = exchange.advanced().getRequest();
-        ServerIdentity identity = getServerOrRejectRequest(exchange, coapRequest);
+        LwM2mServer identity = getServerOrRejectRequest(exchange, coapRequest);
         if (identity == null)
             return;
 
@@ -211,7 +211,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
     @Override
     public void handlePUT(CoapExchange coapExchange) {
         Request coapRequest = coapExchange.advanced().getRequest();
-        ServerIdentity identity = getServerOrRejectRequest(coapExchange, coapRequest);
+        LwM2mServer identity = getServerOrRejectRequest(coapExchange, coapRequest);
         if (identity == null)
             return;
 
@@ -291,7 +291,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
     @Override
     public void handlePOST(CoapExchange exchange) {
         Request coapRequest = exchange.advanced().getRequest();
-        ServerIdentity identity = getServerOrRejectRequest(exchange, coapRequest);
+        LwM2mServer identity = getServerOrRejectRequest(exchange, coapRequest);
         if (identity == null)
             return;
 
@@ -412,7 +412,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
         // Manage Delete Request
         String URI = coapExchange.getRequestOptions().getUriPathString();
         Request coapRequest = coapExchange.advanced().getRequest();
-        ServerIdentity identity = getServerOrRejectRequest(coapExchange, coapRequest);
+        LwM2mServer identity = getServerOrRejectRequest(coapExchange, coapRequest);
         if (identity == null)
             return;
 

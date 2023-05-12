@@ -30,7 +30,7 @@ import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.leshan.client.californium.CaliforniumConnectionController;
 import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpointFactory;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.californium.DefaultExceptionTranslator;
 import org.eclipse.leshan.core.californium.ExceptionTranslator;
@@ -111,7 +111,7 @@ public class CoapClientEndpointFactory implements CaliforniumClientEndpointFacto
     public CaliforniumConnectionController createConnectionController() {
         return new CaliforniumConnectionController() {
             @Override
-            public void forceReconnection(Endpoint endpoint, ServerIdentity identity, boolean resume) {
+            public void forceReconnection(Endpoint endpoint, LwM2mServer identity, boolean resume) {
                 // no connection in coap, so nothing to do;
             }
         };

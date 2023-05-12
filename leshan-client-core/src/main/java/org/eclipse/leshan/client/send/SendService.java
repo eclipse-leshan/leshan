@@ -17,7 +17,7 @@ package org.eclipse.leshan.client.send;
 
 import java.util.List;
 
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
@@ -60,7 +60,7 @@ public interface SendService {
      * @throws InvalidResponseException if the response received is malformed.
      * @throws UnconnectedPeerException if client is not connected (no dtls connection available).
      */
-    SendResponse sendData(ServerIdentity server, ContentFormat format, List<String> paths, long timeoutInMs)
+    SendResponse sendData(LwM2mServer server, ContentFormat format, List<String> paths, long timeoutInMs)
             throws InterruptedException;
 
     /**
@@ -98,7 +98,7 @@ public interface SendService {
      * @throws NoDataException if we can not collect data for given list of path.
      * @throws InvalidRequestException if send request can not be created.
      */
-    void sendData(ServerIdentity server, ContentFormat format, List<String> paths, long timeoutInMs,
+    void sendData(LwM2mServer server, ContentFormat format, List<String> paths, long timeoutInMs,
             ResponseCallback<SendResponse> responseCallback, ErrorCallback errorCallback);
 
     /**

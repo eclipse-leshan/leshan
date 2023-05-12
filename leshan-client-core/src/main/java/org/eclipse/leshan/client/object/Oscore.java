@@ -28,7 +28,7 @@ import java.util.List;
 
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mResource;
@@ -87,7 +87,7 @@ public class Oscore extends BaseInstanceEnabler {
     }
 
     @Override
-    public WriteResponse write(ServerIdentity identity, boolean replace, int resourceId, LwM2mResource value) {
+    public WriteResponse write(LwM2mServer identity, boolean replace, int resourceId, LwM2mResource value) {
         if (!identity.isSystem())
             LOG.debug("Write on resource {}: {}", resourceId, value);
 
@@ -151,7 +151,7 @@ public class Oscore extends BaseInstanceEnabler {
     }
 
     @Override
-    public ReadResponse read(ServerIdentity identity, int resourceid) {
+    public ReadResponse read(LwM2mServer identity, int resourceid) {
         if (!identity.isSystem())
             LOG.debug("Read on resource {}", resourceid);
 

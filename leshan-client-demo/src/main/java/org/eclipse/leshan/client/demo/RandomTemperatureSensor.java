@@ -24,7 +24,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.request.argument.Arguments;
@@ -64,7 +64,7 @@ public class RandomTemperatureSensor extends BaseInstanceEnabler implements Dest
     }
 
     @Override
-    public synchronized ReadResponse read(ServerIdentity identity, int resourceId) {
+    public synchronized ReadResponse read(LwM2mServer identity, int resourceId) {
         LOG.info("Read on Temperature resource /{}/{}/{}", getModel().id, getId(), resourceId);
         switch (resourceId) {
         case MIN_MEASURED_VALUE:
@@ -81,7 +81,7 @@ public class RandomTemperatureSensor extends BaseInstanceEnabler implements Dest
     }
 
     @Override
-    public synchronized ExecuteResponse execute(ServerIdentity identity, int resourceId, Arguments arguments) {
+    public synchronized ExecuteResponse execute(LwM2mServer identity, int resourceId, Arguments arguments) {
         LOG.info("Execute on Temperature resource /{}/{}/{}", getModel().id, getId(), resourceId);
         switch (resourceId) {
         case RESET_MIN_MAX_MEASURED_VALUES:

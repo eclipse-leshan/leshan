@@ -20,7 +20,7 @@ import java.util.List;
 
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
@@ -77,29 +77,29 @@ public interface LwM2mObjectEnabler {
 
     List<Integer> getAvailableResourceIds(int instanceId);
 
-    CreateResponse create(ServerIdentity identity, CreateRequest request);
+    CreateResponse create(LwM2mServer identity, CreateRequest request);
 
-    ReadResponse read(ServerIdentity identity, ReadRequest request);
+    ReadResponse read(LwM2mServer identity, ReadRequest request);
 
-    BootstrapReadResponse read(ServerIdentity identity, BootstrapReadRequest request);
+    BootstrapReadResponse read(LwM2mServer identity, BootstrapReadRequest request);
 
-    WriteResponse write(ServerIdentity identity, WriteRequest request);
+    WriteResponse write(LwM2mServer identity, WriteRequest request);
 
-    BootstrapWriteResponse write(ServerIdentity identity, BootstrapWriteRequest request);
+    BootstrapWriteResponse write(LwM2mServer identity, BootstrapWriteRequest request);
 
-    DeleteResponse delete(ServerIdentity identity, DeleteRequest request);
+    DeleteResponse delete(LwM2mServer identity, DeleteRequest request);
 
-    BootstrapDeleteResponse delete(ServerIdentity identity, BootstrapDeleteRequest request);
+    BootstrapDeleteResponse delete(LwM2mServer identity, BootstrapDeleteRequest request);
 
-    ExecuteResponse execute(ServerIdentity identity, ExecuteRequest request);
+    ExecuteResponse execute(LwM2mServer identity, ExecuteRequest request);
 
-    WriteAttributesResponse writeAttributes(ServerIdentity identity, WriteAttributesRequest request);
+    WriteAttributesResponse writeAttributes(LwM2mServer identity, WriteAttributesRequest request);
 
-    DiscoverResponse discover(ServerIdentity identity, DiscoverRequest request);
+    DiscoverResponse discover(LwM2mServer identity, DiscoverRequest request);
 
-    BootstrapDiscoverResponse discover(ServerIdentity identity, BootstrapDiscoverRequest request);
+    BootstrapDiscoverResponse discover(LwM2mServer identity, BootstrapDiscoverRequest request);
 
-    ObserveResponse observe(ServerIdentity identity, ObserveRequest request);
+    ObserveResponse observe(LwM2mServer identity, ObserveRequest request);
 
     void addListener(ObjectListener listener);
 

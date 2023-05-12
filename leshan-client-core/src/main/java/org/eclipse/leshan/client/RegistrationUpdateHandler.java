@@ -22,7 +22,7 @@ import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.resource.listener.ObjectsListener;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.LwM2mId;
@@ -91,7 +91,7 @@ public class RegistrationUpdateHandler {
                                         Long serverId = ServersInfoExtractor.getServerId(enabler,
                                                 path.getObjectInstanceId());
                                         if (lifetime != null && serverId != null) {
-                                            ServerIdentity server = engine.getRegisteredServer(serverId);
+                                            LwM2mServer server = engine.getRegisteredServer(serverId);
                                             if (server != null) {
                                                 engine.triggerRegistrationUpdate(server,
                                                         new RegistrationUpdate(lifetime, null, null, null, null));

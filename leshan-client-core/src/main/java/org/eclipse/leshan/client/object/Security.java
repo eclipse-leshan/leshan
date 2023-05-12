@@ -32,7 +32,7 @@ import java.util.List;
 
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -196,7 +196,7 @@ public class Security extends BaseInstanceEnabler {
     }
 
     @Override
-    public WriteResponse write(ServerIdentity identity, boolean replace, int resourceId, LwM2mResource value) {
+    public WriteResponse write(LwM2mServer identity, boolean replace, int resourceId, LwM2mResource value) {
         if (!identity.isSystem())
             LOG.debug("Write on Security resource /{}/{}/{}", getModel().id, getId(), resourceId);
 
@@ -267,7 +267,7 @@ public class Security extends BaseInstanceEnabler {
     }
 
     @Override
-    public ReadResponse read(ServerIdentity identity, int resourceid) {
+    public ReadResponse read(LwM2mServer identity, int resourceid) {
         // only accessible for internal read?
 
         switch (resourceid) {
@@ -306,7 +306,7 @@ public class Security extends BaseInstanceEnabler {
     }
 
     @Override
-    public ExecuteResponse execute(ServerIdentity identity, int resourceid, Arguments arguments) {
+    public ExecuteResponse execute(LwM2mServer identity, int resourceid, Arguments arguments) {
         return super.execute(identity, resourceid, arguments);
     }
 

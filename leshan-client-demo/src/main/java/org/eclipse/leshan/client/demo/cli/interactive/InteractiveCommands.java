@@ -34,7 +34,7 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.send.ManualDataSender;
 import org.eclipse.leshan.client.send.NoDataException;
 import org.eclipse.leshan.client.send.SendService;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.demo.cli.converters.ContentFormatConverter;
@@ -284,11 +284,11 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
 
         @Override
         public void run() {
-            Map<String, ServerIdentity> registeredServers = sendCommand.parent.client.getRegisteredServers();
+            Map<String, LwM2mServer> registeredServers = sendCommand.parent.client.getRegisteredServers();
             if (registeredServers.isEmpty()) {
                 sendCommand.parent.printf("There is no registered server to send to.%n").flush();
             }
-            for (final ServerIdentity server : registeredServers.values()) {
+            for (final LwM2mServer server : registeredServers.values()) {
                 LOG.info("Sending Data to {} using {}.", server, sendCommand.contentFormat);
                 ResponseCallback<SendResponse> responseCallback = (response) -> {
                     if (response.isSuccess())
@@ -315,12 +315,12 @@ public class InteractiveCommands extends JLineInteractiveCommands implements Run
         @Override
         public void run() {
             // get registered servers
-            Map<String, ServerIdentity> registeredServers = sendCommand.parent.client.getRegisteredServers();
+            Map<String, LwM2mServer> registeredServers = sendCommand.parent.client.getRegisteredServers();
             if (registeredServers.isEmpty()) {
                 sendCommand.parent.printf("There is no registered server to send to.%n").flush();
             }
             // for each server send data
-            for (final ServerIdentity server : registeredServers.values()) {
+            for (final LwM2mServer server : registeredServers.values()) {
                 LOG.info("Sending Collected data to {} using {}.", server, sendCommand.contentFormat);
                 // send collected data
                 SendService sendService = sendCommand.parent.client.getSendService();

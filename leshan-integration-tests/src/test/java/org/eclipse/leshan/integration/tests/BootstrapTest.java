@@ -37,7 +37,7 @@ import java.util.stream.Stream;
 
 import org.eclipse.leshan.client.bootstrap.InvalidStateException;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.endpoint.Protocol;
@@ -575,24 +575,24 @@ public class BootstrapTest {
         assertThat(client).isRegisteredAt(server);
 
         // ensure instances are deleted
-        ReadResponse response = client.getObjectTree().getObjectEnabler(LwM2mId.ACCESS_CONTROL)
-                .read(ServerIdentity.SYSTEM, new ReadRequest(LwM2mId.ACCESS_CONTROL));
+        ReadResponse response = client.getObjectTree().getObjectEnabler(LwM2mId.ACCESS_CONTROL).read(LwM2mServer.SYSTEM,
+                new ReadRequest(LwM2mId.ACCESS_CONTROL));
         assertThat(((LwM2mObject) response.getContent()).getInstances()).as("ACL instances").isEmpty();
 
-        response = client.getObjectTree().getObjectEnabler(TestLwM2mId.TEST_OBJECT).read(ServerIdentity.SYSTEM,
+        response = client.getObjectTree().getObjectEnabler(TestLwM2mId.TEST_OBJECT).read(LwM2mServer.SYSTEM,
                 new ReadRequest(TestLwM2mId.TEST_OBJECT));
         assertThat(((LwM2mObject) response.getContent()).getInstances()).as("Test Object instances").isEmpty();
 
         // ensure other instances are not deleted.
-        response = client.getObjectTree().getObjectEnabler(LwM2mId.DEVICE).read(ServerIdentity.SYSTEM,
+        response = client.getObjectTree().getObjectEnabler(LwM2mId.DEVICE).read(LwM2mServer.SYSTEM,
                 new ReadRequest(LwM2mId.DEVICE));
         assertThat(((LwM2mObject) response.getContent()).getInstances()).as("DEVICE instances").isNotEmpty();
 
-        response = client.getObjectTree().getObjectEnabler(LwM2mId.SECURITY).read(ServerIdentity.SYSTEM,
+        response = client.getObjectTree().getObjectEnabler(LwM2mId.SECURITY).read(LwM2mServer.SYSTEM,
                 new ReadRequest(LwM2mId.SECURITY));
         assertThat(((LwM2mObject) response.getContent()).getInstances()).as("SECURITY instances").isNotEmpty();
 
-        response = client.getObjectTree().getObjectEnabler(LwM2mId.LOCATION).read(ServerIdentity.SYSTEM,
+        response = client.getObjectTree().getObjectEnabler(LwM2mId.LOCATION).read(LwM2mServer.SYSTEM,
                 new ReadRequest(LwM2mId.LOCATION));
         assertThat(((LwM2mObject) response.getContent()).getInstances()).as("LOCATION instances").isNotEmpty();
     }
@@ -629,7 +629,7 @@ public class BootstrapTest {
 
         // ensure instances are deleted except device instance and bootstrap server
         for (LwM2mObjectEnabler enabler : client.getObjectTree().getObjectEnablers().values()) {
-            ReadResponse response = enabler.read(ServerIdentity.SYSTEM, new ReadRequest(enabler.getId()));
+            ReadResponse response = enabler.read(LwM2mServer.SYSTEM, new ReadRequest(enabler.getId()));
             LwM2mObject responseValue = (LwM2mObject) response.getContent();
             if (enabler.getId() == LwM2mId.DEVICE) {
                 assertThat(responseValue.getInstances()).as("Devices instances").hasSize(1);
@@ -693,8 +693,7 @@ public class BootstrapTest {
         client.waitForBootstrapSuccess(bootstrapServer, 1, TimeUnit.SECONDS);
 
         // ensure ACL is correctly set
-        ReadResponse response = client.getObjectTree().getObjectEnabler(2).read(ServerIdentity.SYSTEM,
-                new ReadRequest(2));
+        ReadResponse response = client.getObjectTree().getObjectEnabler(2).read(LwM2mServer.SYSTEM, new ReadRequest(2));
         LwM2mObject aclObject = (LwM2mObject) response.getContent();
 
         assertThat(aclObject.getInstances()).allSatisfy((i, instance) -> {

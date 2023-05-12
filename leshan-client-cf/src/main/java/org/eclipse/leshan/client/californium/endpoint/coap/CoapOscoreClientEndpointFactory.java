@@ -30,7 +30,7 @@ import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.oscore.OSCoreCoapStackFactory;
 import org.eclipse.californium.oscore.OSCoreEndpointContextInfo;
 import org.eclipse.leshan.client.californium.CaliforniumConnectionController;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.californium.oscore.cf.InMemoryOscoreContextDB;
@@ -149,7 +149,7 @@ public class CoapOscoreClientEndpointFactory extends CoapClientEndpointFactory {
     public CaliforniumConnectionController createConnectionController() {
         return new CaliforniumConnectionController() {
             @Override
-            public void forceReconnection(Endpoint endpoint, ServerIdentity identity, boolean resume) {
+            public void forceReconnection(Endpoint endpoint, LwM2mServer identity, boolean resume) {
                 // TODO TL : how to force oscore connection ?
             }
         };

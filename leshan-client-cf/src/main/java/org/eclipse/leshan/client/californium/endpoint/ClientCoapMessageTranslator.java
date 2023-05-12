@@ -35,7 +35,7 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -47,7 +47,7 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 
 public class ClientCoapMessageTranslator {
 
-    public Request createCoapRequest(ServerIdentity serverIdentity, UplinkRequest<? extends LwM2mResponse> lwm2mRequest,
+    public Request createCoapRequest(LwM2mServer serverIdentity, UplinkRequest<? extends LwM2mResponse> lwm2mRequest,
             ClientEndpointToolbox toolbox, LwM2mModel model, IdentityHandler identityHandler) {
 
         // create CoAP Request
@@ -63,7 +63,7 @@ public class ClientCoapMessageTranslator {
         return builder.getRequest();
     }
 
-    public <T extends LwM2mResponse> T createLwM2mResponse(ServerIdentity serverIdentity, UplinkRequest<T> lwm2mRequest,
+    public <T extends LwM2mResponse> T createLwM2mResponse(LwM2mServer serverIdentity, UplinkRequest<T> lwm2mRequest,
             Request coapRequest, Response coapResponse, ClientEndpointToolbox toolbox) {
 
         // create LWM2M Response

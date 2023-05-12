@@ -62,7 +62,7 @@ import org.eclipse.leshan.client.californium.ServiceCertificateConstraintCertifi
 import org.eclipse.leshan.client.californium.TrustAnchorAssertionCertificateVerifier;
 import org.eclipse.leshan.client.californium.endpoint.coap.CoapClientEndpointFactory;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.SecurityMode;
@@ -405,7 +405,7 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
     public CaliforniumConnectionController createConnectionController() {
         return new CaliforniumConnectionController() {
             @Override
-            public void forceReconnection(Endpoint endpoint, ServerIdentity server, boolean resume) {
+            public void forceReconnection(Endpoint endpoint, LwM2mServer server, boolean resume) {
                 Connector connector = ((CoapEndpoint) endpoint).getConnector();
                 if (connector instanceof DTLSConnector) {
                     if (resume) {

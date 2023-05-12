@@ -46,7 +46,7 @@ import org.eclipse.leshan.client.resource.RootEnabler;
 import org.eclipse.leshan.client.send.DataSender;
 import org.eclipse.leshan.client.send.DataSenderManager;
 import org.eclipse.leshan.client.send.SendService;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -227,7 +227,7 @@ public class LeshanClient implements LwM2mClient {
     }
 
     @Override
-    public void triggerRegistrationUpdate(ServerIdentity server) {
+    public void triggerRegistrationUpdate(LwM2mServer server) {
         engine.triggerRegistrationUpdate(server);
     }
 
@@ -241,8 +241,8 @@ public class LeshanClient implements LwM2mClient {
         return new SendService() {
 
             @Override
-            public SendResponse sendData(ServerIdentity server, ContentFormat format, List<String> paths,
-                    long timeoutInMs) throws InterruptedException {
+            public SendResponse sendData(LwM2mServer server, ContentFormat format, List<String> paths, long timeoutInMs)
+                    throws InterruptedException {
                 Validate.notNull(server);
                 Validate.notEmpty(paths);
 
@@ -252,7 +252,7 @@ public class LeshanClient implements LwM2mClient {
             }
 
             @Override
-            public void sendData(ServerIdentity server, ContentFormat format, List<String> paths, long timeoutInMs,
+            public void sendData(LwM2mServer server, ContentFormat format, List<String> paths, long timeoutInMs,
                     ResponseCallback<SendResponse> onResponse, ErrorCallback onError) {
                 Validate.notNull(server);
                 Validate.notEmpty(paths);
@@ -296,18 +296,18 @@ public class LeshanClient implements LwM2mClient {
      *
      * @return the client registration Id or <code>null</code> if the client is not registered
      */
-    public String getRegistrationId(ServerIdentity server) {
+    public String getRegistrationId(LwM2mServer server) {
         return engine.getRegistrationId(server);
     }
 
     /**
      * @return All the registered Server indexed by the corresponding registration id;
      */
-    public Map<String, ServerIdentity> getRegisteredServers() {
+    public Map<String, LwM2mServer> getRegisteredServers() {
         return engine.getRegisteredServers();
     }
 
-    public LwM2mClientEndpoint getEndpoint(ServerIdentity server) {
+    public LwM2mClientEndpoint getEndpoint(LwM2mServer server) {
         return endpointsProvider.getEndpoint(server);
     }
 }

@@ -41,7 +41,7 @@ import org.eclipse.leshan.client.endpoint.LwM2mClientEndpoint;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
@@ -77,7 +77,7 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
     private final InetAddress clientAddress;
 
     // we support only 1 endpoint at a time by
-    private ServerIdentity currentServer;
+    private LwM2mServer currentServer;
     private CaliforniumClientEndpoint endpoint;
     private CoapServer coapServer;
 
@@ -97,7 +97,7 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
         identityExtrator = new ServerIdentityExtractor() {
 
             @Override
-            public ServerIdentity extractIdentity(Exchange exchange, IpPeer foreignPeerIdentity) {
+            public LwM2mServer extractIdentity(Exchange exchange, IpPeer foreignPeerIdentity) {
                 // TODO support multi server
                 Endpoint currentCoapEndpoint = endpoint.getCoapEndpoint();
 
@@ -166,8 +166,8 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
     }
 
     @Override
-    public ServerIdentity createEndpoint(ServerInfo serverInfo, boolean clientInitiatedOnly,
-            List<Certificate> trustStore, ClientEndpointToolbox toolbox) {
+    public LwM2mServer createEndpoint(ServerInfo serverInfo, boolean clientInitiatedOnly, List<Certificate> trustStore,
+            ClientEndpointToolbox toolbox) {
 
         // create endpoints
         for (CaliforniumClientEndpointFactory endpointFactory : endpointsFactory) {
@@ -209,7 +209,7 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
         return null;
     }
 
-    private ServerIdentity extractIdentity(ServerInfo serverInfo) {
+    private LwM2mServer extractIdentity(ServerInfo serverInfo) {
         IpPeer serverIdentity;
         if (serverInfo.isSecure()) {
             // Support PSK
@@ -234,14 +234,14 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
         }
 
         if (serverInfo.bootstrap) {
-            return new ServerIdentity(serverIdentity, serverInfo.serverUri);
+            return new LwM2mServer(serverIdentity, serverInfo.serverUri);
         } else {
-            return new ServerIdentity(serverIdentity, serverInfo.serverId, serverInfo.serverUri);
+            return new LwM2mServer(serverIdentity, serverInfo.serverId, serverInfo.serverUri);
         }
     }
 
     @Override
-    public Collection<ServerIdentity> createEndpoints(Collection<? extends ServerInfo> serverInfo,
+    public Collection<LwM2mServer> createEndpoints(Collection<? extends ServerInfo> serverInfo,
             boolean clientInitiatedOnly, List<Certificate> trustStore, ClientEndpointToolbox toolbox) {
         // TODO TL : need to be implemented or removed ?
         return null;
@@ -257,7 +257,7 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
     }
 
     @Override
-    public LwM2mClientEndpoint getEndpoint(ServerIdentity server) {
+    public LwM2mClientEndpoint getEndpoint(LwM2mServer server) {
         if (currentServer.equals(server)) {
             return endpoint;
         }

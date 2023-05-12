@@ -30,7 +30,7 @@ import java.util.Set;
 
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
@@ -108,7 +108,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized CreateResponse create(ServerIdentity identity, CreateRequest request) {
+    public synchronized CreateResponse create(LwM2mServer identity, CreateRequest request) {
         try {
             beginTransaction(LwM2mPath.OBJECT_DEPTH);
 
@@ -140,13 +140,13 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         }
     }
 
-    protected CreateResponse doCreate(ServerIdentity identity, CreateRequest request) {
+    protected CreateResponse doCreate(LwM2mServer identity, CreateRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return CreateResponse.internalServerError("not implemented");
     }
 
     @Override
-    public synchronized ReadResponse read(ServerIdentity identity, ReadRequest request) {
+    public synchronized ReadResponse read(LwM2mServer identity, ReadRequest request) {
         LwM2mPath path = request.getPath();
 
         // read is not supported for bootstrap
@@ -178,13 +178,13 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         // TODO we could do a validation of response.getContent by comparing with resourceSpec information
     }
 
-    protected ReadResponse doRead(ServerIdentity identity, ReadRequest request) {
+    protected ReadResponse doRead(LwM2mServer identity, ReadRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return ReadResponse.internalServerError("not implemented");
     }
 
     @Override
-    public BootstrapReadResponse read(ServerIdentity identity, BootstrapReadRequest request) {
+    public BootstrapReadResponse read(LwM2mServer identity, BootstrapReadRequest request) {
         // read is not supported for bootstrap
         if (identity.isLwm2mServer()) {
             return BootstrapReadResponse.methodNotAllowed();
@@ -201,13 +201,13 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         return doRead(identity, request);
     }
 
-    protected BootstrapReadResponse doRead(ServerIdentity identity, BootstrapReadRequest request) {
+    protected BootstrapReadResponse doRead(LwM2mServer identity, BootstrapReadRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return BootstrapReadResponse.internalServerError("not implemented");
     }
 
     @Override
-    public synchronized WriteResponse write(ServerIdentity identity, WriteRequest request) {
+    public synchronized WriteResponse write(LwM2mServer identity, WriteRequest request) {
         try {
             beginTransaction(LwM2mPath.OBJECT_DEPTH);
 
@@ -266,13 +266,13 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         }
     }
 
-    protected WriteResponse doWrite(ServerIdentity identity, WriteRequest request) {
+    protected WriteResponse doWrite(LwM2mServer identity, WriteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return WriteResponse.internalServerError("not implemented");
     }
 
     @Override
-    public synchronized BootstrapWriteResponse write(ServerIdentity identity, BootstrapWriteRequest request) {
+    public synchronized BootstrapWriteResponse write(LwM2mServer identity, BootstrapWriteRequest request) {
 
         // We should not get a bootstrapWriteRequest from a LWM2M server
         if (identity.isLwm2mServer()) {
@@ -282,13 +282,13 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         return doWrite(identity, request);
     }
 
-    protected BootstrapWriteResponse doWrite(ServerIdentity identity, BootstrapWriteRequest request) {
+    protected BootstrapWriteResponse doWrite(LwM2mServer identity, BootstrapWriteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return BootstrapWriteResponse.internalServerError("not implemented");
     }
 
     @Override
-    public synchronized DeleteResponse delete(ServerIdentity identity, DeleteRequest request) {
+    public synchronized DeleteResponse delete(LwM2mServer identity, DeleteRequest request) {
         if (!identity.isSystem()) {
             if (identity.isLwm2mBootstrapServer())
                 return DeleteResponse.methodNotAllowed();
@@ -306,13 +306,13 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         return doDelete(identity, request);
     }
 
-    protected DeleteResponse doDelete(ServerIdentity identity, DeleteRequest request) {
+    protected DeleteResponse doDelete(LwM2mServer identity, DeleteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return DeleteResponse.internalServerError("not implemented");
     }
 
     @Override
-    public synchronized BootstrapDeleteResponse delete(ServerIdentity identity, BootstrapDeleteRequest request) {
+    public synchronized BootstrapDeleteResponse delete(LwM2mServer identity, BootstrapDeleteRequest request) {
         if (!identity.isSystem()) {
             if (identity.isLwm2mServer()) {
                 return BootstrapDeleteResponse.internalServerError("bootstrap delete request from LWM2M server");
@@ -324,13 +324,13 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         return doDelete(identity, request);
     }
 
-    protected BootstrapDeleteResponse doDelete(ServerIdentity identity, BootstrapDeleteRequest request) {
+    protected BootstrapDeleteResponse doDelete(LwM2mServer identity, BootstrapDeleteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return BootstrapDeleteResponse.internalServerError("not implemented");
     }
 
     @Override
-    public synchronized ExecuteResponse execute(ServerIdentity identity, ExecuteRequest request) {
+    public synchronized ExecuteResponse execute(LwM2mServer identity, ExecuteRequest request) {
         LwM2mPath path = request.getPath();
 
         // execute is not supported for bootstrap
@@ -359,14 +359,13 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         return doExecute(identity, request);
     }
 
-    protected ExecuteResponse doExecute(ServerIdentity identity, ExecuteRequest request) {
+    protected ExecuteResponse doExecute(LwM2mServer identity, ExecuteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return ExecuteResponse.internalServerError("not implemented");
     }
 
     @Override
-    public synchronized WriteAttributesResponse writeAttributes(ServerIdentity identity,
-            WriteAttributesRequest request) {
+    public synchronized WriteAttributesResponse writeAttributes(LwM2mServer identity, WriteAttributesRequest request) {
         // execute is not supported for bootstrap
         if (identity.isLwm2mBootstrapServer()) {
             return WriteAttributesResponse.methodNotAllowed();
@@ -377,7 +376,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized DiscoverResponse discover(ServerIdentity identity, DiscoverRequest request) {
+    public synchronized DiscoverResponse discover(LwM2mServer identity, DiscoverRequest request) {
 
         if (identity.isLwm2mBootstrapServer()) {
             // discover is not supported for bootstrap
@@ -391,7 +390,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     }
 
-    protected DiscoverResponse doDiscover(ServerIdentity identity, DiscoverRequest request) {
+    protected DiscoverResponse doDiscover(LwM2mServer identity, DiscoverRequest request) {
 
         LwM2mPath path = request.getPath();
         if (path.isObject()) {
@@ -427,7 +426,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized BootstrapDiscoverResponse discover(ServerIdentity identity, BootstrapDiscoverRequest request) {
+    public synchronized BootstrapDiscoverResponse discover(LwM2mServer identity, BootstrapDiscoverRequest request) {
 
         if (!identity.isLwm2mBootstrapServer()) {
             return BootstrapDiscoverResponse.badRequest("not a bootstrap server");
@@ -436,7 +435,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         return doDiscover(identity, request);
     }
 
-    protected BootstrapDiscoverResponse doDiscover(ServerIdentity identity, BootstrapDiscoverRequest request) {
+    protected BootstrapDiscoverResponse doDiscover(LwM2mServer identity, BootstrapDiscoverRequest request) {
 
         LwM2mPath path = request.getPath();
         if (path.isObject()) {
@@ -448,7 +447,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized ObserveResponse observe(ServerIdentity identity, ObserveRequest request) {
+    public synchronized ObserveResponse observe(LwM2mServer identity, ObserveRequest request) {
         LwM2mPath path = request.getPath();
 
         // observe is not supported for bootstrap
@@ -475,7 +474,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         return doObserve(identity, request);
     }
 
-    protected ObserveResponse doObserve(ServerIdentity identity, ObserveRequest request) {
+    protected ObserveResponse doObserve(LwM2mServer identity, ObserveRequest request) {
         ReadResponse readResponse = this.read(identity, new ReadRequest(request.getPath().toString()));
         return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null,
                 readResponse.getErrorMessage());

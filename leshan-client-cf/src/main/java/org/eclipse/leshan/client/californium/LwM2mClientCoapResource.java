@@ -21,7 +21,7 @@ import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.client.californium.endpoint.ServerIdentityExtractor;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.californium.LwM2mCoapResource;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.peer.IpPeer;
@@ -40,12 +40,12 @@ public class LwM2mClientCoapResource extends LwM2mCoapResource {
     }
 
     /**
-     * Extract the {@link ServerIdentity} for this exchange. If there is no corresponding server currently in
-     * communication with this client. Answer with an {@link ResponseCode#INTERNAL_SERVER_ERROR}.
+     * Extract the {@link LwM2mServer} for this exchange. If there is no corresponding server currently in communication
+     * with this client. Answer with an {@link ResponseCode#INTERNAL_SERVER_ERROR}.
      */
-    protected ServerIdentity getServerOrRejectRequest(CoapExchange exchange, Message receivedMessage) {
+    protected LwM2mServer getServerOrRejectRequest(CoapExchange exchange, Message receivedMessage) {
         // search if we are in communication with this server.
-        ServerIdentity server = extractIdentity(exchange.advanced(), receivedMessage);
+        LwM2mServer server = extractIdentity(exchange.advanced(), receivedMessage);
         if (server != null)
             return server;
 
@@ -54,13 +54,13 @@ public class LwM2mClientCoapResource extends LwM2mCoapResource {
     }
 
     /**
-     * Get Leshan {@link ServerIdentity} from Californium {@link Exchange}.
+     * Get Leshan {@link LwM2mServer} from Californium {@link Exchange}.
      *
      * @param exchange The Californium {@link Exchange} containing the request for which we search sender identity.
-     * @return The corresponding Leshan {@link ServerIdentity}.
-     * @throws IllegalStateException if we are not able to extract {@link ServerIdentity}.
+     * @return The corresponding Leshan {@link LwM2mServer}.
+     * @throws IllegalStateException if we are not able to extract {@link LwM2mServer}.
      */
-    protected ServerIdentity extractIdentity(Exchange exchange, Message receivedMessage) {
+    protected LwM2mServer extractIdentity(Exchange exchange, Message receivedMessage) {
         IpPeer foreignPeerIdentity = getForeignPeerIdentity(exchange, receivedMessage);
         if (foreignPeerIdentity == null)
             return null;

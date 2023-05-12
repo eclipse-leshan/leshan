@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.leshan.client.EndpointsManager;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +50,7 @@ public class DefaultEndpointsManager implements EndpointsManager {
     }
 
     @Override
-    public synchronized ServerIdentity createEndpoint(ServerInfo serverInfo, boolean clientInitiatedOnly) {
+    public synchronized LwM2mServer createEndpoint(ServerInfo serverInfo, boolean clientInitiatedOnly) {
         // Clear previous endpoint
         endpointProvider.destroyEndpoints();
 
@@ -59,7 +59,7 @@ public class DefaultEndpointsManager implements EndpointsManager {
     }
 
     @Override
-    public synchronized Collection<ServerIdentity> createEndpoints(Collection<? extends ServerInfo> serverInfo,
+    public synchronized Collection<LwM2mServer> createEndpoints(Collection<? extends ServerInfo> serverInfo,
             boolean clientInitiatedOnly) {
         if (serverInfo == null || serverInfo.isEmpty())
             return null;
@@ -71,14 +71,14 @@ public class DefaultEndpointsManager implements EndpointsManager {
                         serverInfo.size());
             }
             ServerInfo firstServer = serverInfo.iterator().next();
-            Collection<ServerIdentity> servers = new ArrayList<>(1);
+            Collection<LwM2mServer> servers = new ArrayList<>(1);
             servers.add(createEndpoint(firstServer, clientInitiatedOnly));
             return servers;
         }
     }
 
     @Override
-    public long getMaxCommunicationPeriodFor(ServerIdentity server, long lifetimeInMs) {
+    public long getMaxCommunicationPeriodFor(LwM2mServer server, long lifetimeInMs) {
         LwM2mClientEndpoint endpoint = getEndpoint(server);
         if (endpoint != null) {
             return endpoint.getMaxCommunicationPeriodFor(lifetimeInMs);
@@ -88,14 +88,14 @@ public class DefaultEndpointsManager implements EndpointsManager {
     }
 
     @Override
-    public synchronized void forceReconnection(ServerIdentity server, boolean resume) {
+    public synchronized void forceReconnection(LwM2mServer server, boolean resume) {
         LwM2mClientEndpoint endpoint = getEndpoint(server);
         if (endpoint != null) {
             endpoint.forceReconnection(server, resume);
         }
     }
 
-    public synchronized LwM2mClientEndpoint getEndpoint(ServerIdentity server) {
+    public synchronized LwM2mClientEndpoint getEndpoint(LwM2mServer server) {
         return endpointProvider.getEndpoint(server);
     }
 
