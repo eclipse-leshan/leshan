@@ -65,7 +65,7 @@ public class ServerIdentity {
         this.uri = uri;
     }
 
-    public LwM2mPeer getIdentity() {
+    public LwM2mPeer getTransportData() {
         return peer;
     }
 

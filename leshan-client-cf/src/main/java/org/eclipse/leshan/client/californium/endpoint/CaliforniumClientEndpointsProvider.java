@@ -113,19 +113,19 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
                     // For UDP (not secure) endpoint we also check socket address as anybody send data to this kind of
                     // endpoint.
                     if (endpoint.getProtocol().equals(Protocol.COAP)) {
-                        if (currentServer.getIdentity() instanceof IpPeer) {
-                            IpPeer currentIpServer = (IpPeer) currentServer.getIdentity();
+                        if (currentServer.getTransportData() instanceof IpPeer) {
+                            IpPeer currentIpServer = (IpPeer) currentServer.getTransportData();
                             if (!(currentIpServer.getSocketAddress().equals(foreignPeerIdentity.getSocketAddress()))) {
                                 return null;
                             }
                         } else {
                             throw new IllegalStateException(
                                     String.format("%s is not a LwM2mPeer supported by this class",
-                                            currentServer.getIdentity().getClass().getSimpleName()));
+                                            currentServer.getTransportData().getClass().getSimpleName()));
                         }
                     }
                     // For OSCORE, be sure OSCORE is used.
-                    if (currentServer.getIdentity().getIdentity() instanceof OscoreIdentity) {
+                    if (currentServer.getTransportData().getIdentity() instanceof OscoreIdentity) {
                         if (!(foreignPeerIdentity.getIdentity() instanceof OscoreIdentity) //
                                 // we also check OscoreIdentity but this is probably not useful
                                 // because we are using static OSCOREstore which holds only 1 OscoreParameter,
@@ -133,7 +133,7 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
                                 // right
                                 // server.
                                 || !foreignPeerIdentity.getIdentity()
-                                        .equals(currentServer.getIdentity().getIdentity())) {
+                                        .equals(currentServer.getTransportData().getIdentity())) {
                             return null;
                         }
                     }
