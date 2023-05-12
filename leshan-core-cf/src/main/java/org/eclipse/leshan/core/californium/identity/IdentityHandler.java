@@ -22,7 +22,6 @@ import org.eclipse.leshan.core.peer.LwM2mPeer;
 public interface IdentityHandler {
 
     LwM2mPeer getIdentity(Message receivedMessage);
-    // Identity getIdentity(Message receivedMessage);
 
     EndpointContext createEndpointContext(LwM2mPeer client, boolean allowConnectionInitiation);
 }
