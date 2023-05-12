@@ -51,7 +51,7 @@ public class ClientCoapMessageTranslator {
             ClientEndpointToolbox toolbox, LwM2mModel model, IdentityHandler identityHandler) {
 
         // create CoAP Request
-        LwM2mPeer server = serverIdentity.getIdentity();
+        LwM2mPeer server = serverIdentity.getTransportData();
         if (!(server instanceof IpPeer)) {
             throw new IllegalStateException(
                     String.format("%s is not a LwM2mPeer supported by this class", server.getClass().getSimpleName()));
