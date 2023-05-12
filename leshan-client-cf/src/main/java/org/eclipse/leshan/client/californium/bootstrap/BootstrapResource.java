@@ -51,13 +51,13 @@ public class BootstrapResource extends LwM2mClientCoapResource {
     public void handlePOST(CoapExchange exchange) {
         // Handle bootstrap request
         Request coapRequest = exchange.advanced().getRequest();
-        LwM2mServer identity = getServerOrRejectRequest(exchange, coapRequest);
-        if (identity == null)
+        LwM2mServer server = getServerOrRejectRequest(exchange, coapRequest);
+        if (server == null)
             return;
 
         // Acknowledge bootstrap finished request
         exchange.accept();
-        final SendableResponse<BootstrapFinishResponse> sendableResponse = requestReceiver.requestReceived(identity,
+        final SendableResponse<BootstrapFinishResponse> sendableResponse = requestReceiver.requestReceived(server,
                 new BootstrapFinishRequest(coapRequest));
 
         // Create CoAP response

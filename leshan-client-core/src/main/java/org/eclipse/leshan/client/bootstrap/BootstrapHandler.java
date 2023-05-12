@@ -135,8 +135,8 @@ public class BootstrapHandler {
     /**
      * @since 1.1
      */
-    public BootstrapDiscoverResponse discover(LwM2mServer identity, BootstrapDiscoverRequest request) {
-        if (!identity.isLwm2mBootstrapServer()) {
+    public BootstrapDiscoverResponse discover(LwM2mServer server, BootstrapDiscoverRequest request) {
+        if (!server.isLwm2mBootstrapServer()) {
             return BootstrapDiscoverResponse.badRequest("not a bootstrap server");
         }
 

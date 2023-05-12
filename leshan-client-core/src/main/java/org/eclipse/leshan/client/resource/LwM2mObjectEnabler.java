@@ -77,29 +77,29 @@ public interface LwM2mObjectEnabler {
 
     List<Integer> getAvailableResourceIds(int instanceId);
 
-    CreateResponse create(LwM2mServer identity, CreateRequest request);
+    CreateResponse create(LwM2mServer server, CreateRequest request);
 
-    ReadResponse read(LwM2mServer identity, ReadRequest request);
+    ReadResponse read(LwM2mServer server, ReadRequest request);
 
-    BootstrapReadResponse read(LwM2mServer identity, BootstrapReadRequest request);
+    BootstrapReadResponse read(LwM2mServer server, BootstrapReadRequest request);
 
-    WriteResponse write(LwM2mServer identity, WriteRequest request);
+    WriteResponse write(LwM2mServer server, WriteRequest request);
 
-    BootstrapWriteResponse write(LwM2mServer identity, BootstrapWriteRequest request);
+    BootstrapWriteResponse write(LwM2mServer server, BootstrapWriteRequest request);
 
-    DeleteResponse delete(LwM2mServer identity, DeleteRequest request);
+    DeleteResponse delete(LwM2mServer server, DeleteRequest request);
 
-    BootstrapDeleteResponse delete(LwM2mServer identity, BootstrapDeleteRequest request);
+    BootstrapDeleteResponse delete(LwM2mServer server, BootstrapDeleteRequest request);
 
-    ExecuteResponse execute(LwM2mServer identity, ExecuteRequest request);
+    ExecuteResponse execute(LwM2mServer server, ExecuteRequest request);
 
-    WriteAttributesResponse writeAttributes(LwM2mServer identity, WriteAttributesRequest request);
+    WriteAttributesResponse writeAttributes(LwM2mServer server, WriteAttributesRequest request);
 
-    DiscoverResponse discover(LwM2mServer identity, DiscoverRequest request);
+    DiscoverResponse discover(LwM2mServer server, DiscoverRequest request);
 
-    BootstrapDiscoverResponse discover(LwM2mServer identity, BootstrapDiscoverRequest request);
+    BootstrapDiscoverResponse discover(LwM2mServer server, BootstrapDiscoverRequest request);
 
-    ObserveResponse observe(LwM2mServer identity, ObserveRequest request);
+    ObserveResponse observe(LwM2mServer server, ObserveRequest request);
 
     void addListener(ObjectListener listener);
 

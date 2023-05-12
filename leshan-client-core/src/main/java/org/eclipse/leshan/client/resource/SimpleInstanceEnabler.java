@@ -75,7 +75,7 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
     }
 
     @Override
-    public ReadResponse read(LwM2mServer identity, int resourceid) {
+    public ReadResponse read(LwM2mServer server, int resourceid) {
         if (resources.containsKey(resourceid)) {
             return ReadResponse.success(resources.get(resourceid));
         }
@@ -83,7 +83,7 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
     }
 
     @Override
-    public WriteResponse write(LwM2mServer identity, boolean replace, int resourceid, LwM2mResource value) {
+    public WriteResponse write(LwM2mServer server, boolean replace, int resourceid, LwM2mResource value) {
         // define new Value
         LwM2mResource newValue;
         List<LwM2mPath> newInstances = new ArrayList<>();
@@ -122,7 +122,7 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
     }
 
     @Override
-    public ExecuteResponse execute(LwM2mServer identity, int resourceid, Arguments arguments) {
+    public ExecuteResponse execute(LwM2mServer server, int resourceid, Arguments arguments) {
         return ExecuteResponse.notFound();
     }
 

@@ -58,7 +58,7 @@ public class MyLocation extends BaseInstanceEnabler {
     }
 
     @Override
-    public ReadResponse read(LwM2mServer identity, int resourceid) {
+    public ReadResponse read(LwM2mServer server, int resourceid) {
         LOG.info("Read on Location resource /{}/{}/{}", getModel().id, getId(), resourceid);
         switch (resourceid) {
         case 0:
@@ -68,7 +68,7 @@ public class MyLocation extends BaseInstanceEnabler {
         case 5:
             return ReadResponse.success(resourceid, getTimestamp());
         default:
-            return super.read(identity, resourceid);
+            return super.read(server, resourceid);
         }
     }
 

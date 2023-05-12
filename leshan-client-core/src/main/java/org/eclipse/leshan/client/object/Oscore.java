@@ -87,8 +87,8 @@ public class Oscore extends BaseInstanceEnabler {
     }
 
     @Override
-    public WriteResponse write(LwM2mServer identity, boolean replace, int resourceId, LwM2mResource value) {
-        if (!identity.isSystem())
+    public WriteResponse write(LwM2mServer server, boolean replace, int resourceId, LwM2mResource value) {
+        if (!server.isSystem())
             LOG.debug("Write on resource {}: {}", resourceId, value);
 
         switch (resourceId) {
@@ -145,14 +145,14 @@ public class Oscore extends BaseInstanceEnabler {
             return WriteResponse.success();
 
         default:
-            return super.write(identity, replace, resourceId, value);
+            return super.write(server, replace, resourceId, value);
         }
 
     }
 
     @Override
-    public ReadResponse read(LwM2mServer identity, int resourceid) {
-        if (!identity.isSystem())
+    public ReadResponse read(LwM2mServer server, int resourceid) {
+        if (!server.isSystem())
             LOG.debug("Read on resource {}", resourceid);
 
         switch (resourceid) {
@@ -185,7 +185,7 @@ public class Oscore extends BaseInstanceEnabler {
             return ReadResponse.success(resourceid, masterSalt);
 
         default:
-            return super.read(identity, resourceid);
+            return super.read(server, resourceid);
         }
     }
 

@@ -99,7 +99,7 @@ public class DefaultDownlinkReceiver implements DownlinkRequestReceiver {
     }
 
     @Override
-    public void onError(LwM2mServer identity, Exception e,
+    public void onError(LwM2mServer server, Exception e,
             Class<? extends LwM2mRequest<? extends LwM2mResponse>> requestType) {
     }
 
@@ -108,8 +108,8 @@ public class DefaultDownlinkReceiver implements DownlinkRequestReceiver {
         private final LwM2mServer sender;
         private SendableResponse<? extends LwM2mResponse> response;
 
-        public RequestHandler(LwM2mServer identity) {
-            this.sender = identity;
+        public RequestHandler(LwM2mServer server) {
+            this.sender = server;
         }
 
         @Override

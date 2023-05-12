@@ -23,7 +23,7 @@ import org.eclipse.leshan.core.response.SendableResponse;
 
 public interface DownlinkRequestReceiver {
 
-    <T extends LwM2mResponse> SendableResponse<T> requestReceived(LwM2mServer identity, DownlinkRequest<T> request);
+    <T extends LwM2mResponse> SendableResponse<T> requestReceived(LwM2mServer server, DownlinkRequest<T> request);
 
-    void onError(LwM2mServer identity, Exception e, Class<? extends LwM2mRequest<? extends LwM2mResponse>> requestType);
+    void onError(LwM2mServer server, Exception e, Class<? extends LwM2mRequest<? extends LwM2mResponse>> requestType);
 }

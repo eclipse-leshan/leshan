@@ -45,28 +45,28 @@ public class LwM2mServer {
         LWM2M_BOOTSTRAP_SERVER
     }
 
-    private final LwM2mPeer peer;
+    private final LwM2mPeer transportData;
     private final Long id;
     private final Role role;
     private final URI uri;
 
-    public LwM2mServer(LwM2mPeer peer, Long id, URI uri) {
-        this(peer, id, Role.LWM2M_SERVER, uri);
+    public LwM2mServer(LwM2mPeer transportData, Long id, URI uri) {
+        this(transportData, id, Role.LWM2M_SERVER, uri);
     }
 
-    public LwM2mServer(LwM2mPeer peer, URI uri) {
-        this(peer, null, Role.LWM2M_BOOTSTRAP_SERVER, uri);
+    public LwM2mServer(LwM2mPeer transportData, URI uri) {
+        this(transportData, null, Role.LWM2M_BOOTSTRAP_SERVER, uri);
     }
 
-    public LwM2mServer(LwM2mPeer peer, Long id, Role role, URI uri) {
-        this.peer = peer;
+    public LwM2mServer(LwM2mPeer transportData, Long id, Role role, URI uri) {
+        this.transportData = transportData;
         this.id = id;
         this.role = role;
         this.uri = uri;
     }
 
     public LwM2mPeer getTransportData() {
-        return peer;
+        return transportData;
     }
 
     public Long getId() {
@@ -130,7 +130,7 @@ public class LwM2mServer {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((peer == null) ? 0 : peer.hashCode());
+        result = prime * result + ((transportData == null) ? 0 : transportData.hashCode());
         result = prime * result + ((role == null) ? 0 : role.hashCode());
         return result;
     }
@@ -149,10 +149,10 @@ public class LwM2mServer {
                 return false;
         } else if (!id.equals(other.id))
             return false;
-        if (peer == null) {
-            if (other.peer != null)
+        if (transportData == null) {
+            if (other.transportData != null)
                 return false;
-        } else if (!peer.equals(other.peer))
+        } else if (!transportData.equals(other.transportData))
             return false;
         if (role != other.role)
             return false;

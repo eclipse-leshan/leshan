@@ -149,7 +149,7 @@ public class CoapOscoreClientEndpointFactory extends CoapClientEndpointFactory {
     public CaliforniumConnectionController createConnectionController() {
         return new CaliforniumConnectionController() {
             @Override
-            public void forceReconnection(Endpoint endpoint, LwM2mServer identity, boolean resume) {
+            public void forceReconnection(Endpoint endpoint, LwM2mServer server, boolean resume) {
                 // TODO TL : how to force oscore connection ?
             }
         };

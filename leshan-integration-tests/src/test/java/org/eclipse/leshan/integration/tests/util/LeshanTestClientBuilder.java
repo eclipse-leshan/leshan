@@ -416,11 +416,11 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
         }
 
         @Override
-        public ExecuteResponse execute(LwM2mServer identity, int resourceid, Arguments arguments) {
+        public ExecuteResponse execute(LwM2mServer server, int resourceid, Arguments arguments) {
             if (resourceid == 4) {
                 return ExecuteResponse.success();
             } else {
-                return super.execute(identity, resourceid, arguments);
+                return super.execute(server, resourceid, arguments);
             }
         }
     }

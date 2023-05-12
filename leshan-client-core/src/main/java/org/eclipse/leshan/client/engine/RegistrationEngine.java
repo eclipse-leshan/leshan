@@ -81,7 +81,7 @@ public interface RegistrationEngine {
     /**
      * @return true if the given server can currently communicate with the device.
      */
-    boolean isAllowedToCommunicate(LwM2mServer foreingPeer);
+    boolean isAllowedToCommunicate(LwM2mServer server);
 
     /**
      * @return the endpoint name of the LWM2M client

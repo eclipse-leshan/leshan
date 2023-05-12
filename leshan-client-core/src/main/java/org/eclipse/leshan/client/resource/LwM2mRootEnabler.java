@@ -31,13 +31,13 @@ import org.eclipse.leshan.core.response.WriteCompositeResponse;
  */
 public interface LwM2mRootEnabler {
 
-    ReadCompositeResponse read(LwM2mServer identity, ReadCompositeRequest request);
+    ReadCompositeResponse read(LwM2mServer server, ReadCompositeRequest request);
 
-    WriteCompositeResponse write(LwM2mServer identity, WriteCompositeRequest request);
+    WriteCompositeResponse write(LwM2mServer server, WriteCompositeRequest request);
 
     LwM2mModel getModel();
 
-    ObserveCompositeResponse observe(LwM2mServer identity, ObserveCompositeRequest request);
+    ObserveCompositeResponse observe(LwM2mServer server, ObserveCompositeRequest request);
 
     void addListener(ObjectsListener listener);
 

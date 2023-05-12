@@ -145,12 +145,12 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
-    public ReadResponse read(LwM2mServer identity) {
+    public ReadResponse read(LwM2mServer server) {
         List<LwM2mResource> resources = new ArrayList<>();
         for (ResourceModel resourceModel : model.resources.values()) {
             // check, if internal request (SYSTEM) or readable
-            if (identity.isSystem() || resourceModel.operations.isReadable()) {
-                ReadResponse response = read(identity, resourceModel.id);
+            if (server.isSystem() || resourceModel.operations.isReadable()) {
+                ReadResponse response = read(server, resourceModel.id);
                 if (response.isSuccess() && response.getContent() instanceof LwM2mResource)
                     resources.add((LwM2mResource) response.getContent());
             }
@@ -159,13 +159,13 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
-    public ReadResponse read(LwM2mServer identity, int resourceid) {
+    public ReadResponse read(LwM2mServer server, int resourceid) {
         return ReadResponse.notFound();
     }
 
     @Override
-    public ReadResponse read(LwM2mServer identity, int resourceId, int resourceInstance) {
-        ReadResponse response = read(identity, resourceId);
+    public ReadResponse read(LwM2mServer server, int resourceId, int resourceInstance) {
+        ReadResponse response = read(server, resourceId);
         if (response.isFailure())
             return response;
         LwM2mMultipleResource resource = (LwM2mMultipleResource) response.getContent();
@@ -178,27 +178,27 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     }
 
     @Override
-    public WriteResponse write(LwM2mServer identity, boolean replace, LwM2mObjectInstance value) {
+    public WriteResponse write(LwM2mServer server, boolean replace, LwM2mObjectInstance value) {
         Map<Integer, LwM2mResource> resourcesToWrite = new HashMap<>(value.getResources());
 
         if (replace) {
             // REPLACE
             for (ResourceModel resourceModel : model.resources.values()) {
-                if (identity.isSystem() || identity.isLwm2mBootstrapServer()) {
+                if (server.isSystem() || server.isLwm2mBootstrapServer()) {
                     // For request comes from System or Bootstrap server we handle all resources.
                     LwM2mResource writeResource = resourcesToWrite.remove(resourceModel.id);
                     if (null != writeResource) {
-                        write(identity, true, resourceModel.id, writeResource);
+                        write(server, true, resourceModel.id, writeResource);
                     } else {
                         reset(resourceModel.id);
                     }
 
-                } else if (identity.isLwm2mServer()) {
+                } else if (server.isLwm2mServer()) {
                     if (resourceModel.operations.isWritable()) {
                         // For writable resource, Write resource if there something to write, if not reset value
                         LwM2mResource writeResource = resourcesToWrite.remove(resourceModel.id);
                         if (null != writeResource) {
-                            write(identity, true, resourceModel.id, writeResource);
+                            write(server, true, resourceModel.id, writeResource);
                         } else {
                             reset(resourceModel.id);
                         }
@@ -207,24 +207,24 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
                         reset(resourceModel.id);
                     }
                 } else {
-                    throw new IllegalStateException("Unsupported type of server identity " + identity);
+                    throw new IllegalStateException("Unsupported type of server identity " + server);
                 }
             }
         }
         // UPDATE and resources currently not in the model
         for (LwM2mResource resource : resourcesToWrite.values()) {
-            write(identity, false, resource.getId(), resource);
+            write(server, false, resource.getId(), resource);
         }
         return WriteResponse.success();
     }
 
     @Override
-    public WriteResponse write(LwM2mServer identity, boolean replace, int resourceid, LwM2mResource value) {
+    public WriteResponse write(LwM2mServer server, boolean replace, int resourceid, LwM2mResource value) {
         return WriteResponse.notFound();
     }
 
     @Override
-    public WriteResponse write(LwM2mServer identity, boolean addIfAbsent, int resourceid, int resourceInstanceId,
+    public WriteResponse write(LwM2mServer server, boolean addIfAbsent, int resourceid, int resourceInstanceId,
             LwM2mResourceInstance value) {
 
         // this is a sub-optimal default implementation
@@ -234,40 +234,40 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
                 return WriteResponse.notFound();
             }
         }
-        return write(identity, false, resourceid, new LwM2mMultipleResource(resourceid, value.getType(), value));
+        return write(server, false, resourceid, new LwM2mMultipleResource(resourceid, value.getType(), value));
     }
 
     @Override
-    public ExecuteResponse execute(LwM2mServer identity, int resourceid, Arguments arguments) {
+    public ExecuteResponse execute(LwM2mServer server, int resourceid, Arguments arguments) {
         return ExecuteResponse.notFound();
     }
 
     @Override
-    public ObserveResponse observe(LwM2mServer identity) {
+    public ObserveResponse observe(LwM2mServer server) {
         // Perform a read by default
-        ReadResponse readResponse = this.read(identity);
+        ReadResponse readResponse = this.read(server);
         return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null,
                 readResponse.getErrorMessage());
     }
 
     @Override
-    public ObserveResponse observe(LwM2mServer identity, int resourceid) {
+    public ObserveResponse observe(LwM2mServer server, int resourceid) {
         // Perform a read by default
-        ReadResponse readResponse = this.read(identity, resourceid);
+        ReadResponse readResponse = this.read(server, resourceid);
         return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null,
                 readResponse.getErrorMessage());
     }
 
     @Override
-    public ObserveResponse observe(LwM2mServer identity, int resourceid, int resourceInstanceId) {
+    public ObserveResponse observe(LwM2mServer server, int resourceid, int resourceInstanceId) {
         // Perform a read by default
-        ReadResponse readResponse = this.read(identity, resourceid, resourceInstanceId);
+        ReadResponse readResponse = this.read(server, resourceid, resourceInstanceId);
         return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null,
                 readResponse.getErrorMessage());
     }
 
     @Override
-    public void onDelete(LwM2mServer identity) {
+    public void onDelete(LwM2mServer server) {
         // No default behavior
     }
 

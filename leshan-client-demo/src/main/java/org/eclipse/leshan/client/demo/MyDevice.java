@@ -61,8 +61,8 @@ public class MyDevice extends BaseInstanceEnabler implements Destroyable {
     }
 
     @Override
-    public ReadResponse read(LwM2mServer identity, int resourceid) {
-        if (!identity.isSystem())
+    public ReadResponse read(LwM2mServer server, int resourceid) {
+        if (!server.isSystem())
             LOG.info("Read on Device resource /{}/{}/{}", getModel().id, getId(), resourceid);
         switch (resourceid) {
         case 0:
@@ -100,12 +100,12 @@ public class MyDevice extends BaseInstanceEnabler implements Destroyable {
         case 21:
             return ReadResponse.success(resourceid, getMemoryTotal());
         default:
-            return super.read(identity, resourceid);
+            return super.read(server, resourceid);
         }
     }
 
     @Override
-    public ExecuteResponse execute(LwM2mServer identity, int resourceid, Arguments arguments) {
+    public ExecuteResponse execute(LwM2mServer server, int resourceid, Arguments arguments) {
         String withArguments = "";
         if (!arguments.isEmpty())
             withArguments = " with arguments " + arguments;
@@ -128,7 +128,7 @@ public class MyDevice extends BaseInstanceEnabler implements Destroyable {
     }
 
     @Override
-    public WriteResponse write(LwM2mServer identity, boolean replace, int resourceid, LwM2mResource value) {
+    public WriteResponse write(LwM2mServer server, boolean replace, int resourceid, LwM2mResource value) {
         LOG.info("Write on Device resource /{}/{}/{}", getModel().id, getId(), resourceid);
 
         switch (resourceid) {
@@ -143,7 +143,7 @@ public class MyDevice extends BaseInstanceEnabler implements Destroyable {
             fireResourceChange(resourceid);
             return WriteResponse.success();
         default:
-            return super.write(identity, replace, resourceid, value);
+            return super.write(server, replace, resourceid, value);
         }
     }
 
