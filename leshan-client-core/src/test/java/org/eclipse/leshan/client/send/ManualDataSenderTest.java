@@ -28,7 +28,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 import org.eclipse.leshan.client.send.ManualDataSenderTest.FakeDataSenderManager.SendDataOutcome;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
@@ -44,7 +44,7 @@ public class ManualDataSenderTest {
     private ManualDataSender manualDataSender;
     private FakeDataSenderManager fakeDataSenderManager;
 
-    private final ServerIdentity givenServer = ServerIdentity.SYSTEM;
+    private final LwM2mServer givenServer = LwM2mServer.SYSTEM;
     private final List<LwM2mPath> givenPaths = Arrays.asList(new LwM2mPath(1, 2, 3), new LwM2mPath(4, 5, 6),
             new LwM2mPath(7, 8, 9));
 
@@ -191,18 +191,18 @@ public class ManualDataSenderTest {
         }
 
         @Override
-        public Map<LwM2mPath, LwM2mNode> getCurrentValues(ServerIdentity server, List<LwM2mPath> paths) {
+        public Map<LwM2mPath, LwM2mNode> getCurrentValues(LwM2mServer server, List<LwM2mPath> paths) {
             return currentValues;
         }
 
-        public Map<LwM2mPath, LwM2mNode> changeCurrentValues(ServerIdentity server, List<LwM2mPath> paths) {
+        public Map<LwM2mPath, LwM2mNode> changeCurrentValues(LwM2mServer server, List<LwM2mPath> paths) {
             currentValues = paths.stream().map(this::readRandomValue)
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             return currentValues;
         }
 
         @Override
-        public void sendData(ServerIdentity server, ContentFormat format, TimestampedLwM2mNodes nodes,
+        public void sendData(LwM2mServer server, ContentFormat format, TimestampedLwM2mNodes nodes,
                 ResponseCallback<SendResponse> onResponse, ErrorCallback onError, long timeoutInMs) {
             switch (sendDataOutcome) {
             case SUCCESS:

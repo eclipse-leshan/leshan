@@ -27,7 +27,7 @@ import java.util.Map.Entry;
 
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.resource.listener.ResourceListener;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.Destroyable;
@@ -127,7 +127,7 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
     }
 
     @Override
-    protected CreateResponse doCreate(ServerIdentity identity, CreateRequest request) {
+    protected CreateResponse doCreate(LwM2mServer identity, CreateRequest request) {
         if (!getObjectModel().multiple && instances.size() > 0) {
             return CreateResponse.badRequest("an instance already exist for this single instance object");
         }
@@ -184,7 +184,7 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
         }
     }
 
-    protected LwM2mInstanceEnabler createInstance(ServerIdentity identity, Integer instanceId,
+    protected LwM2mInstanceEnabler createInstance(LwM2mServer identity, Integer instanceId,
             Collection<LwM2mResource> resources) {
         // create the new instance
         LwM2mInstanceEnabler newInstance = instanceFactory.create(getObjectModel(), instanceId, instances.keySet());
@@ -199,7 +199,7 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
     }
 
     @Override
-    protected ReadResponse doRead(ServerIdentity identity, ReadRequest request) {
+    protected ReadResponse doRead(LwM2mServer identity, ReadRequest request) {
         LwM2mPath path = request.getPath();
 
         // Manage Object case
@@ -233,7 +233,7 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
     }
 
     @Override
-    protected BootstrapReadResponse doRead(ServerIdentity identity, BootstrapReadRequest request) {
+    protected BootstrapReadResponse doRead(LwM2mServer identity, BootstrapReadRequest request) {
         // Basic implementation we delegate to classic Read Request
         ReadResponse response = doRead(identity,
                 new ReadRequest(request.getContentFormat(), request.getPath(), request.getCoapRequest()));
@@ -241,7 +241,7 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
     }
 
     @Override
-    protected ObserveResponse doObserve(final ServerIdentity identity, final ObserveRequest request) {
+    protected ObserveResponse doObserve(final LwM2mServer identity, final ObserveRequest request) {
         final LwM2mPath path = request.getPath();
 
         // Manage Object case
@@ -275,7 +275,7 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
     }
 
     @Override
-    protected WriteResponse doWrite(ServerIdentity identity, WriteRequest request) {
+    protected WriteResponse doWrite(LwM2mServer identity, WriteRequest request) {
         LwM2mPath path = request.getPath();
 
         // Manage Instance case
@@ -299,7 +299,7 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
     }
 
     @Override
-    protected BootstrapWriteResponse doWrite(ServerIdentity identity, BootstrapWriteRequest request) {
+    protected BootstrapWriteResponse doWrite(LwM2mServer identity, BootstrapWriteRequest request) {
         LwM2mPath path = request.getPath();
 
         // Manage Object case
@@ -342,7 +342,7 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
     }
 
     @Override
-    protected ExecuteResponse doExecute(ServerIdentity identity, ExecuteRequest request) {
+    protected ExecuteResponse doExecute(LwM2mServer identity, ExecuteRequest request) {
         LwM2mPath path = request.getPath();
         LwM2mInstanceEnabler instance = instances.get(path.getObjectInstanceId());
         if (instance == null) {
@@ -352,7 +352,7 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
     }
 
     @Override
-    protected DeleteResponse doDelete(ServerIdentity identity, DeleteRequest request) {
+    protected DeleteResponse doDelete(LwM2mServer identity, DeleteRequest request) {
         LwM2mInstanceEnabler deletedInstance = instances.remove(request.getPath().getObjectInstanceId());
         if (deletedInstance != null) {
             deletedInstance.onDelete(identity);
@@ -363,7 +363,7 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
     }
 
     @Override
-    public BootstrapDeleteResponse doDelete(ServerIdentity identity, BootstrapDeleteRequest request) {
+    public BootstrapDeleteResponse doDelete(LwM2mServer identity, BootstrapDeleteRequest request) {
         if (request.getPath().isRoot() || request.getPath().isObject()) {
             if (id == LwM2mId.SECURITY) {
                 // For security object, we clean everything except bootstrap Server account.

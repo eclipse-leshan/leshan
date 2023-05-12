@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.resource.listener.ResourceListener;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
@@ -110,7 +110,7 @@ public interface LwM2mInstanceEnabler {
      * @return a success response with an {@link LwM2mObjectInstance} as content or a failure response with optional
      *         explanation message.
      */
-    ReadResponse read(ServerIdentity identity);
+    ReadResponse read(LwM2mServer identity);
 
     /**
      * Gets the current value of one of this LWM2M object instance's resources.
@@ -122,7 +122,7 @@ public interface LwM2mInstanceEnabler {
      *         {@link ReadResponse#getCode() response code} to either reflect the success or reason for failure to
      *         retrieve the value.
      */
-    ReadResponse read(ServerIdentity identity, int resourceId);
+    ReadResponse read(LwM2mServer identity, int resourceId);
 
     /**
      * Gets the current value of one of this LWM2M object instance's resources instance.
@@ -135,7 +135,7 @@ public interface LwM2mInstanceEnabler {
      *         {@link ReadResponse#getCode() response code} to either reflect the success or reason for failure to
      *         retrieve the value.
      */
-    ReadResponse read(ServerIdentity identity, int resourceId, int resourceInstance);
+    ReadResponse read(LwM2mServer identity, int resourceId, int resourceInstance);
 
     /**
      * Sets all resources of this LWM2M object instance.
@@ -148,7 +148,7 @@ public interface LwM2mInstanceEnabler {
      *         {@link WriteResponse#getCode() response code} to either reflect the success or reason for failure to set
      *         the value.
      */
-    WriteResponse write(ServerIdentity identity, boolean replace, LwM2mObjectInstance value);
+    WriteResponse write(LwM2mServer identity, boolean replace, LwM2mObjectInstance value);
 
     /**
      * Sets the value of one of this LWM2M object instance's resources.
@@ -164,7 +164,7 @@ public interface LwM2mInstanceEnabler {
      *         {@link WriteResponse#getCode() response code} to either reflect the success or reason for failure to set
      *         the value.
      */
-    WriteResponse write(ServerIdentity identity, boolean replace, int resourceid, LwM2mResource value);
+    WriteResponse write(LwM2mServer identity, boolean replace, int resourceid, LwM2mResource value);
 
     /**
      * Sets the value of one of this LWM2M object instance's resources instance.
@@ -179,7 +179,7 @@ public interface LwM2mInstanceEnabler {
      *         {@link WriteResponse#getCode() response code} to either reflect the success or reason for failure to set
      *         the value.
      */
-    WriteResponse write(ServerIdentity identity, boolean addIfAbsent, int resourceid, int resourceInstance,
+    WriteResponse write(LwM2mServer identity, boolean addIfAbsent, int resourceid, int resourceInstance,
             LwM2mResourceInstance value);
 
     /**
@@ -193,7 +193,7 @@ public interface LwM2mInstanceEnabler {
      *         {@link ExecuteResponse#getCode() response code} to either reflect the success or reason for failure to
      *         execute the operation.
      */
-    ExecuteResponse execute(ServerIdentity identity, int resourceid, Arguments arguments);
+    ExecuteResponse execute(LwM2mServer identity, int resourceid, Arguments arguments);
 
     /**
      * Performs an observe register the whole LWM2M object instance.
@@ -203,7 +203,7 @@ public interface LwM2mInstanceEnabler {
      * @return a success response with an {@link LwM2mObjectInstance} as content or a failure response with optional
      *         explanation message.
      */
-    ObserveResponse observe(ServerIdentity identity);
+    ObserveResponse observe(LwM2mServer identity);
 
     /**
      * Performs an observe register on one of this LWM2M object instance's resources.
@@ -212,7 +212,7 @@ public interface LwM2mInstanceEnabler {
      *        <code> identity == ServerIdentity.SYSTEM</code>.
      * @param resourceid the ID of the resource to observe
      */
-    ObserveResponse observe(ServerIdentity identity, int resourceid);
+    ObserveResponse observe(LwM2mServer identity, int resourceid);
 
     /**
      * Performs an observe register on one of this LWM2M object instance's resource instance.
@@ -222,7 +222,7 @@ public interface LwM2mInstanceEnabler {
      * @param resourceid the ID of the resource to observe
      * @param resourceInstanceId the ID of the resource instance to observe
      */
-    ObserveResponse observe(ServerIdentity identity, int resourceid, int resourceInstanceId);
+    ObserveResponse observe(LwM2mServer identity, int resourceid, int resourceInstanceId);
 
     /**
      * A callback called when this instance is deleted
@@ -230,7 +230,7 @@ public interface LwM2mInstanceEnabler {
      * @param identity the identity of the requester. This could be an internal call in this case
      *        <code> identity == ServerIdentity.SYSTEM</code>.
      */
-    void onDelete(ServerIdentity identity);
+    void onDelete(LwM2mServer identity);
 
     /**
      * @param objectModel the model of this instance

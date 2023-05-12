@@ -28,7 +28,7 @@ import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.client.californium.CaliforniumConnectionController;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpoint;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.californium.AsyncRequestObserver;
 import org.eclipse.leshan.core.californium.ExceptionTranslator;
 import org.eclipse.leshan.core.californium.SyncRequestObserver;
@@ -112,7 +112,7 @@ public class CaliforniumClientEndpoint implements LwM2mClientEndpoint {
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(ServerIdentity server, UplinkRequest<T> lwm2mRequest, long timeoutInMs)
+    public <T extends LwM2mResponse> T send(LwM2mServer server, UplinkRequest<T> lwm2mRequest, long timeoutInMs)
             throws InterruptedException {
         // Create the CoAP request from LwM2m request
         final Request coapRequest = translator.createCoapRequest(server, lwm2mRequest, toolbox, model, identityHandler);
@@ -140,7 +140,7 @@ public class CaliforniumClientEndpoint implements LwM2mClientEndpoint {
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(ServerIdentity server, UplinkRequest<T> lwm2mRequest,
+    public <T extends LwM2mResponse> void send(LwM2mServer server, UplinkRequest<T> lwm2mRequest,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback, long timeoutInMs) {
         Validate.notNull(responseCallback);
         Validate.notNull(errorCallback);
@@ -167,7 +167,7 @@ public class CaliforniumClientEndpoint implements LwM2mClientEndpoint {
     }
 
     @Override
-    public void forceReconnection(ServerIdentity server, boolean resume) {
+    public void forceReconnection(LwM2mServer server, boolean resume) {
         connectionController.forceReconnection(endpoint, server, resume);
     }
 

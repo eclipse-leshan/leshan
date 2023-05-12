@@ -18,7 +18,7 @@ package org.eclipse.leshan.client.engine;
 import java.util.Map;
 
 import org.eclipse.leshan.client.RegistrationUpdate;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 
 /**
  * Manage the registration life-cycle:
@@ -40,7 +40,7 @@ public interface RegistrationEngine {
     /**
      * Trigger an "empty" registration update to the given servers.
      */
-    void triggerRegistrationUpdate(ServerIdentity server);
+    void triggerRegistrationUpdate(LwM2mServer server);
 
     /**
      * Trigger the given registration update to all servers.
@@ -50,7 +50,7 @@ public interface RegistrationEngine {
     /**
      * Trigger the given registration update to the given servers.
      */
-    void triggerRegistrationUpdate(ServerIdentity server, RegistrationUpdate registrationUpdate);
+    void triggerRegistrationUpdate(LwM2mServer server, RegistrationUpdate registrationUpdate);
 
     /**
      * Trigger a client initiated bootstrap.
@@ -66,22 +66,22 @@ public interface RegistrationEngine {
      *
      * @return the client registration Id or <code>null</code> if the client is not registered to this server.
      */
-    String getRegistrationId(ServerIdentity server);
+    String getRegistrationId(LwM2mServer server);
 
     /**
      * @return All the registered Server indexed by the corresponding registration id;
      */
-    Map<String, ServerIdentity> getRegisteredServers();
+    Map<String, LwM2mServer> getRegisteredServers();
 
     /**
      * @return The registered server identified by the given id or null if there is no corresponding server registered.
      */
-    ServerIdentity getRegisteredServer(long serverId);
+    LwM2mServer getRegisteredServer(long serverId);
 
     /**
      * @return true if the given server can currently communicate with the device.
      */
-    boolean isAllowedToCommunicate(ServerIdentity foreingPeer);
+    boolean isAllowedToCommunicate(LwM2mServer foreingPeer);
 
     /**
      * @return the endpoint name of the LWM2M client

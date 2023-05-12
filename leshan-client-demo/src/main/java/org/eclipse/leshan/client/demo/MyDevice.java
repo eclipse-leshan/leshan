@@ -27,7 +27,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -61,7 +61,7 @@ public class MyDevice extends BaseInstanceEnabler implements Destroyable {
     }
 
     @Override
-    public ReadResponse read(ServerIdentity identity, int resourceid) {
+    public ReadResponse read(LwM2mServer identity, int resourceid) {
         if (!identity.isSystem())
             LOG.info("Read on Device resource /{}/{}/{}", getModel().id, getId(), resourceid);
         switch (resourceid) {
@@ -105,7 +105,7 @@ public class MyDevice extends BaseInstanceEnabler implements Destroyable {
     }
 
     @Override
-    public ExecuteResponse execute(ServerIdentity identity, int resourceid, Arguments arguments) {
+    public ExecuteResponse execute(LwM2mServer identity, int resourceid, Arguments arguments) {
         String withArguments = "";
         if (!arguments.isEmpty())
             withArguments = " with arguments " + arguments;
@@ -128,7 +128,7 @@ public class MyDevice extends BaseInstanceEnabler implements Destroyable {
     }
 
     @Override
-    public WriteResponse write(ServerIdentity identity, boolean replace, int resourceid, LwM2mResource value) {
+    public WriteResponse write(LwM2mServer identity, boolean replace, int resourceid, LwM2mResource value) {
         LOG.info("Write on Device resource /{}/{}/{}", getModel().id, getId(), resourceid);
 
         switch (resourceid) {

@@ -33,7 +33,7 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.client.californium.endpoint.ServerIdentityExtractor;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.californium.ObserveUtil;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -73,7 +73,7 @@ public class RootResource extends LwM2mClientCoapResource {
     public void handleGET(CoapExchange exchange) {
         // Manage Bootstrap Discover Request
         Request coapRequest = exchange.advanced().getRequest();
-        ServerIdentity identity = getServerOrRejectRequest(exchange, coapRequest);
+        LwM2mServer identity = getServerOrRejectRequest(exchange, coapRequest);
         if (identity == null)
             return;
 
@@ -94,7 +94,7 @@ public class RootResource extends LwM2mClientCoapResource {
     @Override
     public void handleFETCH(CoapExchange exchange) {
         Request coapRequest = exchange.advanced().getRequest();
-        ServerIdentity identity = getServerOrRejectRequest(exchange, coapRequest);
+        LwM2mServer identity = getServerOrRejectRequest(exchange, coapRequest);
         if (identity == null)
             return;
 
@@ -166,7 +166,7 @@ public class RootResource extends LwM2mClientCoapResource {
     public void handleIPATCH(CoapExchange exchange) {
         // Manage Read Composite request
         Request coapRequest = exchange.advanced().getRequest();
-        ServerIdentity identity = getServerOrRejectRequest(exchange, coapRequest);
+        LwM2mServer identity = getServerOrRejectRequest(exchange, coapRequest);
         if (identity == null)
             return;
 
@@ -199,7 +199,7 @@ public class RootResource extends LwM2mClientCoapResource {
         }
 
         Request coapRequest = exchange.advanced().getRequest();
-        ServerIdentity identity = getServerOrRejectRequest(exchange, coapRequest);
+        LwM2mServer identity = getServerOrRejectRequest(exchange, coapRequest);
         if (identity == null)
             return;
 

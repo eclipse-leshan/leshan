@@ -57,7 +57,7 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.client.send.DataSender;
 import org.eclipse.leshan.client.send.ManualDataSender;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.LwM2mId;
@@ -417,7 +417,7 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
         }
 
         @Override
-        public ExecuteResponse execute(ServerIdentity identity, int resourceid, Arguments arguments) {
+        public ExecuteResponse execute(LwM2mServer identity, int resourceid, Arguments arguments) {
             if (resourceid == 4) {
                 return ExecuteResponse.success();
             } else {

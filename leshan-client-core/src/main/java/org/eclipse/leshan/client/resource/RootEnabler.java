@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.leshan.client.resource.listener.ObjectsListener;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
@@ -72,7 +72,7 @@ public class RootEnabler implements LwM2mRootEnabler {
     }
 
     @Override
-    public ReadCompositeResponse read(ServerIdentity identity, ReadCompositeRequest request) {
+    public ReadCompositeResponse read(LwM2mServer identity, ReadCompositeRequest request) {
         List<LwM2mPath> paths = request.getPaths();
         if (paths.size() == 1 && paths.get(0).isRoot()) {
             // TODO implement read for "/" use case.
@@ -117,7 +117,7 @@ public class RootEnabler implements LwM2mRootEnabler {
     }
 
     @Override
-    public WriteCompositeResponse write(ServerIdentity identity, WriteCompositeRequest request) {
+    public WriteCompositeResponse write(LwM2mServer identity, WriteCompositeRequest request) {
         // We first need to check if targeted object and instance exist and if there are writable.
         Map<Integer, LwM2mObjectEnabler> enablers = new HashMap<>();
         for (Entry<LwM2mPath, LwM2mNode> entry : request.getNodes().entrySet()) {
@@ -209,7 +209,7 @@ public class RootEnabler implements LwM2mRootEnabler {
     }
 
     @Override
-    public synchronized ObserveCompositeResponse observe(ServerIdentity identity, ObserveCompositeRequest request) {
+    public synchronized ObserveCompositeResponse observe(LwM2mServer identity, ObserveCompositeRequest request) {
         List<LwM2mPath> paths = request.getPaths();
 
         // Read Nodes

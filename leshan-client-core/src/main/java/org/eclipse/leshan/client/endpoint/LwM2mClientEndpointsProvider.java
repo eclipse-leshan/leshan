@@ -21,17 +21,17 @@ import java.util.List;
 
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServerInfo;
 
 public interface LwM2mClientEndpointsProvider {
 
     void init(LwM2mObjectTree objectTree, DownlinkRequestReceiver requestReceiver, ClientEndpointToolbox toolbox);
 
-    ServerIdentity createEndpoint(ServerInfo serverInfo, boolean clientInitiatedOnly, List<Certificate> trustStore,
+    LwM2mServer createEndpoint(ServerInfo serverInfo, boolean clientInitiatedOnly, List<Certificate> trustStore,
             ClientEndpointToolbox toolbox);
 
-    Collection<ServerIdentity> createEndpoints(Collection<? extends ServerInfo> serverInfo, boolean clientInitiatedOnly,
+    Collection<LwM2mServer> createEndpoints(Collection<? extends ServerInfo> serverInfo, boolean clientInitiatedOnly,
             List<Certificate> trustStore, ClientEndpointToolbox toolbox);
 
     void destroyEndpoints();
@@ -40,7 +40,7 @@ public interface LwM2mClientEndpointsProvider {
 
     List<LwM2mClientEndpoint> getEndpoints();
 
-    LwM2mClientEndpoint getEndpoint(ServerIdentity server);
+    LwM2mClientEndpoint getEndpoint(LwM2mServer server);
 
     void stop();
 

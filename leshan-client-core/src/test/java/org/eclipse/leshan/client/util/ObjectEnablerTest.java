@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.junit.jupiter.api.Test;
@@ -39,7 +39,7 @@ public class ObjectEnablerTest {
         initializer.setInstancesForObject(LwM2mId.ACCESS_CONTROL, instanceEnabler);
         LwM2mObjectEnabler objectEnabler = initializer.create(LwM2mId.ACCESS_CONTROL);
 
-        objectEnabler.delete(ServerIdentity.SYSTEM, new DeleteRequest(LwM2mId.ACCESS_CONTROL, instanceEnabler.getId()));
+        objectEnabler.delete(LwM2mServer.SYSTEM, new DeleteRequest(LwM2mId.ACCESS_CONTROL, instanceEnabler.getId()));
         assertTrue(instanceEnabler.waitForDelete(2, TimeUnit.SECONDS), "callback delete should have been called");
     }
 
@@ -48,7 +48,7 @@ public class ObjectEnablerTest {
         CountDownLatch onDelete = new CountDownLatch(1);
 
         @Override
-        public void onDelete(ServerIdentity identity) {
+        public void onDelete(LwM2mServer identity) {
             onDelete.countDown();
         }
 

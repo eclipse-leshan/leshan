@@ -23,7 +23,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -56,7 +56,7 @@ public class BootstrapHandler {
         this.linkFormatHelper = linkFormatHelper;
     }
 
-    public synchronized SendableResponse<BootstrapFinishResponse> finished(ServerIdentity server,
+    public synchronized SendableResponse<BootstrapFinishResponse> finished(LwM2mServer server,
             BootstrapFinishRequest finishedRequest) {
         if (bootstrapping) {
             // only if the request is from the bootstrap server
@@ -87,7 +87,7 @@ public class BootstrapHandler {
         }
     }
 
-    public synchronized BootstrapDeleteResponse delete(ServerIdentity server, BootstrapDeleteRequest deleteRequest) {
+    public synchronized BootstrapDeleteResponse delete(LwM2mServer server, BootstrapDeleteRequest deleteRequest) {
         if (bootstrapping) {
             // Only if the request is from the bootstrap server
             if (!server.isLwm2mBootstrapServer()) {
@@ -138,7 +138,7 @@ public class BootstrapHandler {
     /**
      * @since 1.1
      */
-    public BootstrapDiscoverResponse discover(ServerIdentity identity, BootstrapDiscoverRequest request) {
+    public BootstrapDiscoverResponse discover(LwM2mServer identity, BootstrapDiscoverRequest request) {
         if (!identity.isLwm2mBootstrapServer()) {
             return BootstrapDiscoverResponse.badRequest("not a bootstrap server");
         }

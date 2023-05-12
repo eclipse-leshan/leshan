@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -118,7 +118,7 @@ public class SendTest {
             String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws InterruptedException, TimeoutException {
         // Send Data
-        ServerIdentity serverIdentity = client.getRegisteredServers().values().iterator().next();
+        LwM2mServer serverIdentity = client.getRegisteredServers().values().iterator().next();
         SendResponse response = client.getSendService().sendData(serverIdentity, contentformat,
                 Arrays.asList("/3/0/1", "/3/0/2"), 1000);
         assertThat(response.isSuccess()).isTrue();
@@ -144,7 +144,7 @@ public class SendTest {
         @SuppressWarnings("unchecked")
         ResponseCallback<SendResponse> responseCallback = mock(ResponseCallback.class);
         ErrorCallback errorCallback = mock(ErrorCallback.class);
-        ServerIdentity serverIdentity = client.getRegisteredServers().values().iterator().next();
+        LwM2mServer serverIdentity = client.getRegisteredServers().values().iterator().next();
         client.getSendService().sendData(serverIdentity, contentformat, Arrays.asList("/3/0/1", "/3/0/2"), 1000,
                 responseCallback, errorCallback);
 
