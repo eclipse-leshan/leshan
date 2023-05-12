@@ -16,8 +16,8 @@
 package org.eclipse.leshan.client.californium;
 
 import org.eclipse.californium.core.network.Endpoint;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 
 public interface CaliforniumConnectionController {
-    void forceReconnection(Endpoint endpoint, ServerIdentity identity, boolean resume);
+    void forceReconnection(Endpoint endpoint, LwM2mServer server, boolean resume);
 }

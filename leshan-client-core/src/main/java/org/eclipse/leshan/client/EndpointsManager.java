@@ -17,7 +17,7 @@ package org.eclipse.leshan.client;
 
 import java.util.Collection;
 
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServerInfo;
 
 /**
@@ -29,21 +29,19 @@ public interface EndpointsManager {
     /**
      * Create the endpoint/connector/socket based on given {@link ServerInfo}.
      *
-     * @return a {@link ServerIdentity} object which could be used to
-     *         {@link #forceReconnection(ServerIdentity, boolean)} or
-     *         {@link #getMaxCommunicationPeriodFor(ServerIdentity, long)}
+     * @return a {@link LwM2mServer} object which could be used to {@link #forceReconnection(LwM2mServer, boolean)} or
+     *         {@link #getMaxCommunicationPeriodFor(LwM2mServer, long)}
      */
-    ServerIdentity createEndpoint(ServerInfo serverInfo, boolean clientInitiatedOnly);
+    LwM2mServer createEndpoint(ServerInfo serverInfo, boolean clientInitiatedOnly);
 
     /**
      * Create an endpoint/connector/socket for each given {@link ServerInfo}.
      *
-     * @return a collection of {@link ServerIdentity} object which could be used to
-     *         {@link #forceReconnection(ServerIdentity, boolean)} or
-     *         {@link #getMaxCommunicationPeriodFor(ServerIdentity, long)}
+     * @return a collection of {@link LwM2mServer} object which could be used to
+     *         {@link #forceReconnection(LwM2mServer, boolean)} or
+     *         {@link #getMaxCommunicationPeriodFor(LwM2mServer, long)}
      */
-    Collection<ServerIdentity> createEndpoints(Collection<? extends ServerInfo> serverInfo,
-            boolean clientInitiatedOnly);
+    Collection<LwM2mServer> createEndpoints(Collection<? extends ServerInfo> serverInfo, boolean clientInitiatedOnly);
 
     /**
      * Return the longest possible communication period based on given lifetime for the given server.
@@ -54,7 +52,7 @@ public interface EndpointsManager {
      *
      * @return the longest possible communication period based on given lifetime for the given server.
      */
-    long getMaxCommunicationPeriodFor(ServerIdentity server, long lifetimeInSeconds);
+    long getMaxCommunicationPeriodFor(LwM2mServer server, long lifetimeInSeconds);
 
     /**
      * Force a "reconnection" to the server. "reconnection" meaning changes depending of transport layer used to
@@ -64,7 +62,7 @@ public interface EndpointsManager {
      *
      * @param resume True if we must try to resume the connection (e.g. Abbreviated Handshake for DTLS)
      */
-    void forceReconnection(ServerIdentity server, boolean resume);
+    void forceReconnection(LwM2mServer server, boolean resume);
 
     /**
      * Starts the manager.

@@ -20,7 +20,7 @@ import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.resource.LwM2mRootEnabler;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
@@ -82,7 +82,7 @@ public class DefaultDownlinkReceiver implements DownlinkRequestReceiver {
     }
 
     @Override
-    public <T extends LwM2mResponse> SendableResponse<T> requestReceived(ServerIdentity server,
+    public <T extends LwM2mResponse> SendableResponse<T> requestReceived(LwM2mServer server,
             DownlinkRequest<T> request) {
 
         // Check if this is a well-known server
@@ -99,17 +99,17 @@ public class DefaultDownlinkReceiver implements DownlinkRequestReceiver {
     }
 
     @Override
-    public void onError(ServerIdentity identity, Exception e,
+    public void onError(LwM2mServer server, Exception e,
             Class<? extends LwM2mRequest<? extends LwM2mResponse>> requestType) {
     }
 
     public class RequestHandler<T extends LwM2mResponse> implements DownlinkRequestVisitor {
 
-        private final ServerIdentity sender;
+        private final LwM2mServer sender;
         private SendableResponse<? extends LwM2mResponse> response;
 
-        public RequestHandler(ServerIdentity identity) {
-            this.sender = identity;
+        public RequestHandler(LwM2mServer server) {
+            this.sender = server;
         }
 
         @Override

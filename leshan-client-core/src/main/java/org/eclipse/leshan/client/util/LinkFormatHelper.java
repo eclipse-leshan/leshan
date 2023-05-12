@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
@@ -124,7 +124,7 @@ public class LinkFormatHelper {
         Map<Integer/* oscore instance id */, List<LwM2mAttribute<?>>> oscoreAttributes = new HashMap<>();
         for (LwM2mObjectEnabler objectEnabler : objectEnablers) {
             if (objectEnabler.getId() == LwM2mId.SECURITY) {
-                ReadResponse response = objectEnabler.read(ServerIdentity.SYSTEM, new ReadRequest(LwM2mId.SECURITY));
+                ReadResponse response = objectEnabler.read(LwM2mServer.SYSTEM, new ReadRequest(LwM2mId.SECURITY));
                 if (response.isSuccess()) {
                     LwM2mObject object = (LwM2mObject) response.getContent();
                     for (LwM2mObjectInstance instance : object.getInstances().values()) {

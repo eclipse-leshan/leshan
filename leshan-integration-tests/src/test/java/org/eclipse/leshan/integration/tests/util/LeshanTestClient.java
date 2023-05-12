@@ -41,7 +41,7 @@ import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.send.DataSender;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
@@ -81,13 +81,13 @@ public class LeshanTestClient extends LeshanClient {
         return endpointName;
     }
 
-    public Connector getClientConnector(ServerIdentity server) {
+    public Connector getClientConnector(LwM2mServer server) {
         CaliforniumClientEndpoint endpoint = (CaliforniumClientEndpoint) getEndpoint(server);
         return ((CoapEndpoint) endpoint.getCoapEndpoint()).getConnector();
     }
 
-    public ServerIdentity getServerIdForRegistrationId(String regId) {
-        Map<String, ServerIdentity> registeredServers = getRegisteredServers();
+    public LwM2mServer getServerIdForRegistrationId(String regId) {
+        Map<String, LwM2mServer> registeredServers = getRegisteredServers();
         if (registeredServers != null && !registeredServers.isEmpty()) {
             return registeredServers.get(regId);
         }

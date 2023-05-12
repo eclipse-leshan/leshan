@@ -17,7 +17,7 @@ package org.eclipse.leshan.client.request;
 
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpoint;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -32,14 +32,14 @@ public class DefaultUplinkRequestSender implements UplinkRequestSender {
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(ServerIdentity server, UplinkRequest<T> request, long timeoutInMs)
+    public <T extends LwM2mResponse> T send(LwM2mServer server, UplinkRequest<T> request, long timeoutInMs)
             throws InterruptedException {
         LwM2mClientEndpoint endpoint = endpointsProvider.getEndpoint(server);
         return endpoint.send(server, request, timeoutInMs);
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(ServerIdentity server, UplinkRequest<T> request, long timeoutInMs,
+    public <T extends LwM2mResponse> void send(LwM2mServer server, UplinkRequest<T> request, long timeoutInMs,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         LwM2mClientEndpoint endpoint = endpointsProvider.getEndpoint(server);
         endpoint.send(server, request, responseCallback, errorCallback, timeoutInMs);

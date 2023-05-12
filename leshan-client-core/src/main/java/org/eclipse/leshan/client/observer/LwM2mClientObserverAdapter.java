@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.observer;
 
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DeregisterRequest;
@@ -29,71 +29,71 @@ import org.eclipse.leshan.core.request.UpdateRequest;
 public class LwM2mClientObserverAdapter implements LwM2mClientObserver {
 
     @Override
-    public void onBootstrapStarted(ServerIdentity bsserver, BootstrapRequest request) {
+    public void onBootstrapStarted(LwM2mServer bsserver, BootstrapRequest request) {
     }
 
     @Override
-    public void onBootstrapSuccess(ServerIdentity bsserver, BootstrapRequest request) {
+    public void onBootstrapSuccess(LwM2mServer bsserver, BootstrapRequest request) {
     }
 
     @Override
-    public void onBootstrapFailure(ServerIdentity bsserver, BootstrapRequest request, ResponseCode responseCode,
+    public void onBootstrapFailure(LwM2mServer bsserver, BootstrapRequest request, ResponseCode responseCode,
             String errorMessage, Exception cause) {
     }
 
     @Override
-    public void onBootstrapTimeout(ServerIdentity bsserver, BootstrapRequest request) {
+    public void onBootstrapTimeout(LwM2mServer bsserver, BootstrapRequest request) {
     }
 
     @Override
-    public void onRegistrationStarted(ServerIdentity server, RegisterRequest request) {
+    public void onRegistrationStarted(LwM2mServer server, RegisterRequest request) {
     }
 
     @Override
-    public void onRegistrationSuccess(ServerIdentity server, RegisterRequest request, String registrationID) {
+    public void onRegistrationSuccess(LwM2mServer server, RegisterRequest request, String registrationID) {
     }
 
     @Override
-    public void onRegistrationFailure(ServerIdentity server, RegisterRequest request, ResponseCode responseCode,
+    public void onRegistrationFailure(LwM2mServer server, RegisterRequest request, ResponseCode responseCode,
             String errorMessage, Exception cause) {
     }
 
     @Override
-    public void onRegistrationTimeout(ServerIdentity server, RegisterRequest request) {
+    public void onRegistrationTimeout(LwM2mServer server, RegisterRequest request) {
     }
 
     @Override
-    public void onUpdateStarted(ServerIdentity server, UpdateRequest request) {
+    public void onUpdateStarted(LwM2mServer server, UpdateRequest request) {
     }
 
     @Override
-    public void onUpdateSuccess(ServerIdentity server, UpdateRequest request) {
+    public void onUpdateSuccess(LwM2mServer server, UpdateRequest request) {
     }
 
     @Override
-    public void onUpdateFailure(ServerIdentity server, UpdateRequest request, ResponseCode responseCode,
+    public void onUpdateFailure(LwM2mServer server, UpdateRequest request, ResponseCode responseCode,
             String errorMessage, Exception cause) {
     }
 
     @Override
-    public void onUpdateTimeout(ServerIdentity server, UpdateRequest request) {
+    public void onUpdateTimeout(LwM2mServer server, UpdateRequest request) {
     }
 
     @Override
-    public void onDeregistrationStarted(ServerIdentity server, DeregisterRequest request) {
+    public void onDeregistrationStarted(LwM2mServer server, DeregisterRequest request) {
     }
 
     @Override
-    public void onDeregistrationSuccess(ServerIdentity server, DeregisterRequest request) {
+    public void onDeregistrationSuccess(LwM2mServer server, DeregisterRequest request) {
     }
 
     @Override
-    public void onDeregistrationFailure(ServerIdentity server, DeregisterRequest request, ResponseCode responseCode,
+    public void onDeregistrationFailure(LwM2mServer server, DeregisterRequest request, ResponseCode responseCode,
             String errorMessage, Exception cause) {
     }
 
     @Override
-    public void onDeregistrationTimeout(ServerIdentity server, DeregisterRequest request) {
+    public void onDeregistrationTimeout(LwM2mServer server, DeregisterRequest request) {
     }
 
     @Override

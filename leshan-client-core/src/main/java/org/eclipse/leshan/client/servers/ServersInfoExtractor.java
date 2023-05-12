@@ -17,7 +17,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.servers;
 
-import static org.eclipse.leshan.client.servers.ServerIdentity.SYSTEM;
+import static org.eclipse.leshan.client.servers.LwM2mServer.SYSTEM;
 import static org.eclipse.leshan.core.LwM2mId.DEVICE;
 import static org.eclipse.leshan.core.LwM2mId.DVC_SUPPORTED_BINDING;
 import static org.eclipse.leshan.core.LwM2mId.OSCORE;
@@ -258,7 +258,7 @@ public class ServersInfoExtractor {
     }
 
     public static Long getLifeTime(LwM2mObjectEnabler serverEnabler, int instanceId) {
-        ReadResponse response = serverEnabler.read(ServerIdentity.SYSTEM,
+        ReadResponse response = serverEnabler.read(LwM2mServer.SYSTEM,
                 new ReadRequest(SERVER, instanceId, SRV_LIFETIME));
         if (response.isSuccess()) {
             return (Long) ((LwM2mResource) response.getContent()).getValue();
@@ -268,7 +268,7 @@ public class ServersInfoExtractor {
     }
 
     public static EnumSet<BindingMode> getServerBindingMode(LwM2mObjectEnabler serverEnabler, int instanceId) {
-        ReadResponse response = serverEnabler.read(ServerIdentity.SYSTEM,
+        ReadResponse response = serverEnabler.read(LwM2mServer.SYSTEM,
                 new ReadRequest(SERVER, instanceId, SRV_BINDING));
         if (response.isSuccess()) {
             return BindingMode.parse((String) ((LwM2mResource) response.getContent()).getValue());
@@ -278,7 +278,7 @@ public class ServersInfoExtractor {
     }
 
     public static EnumSet<BindingMode> getDeviceSupportedBindingMode(LwM2mObjectEnabler serverEnabler, int instanceId) {
-        ReadResponse response = serverEnabler.read(ServerIdentity.SYSTEM,
+        ReadResponse response = serverEnabler.read(LwM2mServer.SYSTEM,
                 new ReadRequest(DEVICE, instanceId, DVC_SUPPORTED_BINDING));
         if (response.isSuccess()) {
             return BindingMode.parse((String) ((LwM2mResource) response.getContent()).getValue());
@@ -288,7 +288,7 @@ public class ServersInfoExtractor {
     }
 
     public static Boolean isBootstrapServer(LwM2mObjectEnabler objectEnabler, int instanceId) {
-        ReadResponse response = objectEnabler.read(ServerIdentity.SYSTEM,
+        ReadResponse response = objectEnabler.read(LwM2mServer.SYSTEM,
                 new ReadRequest(SECURITY, instanceId, SEC_BOOTSTRAP));
         if (response != null && response.isSuccess()) {
             return (Boolean) ((LwM2mResource) response.getContent()).getValue();
@@ -300,9 +300,9 @@ public class ServersInfoExtractor {
     public static Long getServerId(LwM2mObjectEnabler objectEnabler, int instanceId) {
         ReadResponse response = null;
         if (objectEnabler.getId() == SERVER) {
-            response = objectEnabler.read(ServerIdentity.SYSTEM, new ReadRequest(SERVER, instanceId, SRV_SERVER_ID));
+            response = objectEnabler.read(LwM2mServer.SYSTEM, new ReadRequest(SERVER, instanceId, SRV_SERVER_ID));
         } else if (objectEnabler.getId() == SECURITY) {
-            response = objectEnabler.read(ServerIdentity.SYSTEM, new ReadRequest(SECURITY, instanceId, SEC_SERVER_ID));
+            response = objectEnabler.read(LwM2mServer.SYSTEM, new ReadRequest(SECURITY, instanceId, SEC_SERVER_ID));
         }
         if (response != null && response.isSuccess()) {
             return (Long) ((LwM2mResource) response.getContent()).getValue();
@@ -314,7 +314,7 @@ public class ServersInfoExtractor {
     public static String getServerURI(LwM2mObjectEnabler objectEnabler, int instanceId) {
         ReadResponse response = null;
         if (objectEnabler.getId() == SECURITY) {
-            response = objectEnabler.read(ServerIdentity.SYSTEM, new ReadRequest(SECURITY, instanceId, SEC_SERVER_URI));
+            response = objectEnabler.read(LwM2mServer.SYSTEM, new ReadRequest(SECURITY, instanceId, SEC_SERVER_URI));
         }
         if (response != null && response.isSuccess()) {
             return (String) ((LwM2mResource) response.getContent()).getValue();
@@ -394,7 +394,7 @@ public class ServersInfoExtractor {
     }
 
     public static boolean isBootstrapServer(LwM2mInstanceEnabler instance) {
-        ReadResponse response = instance.read(ServerIdentity.SYSTEM, LwM2mId.SEC_BOOTSTRAP);
+        ReadResponse response = instance.read(LwM2mServer.SYSTEM, LwM2mId.SEC_BOOTSTRAP);
         if (response == null || response.isFailure()) {
             return false;
         }

@@ -19,7 +19,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
@@ -46,7 +46,7 @@ public class ManualDataSender implements DataSender {
 
     public synchronized void collectData(List<LwM2mPath> paths) {
         Instant currentTimestamp = Instant.now();
-        Map<LwM2mPath, LwM2mNode> currentValues = dataSenderManager.getCurrentValues(ServerIdentity.SYSTEM, paths);
+        Map<LwM2mPath, LwM2mNode> currentValues = dataSenderManager.getCurrentValues(LwM2mServer.SYSTEM, paths);
         synchronized (this) {
             builder.addNodes(currentTimestamp, currentValues);
         }
@@ -57,7 +57,7 @@ public class ManualDataSender implements DataSender {
      *
      * @throws NoDataException if no data was collected before to send
      */
-    public void sendCollectedData(ServerIdentity server, ContentFormat format, long timeoutInMs, boolean noFlush)
+    public void sendCollectedData(LwM2mServer server, ContentFormat format, long timeoutInMs, boolean noFlush)
             throws NoDataException {
         TimestampedLwM2mNodes data;
         synchronized (this) {

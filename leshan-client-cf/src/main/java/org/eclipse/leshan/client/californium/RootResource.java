@@ -33,7 +33,7 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.client.californium.endpoint.ServerIdentityExtractor;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.californium.ObserveUtil;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -73,14 +73,14 @@ public class RootResource extends LwM2mClientCoapResource {
     public void handleGET(CoapExchange exchange) {
         // Manage Bootstrap Discover Request
         Request coapRequest = exchange.advanced().getRequest();
-        ServerIdentity identity = getServerOrRejectRequest(exchange, coapRequest);
-        if (identity == null)
+        LwM2mServer server = getServerOrRejectRequest(exchange, coapRequest);
+        if (server == null)
             return;
 
         String URI = exchange.getRequestOptions().getUriPathString();
 
         BootstrapDiscoverResponse response = requestReceiver
-                .requestReceived(identity, new BootstrapDiscoverRequest(URI, coapRequest)).getResponse();
+                .requestReceived(server, new BootstrapDiscoverRequest(URI, coapRequest)).getResponse();
         if (response.getCode().isError()) {
             exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
         } else {
@@ -94,8 +94,8 @@ public class RootResource extends LwM2mClientCoapResource {
     @Override
     public void handleFETCH(CoapExchange exchange) {
         Request coapRequest = exchange.advanced().getRequest();
-        ServerIdentity identity = getServerOrRejectRequest(exchange, coapRequest);
-        if (identity == null)
+        LwM2mServer server = getServerOrRejectRequest(exchange, coapRequest);
+        if (server == null)
             return;
 
         // Handle content format for the response
@@ -121,7 +121,7 @@ public class RootResource extends LwM2mClientCoapResource {
             // Manage Observe Composite request
             ObserveCompositeRequest observeRequest = new ObserveCompositeRequest(requestContentFormat,
                     responseContentFormat, paths, coapRequest);
-            ObserveCompositeResponse response = requestReceiver.requestReceived(identity, observeRequest).getResponse();
+            ObserveCompositeResponse response = requestReceiver.requestReceived(server, observeRequest).getResponse();
 
             updateUserContextWithPaths(coapRequest, paths);
 
@@ -137,7 +137,7 @@ public class RootResource extends LwM2mClientCoapResource {
         } else {
             // Manage Read Composite request
             ReadCompositeResponse response = requestReceiver
-                    .requestReceived(identity,
+                    .requestReceived(server,
                             new ReadCompositeRequest(paths, requestContentFormat, responseContentFormat, coapRequest))
                     .getResponse();
             if (response.getCode().isError()) {
@@ -166,8 +166,8 @@ public class RootResource extends LwM2mClientCoapResource {
     public void handleIPATCH(CoapExchange exchange) {
         // Manage Read Composite request
         Request coapRequest = exchange.advanced().getRequest();
-        ServerIdentity identity = getServerOrRejectRequest(exchange, coapRequest);
-        if (identity == null)
+        LwM2mServer server = getServerOrRejectRequest(exchange, coapRequest);
+        if (server == null)
             return;
 
         // Handle content format
@@ -181,7 +181,7 @@ public class RootResource extends LwM2mClientCoapResource {
                 null, toolbox.getModel());
 
         WriteCompositeResponse response = requestReceiver
-                .requestReceived(identity, new WriteCompositeRequest(contentFormat, nodes, coapRequest)).getResponse();
+                .requestReceived(server, new WriteCompositeRequest(contentFormat, nodes, coapRequest)).getResponse();
         if (response.getCode().isError()) {
             exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
         } else {
@@ -199,12 +199,12 @@ public class RootResource extends LwM2mClientCoapResource {
         }
 
         Request coapRequest = exchange.advanced().getRequest();
-        ServerIdentity identity = getServerOrRejectRequest(exchange, coapRequest);
-        if (identity == null)
+        LwM2mServer server = getServerOrRejectRequest(exchange, coapRequest);
+        if (server == null)
             return;
 
         BootstrapDeleteResponse response = requestReceiver
-                .requestReceived(identity, new BootstrapDeleteRequest(URI, coapRequest)).getResponse();
+                .requestReceived(server, new BootstrapDeleteRequest(URI, coapRequest)).getResponse();
         exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
     }
 }

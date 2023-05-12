@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.request;
 
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.LwM2mRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -23,8 +23,7 @@ import org.eclipse.leshan.core.response.SendableResponse;
 
 public interface DownlinkRequestReceiver {
 
-    <T extends LwM2mResponse> SendableResponse<T> requestReceived(ServerIdentity identity, DownlinkRequest<T> request);
+    <T extends LwM2mResponse> SendableResponse<T> requestReceived(LwM2mServer server, DownlinkRequest<T> request);
 
-    void onError(ServerIdentity identity, Exception e,
-            Class<? extends LwM2mRequest<? extends LwM2mResponse>> requestType);
+    void onError(LwM2mServer server, Exception e, Class<? extends LwM2mRequest<? extends LwM2mResponse>> requestType);
 }

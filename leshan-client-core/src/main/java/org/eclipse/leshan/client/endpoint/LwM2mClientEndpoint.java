@@ -17,7 +17,7 @@ package org.eclipse.leshan.client.endpoint;
 
 import java.net.URI;
 
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
@@ -30,14 +30,14 @@ public interface LwM2mClientEndpoint {
 
     URI getURI();
 
-    void forceReconnection(ServerIdentity server, boolean resume);
+    void forceReconnection(LwM2mServer server, boolean resume);
 
     long getMaxCommunicationPeriodFor(long lifetimeInMs);
 
-    <T extends LwM2mResponse> T send(ServerIdentity server, UplinkRequest<T> request, long timeoutInMs)
+    <T extends LwM2mResponse> T send(LwM2mServer server, UplinkRequest<T> request, long timeoutInMs)
             throws InterruptedException;
 
-    <T extends LwM2mResponse> void send(ServerIdentity server, UplinkRequest<T> request,
+    <T extends LwM2mResponse> void send(LwM2mServer server, UplinkRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback, long timeoutInMs);
 
 }

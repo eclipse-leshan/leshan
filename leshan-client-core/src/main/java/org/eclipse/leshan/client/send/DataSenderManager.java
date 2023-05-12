@@ -20,7 +20,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.client.request.UplinkRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mRootEnabler;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
@@ -58,7 +58,7 @@ public class DataSenderManager implements Startable, Stoppable, Destroyable {
      * @throws NoDataException if a read request turns out to be unsuccessful
      * @return retrieved nodes mapped by their respective paths
      */
-    public Map<LwM2mPath, LwM2mNode> getCurrentValues(ServerIdentity server, List<LwM2mPath> paths)
+    public Map<LwM2mPath, LwM2mNode> getCurrentValues(LwM2mServer server, List<LwM2mPath> paths)
             throws NoDataException {
         ReadCompositeResponse response = rootEnabler.read(server,
                 new ReadCompositeRequest(paths, ContentFormat.SENML_CBOR, ContentFormat.SENML_CBOR, null));
@@ -110,7 +110,7 @@ public class DataSenderManager implements Startable, Stoppable, Destroyable {
     /**
      * Send data asynchronously
      */
-    public void sendData(ServerIdentity server, ContentFormat format, Map<LwM2mPath, LwM2mNode> nodes,
+    public void sendData(LwM2mServer server, ContentFormat format, Map<LwM2mPath, LwM2mNode> nodes,
             ResponseCallback<SendResponse> onResponse, ErrorCallback onError, long timeoutInMs) {
         requestSender.send(server, new SendRequest(format, nodes, null), timeoutInMs, onResponse, onError);
     }
@@ -118,7 +118,7 @@ public class DataSenderManager implements Startable, Stoppable, Destroyable {
     /**
      * Send data synchronously.
      */
-    public SendResponse sendData(ServerIdentity server, ContentFormat format, Map<LwM2mPath, LwM2mNode> nodes,
+    public SendResponse sendData(LwM2mServer server, ContentFormat format, Map<LwM2mPath, LwM2mNode> nodes,
             long timeoutInMs) throws InterruptedException {
         return requestSender.send(server, new SendRequest(format, nodes, null), timeoutInMs);
     }
@@ -126,7 +126,7 @@ public class DataSenderManager implements Startable, Stoppable, Destroyable {
     /**
      * Send timestamped data asynchronously
      */
-    public void sendData(ServerIdentity server, ContentFormat format, TimestampedLwM2mNodes nodes,
+    public void sendData(LwM2mServer server, ContentFormat format, TimestampedLwM2mNodes nodes,
             ResponseCallback<SendResponse> onResponse, ErrorCallback onError, long timeoutInMs) {
         requestSender.send(server, new SendRequest(format, nodes, null), timeoutInMs, onResponse, onError);
     }
@@ -134,7 +134,7 @@ public class DataSenderManager implements Startable, Stoppable, Destroyable {
     /**
      * Send timestamped data synchronously.
      */
-    public SendResponse sendData(ServerIdentity server, ContentFormat format, TimestampedLwM2mNodes nodes,
+    public SendResponse sendData(LwM2mServer server, ContentFormat format, TimestampedLwM2mNodes nodes,
             long timeoutInMs) throws InterruptedException {
         return requestSender.send(server, new SendRequest(format, nodes, null), timeoutInMs);
     }

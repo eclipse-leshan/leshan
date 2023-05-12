@@ -40,7 +40,7 @@ import org.eclipse.leshan.client.request.UplinkRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.servers.DmServerInfo;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
@@ -79,7 +79,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultRegistrationEngine.class);
 
     private static final long NOW = 0;
-    private static final ServerIdentity ALL = new ServerIdentity(null, null, null);
+    private static final LwM2mServer ALL = new LwM2mServer(null, null, null);
 
     // Timeout for bootstrap/register/update request
     private final long requestTimeoutInMs;
@@ -109,9 +109,9 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private final Map<String, String> additionalAttributes;
     private final Map<String, String> bsAdditionalAttributes; // @since 1.1
     private final Map<Integer /* objectId */, LwM2mObjectEnabler> objectEnablers;
-    private final Map<String /* registrationId */, ServerIdentity> registeredServers;
-    private final List<ServerIdentity> registeringServers;
-    private final AtomicReference<ServerIdentity> currentBootstrapServer;
+    private final Map<String /* registrationId */, LwM2mServer> registeredServers;
+    private final List<LwM2mServer> registeringServers;
+    private final AtomicReference<LwM2mServer> currentBootstrapServer;
 
     // helpers
     private final UplinkRequestSender sender;
@@ -181,7 +181,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             started = true;
             // Try factory bootstrap
             // TODO support multi server
-            ServerIdentity dmServer = factoryBootstrap();
+            LwM2mServer dmServer = factoryBootstrap();
 
             if (dmServer == null) {
                 // If it failed try client initiated bootstrap
@@ -193,7 +193,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         }
     }
 
-    private ServerIdentity factoryBootstrap() {
+    private LwM2mServer factoryBootstrap() {
         ServerInfo serverInfo = selectServer(ServersInfoExtractor.getInfo(objectEnablers).deviceManagements);
         if (serverInfo != null) {
             return endpointsManager.createEndpoint(serverInfo, isClientInitiatedOnly());
@@ -205,7 +205,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         return queueMode;
     }
 
-    private ServerIdentity clientInitiatedBootstrap() throws InterruptedException {
+    private LwM2mServer clientInitiatedBootstrap() throws InterruptedException {
         ServerInfo bootstrapServerInfo = ServersInfoExtractor.getBootstrapServerInfo(objectEnablers);
 
         if (bootstrapServerInfo == null) {
@@ -220,7 +220,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             registeredServers.clear();
             cancelRegistrationTask();
             cancelUpdateTask(true);
-            ServerIdentity bootstrapServer = endpointsManager.createEndpoint(bootstrapServerInfo, true);
+            LwM2mServer bootstrapServer = endpointsManager.createEndpoint(bootstrapServerInfo, true);
             if (bootstrapServer != null) {
                 currentBootstrapServer.set(bootstrapServer);
             }
@@ -254,7 +254,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                             LOG.info("Bootstrap finished {}.", bootstrapServer.getUri());
                             ServerInfo serverInfo = selectServer(
                                     ServersInfoExtractor.getInfo(objectEnablers).deviceManagements);
-                            ServerIdentity dmServer = null;
+                            LwM2mServer dmServer = null;
                             if (serverInfo != null) {
                                 dmServer = endpointsManager.createEndpoint(serverInfo, isClientInitiatedOnly());
                             }
@@ -294,7 +294,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         }
     }
 
-    private boolean registerWithRetry(ServerIdentity server) throws InterruptedException {
+    private boolean registerWithRetry(LwM2mServer server) throws InterruptedException {
         Status registerStatus = register(server);
         if (registerStatus == Status.TIMEOUT) {
             // if register timeout maybe server lost the session,
@@ -305,7 +305,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         return registerStatus == Status.SUCCESS;
     }
 
-    private Status register(ServerIdentity server) throws InterruptedException {
+    private Status register(LwM2mServer server) throws InterruptedException {
         DmServerInfo dmInfo = ServersInfoExtractor.getDMServerInfo(objectEnablers, server.getId());
 
         if (dmInfo == null) {
@@ -370,7 +370,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         }
     }
 
-    private boolean deregister(ServerIdentity server, String registrationID) throws InterruptedException {
+    private boolean deregister(LwM2mServer server, String registrationID) throws InterruptedException {
         if (registrationID == null)
             return true;
 
@@ -421,7 +421,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         }
     }
 
-    private boolean updateWithRetry(ServerIdentity server, String registrationId, RegistrationUpdate registrationUpdate)
+    private boolean updateWithRetry(LwM2mServer server, String registrationId, RegistrationUpdate registrationUpdate)
             throws InterruptedException {
 
         Status updateStatus = update(server, registrationId, registrationUpdate);
@@ -434,7 +434,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         return updateStatus == Status.SUCCESS;
     }
 
-    private Status update(ServerIdentity server, String registrationID, RegistrationUpdate registrationUpdate)
+    private Status update(LwM2mServer server, String registrationID, RegistrationUpdate registrationUpdate)
             throws InterruptedException {
         DmServerInfo dmInfo = ServersInfoExtractor.getDMServerInfo(objectEnablers, server.getId());
         if (dmInfo == null) {
@@ -489,7 +489,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         }
     }
 
-    private long calculateNextUpdate(ServerIdentity server, long lifetimeInSeconds) {
+    private long calculateNextUpdate(LwM2mServer server, long lifetimeInSeconds) {
         long maxComminucationPeriod = endpointsManager.getMaxCommunicationPeriodFor(server, lifetimeInSeconds * 1000);
         if (communicationPeriodInMs != null) {
             return Math.min(communicationPeriodInMs, maxComminucationPeriod);
@@ -527,7 +527,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         public void run() {
             synchronized (taskLock) {
                 try {
-                    ServerIdentity dmServer = clientInitiatedBootstrap();
+                    LwM2mServer dmServer = clientInitiatedBootstrap();
                     if (dmServer == null) {
                         // clientInitiatatedBootstrapTask is considered as finished.
                         // see https://github.com/eclipse/leshan/issues/701
@@ -548,7 +548,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         }
     }
 
-    private synchronized void scheduleRegistrationTask(ServerIdentity dmServer, long timeInMs) {
+    private synchronized void scheduleRegistrationTask(LwM2mServer dmServer, long timeInMs) {
         if (!started)
             return;
 
@@ -562,9 +562,9 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     }
 
     private class RegistrationTask implements Runnable {
-        private final ServerIdentity server;
+        private final LwM2mServer server;
 
-        public RegistrationTask(ServerIdentity server) {
+        public RegistrationTask(LwM2mServer server) {
             this.server = server;
         }
 
@@ -588,7 +588,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
 
     }
 
-    private synchronized void scheduleUpdate(ServerIdentity server, String registrationId,
+    private synchronized void scheduleUpdate(LwM2mServer server, String registrationId,
             RegistrationUpdate registrationUpdate, long timeInMs) {
         if (!started)
             return;
@@ -604,11 +604,11 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     }
 
     private class UpdateRegistrationTask implements Runnable {
-        private final ServerIdentity server;
+        private final LwM2mServer server;
         private final String registrationId;
         private final RegistrationUpdate registrationUpdate;
 
-        public UpdateRegistrationTask(ServerIdentity server, String registrationId,
+        public UpdateRegistrationTask(LwM2mServer server, String registrationId,
                 RegistrationUpdate registrationUpdate) {
             this.server = server;
             this.registrationId = registrationId;
@@ -668,7 +668,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         try {
             if (deregister) {
                 if (!registeredServers.isEmpty()) {
-                    for (Entry<String, ServerIdentity> registeredServer : registeredServers.entrySet()) {
+                    for (Entry<String, LwM2mServer> registeredServer : registeredServers.entrySet()) {
                         deregister(registeredServer.getValue(), registeredServer.getKey());
                     }
                 }
@@ -697,7 +697,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             }
             if (wasStarted && deregister) {
                 if (!registeredServers.isEmpty()) {
-                    for (Entry<String, ServerIdentity> registeredServer : registeredServers.entrySet()) {
+                    for (Entry<String, LwM2mServer> registeredServer : registeredServers.entrySet()) {
                         deregister(registeredServer.getValue(), registeredServer.getKey());
                     }
                 }
@@ -709,9 +709,9 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private class QueueUpdateTask implements Runnable {
 
         private final RegistrationUpdate registrationUpdate;
-        private final ServerIdentity server;
+        private final LwM2mServer server;
 
-        public QueueUpdateTask(ServerIdentity server, RegistrationUpdate registrationUpdate) {
+        public QueueUpdateTask(LwM2mServer server, RegistrationUpdate registrationUpdate) {
             this.registrationUpdate = registrationUpdate;
             this.server = server;
         }
@@ -722,7 +722,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 cancelUpdateTask(true);
                 if (ALL.equals(server)) {
                     // TODO support multi server
-                    Entry<String, ServerIdentity> currentServer = registeredServers.entrySet().iterator().next();
+                    Entry<String, LwM2mServer> currentServer = registeredServers.entrySet().iterator().next();
                     if (currentServer != null) {
                         scheduleUpdate(currentServer.getValue(), currentServer.getKey(), registrationUpdate, NOW);
                     }
@@ -756,12 +756,12 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     }
 
     @Override
-    public void triggerRegistrationUpdate(ServerIdentity server) {
+    public void triggerRegistrationUpdate(LwM2mServer server) {
         triggerRegistrationUpdate(server, new RegistrationUpdate());
     }
 
     @Override
-    public void triggerRegistrationUpdate(ServerIdentity server, RegistrationUpdate registrationUpdate) {
+    public void triggerRegistrationUpdate(LwM2mServer server, RegistrationUpdate registrationUpdate) {
         if (server == null)
             return;
 
@@ -802,8 +802,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                             // deregister if needed
                             if (deregister) {
                                 if (!registeredServers.isEmpty()) {
-                                    for (Entry<String, ServerIdentity> registeredServer : registeredServers
-                                            .entrySet()) {
+                                    for (Entry<String, LwM2mServer> registeredServer : registeredServers.entrySet()) {
                                         deregister(registeredServer.getValue(), registeredServer.getKey());
                                     }
                                 }
@@ -835,10 +834,10 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     }
 
     @Override
-    public String getRegistrationId(ServerIdentity server) {
+    public String getRegistrationId(LwM2mServer server) {
         if (server == null)
             return null;
-        for (Entry<String, ServerIdentity> entry : registeredServers.entrySet()) {
+        for (Entry<String, LwM2mServer> entry : registeredServers.entrySet()) {
             if (server.equals(entry.getValue())) {
                 return entry.getKey();
             }
@@ -847,19 +846,19 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     }
 
     @Override
-    public Map<String, ServerIdentity> getRegisteredServers() {
+    public Map<String, LwM2mServer> getRegisteredServers() {
         return Collections.unmodifiableMap(registeredServers);
     }
 
     @Override
-    public ServerIdentity getRegisteredServer(long serverId) {
-        for (ServerIdentity server : registeringServers) {
+    public LwM2mServer getRegisteredServer(long serverId) {
+        for (LwM2mServer server : registeringServers) {
             if (server != null && server.getId() == serverId) {
                 return server;
             }
         }
-        for (Entry<String, ServerIdentity> entry : registeredServers.entrySet()) {
-            ServerIdentity server = entry.getValue();
+        for (Entry<String, LwM2mServer> entry : registeredServers.entrySet()) {
+            LwM2mServer server = entry.getValue();
             if (server != null && server.getId() == serverId) {
                 return server;
             }
@@ -868,19 +867,19 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     }
 
     @Override
-    public boolean isAllowedToCommunicate(ServerIdentity foreingPeer) {
+    public boolean isAllowedToCommunicate(LwM2mServer foreingPeer) {
         if (foreingPeer == null)
             return false;
-        ServerIdentity bootstrapServer = currentBootstrapServer.get();
+        LwM2mServer bootstrapServer = currentBootstrapServer.get();
         if (bootstrapServer != null && foreingPeer.equals(bootstrapServer)) {
             return true;
         } else {
-            for (ServerIdentity server : registeringServers) {
+            for (LwM2mServer server : registeringServers) {
                 if (foreingPeer.equals(server)) {
                     return true;
                 }
             }
-            for (ServerIdentity server : registeredServers.values()) {
+            for (LwM2mServer server : registeredServers.values()) {
                 if (foreingPeer.equals(server)) {
                     return true;
                 }

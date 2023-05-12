@@ -36,7 +36,7 @@ import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
@@ -96,17 +96,17 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
     @Override
     public void handleGET(CoapExchange exchange) {
         Request coapRequest = exchange.advanced().getRequest();
-        ServerIdentity identity = getServerOrRejectRequest(exchange, coapRequest);
-        if (identity == null)
+        LwM2mServer server = getServerOrRejectRequest(exchange, coapRequest);
+        if (server == null)
             return;
 
         String URI = exchange.getRequestOptions().getUriPathString();
 
         if (exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_LINK_FORMAT) {
-            if (identity.isLwm2mBootstrapServer()) {
+            if (server.isLwm2mBootstrapServer()) {
                 // Manage Bootstrap Discover Request
                 BootstrapDiscoverResponse response = requestReceiver
-                        .requestReceived(identity, new BootstrapDiscoverRequest(URI, coapRequest)).getResponse();
+                        .requestReceived(server, new BootstrapDiscoverRequest(URI, coapRequest)).getResponse();
                 if (response.getCode().isError()) {
                     exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                 } else {
@@ -118,7 +118,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
             } else {
                 // Manage Discover Request
                 DiscoverResponse response = requestReceiver
-                        .requestReceived(identity, new DiscoverRequest(URI, coapRequest)).getResponse();
+                        .requestReceived(server, new DiscoverRequest(URI, coapRequest)).getResponse();
                 if (response.getCode().isError()) {
                     exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                 } else {
@@ -143,7 +143,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
             // Manage Observe Request
             if (exchange.getRequestOptions().hasObserve()) {
                 ObserveRequest observeRequest = new ObserveRequest(requestedContentFormat, URI, coapRequest);
-                ObserveResponse response = requestReceiver.requestReceived(identity, observeRequest).getResponse();
+                ObserveResponse response = requestReceiver.requestReceived(server, observeRequest).getResponse();
                 if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CONTENT) {
                     LwM2mPath path = getPath(URI);
                     LwM2mNode content = response.getContent();
@@ -156,12 +156,11 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                     return;
                 }
             } else {
-                if (identity.isLwm2mBootstrapServer()) {
+                if (server.isLwm2mBootstrapServer()) {
                     // Manage Bootstrap Read Request
                     BootstrapReadRequest readRequest = new BootstrapReadRequest(requestedContentFormat, URI,
                             coapRequest);
-                    BootstrapReadResponse response = requestReceiver.requestReceived(identity, readRequest)
-                            .getResponse();
+                    BootstrapReadResponse response = requestReceiver.requestReceived(server, readRequest).getResponse();
                     if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CONTENT) {
                         LwM2mPath path = getPath(URI);
                         LwM2mNode content = response.getContent();
@@ -177,7 +176,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                 } else {
                     // Manage Read Request
                     ReadRequest readRequest = new ReadRequest(requestedContentFormat, URI, coapRequest);
-                    ReadResponse response = requestReceiver.requestReceived(identity, readRequest).getResponse();
+                    ReadResponse response = requestReceiver.requestReceived(server, readRequest).getResponse();
                     if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CONTENT) {
                         LwM2mPath path = getPath(URI);
                         LwM2mNode content = response.getContent();
@@ -211,7 +210,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
     @Override
     public void handlePUT(CoapExchange coapExchange) {
         Request coapRequest = coapExchange.advanced().getRequest();
-        ServerIdentity identity = getServerOrRejectRequest(coapExchange, coapRequest);
+        LwM2mServer identity = getServerOrRejectRequest(coapExchange, coapRequest);
         if (identity == null)
             return;
 
@@ -291,7 +290,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
     @Override
     public void handlePOST(CoapExchange exchange) {
         Request coapRequest = exchange.advanced().getRequest();
-        ServerIdentity identity = getServerOrRejectRequest(exchange, coapRequest);
+        LwM2mServer identity = getServerOrRejectRequest(exchange, coapRequest);
         if (identity == null)
             return;
 
@@ -412,7 +411,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
         // Manage Delete Request
         String URI = coapExchange.getRequestOptions().getUriPathString();
         Request coapRequest = coapExchange.advanced().getRequest();
-        ServerIdentity identity = getServerOrRejectRequest(coapExchange, coapRequest);
+        LwM2mServer identity = getServerOrRejectRequest(coapExchange, coapRequest);
         if (identity == null)
             return;
 

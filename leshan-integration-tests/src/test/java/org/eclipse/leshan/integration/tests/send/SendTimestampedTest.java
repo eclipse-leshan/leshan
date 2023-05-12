@@ -30,7 +30,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
 import org.eclipse.leshan.client.send.ManualDataSender;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -110,13 +110,13 @@ public class SendTimestampedTest {
             String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws InterruptedException, TimeoutException {
         // Send Data
-        ServerIdentity serverIdentity = client.getRegisteredServers().values().iterator().next();
+        LwM2mServer registeredServer = client.getRegisteredServers().values().iterator().next();
         ManualDataSender sender = client.getSendService().getDataSender(ManualDataSender.DEFAULT_NAME,
                 ManualDataSender.class);
         sender.collectData(Arrays.asList(getExamplePath()));
         Thread.sleep(1000);
         sender.collectData(Arrays.asList(getExamplePath()));
-        sender.sendCollectedData(serverIdentity, contentFormat, 1000, false);
+        sender.sendCollectedData(registeredServer, contentFormat, 1000, false);
         TimestampedLwM2mNodes data = server.waitForData(client.getEndpointName(), 1, TimeUnit.SECONDS);
 
         // Verify SendListener data received

@@ -24,7 +24,7 @@ import java.util.Objects;
 
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mResource;
@@ -71,8 +71,8 @@ public class Server extends BaseInstanceEnabler {
     }
 
     @Override
-    public ReadResponse read(ServerIdentity identity, int resourceid) {
-        if (!identity.isSystem())
+    public ReadResponse read(LwM2mServer server, int resourceid) {
+        if (!server.isSystem())
             LOG.debug("Read on Server resource /{}/{}/{}", getModel().id, getId(), resourceid);
 
         switch (resourceid) {
@@ -104,13 +104,13 @@ public class Server extends BaseInstanceEnabler {
             return ReadResponse.success(resourceid, preferredTransport.toString());
 
         default:
-            return super.read(identity, resourceid);
+            return super.read(server, resourceid);
         }
     }
 
     @Override
-    public WriteResponse write(ServerIdentity identity, boolean replace, int resourceid, LwM2mResource value) {
-        if (!identity.isSystem())
+    public WriteResponse write(LwM2mServer server, boolean replace, int resourceid, LwM2mResource value) {
+        if (!server.isSystem())
             LOG.debug("Write on Server resource /{}/{}/{}", getModel().id, getId(), resourceid);
 
         switch (resourceid) {
@@ -192,15 +192,15 @@ public class Server extends BaseInstanceEnabler {
             }
 
         default:
-            return super.write(identity, replace, resourceid, value);
+            return super.write(server, replace, resourceid, value);
         }
     }
 
     @Override
-    public ExecuteResponse execute(ServerIdentity identity, int resourceid, Arguments arguments) {
+    public ExecuteResponse execute(LwM2mServer server, int resourceid, Arguments arguments) {
         LOG.debug("Execute on Server resource /{}/{}/{}", getModel().id, getId(), resourceid);
         if (resourceid == 8) {
-            getLwM2mClient().triggerRegistrationUpdate(identity);
+            getLwM2mClient().triggerRegistrationUpdate(server);
             return ExecuteResponse.success();
         } else if (resourceid == 9) {
             boolean success = getLwM2mClient().triggerClientInitiatedBootstrap(true);
@@ -210,7 +210,7 @@ public class Server extends BaseInstanceEnabler {
                 return ExecuteResponse.badRequest("probably no bootstrap server configured");
             }
         } else {
-            return super.execute(identity, resourceid, arguments);
+            return super.execute(server, resourceid, arguments);
         }
     }
 

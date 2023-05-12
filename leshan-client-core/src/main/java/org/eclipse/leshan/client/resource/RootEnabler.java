@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.leshan.client.resource.listener.ObjectsListener;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
@@ -72,7 +72,7 @@ public class RootEnabler implements LwM2mRootEnabler {
     }
 
     @Override
-    public ReadCompositeResponse read(ServerIdentity identity, ReadCompositeRequest request) {
+    public ReadCompositeResponse read(LwM2mServer server, ReadCompositeRequest request) {
         List<LwM2mPath> paths = request.getPaths();
         if (paths.size() == 1 && paths.get(0).isRoot()) {
             // TODO implement read for "/" use case.
@@ -89,19 +89,19 @@ public class RootEnabler implements LwM2mRootEnabler {
 
             LwM2mNode node = null;
             if (objectEnabler != null) {
-                ReadResponse response = objectEnabler.read(identity,
+                ReadResponse response = objectEnabler.read(server,
                         new ReadRequest(request.getResponseContentFormat(), path, request.getCoapRequest()));
                 if (response.isSuccess()) {
                     node = response.getContent();
                     isEmpty = false;
                 } else {
                     LOG.debug("Server {} try to read node {} in a Read-Composite Request {} but it failed for {} {}",
-                            identity, path, paths, response.getCode(), response.getErrorMessage());
+                            server, path, paths, response.getCode(), response.getErrorMessage());
                 }
             } else {
                 LOG.debug(
                         "Server {} try to read node {} in a Read-Composite Request {} but it failed because Object {} is not supported",
-                        identity, path, paths, objectId);
+                        server, path, paths, objectId);
             }
             // LWM2M specification says that "Read-Composite operation is treated as
             // non-atomic and handled as best effort by the client. That is, if any of the requested resources do not
@@ -117,7 +117,7 @@ public class RootEnabler implements LwM2mRootEnabler {
     }
 
     @Override
-    public WriteCompositeResponse write(ServerIdentity identity, WriteCompositeRequest request) {
+    public WriteCompositeResponse write(LwM2mServer server, WriteCompositeRequest request) {
         // We first need to check if targeted object and instance exist and if there are writable.
         Map<Integer, LwM2mObjectEnabler> enablers = new HashMap<>();
         for (Entry<LwM2mPath, LwM2mNode> entry : request.getNodes().entrySet()) {
@@ -194,7 +194,7 @@ public class RootEnabler implements LwM2mRootEnabler {
                                     node.getClass().getSimpleName()));
                 }
 
-                WriteResponse response = objectEnabler.write(identity, new WriteRequest(Mode.UPDATE,
+                WriteResponse response = objectEnabler.write(server, new WriteRequest(Mode.UPDATE,
                         request.getContentFormat(), path.toObjectInstancePath(), instance, request.getCoapRequest()));
 
                 if (response.isFailure()) {
@@ -209,7 +209,7 @@ public class RootEnabler implements LwM2mRootEnabler {
     }
 
     @Override
-    public synchronized ObserveCompositeResponse observe(ServerIdentity identity, ObserveCompositeRequest request) {
+    public synchronized ObserveCompositeResponse observe(LwM2mServer server, ObserveCompositeRequest request) {
         List<LwM2mPath> paths = request.getPaths();
 
         // Read Nodes
@@ -222,18 +222,18 @@ public class RootEnabler implements LwM2mRootEnabler {
 
             LwM2mNode node = null;
             if (objectEnabler != null) {
-                ReadResponse response = objectEnabler.observe(identity,
+                ReadResponse response = objectEnabler.observe(server,
                         new ObserveRequest(request.getResponseContentFormat(), path, request.getCoapRequest()));
                 if (response.isSuccess()) {
                     node = response.getContent();
                     isEmpty = false;
                 } else {
                     LOG.debug("Server {} try to read node {} in a Observe-Composite Request {} but it failed for {} "
-                            + "{}", identity, path, paths, response.getCode(), response.getErrorMessage());
+                            + "{}", server, path, paths, response.getCode(), response.getErrorMessage());
                 }
             } else {
                 LOG.debug("Server {} try to read node {} in a Observe-Composite Request {} but it failed because "
-                        + "Object {} is not supported", identity, path, paths, objectId);
+                        + "Object {} is not supported", server, path, paths, objectId);
             }
 
             content.put(path, node);

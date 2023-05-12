@@ -22,7 +22,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
@@ -53,41 +53,41 @@ public class DummyInstanceEnabler extends SimpleInstanceEnabler {
     }
 
     @Override
-    public ReadResponse read(ServerIdentity identity, int resourceid) {
+    public ReadResponse read(LwM2mServer server, int resourceid) {
         LOG.info("Read on {} Resource /{}/{}/{} ", getModel().name, getModel().id, getId(), resourceid);
-        return super.read(identity, resourceid);
+        return super.read(server, resourceid);
     }
 
     @Override
-    public ReadResponse read(ServerIdentity identity, int resourceid, int resourceInstance) {
+    public ReadResponse read(LwM2mServer server, int resourceid, int resourceInstance) {
         LOG.info("Read on {} Resource /{}/{}/{}/{} ", getModel().name, getModel().id, getId(), resourceid,
                 resourceInstance);
-        return super.read(identity, resourceid, resourceInstance);
+        return super.read(server, resourceid, resourceInstance);
     }
 
     @Override
-    public WriteResponse write(ServerIdentity identity, boolean replace, int resourceid, LwM2mResource value) {
+    public WriteResponse write(LwM2mServer server, boolean replace, int resourceid, LwM2mResource value) {
         LOG.info("Write on {} Resource /{}/{}/{} ", getModel().name, getModel().id, getId(), resourceid);
-        return super.write(identity, replace, resourceid, value);
+        return super.write(server, replace, resourceid, value);
     }
 
     @Override
-    public WriteResponse write(ServerIdentity identity, boolean addIfAbsent, int resourceid, int resourceInstance,
+    public WriteResponse write(LwM2mServer server, boolean addIfAbsent, int resourceid, int resourceInstance,
             LwM2mResourceInstance value) {
         LOG.info("Write on {} Resource  Instance/{}/{}/{}/{} ", getModel().name, getModel().id, getId(), resourceid,
                 resourceInstance);
-        return super.write(identity, addIfAbsent, resourceid, resourceInstance, value);
+        return super.write(server, addIfAbsent, resourceid, resourceInstance, value);
     }
 
     @Override
-    public ExecuteResponse execute(ServerIdentity identity, int resourceid, Arguments arguments) {
+    public ExecuteResponse execute(LwM2mServer server, int resourceid, Arguments arguments) {
         LOG.info("Execute {} Resource /{}/{}/{} with params {}", getModel().name, getModel().id, getId(), resourceid,
                 arguments);
         return ExecuteResponse.success();
     }
 
     @Override
-    public void onDelete(ServerIdentity identity) {
+    public void onDelete(LwM2mServer server) {
         LOG.info("Instance {} from object {} ({}) deleted.", getId(), getModel().name, getModel().id);
     }
 

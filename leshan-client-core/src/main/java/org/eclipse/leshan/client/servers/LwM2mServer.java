@@ -20,14 +20,14 @@ import java.net.URI;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 
 /**
- * A Bean which identify a LWM2M Server.
+ * A Bean which represents a LWM2M Server at client side.
  */
-public class ServerIdentity {
+public class LwM2mServer {
 
     /**
-     * Identity for system calls.
+     * Server for system calls.
      */
-    public final static ServerIdentity SYSTEM = new ServerIdentity(null, null, Role.SYSTEM, null);
+    public final static LwM2mServer SYSTEM = new LwM2mServer(null, null, Role.SYSTEM, null);
 
     public enum Role {
         /**
@@ -45,28 +45,28 @@ public class ServerIdentity {
         LWM2M_BOOTSTRAP_SERVER
     }
 
-    private final LwM2mPeer peer;
+    private final LwM2mPeer transportData;
     private final Long id;
     private final Role role;
     private final URI uri;
 
-    public ServerIdentity(LwM2mPeer peer, Long id, URI uri) {
-        this(peer, id, Role.LWM2M_SERVER, uri);
+    public LwM2mServer(LwM2mPeer transportData, Long id, URI uri) {
+        this(transportData, id, Role.LWM2M_SERVER, uri);
     }
 
-    public ServerIdentity(LwM2mPeer peer, URI uri) {
-        this(peer, null, Role.LWM2M_BOOTSTRAP_SERVER, uri);
+    public LwM2mServer(LwM2mPeer transportData, URI uri) {
+        this(transportData, null, Role.LWM2M_BOOTSTRAP_SERVER, uri);
     }
 
-    public ServerIdentity(LwM2mPeer peer, Long id, Role role, URI uri) {
-        this.peer = peer;
+    public LwM2mServer(LwM2mPeer transportData, Long id, Role role, URI uri) {
+        this.transportData = transportData;
         this.id = id;
         this.role = role;
         this.uri = uri;
     }
 
     public LwM2mPeer getTransportData() {
-        return peer;
+        return transportData;
     }
 
     public Long getId() {
@@ -83,27 +83,27 @@ public class ServerIdentity {
     }
 
     /**
-     * Test, if identity has role {@link Role#LWM2M_BOOTSTRAP_SERVER}.
+     * Test, if server has role {@link Role#LWM2M_BOOTSTRAP_SERVER}.
      *
-     * @return true, if identity is from a LWM2M bootstrap server, false, otherwise
+     * @return true, if server is from a LWM2M bootstrap server, false, otherwise
      */
     public boolean isLwm2mBootstrapServer() {
         return Role.LWM2M_BOOTSTRAP_SERVER == role;
     }
 
     /**
-     * Test, if identity has role {@link Role#LWM2M_SERVER}.
+     * Test, if server has role {@link Role#LWM2M_SERVER}.
      *
-     * @return true, if identity is from a LWM2M server, false, otherwise
+     * @return true, if server is from a LWM2M server, false, otherwise
      */
     public boolean isLwm2mServer() {
         return Role.LWM2M_SERVER == role;
     }
 
     /**
-     * Test, if identity has role {@link Role#SYSTEM}.
+     * Test, if server has role {@link Role#SYSTEM}.
      *
-     * @return true, if identity is from system, false, otherwise
+     * @return true, if this is a system call, false, otherwise
      */
     public boolean isSystem() {
         return Role.SYSTEM == role;
@@ -130,7 +130,7 @@ public class ServerIdentity {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((peer == null) ? 0 : peer.hashCode());
+        result = prime * result + ((transportData == null) ? 0 : transportData.hashCode());
         result = prime * result + ((role == null) ? 0 : role.hashCode());
         return result;
     }
@@ -143,16 +143,16 @@ public class ServerIdentity {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        ServerIdentity other = (ServerIdentity) obj;
+        LwM2mServer other = (LwM2mServer) obj;
         if (id == null) {
             if (other.id != null)
                 return false;
         } else if (!id.equals(other.id))
             return false;
-        if (peer == null) {
-            if (other.peer != null)
+        if (transportData == null) {
+            if (other.transportData != null)
                 return false;
-        } else if (!peer.equals(other.peer))
+        } else if (!transportData.equals(other.transportData))
             return false;
         if (role != other.role)
             return false;

@@ -27,7 +27,7 @@ import java.util.TimeZone;
 
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mResource;
@@ -71,7 +71,7 @@ public class Device extends BaseInstanceEnabler {
     }
 
     @Override
-    public ReadResponse read(ServerIdentity identity, int resourceid) {
+    public ReadResponse read(LwM2mServer server, int resourceid) {
 
         switch (resourceid) {
         case 0: // manufacturer
@@ -96,12 +96,12 @@ public class Device extends BaseInstanceEnabler {
             return ReadResponse.success(resourceid, BindingMode.toString(supportedBinding));
 
         default:
-            return super.read(identity, resourceid);
+            return super.read(server, resourceid);
         }
     }
 
     @Override
-    public WriteResponse write(ServerIdentity identity, boolean replace, int resourceid, LwM2mResource value) {
+    public WriteResponse write(LwM2mServer server, boolean replace, int resourceid, LwM2mResource value) {
 
         switch (resourceid) {
 
@@ -116,17 +116,17 @@ public class Device extends BaseInstanceEnabler {
             return WriteResponse.success();
 
         default:
-            return super.write(identity, replace, resourceid, value);
+            return super.write(server, replace, resourceid, value);
         }
     }
 
     @Override
-    public ExecuteResponse execute(ServerIdentity identity, int resourceid, Arguments arguments) {
+    public ExecuteResponse execute(LwM2mServer server, int resourceid, Arguments arguments) {
 
         if (resourceid == 4) { // reboot
             return ExecuteResponse.internalServerError("not implemented");
         } else {
-            return super.execute(identity, resourceid, arguments);
+            return super.execute(server, resourceid, arguments);
         }
     }
 

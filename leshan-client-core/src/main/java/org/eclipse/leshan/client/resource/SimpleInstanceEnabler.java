@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
@@ -75,7 +75,7 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
     }
 
     @Override
-    public ReadResponse read(ServerIdentity identity, int resourceid) {
+    public ReadResponse read(LwM2mServer server, int resourceid) {
         if (resources.containsKey(resourceid)) {
             return ReadResponse.success(resources.get(resourceid));
         }
@@ -83,7 +83,7 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
     }
 
     @Override
-    public WriteResponse write(ServerIdentity identity, boolean replace, int resourceid, LwM2mResource value) {
+    public WriteResponse write(LwM2mServer server, boolean replace, int resourceid, LwM2mResource value) {
         // define new Value
         LwM2mResource newValue;
         List<LwM2mPath> newInstances = new ArrayList<>();
@@ -122,7 +122,7 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
     }
 
     @Override
-    public ExecuteResponse execute(ServerIdentity identity, int resourceid, Arguments arguments) {
+    public ExecuteResponse execute(LwM2mServer server, int resourceid, Arguments arguments) {
         return ExecuteResponse.notFound();
     }
 

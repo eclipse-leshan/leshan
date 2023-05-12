@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.resource.listener.ResourceListener;
-import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
@@ -105,56 +105,56 @@ public interface LwM2mInstanceEnabler {
      * Gets values of all readable resources of this instance.
      *
      * @param identity the identity of the requester. This could be an internal call in this case
-     *        <code> identity == ServerIdentity.SYSTEM</code>.
+     *        <code> identity == LwM2mServer.SYSTEM</code>.
      *
      * @return a success response with an {@link LwM2mObjectInstance} as content or a failure response with optional
      *         explanation message.
      */
-    ReadResponse read(ServerIdentity identity);
+    ReadResponse read(LwM2mServer identity);
 
     /**
      * Gets the current value of one of this LWM2M object instance's resources.
      *
-     * @param identity the identity of the requester. This could be an internal call in this case
-     *        <code> identity == ServerIdentity.SYSTEM</code>.
+     * @param server the identity of the requester. This could be an internal call in this case
+     *        <code> server == LwM2mServer.SYSTEM</code>.
      * @param resourceId the ID of the resource to get the value of
      * @return the response object representing the outcome of the operation. An implementation should set the result's
      *         {@link ReadResponse#getCode() response code} to either reflect the success or reason for failure to
      *         retrieve the value.
      */
-    ReadResponse read(ServerIdentity identity, int resourceId);
+    ReadResponse read(LwM2mServer server, int resourceId);
 
     /**
      * Gets the current value of one of this LWM2M object instance's resources instance.
      *
-     * @param identity the identity of the requester. This could be an internal call in this case
-     *        <code> identity == ServerIdentity.SYSTEM</code>.
+     * @param server the identity of the requester. This could be an internal call in this case
+     *        <code> server == LwM2mServer.SYSTEM</code>.
      * @param resourceId the ID of the resource to get the value of
      * @param resourceInstance the ID of the resource instance to get the value of
      * @return the response object representing the outcome of the operation. An implementation should set the result's
      *         {@link ReadResponse#getCode() response code} to either reflect the success or reason for failure to
      *         retrieve the value.
      */
-    ReadResponse read(ServerIdentity identity, int resourceId, int resourceInstance);
+    ReadResponse read(LwM2mServer server, int resourceId, int resourceInstance);
 
     /**
      * Sets all resources of this LWM2M object instance.
      *
-     * @param identity the identity of the requester. This could be an internal call in this case
-     *        <code> identity == ServerIdentity.SYSTEM</code>.
+     * @param server the identity of the requester. This could be an internal call in this case
+     *        <code> server == LwM2mServer.SYSTEM</code>.
      * @param replace if replace is true a {@link Mode#REPLACE} should be done, else {@link Mode#UPDATE} should be done.
      * @param value all the resources to be written.
      * @return the response object representing the outcome of the operation. An implementation should set the result's
      *         {@link WriteResponse#getCode() response code} to either reflect the success or reason for failure to set
      *         the value.
      */
-    WriteResponse write(ServerIdentity identity, boolean replace, LwM2mObjectInstance value);
+    WriteResponse write(LwM2mServer server, boolean replace, LwM2mObjectInstance value);
 
     /**
      * Sets the value of one of this LWM2M object instance's resources.
      *
-     * @param identity the identity of the requester. This could be an internal call in this case
-     *        <code> identity == ServerIdentity.SYSTEM</code>.
+     * @param server the identity of the requester. This could be an internal call in this case
+     *        <code> server == LwM2mServer.SYSTEM</code>.
      * @param replace If replace is true that means that the resource value completely replace the previous value. The
      *        behavior difference is only for Multiple resource. If replace is false the existing array of Resource
      *        Instances is updated meaning some Instances may be created or overwritten but not deleted.
@@ -164,13 +164,13 @@ public interface LwM2mInstanceEnabler {
      *         {@link WriteResponse#getCode() response code} to either reflect the success or reason for failure to set
      *         the value.
      */
-    WriteResponse write(ServerIdentity identity, boolean replace, int resourceid, LwM2mResource value);
+    WriteResponse write(LwM2mServer server, boolean replace, int resourceid, LwM2mResource value);
 
     /**
      * Sets the value of one of this LWM2M object instance's resources instance.
      *
-     * @param identity the identity of the requester. This could be an internal call in this case
-     *        <code> identity == ServerIdentity.SYSTEM</code>.
+     * @param server the identity of the requester. This could be an internal call in this case
+     *        <code> server == LwM2mServer.SYSTEM</code>.
      * @param addIfAbsent If resource instance does not already exist it must be addded only if addIfAbsent is True
      * @param resourceid the ID of the resource to set the value for
      * @param resourceInstance the ID of the resource instance to set the value of
@@ -179,58 +179,58 @@ public interface LwM2mInstanceEnabler {
      *         {@link WriteResponse#getCode() response code} to either reflect the success or reason for failure to set
      *         the value.
      */
-    WriteResponse write(ServerIdentity identity, boolean addIfAbsent, int resourceid, int resourceInstance,
+    WriteResponse write(LwM2mServer server, boolean addIfAbsent, int resourceid, int resourceInstance,
             LwM2mResourceInstance value);
 
     /**
      * Executes the operation represented by one of this LWM2M object instance's resources.
      *
-     * @param identity the identity of the requester. This could be an internal call in this case
-     *        <code> identity == ServerIdentity.SYSTEM</code>.
+     * @param server the identity of the requester. This could be an internal call in this case
+     *        <code> server == LwM2mServer.SYSTEM</code>.
      * @param resourceid the ID of the resource to set the value for
      * @param arguments the input arguments of the operation
      * @return the response object representing the outcome of the operation. An implementation should set the result's
      *         {@link ExecuteResponse#getCode() response code} to either reflect the success or reason for failure to
      *         execute the operation.
      */
-    ExecuteResponse execute(ServerIdentity identity, int resourceid, Arguments arguments);
+    ExecuteResponse execute(LwM2mServer server, int resourceid, Arguments arguments);
 
     /**
      * Performs an observe register the whole LWM2M object instance.
      *
-     * @param identity the identity of the requester. This could be an internal call in this case
-     *        <code> identity == ServerIdentity.SYSTEM</code>.
+     * @param server the identity of the requester. This could be an internal call in this case
+     *        <code> server == LwM2mServer.SYSTEM</code>.
      * @return a success response with an {@link LwM2mObjectInstance} as content or a failure response with optional
      *         explanation message.
      */
-    ObserveResponse observe(ServerIdentity identity);
+    ObserveResponse observe(LwM2mServer server);
 
     /**
      * Performs an observe register on one of this LWM2M object instance's resources.
      *
-     * @param identity the identity of the requester. This could be an internal call in this case
-     *        <code> identity == ServerIdentity.SYSTEM</code>.
+     * @param server the identity of the requester. This could be an internal call in this case
+     *        <code> server == LwM2mServer.SYSTEM</code>.
      * @param resourceid the ID of the resource to observe
      */
-    ObserveResponse observe(ServerIdentity identity, int resourceid);
+    ObserveResponse observe(LwM2mServer server, int resourceid);
 
     /**
      * Performs an observe register on one of this LWM2M object instance's resource instance.
      *
-     * @param identity the identity of the requester. This could be an internal call in this case
-     *        <code> identity == ServerIdentity.SYSTEM</code>.
+     * @param server the identity of the requester. This could be an internal call in this case
+     *        <code> server == LwM2mServer.SYSTEM</code>.
      * @param resourceid the ID of the resource to observe
      * @param resourceInstanceId the ID of the resource instance to observe
      */
-    ObserveResponse observe(ServerIdentity identity, int resourceid, int resourceInstanceId);
+    ObserveResponse observe(LwM2mServer server, int resourceid, int resourceInstanceId);
 
     /**
      * A callback called when this instance is deleted
      *
-     * @param identity the identity of the requester. This could be an internal call in this case
-     *        <code> identity == ServerIdentity.SYSTEM</code>.
+     * @param server the identity of the requester. This could be an internal call in this case
+     *        <code> server == LwM2mServer.SYSTEM</code>.
      */
-    void onDelete(ServerIdentity identity);
+    void onDelete(LwM2mServer server);
 
     /**
      * @param objectModel the model of this instance
