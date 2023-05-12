@@ -73,14 +73,14 @@ public class RootResource extends LwM2mClientCoapResource {
     public void handleGET(CoapExchange exchange) {
         // Manage Bootstrap Discover Request
         Request coapRequest = exchange.advanced().getRequest();
-        LwM2mServer identity = getServerOrRejectRequest(exchange, coapRequest);
-        if (identity == null)
+        LwM2mServer server = getServerOrRejectRequest(exchange, coapRequest);
+        if (server == null)
             return;
 
         String URI = exchange.getRequestOptions().getUriPathString();
 
         BootstrapDiscoverResponse response = requestReceiver
-                .requestReceived(identity, new BootstrapDiscoverRequest(URI, coapRequest)).getResponse();
+                .requestReceived(server, new BootstrapDiscoverRequest(URI, coapRequest)).getResponse();
         if (response.getCode().isError()) {
             exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
         } else {
@@ -94,8 +94,8 @@ public class RootResource extends LwM2mClientCoapResource {
     @Override
     public void handleFETCH(CoapExchange exchange) {
         Request coapRequest = exchange.advanced().getRequest();
-        LwM2mServer identity = getServerOrRejectRequest(exchange, coapRequest);
-        if (identity == null)
+        LwM2mServer server = getServerOrRejectRequest(exchange, coapRequest);
+        if (server == null)
             return;
 
         // Handle content format for the response
@@ -121,7 +121,7 @@ public class RootResource extends LwM2mClientCoapResource {
             // Manage Observe Composite request
             ObserveCompositeRequest observeRequest = new ObserveCompositeRequest(requestContentFormat,
                     responseContentFormat, paths, coapRequest);
-            ObserveCompositeResponse response = requestReceiver.requestReceived(identity, observeRequest).getResponse();
+            ObserveCompositeResponse response = requestReceiver.requestReceived(server, observeRequest).getResponse();
 
             updateUserContextWithPaths(coapRequest, paths);
 
@@ -137,7 +137,7 @@ public class RootResource extends LwM2mClientCoapResource {
         } else {
             // Manage Read Composite request
             ReadCompositeResponse response = requestReceiver
-                    .requestReceived(identity,
+                    .requestReceived(server,
                             new ReadCompositeRequest(paths, requestContentFormat, responseContentFormat, coapRequest))
                     .getResponse();
             if (response.getCode().isError()) {

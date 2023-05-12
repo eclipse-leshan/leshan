@@ -48,7 +48,7 @@ public class ObjectEnablerTest {
         CountDownLatch onDelete = new CountDownLatch(1);
 
         @Override
-        public void onDelete(LwM2mServer identity) {
+        public void onDelete(LwM2mServer server) {
             onDelete.countDown();
         }
 

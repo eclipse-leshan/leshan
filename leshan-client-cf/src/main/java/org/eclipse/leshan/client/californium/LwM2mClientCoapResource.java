@@ -61,9 +61,9 @@ public class LwM2mClientCoapResource extends LwM2mCoapResource {
      * @throws IllegalStateException if we are not able to extract {@link LwM2mServer}.
      */
     protected LwM2mServer extractIdentity(Exchange exchange, Message receivedMessage) {
-        IpPeer foreignPeerIdentity = getForeignPeerIdentity(exchange, receivedMessage);
-        if (foreignPeerIdentity == null)
+        IpPeer foreignPeer = getForeignPeerIdentity(exchange, receivedMessage);
+        if (foreignPeer == null)
             return null;
-        return serverIdentityExtractor.extractIdentity(exchange, foreignPeerIdentity);
+        return serverIdentityExtractor.extractIdentity(exchange, foreignPeer);
     }
 }

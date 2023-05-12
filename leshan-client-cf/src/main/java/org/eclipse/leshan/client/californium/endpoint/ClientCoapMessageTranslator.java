@@ -47,23 +47,23 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 
 public class ClientCoapMessageTranslator {
 
-    public Request createCoapRequest(LwM2mServer serverIdentity, UplinkRequest<? extends LwM2mResponse> lwm2mRequest,
+    public Request createCoapRequest(LwM2mServer server, UplinkRequest<? extends LwM2mResponse> lwm2mRequest,
             ClientEndpointToolbox toolbox, LwM2mModel model, IdentityHandler identityHandler) {
 
         // create CoAP Request
-        LwM2mPeer server = serverIdentity.getTransportData();
-        if (!(server instanceof IpPeer)) {
+        LwM2mPeer lwm2mPeer = server.getTransportData();
+        if (!(lwm2mPeer instanceof IpPeer)) {
             throw new IllegalStateException(
                     String.format("%s is not a LwM2mPeer supported by this class", server.getClass().getSimpleName()));
         }
 
-        CoapRequestBuilder builder = new CoapRequestBuilder((IpPeer) server, toolbox.getEncoder(), model,
+        CoapRequestBuilder builder = new CoapRequestBuilder((IpPeer) lwm2mPeer, toolbox.getEncoder(), model,
                 toolbox.getLinkSerializer(), identityHandler);
         lwm2mRequest.accept(builder);
         return builder.getRequest();
     }
 
-    public <T extends LwM2mResponse> T createLwM2mResponse(LwM2mServer serverIdentity, UplinkRequest<T> lwm2mRequest,
+    public <T extends LwM2mResponse> T createLwM2mResponse(LwM2mServer server, UplinkRequest<T> lwm2mRequest,
             Request coapRequest, Response coapResponse, ClientEndpointToolbox toolbox) {
 
         // create LWM2M Response

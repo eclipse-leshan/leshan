@@ -108,15 +108,15 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized CreateResponse create(LwM2mServer identity, CreateRequest request) {
+    public synchronized CreateResponse create(LwM2mServer server, CreateRequest request) {
         try {
             beginTransaction(LwM2mPath.OBJECT_DEPTH);
 
-            if (!identity.isSystem()) {
+            if (!server.isSystem()) {
                 if (id == LwM2mId.SECURITY || id == LwM2mId.OSCORE) {
                     return CreateResponse.notFound();
                 }
-            } else if (identity.isLwm2mBootstrapServer()) {
+            } else if (server.isLwm2mBootstrapServer()) {
                 // create is not supported for bootstrap
                 CreateResponse.methodNotAllowed();
             }
@@ -133,28 +133,28 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                 }
             }
 
-            return doCreate(identity, request);
+            return doCreate(server, request);
 
         } finally {
             endTransaction(LwM2mPath.OBJECT_DEPTH);
         }
     }
 
-    protected CreateResponse doCreate(LwM2mServer identity, CreateRequest request) {
+    protected CreateResponse doCreate(LwM2mServer server, CreateRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return CreateResponse.internalServerError("not implemented");
     }
 
     @Override
-    public synchronized ReadResponse read(LwM2mServer identity, ReadRequest request) {
+    public synchronized ReadResponse read(LwM2mServer server, ReadRequest request) {
         LwM2mPath path = request.getPath();
 
         // read is not supported for bootstrap
-        if (identity.isLwm2mBootstrapServer()) {
+        if (server.isLwm2mBootstrapServer()) {
             return ReadResponse.methodNotAllowed();
         }
 
-        if (!identity.isSystem()) {
+        if (!server.isSystem()) {
             // read the security or oscore object is forbidden
             if (id == LwM2mId.SECURITY || id == LwM2mId.OSCORE) {
                 return ReadResponse.notFound();
@@ -173,24 +173,24 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             }
         }
 
-        return doRead(identity, request);
+        return doRead(server, request);
 
         // TODO we could do a validation of response.getContent by comparing with resourceSpec information
     }
 
-    protected ReadResponse doRead(LwM2mServer identity, ReadRequest request) {
+    protected ReadResponse doRead(LwM2mServer server, ReadRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return ReadResponse.internalServerError("not implemented");
     }
 
     @Override
-    public BootstrapReadResponse read(LwM2mServer identity, BootstrapReadRequest request) {
+    public BootstrapReadResponse read(LwM2mServer server, BootstrapReadRequest request) {
         // read is not supported for bootstrap
-        if (identity.isLwm2mServer()) {
+        if (server.isLwm2mServer()) {
             return BootstrapReadResponse.methodNotAllowed();
         }
 
-        if (!identity.isSystem()) {
+        if (!server.isSystem()) {
             LwM2mPath path = request.getPath();
 
             // BootstrapRead can only target object 1 and 2
@@ -198,28 +198,28 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                 return BootstrapReadResponse.badRequest("bootstrap read can only target Object 1 (Server) or 2 (ACL)");
             }
         }
-        return doRead(identity, request);
+        return doRead(server, request);
     }
 
-    protected BootstrapReadResponse doRead(LwM2mServer identity, BootstrapReadRequest request) {
+    protected BootstrapReadResponse doRead(LwM2mServer server, BootstrapReadRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return BootstrapReadResponse.internalServerError("not implemented");
     }
 
     @Override
-    public synchronized WriteResponse write(LwM2mServer identity, WriteRequest request) {
+    public synchronized WriteResponse write(LwM2mServer server, WriteRequest request) {
         try {
             beginTransaction(LwM2mPath.OBJECT_DEPTH);
 
             LwM2mPath path = request.getPath();
 
             // write is not supported for bootstrap, use bootstrap write
-            if (identity.isLwm2mBootstrapServer()) {
+            if (server.isLwm2mBootstrapServer()) {
                 return WriteResponse.methodNotAllowed();
             }
 
             // write the security or oscore object is forbidden
-            if (!identity.isSystem() && (id == LwM2mId.SECURITY || id == LwM2mId.OSCORE)) {
+            if (!server.isSystem() && (id == LwM2mId.SECURITY || id == LwM2mId.OSCORE)) {
                 return WriteResponse.notFound();
             }
 
@@ -260,37 +260,37 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
             // TODO we could do a validation of request.getNode() by comparing with resourceSpec information
 
-            return doWrite(identity, request);
+            return doWrite(server, request);
         } finally {
             endTransaction(LwM2mPath.OBJECT_DEPTH);
         }
     }
 
-    protected WriteResponse doWrite(LwM2mServer identity, WriteRequest request) {
+    protected WriteResponse doWrite(LwM2mServer server, WriteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return WriteResponse.internalServerError("not implemented");
     }
 
     @Override
-    public synchronized BootstrapWriteResponse write(LwM2mServer identity, BootstrapWriteRequest request) {
+    public synchronized BootstrapWriteResponse write(LwM2mServer server, BootstrapWriteRequest request) {
 
         // We should not get a bootstrapWriteRequest from a LWM2M server
-        if (identity.isLwm2mServer()) {
+        if (server.isLwm2mServer()) {
             return BootstrapWriteResponse.internalServerError("bootstrap write request from LWM2M server");
         }
 
-        return doWrite(identity, request);
+        return doWrite(server, request);
     }
 
-    protected BootstrapWriteResponse doWrite(LwM2mServer identity, BootstrapWriteRequest request) {
+    protected BootstrapWriteResponse doWrite(LwM2mServer server, BootstrapWriteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return BootstrapWriteResponse.internalServerError("not implemented");
     }
 
     @Override
-    public synchronized DeleteResponse delete(LwM2mServer identity, DeleteRequest request) {
-        if (!identity.isSystem()) {
-            if (identity.isLwm2mBootstrapServer())
+    public synchronized DeleteResponse delete(LwM2mServer server, DeleteRequest request) {
+        if (!server.isSystem()) {
+            if (server.isLwm2mBootstrapServer())
                 return DeleteResponse.methodNotAllowed();
 
             // delete the security object is forbidden
@@ -303,38 +303,38 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             }
         }
 
-        return doDelete(identity, request);
+        return doDelete(server, request);
     }
 
-    protected DeleteResponse doDelete(LwM2mServer identity, DeleteRequest request) {
+    protected DeleteResponse doDelete(LwM2mServer server, DeleteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return DeleteResponse.internalServerError("not implemented");
     }
 
     @Override
-    public synchronized BootstrapDeleteResponse delete(LwM2mServer identity, BootstrapDeleteRequest request) {
-        if (!identity.isSystem()) {
-            if (identity.isLwm2mServer()) {
+    public synchronized BootstrapDeleteResponse delete(LwM2mServer server, BootstrapDeleteRequest request) {
+        if (!server.isSystem()) {
+            if (server.isLwm2mServer()) {
                 return BootstrapDeleteResponse.internalServerError("bootstrap delete request from LWM2M server");
             }
             if (id == LwM2mId.DEVICE) {
                 return BootstrapDeleteResponse.badRequest("Device object instance is not deletable");
             }
         }
-        return doDelete(identity, request);
+        return doDelete(server, request);
     }
 
-    protected BootstrapDeleteResponse doDelete(LwM2mServer identity, BootstrapDeleteRequest request) {
+    protected BootstrapDeleteResponse doDelete(LwM2mServer server, BootstrapDeleteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return BootstrapDeleteResponse.internalServerError("not implemented");
     }
 
     @Override
-    public synchronized ExecuteResponse execute(LwM2mServer identity, ExecuteRequest request) {
+    public synchronized ExecuteResponse execute(LwM2mServer server, ExecuteRequest request) {
         LwM2mPath path = request.getPath();
 
         // execute is not supported for bootstrap
-        if (identity.isLwm2mBootstrapServer()) {
+        if (server.isLwm2mBootstrapServer()) {
             return ExecuteResponse.methodNotAllowed();
         }
 
@@ -356,18 +356,18 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             return ExecuteResponse.methodNotAllowed();
         }
 
-        return doExecute(identity, request);
+        return doExecute(server, request);
     }
 
-    protected ExecuteResponse doExecute(LwM2mServer identity, ExecuteRequest request) {
+    protected ExecuteResponse doExecute(LwM2mServer server, ExecuteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
         return ExecuteResponse.internalServerError("not implemented");
     }
 
     @Override
-    public synchronized WriteAttributesResponse writeAttributes(LwM2mServer identity, WriteAttributesRequest request) {
+    public synchronized WriteAttributesResponse writeAttributes(LwM2mServer server, WriteAttributesRequest request) {
         // execute is not supported for bootstrap
-        if (identity.isLwm2mBootstrapServer()) {
+        if (server.isLwm2mBootstrapServer()) {
             return WriteAttributesResponse.methodNotAllowed();
         }
         // TODO should be implemented here to be available for all object enabler
@@ -376,9 +376,9 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized DiscoverResponse discover(LwM2mServer identity, DiscoverRequest request) {
+    public synchronized DiscoverResponse discover(LwM2mServer server, DiscoverRequest request) {
 
-        if (identity.isLwm2mBootstrapServer()) {
+        if (server.isLwm2mBootstrapServer()) {
             // discover is not supported for bootstrap
             return DiscoverResponse.methodNotAllowed();
         }
@@ -386,11 +386,11 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         if (id == LwM2mId.SECURITY || id == LwM2mId.OSCORE) {
             return DiscoverResponse.notFound();
         }
-        return doDiscover(identity, request);
+        return doDiscover(server, request);
 
     }
 
-    protected DiscoverResponse doDiscover(LwM2mServer identity, DiscoverRequest request) {
+    protected DiscoverResponse doDiscover(LwM2mServer server, DiscoverRequest request) {
 
         LwM2mPath path = request.getPath();
         if (path.isObject()) {
@@ -426,16 +426,16 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized BootstrapDiscoverResponse discover(LwM2mServer identity, BootstrapDiscoverRequest request) {
+    public synchronized BootstrapDiscoverResponse discover(LwM2mServer server, BootstrapDiscoverRequest request) {
 
-        if (!identity.isLwm2mBootstrapServer()) {
+        if (!server.isLwm2mBootstrapServer()) {
             return BootstrapDiscoverResponse.badRequest("not a bootstrap server");
         }
 
-        return doDiscover(identity, request);
+        return doDiscover(server, request);
     }
 
-    protected BootstrapDiscoverResponse doDiscover(LwM2mServer identity, BootstrapDiscoverRequest request) {
+    protected BootstrapDiscoverResponse doDiscover(LwM2mServer server, BootstrapDiscoverRequest request) {
 
         LwM2mPath path = request.getPath();
         if (path.isObject()) {
@@ -447,14 +447,14 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public synchronized ObserveResponse observe(LwM2mServer identity, ObserveRequest request) {
+    public synchronized ObserveResponse observe(LwM2mServer server, ObserveRequest request) {
         LwM2mPath path = request.getPath();
 
         // observe is not supported for bootstrap
-        if (identity.isLwm2mBootstrapServer())
+        if (server.isLwm2mBootstrapServer())
             return ObserveResponse.methodNotAllowed();
 
-        if (!identity.isSystem()) {
+        if (!server.isSystem()) {
             // observe or read of the security and oscore object are forbidden
             if (id == LwM2mId.SECURITY || id == LwM2mId.OSCORE)
                 return ObserveResponse.notFound();
@@ -471,11 +471,11 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                 }
             }
         }
-        return doObserve(identity, request);
+        return doObserve(server, request);
     }
 
-    protected ObserveResponse doObserve(LwM2mServer identity, ObserveRequest request) {
-        ReadResponse readResponse = this.read(identity, new ReadRequest(request.getPath().toString()));
+    protected ObserveResponse doObserve(LwM2mServer server, ObserveRequest request) {
+        ReadResponse readResponse = this.read(server, new ReadRequest(request.getPath().toString()));
         return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null,
                 readResponse.getErrorMessage());
     }

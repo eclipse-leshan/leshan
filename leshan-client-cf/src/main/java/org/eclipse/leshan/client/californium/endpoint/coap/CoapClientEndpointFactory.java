@@ -111,7 +111,7 @@ public class CoapClientEndpointFactory implements CaliforniumClientEndpointFacto
     public CaliforniumConnectionController createConnectionController() {
         return new CaliforniumConnectionController() {
             @Override
-            public void forceReconnection(Endpoint endpoint, LwM2mServer identity, boolean resume) {
+            public void forceReconnection(Endpoint endpoint, LwM2mServer server, boolean resume) {
                 // no connection in coap, so nothing to do;
             }
         };

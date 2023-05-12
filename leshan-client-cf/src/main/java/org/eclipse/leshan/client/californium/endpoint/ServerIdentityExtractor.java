@@ -20,5 +20,5 @@ import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.peer.IpPeer;
 
 public interface ServerIdentityExtractor {
-    LwM2mServer extractIdentity(Exchange exchange, IpPeer foreignPeerIdentity);
+    LwM2mServer extractIdentity(Exchange exchange, IpPeer foreignPeer);
 }

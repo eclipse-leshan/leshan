@@ -66,7 +66,7 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
     public static final ObjectLink INITIAL_OBJLINK_VALUE = new ObjectLink(3, 0);
     public static final Link[] INITIAL_CORELINK_VALUE = new Link[] { new LwM2mLink(null, new LwM2mPath(3442)) };
 
-    private Random random = new Random(System.currentTimeMillis());
+    private final Random random = new Random(System.currentTimeMillis());
 
     public LwM2mTestObject() {
         super();
@@ -245,7 +245,7 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
     }
 
     @Override
-    public ExecuteResponse execute(LwM2mServer identity, int resourceid, Arguments arguments) {
+    public ExecuteResponse execute(LwM2mServer server, int resourceid, Arguments arguments) {
         switch (resourceid) {
         case 0:
             resetValues();
@@ -260,9 +260,9 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
             storeArguments(arguments);
             return ExecuteResponse.success();
         case 5:
-            return sendData(identity, arguments);
+            return sendData(server, arguments);
         default:
-            return super.execute(identity, resourceid, arguments);
+            return super.execute(server, resourceid, arguments);
         }
     }
 

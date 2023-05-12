@@ -118,8 +118,8 @@ public class SendTest {
             String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws InterruptedException, TimeoutException {
         // Send Data
-        LwM2mServer serverIdentity = client.getRegisteredServers().values().iterator().next();
-        SendResponse response = client.getSendService().sendData(serverIdentity, contentformat,
+        LwM2mServer registeredServer = client.getRegisteredServers().values().iterator().next();
+        SendResponse response = client.getSendService().sendData(registeredServer, contentformat,
                 Arrays.asList("/3/0/1", "/3/0/2"), 1000);
         assertThat(response.isSuccess()).isTrue();
 
@@ -144,8 +144,8 @@ public class SendTest {
         @SuppressWarnings("unchecked")
         ResponseCallback<SendResponse> responseCallback = mock(ResponseCallback.class);
         ErrorCallback errorCallback = mock(ErrorCallback.class);
-        LwM2mServer serverIdentity = client.getRegisteredServers().values().iterator().next();
-        client.getSendService().sendData(serverIdentity, contentformat, Arrays.asList("/3/0/1", "/3/0/2"), 1000,
+        LwM2mServer registeredServer = client.getRegisteredServers().values().iterator().next();
+        client.getSendService().sendData(registeredServer, contentformat, Arrays.asList("/3/0/1", "/3/0/2"), 1000,
                 responseCallback, errorCallback);
 
         verify(responseCallback, timeout(1000).times(1)).onResponse(Assertions.assertArg(r -> {
