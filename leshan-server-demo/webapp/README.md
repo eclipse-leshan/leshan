@@ -55,3 +55,35 @@ yarn lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+### Common maintenance tasks
+
+#### Update browser list 
+
+When building we could face this message:
+
+```
+Browserslist: caniuse-lite is outdated. Please run:
+   npx update-browserslist-db@latest
+   Why you should do it regularly: https://github.com/browserslist/update-db#readme
+ All browser targets in the browserslist configuration have supported ES module.
+Therefore we don't build two separate bundles for differential loading.
+```
+
+That's means it's time to update browser data. All is said in message just above.
+
+
+#### Update direct dependencies
+
+Regularly we need to update direct dependencies, this can be done with : 
+
+```
+yarn upgrade-interactive    
+```
+
+#### Update indirect depndencies
+
+Sometime it is needed to upgrade indirect dependencies especially for security issues. (e.g. [dependabot alert](https://github.com/eclipse/leshan/security/dependabot)) 
+
+There is several way to do that.   
+I recommend : https://github.com/yarnpkg/yarn/issues/4986#issuecomment-1323814431 but there is maybe better way. 
