@@ -45,9 +45,11 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.ObservationIdentifier;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.peer.LwM2mIdentity;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.redis.serialization.LwM2mIdentitySerDes;
+import org.eclipse.leshan.server.redis.serialization.LwM2mPeerSerDes;
 import org.eclipse.leshan.server.redis.serialization.ObservationSerDes;
 import org.eclipse.leshan.server.redis.serialization.RegistrationSerDes;
 import org.eclipse.leshan.server.registration.Deregistration;
@@ -98,7 +100,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
     private final JedisLock lock;
     private final RegistrationSerDes registrationSerDes;
     private final ObservationSerDes observationSerDes;
-    private final LwM2mIdentitySerDes identitySerDes = new LwM2mIdentitySerDes(); // TODO add it to builder ?
+    private final LwM2mIdentitySerDes identitySerDes;
 
     public RedisRegistrationStore(Pool<Jedis> p) {
         this(new Builder(p).generateDefaultValue());
@@ -121,6 +123,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
         this.lock = builder.lock;
         this.registrationSerDes = builder.registrationSerDes;
         this.observationSerDes = builder.observationSerDes;
+        this.identitySerDes = builder.identitySerDes;
     }
 
     /* *************** Redis Key utility function **************** */
@@ -766,6 +769,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
     public static class Builder {
 
         private final Pool<Jedis> pool;
+
         private String prefix;
         private String registrationByEndpointPrefix;
         private String endpointByRegistrationIdPrefix;
@@ -786,6 +790,8 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
         private JedisLock lock;
         private RegistrationSerDes registrationSerDes;
         private ObservationSerDes observationSerDes;
+        private LwM2mIdentitySerDes identitySerDes;
+        private LwM2mPeerSerDes peerSerDes;
 
         /**
          * Set the prefix for all keys and prefixes.
@@ -943,6 +949,23 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
         }
 
         /**
+         * Set {@link LwM2mIdentitySerDes} instance used to serialize/de-serialize {@link LwM2mIdentity} to/from this
+         * store.
+         */
+        public Builder setIdentitySerDes(LwM2mIdentitySerDes identitySerDes) {
+            this.identitySerDes = identitySerDes;
+            return this;
+        }
+
+        /**
+         * Set {@link LwM2mPeerSerDes} instance used to serialize/de-serialize {@link LwM2mPeer} to/from this store.
+         */
+        public Builder setPeerSerDes(LwM2mPeerSerDes peerSerDes) {
+            this.peerSerDes = peerSerDes;
+            return this;
+        }
+
+        /**
          * Set {@link ObservationSerDes} instance used to serialize/de-serialize {@link Observation} to/from this store.
          */
         public Builder setObservationSerDes(ObservationSerDes observationSerDes) {
@@ -977,7 +1000,14 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
             }
 
             if (this.registrationSerDes == null) {
-                this.registrationSerDes = new RegistrationSerDes();
+                if (peerSerDes == null) {
+                    this.peerSerDes = new LwM2mPeerSerDes();
+                }
+                this.registrationSerDes = new RegistrationSerDes(peerSerDes);
+            }
+
+            if (this.identitySerDes == null) {
+                this.identitySerDes = new LwM2mIdentitySerDes();
             }
 
             if (this.observationSerDes == null) {

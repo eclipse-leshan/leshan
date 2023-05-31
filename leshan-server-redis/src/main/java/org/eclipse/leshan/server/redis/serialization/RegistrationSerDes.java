@@ -59,9 +59,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class RegistrationSerDes {
 
     private final AttributeParser attributeParser;
-    private final LwM2mPeerSerDes peerSerDes = new LwM2mPeerSerDes();
+    private final LwM2mPeerSerDes peerSerDes;
 
-    public RegistrationSerDes() {
+    public RegistrationSerDes(LwM2mPeerSerDes peerSerDes) {
         // Define all supported Attributes
         Collection<AttributeModel<?>> suppportedAttributes = new ArrayList<AttributeModel<?>>();
         suppportedAttributes.addAll(Attributes.ALL);
@@ -69,10 +69,17 @@ public class RegistrationSerDes {
 
         // Create default link Parser
         this.attributeParser = new DefaultAttributeParser(suppportedAttributes);
+        this.peerSerDes = peerSerDes;
     }
 
-    public RegistrationSerDes(AttributeParser attributeParser) {
+    public RegistrationSerDes() {
+        this.attributeParser = new DefaultAttributeParser();
+        this.peerSerDes = new LwM2mPeerSerDes();
+    }
+
+    public RegistrationSerDes(AttributeParser attributeParser, LwM2mPeerSerDes peerSerDes) {
         this.attributeParser = attributeParser;
+        this.peerSerDes = peerSerDes;
     }
 
     public JsonNode jSerialize(Registration r) {
