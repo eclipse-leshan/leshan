@@ -26,6 +26,7 @@ import java.nio.ByteBuffer;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
+import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.californium.identity.DefaultCoapIdentityHandler;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
@@ -55,8 +56,10 @@ import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.core.tlv.Tlv;
 import org.eclipse.leshan.core.tlv.Tlv.TlvType;
 import org.eclipse.leshan.core.tlv.TlvDecoder;
+import org.eclipse.leshan.server.registration.DefaultRegistrationDataExtractor;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.Registration.Builder;
+import org.eclipse.leshan.server.registration.RegistrationDataExtractor.RegistrationData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -84,9 +87,17 @@ public class CoapRequestBuilderTest {
         Builder b = new Registration.Builder("regid", "endpoint",
                 Identity.unsecure(Inet4Address.getLoopbackAddress(), 12354),
                 EndpointUriUtil.createUri("coap://localhost:5683"));
-        b.extractDataFromObjectLink(true);
+
         if (rootpath != null) {
-            b.objectLinks(new Link[] { new Link(rootpath, new ResourceTypeAttribute("oma.lwm2m")) });
+            Link[] links = new Link[] { new Link(rootpath, new ResourceTypeAttribute("oma.lwm2m")) };
+            b.objectLinks(links);
+
+            RegistrationData dataFromObjectLinks = new DefaultRegistrationDataExtractor()
+                    .extractDataFromObjectLinks(links, LwM2mVersion.V1_0);
+            b.rootPath(dataFromObjectLinks.getAlternatePath());
+            b.supportedContentFormats(dataFromObjectLinks.getSupportedContentFormats());
+            b.supportedObjects(dataFromObjectLinks.getSupportedObjects());
+            b.availableInstances(dataFromObjectLinks.getAvailableInstances());
         }
         return b.build();
     }

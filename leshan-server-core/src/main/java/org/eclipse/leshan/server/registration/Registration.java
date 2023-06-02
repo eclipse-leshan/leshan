@@ -35,13 +35,6 @@ import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
-import org.eclipse.leshan.core.link.attributes.Attributes;
-import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
-import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
-import org.eclipse.leshan.core.link.lwm2m.MixedLwM2mLink;
-import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
-import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
-import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -502,9 +495,6 @@ public class Registration {
         private Map<String, String> additionalRegistrationAttributes;
         private Map<String, String> applicationData;
 
-        // builder setting
-        private boolean extractData; // if true extract data from objectLinks
-
         public Builder(Registration registration) {
 
             // mandatory params
@@ -544,11 +534,6 @@ public class Registration {
             this.endpoint = endpoint;
             this.identity = identity;
             this.lastEndpointUsed = lastEndpointUsed;
-        }
-
-        public Builder extractDataFromObjectLink(boolean extract) {
-            this.extractData = extract;
-            return this;
         }
 
         public Builder registrationDate(Date registrationDate) {
@@ -629,95 +614,6 @@ public class Registration {
             return this;
         }
 
-        private void extractDataFromObjectLinks() {
-            if (objectLinks != null) {
-
-                // Search LWM2M root link
-                Link root = null;
-                for (Link link : objectLinks) {
-                    if (link != null) {
-                        ResourceTypeAttribute rt = link.getAttributes().get(Attributes.RT);
-                        if (rt != null && rt.getValue().contains("oma.lwm2m")) {
-                            // this link has the ResourceType oma.lwm2m this is the LWM2M root for sure.
-                            root = link;
-                            break;
-                        } else if (link.getUriReference().equals("/")) {
-                            // this link refer to "/", so could be the LWM2M root link unless another one has the
-                            // ResourceType oma.lwm2m, so we continue to search.
-                            root = link;
-                        }
-                    }
-                }
-
-                // extract root path
-                if (root != null) {
-                    rootPath = root.getUriReference();
-                    if (!rootPath.endsWith("/")) {
-                        rootPath = rootPath + "/";
-                    }
-                } else {
-                    rootPath = "/";
-                }
-
-                // extract supported Content format in root link
-                if (root != null) {
-                    ContentFormatAttribute ctValue = root.getAttributes().get(Attributes.CT);
-                    if (ctValue != null) {
-                        supportedContentFormats = extractContentFormat(ctValue);
-                    }
-                }
-
-                // Extract data from link object
-                supportedObjects = new HashMap<>();
-                availableInstances = new HashSet<>();
-                for (Link link : objectLinks) {
-                    if (link instanceof MixedLwM2mLink) {
-                        LwM2mPath path = ((MixedLwM2mLink) link).getPath();
-                        // add supported objects
-                        if (path.isObject()) {
-                            addSupportedObject(link, path);
-                        } else if (path.isObjectInstance()) {
-                            addSupportedObject(link, path);
-                            availableInstances.add(path);
-                        }
-                    }
-                }
-            }
-        }
-
-        private Set<ContentFormat> extractContentFormat(ContentFormatAttribute ctValue) {
-            Set<ContentFormat> supportedContentFormats = new HashSet<>();
-
-            // add content format from ct attributes
-            supportedContentFormats.addAll(ctValue.getValue());
-
-            // add mandatory content format
-            for (ContentFormat format : ContentFormat.knownContentFormat) {
-                if (format.isMandatoryForClient(lwM2mVersion)) {
-                    supportedContentFormats.add(format);
-                }
-            }
-            return supportedContentFormats;
-        }
-
-        private void addSupportedObject(Link link, LwM2mPath path) {
-            // extract object id and version
-            int objectId = path.getObjectId();
-            LwM2mAttribute<Version> versionParamValue = link.getAttributes().get(LwM2mAttributes.OBJECT_VERSION);
-
-            if (versionParamValue != null) {
-                // if there is a version attribute then use it as version for this object
-                supportedObjects.put(objectId, versionParamValue.getValue());
-            } else {
-                // there is no version attribute attached.
-                // In this case we use the DEFAULT_VERSION only if this object stored as supported object.
-                Version currentVersion = supportedObjects.get(objectId);
-                if (currentVersion == null) {
-                    supportedObjects.put(objectId, new Version(ObjectModel.DEFAULT_VERSION));
-                }
-            }
-        }
-
         public Registration build() {
             // Define Default value
             rootPath = rootPath == null ? "/" : rootPath;
@@ -727,11 +623,6 @@ public class Registration {
             queueMode = queueMode == null && lwM2mVersion.newerThan(LwM2mVersion.V1_0) ? Boolean.FALSE : queueMode;
             registrationDate = registrationDate == null ? new Date() : registrationDate;
             lastUpdate = lastUpdate == null ? new Date() : lastUpdate;
-
-            // Extract data from object links if wanted
-            if (extractData) {
-                extractDataFromObjectLinks();
-            }
 
             // Make collection immutable
             // We create a new Collection and make it "unmodifiable".

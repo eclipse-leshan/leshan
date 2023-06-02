@@ -25,9 +25,13 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
+import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.core.util.Validate;
 
@@ -43,20 +47,42 @@ public class RegistrationUpdate {
     private final String smsNumber;
     private final EnumSet<BindingMode> bindingMode;
     private final Link[] objectLinks;
+    // The location where LWM2M objects are hosted on the device
+    private final String alternatePath;
+    // All ContentFormat supported by the client
+    private final Set<ContentFormat> supportedContentFormats;
+    // All supported object (object id => version)
+    private final Map<Integer, Version> supportedObjects;
+    // All available instances
+    private final Set<LwM2mPath> availableInstances;
     private final Map<String, String> additionalAttributes;
     private final Map<String, String> applicationData;
 
     public RegistrationUpdate(String registrationId, Identity identity, Long lifeTimeInSec, String smsNumber,
-            EnumSet<BindingMode> bindingMode, Link[] objectLinks, Map<String, String> additionalAttributes,
+            EnumSet<BindingMode> bindingMode, Link[] objectLinks, String alternatePath,
+            Set<ContentFormat> supportedContentFormats, Map<Integer, Version> supportedObjects,
+            Set<LwM2mPath> availableInstances, Map<String, String> additionalAttributes,
             Map<String, String> applicationData) {
+
+        // mandatory params
         Validate.notNull(registrationId);
         Validate.notNull(identity);
         this.registrationId = registrationId;
         this.identity = identity;
+
+        // other params
         this.lifeTimeInSec = lifeTimeInSec;
         this.smsNumber = smsNumber;
         this.bindingMode = bindingMode;
+
+        // object links related params
         this.objectLinks = objectLinks;
+        this.alternatePath = alternatePath;
+        this.supportedContentFormats = supportedContentFormats;
+        this.supportedObjects = supportedObjects;
+        this.availableInstances = availableInstances;
+
+        // out of spec data
         if (additionalAttributes == null)
             this.additionalAttributes = Collections.emptyMap();
         else
@@ -75,10 +101,18 @@ public class RegistrationUpdate {
      */
     public Registration update(Registration registration) {
         Identity identity = this.identity != null ? this.identity : registration.getIdentity();
-        Link[] linkObject = this.objectLinks != null ? this.objectLinks : registration.getObjectLinks();
         long lifeTimeInSec = this.lifeTimeInSec != null ? this.lifeTimeInSec : registration.getLifeTimeInSec();
         EnumSet<BindingMode> bindingMode = this.bindingMode != null ? this.bindingMode : registration.getBindingMode();
         String smsNumber = this.smsNumber != null ? this.smsNumber : registration.getSmsNumber();
+
+        Link[] linkObject = this.objectLinks != null ? this.objectLinks : registration.getObjectLinks();
+        String alternatePath = this.alternatePath != null ? this.alternatePath : registration.getRootPath();
+        Set<ContentFormat> supportedContentFormats = this.supportedContentFormats != null ? this.supportedContentFormats
+                : registration.getSupportedContentFormats();
+        Map<Integer, Version> supportedObjects = this.supportedObjects != null ? this.supportedObjects
+                : registration.getSupportedObject();
+        Set<LwM2mPath> availableInstances = this.availableInstances != null ? this.availableInstances
+                : registration.getAvailableInstances();
 
         Map<String, String> additionalAttributes = this.additionalAttributes.isEmpty()
                 ? registration.getAdditionalRegistrationAttributes()
@@ -93,15 +127,25 @@ public class RegistrationUpdate {
 
         Registration.Builder builder = new Registration.Builder(registration.getId(), registration.getEndpoint(),
                 identity, registration.getLastEndpointUsed());
-        builder.extractDataFromObjectLink(this.objectLinks != null); // we parse object link only if there was updated.
 
-        builder.lwM2mVersion(registration.getLwM2mVersion()).lifeTimeInSec(lifeTimeInSec).smsNumber(smsNumber)
-                .bindingMode(bindingMode).queueMode(registration.getQueueMode()).objectLinks(linkObject)
-                .registrationDate(registration.getRegistrationDate()).lastUpdate(lastUpdate)
-                .additionalRegistrationAttributes(additionalAttributes).rootPath(registration.getRootPath())
-                .supportedContentFormats(registration.getSupportedContentFormats())
-                .supportedObjects(registration.getSupportedObject())
-                .availableInstances(registration.getAvailableInstances()).applicationData(applicationData);
+        builder.registrationDate(lastUpdate)
+                // unmodifiable data
+                .lwM2mVersion(registration.getLwM2mVersion()) //
+                .queueMode(registration.getQueueMode()) //
+                .registrationDate(registration.getRegistrationDate())
+                // modifiable data
+                .lifeTimeInSec(lifeTimeInSec) //
+                .bindingMode(bindingMode) //
+                .smsNumber(smsNumber) //
+                // object link data
+                .objectLinks(linkObject) //
+                .rootPath(alternatePath) //
+                .supportedContentFormats(supportedContentFormats) //
+                .supportedObjects(supportedObjects) //
+                .availableInstances(availableInstances) //
+                // out of spec data
+                .additionalRegistrationAttributes(additionalAttributes) //
+                .applicationData(applicationData);
 
         return builder.build();
     }
@@ -146,8 +190,23 @@ public class RegistrationUpdate {
         return applicationData;
     }
 
-    private Map<String, String> updateAdditionalAttributes(Map<String, String> oldAdditionalAttributes) {
+    public String getAlternatePath() {
+        return alternatePath;
+    }
 
+    public Set<ContentFormat> getSupportedContentFormats() {
+        return supportedContentFormats;
+    }
+
+    public Map<Integer, Version> getSupportedObjects() {
+        return supportedObjects;
+    }
+
+    public Set<LwM2mPath> getAvailableInstances() {
+        return availableInstances;
+    }
+
+    private Map<String, String> updateAdditionalAttributes(Map<String, String> oldAdditionalAttributes) {
         // putAll method updates already present key values or add them if not present.
         Map<String, String> aux = new HashMap<String, String>();
         aux.putAll(oldAdditionalAttributes);
@@ -157,10 +216,11 @@ public class RegistrationUpdate {
 
     @Override
     public String toString() {
-        return "RegistrationUpdate [registrationId=" + registrationId + ", identity=" + identity + ", lifeTimeInSec="
-                + lifeTimeInSec + ", smsNumber=" + smsNumber + ", bindingMode=" + bindingMode + ", objectLinks="
-                + Arrays.toString(objectLinks) + ", additionalAttributes=" + additionalAttributes + ", applicationData="
-                + applicationData + "]";
+        return String.format(
+                "RegistrationUpdate [registrationId=%s, identity=%s, lifeTimeInSec=%s, smsNumber=%s, bindingMode=%s, objectLinks=%s, alternatePath=%s, supportedContentFormats=%s, supportedObjects=%s, availableInstances=%s, additionalAttributes=%s, applicationData=%s]",
+                registrationId, identity, lifeTimeInSec, smsNumber, bindingMode, Arrays.toString(objectLinks),
+                alternatePath, supportedContentFormats, supportedObjects, availableInstances, additionalAttributes,
+                applicationData);
     }
 
     @Override
@@ -168,8 +228,9 @@ public class RegistrationUpdate {
         final int prime = 31;
         int result = 1;
         result = prime * result + Arrays.hashCode(objectLinks);
-        result = prime * result + Objects.hash(additionalAttributes, applicationData, bindingMode, identity,
-                lifeTimeInSec, registrationId, smsNumber);
+        result = prime * result
+                + Objects.hash(additionalAttributes, alternatePath, applicationData, availableInstances, bindingMode,
+                        identity, lifeTimeInSec, registrationId, smsNumber, supportedContentFormats, supportedObjects);
         return result;
     }
 
@@ -183,9 +244,13 @@ public class RegistrationUpdate {
             return false;
         RegistrationUpdate other = (RegistrationUpdate) obj;
         return Objects.equals(additionalAttributes, other.additionalAttributes)
+                && Objects.equals(alternatePath, other.alternatePath)
                 && Objects.equals(applicationData, other.applicationData)
+                && Objects.equals(availableInstances, other.availableInstances)
                 && Objects.equals(bindingMode, other.bindingMode) && Objects.equals(identity, other.identity)
                 && Objects.equals(lifeTimeInSec, other.lifeTimeInSec) && Arrays.equals(objectLinks, other.objectLinks)
-                && Objects.equals(registrationId, other.registrationId) && Objects.equals(smsNumber, other.smsNumber);
+                && Objects.equals(registrationId, other.registrationId) && Objects.equals(smsNumber, other.smsNumber)
+                && Objects.equals(supportedContentFormats, other.supportedContentFormats)
+                && Objects.equals(supportedObjects, other.supportedObjects);
     }
 }

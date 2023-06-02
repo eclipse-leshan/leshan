@@ -44,7 +44,10 @@ import org.eclipse.leshan.core.link.lwm2m.attributes.MixedLwM2mAttributeSet;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.server.registration.DefaultRegistrationDataExtractor;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationDataExtractor;
+import org.eclipse.leshan.server.registration.RegistrationDataExtractor.RegistrationData;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -59,6 +62,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class RegistrationSerDes {
 
     private final AttributeParser attributeParser;
+    // only needed for backward compatibility : maybe should be removed.
+    private final RegistrationDataExtractor dataExtractor;
 
     public RegistrationSerDes() {
         // Define all supported Attributes
@@ -68,10 +73,16 @@ public class RegistrationSerDes {
 
         // Create default link Parser
         this.attributeParser = new DefaultAttributeParser(suppportedAttributes);
+        this.dataExtractor = new DefaultRegistrationDataExtractor();
     }
 
     public RegistrationSerDes(AttributeParser attributeParser) {
+        this(attributeParser, new DefaultRegistrationDataExtractor());
+    }
+
+    public RegistrationSerDes(AttributeParser attributeParser, RegistrationDataExtractor dataExtractor) {
         this.attributeParser = attributeParser;
+        this.dataExtractor = dataExtractor;
     }
 
     public JsonNode jSerialize(Registration r) {
@@ -173,11 +184,10 @@ public class RegistrationSerDes {
         b.lastUpdate(new Date(jObj.get("lastUp").asLong(0)));
         b.lifeTimeInSec(jObj.get("lt").asLong(0));
         String versionAsString = jObj.get("ver").asText();
-        if (versionAsString == null) {
-            b.lwM2mVersion(LwM2mVersion.getDefault());
-        } else {
-            b.lwM2mVersion(LwM2mVersion.get(versionAsString));
-        }
+        LwM2mVersion lwm2mVersion = versionAsString == null ? LwM2mVersion.getDefault()
+                : LwM2mVersion.get(versionAsString);
+        b.lwM2mVersion(lwm2mVersion);
+
         b.registrationDate(new Date(jObj.get("regDate").asLong(0)));
         if (jObj.get("sms") != null) {
             b.smsNumber(jObj.get("sms").asText(""));
@@ -237,11 +247,14 @@ public class RegistrationSerDes {
         }
         b.additionalRegistrationAttributes(addAttr);
 
+        // For backward compatibility only ...
+        boolean extractData = false;
+
         // parse supported content format
         JsonNode ct = jObj.get("ct");
         if (ct == null) {
             // Backward compatibility : if ct doesn't exist we extract supported content format from object link
-            b.extractDataFromObjectLink(true);
+            extractData = true;
         } else {
             Set<ContentFormat> supportedContentFormat = new HashSet<>();
             for (JsonNode ctCode : ct) {
@@ -253,7 +266,7 @@ public class RegistrationSerDes {
         JsonNode so = jObj.get("suppObjs");
         if (so == null) {
             // Backward compatibility : if suppObjs doesn't exist we extract supported object from object link
-            b.extractDataFromObjectLink(true);
+            extractData = true;
         } else {
             Map<Integer, Version> supportedObject = new HashMap<>();
             for (Iterator<String> it = so.fieldNames(); it.hasNext();) {
@@ -267,13 +280,21 @@ public class RegistrationSerDes {
         JsonNode ai = jObj.get("objInstances");
         if (ai == null) {
             // Backward compatibility : if objInstances doesn't exist we extract available instances from object link
-            b.extractDataFromObjectLink(true);
+            extractData = true;
         } else {
             Set<LwM2mPath> availableInstances = new HashSet<>();
             for (JsonNode aiPath : ai) {
                 availableInstances.add(new LwM2mPath(aiPath.asText()));
             }
             b.availableInstances(availableInstances);
+        }
+
+        // extract data if needed
+        if (extractData) {
+            RegistrationData dataFromObjectLinks = dataExtractor.extractDataFromObjectLinks(linkObjs, lwm2mVersion);
+            b.supportedContentFormats(dataFromObjectLinks.getSupportedContentFormats());
+            b.supportedObjects(dataFromObjectLinks.getSupportedObjects());
+            b.availableInstances(dataFromObjectLinks.getAvailableInstances());
         }
 
         // parse app data

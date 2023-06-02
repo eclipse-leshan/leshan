@@ -48,7 +48,7 @@ public class RegistrationHandlerTest {
         authorizer = new TestAuthorizer();
         registrationStore = new InMemoryRegistrationStore();
         registrationHandler = new RegistrationHandler(new RegistrationServiceImpl(registrationStore), authorizer,
-                new RandomStringRegistrationIdProvider());
+                new RandomStringRegistrationIdProvider(), new DefaultRegistrationDataExtractor());
     }
 
     @Test

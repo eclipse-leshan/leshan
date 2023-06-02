@@ -29,6 +29,7 @@ import org.eclipse.leshan.core.response.DeregisterResponse;
 import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.core.response.UpdateResponse;
+import org.eclipse.leshan.server.registration.RegistrationDataExtractor.RegistrationData;
 import org.eclipse.leshan.server.security.Authorization;
 import org.eclipse.leshan.server.security.Authorizer;
 import org.slf4j.Logger;
@@ -45,28 +46,41 @@ public class RegistrationHandler {
     private final RegistrationServiceImpl registrationService;
     private final RegistrationIdProvider registrationIdProvider;
     private final Authorizer authorizer;
+    private final RegistrationDataExtractor dataExtractor;
 
     public RegistrationHandler(RegistrationServiceImpl registrationService, Authorizer authorizer,
-            RegistrationIdProvider registrationIdProvider) {
+            RegistrationIdProvider registrationIdProvider, RegistrationDataExtractor dataExtractor) {
         this.registrationService = registrationService;
         this.authorizer = authorizer;
         this.registrationIdProvider = registrationIdProvider;
+        this.dataExtractor = dataExtractor;
     }
 
     public SendableResponse<RegisterResponse> register(Identity sender, RegisterRequest registerRequest,
             URI endpointUsed) {
 
+        // Extract data from object link
+        LwM2mVersion lwM2mVersion = LwM2mVersion.get(registerRequest.getLwVersion());
+        RegistrationData objLinksData = dataExtractor.extractDataFromObjectLinks(registerRequest.getObjectLinks(),
+                lwM2mVersion);
+
         // Create Registration from RegisterRequest
         Registration.Builder builder = new Registration.Builder(
                 registrationIdProvider.getRegistrationId(registerRequest), registerRequest.getEndpointName(), sender,
                 endpointUsed);
-        builder.extractDataFromObjectLink(true);
 
-        builder.lwM2mVersion(LwM2mVersion.get(registerRequest.getLwVersion()))
-                .lifeTimeInSec(registerRequest.getLifetime()).bindingMode(registerRequest.getBindingMode())
-                .queueMode(registerRequest.getQueueMode()).objectLinks(registerRequest.getObjectLinks())
-                .smsNumber(registerRequest.getSmsNumber()).registrationDate(new Date()).lastUpdate(new Date())
-                .additionalRegistrationAttributes(registerRequest.getAdditionalAttributes());
+        builder.lwM2mVersion(lwM2mVersion) //
+                .lifeTimeInSec(registerRequest.getLifetime()) //
+                .bindingMode(registerRequest.getBindingMode()) //
+                .queueMode(registerRequest.getQueueMode()) //
+                .smsNumber(registerRequest.getSmsNumber()) //
+                .registrationDate(new Date()).lastUpdate(new Date()) //
+                .additionalRegistrationAttributes(registerRequest.getAdditionalAttributes())//
+                .objectLinks(registerRequest.getObjectLinks()) //
+                .rootPath(objLinksData.getAlternatePath()) //
+                .supportedContentFormats(objLinksData.getSupportedContentFormats()) //
+                .supportedObjects(objLinksData.getSupportedObjects()) //
+                .availableInstances(objLinksData.getAvailableInstances());
 
         Registration registrationToApproved = builder.build();
 
@@ -121,13 +135,20 @@ public class RegistrationHandler {
             return new SendableResponse<>(UpdateResponse.badRequest("forbidden"));
         }
 
-        // validate request
-        updateRequest.validate(currentRegistration.getLwM2mVersion());
+        // Validate request
+        LwM2mVersion lwM2mVersion = currentRegistration.getLwM2mVersion();
+        updateRequest.validate(lwM2mVersion);
+
+        // Extract data from object link
+        RegistrationData objLinksData = dataExtractor.extractDataFromObjectLinks(updateRequest.getObjectLinks(),
+                lwM2mVersion);
 
         // Create update
         final RegistrationUpdate update = new RegistrationUpdate(updateRequest.getRegistrationId(), sender,
                 updateRequest.getLifeTimeInSec(), updateRequest.getSmsNumber(), updateRequest.getBindingMode(),
-                updateRequest.getObjectLinks(), updateRequest.getAdditionalAttributes(),
+                updateRequest.getObjectLinks(), objLinksData.getAlternatePath(),
+                objLinksData.getSupportedContentFormats(), objLinksData.getSupportedObjects(),
+                objLinksData.getAvailableInstances(), updateRequest.getAdditionalAttributes(),
                 authorization.getApplicationData());
 
         // update registration

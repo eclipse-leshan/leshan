@@ -26,8 +26,10 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
@@ -35,6 +37,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
 import org.eclipse.leshan.server.registration.Registration.Builder;
+import org.eclipse.leshan.server.registration.RegistrationDataExtractor.RegistrationData;
 import org.junit.jupiter.api.Test;
 
 public class RegistrationTest {
@@ -247,8 +250,17 @@ public class RegistrationTest {
         Builder builder = new Registration.Builder("id", "endpoint",
                 Identity.unsecure(InetSocketAddress.createUnresolved("localhost", 0)),
                 EndpointUriUtil.createUri("coap://localhost:5683"));
-        builder.extractDataFromObjectLink(true);
-        builder.objectLinks(linkParser.parseCoreLinkFormat(objectLinks.getBytes()));
+
+        Link[] links = linkParser.parseCoreLinkFormat(objectLinks.getBytes());
+        builder.objectLinks(links);
+
+        RegistrationData dataFromObjectLinks = new DefaultRegistrationDataExtractor().extractDataFromObjectLinks(links,
+                LwM2mVersion.V1_0);
+        builder.rootPath(dataFromObjectLinks.getAlternatePath());
+        builder.supportedContentFormats(dataFromObjectLinks.getSupportedContentFormats());
+        builder.supportedObjects(dataFromObjectLinks.getSupportedObjects());
+        builder.availableInstances(dataFromObjectLinks.getAvailableInstances());
+
         return builder.build();
     }
 }

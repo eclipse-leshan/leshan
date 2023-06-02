@@ -45,6 +45,7 @@ import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.VersionedModelProvider;
 import org.eclipse.leshan.server.queue.ClientAwakeTimeProvider;
 import org.eclipse.leshan.server.queue.StaticClientAwakeTimeProvider;
+import org.eclipse.leshan.server.registration.RegistrationDataExtractor;
 import org.eclipse.leshan.server.registration.RegistrationIdProvider;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.security.Authorizer;
@@ -79,8 +80,8 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
             RegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder, boolean noQueueMode,
             ClientAwakeTimeProvider awakeTimeProvider, RegistrationIdProvider registrationIdProvider,
-            LwM2mLinkParser linkParser, ServerSecurityInfo serverSecurityInfo,
-            boolean updateRegistrationOnNotification) {
+            RegistrationDataExtractor registrationDataExtractor, LwM2mLinkParser linkParser,
+            ServerSecurityInfo serverSecurityInfo, boolean updateRegistrationOnNotification) {
 
         // create endpoint provider.
         if (endpointsProvider == null) {
@@ -103,8 +104,8 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
             }
         }
         return new LeshanTestServer(endpointsProvider, registrationStore, securityStore, authorizer, modelProvider,
-                encoder, decoder, noQueueMode, awakeTimeProvider, registrationIdProvider, linkParser,
-                serverSecurityInfo, updateRegistrationOnNotification);
+                encoder, decoder, noQueueMode, awakeTimeProvider, registrationIdProvider, registrationDataExtractor,
+                linkParser, serverSecurityInfo, updateRegistrationOnNotification);
     }
 
     public static LeshanTestServerBuilder givenServerUsing(Protocol protocolToUse) {

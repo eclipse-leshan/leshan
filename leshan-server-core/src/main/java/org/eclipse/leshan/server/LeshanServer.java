@@ -55,6 +55,7 @@ import org.eclipse.leshan.server.queue.PresenceServiceImpl;
 import org.eclipse.leshan.server.queue.PresenceStateListener;
 import org.eclipse.leshan.server.queue.QueueModeLwM2mRequestSender;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationDataExtractor;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.registration.RegistrationIdProvider;
 import org.eclipse.leshan.server.registration.RegistrationListener;
@@ -118,6 +119,7 @@ public class LeshanServer {
      * @param awakeTimeProvider to set the client awake time if queue mode is used.
      * @param registrationIdProvider to provide registrationId using for location-path option values on response of
      *        Register operation.
+     * @param registrationDataExtractor to extract registration data from object links
      * @param updateRegistrationOnNotification will activate registration update on observe notification.
      * @param linkParser a parser {@link LwM2mLinkParser} used to parse a CoRE Link.
      * @param serverSecurityInfo credentials of the Server
@@ -126,8 +128,9 @@ public class LeshanServer {
     public LeshanServer(LwM2mServerEndpointsProvider endpointsProvider, RegistrationStore registrationStore,
             SecurityStore securityStore, Authorizer authorizer, LwM2mModelProvider modelProvider, LwM2mEncoder encoder,
             LwM2mDecoder decoder, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
-            RegistrationIdProvider registrationIdProvider, boolean updateRegistrationOnNotification,
-            LwM2mLinkParser linkParser, ServerSecurityInfo serverSecurityInfo) {
+            RegistrationIdProvider registrationIdProvider, RegistrationDataExtractor registrationDataExtractor,
+            boolean updateRegistrationOnNotification, LwM2mLinkParser linkParser,
+            ServerSecurityInfo serverSecurityInfo) {
 
         Validate.notNull(endpointsProvider, "endpointsProvider cannot be null");
         Validate.notNull(registrationStore, "registration store cannot be null");
@@ -157,7 +160,7 @@ public class LeshanServer {
         ServerEndpointToolbox toolbox = new ServerEndpointToolbox(decoder, encoder, linkParser,
                 new DefaultClientProfileProvider(registrationStore, modelProvider));
         RegistrationHandler registrationHandler = new RegistrationHandler(registrationService, authorizer,
-                registrationIdProvider);
+                registrationIdProvider, registrationDataExtractor);
         DefaultUplinkRequestReceiver requestReceiver = new DefaultUplinkRequestReceiver(registrationHandler,
                 sendService);
         endpointsProvider.createEndpoints(requestReceiver, observationService, toolbox, serverSecurityInfo, this);

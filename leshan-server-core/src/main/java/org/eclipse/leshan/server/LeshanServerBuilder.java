@@ -40,9 +40,11 @@ import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
 import org.eclipse.leshan.server.queue.ClientAwakeTimeProvider;
 import org.eclipse.leshan.server.queue.StaticClientAwakeTimeProvider;
+import org.eclipse.leshan.server.registration.DefaultRegistrationDataExtractor;
 import org.eclipse.leshan.server.registration.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.registration.RandomStringRegistrationIdProvider;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationDataExtractor;
 import org.eclipse.leshan.server.registration.RegistrationIdProvider;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.security.Authorizer;
@@ -65,6 +67,7 @@ public class LeshanServerBuilder {
     private Authorizer authorizer;
     private ClientAwakeTimeProvider awakeTimeProvider;
     private RegistrationIdProvider registrationIdProvider;
+    private RegistrationDataExtractor registrationDataExtractor;
 
     private LwM2mEncoder encoder;
     private LwM2mDecoder decoder;
@@ -235,6 +238,18 @@ public class LeshanServerBuilder {
     }
 
     /**
+     * Sets {@link RegistrationDataExtractor} responsible to extract Registration Data from object links generally
+     * received from Register or Update requests.
+     * <p>
+     * By default, {@link DefaultRegistrationDataExtractor} is used.
+     *
+     * @param registrationDataExtractor the {@link RegistrationDataExtractor} to set.
+     */
+    public void setRegistrationDataExtractor(RegistrationDataExtractor registrationDataExtractor) {
+        this.registrationDataExtractor = registrationDataExtractor;
+    }
+
+    /**
      * Update Registration on notification.
      * <p>
      * There is some use cases where device can have a dynamic IP (E.g. NAT environment), the specification says to use
@@ -293,12 +308,16 @@ public class LeshanServerBuilder {
         if (registrationIdProvider == null)
             registrationIdProvider = new RandomStringRegistrationIdProvider();
 
+        if (registrationDataExtractor == null) {
+            registrationDataExtractor = new DefaultRegistrationDataExtractor();
+        }
+
         ServerSecurityInfo serverSecurityInfo = new ServerSecurityInfo(privateKey, publicKey, certificateChain,
                 trustedCertificates);
 
         return createServer(endpointProvider, registrationStore, securityStore, authorizer, modelProvider, encoder,
-                decoder, noQueueMode, awakeTimeProvider, registrationIdProvider, linkParser, serverSecurityInfo,
-                updateRegistrationOnNotification);
+                decoder, noQueueMode, awakeTimeProvider, registrationIdProvider, registrationDataExtractor, linkParser,
+                serverSecurityInfo, updateRegistrationOnNotification);
     }
 
     /**
@@ -309,16 +328,16 @@ public class LeshanServerBuilder {
      *
      * @see LeshanServer#LeshanServer(LwM2mServerEndpointsProvider, RegistrationStore, SecurityStore, Authorizer,
      *      LwM2mModelProvider, LwM2mEncoder, LwM2mDecoder, boolean, ClientAwakeTimeProvider, RegistrationIdProvider,
-     *      boolean, LwM2mLinkParser, ServerSecurityInfo)
+     *      RegistrationDataExtractor, boolean, LwM2mLinkParser, ServerSecurityInfo)
      */
     protected LeshanServer createServer(LwM2mServerEndpointsProvider endpointsProvider,
             RegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder, boolean noQueueMode,
             ClientAwakeTimeProvider awakeTimeProvider, RegistrationIdProvider registrationIdProvider,
-            LwM2mLinkParser linkParser, ServerSecurityInfo serverSecurityInfo,
-            boolean updateRegistrationOnNotification) {
+            RegistrationDataExtractor registrationDataExtractor, LwM2mLinkParser linkParser,
+            ServerSecurityInfo serverSecurityInfo, boolean updateRegistrationOnNotification) {
         return new LeshanServer(endpointsProvider, registrationStore, securityStore, authorizer, modelProvider, encoder,
-                decoder, noQueueMode, awakeTimeProvider, registrationIdProvider, updateRegistrationOnNotification,
-                linkParser, serverSecurityInfo);
+                decoder, noQueueMode, awakeTimeProvider, registrationIdProvider, registrationDataExtractor,
+                updateRegistrationOnNotification, linkParser, serverSecurityInfo);
     }
 }

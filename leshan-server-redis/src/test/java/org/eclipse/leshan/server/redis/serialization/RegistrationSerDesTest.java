@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.AttributeSet;
@@ -33,7 +34,9 @@ import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
 import org.eclipse.leshan.core.link.attributes.ValuelessAttribute;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.Identity;
+import org.eclipse.leshan.server.registration.DefaultRegistrationDataExtractor;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationDataExtractor.RegistrationData;
 import org.junit.jupiter.api.Test;
 
 public class RegistrationSerDesTest {
@@ -57,8 +60,15 @@ public class RegistrationSerDesTest {
                 EndpointUriUtil.createUri("coap://localhost:5683")).objectLinks(objs).rootPath("/")
                         .supportedContentFormats(ContentFormat.TLV, ContentFormat.TEXT);
         builder.registrationDate(new Date(100L));
-        builder.extractDataFromObjectLink(true);
         builder.lastUpdate(new Date(101L));
+
+        RegistrationData dataFromObjectLinks = new DefaultRegistrationDataExtractor().extractDataFromObjectLinks(objs,
+                LwM2mVersion.V1_0);
+        builder.rootPath(dataFromObjectLinks.getAlternatePath());
+        builder.supportedContentFormats(dataFromObjectLinks.getSupportedContentFormats());
+        builder.supportedObjects(dataFromObjectLinks.getSupportedObjects());
+        builder.availableInstances(dataFromObjectLinks.getAvailableInstances());
+
         Registration r = builder.build();
 
         byte[] ser = registrationSerDes.bSerialize(r);
@@ -90,7 +100,14 @@ public class RegistrationSerDesTest {
 
         builder.registrationDate(new Date(100L));
         builder.lastUpdate(new Date(101L));
-        builder.extractDataFromObjectLink(true);
+
+        RegistrationData dataFromObjectLinks = new DefaultRegistrationDataExtractor().extractDataFromObjectLinks(objs,
+                LwM2mVersion.V1_0);
+        builder.rootPath(dataFromObjectLinks.getAlternatePath());
+        builder.supportedContentFormats(dataFromObjectLinks.getSupportedContentFormats());
+        builder.supportedObjects(dataFromObjectLinks.getSupportedObjects());
+        builder.availableInstances(dataFromObjectLinks.getAvailableInstances());
+
         Registration r = builder.build();
 
         byte[] ser = registrationSerDes.bSerialize(r);

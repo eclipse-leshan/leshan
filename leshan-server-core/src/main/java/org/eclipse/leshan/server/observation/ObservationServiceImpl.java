@@ -204,7 +204,7 @@ public class ObservationServiceImpl implements ObservationService, LwM2mNotifica
         if (updateRegistrationOnNotification) {
             Identity obsIdentity = profile.getIdentity();
             RegistrationUpdate regUpdate = new RegistrationUpdate(observation.getRegistrationId(), obsIdentity, null,
-                    null, null, null, null, null);
+                    null, null, null, null, null, null, null, null, null);
             UpdatedRegistration updatedRegistration = registrationStore.updateRegistration(regUpdate);
             if (updatedRegistration == null || updatedRegistration.getUpdatedRegistration() == null) {
                 LOG.error("Unexpected error: There is no registration with id {} for this observation {}",

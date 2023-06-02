@@ -59,7 +59,7 @@ public class InMemoryRegistrationStoreTest {
         store.addRegistration(registration);
 
         RegistrationUpdate update = new RegistrationUpdate(registrationId, Identity.unsecure(address, port), null, null,
-                null, null, null, null);
+                null, null, null, null, null, null, null, null);
         UpdatedRegistration updatedRegistration = store.updateRegistration(update);
         assertEquals(lifetime, updatedRegistration.getUpdatedRegistration().getLifeTimeInSec());
         assertSame(binding, updatedRegistration.getUpdatedRegistration().getBindingMode());
@@ -87,7 +87,7 @@ public class InMemoryRegistrationStoreTest {
         assertFalse(registration.isAlive());
 
         RegistrationUpdate update = new RegistrationUpdate(registrationId, Identity.unsecure(address, port), lifetime,
-                null, null, null, null, null);
+                null, null, null, null, null, null, null, null, null);
         UpdatedRegistration updatedRegistration = store.updateRegistration(update);
         assertTrue(updatedRegistration.getUpdatedRegistration().isAlive());
 
