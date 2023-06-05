@@ -48,7 +48,6 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
-import org.eclipse.leshan.core.util.StringUtils;
 
 /**
  * An Utility class which help to generate @{link Link} from {@link LwM2mObjectEnabler} and {@link LwM2mModel}.<br>
@@ -269,8 +268,14 @@ public class LinkFormatHelper {
     }
 
     protected Version getVersion(ObjectModel objectModel) {
-        if (StringUtils.isEmpty(objectModel.version) || ObjectModel.DEFAULT_VERSION.equals(objectModel.version)) {
-            return null;
+        if (versionRegistry.isCoreObject(objectModel.id, version)) {
+            if (versionRegistry.isDefaultVersion(new Version(objectModel.version), objectModel.id, version)) {
+                return null;
+            }
+        } else {
+            if (Version.V1_0.equals(new Version(objectModel.version))) {
+                return null;
+            }
         }
         return new Version(objectModel.version);
     }

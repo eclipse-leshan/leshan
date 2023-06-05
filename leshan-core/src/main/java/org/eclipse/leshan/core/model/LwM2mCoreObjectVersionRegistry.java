@@ -84,6 +84,11 @@ public class LwM2mCoreObjectVersionRegistry {
         return null;
     }
 
+    public boolean isCoreObject(int objectId, LwM2mVersion lwM2mVersion) {
+        Map<Integer, Version> objectIdToVersion = lwm2mVerionToObjectRegistry.get(lwM2mVersion);
+        return objectIdToVersion.get(objectId) != null;
+    }
+
     public boolean isDefaultVersion(Version objectVersion, int objectId, LwM2mVersion lwM2mVersion) {
         Map<Integer, Version> objectIdToVersion = lwm2mVerionToObjectRegistry.get(lwM2mVersion);
         if (objectIdToVersion != null) {

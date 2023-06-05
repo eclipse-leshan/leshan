@@ -148,7 +148,7 @@ public class RegistrationTest {
         assertThat(client).isRegisteredAt(server);
         Registration registration = server.getRegistrationFor(client);
         assertThat(registration.getObjectLinks()).isLikeLinks(
-                "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1>;ver=1.1,</1/0>,</2>,</3>;ver=1.1,</3/0>,</3442/0>");
+                "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1/0>,</2>,</3/0>,</3442/0>");
 
         // Check for update
         client.waitForUpdateTo(server, SHORT_LIFETIME, TimeUnit.SECONDS);

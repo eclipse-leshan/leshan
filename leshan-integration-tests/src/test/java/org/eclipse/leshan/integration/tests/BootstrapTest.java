@@ -355,10 +355,10 @@ public class BootstrapTest {
         LwM2mResponse firstResponse = bootstrapServer.getFirstResponseFor(bootstrapSession, firstRequest);
         assertThat(firstResponse).isInstanceOfSatisfying(BootstrapDiscoverResponse.class, r -> {
             assertThat(r).hasCode(ResponseCode.CONTENT);
-            assertThat(r.getObjectLinks()).isLikeLwM2mLinks(String.format(
-                    "</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</2>,</3442/0>,</3>;ver=1.1,</3/0>",
-                    bootstrapServer.getEndpoint(givenProtocol).getURI().getHost(),
-                    bootstrapServer.getEndpoint(givenProtocol).getURI().getPort()));
+            assertThat(r.getObjectLinks()).isLikeLwM2mLinks(
+                    String.format("</>;lwm2m=1.0,</0/0>;uri=\"coap://%s:%d\",</1>,</2>,</3442/0>,</3/0>",
+                            bootstrapServer.getEndpoint(givenProtocol).getURI().getHost(),
+                            bootstrapServer.getEndpoint(givenProtocol).getURI().getPort()));
         });
     }
 
@@ -398,10 +398,10 @@ public class BootstrapTest {
         LwM2mResponse firstResponse = bootstrapServer.getFirstResponseFor(bootstrapSession, firstRequest);
         assertThat(firstResponse).isInstanceOfSatisfying(BootstrapDiscoverResponse.class, r -> {
             assertThat(r).hasCode(ResponseCode.CONTENT);
-            assertThat(r.getObjectLinks()).isLikeLwM2mLinks(String.format(
-                    "</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</1>;ver=1.1,</2>,</3442/0>,</3>;ver=1.1,</3/0>",
-                    bootstrapServer.getEndpoint(givenProtocol).getURI().getHost(),
-                    bootstrapServer.getEndpoint(givenProtocol).getURI().getPort()));
+            assertThat(r.getObjectLinks()).isLikeLwM2mLinks(
+                    String.format("</>;lwm2m=1.0,</0/0>;uri=\"coap://%s:%d\",</1>,</2>,</3442/0>,</3/0>",
+                            bootstrapServer.getEndpoint(givenProtocol).getURI().getHost(),
+                            bootstrapServer.getEndpoint(givenProtocol).getURI().getPort()));
         });
 
         // re-bootstrap
@@ -423,7 +423,7 @@ public class BootstrapTest {
         assertThat(secondResponse).isInstanceOfSatisfying(BootstrapDiscoverResponse.class, r -> {
             assertThat(r).hasCode(ResponseCode.CONTENT);
             assertThat(r.getObjectLinks()).isLikeLwM2mLinks(String.format(
-                    "</>;lwm2m=1.0,</0>;ver=1.1,</0/0>;uri=\"coap://%s:%d\",</0/1>;ssid=2222;uri=\"coap://%s:%d\",</1>;ver=1.1,</1/0>;ssid=2222,</2>,</3442/0>,</3>;ver=1.1,</3/0>",
+                    "</>;lwm2m=1.0,</0/0>;uri=\"coap://%s:%d\",</0/1>;ssid=2222;uri=\"coap://%s:%d\",</1/0>;ssid=2222,</2>,</3442/0>,</3/0>",
                     bootstrapServer.getEndpoint(givenProtocol).getURI().getHost(),
                     bootstrapServer.getEndpoint(givenProtocol).getURI().getPort(),
                     server.getEndpoint(givenProtocol).getURI().getHost(),
@@ -467,7 +467,7 @@ public class BootstrapTest {
         LwM2mResponse firstResponse = bootstrapServer.getFirstResponseFor(bootstrapSession, firstRequest);
         assertThat(firstResponse).isInstanceOfSatisfying(BootstrapDiscoverResponse.class, r -> {
             assertThat(r).hasCode(ResponseCode.CONTENT);
-            assertThat(r.getObjectLinks()).isLikeLwM2mLinks("</>;lwm2m=1.0,</3>;ver=1.1,</3/0>");
+            assertThat(r.getObjectLinks()).isLikeLwM2mLinks("</>;lwm2m=1.0,</3/0>");
         });
     }
 

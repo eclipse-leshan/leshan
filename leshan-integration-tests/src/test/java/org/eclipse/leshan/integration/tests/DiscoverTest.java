@@ -101,8 +101,7 @@ public class DiscoverTest {
         assertThat(response) //
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider) // */
-                .hasObjectLinksLike(
-                        "</3>;ver=1.1,</3/0>,</3/0/0>,</3/0/1>,</3/0/2>,</3/0/11>,</3/0/14>,</3/0/15>,</3/0/16>");
+                .hasObjectLinksLike("</3>,</3/0>,</3/0/0>,</3/0/1>,</3/0/2>,</3/0/11>,</3/0/14>,</3/0/15>,</3/0/16>");
 
     }
 
