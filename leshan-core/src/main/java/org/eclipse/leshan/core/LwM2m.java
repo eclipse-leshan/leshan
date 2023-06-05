@@ -97,6 +97,11 @@ public interface LwM2m {
         protected final Short major;
         protected final Short minor;
 
+        public Version(int major, int minor) {
+            this.major = (short) major;
+            this.minor = (short) minor;
+        }
+
         public Version(Short major, Short minor) {
             this.major = major;
             this.minor = minor;

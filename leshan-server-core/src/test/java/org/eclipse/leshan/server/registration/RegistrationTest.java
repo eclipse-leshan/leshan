@@ -246,7 +246,37 @@ public class RegistrationTest {
         });
     }
 
+    @Test
+    public void test_object_links_with_version_for_lwm2m_v1_1() throws LinkParseException {
+        Registration reg = given_a_registration_with_object_link_like("</1/0>,</2>,</3>,</3/0>,</4>,</5>,</6>,</7>",
+                LwM2mVersion.V1_1);
+
+        // check root path
+        assertEquals("/", reg.getRootPath());
+
+        // Ensure supported objects are correct
+        Map<Integer, Version> supportedObject = reg.getSupportedObject();
+        assertEquals(7, supportedObject.size());
+        assertEquals(new Version("1.1"), supportedObject.get(1));
+        assertEquals(new Version("1.0"), supportedObject.get(2));
+        assertEquals(new Version("1.1"), supportedObject.get(3));
+        assertEquals(new Version("1.2"), supportedObject.get(4));
+        assertEquals(new Version("1.0"), supportedObject.get(5));
+        assertEquals(new Version("1.0"), supportedObject.get(6));
+        assertEquals(new Version("1.0"), supportedObject.get(7));
+
+        // ensure available instances are correct
+        Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
+        assertEquals(2, availableInstances.size());
+        assertTrue(availableInstances.containsAll(Arrays.asList(new LwM2mPath(1, 0), new LwM2mPath(3, 0))));
+    }
+
     private Registration given_a_registration_with_object_link_like(String objectLinks) throws LinkParseException {
+        return given_a_registration_with_object_link_like(objectLinks, LwM2mVersion.V1_0);
+    }
+
+    private Registration given_a_registration_with_object_link_like(String objectLinks, LwM2mVersion version)
+            throws LinkParseException {
         Builder builder = new Registration.Builder("id", "endpoint",
                 Identity.unsecure(InetSocketAddress.createUnresolved("localhost", 0)),
                 EndpointUriUtil.createUri("coap://localhost:5683"));
@@ -255,7 +285,7 @@ public class RegistrationTest {
         builder.objectLinks(links);
 
         RegistrationData dataFromObjectLinks = new DefaultRegistrationDataExtractor().extractDataFromObjectLinks(links,
-                LwM2mVersion.V1_0);
+                version);
         builder.rootPath(dataFromObjectLinks.getAlternatePath());
         builder.supportedContentFormats(dataFromObjectLinks.getSupportedContentFormats());
         builder.supportedObjects(dataFromObjectLinks.getSupportedObjects());

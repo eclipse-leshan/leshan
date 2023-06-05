@@ -29,11 +29,13 @@ import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
 import org.eclipse.leshan.core.link.lwm2m.MixedLwM2mLink;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
-import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.LwM2mCoreObjectVersionRegistry;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
 
 public class DefaultRegistrationDataExtractor implements RegistrationDataExtractor {
+
+    protected LwM2mCoreObjectVersionRegistry versionRegistry = new LwM2mCoreObjectVersionRegistry();
 
     @Override
     public RegistrationData extractDataFromObjectLinks(Link[] objectLinks, LwM2mVersion lwM2mVersion) {
@@ -150,6 +152,14 @@ public class DefaultRegistrationDataExtractor implements RegistrationDataExtract
     }
 
     protected Version getDefaultVersion(LwM2mVersion lwM2mVersion, int objectId) {
-        return new Version(ObjectModel.DEFAULT_VERSION);
+        // Implements : https://github.com/eclipse/leshan/issues/1434 behavior
+
+        Version defaultVersion = versionRegistry.getDefaultVersion(objectId, lwM2mVersion);
+        if (defaultVersion != null) {
+            return defaultVersion;
+        } else {
+            // this is not a core object, use v1.0
+            return Version.V1_0;
+        }
     }
 }
