@@ -47,6 +47,7 @@ import org.eclipse.leshan.client.send.DataSender;
 import org.eclipse.leshan.client.send.DataSenderManager;
 import org.eclipse.leshan.client.send.SendService;
 import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -84,14 +85,14 @@ public class LeshanClient implements LwM2mClient {
             List<DataSender> dataSenders, List<Certificate> trustStore, RegistrationEngineFactory engineFactory,
             BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer,
+            ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer, LinkFormatHelper linkFormatHelper,
             LwM2mAttributeParser attributeParser, LwM2mClientEndpointsProvider endpointsProvider) {
 
         Validate.notNull(endpoint);
         Validate.notEmpty(objectEnablers);
         Validate.notNull(checker);
 
-        objectTree = createObjectTree(objectEnablers);
+        objectTree = createObjectTree(objectEnablers, linkFormatHelper);
         List<String> errors = checker.checkconfig(objectTree.getObjectEnablers());
         if (errors != null) {
             throw new IllegalArgumentException(
@@ -101,7 +102,7 @@ public class LeshanClient implements LwM2mClient {
         this.endpointsProvider = endpointsProvider;
         rootEnabler = createRootEnabler(objectTree);
         observers = createClientObserverDispatcher();
-        bootstrapHandler = createBoostrapHandler(objectTree, checker);
+        bootstrapHandler = createBoostrapHandler(objectTree, checker, linkFormatHelper);
 
         ClientEndpointToolbox toolbox = new ClientEndpointToolbox(decoder, encoder, linkSerializer,
                 objectTree.getModel(), attributeParser);
@@ -111,11 +112,11 @@ public class LeshanClient implements LwM2mClient {
 
         engine = engineFactory.createRegistratioEngine(endpoint, objectTree, endpointsManager, requestSender,
                 bootstrapHandler, observers, additionalAttributes, bsAdditionalAttributes,
-                getSupportedContentFormat(decoder, encoder), sharedExecutor);
+                getSupportedContentFormat(decoder, encoder), sharedExecutor, linkFormatHelper);
 
         DownlinkRequestReceiver requestReceiver = createRequestReceiver(bootstrapHandler, rootEnabler, objectTree,
                 engine);
-        createRegistrationUpdateHandler(engine, endpointsManager, bootstrapHandler, objectTree);
+        createRegistrationUpdateHandler(engine, endpointsManager, bootstrapHandler, objectTree, linkFormatHelper);
 
         endpointsProvider.init(objectTree, requestReceiver, toolbox);
     }
@@ -124,8 +125,9 @@ public class LeshanClient implements LwM2mClient {
         return new RootEnabler(tree);
     }
 
-    protected LwM2mObjectTree createObjectTree(List<? extends LwM2mObjectEnabler> objectEnablers) {
-        return new LwM2mObjectTree(this, objectEnablers);
+    protected LwM2mObjectTree createObjectTree(List<? extends LwM2mObjectEnabler> objectEnablers,
+            LinkFormatHelper linkFormatHelper) {
+        return new LwM2mObjectTree(this, linkFormatHelper, objectEnablers);
     }
 
     protected DataSenderManager createDataSenderManager(List<DataSender> dataSenders, LwM2mRootEnabler rootEnabler,
@@ -148,8 +150,9 @@ public class LeshanClient implements LwM2mClient {
         return observer;
     }
 
-    protected BootstrapHandler createBoostrapHandler(LwM2mObjectTree objectTree, BootstrapConsistencyChecker checker) {
-        return new BootstrapHandler(objectTree.getObjectEnablers(), checker);
+    protected BootstrapHandler createBoostrapHandler(LwM2mObjectTree objectTree, BootstrapConsistencyChecker checker,
+            LinkFormatHelper linkFormatHelper) {
+        return new BootstrapHandler(objectTree.getObjectEnablers(), checker, linkFormatHelper);
     }
 
     protected DownlinkRequestReceiver createRequestReceiver(BootstrapHandler bootstrapHandler,
@@ -167,8 +170,10 @@ public class LeshanClient implements LwM2mClient {
     }
 
     protected RegistrationUpdateHandler createRegistrationUpdateHandler(RegistrationEngine engine,
-            EndpointsManager endpointsManager, BootstrapHandler bootstrapHandler, LwM2mObjectTree objectTree) {
-        RegistrationUpdateHandler registrationUpdateHandler = new RegistrationUpdateHandler(engine, bootstrapHandler);
+            EndpointsManager endpointsManager, BootstrapHandler bootstrapHandler, LwM2mObjectTree objectTree,
+            LinkFormatHelper linkFormatHelper) {
+        RegistrationUpdateHandler registrationUpdateHandler = new RegistrationUpdateHandler(engine, bootstrapHandler,
+                linkFormatHelper);
         registrationUpdateHandler.listen(objectTree);
         return registrationUpdateHandler;
     }

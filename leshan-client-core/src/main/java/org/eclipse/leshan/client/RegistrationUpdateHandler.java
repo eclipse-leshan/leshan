@@ -37,10 +37,13 @@ public class RegistrationUpdateHandler {
 
     private final RegistrationEngine engine;
     private final BootstrapHandler bsHandler;
+    private final LinkFormatHelper linkFormatHelper;
 
-    public RegistrationUpdateHandler(RegistrationEngine engine, BootstrapHandler bsHandler) {
+    public RegistrationUpdateHandler(RegistrationEngine engine, BootstrapHandler bsHandler,
+            LinkFormatHelper linkFormatHelper) {
         this.engine = engine;
         this.bsHandler = bsHandler;
+        this.linkFormatHelper = linkFormatHelper;
     }
 
     public void listen(final LwM2mObjectTree objecTree) {
@@ -49,28 +52,28 @@ public class RegistrationUpdateHandler {
             public void objectInstancesRemoved(LwM2mObjectEnabler object, int... instanceIds) {
                 if (!bsHandler.isBootstrapping())
                     engine.triggerRegistrationUpdate(new RegistrationUpdate(
-                            LinkFormatHelper.getClientDescription(objecTree.getObjectEnablers().values(), null, null)));
+                            linkFormatHelper.getClientDescription(objecTree.getObjectEnablers().values(), null, null)));
             }
 
             @Override
             public void objectInstancesAdded(LwM2mObjectEnabler object, int... instanceIds) {
                 if (!bsHandler.isBootstrapping())
                     engine.triggerRegistrationUpdate(new RegistrationUpdate(
-                            LinkFormatHelper.getClientDescription(objecTree.getObjectEnablers().values(), null, null)));
+                            linkFormatHelper.getClientDescription(objecTree.getObjectEnablers().values(), null, null)));
             }
 
             @Override
             public void objectRemoved(LwM2mObjectEnabler object) {
                 if (!bsHandler.isBootstrapping())
                     engine.triggerRegistrationUpdate(new RegistrationUpdate(
-                            LinkFormatHelper.getClientDescription(objecTree.getObjectEnablers().values(), null, null)));
+                            linkFormatHelper.getClientDescription(objecTree.getObjectEnablers().values(), null, null)));
             }
 
             @Override
             public void objectAdded(LwM2mObjectEnabler object) {
                 if (!bsHandler.isBootstrapping())
                     engine.triggerRegistrationUpdate(new RegistrationUpdate(
-                            LinkFormatHelper.getClientDescription(objecTree.getObjectEnablers().values(), null, null)));
+                            linkFormatHelper.getClientDescription(objecTree.getObjectEnablers().values(), null, null)));
             }
 
             @Override

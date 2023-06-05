@@ -46,11 +46,14 @@ public class BootstrapHandler {
     private volatile List<String> lastConsistencyError = null;
 
     private final Map<Integer, LwM2mObjectEnabler> objects;
-    private BootstrapConsistencyChecker checker;
+    private final BootstrapConsistencyChecker checker;
+    private final LinkFormatHelper linkFormatHelper;
 
-    public BootstrapHandler(Map<Integer, LwM2mObjectEnabler> objectEnablers, BootstrapConsistencyChecker checker) {
+    public BootstrapHandler(Map<Integer, LwM2mObjectEnabler> objectEnablers, BootstrapConsistencyChecker checker,
+            LinkFormatHelper linkFormatHelper) {
         objects = objectEnablers;
         this.checker = checker;
+        this.linkFormatHelper = linkFormatHelper;
     }
 
     public synchronized SendableResponse<BootstrapFinishResponse> finished(ServerIdentity server,
@@ -143,7 +146,7 @@ public class BootstrapHandler {
         LwM2mPath path = request.getPath();
         if (path.isRoot()) {
             // Manage discover on object
-            LwM2mLink[] ObjectLinks = LinkFormatHelper.getBootstrapClientDescription(objects.values());
+            LwM2mLink[] ObjectLinks = linkFormatHelper.getBootstrapClientDescription(objects.values());
             return BootstrapDiscoverResponse.success(ObjectLinks);
         }
         return BootstrapDiscoverResponse.badRequest("invalid path");

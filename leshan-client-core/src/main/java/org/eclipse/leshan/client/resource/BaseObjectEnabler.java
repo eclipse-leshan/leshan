@@ -77,12 +77,12 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     protected final ObjectModel objectModel;
 
     private LwM2mClient lwm2mClient;
+    private LinkFormatHelper linkFormatHelper;
 
     public BaseObjectEnabler(int id, ObjectModel objectModel) {
         this.id = id;
         this.objectModel = objectModel;
         this.transactionalListener = createTransactionListener();
-
     }
 
     protected TransactionalObjectListener createTransactionListener() {
@@ -396,7 +396,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         LwM2mPath path = request.getPath();
         if (path.isObject()) {
             // Manage discover on object
-            LwM2mLink[] ObjectLinks = LinkFormatHelper.getObjectDescription(this, null);
+            LwM2mLink[] ObjectLinks = linkFormatHelper.getObjectDescription(this, null);
             return DiscoverResponse.success(ObjectLinks);
 
         } else if (path.isObjectInstance()) {
@@ -404,7 +404,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             if (!getAvailableInstanceIds().contains(path.getObjectInstanceId()))
                 return DiscoverResponse.notFound();
 
-            LwM2mLink[] instanceLink = LinkFormatHelper.getInstanceDescription(this, path.getObjectInstanceId(), null);
+            LwM2mLink[] instanceLink = linkFormatHelper.getInstanceDescription(this, path.getObjectInstanceId(), null);
             return DiscoverResponse.success(instanceLink);
 
         } else if (path.isResource()) {
@@ -419,7 +419,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             if (!getAvailableResourceIds(path.getObjectInstanceId()).contains(path.getResourceId()))
                 return DiscoverResponse.notFound();
 
-            LwM2mLink resourceLink = LinkFormatHelper.getResourceDescription(this, path.getObjectInstanceId(),
+            LwM2mLink resourceLink = linkFormatHelper.getResourceDescription(this, path.getObjectInstanceId(),
                     path.getResourceId(), null);
             return DiscoverResponse.success(new LwM2mLink[] { resourceLink });
         }
@@ -441,7 +441,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         LwM2mPath path = request.getPath();
         if (path.isObject()) {
             // Manage discover on object
-            LwM2mLink[] ObjectLinks = LinkFormatHelper.getBootstrapObjectDescription(this);
+            LwM2mLink[] ObjectLinks = linkFormatHelper.getBootstrapObjectDescription(this);
             return BootstrapDiscoverResponse.success(ObjectLinks);
         }
         return BootstrapDiscoverResponse.badRequest("invalid path");
@@ -518,8 +518,9 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public void setLwM2mClient(LwM2mClient client) {
+    public void init(LwM2mClient client, LinkFormatHelper linkFormatHelper) {
         this.lwm2mClient = client;
+        this.linkFormatHelper = linkFormatHelper;
     }
 
     public LwM2mClient getLwm2mClient() {

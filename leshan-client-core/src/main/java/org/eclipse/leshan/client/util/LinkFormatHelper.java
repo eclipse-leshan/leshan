@@ -39,6 +39,7 @@ import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
 import org.eclipse.leshan.core.link.lwm2m.MixedLwM2mLink;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
+import org.eclipse.leshan.core.model.LwM2mCoreObjectVersionRegistry;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mObject;
@@ -53,12 +54,16 @@ import org.eclipse.leshan.core.util.StringUtils;
  * An Utility class which help to generate @{link Link} from {@link LwM2mObjectEnabler} and {@link LwM2mModel}.<br>
  * Used for register and discover payload.
  */
-public final class LinkFormatHelper {
+public class LinkFormatHelper {
 
-    private LinkFormatHelper() {
+    protected LwM2mCoreObjectVersionRegistry versionRegistry = new LwM2mCoreObjectVersionRegistry();
+    protected LwM2mVersion version;
+
+    public LinkFormatHelper(LwM2mVersion version) {
+        this.version = version;
     }
 
-    public static Link[] getClientDescription(Collection<LwM2mObjectEnabler> objectEnablers, String rootPath,
+    public Link[] getClientDescription(Collection<LwM2mObjectEnabler> objectEnablers, String rootPath,
             List<ContentFormat> supportedContentFormats) {
         List<Link> links = new ArrayList<>();
 
@@ -99,7 +104,7 @@ public final class LinkFormatHelper {
         return links.toArray(new Link[] {});
     }
 
-    public static LwM2mLink[] getBootstrapClientDescription(Collection<LwM2mObjectEnabler> objectEnablers) {
+    public LwM2mLink[] getBootstrapClientDescription(Collection<LwM2mObjectEnabler> objectEnablers) {
         List<Link> links = new ArrayList<>();
         // TODO should be version 1.1 ?
         links.add(new LwM2mLink("/", LwM2mPath.ROOTPATH,
@@ -115,7 +120,7 @@ public final class LinkFormatHelper {
         return links.toArray(new LwM2mLink[] {});
     }
 
-    private static Map<Integer, List<LwM2mAttribute<?>>> extractOscoreAttributes(
+    private Map<Integer, List<LwM2mAttribute<?>>> extractOscoreAttributes(
             Collection<LwM2mObjectEnabler> objectEnablers) {
         Map<Integer/* oscore instance id */, List<LwM2mAttribute<?>>> oscoreAttributes = new HashMap<>();
         for (LwM2mObjectEnabler objectEnabler : objectEnablers) {
@@ -147,7 +152,7 @@ public final class LinkFormatHelper {
         return oscoreAttributes;
     }
 
-    public static LwM2mLink[] getObjectDescription(LwM2mObjectEnabler objectEnabler, String rootPath) {
+    public LwM2mLink[] getObjectDescription(LwM2mObjectEnabler objectEnabler, String rootPath) {
         List<LwM2mLink> links = new ArrayList<>();
 
         // create link for "object"
@@ -162,7 +167,7 @@ public final class LinkFormatHelper {
         return links.toArray(new LwM2mLink[links.size()]);
     }
 
-    public static LwM2mLink[] getBootstrapObjectDescription(LwM2mObjectEnabler objectEnabler) {
+    public LwM2mLink[] getBootstrapObjectDescription(LwM2mObjectEnabler objectEnabler) {
         List<LwM2mLink> links = new ArrayList<>();
         links.add(new LwM2mLink("/", LwM2mPath.ROOTPATH,
                 // TODO should be version 1.1 ?
@@ -173,7 +178,7 @@ public final class LinkFormatHelper {
         return links.toArray(new LwM2mLink[] {});
     }
 
-    private static List<LwM2mLink> getBootstrapObjectDescriptionWithoutRoot(LwM2mObjectEnabler objectEnabler,
+    protected List<LwM2mLink> getBootstrapObjectDescriptionWithoutRoot(LwM2mObjectEnabler objectEnabler,
             Map<Integer, List<LwM2mAttribute<?>>> oscoreAttributesByInstanceId) {
         List<LwM2mLink> links = new ArrayList<>();
 
@@ -233,8 +238,7 @@ public final class LinkFormatHelper {
         return links;
     }
 
-    public static LwM2mLink[] getInstanceDescription(LwM2mObjectEnabler objectEnabler, int instanceId,
-            String rootPath) {
+    public LwM2mLink[] getInstanceDescription(LwM2mObjectEnabler objectEnabler, int instanceId, String rootPath) {
         List<LwM2mLink> links = new ArrayList<>();
 
         // create link for "instance"
@@ -247,13 +251,13 @@ public final class LinkFormatHelper {
         return links.toArray(new LwM2mLink[links.size()]);
     }
 
-    public static LwM2mLink getResourceDescription(LwM2mObjectEnabler objectEnabler, int instanceId, int resourceId,
+    public LwM2mLink getResourceDescription(LwM2mObjectEnabler objectEnabler, int instanceId, int resourceId,
             String rootPath) {
         // create link for "resource"
         return new LwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId(), instanceId, resourceId));
     }
 
-    private static List<LwM2mAttribute<?>> getObjectAttributes(ObjectModel objectModel) {
+    protected List<LwM2mAttribute<?>> getObjectAttributes(ObjectModel objectModel) {
         Version version = getVersion(objectModel);
         if (version == null) {
             return null;
@@ -264,7 +268,7 @@ public final class LinkFormatHelper {
         return attributes;
     }
 
-    private static Version getVersion(ObjectModel objectModel) {
+    protected Version getVersion(ObjectModel objectModel) {
         if (StringUtils.isEmpty(objectModel.version) || ObjectModel.DEFAULT_VERSION.equals(objectModel.version)) {
             return null;
         }

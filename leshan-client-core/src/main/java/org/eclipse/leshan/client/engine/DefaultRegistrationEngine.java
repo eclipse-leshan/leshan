@@ -118,6 +118,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private final BootstrapHandler bootstrapHandler;
     private final EndpointsManager endpointsManager;
     private final LwM2mClientObserver observer;
+    private final LinkFormatHelper linkFormatHelper;
 
     // tasks stuff
     private boolean started = false;
@@ -134,11 +135,13 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             ScheduledExecutorService executor, long requestTimeoutInMs, long deregistrationTimeoutInMs,
             int bootstrapSessionTimeoutInSec, int retryWaitingTimeInMs, Integer communicationPeriodInMs,
             boolean reconnectOnUpdate, boolean resumeOnConnect, boolean useQueueMode,
-            ContentFormat preferredContentFormat, Set<ContentFormat> supportedContentFormats) {
+            ContentFormat preferredContentFormat, Set<ContentFormat> supportedContentFormats,
+            LinkFormatHelper linkFormatHelper) {
         this.endpoint = endpoint;
         this.objectEnablers = objectTree.getObjectEnablers();
         this.bootstrapHandler = bootstrapState;
         this.endpointsManager = endpointsManager;
+        this.linkFormatHelper = linkFormatHelper;
         this.observer = observer;
         this.additionalAttributes = additionalAttributes;
         this.bsAdditionalAttributes = bsAdditionalAttributes;
@@ -317,7 +320,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             LwM2mVersion lwM2mVersion = LwM2mVersion.lastSupported();
             EnumSet<BindingMode> supportedBindingMode = ServersInfoExtractor
                     .getDeviceSupportedBindingMode(objectEnablers.get(LwM2mId.DEVICE), 0);
-            Link[] links = LinkFormatHelper.getClientDescription(objectEnablers.values(), null,
+            Link[] links = linkFormatHelper.getClientDescription(objectEnablers.values(), null,
                     ContentFormat.getOptionalContentFormatForClient(supportedContentFormats, lwM2mVersion));
 
             request = new RegisterRequest(endpoint, dmInfo.lifetime, lwM2mVersion.toString(), supportedBindingMode,

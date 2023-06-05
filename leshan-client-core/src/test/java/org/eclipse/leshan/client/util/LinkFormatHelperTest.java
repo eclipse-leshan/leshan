@@ -59,7 +59,8 @@ public class LinkFormatHelperTest {
     public void encode_objectModel_to_linkObject_without_root_path() {
         ObjectModel locationModel = getObjectModel(6);
 
-        Link[] links = LinkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), null);
+        LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
+        Link[] links = linkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), null);
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         assertEquals("</6>,</6/0>,</6/0/0>,</6/0/1>,</6/0/2>,</6/0/3>,</6/0/4>,</6/0/5>,</6/0/6>", strLinks);
@@ -69,7 +70,8 @@ public class LinkFormatHelperTest {
     public void encode_objectModel_to_linkObject_with_simple_root_path() {
         ObjectModel locationModel = getObjectModel(6);
 
-        Link[] links = LinkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "/rp");
+        LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
+        Link[] links = linkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "/rp");
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         assertEquals(
@@ -81,7 +83,8 @@ public class LinkFormatHelperTest {
     public void encode_objectModel_to_linkObject_with_empty_root_path() {
         ObjectModel locationModel = getObjectModel(6);
 
-        Link[] links = LinkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "");
+        LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
+        Link[] links = linkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "");
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         assertEquals("</6>,</6/0>,</6/0/0>,</6/0/1>,</6/0/2>,</6/0/3>,</6/0/4>,</6/0/5>,</6/0/6>", strLinks);
@@ -91,7 +94,8 @@ public class LinkFormatHelperTest {
     public void encode_objectModel_to_linkObject_with_explicit_empty_root_path() {
         ObjectModel locationModel = getObjectModel(6);
 
-        Link[] links = LinkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "/");
+        LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
+        Link[] links = linkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "/");
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         assertEquals("</6>,</6/0>,</6/0/0>,</6/0/1>,</6/0/2>,</6/0/3>,</6/0/4>,</6/0/5>,</6/0/6>", strLinks);
@@ -101,7 +105,8 @@ public class LinkFormatHelperTest {
     public void encode_objectModel_to_linkObject_with_version2_0() {
         ObjectModel locationModel = getVersionedObjectModel(6, "2.0");
 
-        Link[] links = LinkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "/");
+        LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
+        Link[] links = linkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "/");
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         assertEquals("</6>;ver=2.0,</6/0>,</6/0/0>,</6/0/1>,</6/0/2>,</6/0/3>,</6/0/4>,</6/0/5>,</6/0/6>", strLinks);
@@ -111,7 +116,8 @@ public class LinkFormatHelperTest {
     public void encode_objectModel_to_linkObject_with_explicit_complex_root_path() {
         ObjectModel locationModel = getObjectModel(6);
 
-        Link[] links = LinkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "/r/t");
+        LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
+        Link[] links = linkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "/r/t");
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         assertEquals(
@@ -127,7 +133,8 @@ public class LinkFormatHelperTest {
         instancesMap.put(0, new BaseInstanceEnabler());
         objectEnablers.add(createObjectEnabler(getObjectModel(6), instancesMap));
 
-        Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null, null);
+        LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
+        Link[] links = linkFormatHelper.getClientDescription(objectEnablers, null, null);
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         assertEquals("</>;rt=\"oma.lwm2m\",</6/0>", strLinks);
@@ -142,7 +149,8 @@ public class LinkFormatHelperTest {
         instancesMap.put(1, new BaseInstanceEnabler());
         objectEnablers.add(createObjectEnabler(getVersionedObjectModel(6, "2.0"), instancesMap));
 
-        Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null, null);
+        LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
+        Link[] links = linkFormatHelper.getClientDescription(objectEnablers, null, null);
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         assertEquals("</>;rt=\"oma.lwm2m\",</6>;ver=2.0,</6/0>,</6/1>", strLinks);
@@ -155,7 +163,8 @@ public class LinkFormatHelperTest {
         Map<Integer, LwM2mInstanceEnabler> instancesMap = new HashMap<>();
         objectEnablers.add(createObjectEnabler(getVersionedObjectModel(6, "2.0"), instancesMap));
 
-        Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null, null);
+        LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
+        Link[] links = linkFormatHelper.getClientDescription(objectEnablers, null, null);
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         assertEquals("</>;rt=\"oma.lwm2m\",</6>;ver=2.0", strLinks);
@@ -167,7 +176,8 @@ public class LinkFormatHelperTest {
         Map<Integer, LwM2mInstanceEnabler> instancesMap = Collections.emptyMap();
         objectEnablers.add(createObjectEnabler(getVersionedObjectModel(6, "1.0"), instancesMap));
 
-        Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null, Arrays.asList(ContentFormat.TLV));
+        LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
+        Link[] links = linkFormatHelper.getClientDescription(objectEnablers, null, Arrays.asList(ContentFormat.TLV));
 
         assertArrayEquals(parser.parseCoreLinkFormat("</>;rt=\"oma.lwm2m\";ct=11542,</6>".getBytes()), links);
     }
@@ -178,7 +188,8 @@ public class LinkFormatHelperTest {
         Map<Integer, LwM2mInstanceEnabler> instancesMap = Collections.emptyMap();
         objectEnablers.add(createObjectEnabler(getVersionedObjectModel(6, "1.0"), instancesMap));
 
-        Link[] links = LinkFormatHelper.getClientDescription(objectEnablers, null,
+        LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
+        Link[] links = linkFormatHelper.getClientDescription(objectEnablers, null,
                 Arrays.asList(ContentFormat.TLV, ContentFormat.JSON, ContentFormat.OPAQUE));
 
         assertArrayEquals(parser.parseCoreLinkFormat("</>;rt=\"oma.lwm2m\";ct=\"11542 11543 42\",</6>".getBytes()),
@@ -191,7 +202,8 @@ public class LinkFormatHelperTest {
         instancesMap.put(0, new BaseInstanceEnabler());
         LwM2mObjectEnabler objectEnabler = createObjectEnabler(getObjectModel(3), instancesMap);
 
-        Link[] links = LinkFormatHelper.getBootstrapObjectDescription(objectEnabler);
+        LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
+        Link[] links = linkFormatHelper.getBootstrapObjectDescription(objectEnabler);
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         assertEquals("</>;lwm2m=1.0,</3/0>", strLinks);
@@ -202,7 +214,8 @@ public class LinkFormatHelperTest {
         Map<Integer, LwM2mInstanceEnabler> instancesMap = new HashMap<>();
         LwM2mObjectEnabler objectEnabler = createObjectEnabler(getVersionedObjectModel(3, "2.0"), instancesMap);
 
-        Link[] links = LinkFormatHelper.getBootstrapObjectDescription(objectEnabler);
+        LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
+        Link[] links = linkFormatHelper.getBootstrapObjectDescription(objectEnabler);
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         assertEquals("</>;lwm2m=1.0,</3>;ver=2.0", strLinks);
@@ -214,7 +227,8 @@ public class LinkFormatHelperTest {
         instancesMap.put(0, new BaseInstanceEnabler());
         LwM2mObjectEnabler objectEnabler = createObjectEnabler(getVersionedObjectModel(3, "2.0"), instancesMap);
 
-        Link[] links = LinkFormatHelper.getBootstrapObjectDescription(objectEnabler);
+        LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
+        Link[] links = linkFormatHelper.getBootstrapObjectDescription(objectEnabler);
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         assertEquals("</>;lwm2m=1.0,</3>;ver=2.0,</3/0>", strLinks);
@@ -226,7 +240,8 @@ public class LinkFormatHelperTest {
         instancesMap.put(0, new Server(333, 120));
         LwM2mObjectEnabler objectEnabler = createObjectEnabler(getObjectModel(1), instancesMap);
 
-        Link[] links = LinkFormatHelper.getBootstrapObjectDescription(objectEnabler);
+        LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
+        Link[] links = linkFormatHelper.getBootstrapObjectDescription(objectEnabler);
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         assertEquals("</>;lwm2m=1.0,</1/0>;ssid=333", strLinks);
@@ -238,7 +253,8 @@ public class LinkFormatHelperTest {
         instancesMap.put(0, new Server(333, 120));
         LwM2mObjectEnabler objectEnabler = createObjectEnabler(getVersionedObjectModel(1, "2.0"), instancesMap);
 
-        Link[] links = LinkFormatHelper.getBootstrapObjectDescription(objectEnabler);
+        LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
+        Link[] links = linkFormatHelper.getBootstrapObjectDescription(objectEnabler);
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         assertEquals("</>;lwm2m=1.0,</1>;ver=2.0,</1/0>;ssid=333", strLinks);
@@ -254,7 +270,8 @@ public class LinkFormatHelperTest {
         LwM2mObjectEnabler objectEnabler = new ObjectEnabler(0, getObjectModel(0), instancesMap, null,
                 ContentFormat.DEFAULT);
 
-        Link[] links = LinkFormatHelper.getBootstrapObjectDescription(objectEnabler);
+        LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
+        Link[] links = linkFormatHelper.getBootstrapObjectDescription(objectEnabler);
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         assertEquals("</>;lwm2m=1.0,</0/0>;ssid=111;uri=\"coap://localhost:11\"," //
@@ -296,7 +313,8 @@ public class LinkFormatHelperTest {
         LwM2mObjectEnabler deviceObjectEnabler = createObjectEnabler(getObjectModel(3), deviceInstances);
         objectEnablers.add(deviceObjectEnabler);
 
-        Link[] links = LinkFormatHelper.getBootstrapClientDescription(objectEnablers);
+        LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
+        Link[] links = linkFormatHelper.getBootstrapClientDescription(objectEnablers);
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         // TODO : handle version correctly
@@ -341,7 +359,8 @@ public class LinkFormatHelperTest {
         LwM2mObjectEnabler oscoreObjectEnabler = createObjectEnabler(getObjectModel(21, "2.0"), oscoreInstances);
         objectEnablers.add(oscoreObjectEnabler);
 
-        Link[] links = LinkFormatHelper.getBootstrapClientDescription(objectEnablers);
+        LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
+        Link[] links = linkFormatHelper.getBootstrapClientDescription(objectEnablers);
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         // TODO : handle version correctly

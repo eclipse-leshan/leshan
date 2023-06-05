@@ -29,6 +29,7 @@ import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.resource.listener.ResourceListener;
 import org.eclipse.leshan.client.servers.ServerIdentity;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
+import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.Startable;
@@ -515,8 +516,8 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
     }
 
     @Override
-    public void setLwM2mClient(LwM2mClient client) {
-        super.setLwM2mClient(client);
+    public void init(LwM2mClient client, LinkFormatHelper linkFormatHelper) {
+        super.init(client, linkFormatHelper);
         for (LwM2mInstanceEnabler instanceEnabler : instances.values()) {
             instanceEnabler.setLwM2mClient(client);
         }

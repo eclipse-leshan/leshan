@@ -42,6 +42,7 @@ import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.send.DataSender;
 import org.eclipse.leshan.client.servers.ServerIdentity;
+import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
@@ -61,11 +62,11 @@ public class LeshanTestClient extends LeshanClient {
             List<DataSender> dataSenders, List<Certificate> trustStore, RegistrationEngineFactory engineFactory,
             BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer,
+            ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer, LinkFormatHelper linkFormatHelper,
             LwM2mAttributeParser attributeParser, LwM2mClientEndpointsProvider endpointsProvider) {
         super(endpoint, objectEnablers, dataSenders, trustStore, engineFactory, checker, additionalAttributes,
-                bsAdditionalAttributes, encoder, decoder, sharedExecutor, linkSerializer, attributeParser,
-                endpointsProvider);
+                bsAdditionalAttributes, encoder, decoder, sharedExecutor, linkSerializer, linkFormatHelper,
+                attributeParser, endpointsProvider);
 
         // Store some internal attribute
         this.endpointName = endpoint;
