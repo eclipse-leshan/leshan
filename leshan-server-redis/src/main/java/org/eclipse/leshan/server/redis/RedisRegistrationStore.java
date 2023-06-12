@@ -949,8 +949,8 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
         }
 
         /**
-         * Set {@link LwM2mIdentitySerDes} instance used to LwM2mIdentity serialize/de-serialize {@link LwM2mIdentity}
-         * to/from this store.
+         * Set {@link LwM2mIdentitySerDes} instance used to serialize/de-serialize {@link LwM2mIdentity} to/from this
+         * store.
          */
         public Builder setIdentitySerDes(LwM2mIdentitySerDes identitySerDes) {
             this.identitySerDes = identitySerDes;
@@ -958,8 +958,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
         }
 
         /**
-         * Set {@link LwM2mPeerSerDes} instance used to LwM2mIdentity serialize/de-serialize {@link LwM2mPeer} to/from
-         * this store.
+         * Set {@link LwM2mPeerSerDes} instance used to serialize/de-serialize {@link LwM2mPeer} to/from this store.
          */
         public Builder setPeerSerDes(LwM2mPeerSerDes peerSerDes) {
             this.peerSerDes = peerSerDes;

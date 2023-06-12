@@ -39,7 +39,7 @@ import org.junit.jupiter.api.Test;
 
 public class RegistrationSerDesTest {
 
-    private final RegistrationSerDes registrationSerDes = new RegistrationSerDes(new LwM2mPeerSerDes());
+    private final RegistrationSerDes registrationSerDes = new RegistrationSerDes();
 
     @Test
     public void ser_and_des_are_equals() {

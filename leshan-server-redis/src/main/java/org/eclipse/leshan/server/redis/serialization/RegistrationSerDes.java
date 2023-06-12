@@ -72,6 +72,11 @@ public class RegistrationSerDes {
         this.peerSerDes = peerSerDes;
     }
 
+    public RegistrationSerDes() {
+        this.attributeParser = new DefaultAttributeParser();
+        this.peerSerDes = new LwM2mPeerSerDes();
+    }
+
     public RegistrationSerDes(AttributeParser attributeParser, LwM2mPeerSerDes peerSerDes) {
         this.attributeParser = attributeParser;
         this.peerSerDes = peerSerDes;

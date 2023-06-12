@@ -59,8 +59,6 @@ import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.VersionedModelProvider;
 import org.eclipse.leshan.server.redis.RedisRegistrationStore;
 import org.eclipse.leshan.server.redis.RedisSecurityStore;
-import org.eclipse.leshan.server.redis.serialization.LwM2mIdentitySerDes;
-import org.eclipse.leshan.server.redis.serialization.LwM2mPeerSerDes;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.FileSecurityStore;
 import org.slf4j.Logger;
@@ -160,11 +158,7 @@ public class LeshanServerDemo {
         } else {
             // use Redis Store
             securityStore = new RedisSecurityStore(cli.main.redis);
-            RedisRegistrationStore.Builder redisregistrationstorebuilder = new RedisRegistrationStore.Builder(
-                    cli.main.redis);
-            redisregistrationstorebuilder.setIdentitySerDes(new LwM2mIdentitySerDes());
-            redisregistrationstorebuilder.setPeerSerDes(new LwM2mPeerSerDes());
-            builder.setRegistrationStore(redisregistrationstorebuilder.build());
+            builder.setRegistrationStore(new RedisRegistrationStore(cli.main.redis));
         }
         builder.setSecurityStore(securityStore);
 
