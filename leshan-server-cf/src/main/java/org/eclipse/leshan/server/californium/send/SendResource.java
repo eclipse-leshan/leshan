@@ -65,11 +65,6 @@ public class SendResource extends LwM2mCoapResource {
             return;
         }
 
-        // if clientProfile exists but registration cannot be found because of device ip address change
-        if (clientProfile.getRegistration() == null) {
-            exchange.respond(ResponseCode.NOT_FOUND, "no registration found");
-            return;
-        }
         try {
             // Decode payload
             byte[] payload = exchange.getRequestPayload();
