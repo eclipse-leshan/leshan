@@ -28,8 +28,8 @@ public class LwM2mPeerSerDes {
 
     // LwM2mPeer keys
     protected static final String KEY_IDENTITY = "identity";
-    // TODO should we add a type field here ?
-
+    protected static final String KEY_LWM2MPEERTYPE = "type";
+    protected static final String DEFAULT_LWM2MPEERTYPE = "ippeer";
     // IpPeer keys
     protected static final String KEY_ADDRESS = "address";
     protected static final String KEY_PORT = "port";
@@ -42,21 +42,24 @@ public class LwM2mPeerSerDes {
             IpPeer ipPeer = (IpPeer) peer;
             o.put(KEY_ADDRESS, ipPeer.getSocketAddress().getHostString());
             o.put(KEY_PORT, ipPeer.getSocketAddress().getPort());
-            // TODO should we add a type field here ?
+            o.put(KEY_LWM2MPEERTYPE, DEFAULT_LWM2MPEERTYPE);
         } else {
             throw new IllegalStateException(String.format("Can not serialize %s", peer.getClass().getSimpleName()));
         }
-        o.set("identity", identitySerDes.serialize(peer.getIdentity()));
+        o.set(KEY_IDENTITY, identitySerDes.serialize(peer.getIdentity()));
         return o;
     }
 
-    public LwM2mPeer deserialize(JsonNode jObj) {
-        // TODO we should ensure that key address and port is really here
-        // OR we need a type field ?
-        String address = jObj.get(KEY_ADDRESS).asText();
-        int port = jObj.get(KEY_PORT).asInt();
+    public LwM2mPeer deserialize(JsonNode jObj) throws IllegalStateException {
+        if ((jObj.get(KEY_LWM2MPEERTYPE).asText()).equals(DEFAULT_LWM2MPEERTYPE)) {
+            String address = jObj.get(KEY_ADDRESS).asText();
+            int port = jObj.get(KEY_PORT).asInt();
 
-        return new IpPeer(new InetSocketAddress(address, port), identitySerDes.deserialize(jObj.get("identity")));
+            return new IpPeer(new InetSocketAddress(address, port), identitySerDes.deserialize(jObj.get("identity")));
+        } else {
+            throw new IllegalStateException(String.format("Invalid object type, expected type for this object is: %s",
+                    jObj.get(KEY_LWM2MPEERTYPE)));
+        }
     }
 
 }

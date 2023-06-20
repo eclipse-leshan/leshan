@@ -40,21 +40,30 @@ public class LwM2mIdentitySerDes {
     protected static final String KEY_ID = "pskid";
     protected static final String KEY_CN = "cn";
     protected static final String KEY_RPK = "rpk";
-    // TODO should we add a type field here ?
+    // identity field key and types
+    protected static final String KEY_LWM2MIDENTITY_TYPE = "type";
+    protected static final String LWM2MIDENTITY_TYPE_UNSECURE = "unsecure";
+    protected static final String LWM2MIDENTITY_TYPE_PSK = "psk";
+    protected static final String LWM2MIDENTITY_TYPE_X509 = "cn";
+    protected static final String LWM2MIDENTITY_TYPE_RPK = "rpk";
+    protected static final String LWM2MIDENTITY_TYPE_RID = "rid";
 
     public JsonNode serialize(LwM2mIdentity identity) {
         ObjectNode o = JsonNodeFactory.instance.objectNode();
-        // TODO should we add a type field here ?
 
         if (identity.getClass() == SocketIdentity.class) {
+            o.put(KEY_LWM2MIDENTITY_TYPE, LWM2MIDENTITY_TYPE_UNSECURE);
             o.put(KEY_ADDRESS, ((SocketIdentity) identity).getSocketAddress().getHostString());
             o.put(KEY_PORT, ((SocketIdentity) identity).getSocketAddress().getPort());
         } else if (identity.getClass() == PskIdentity.class) {
+            o.put(KEY_LWM2MIDENTITY_TYPE, LWM2MIDENTITY_TYPE_PSK);
             o.put(KEY_ID, ((PskIdentity) identity).getPskIdentity());
         } else if (identity.getClass() == RpkIdentity.class) {
+            o.put(KEY_LWM2MIDENTITY_TYPE, LWM2MIDENTITY_TYPE_RPK);
             PublicKey publicKey = ((RpkIdentity) identity).getPublicKey();
             o.put(KEY_RPK, Hex.encodeHexString(publicKey.getEncoded()));
         } else if (identity.getClass() == X509Identity.class) {
+            o.put(KEY_LWM2MIDENTITY_TYPE, LWM2MIDENTITY_TYPE_X509);
             o.put(KEY_CN, ((X509Identity) identity).getX509CommonName());
         } else {
             throw new IllegalStateException(String.format("Can not serialize %s", identity.getClass().getSimpleName()));
@@ -63,34 +72,40 @@ public class LwM2mIdentitySerDes {
     }
 
     public LwM2mIdentity deserialize(JsonNode jObj) {
-        // TODO should we add a type field here ?
-
-        JsonNode jaddress = jObj.get(KEY_ADDRESS);
-        JsonNode jport = jObj.get(KEY_PORT);
-        if (jaddress != null && jport != null) {
-            return new SocketIdentity(new InetSocketAddress(jaddress.asText(), jport.asInt()));
-        }
-
-        JsonNode jpsk = jObj.get(KEY_ID);
-        if (jpsk != null) {
-            return new PskIdentity(jpsk.asText());
-        }
-
-        JsonNode jrpk = jObj.get(KEY_RPK);
-        if (jrpk != null) {
-            try {
-                byte[] rpk = Hex.decodeHex(jrpk.asText().toCharArray());
-                X509EncodedKeySpec spec = new X509EncodedKeySpec(rpk);
-                PublicKey publicKey = KeyFactory.getInstance("EC").generatePublic(spec);
-                return new RpkIdentity(publicKey);
-            } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
-                throw new IllegalStateException("Invalid security info content", e);
+        if ((jObj.get(KEY_LWM2MIDENTITY_TYPE).asText()).equals(LWM2MIDENTITY_TYPE_UNSECURE)) {
+            JsonNode jaddress = jObj.get(KEY_ADDRESS);
+            JsonNode jport = jObj.get(KEY_PORT);
+            if (jaddress != null && jport != null) {
+                return new SocketIdentity(new InetSocketAddress(jaddress.asText(), jport.asInt()));
             }
         }
 
-        JsonNode jcn = jObj.get(KEY_CN);
-        if (jcn != null) {
-            return new X509Identity(jcn.asText());
+        if ((jObj.get(KEY_LWM2MIDENTITY_TYPE).asText()).equals(LWM2MIDENTITY_TYPE_PSK)) {
+            JsonNode jpsk = jObj.get(KEY_ID);
+            if (jpsk != null) {
+                return new PskIdentity(jpsk.asText());
+            }
+        }
+
+        if ((jObj.get(KEY_LWM2MIDENTITY_TYPE).asText()).equals(LWM2MIDENTITY_TYPE_RPK)) {
+            JsonNode jrpk = jObj.get(KEY_RPK);
+            if (jrpk != null) {
+                try {
+                    byte[] rpk = Hex.decodeHex(jrpk.asText().toCharArray());
+                    X509EncodedKeySpec spec = new X509EncodedKeySpec(rpk);
+                    PublicKey publicKey = KeyFactory.getInstance("EC").generatePublic(spec);
+                    return new RpkIdentity(publicKey);
+                } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+                    throw new IllegalStateException("Invalid security info content", e);
+                }
+            }
+        }
+
+        if ((jObj.get(KEY_LWM2MIDENTITY_TYPE).asText()).equals(LWM2MIDENTITY_TYPE_X509)) {
+            JsonNode jcn = jObj.get(KEY_CN);
+            if (jcn != null) {
+                return new X509Identity(jcn.asText());
+            }
         }
         throw new IllegalStateException(String.format("Can not deserialize %s", jObj.toPrettyString()));
 
