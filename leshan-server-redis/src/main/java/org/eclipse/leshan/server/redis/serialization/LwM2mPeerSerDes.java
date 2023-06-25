@@ -28,8 +28,8 @@ public class LwM2mPeerSerDes {
 
     // LwM2mPeer keys
     protected static final String KEY_IDENTITY = "identity";
-    protected static final String KEY_LWM2MPEERTYPE = "type";
-    protected static final String DEFAULT_LWM2MPEERTYPE = "ippeer";
+    protected static final String KEY_LWM2MPEER_TYPE = "type";
+    protected static final String LWM2MPEER_TYPE_IP = "ip";
     // IpPeer keys
     protected static final String KEY_ADDRESS = "address";
     protected static final String KEY_PORT = "port";
@@ -42,7 +42,7 @@ public class LwM2mPeerSerDes {
             IpPeer ipPeer = (IpPeer) peer;
             o.put(KEY_ADDRESS, ipPeer.getSocketAddress().getHostString());
             o.put(KEY_PORT, ipPeer.getSocketAddress().getPort());
-            o.put(KEY_LWM2MPEERTYPE, DEFAULT_LWM2MPEERTYPE);
+            o.put(KEY_LWM2MPEER_TYPE, LWM2MPEER_TYPE_IP);
         } else {
             throw new IllegalStateException(String.format("Can not serialize %s", peer.getClass().getSimpleName()));
         }
@@ -51,14 +51,14 @@ public class LwM2mPeerSerDes {
     }
 
     public LwM2mPeer deserialize(JsonNode jObj) throws IllegalStateException {
-        if ((jObj.get(KEY_LWM2MPEERTYPE).asText()).equals(DEFAULT_LWM2MPEERTYPE)) {
+        if ((jObj.get(KEY_LWM2MPEER_TYPE).asText()).equals(LWM2MPEER_TYPE_IP)) {
             String address = jObj.get(KEY_ADDRESS).asText();
             int port = jObj.get(KEY_PORT).asInt();
 
             return new IpPeer(new InetSocketAddress(address, port), identitySerDes.deserialize(jObj.get("identity")));
         } else {
-            throw new IllegalStateException(String.format("Invalid object type, expected type for this object is: %s",
-                    jObj.get(KEY_LWM2MPEERTYPE)));
+            throw new IllegalStateException(
+                    String.format("Invalid type of LWM2M Peer :  %s is not supported", jObj.get(KEY_LWM2MPEER_TYPE)));
         }
     }
 

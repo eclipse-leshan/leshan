@@ -44,9 +44,8 @@ public class LwM2mIdentitySerDes {
     protected static final String KEY_LWM2MIDENTITY_TYPE = "type";
     protected static final String LWM2MIDENTITY_TYPE_UNSECURE = "unsecure";
     protected static final String LWM2MIDENTITY_TYPE_PSK = "psk";
-    protected static final String LWM2MIDENTITY_TYPE_X509 = "cn";
+    protected static final String LWM2MIDENTITY_TYPE_X509 = "x509";
     protected static final String LWM2MIDENTITY_TYPE_RPK = "rpk";
-    protected static final String LWM2MIDENTITY_TYPE_RID = "rid";
 
     public JsonNode serialize(LwM2mIdentity identity) {
         ObjectNode o = JsonNodeFactory.instance.objectNode();
@@ -77,6 +76,8 @@ public class LwM2mIdentitySerDes {
             JsonNode jport = jObj.get(KEY_PORT);
             if (jaddress != null && jport != null) {
                 return new SocketIdentity(new InetSocketAddress(jaddress.asText(), jport.asInt()));
+            } else {
+                throw new IllegalStateException(String.format("Can not deserialize %s", jObj.toPrettyString()));
             }
         }
 
@@ -84,6 +85,8 @@ public class LwM2mIdentitySerDes {
             JsonNode jpsk = jObj.get(KEY_ID);
             if (jpsk != null) {
                 return new PskIdentity(jpsk.asText());
+            } else {
+                throw new IllegalStateException(String.format("Can not deserialize %s", jObj.toPrettyString()));
             }
         }
 
@@ -98,6 +101,8 @@ public class LwM2mIdentitySerDes {
                 } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
                     throw new IllegalStateException("Invalid security info content", e);
                 }
+            } else {
+                throw new IllegalStateException(String.format("Can not deserialize %s", jObj.toPrettyString()));
             }
         }
 
@@ -105,6 +110,8 @@ public class LwM2mIdentitySerDes {
             JsonNode jcn = jObj.get(KEY_CN);
             if (jcn != null) {
                 return new X509Identity(jcn.asText());
+            } else {
+                throw new IllegalStateException(String.format("Can not deserialize %s", jObj.toPrettyString()));
             }
         }
         throw new IllegalStateException(String.format("Can not deserialize %s", jObj.toPrettyString()));
