@@ -58,7 +58,7 @@ public class SecurityInfo implements Serializable {
     // OSCORE
     private final OscoreSetting oscoreSetting;
 
-    private SecurityInfo(String endpoint, String pskIdentity, byte[] preSharedKey, PublicKey rawPublicKey,
+    protected SecurityInfo(String endpoint, String pskIdentity, byte[] preSharedKey, PublicKey rawPublicKey,
             boolean useX509Cert, OscoreSetting oscoreSetting) {
         Validate.notEmpty(endpoint);
         this.endpoint = endpoint;
