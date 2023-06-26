@@ -37,8 +37,10 @@ public class PublicKeySerDes extends JacksonJsonSerDes<PublicKey> {
 
     @Override
     public JsonNode jSerialize(PublicKey publicKey) {
-        if (!(publicKey instanceof ECPublicKey))
-            throw new IllegalStateException("Unsupported Public Key Format (only ECPublicKey supported).");
+        if (!(publicKey instanceof ECPublicKey)) {
+            // throw new IllegalStateException("Unsupported Public Key Format (only ECPublicKey supported).");
+            return null;
+        }
 
         ECPublicKey ecPublicKey = (ECPublicKey) publicKey;
         ObjectNode o = JsonNodeFactory.instance.objectNode();

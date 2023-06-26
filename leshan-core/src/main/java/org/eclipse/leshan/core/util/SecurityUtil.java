@@ -38,7 +38,7 @@ public class SecurityUtil {
         @Override
         public PrivateKey decode(byte[] bytes) throws InvalidKeySpecException, NoSuchAlgorithmException {
             PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(bytes);
-            KeyFactory kf = KeyFactory.getInstance("EC");
+            KeyFactory kf = KeyFactory.getInstance("RSA");
             return kf.generatePrivate(spec);
         }
     };
@@ -59,11 +59,11 @@ public class SecurityUtil {
             Certificate certificate = cf.generateCertificate(inputStream);
 
             // we support only EC algorithm
-            if (!"EC".equals(certificate.getPublicKey().getAlgorithm())) {
-                throw new CertificateException(
-                        String.format("%s algorithm is not supported, Only EC algorithm is supported",
-                                certificate.getPublicKey().getAlgorithm()));
-            }
+            /*
+             * if (!"EC".equals(certificate.getPublicKey().getAlgorithm())) { throw new CertificateException(
+             * String.format("%s algorithm is not supported, Only EC algorithm is supported",
+             * certificate.getPublicKey().getAlgorithm())); }
+             */
 
             // we support only X509 certificate
             if (!(certificate instanceof X509Certificate)) {
@@ -93,11 +93,11 @@ public class SecurityUtil {
             }
 
             // we support only EC algorithm
-            if (!"EC".equals(x509Certificates.get(0).getPublicKey().getAlgorithm())) {
-                throw new CertificateException(
-                        String.format("%s algorithm is not supported, Only EC algorithm is supported",
-                                x509Certificates.get(0).getPublicKey().getAlgorithm()));
-            }
+            /*
+             * if (!"EC".equals(x509Certificates.get(0).getPublicKey().getAlgorithm())) { throw new
+             * CertificateException( String.format("%s algorithm is not supported, Only EC algorithm is supported",
+             * x509Certificates.get(0).getPublicKey().getAlgorithm())); }
+             */
 
             return x509Certificates.toArray(new X509Certificate[0]);
         }
