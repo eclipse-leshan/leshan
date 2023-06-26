@@ -50,7 +50,7 @@ public class SecurityInfo implements Serializable {
     // X.509
     private final boolean useX509Cert;
 
-    private SecurityInfo(String endpoint, String identity, byte[] preSharedKey, PublicKey rawPublicKey,
+    protected SecurityInfo(String endpoint, String identity, byte[] preSharedKey, PublicKey rawPublicKey,
             boolean useX509Cert) {
         Validate.notEmpty(endpoint);
         this.endpoint = endpoint;
