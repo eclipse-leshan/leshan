@@ -2,9 +2,10 @@
 
 ## Reporting a Vulnerability
 
-Currently, [GitHub security advisories](https://help.github.com/en/articles/managing-security-vulnerabilities-in-your-project) is not activated on [eclipse](https://www.eclipse.org/) project, but this could change soon, see : https://github.com/eclipse/leshan/issues/1439.
-
-For now, to report a vulnerability, your need to open a [gitlab issue](https://gitlab.eclipse.org/security/vulnerability-reports/-/issues/new?issuable_template=new_vulnerability) or directly send an email to  security@eclipse-foundation.org.
+To report a Security issue, you can : 
+- (**Preferred way ⭐**) create a new [Github Security Advisories](https://docs.github.com/en/code-security/security-advisories/repository-security-advisories/about-repository-security-advisories), using [this form](https://github.com/eclipse-leshan/leshan/security/advisories/new), 
+ - open a [gitlab issue](https://gitlab.eclipse.org/security/vulnerability-reports/-/issues/new?issuable_template=new_vulnerability),
+ - send an email to  security@eclipse-foundation.org.
 
 For more details, please look at :
  - https://www.eclipse.org/security/
