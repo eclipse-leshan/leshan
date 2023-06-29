@@ -47,6 +47,15 @@ public class EndpointUriUtil {
         }
     }
 
+    public static URI replaceAddress(URI originalUri, InetSocketAddress newAddress) {
+        try {
+            return new URI(originalUri.getScheme(), null, newAddress.getHostString(), newAddress.getPort(), null, null,
+                    null);
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     public static InetSocketAddress getSocketAddr(URI uri) {
         return new InetSocketAddress(uri.getHost(), uri.getPort());
     }

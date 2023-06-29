@@ -61,6 +61,7 @@ import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.LwM2mId;
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
@@ -88,6 +89,7 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
     private Protocol protocolToUse;
     private LeshanServer server;
     private LeshanBootstrapServer bootstrapServer;
+    private ReverseProxy proxy;
 
     private Integer bootstrapServerId;
 
@@ -128,8 +130,8 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
         try {
             // connect to LWM2M Server
             if (server != null) {
-                LwM2mServerEndpoint endpoint = server.getEndpoint(protocolToUse);
-                URI uri = endpoint.getURI();
+                URI uri = getServerUri();
+
                 int serverID = 12345;
 
                 if (pskIdentity != null && pskKey != null) {
@@ -234,7 +236,7 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
 
         return new LeshanTestClient(endpointName, objectEnablers, dataSenders, trustStore, engineFactory, checker,
                 additionalAttributes, bsAdditionalAttributes, encoder, decoder, sharedExecutor, linkSerializer,
-                linkFormatHelper, attributeParser, endpointsProvider);
+                linkFormatHelper, attributeParser, endpointsProvider, proxy);
     }
 
     public static LeshanTestClientBuilder givenClientUsing(Protocol protocol) {
@@ -423,6 +425,22 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
             } else {
                 return super.execute(server, resourceid, arguments);
             }
+        }
+    }
+
+    public LeshanTestClientBuilder behind(ReverseProxy proxy) {
+        this.proxy = proxy;
+        return this;
+    }
+
+    private URI getServerUri() {
+        LwM2mServerEndpoint endpoint = server.getEndpoint(protocolToUse);
+        URI serverUri = endpoint.getURI();
+        if (proxy != null) {
+            // if server is behind a proxy we use its URI
+            return EndpointUriUtil.replaceAddress(serverUri, proxy.getClientSideProxyAddress());
+        } else {
+            return serverUri;
         }
     }
 }

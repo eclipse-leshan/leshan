@@ -25,6 +25,8 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 
+import java.net.InetSocketAddress;
+import java.net.URI;
 import java.security.cert.Certificate;
 import java.util.List;
 import java.util.Map;
@@ -43,11 +45,13 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.send.DataSender;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
+import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 
@@ -57,19 +61,22 @@ public class LeshanTestClient extends LeshanClient {
 
     private final String endpointName;
     private final InOrder inOrder;
+    private final ReverseProxy proxy;
 
     public LeshanTestClient(String endpoint, List<? extends LwM2mObjectEnabler> objectEnablers,
             List<DataSender> dataSenders, List<Certificate> trustStore, RegistrationEngineFactory engineFactory,
             BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
             ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer, LinkFormatHelper linkFormatHelper,
-            LwM2mAttributeParser attributeParser, LwM2mClientEndpointsProvider endpointsProvider) {
+            LwM2mAttributeParser attributeParser, LwM2mClientEndpointsProvider endpointsProvider, ReverseProxy proxy) {
         super(endpoint, objectEnablers, dataSenders, trustStore, engineFactory, checker, additionalAttributes,
                 bsAdditionalAttributes, encoder, decoder, sharedExecutor, linkSerializer, linkFormatHelper,
                 attributeParser, endpointsProvider);
 
         // Store some internal attribute
         this.endpointName = endpoint;
+
+        this.proxy = proxy;
 
         // Add Mock Listener
         clientObserver = mock(LwM2mClientObserver.class);
@@ -100,31 +107,20 @@ public class LeshanTestClient extends LeshanClient {
 
     public void waitForRegistrationTo(LeshanTestServer server, long timeout, TimeUnit unit) {
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onRegistrationStarted(assertArg( //
-                s -> {
-                    assertThat(server.getEndpoints()) //
-                            .filteredOn(ep -> ep.getURI().toString().equals(s.getUri())) //
-                            .hasSize(1);
-
-                }), //
+                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
                 isNotNull());
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onRegistrationSuccess(assertArg( //
-                s -> assertThat(server.getEndpoints()) //
-                        .filteredOn(ep -> ep.getURI().toString().equals(s.getUri())) //
-                        .hasSize(1)), //
+                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
                 isNotNull(), isNotNull());
         inOrder.verifyNoMoreInteractions();
     }
 
     public void waitForUpdateTo(LeshanTestServer server, long timeout, TimeUnit unit) {
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onUpdateStarted(assertArg( //
-                s -> assertThat(server.getEndpoints()) //
-                        .filteredOn(ep -> ep.getURI().toString().equals(s.getUri())) //
-                        .hasSize(1)), //
+                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
                 notNull());
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onUpdateSuccess(assertArg( //
-                s -> assertThat(server.getEndpoints()) //
-                        .filteredOn(ep -> ep.getURI().toString().equals(s.getUri())) //
-                        .hasSize(1)), //
+                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
                 notNull());
         inOrder.verifyNoMoreInteractions();
     }
@@ -135,17 +131,10 @@ public class LeshanTestClient extends LeshanClient {
 
     public void waitForDeregistrationTo(LeshanTestServer server, long timeout, TimeUnit unit) {
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onDeregistrationStarted(assertArg( //
-                s -> {
-                    assertThat(server.getEndpoints()) //
-                            .filteredOn(ep -> ep.getURI().toString().equals(s.getUri())) //
-                            .hasSize(1);
-
-                }), //
+                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
                 isNotNull());
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onDeregistrationSuccess(assertArg( //
-                s -> assertThat(server.getEndpoints()) //
-                        .filteredOn(ep -> ep.getURI().toString().equals(s.getUri())) //
-                        .hasSize(1)), //
+                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
                 isNotNull());
         inOrder.verifyNoMoreInteractions();
     }
@@ -156,15 +145,11 @@ public class LeshanTestClient extends LeshanClient {
 
     public void waitForUpdateTimeoutTo(LeshanTestServer server, long timeout, TimeUnit unit) {
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onUpdateStarted(assertArg( //
-                s -> assertThat(server.getEndpoints()) //
-                        .filteredOn(ep -> ep.getURI().toString().equals(s.getUri())) //
-                        .hasSize(1)), //
+                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
                 notNull());
 
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onUpdateTimeout(assertArg( //
-                s -> assertThat(server.getEndpoints()) //
-                        .filteredOn(ep -> ep.getURI().toString().equals(s.getUri())) //
-                        .hasSize(1)), //
+                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
                 notNull());
         // if client update timeout, it will retry again then try a register so all events can not be consume by inOrder
         // ...
@@ -176,14 +161,10 @@ public class LeshanTestClient extends LeshanClient {
 
     public void waitForUpdateFailureTo(LeshanTestServer server, long timeout, TimeUnit unit) {
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onUpdateStarted(assertArg( //
-                s -> assertThat(server.getEndpoints()) //
-                        .filteredOn(ep -> ep.getURI().toString().equals(s.getUri())) //
-                        .hasSize(1)), //
+                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
                 notNull());
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onUpdateFailure(assertArg( //
-                s -> assertThat(server.getEndpoints()) //
-                        .filteredOn(ep -> ep.getURI().toString().equals(s.getUri())) //
-                        .hasSize(1)), //
+                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
                 notNull(), //
                 notNull(), // TODO we should be able to check response code
                 any(), //
@@ -224,5 +205,23 @@ public class LeshanTestClient extends LeshanClient {
                 any(), //
                 c.capture());
         return c.getValue();
+    }
+
+    private boolean isServerIdentifiedByUri(LeshanTestServer server, String expectedUri) {
+        for (LwM2mServerEndpoint endpoint : server.getEndpoints()) {
+            URI endpointURI = endpoint.getURI();
+            InetSocketAddress endpointAddr = EndpointUriUtil.getSocketAddr(endpointURI);
+            if (proxy != null && endpointAddr.equals(proxy.getServerAddress())) {
+                URI proxyUri = EndpointUriUtil.replaceAddress(endpointURI, proxy.getClientSideProxyAddress());
+                if (proxyUri.toString().equals(expectedUri)) {
+                    return true;
+                }
+            } else {
+                if (endpointURI.toString().equals(expectedUri)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
