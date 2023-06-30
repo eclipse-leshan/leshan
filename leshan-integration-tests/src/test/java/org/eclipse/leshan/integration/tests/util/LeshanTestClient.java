@@ -35,9 +35,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.elements.Connector;
+import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.leshan.client.LeshanClient;
 import org.eclipse.leshan.client.bootstrap.BootstrapConsistencyChecker;
 import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpoint;
+import org.eclipse.leshan.client.endpoint.LwM2mClientEndpoint;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
@@ -91,6 +93,23 @@ public class LeshanTestClient extends LeshanClient {
     public Connector getClientConnector(LwM2mServer server) {
         CaliforniumClientEndpoint endpoint = (CaliforniumClientEndpoint) getEndpoint(server);
         return ((CoapEndpoint) endpoint.getCoapEndpoint()).getConnector();
+    }
+
+    public void clearSecurityContextFor(LwM2mServer server) {
+        // TODO there is something not so good with this abstraction ...
+        LwM2mClientEndpoint endpoint = this.getEndpoint(server);
+        if (endpoint instanceof CaliforniumClientEndpoint) {
+            Connector connector = ((CaliforniumClientEndpoint) endpoint).getCoapEndpoint().getConnector();
+            if (connector instanceof DTLSConnector) {
+                ((DTLSConnector) connector).clearConnectionState();
+                return;
+            } else {
+                throw new IllegalStateException(String.format("clearSecurityContext not implemented for connector %s",
+                        connector.getClass().getSimpleName()));
+            }
+        }
+        throw new IllegalStateException(String.format("clearSecurityContext not implemented for endpoint %s",
+                endpoint.getClass().getSimpleName()));
     }
 
     public LwM2mServer getServerIdForRegistrationId(String regId) {

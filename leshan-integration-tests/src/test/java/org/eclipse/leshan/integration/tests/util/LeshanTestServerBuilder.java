@@ -164,6 +164,11 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
         return this;
     }
 
+    public LeshanTestServerBuilder withUpdateOnNotification() {
+        setUpdateRegistrationOnNotification(true);
+        return this;
+    }
+
     protected ServerProtocolProvider getCaliforniumProtocolProvider(Protocol protocol) {
         if (protocolToUse.equals(Protocol.COAP)) {
             return new CoapServerProtocolProvider();
