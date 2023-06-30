@@ -112,7 +112,7 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
     }
 
     @Override
-    public Endpoint createCoapEndpoint(InetAddress clientAddress, Configuration defaultConfiguration,
+    public CoapEndpoint createCoapEndpoint(InetAddress clientAddress, Configuration defaultConfiguration,
             ServerInfo serverInfo, boolean clientInitiatedOnly, List<Certificate> trustStore,
             ClientEndpointToolbox toolbox) {
 

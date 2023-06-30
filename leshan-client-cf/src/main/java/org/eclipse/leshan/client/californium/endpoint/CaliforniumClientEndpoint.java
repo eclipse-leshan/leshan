@@ -24,7 +24,7 @@ import org.eclipse.californium.core.coap.MessageObserver;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.config.CoapConfig;
-import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.leshan.client.californium.CaliforniumConnectionController;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpoint;
@@ -49,7 +49,7 @@ public class CaliforniumClientEndpoint implements LwM2mClientEndpoint {
 
     private final Protocol protocol;
     private final ScheduledExecutorService executor;
-    private final Endpoint endpoint;
+    private final CoapEndpoint endpoint;
     private final ClientEndpointToolbox toolbox;
     private final ClientCoapMessageTranslator translator;
     private final IdentityHandler identityHandler;
@@ -57,7 +57,7 @@ public class CaliforniumClientEndpoint implements LwM2mClientEndpoint {
     private final LwM2mModel model;
     private final ExceptionTranslator exceptionTranslator;
 
-    public CaliforniumClientEndpoint(Protocol protocol, Endpoint endpoint, ClientCoapMessageTranslator translator,
+    public CaliforniumClientEndpoint(Protocol protocol, CoapEndpoint endpoint, ClientCoapMessageTranslator translator,
             ClientEndpointToolbox toolbox, IdentityHandler identityHandler,
             CaliforniumConnectionController connectionController, LwM2mModel model,
             ExceptionTranslator exceptionTranslator, ScheduledExecutorService executor) {
@@ -171,7 +171,7 @@ public class CaliforniumClientEndpoint implements LwM2mClientEndpoint {
         connectionController.forceReconnection(endpoint, server, resume);
     }
 
-    public Endpoint getCoapEndpoint() {
+    public CoapEndpoint getCoapEndpoint() {
         return endpoint;
     }
 }

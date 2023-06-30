@@ -19,7 +19,7 @@ import java.net.InetAddress;
 import java.security.cert.Certificate;
 import java.util.List;
 
-import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.leshan.client.californium.CaliforniumConnectionController;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
@@ -32,8 +32,9 @@ public interface CaliforniumClientEndpointFactory {
 
     Protocol getProtocol();
 
-    Endpoint createCoapEndpoint(InetAddress clientAddress, Configuration defaultConfiguration, ServerInfo serverInfo,
-            boolean clientInitiatedOnly, List<Certificate> trustStore, ClientEndpointToolbox toolbox);
+    CoapEndpoint createCoapEndpoint(InetAddress clientAddress, Configuration defaultConfiguration,
+            ServerInfo serverInfo, boolean clientInitiatedOnly, List<Certificate> trustStore,
+            ClientEndpointToolbox toolbox);
 
     CaliforniumConnectionController createConnectionController();
 

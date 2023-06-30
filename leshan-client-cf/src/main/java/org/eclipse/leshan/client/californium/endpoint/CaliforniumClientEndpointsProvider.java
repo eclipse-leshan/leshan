@@ -30,6 +30,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.californium.core.CoapServer;
+import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.Resource;
@@ -172,7 +173,7 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
 
             if (endpointFactory.getProtocol().getUriScheme().equals(serverInfo.getFullUri().getScheme())) {
                 // create Californium endpoint
-                Endpoint coapEndpoint = endpointFactory.createCoapEndpoint(clientAddress, serverConfig, serverInfo,
+                CoapEndpoint coapEndpoint = endpointFactory.createCoapEndpoint(clientAddress, serverConfig, serverInfo,
                         clientInitiatedOnly, trustStore, toolbox);
 
                 if (coapEndpoint != null) {

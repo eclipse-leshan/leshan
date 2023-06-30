@@ -65,7 +65,7 @@ public class CoapClientEndpointFactory implements CaliforniumClientEndpointFacto
     }
 
     @Override
-    public Endpoint createCoapEndpoint(InetAddress clientAddress, Configuration defaultConfiguration,
+    public CoapEndpoint createCoapEndpoint(InetAddress clientAddress, Configuration defaultConfiguration,
             ServerInfo serverInfo, boolean clientInitiatedOnly, List<Certificate> trustStore,
             ClientEndpointToolbox toolbox) {
         return createEndpointBuilder(new InetSocketAddress(clientAddress, 0), serverInfo, defaultConfiguration).build();
