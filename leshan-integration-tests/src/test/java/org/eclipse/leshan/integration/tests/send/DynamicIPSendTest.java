@@ -53,6 +53,7 @@ import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
 import org.eclipse.leshan.integration.tests.util.ReverseProxy;
+import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.security.InMemorySecurityStore;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
@@ -176,7 +177,43 @@ public class DynamicIPSendTest {
         client.waitForRegistrationTo(server);
 
         // Send Data should works
+        Registration registrationBeforeSend = server.getRegistrationFor(client);
         assertSuccessfulSendAfterAddressChanged();
+
+        // check that client registration is not updated.
+        Registration registrationAfterObserve = server.getRegistrationFor(client);
+        assertThat(registrationAfterObserve).isEqualTo(registrationBeforeSend);
+    }
+
+    @TestTlsTransport
+    public void update_registration_on_send_using_psk(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider)
+            throws InterruptedException, TimeoutException, NonUniqueSecurityInfoException {
+
+        // Start Client and Server
+        server = givenServerUsing(givenProtocol).with(givenServerEndpointProvider).withUpdateOnSendOperation().build();
+        server.start();
+
+        proxy = givenReverseProxyFor(server, givenProtocol);
+        proxy.start();
+
+        client = givenClientUsing(givenProtocol).with(givenClientEndpointProvider).connectingTo(server).behind(proxy)
+                .usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY).build();
+
+        server.getSecurityStore()
+                .add(SecurityInfo.newPreSharedKeyInfo(client.getEndpointName(), GOOD_PSK_ID, GOOD_PSK_KEY));
+
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        client.waitForRegistrationTo(server);
+
+        // Send Data should works
+        Registration registrationBeforeSend = server.getRegistrationFor(client);
+        assertSuccessfulSendAfterAddressChanged();
+
+        // check that client registration is updated.
+        Registration registrationAfterSend = server.getRegistrationFor(client);
+        assertThat(registrationAfterSend.getSocketAddress()).isNotEqualTo(registrationBeforeSend.getSocketAddress());
     }
 
     @TestTlsTransport

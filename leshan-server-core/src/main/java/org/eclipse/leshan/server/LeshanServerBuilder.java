@@ -79,7 +79,8 @@ public class LeshanServerBuilder {
     private Certificate[] trustedCertificates;
 
     private boolean noQueueMode = false;
-    private boolean updateRegistrationOnNotification;
+    private boolean updateRegistrationOnNotification = false;
+    private boolean updateRegistrationOnSend = false;
 
     private LwM2mServerEndpointsProvider endpointProvider;
 
@@ -269,10 +270,29 @@ public class LeshanServerBuilder {
      *
      * @see <a href=
      *      "https://github.com/eclipse/leshan/wiki/LWM2M-Devices-with-Dynamic-IP#is-the-update-request-mandatory--should-i-update-registration-on-notification-">Dynamic
-     *      IP environnement documentaiton</a>
+     *      IP environment documentation</a>
      */
     public LeshanServerBuilder setUpdateRegistrationOnNotification(boolean updateRegistrationOnNotification) {
         this.updateRegistrationOnNotification = updateRegistrationOnNotification;
+        return this;
+    }
+
+    /**
+     * Update Registration on Send Operation.
+     * <p>
+     * There is some use cases where device can have a dynamic IP (E.g. NAT environment), the specification says to use
+     * an UPDATE request to notify server about IP address/ port changes. But it seems there is some rare use case where
+     * this update REQUEST can not be done.
+     * <p>
+     * With this option you can allow Leshan to update Registration on Send Operation. This is clearly OUT OF
+     * SPECIFICATION and so this is not recommended and should be used only if there is no other way.
+     *
+     * @see <a href=
+     *      "https://github.com/eclipse/leshan/wiki/LWM2M-Devices-with-Dynamic-IP#is-the-update-request-mandatory--should-i-update-registration-on-notification-">Dynamic
+     *      IP environment documentation</a>
+     */
+    public LeshanServerBuilder setUpdateRegistrationOnSend(boolean updateRegistrationOnSend) {
+        this.updateRegistrationOnSend = updateRegistrationOnSend;
         return this;
     }
 
@@ -317,7 +337,7 @@ public class LeshanServerBuilder {
 
         return createServer(endpointProvider, registrationStore, securityStore, authorizer, modelProvider, encoder,
                 decoder, noQueueMode, awakeTimeProvider, registrationIdProvider, registrationDataExtractor, linkParser,
-                serverSecurityInfo, updateRegistrationOnNotification);
+                serverSecurityInfo, updateRegistrationOnNotification, updateRegistrationOnSend);
     }
 
     /**
@@ -328,16 +348,17 @@ public class LeshanServerBuilder {
      *
      * @see LeshanServer#LeshanServer(LwM2mServerEndpointsProvider, RegistrationStore, SecurityStore, Authorizer,
      *      LwM2mModelProvider, LwM2mEncoder, LwM2mDecoder, boolean, ClientAwakeTimeProvider, RegistrationIdProvider,
-     *      RegistrationDataExtractor, boolean, LwM2mLinkParser, ServerSecurityInfo)
+     *      RegistrationDataExtractor, boolean, boolean, LwM2mLinkParser, ServerSecurityInfo)
      */
     protected LeshanServer createServer(LwM2mServerEndpointsProvider endpointsProvider,
             RegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder, boolean noQueueMode,
             ClientAwakeTimeProvider awakeTimeProvider, RegistrationIdProvider registrationIdProvider,
             RegistrationDataExtractor registrationDataExtractor, LwM2mLinkParser linkParser,
-            ServerSecurityInfo serverSecurityInfo, boolean updateRegistrationOnNotification) {
+            ServerSecurityInfo serverSecurityInfo, boolean updateRegistrationOnNotification,
+            boolean updateRegistrationOnSend) {
         return new LeshanServer(endpointsProvider, registrationStore, securityStore, authorizer, modelProvider, encoder,
                 decoder, noQueueMode, awakeTimeProvider, registrationIdProvider, registrationDataExtractor,
-                updateRegistrationOnNotification, linkParser, serverSecurityInfo);
+                updateRegistrationOnNotification, updateRegistrationOnSend, linkParser, serverSecurityInfo);
     }
 }

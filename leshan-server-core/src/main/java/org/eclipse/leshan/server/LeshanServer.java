@@ -121,6 +121,7 @@ public class LeshanServer {
      *        Register operation.
      * @param registrationDataExtractor to extract registration data from object links
      * @param updateRegistrationOnNotification will activate registration update on observe notification.
+     * @param updateRegistrationOnSend will activate registration update on Send Operation.
      * @param linkParser a parser {@link LwM2mLinkParser} used to parse a CoRE Link.
      * @param serverSecurityInfo credentials of the Server
      * @since 1.1
@@ -129,7 +130,7 @@ public class LeshanServer {
             SecurityStore securityStore, Authorizer authorizer, LwM2mModelProvider modelProvider, LwM2mEncoder encoder,
             LwM2mDecoder decoder, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
             RegistrationIdProvider registrationIdProvider, RegistrationDataExtractor registrationDataExtractor,
-            boolean updateRegistrationOnNotification, LwM2mLinkParser linkParser,
+            boolean updateRegistrationOnNotification, boolean updateRegistrationOnSend, LwM2mLinkParser linkParser,
             ServerSecurityInfo serverSecurityInfo) {
 
         Validate.notNull(endpointsProvider, "endpointsProvider cannot be null");
@@ -154,7 +155,7 @@ public class LeshanServer {
             presenceService = createPresenceService(registrationService, awakeTimeProvider,
                     updateRegistrationOnNotification);
         }
-        this.sendService = createSendHandler();
+        this.sendService = createSendHandler(registrationStore, updateRegistrationOnSend);
 
         // create endpoints
         ServerEndpointToolbox toolbox = new ServerEndpointToolbox(decoder, encoder, linkParser,
@@ -194,8 +195,8 @@ public class LeshanServer {
         return presenceService;
     }
 
-    protected SendHandler createSendHandler() {
-        return new SendHandler();
+    protected SendHandler createSendHandler(RegistrationStore registrationStore, boolean updateRegistrationOnSend) {
+        return new SendHandler(registrationStore, updateRegistrationOnSend);
     }
 
     protected DownlinkRequestSender createRequestSender(LwM2mServerEndpointsProvider endpointsProvider,
@@ -215,8 +216,8 @@ public class LeshanServer {
 
             @Override
             public void updated(RegistrationUpdate update, Registration updatedRegistration, Registration previousReg) {
-                if ((previousReg.getAddress() != null && !previousReg.getAddress().equals(update.getAddress())) || //
-                (previousReg.getPort() != null && !previousReg.getPort().equals(update.getPort()))) {
+                if ((previousReg.getAddress() != null && !previousReg.getAddress().equals(update.getAddress()))
+                        || (previousReg.getPort() != null && !previousReg.getPort().equals(update.getPort()))) {
                     requestSender.cancelOngoingRequests(previousReg);
                 }
             }

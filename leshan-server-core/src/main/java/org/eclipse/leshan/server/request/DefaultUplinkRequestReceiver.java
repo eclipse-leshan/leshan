@@ -94,7 +94,7 @@ public class DefaultUplinkRequestReceiver implements UplinkRequestReceiver {
 
         @Override
         public void visit(SendRequest request) {
-            response = sendHandler.handleSend(senderProfile.getRegistration(), request);
+            response = sendHandler.handleSend(sender, senderProfile.getRegistration(), request);
         }
 
         @SuppressWarnings("unchecked")

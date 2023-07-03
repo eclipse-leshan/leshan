@@ -81,7 +81,8 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
             LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder, boolean noQueueMode,
             ClientAwakeTimeProvider awakeTimeProvider, RegistrationIdProvider registrationIdProvider,
             RegistrationDataExtractor registrationDataExtractor, LwM2mLinkParser linkParser,
-            ServerSecurityInfo serverSecurityInfo, boolean updateRegistrationOnNotification) {
+            ServerSecurityInfo serverSecurityInfo, boolean updateRegistrationOnNotification,
+            boolean updateRegistrationOnSend) {
 
         // create endpoint provider.
         if (endpointsProvider == null) {
@@ -105,7 +106,7 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
         }
         return new LeshanTestServer(endpointsProvider, registrationStore, securityStore, authorizer, modelProvider,
                 encoder, decoder, noQueueMode, awakeTimeProvider, registrationIdProvider, registrationDataExtractor,
-                linkParser, serverSecurityInfo, updateRegistrationOnNotification);
+                linkParser, serverSecurityInfo, updateRegistrationOnNotification, updateRegistrationOnSend);
     }
 
     public static LeshanTestServerBuilder givenServerUsing(Protocol protocolToUse) {
@@ -166,6 +167,11 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
 
     public LeshanTestServerBuilder withUpdateOnNotification() {
         setUpdateRegistrationOnNotification(true);
+        return this;
+    }
+
+    public LeshanTestServerBuilder withUpdateOnSendOperation() {
+        setUpdateRegistrationOnSend(true);
         return this;
     }
 

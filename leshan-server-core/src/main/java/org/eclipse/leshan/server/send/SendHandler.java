@@ -19,10 +19,16 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.response.SendResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationStore;
+import org.eclipse.leshan.server.registration.RegistrationUpdate;
+import org.eclipse.leshan.server.registration.UpdatedRegistration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class responsible to handle "Send" request from LWM2M client.
@@ -31,7 +37,17 @@ import org.eclipse.leshan.server.registration.Registration;
  */
 public class SendHandler implements SendService {
 
+    private final Logger LOG = LoggerFactory.getLogger(SendHandler.class);
+
+    private final RegistrationStore registrationStore;
+    private final boolean updateRegistrationOnSend;
+
     private final List<SendListener> listeners = new CopyOnWriteArrayList<>();;
+
+    public SendHandler(RegistrationStore registrationStore, boolean updateRegistrationOnSend) {
+        this.registrationStore = registrationStore;
+        this.updateRegistrationOnSend = updateRegistrationOnSend;
+    }
 
     @Override
     public void addListener(SendListener listener) {
@@ -43,14 +59,50 @@ public class SendHandler implements SendService {
         listeners.remove(listener);
     }
 
-    public SendableResponse<SendResponse> handleSend(final Registration registration, final SendRequest request) {
+    public SendableResponse<SendResponse> handleSend(LwM2mPeer sender, Registration registration,
+            final SendRequest request) {
+
+        // try to update registration if needed
+        final Registration updatedRegistration;
+        try {
+            updatedRegistration = updateRegistration(sender, registration);
+        } catch (Exception e) {
+            SendableResponse<SendResponse> response = new SendableResponse<>(
+                    SendResponse.internalServerError("unable to update registration"), new Runnable() {
+                        @Override
+                        public void run() {
+                            onError(registration, e);
+                        }
+                    });
+            return response;
+        }
+
+        // Send Response to send request on success
         SendableResponse<SendResponse> response = new SendableResponse<>(SendResponse.success(), new Runnable() {
             @Override
             public void run() {
-                fireDataReceived(registration, request.getTimestampedNodes(), request);
+                fireDataReceived(updatedRegistration, request.getTimestampedNodes(), request);
             }
         });
         return response;
+
+    }
+
+    private Registration updateRegistration(LwM2mPeer sender, final Registration registration) {
+        if (updateRegistrationOnSend) {
+            RegistrationUpdate regUpdate = new RegistrationUpdate(registration.getId(), sender, null, null, null, null,
+                    null, null, null, null, null, null);
+            UpdatedRegistration updatedRegistration = registrationStore.updateRegistration(regUpdate);
+            if (updatedRegistration == null || updatedRegistration.getUpdatedRegistration() == null) {
+                String errorMsg = String.format(
+                        "Unexpected error when receiving Send Request: There is no registration with id %s",
+                        registration.getId());
+                LOG.error(errorMsg);
+                throw new IllegalStateException(errorMsg);
+            }
+            return updatedRegistration.getUpdatedRegistration();
+        }
+        return registration;
     }
 
     protected void fireDataReceived(Registration registration, TimestampedLwM2mNodes data, SendRequest request) {

@@ -80,11 +80,11 @@ public class LeshanTestServer extends LeshanServer {
             SecurityStore securityStore, Authorizer authorizer, LwM2mModelProvider modelProvider, LwM2mEncoder encoder,
             LwM2mDecoder decoder, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
             RegistrationIdProvider registrationIdProvider, RegistrationDataExtractor registrationDataExtractor,
-            LwM2mLinkParser linkParser, ServerSecurityInfo serverSecurityInfo,
-            boolean updateRegistrationOnNotification) {
+            LwM2mLinkParser linkParser, ServerSecurityInfo serverSecurityInfo, boolean updateRegistrationOnNotification,
+            boolean updateRegistrationOnSend) {
         super(endpointsProvider, registrationStore, securityStore, authorizer, modelProvider, encoder, decoder,
                 noQueueMode, awakeTimeProvider, registrationIdProvider, registrationDataExtractor,
-                updateRegistrationOnNotification, linkParser, serverSecurityInfo);
+                updateRegistrationOnNotification, updateRegistrationOnSend, linkParser, serverSecurityInfo);
 
         if (securityStore != null && !(securityStore instanceof EditableSecurityStore)) {
             throw new IllegalStateException(
