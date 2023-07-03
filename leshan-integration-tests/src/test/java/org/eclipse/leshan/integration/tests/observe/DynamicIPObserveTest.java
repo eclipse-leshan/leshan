@@ -202,8 +202,6 @@ public class DynamicIPObserveTest {
         assertThat(registrationAfterObserve).isEqualTo(registrationBeforeObserve);
     }
 
-    // TODO Registration is not correctly updated we must fix it.
-    @Disabled
     @TestTlsTransport
     public void update_registration_on_notification_using_psk(Protocol givenProtocol,
             String givenClientEndpointProvider, String givenServerEndpointProvider)
@@ -230,7 +228,7 @@ public class DynamicIPObserveTest {
         Registration registrationBeforeObserve = server.getRegistrationFor(client);
         assertSuccessfulNotificationSendingAfterAddressChanged(registrationBeforeObserve);
 
-        // check that client registration is not updated.
+        // check that client registration is updated.
         Registration registrationAfterObserve = server.getRegistrationFor(client);
         assertThat(registrationAfterObserve.getSocketAddress())
                 .isNotEqualTo(registrationBeforeObserve.getSocketAddress());

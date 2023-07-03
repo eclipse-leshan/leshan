@@ -200,41 +200,57 @@ public class ObservationServiceImpl implements ObservationService, LwM2mNotifica
         listeners.remove(listener);
     }
 
-    private void updateRegistrationOnRegistration(Observation observation, ClientProfile profile) {
+    private Registration updateRegistrationOnRegistration(Observation observation, LwM2mPeer sender,
+            ClientProfile profile) {
         if (updateRegistrationOnNotification) {
-            LwM2mPeer peerData = profile.getTransportData();
-            RegistrationUpdate regUpdate = new RegistrationUpdate(observation.getRegistrationId(), peerData, null, null,
+            RegistrationUpdate regUpdate = new RegistrationUpdate(observation.getRegistrationId(), sender, null, null,
                     null, null, null, null, null, null, null, null);
             UpdatedRegistration updatedRegistration = registrationStore.updateRegistration(regUpdate);
             if (updatedRegistration == null || updatedRegistration.getUpdatedRegistration() == null) {
-                LOG.error("Unexpected error: There is no registration with id {} for this observation {}",
+                String errorMsg = String.format(
+                        "Unexpected error: There is no registration with id %s for this observation %s",
                         observation.getRegistrationId(), observation);
-                return;
+                LOG.error(errorMsg);
+                throw new IllegalStateException(errorMsg);
             }
-            updatedRegistration.getUpdatedRegistration();
+            return updatedRegistration.getUpdatedRegistration();
         }
+        return profile.getRegistration();
     }
 
     // ********** NotificationListener interface **********//
     @Override
-    public void onNotification(SingleObservation observation, ClientProfile profile, ObserveResponse response) {
-        updateRegistrationOnRegistration(observation, profile);
-        for (ObservationListener listener : listeners) {
-            listener.onResponse(observation, profile.getRegistration(), response);
+    public void onNotification(SingleObservation observation, LwM2mPeer sender, ClientProfile profile,
+            ObserveResponse response) {
+        try {
+            Registration updatedRegistration = updateRegistrationOnRegistration(observation, sender, profile);
+            for (ObservationListener listener : listeners) {
+                listener.onResponse(observation, updatedRegistration, response);
+            }
+        } catch (Exception e) {
+            for (ObservationListener listener : listeners) {
+                listener.onError(observation, profile.getRegistration(), e);
+            }
         }
     }
 
     @Override
-    public void onNotification(CompositeObservation observation, ClientProfile profile,
+    public void onNotification(CompositeObservation observation, LwM2mPeer sender, ClientProfile profile,
             ObserveCompositeResponse response) {
-        updateRegistrationOnRegistration(observation, profile);
-        for (ObservationListener listener : listeners) {
-            listener.onResponse(observation, profile.getRegistration(), response);
+        try {
+            Registration updatedRegistration = updateRegistrationOnRegistration(observation, sender, profile);
+            for (ObservationListener listener : listeners) {
+                listener.onResponse(observation, updatedRegistration, response);
+            }
+        } catch (Exception e) {
+            for (ObservationListener listener : listeners) {
+                listener.onError(observation, profile.getRegistration(), e);
+            }
         }
     }
 
     @Override
-    public void onError(Observation observation, ClientProfile profile, Exception error) {
+    public void onError(Observation observation, LwM2mPeer sender, ClientProfile profile, Exception error) {
         for (ObservationListener listener : listeners) {
             listener.onError(observation, profile.getRegistration(), error);
         }

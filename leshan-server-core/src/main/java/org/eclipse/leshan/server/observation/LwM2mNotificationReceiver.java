@@ -18,6 +18,7 @@ package org.eclipse.leshan.server.observation;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.profile.ClientProfile;
@@ -44,26 +45,31 @@ public interface LwM2mNotificationReceiver {
      * Called on new notification.
      *
      * @param observation the observation for which new data are received
+     * @param sender the client which sent the notification
      * @param profile the client profile concerned by this observation
      * @param response the lwm2m response received (successful or error response)
      *
      */
-    void onNotification(SingleObservation observation, ClientProfile profile, ObserveResponse response);
+    void onNotification(SingleObservation observation, LwM2mPeer sender, ClientProfile profile,
+            ObserveResponse response);
 
     /**
      * Called on new notification.
      *
      * @param observation the composite-observation for which new data are received
+     * @param sender the client which sent the notification
      * @param profile the client profile concerned by this observation
      * @param response the lwm2m observe-composite response received (successful or error response)
      *
      */
-    void onNotification(CompositeObservation observation, ClientProfile profile, ObserveCompositeResponse response);
+    void onNotification(CompositeObservation observation, LwM2mPeer sender, ClientProfile profile,
+            ObserveCompositeResponse response);
 
     /**
      * Called when an error occurs on new notification.
      *
      * @param observation the observation for which new data are received
+     * @param sender the client which sent the notification
      * @param profile the client profile concerned by this observation
      * @param error the exception raised when we handle the notification. It can be :
      *        <ul>
@@ -71,5 +77,5 @@ public interface LwM2mNotificationReceiver {
      *        <li>or any other RuntimeException for unexpected issue.
      *        </ul>
      */
-    void onError(Observation observation, ClientProfile profile, Exception error);
+    void onError(Observation observation, LwM2mPeer sender, ClientProfile profile, Exception error);
 }

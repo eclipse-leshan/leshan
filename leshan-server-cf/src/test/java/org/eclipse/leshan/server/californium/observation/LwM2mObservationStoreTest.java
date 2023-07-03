@@ -43,6 +43,7 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.ObservationIdentifier;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveCompositeRequest;
@@ -80,16 +81,17 @@ public class LwM2mObservationStoreTest {
         store = new InMemoryRegistrationStore();
         observationStore = new LwM2mObservationStore(store, new LwM2mNotificationReceiver() {
             @Override
-            public void onNotification(CompositeObservation observation, ClientProfile profile,
+            public void onNotification(CompositeObservation observation, LwM2mPeer sender, ClientProfile profile,
                     ObserveCompositeResponse response) {
             }
 
             @Override
-            public void onNotification(SingleObservation observation, ClientProfile profile, ObserveResponse response) {
+            public void onNotification(SingleObservation observation, LwM2mPeer sender, ClientProfile profile,
+                    ObserveResponse response) {
             }
 
             @Override
-            public void onError(Observation observation, ClientProfile profile, Exception error) {
+            public void onError(Observation observation, LwM2mPeer sender, ClientProfile profile, Exception error) {
             }
 
             @Override

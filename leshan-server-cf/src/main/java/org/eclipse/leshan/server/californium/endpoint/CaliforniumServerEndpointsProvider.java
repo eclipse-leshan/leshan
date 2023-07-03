@@ -164,14 +164,14 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
                             AbstractLwM2mResponse response = messagetranslator.createObservation(observation,
                                     coapResponse, toolbox, profile);
                             if (observation instanceof SingleObservation) {
-                                notificatonReceiver.onNotification((SingleObservation) observation, profile,
+                                notificatonReceiver.onNotification((SingleObservation) observation, client, profile,
                                         (ObserveResponse) response);
                             } else if (observation instanceof CompositeObservation) {
-                                notificatonReceiver.onNotification((CompositeObservation) observation, profile,
+                                notificatonReceiver.onNotification((CompositeObservation) observation, client, profile,
                                         (ObserveCompositeResponse) response);
                             }
                         } catch (Exception e) {
-                            notificatonReceiver.onError(observation, profile, e);
+                            notificatonReceiver.onError(observation, client, profile, e);
                         }
 
                     }
