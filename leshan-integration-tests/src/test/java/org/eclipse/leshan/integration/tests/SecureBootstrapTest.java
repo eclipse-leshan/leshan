@@ -76,7 +76,7 @@ public class SecureBootstrapTest {
     }
 
     @Test
-    public void bootstrapSecureWithPSK() throws NonUniqueSecurityInfoException, InvalidConfigurationException {
+    public void bootstrap_using_psk() throws NonUniqueSecurityInfoException, InvalidConfigurationException {
         // Create DM Server without security & start it
         server = givenServer.using(Protocol.COAP).build();
         server.start();
@@ -110,7 +110,7 @@ public class SecureBootstrapTest {
     }
 
     @Test
-    public void bootstrapSecureWithBadPSKKey() throws InvalidConfigurationException, NonUniqueSecurityInfoException {
+    public void bootstrap_failed_using_bad_psk() throws InvalidConfigurationException, NonUniqueSecurityInfoException {
         // Create DM Server without security & start it
         server = givenServer.using(Protocol.COAP).build();
         server.start();
@@ -141,7 +141,7 @@ public class SecureBootstrapTest {
     }
 
     @Test
-    public void bootstrapSecureWithRPK() throws NonUniqueSecurityInfoException, InvalidConfigurationException {
+    public void bootstrap_using_rpk() throws NonUniqueSecurityInfoException, InvalidConfigurationException {
         // Create DM Server without security & start it
         server = givenServer.using(Protocol.COAP).build();
         server.start();
@@ -177,7 +177,8 @@ public class SecureBootstrapTest {
     }
 
     @Test
-    public void bootstrapToPSKServer() throws NonUniqueSecurityInfoException, InvalidConfigurationException {
+    public void bootstrap_unsecure_then_register_to_server_using_psk()
+            throws NonUniqueSecurityInfoException, InvalidConfigurationException {
         // Create DM Server without security & start it
         server = givenServer.using(Protocol.COAPS).build();
         server.start();
@@ -207,7 +208,8 @@ public class SecureBootstrapTest {
     }
 
     @Test
-    public void bootstrapToRPKServer() throws NonUniqueSecurityInfoException, InvalidConfigurationException {
+    public void bootstrap_unsecure_then_register_to_server_using_rpk()
+            throws NonUniqueSecurityInfoException, InvalidConfigurationException {
         // Create DM Server without security & start it
         server = givenServer.using(Protocol.COAPS).using(serverPublicKey, serverPrivateKey).build();
         server.start();
