@@ -19,11 +19,17 @@ import static org.eclipse.leshan.integration.tests.BootstrapConfigTestBuilder.gi
 import static org.eclipse.leshan.integration.tests.util.Credentials.GOOD_PSK_ID;
 import static org.eclipse.leshan.integration.tests.util.Credentials.GOOD_PSK_KEY;
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientPrivateKey;
+import static org.eclipse.leshan.integration.tests.util.Credentials.clientPrivateKeyFromCert;
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientPublicKey;
+import static org.eclipse.leshan.integration.tests.util.Credentials.clientX509Cert;
 import static org.eclipse.leshan.integration.tests.util.Credentials.serverPrivateKey;
+import static org.eclipse.leshan.integration.tests.util.Credentials.serverPrivateKeyFromCert;
 import static org.eclipse.leshan.integration.tests.util.Credentials.serverPublicKey;
+import static org.eclipse.leshan.integration.tests.util.Credentials.serverX509Cert;
+import static org.eclipse.leshan.integration.tests.util.Credentials.trustedCertificates;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
 
+import java.security.cert.CertificateEncodingException;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpointsProvider;
@@ -177,8 +183,48 @@ public class SecureBootstrapTest {
     }
 
     @Test
+    public void bootstrap_using_x509()
+            throws NonUniqueSecurityInfoException, InvalidConfigurationException, CertificateEncodingException {
+
+        // Create DM Server without security & start it
+        server = givenServer.using(Protocol.COAP).build();
+        server.start();
+
+        // Create and start bootstrap server
+        bootstrapServer = givenBootstrapServer.using(Protocol.COAPS).using(serverX509Cert, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificates).build();
+        bootstrapServer.start();
+
+        // Create Client and check it is not already registered
+        client = givenClient.connectingTo(bootstrapServer).using(Protocol.COAPS)
+                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .trusting(serverX509Cert).build();
+
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Add client credentials to the server
+        bootstrapServer.getEditableSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
+
+        // Add config for this client
+        bootstrapServer.getConfigStore().add(client.getEndpointName(), //
+                givenBootstrapConfig() //
+                        .adding(Protocol.COAPS, bootstrapServer, clientX509Cert, clientPrivateKeyFromCert,
+                                serverX509Cert) //
+                        .adding(Protocol.COAP, server) //
+                        .build());
+
+        // Start it and wait for registration
+        client.start();
+        server.waitForNewRegistrationOf(client);
+
+        // check the client is registered
+        assertThat(client).isRegisteredAt(server);
+    }
+
+    @Test
     public void bootstrap_unsecure_then_register_to_server_using_psk()
             throws NonUniqueSecurityInfoException, InvalidConfigurationException {
+
         // Create DM Server without security & start it
         server = givenServer.using(Protocol.COAPS).build();
         server.start();

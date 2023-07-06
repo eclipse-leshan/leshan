@@ -17,6 +17,8 @@ package org.eclipse.leshan.integration.tests;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.util.List;
 
 import org.eclipse.leshan.core.SecurityMode;
@@ -82,6 +84,22 @@ public class BootstrapConfigTestBuilder {
         bsSecurity.publicKeyOrId = clientPublicKey.getEncoded();
         bsSecurity.secretKey = clientPrivateKey.getEncoded();
         bsSecurity.serverPublicKey = serverPublicKey.getEncoded();
+        bsConfig.security.put(0, bsSecurity);
+        return this;
+    }
+
+    public BootstrapConfigTestBuilder adding(Protocol protocol, LeshanTestBootstrapServer bootstrapServer,
+            Certificate clientCertificate, PrivateKey clientPrivateKey, Certificate serverCertificate)
+            throws CertificateEncodingException {
+
+        // security for BS server
+        ServerSecurity bsSecurity = new ServerSecurity();
+        bsSecurity.bootstrapServer = true;
+        bsSecurity.uri = bootstrapServer.getEndpoint(protocol).getURI().toString();
+        bsSecurity.securityMode = SecurityMode.X509;
+        bsSecurity.publicKeyOrId = clientCertificate.getEncoded();
+        bsSecurity.secretKey = clientPrivateKey.getEncoded();
+        bsSecurity.serverPublicKey = serverCertificate.getEncoded();
         bsConfig.security.put(0, bsSecurity);
         return this;
     }
