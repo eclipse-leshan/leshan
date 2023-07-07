@@ -21,7 +21,9 @@ import java.math.BigInteger;
 import java.security.AlgorithmParameters;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
+import java.security.KeyPair;
 import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
@@ -30,6 +32,8 @@ import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
 import java.security.spec.ECPrivateKeySpec;
 import java.security.spec.ECPublicKeySpec;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,6 +69,8 @@ public class Credentials {
     public static final PrivateKey clientPrivateKey; // client private key used for RPK
     public static final PublicKey serverPublicKey; // server public key used for RPK
     public static final PrivateKey serverPrivateKey; // server private key used for RPK
+    public static final PublicKey anotherServerPublicKey; // server public key used for RPK
+    public static final PrivateKey anotherServerPrivateKey; // server private key used for RPK
 
     // client private key used for X509
     public static final PrivateKey clientPrivateKeyFromCert;
@@ -99,27 +105,13 @@ public class Credentials {
     static {
         // create client credentials
         try {
-            // Get point values
-            byte[] publicX = Hex
-                    .decodeHex("89c048261979208666f2bfb188be1968fc9021c416ce12828c06f4e314c167b5".toCharArray());
-            byte[] publicY = Hex
-                    .decodeHex("cbf1eb7587f08e01688d9ada4be859137ca49f79394bad9179326b3090967b68".toCharArray());
-            byte[] privateS = Hex
-                    .decodeHex("e67b68d2aaeb6550f19d98cade3ad62b39532e02e6b422e1f7ea189dabaea5d2".toCharArray());
-
-            // Get Elliptic Curve Parameter spec for secp256r1
-            AlgorithmParameters algoParameters = AlgorithmParameters.getInstance("EC");
-            algoParameters.init(new ECGenParameterSpec("secp256r1"));
-            ECParameterSpec parameterSpec = algoParameters.getParameterSpec(ECParameterSpec.class);
-
-            // Create key specs
-            KeySpec publicKeySpec = new ECPublicKeySpec(
-                    new ECPoint(new BigInteger(1, publicX), new BigInteger(1, publicY)), parameterSpec);
-            KeySpec privateKeySpec = new ECPrivateKeySpec(new BigInteger(1, privateS), parameterSpec);
-
-            // Get keys
-            clientPublicKey = KeyFactory.getInstance("EC").generatePublic(publicKeySpec);
-            clientPrivateKey = KeyFactory.getInstance("EC").generatePrivate(privateKeySpec);
+            // Create RPK
+            KeyPair clientKeyPair = createEllipticCurveKeyPair( //
+                    "89c048261979208666f2bfb188be1968fc9021c416ce12828c06f4e314c167b5", //
+                    "cbf1eb7587f08e01688d9ada4be859137ca49f79394bad9179326b3090967b68", //
+                    "e67b68d2aaeb6550f19d98cade3ad62b39532e02e6b422e1f7ea189dabaea5d2");
+            clientPublicKey = clientKeyPair.getPublic();
+            clientPrivateKey = clientKeyPair.getPrivate();
 
             // Get certificates from key store
             char[] clientKeyStorePwd = "client".toCharArray();
@@ -139,27 +131,20 @@ public class Credentials {
 
         // create server credentials
         try {
-            // Get point values
-            byte[] publicX = Hex
-                    .decodeHex("fcc28728c123b155be410fc1c0651da374fc6ebe7f96606e90d927d188894a73".toCharArray());
-            byte[] publicY = Hex
-                    .decodeHex("d2ffaa73957d76984633fc1cc54d0b763ca0559a9dff9706e9f4557dacc3f52a".toCharArray());
-            byte[] privateS = Hex
-                    .decodeHex("1dae121ba406802ef07c193c1ee4df91115aabd79c1ed7f4c0ef7ef6a5449400".toCharArray());
+            // Create RPKs
+            KeyPair serverKeyPair = createEllipticCurveKeyPair( //
+                    "fcc28728c123b155be410fc1c0651da374fc6ebe7f96606e90d927d188894a73", //
+                    "d2ffaa73957d76984633fc1cc54d0b763ca0559a9dff9706e9f4557dacc3f52a", //
+                    "1dae121ba406802ef07c193c1ee4df91115aabd79c1ed7f4c0ef7ef6a5449400");
+            serverPublicKey = serverKeyPair.getPublic();
+            serverPrivateKey = serverKeyPair.getPrivate();
 
-            // Get Elliptic Curve Parameter spec for secp256r1
-            AlgorithmParameters algoParameters = AlgorithmParameters.getInstance("EC");
-            algoParameters.init(new ECGenParameterSpec("secp256r1"));
-            ECParameterSpec parameterSpec = algoParameters.getParameterSpec(ECParameterSpec.class);
-
-            // Create key specs
-            KeySpec publicKeySpec = new ECPublicKeySpec(
-                    new ECPoint(new BigInteger(1, publicX), new BigInteger(1, publicY)), parameterSpec);
-            KeySpec privateKeySpec = new ECPrivateKeySpec(new BigInteger(1, privateS), parameterSpec);
-
-            // Get keys
-            serverPublicKey = KeyFactory.getInstance("EC").generatePublic(publicKeySpec);
-            serverPrivateKey = KeyFactory.getInstance("EC").generatePrivate(privateKeySpec);
+            serverKeyPair = createEllipticCurveKeyPair( //
+                    "01b93a61485284414fd2750e4c1da584214f7a76eaf90498d6a13463b88b07cb", //
+                    "482bfc089f8223a5d14206b12dbf69380eae376e5cd2ff212f393a8fec6384eb", //
+                    "c97c734a03aa25b638360cc7f1c4fe3df454c050a28cd5d14d08cddec9e4ece0");
+            anotherServerPublicKey = serverKeyPair.getPublic();
+            anotherServerPrivateKey = serverKeyPair.getPrivate();
 
             // Get certificates from key store
             char[] serverKeyStorePwd = "server".toCharArray();
@@ -180,5 +165,27 @@ public class Credentials {
         } catch (GeneralSecurityException | IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static KeyPair createEllipticCurveKeyPair(String pointX, String pointY, String pointS)
+            throws NoSuchAlgorithmException, InvalidParameterSpecException, InvalidKeySpecException {
+        // Get point values
+        byte[] publicX = Hex.decodeHex(pointX.toCharArray());
+        byte[] publicY = Hex.decodeHex(pointY.toCharArray());
+        byte[] privateS = Hex.decodeHex(pointS.toCharArray());
+
+        // Get Elliptic Curve Parameter spec for secp256r1
+        AlgorithmParameters algoParameters = AlgorithmParameters.getInstance("EC");
+        algoParameters.init(new ECGenParameterSpec("secp256r1"));
+        ECParameterSpec parameterSpec = algoParameters.getParameterSpec(ECParameterSpec.class);
+
+        // Create key specs
+        KeySpec publicKeySpec = new ECPublicKeySpec(new ECPoint(new BigInteger(1, publicX), new BigInteger(1, publicY)),
+                parameterSpec);
+        KeySpec privateKeySpec = new ECPrivateKeySpec(new BigInteger(1, privateS), parameterSpec);
+
+        // Get keys
+        return new KeyPair(KeyFactory.getInstance("EC").generatePublic(publicKeySpec),
+                KeyFactory.getInstance("EC").generatePrivate(privateKeySpec));
     }
 }

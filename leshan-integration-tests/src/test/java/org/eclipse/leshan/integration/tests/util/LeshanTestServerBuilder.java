@@ -18,9 +18,12 @@ package org.eclipse.leshan.integration.tests.util;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.californium.elements.config.Configuration;
@@ -32,6 +35,7 @@ import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
+import org.eclipse.leshan.integration.tests.util.cf.MapBasedRawPublicKeyProvider;
 import org.eclipse.leshan.server.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointFactory;
 import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointsProvider;
@@ -59,6 +63,8 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
     private Protocol protocolToUse;
     private String endpointProviderName;
     private boolean serverOnly = false;
+    private boolean useSNI = false;
+    private final Map<String, KeyPair> keyPairs = new HashMap<>();
 
     public LeshanTestServerBuilder(Protocol protocolToUse) {
         this();
@@ -131,6 +137,11 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
         return this;
     }
 
+    public LeshanTestServerBuilder usingSni() {
+        this.useSNI = true;
+        return this;
+    }
+
     public LeshanTestServerBuilder using(Protocol protocol) {
         this.protocolToUse = protocol;
         return this;
@@ -139,6 +150,11 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
     public LeshanTestServerBuilder using(PublicKey serverPublicKey, PrivateKey serverPrivateKey) {
         this.setPrivateKey(serverPrivateKey);
         this.setPublicKey(serverPublicKey);
+        return this;
+    }
+
+    public LeshanTestServerBuilder using(String host, PublicKey serverPublicKey, PrivateKey serverPrivateKey) {
+        keyPairs.put(host, new KeyPair(serverPublicKey, serverPrivateKey));
         return this;
     }
 
@@ -183,7 +199,12 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
         if (protocolToUse.equals(Protocol.COAP)) {
             return new CoapServerProtocolProvider();
         } else if (protocolToUse.equals(Protocol.COAPS)) {
-            return new CoapsServerProtocolProvider() {
+            return new CoapsServerProtocolProvider(dtlsConfig -> {
+                if (!keyPairs.isEmpty()) {
+                    dtlsConfig.setCertificateIdentityProvider(new MapBasedRawPublicKeyProvider(keyPairs));
+                }
+            }) {
+
                 @Override
                 public void applyDefaultValue(Configuration configuration) {
                     super.applyDefaultValue(configuration);
@@ -192,6 +213,9 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
                     }
                     configuration.set(DtlsConfig.DTLS_MAX_RETRANSMISSIONS, 1);
                     configuration.set(DtlsConfig.DTLS_RETRANSMISSION_TIMEOUT, 300, TimeUnit.MILLISECONDS);
+                    if (useSNI) {
+                        configuration.set(DtlsConfig.DTLS_USE_SERVER_NAME_INDICATION, true);
+                    }
                 }
             };
         }

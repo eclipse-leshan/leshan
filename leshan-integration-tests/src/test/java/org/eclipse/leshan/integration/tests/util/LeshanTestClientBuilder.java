@@ -100,6 +100,7 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
     private final DefaultRegistrationEngineFactory engineFactory = new DefaultRegistrationEngineFactory();
     private ContentFormat[] supportedContentFormat;
 
+    private String sniVirtualHost;
     private String pskIdentity;
     private byte[] pskKey;
     private PrivateKey clientPrivateKey;
@@ -140,13 +141,14 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
                     initializer.setInstancesForObject(LwM2mId.SECURITY,
                             Security.psk(uri.toString(), serverID, pskIdentity.getBytes(), pskKey));
                 } else if (clientPublicKey != null && clientPrivateKey != null) {
-                    initializer.setInstancesForObject(LwM2mId.SECURITY, Security.rpk(uri.toString(), serverID,
-                            clientPublicKey.getEncoded(), clientPrivateKey.getEncoded(), serverPublicKey.getEncoded()));
+                    initializer.setInstancesForObject(LwM2mId.SECURITY,
+                            Security.rpk(uri.toString(), serverID, clientPublicKey.getEncoded(),
+                                    clientPrivateKey.getEncoded(), serverPublicKey.getEncoded(), sniVirtualHost));
                 } else if (clientCertificate != null && clientPrivateKey != null) {
                     initializer.setInstancesForObject(LwM2mId.SECURITY,
                             Security.x509(uri.toString(), serverID, clientCertificate.getEncoded(),
                                     clientPrivateKey.getEncoded(), serverCertificate.getEncoded(),
-                                    certificageUsage.code));
+                                    certificageUsage.code, sniVirtualHost));
                 } else {
                     if (oscoreSetting != null) {
                         Oscore oscoreObject = new Oscore(111, oscoreSetting);
@@ -169,10 +171,11 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
                     securityEnabler = Security.pskBootstrap(uri.toString(), pskIdentity.getBytes(), pskKey);
                 } else if (clientPublicKey != null && clientPrivateKey != null) {
                     securityEnabler = Security.rpkBootstrap(uri.toString(), clientPublicKey.getEncoded(),
-                            clientPrivateKey.getEncoded(), serverPublicKey.getEncoded());
+                            clientPrivateKey.getEncoded(), serverPublicKey.getEncoded(), sniVirtualHost);
                 } else if (clientCertificate != null && clientPrivateKey != null) {
                     securityEnabler = Security.x509Bootstrap(uri.toString(), clientCertificate.getEncoded(),
-                            clientPrivateKey.getEncoded(), serverCertificate.getEncoded(), certificageUsage.code);
+                            clientPrivateKey.getEncoded(), serverCertificate.getEncoded(), certificageUsage.code,
+                            sniVirtualHost);
                 } else {
                     if (oscoreSetting != null) {
                         Oscore oscoreObject = new Oscore(12345, oscoreSetting);
@@ -309,6 +312,11 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
 
     public LeshanTestClientBuilder usingQueueMode() {
         engineFactory.setQueueMode(true);
+        return this;
+    }
+
+    public LeshanTestClientBuilder usingSniVirtualHost(String virtualHost) {
+        this.sniVirtualHost = virtualHost;
         return this;
     }
 
