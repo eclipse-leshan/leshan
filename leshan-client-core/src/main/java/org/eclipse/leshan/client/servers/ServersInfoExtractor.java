@@ -37,6 +37,7 @@ import static org.eclipse.leshan.core.LwM2mId.SEC_SECURITY_MODE;
 import static org.eclipse.leshan.core.LwM2mId.SEC_SERVER_ID;
 import static org.eclipse.leshan.core.LwM2mId.SEC_SERVER_PUBKEY;
 import static org.eclipse.leshan.core.LwM2mId.SEC_SERVER_URI;
+import static org.eclipse.leshan.core.LwM2mId.SEC_SNI;
 import static org.eclipse.leshan.core.LwM2mId.SERVER;
 import static org.eclipse.leshan.core.LwM2mId.SRV_BINDING;
 import static org.eclipse.leshan.core.LwM2mId.SRV_LIFETIME;
@@ -193,15 +194,18 @@ public class ServersInfoExtractor {
             } else if (info.secureMode == SecurityMode.PSK) {
                 info.pskId = getPskIdentity(security);
                 info.pskKey = getPskKey(security);
+                info.sni = getSNI(security);
             } else if (info.secureMode == SecurityMode.RPK) {
                 info.publicKey = getPublicKey(security);
                 info.privateKey = getPrivateKey(security);
                 info.serverPublicKey = getServerPublicKey(security);
+                info.sni = getSNI(security);
             } else if (info.secureMode == SecurityMode.X509) {
                 info.clientCertificate = getClientCertificate(security);
                 info.serverCertificate = getServerCertificate(security);
                 info.privateKey = getPrivateKey(security);
                 info.certificateUsage = getCertificateUsage(security);
+                info.sni = getSNI(security);
             }
         } catch (RuntimeException | URISyntaxException e) {
             throw new IllegalStateException("Invalid Security Instance /0/" + security.getId(), e);
@@ -390,6 +394,15 @@ public class ServersInfoExtractor {
             }
         } catch (CertificateException | IOException e) {
             throw new IllegalArgumentException("Failed to decode X.509 certificate", e);
+        }
+    }
+
+    private static String getSNI(LwM2mObjectInstance securityInstance) {
+        LwM2mResource resource = securityInstance.getResource(SEC_SNI);
+        if (resource == null) {
+            return null;
+        } else {
+            return (String) resource.getValue();
         }
     }
 

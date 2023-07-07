@@ -246,6 +246,11 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
                 throw new RuntimeException("Unable to create connector : unsupported security mode");
             }
 
+            // activate SNI if needed
+            if (serverInfo.sni != null) {
+                effectiveBuilder.set(DtlsConfig.DTLS_USE_SERVER_NAME_INDICATION, true);
+            }
+
             // Handle DTLS mode
             DtlsRole dtlsRole = incompleteConfig.getConfiguration().get(DtlsConfig.DTLS_ROLE);
             if (dtlsRole == null) {
@@ -393,10 +398,13 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
                 if (client instanceof IpPeer) {
                     IpPeer ipClient = (IpPeer) client;
                     if (peerIdentity != null && allowConnectionInitiation) {
-                        return new MapBasedEndpointContext(ipClient.getSocketAddress(), peerIdentity, new Attributes()
-                                .add(DtlsEndpointContext.KEY_HANDSHAKE_MODE, DtlsEndpointContext.HANDSHAKE_MODE_AUTO));
+                        return new MapBasedEndpointContext(ipClient.getSocketAddress(), ipClient.getVirtualHost(),
+                                peerIdentity, new Attributes().add(DtlsEndpointContext.KEY_HANDSHAKE_MODE,
+                                        DtlsEndpointContext.HANDSHAKE_MODE_AUTO));
                     }
-                    return new AddressEndpointContext(ipClient.getSocketAddress(), peerIdentity);
+                    return new AddressEndpointContext(ipClient.getSocketAddress(), ipClient.getVirtualHost(),
+                            peerIdentity);
+
                 } else {
                     throw new IllegalStateException(String.format("Unsupported peer : %s", client));
                 }

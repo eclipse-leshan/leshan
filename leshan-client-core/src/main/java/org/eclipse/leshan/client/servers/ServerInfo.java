@@ -53,6 +53,7 @@ public class ServerInfo {
 
     public Certificate clientCertificate;
     public Certificate serverCertificate;
+    public String sni;
 
     public PrivateKey privateKey;
 

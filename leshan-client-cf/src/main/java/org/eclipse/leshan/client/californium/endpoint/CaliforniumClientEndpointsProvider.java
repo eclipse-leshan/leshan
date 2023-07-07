@@ -212,14 +212,15 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
         if (serverInfo.isSecure()) {
             // Support PSK
             if (serverInfo.secureMode == SecurityMode.PSK) {
-                transportData = new IpPeer(serverInfo.getAddress(), new PskIdentity(serverInfo.pskId));
+                transportData = new IpPeer(serverInfo.getAddress(), serverInfo.sni, new PskIdentity(serverInfo.pskId));
             } else if (serverInfo.secureMode == SecurityMode.RPK) {
-                transportData = new IpPeer(serverInfo.getAddress(), new RpkIdentity(serverInfo.serverPublicKey));
+                transportData = new IpPeer(serverInfo.getAddress(), serverInfo.sni,
+                        new RpkIdentity(serverInfo.serverPublicKey));
             } else if (serverInfo.secureMode == SecurityMode.X509) {
                 // TODO We set CN with '*' as we are not able to know the CN for some certificate usage and so this is
                 // not used anymore to identify a server with x509.
                 // See : https://github.com/eclipse/leshan/issues/992
-                transportData = new IpPeer(serverInfo.getAddress(), new X509Identity("*"));
+                transportData = new IpPeer(serverInfo.getAddress(), serverInfo.sni, new X509Identity("*"));
             } else {
                 throw new RuntimeException("Unable to create connector : unsupported security mode");
             }

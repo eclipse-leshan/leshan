@@ -23,6 +23,7 @@ public class IpPeer implements LwM2mPeer {
 
     private final InetSocketAddress peerAddress;
     private final LwM2mIdentity identity;
+    private final String virtualHost;
 
     public IpPeer(InetSocketAddress peerAddress) {
         this(peerAddress, new SocketIdentity(peerAddress));
@@ -33,6 +34,15 @@ public class IpPeer implements LwM2mPeer {
         Validate.notNull(identity);
         this.peerAddress = peerAddress;
         this.identity = identity;
+        this.virtualHost = null;
+    }
+
+    public IpPeer(InetSocketAddress peerAddress, String virtualHost, LwM2mIdentity identity) {
+        Validate.notNull(peerAddress);
+        Validate.notNull(identity);
+        this.peerAddress = peerAddress;
+        this.identity = identity;
+        this.virtualHost = virtualHost;
     }
 
     public boolean isPSK() {
@@ -62,6 +72,10 @@ public class IpPeer implements LwM2mPeer {
 
     public InetSocketAddress getSocketAddress() {
         return peerAddress;
+    }
+
+    public String getVirtualHost() {
+        return virtualHost;
     }
 
     @Override
