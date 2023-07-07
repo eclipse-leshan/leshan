@@ -43,6 +43,7 @@ public interface LwM2mId {
     public static final int SEC_SERVER_PUBKEY = 4;
     public static final int SEC_SECRET_KEY = 5;
     public static final int SEC_SERVER_ID = 10;
+    public static final int SEC_SNI = 14;
     public static final int SEC_CERTIFICATE_USAGE = 15;
     public static final int SEC_OSCORE_SECURITY_MODE = 17;
 
