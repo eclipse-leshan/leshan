@@ -217,8 +217,8 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
                         trustedCertificates = CertPathUtil.toX509CertificatesList(trustStore)
                                 .toArray(new X509Certificate[trustStore.size()]);
                     }
-                    effectiveBuilder.setAdvancedCertificateVerifier(
-                            new CaConstraintCertificateVerifier(serverInfo.serverCertificate, trustedCertificates));
+                    effectiveBuilder.setAdvancedCertificateVerifier(new CaConstraintCertificateVerifier(
+                            serverInfo.serverCertificate, trustedCertificates, serverInfo.sni));
                 } else if (certificateUsage == CertificateUsage.SERVICE_CERTIFICATE_CONSTRAINT) {
                     X509Certificate[] trustedCertificates = null;
 
@@ -229,10 +229,10 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
                     }
 
                     effectiveBuilder.setAdvancedCertificateVerifier(new ServiceCertificateConstraintCertificateVerifier(
-                            serverInfo.serverCertificate, trustedCertificates));
+                            serverInfo.serverCertificate, trustedCertificates, serverInfo.sni));
                 } else if (certificateUsage == CertificateUsage.TRUST_ANCHOR_ASSERTION) {
                     effectiveBuilder.setAdvancedCertificateVerifier(new TrustAnchorAssertionCertificateVerifier(
-                            (X509Certificate) serverInfo.serverCertificate));
+                            (X509Certificate) serverInfo.serverCertificate, serverInfo.sni));
                 } else if (certificateUsage == CertificateUsage.DOMAIN_ISSUER_CERTIFICATE) {
                     effectiveBuilder.setAdvancedCertificateVerifier(
                             new DomainIssuerCertificateVerifier(serverInfo.serverCertificate));

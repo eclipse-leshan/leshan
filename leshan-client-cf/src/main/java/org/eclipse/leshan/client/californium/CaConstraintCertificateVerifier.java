@@ -60,13 +60,16 @@ public class CaConstraintCertificateVerifier extends BaseCertificateVerifier {
 
     private final Certificate caCertificate;
     private final X509Certificate[] trustedCertificates;
+    private final String expectedServerName; // for SNI
 
-    public CaConstraintCertificateVerifier(Certificate caCertificate, X509Certificate[] trustedCertificates) {
+    public CaConstraintCertificateVerifier(Certificate caCertificate, X509Certificate[] trustedCertificates,
+            String expectedServerName) {
         Validate.notNull(caCertificate);
         Validate.notNull(trustedCertificates);
         Validate.notEmpty(trustedCertificates);
         this.caCertificate = caCertificate;
         this.trustedCertificates = trustedCertificates;
+        this.expectedServerName = expectedServerName;
     }
 
     @Override
@@ -95,7 +98,11 @@ public class CaConstraintCertificateVerifier extends BaseCertificateVerifier {
         }
 
         // - validate server name
-        validateSubject(peerSocket, receivedServerCertificate);
+        if (expectedServerName != null) {
+            validateSNI(expectedServerName, receivedServerCertificate);
+        } else {
+            validateSubject(peerSocket, receivedServerCertificate);
+        }
 
         return certPath;
     }

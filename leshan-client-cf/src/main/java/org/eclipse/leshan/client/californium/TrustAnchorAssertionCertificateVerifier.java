@@ -52,10 +52,12 @@ import org.eclipse.leshan.core.util.Validate;
 public class TrustAnchorAssertionCertificateVerifier extends BaseCertificateVerifier {
 
     private final X509Certificate[] trustAnchor;
+    private final String expectedServerName; // for SNI
 
-    public TrustAnchorAssertionCertificateVerifier(X509Certificate trustAnchor) {
+    public TrustAnchorAssertionCertificateVerifier(X509Certificate trustAnchor, String expectedServerName) {
         Validate.notNull(trustAnchor);
         this.trustAnchor = new X509Certificate[] { trustAnchor };
+        this.expectedServerName = expectedServerName;
     }
 
     @Override
@@ -77,7 +79,11 @@ public class TrustAnchorAssertionCertificateVerifier extends BaseCertificateVeri
         }
 
         // - validate server name
-        validateSubject(peerSocket, receivedServerCertificate);
+        if (expectedServerName != null) {
+            validateSNI(expectedServerName, receivedServerCertificate);
+        } else {
+            validateSubject(peerSocket, receivedServerCertificate);
+        }
 
         return certPath;
     }

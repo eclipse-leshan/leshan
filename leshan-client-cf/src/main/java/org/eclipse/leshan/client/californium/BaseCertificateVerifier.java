@@ -97,7 +97,16 @@ public abstract class BaseCertificateVerifier implements NewAdvancedCertificateV
         return (X509Certificate) receivedServerCertificate;
     }
 
-    protected void validateSubject(final InetSocketAddress peerSocket, final X509Certificate receivedServerCertificate)
+    protected void validateSNI(String serverName, X509Certificate receivedServerCertificate) throws HandshakeException {
+        if (X509CertUtil.matchSubjectDnsName(receivedServerCertificate, serverName))
+            return;
+
+        AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE);
+        throw new HandshakeException(
+                "Certificate chain could not be validated - server identity (sni) does not match certificate", alert);
+    }
+
+    protected void validateSubject(InetSocketAddress peerSocket, X509Certificate receivedServerCertificate)
             throws HandshakeException {
 
         if (X509CertUtil.matchSubjectDnsName(receivedServerCertificate, peerSocket.getHostName()))

@@ -51,14 +51,16 @@ public class ServiceCertificateConstraintCertificateVerifier extends BaseCertifi
 
     private final Certificate serviceCertificate;
     private final X509Certificate[] trustedCertificates;
+    private final String expectedServerName; // for SNI
 
     public ServiceCertificateConstraintCertificateVerifier(Certificate serviceCertificate,
-            X509Certificate[] trustedCertificates) {
+            X509Certificate[] trustedCertificates, String expectedServerName) {
         Validate.notNull(serviceCertificate);
         Validate.notNull(trustedCertificates);
         Validate.notEmpty(trustedCertificates);
         this.serviceCertificate = serviceCertificate;
         this.trustedCertificates = trustedCertificates;
+        this.expectedServerName = expectedServerName;
     }
 
     @Override
@@ -86,7 +88,11 @@ public class ServiceCertificateConstraintCertificateVerifier extends BaseCertifi
         }
 
         // - validate server name
-        validateSubject(peerSocket, receivedServerCertificate);
+        if (expectedServerName != null) {
+            validateSNI(expectedServerName, receivedServerCertificate);
+        } else {
+            validateSubject(peerSocket, receivedServerCertificate);
+        }
 
         return certPath;
     }
