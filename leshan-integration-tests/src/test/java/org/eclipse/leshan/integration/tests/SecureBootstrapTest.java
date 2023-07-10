@@ -22,11 +22,13 @@ import static org.eclipse.leshan.integration.tests.util.Credentials.clientPrivat
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientPrivateKeyFromCert;
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientPublicKey;
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientX509CertSignedByRoot;
+import static org.eclipse.leshan.integration.tests.util.Credentials.rootCAX509Cert;
 import static org.eclipse.leshan.integration.tests.util.Credentials.serverPrivateKey;
 import static org.eclipse.leshan.integration.tests.util.Credentials.serverPrivateKeyFromCert;
 import static org.eclipse.leshan.integration.tests.util.Credentials.serverPublicKey;
 import static org.eclipse.leshan.integration.tests.util.Credentials.serverX509CertSignedByRoot;
 import static org.eclipse.leshan.integration.tests.util.Credentials.trustedCertificatesByServer;
+import static org.eclipse.leshan.integration.tests.util.Credentials.virtualHostX509CertSignedByRoot;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
 
 import java.security.cert.CertificateEncodingException;
@@ -35,6 +37,7 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpointsProvider;
 import org.eclipse.leshan.client.californium.endpoint.coap.CoapClientProtocolProvider;
 import org.eclipse.leshan.client.californium.endpoint.coaps.CoapsClientProtocolProvider;
+import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.integration.tests.util.Credentials;
 import org.eclipse.leshan.integration.tests.util.LeshanTestBootstrapServer;
@@ -211,6 +214,50 @@ public class SecureBootstrapTest {
                 givenBootstrapConfig() //
                         .adding(Protocol.COAPS, bootstrapServer, clientX509CertSignedByRoot, clientPrivateKeyFromCert,
                                 serverX509CertSignedByRoot) //
+                        .adding(Protocol.COAP, server) //
+                        .build());
+
+        // Start it and wait for registration
+        client.start();
+        server.waitForNewRegistrationOf(client);
+
+        // check the client is registered
+        assertThat(client).isRegisteredAt(server);
+    }
+
+    @Test
+    public void bootstrap_using_x509_with_sni()
+            throws NonUniqueSecurityInfoException, InvalidConfigurationException, CertificateEncodingException {
+
+        // Create DM Server without security & start it
+        server = givenServer.using(Protocol.COAP).build();
+        server.start();
+
+        // Create and start bootstrap server
+        bootstrapServer = givenBootstrapServer.using(Protocol.COAPS) //
+                .usingSni() //
+                .using("localhost", serverPrivateKeyFromCert, serverX509CertSignedByRoot) //
+                .using("virtualhost.org", serverPrivateKeyFromCert, virtualHostX509CertSignedByRoot)//
+                .trusting(trustedCertificatesByServer).build();
+        bootstrapServer.start();
+
+        // Create Client and check it is not already registered
+        client = givenClient.connectingTo(bootstrapServer).using(Protocol.COAPS) //
+                .connectingTo(bootstrapServer) //
+                .usingSniVirtualHost("virtualhost.org") //
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(rootCAX509Cert, CertificateUsage.TRUST_ANCHOR_ASSERTION).build();
+
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Add client credentials to the server
+        bootstrapServer.getEditableSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
+
+        // Add config for this client
+        bootstrapServer.getConfigStore().add(client.getEndpointName(), //
+                givenBootstrapConfig() //
+                        .adding(Protocol.COAPS, bootstrapServer, clientX509CertSignedByRoot, clientPrivateKeyFromCert,
+                                rootCAX509Cert) //
                         .adding(Protocol.COAP, server) //
                         .build());
 

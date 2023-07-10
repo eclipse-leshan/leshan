@@ -21,6 +21,8 @@ import java.net.URI;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.californium.elements.config.Configuration;
@@ -32,6 +34,8 @@ import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
+import org.eclipse.leshan.integration.tests.util.cf.CertPair;
+import org.eclipse.leshan.integration.tests.util.cf.MapBasedCertificateProvider;
 import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
 import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
 import org.eclipse.leshan.server.bootstrap.InMemoryBootstrapConfigStore;
@@ -54,6 +58,8 @@ public class LeshanTestBootstrapServerBuilder extends LeshanBootstrapServerBuild
     private String endpointProviderName;
     InMemoryBootstrapConfigStore configStore;
     private EditableSecurityStore editableSecurityStore;
+    private boolean useSNI = false;
+    private final Map<String, CertPair> CertPairs = new HashMap<>();
 
     public LeshanTestBootstrapServerBuilder(Protocol protocolToUse) {
         this();
@@ -132,6 +138,11 @@ public class LeshanTestBootstrapServerBuilder extends LeshanBootstrapServerBuild
         return this;
     }
 
+    public LeshanTestBootstrapServerBuilder usingSni() {
+        this.useSNI = true;
+        return this;
+    }
+
     public LeshanTestBootstrapServerBuilder using(PublicKey serverPublicKey, PrivateKey serverPrivateKey) {
         this.setPrivateKey(serverPrivateKey);
         this.setPublicKey(serverPublicKey);
@@ -141,6 +152,12 @@ public class LeshanTestBootstrapServerBuilder extends LeshanBootstrapServerBuild
     public LeshanTestBootstrapServerBuilder using(X509Certificate serverCertificate, PrivateKey serverPrivateKey) {
         this.setPrivateKey(serverPrivateKey);
         this.setCertificateChain(new X509Certificate[] { serverCertificate });
+        return this;
+    }
+
+    public LeshanTestBootstrapServerBuilder using(String host, PrivateKey serverPrivateKey,
+            X509Certificate... certChain) {
+        CertPairs.put(host, new CertPair(certChain, serverPrivateKey));
         return this;
     }
 
@@ -165,12 +182,20 @@ public class LeshanTestBootstrapServerBuilder extends LeshanBootstrapServerBuild
         if (protocolToUse.equals(Protocol.COAP)) {
             return new CoapBootstrapServerProtocolProvider();
         } else if (protocolToUse.equals(Protocol.COAPS)) {
-            return new CoapsBootstrapServerProtocolProvider() {
+            return new CoapsBootstrapServerProtocolProvider(dtlsConfig -> {
+                if (!CertPairs.isEmpty()) {
+                    dtlsConfig.setCertificateIdentityProvider(new MapBasedCertificateProvider(CertPairs));
+                }
+            }) {
+
                 @Override
                 public void applyDefaultValue(Configuration configuration) {
                     super.applyDefaultValue(configuration);
                     configuration.set(DtlsConfig.DTLS_MAX_RETRANSMISSIONS, 1);
                     configuration.set(DtlsConfig.DTLS_RETRANSMISSION_TIMEOUT, 300, TimeUnit.MILLISECONDS);
+                    if (useSNI) {
+                        configuration.set(DtlsConfig.DTLS_USE_SERVER_NAME_INDICATION, true);
+                    }
                 }
             };
         }

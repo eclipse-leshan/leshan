@@ -46,6 +46,8 @@ import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.integration.tests.util.LeshanTestBootstrapServer;
+import org.eclipse.leshan.integration.tests.util.LeshanTestBootstrapServerBuilder;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
@@ -79,6 +81,7 @@ public class SniTest {
      *  Set-up and Tear-down Tests
      * -------------------------------*/
     LeshanTestServer server;
+    LeshanTestBootstrapServer bootstrapServer;
     LeshanTestClient client;
 
     @AfterEach
@@ -87,6 +90,8 @@ public class SniTest {
             client.destroy(false);
         if (server != null)
             server.destroy();
+        if (bootstrapServer != null)
+            bootstrapServer.destroy();
     }
 
     protected LeshanTestServerBuilder givenServerUsing(Protocol givenProtocol) {
@@ -95,6 +100,10 @@ public class SniTest {
 
     protected LeshanTestClientBuilder givenClientUsing(Protocol givenProtocol) {
         return new LeshanTestClientBuilder(givenProtocol);
+    }
+
+    protected LeshanTestBootstrapServerBuilder givenBootstrapServer(Protocol givenProtocol) {
+        return new LeshanTestBootstrapServerBuilder(givenProtocol).with(new InMemorySecurityStore());
     }
 
     /*---------------------------------/
