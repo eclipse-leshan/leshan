@@ -21,12 +21,12 @@ import static org.eclipse.leshan.integration.tests.util.Credentials.GOOD_PSK_KEY
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientPrivateKey;
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientPrivateKeyFromCert;
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientPublicKey;
-import static org.eclipse.leshan.integration.tests.util.Credentials.clientX509Cert;
+import static org.eclipse.leshan.integration.tests.util.Credentials.clientX509CertSignedByRoot;
 import static org.eclipse.leshan.integration.tests.util.Credentials.serverPrivateKey;
 import static org.eclipse.leshan.integration.tests.util.Credentials.serverPrivateKeyFromCert;
 import static org.eclipse.leshan.integration.tests.util.Credentials.serverPublicKey;
-import static org.eclipse.leshan.integration.tests.util.Credentials.serverX509Cert;
-import static org.eclipse.leshan.integration.tests.util.Credentials.trustedCertificates;
+import static org.eclipse.leshan.integration.tests.util.Credentials.serverX509CertSignedByRoot;
+import static org.eclipse.leshan.integration.tests.util.Credentials.trustedCertificatesByServer;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
 
 import java.security.cert.CertificateEncodingException;
@@ -191,14 +191,15 @@ public class SecureBootstrapTest {
         server.start();
 
         // Create and start bootstrap server
-        bootstrapServer = givenBootstrapServer.using(Protocol.COAPS).using(serverX509Cert, serverPrivateKeyFromCert)//
-                .trusting(trustedCertificates).build();
+        bootstrapServer = givenBootstrapServer.using(Protocol.COAPS)
+                .using(serverX509CertSignedByRoot, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificatesByServer).build();
         bootstrapServer.start();
 
         // Create Client and check it is not already registered
         client = givenClient.connectingTo(bootstrapServer).using(Protocol.COAPS)
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverX509Cert).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertSignedByRoot).build();
 
         assertThat(client).isNotRegisteredAt(server);
 
@@ -208,8 +209,8 @@ public class SecureBootstrapTest {
         // Add config for this client
         bootstrapServer.getConfigStore().add(client.getEndpointName(), //
                 givenBootstrapConfig() //
-                        .adding(Protocol.COAPS, bootstrapServer, clientX509Cert, clientPrivateKeyFromCert,
-                                serverX509Cert) //
+                        .adding(Protocol.COAPS, bootstrapServer, clientX509CertSignedByRoot, clientPrivateKeyFromCert,
+                                serverX509CertSignedByRoot) //
                         .adding(Protocol.COAP, server) //
                         .build());
 

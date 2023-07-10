@@ -68,35 +68,29 @@ public class Credentials {
 
     // client private key used for X509
     public static final PrivateKey clientPrivateKeyFromCert;
-    // mfg client private key used for X509
-    public static final PrivateKey mfgClientPrivateKeyFromCert;
-    // server private key used for X509
-    public static final PrivateKey serverPrivateKeyFromCert;
-    // server private key used for X509
-    public static final PrivateKey serverIntPrivateKeyFromCert;
     // client certificate signed by rootCA with a good CN (CN start by leshan_integration_test)
-    public static final X509Certificate clientX509Cert;
+    public static final X509Certificate clientX509CertSignedByRoot;
     // client certificate signed by rootCA but with bad CN (CN does not start by leshan_integration_test)
     public static final X509Certificate clientX509CertWithBadCN;
     // client certificate self-signed with a good CN (CN start by leshan_integration_test)
     public static final X509Certificate clientX509CertSelfSigned;
     // client certificate signed by another CA (not rootCA) with a good CN (CN start by leshan_integration_test)
     public static final X509Certificate clientX509CertNotTrusted;
-    // client certificate signed by manufacturer CA's with a good CN
-    // (CN=urn:dev:ops:32473-IoT_Device-K1234567,O=Manufacturer)
-    public static final X509Certificate[] mfgClientX509CertChain;
+
+    // server private key used for X509
+    public static final PrivateKey serverPrivateKeyFromCert;
     // server certificate signed by rootCA
-    public static final X509Certificate serverX509Cert;
+    public static final X509Certificate serverX509CertSignedByRoot;
     // server certificate signed by intermediateCA
-    public static final X509Certificate[] serverIntX509CertChain;
+    public static final X509Certificate[] serverX509CertChainWithIntermediateCa;
     // self-signed server certificate
     public static final X509Certificate serverX509CertSelfSigned;
-    // self-signed server certificate
-    public static final X509Certificate serverIntX509CertSelfSigned;
+
     // rootCA used by the server
     public static final X509Certificate rootCAX509Cert;
-    // certificates trustedby the server (should contain rootCA)
-    public static final X509Certificate[] trustedCertificates = new X509Certificate[1];
+
+    // certificates trusted by the server (should contain rootCA)
+    public static final X509Certificate[] trustedCertificatesByServer = new X509Certificate[1];
     // client's initial trust store
     public static final X509Certificate[] clientTrustStore;
     // client's initial empty trust store
@@ -135,13 +129,10 @@ public class Credentials {
             }
 
             clientPrivateKeyFromCert = (PrivateKey) clientKeyStore.getKey("client", clientKeyStorePwd);
-            clientX509Cert = (X509Certificate) clientKeyStore.getCertificate("client");
+            clientX509CertSignedByRoot = (X509Certificate) clientKeyStore.getCertificate("client_signed_by_root");
             clientX509CertWithBadCN = (X509Certificate) clientKeyStore.getCertificate("client_bad_cn");
             clientX509CertSelfSigned = (X509Certificate) clientKeyStore.getCertificate("client_self_signed");
             clientX509CertNotTrusted = (X509Certificate) clientKeyStore.getCertificate("client_not_trusted");
-
-            mfgClientPrivateKeyFromCert = (PrivateKey) clientKeyStore.getKey("mfgClient", clientKeyStorePwd);
-            mfgClientX509CertChain = X509Util.asX509Certificates(clientKeyStore.getCertificateChain("mfgClient"));
         } catch (GeneralSecurityException | IOException e) {
             throw new RuntimeException(e);
         }
@@ -178,13 +169,13 @@ public class Credentials {
             }
 
             serverPrivateKeyFromCert = (PrivateKey) serverKeyStore.getKey("server", serverKeyStorePwd);
-            serverIntPrivateKeyFromCert = (PrivateKey) serverKeyStore.getKey("serverint", serverKeyStorePwd);
             rootCAX509Cert = (X509Certificate) serverKeyStore.getCertificate("rootCA");
-            serverX509Cert = (X509Certificate) serverKeyStore.getCertificate("server");
+            serverX509CertSignedByRoot = (X509Certificate) serverKeyStore.getCertificate("server_signed_by_root");
             serverX509CertSelfSigned = (X509Certificate) serverKeyStore.getCertificate("server_self_signed");
-            serverIntX509CertSelfSigned = (X509Certificate) serverKeyStore.getCertificate("serverInt_self_signed");
-            serverIntX509CertChain = X509Util.asX509Certificates(serverKeyStore.getCertificateChain("serverint"));
-            trustedCertificates[0] = rootCAX509Cert;
+            serverX509CertChainWithIntermediateCa = X509Util.asX509Certificates( //
+                    serverKeyStore.getCertificate("server_signed_by_intermediate_ca"), //
+                    serverKeyStore.getCertificate("intermediateCA"));
+            trustedCertificatesByServer[0] = rootCAX509Cert;
             clientTrustStore = new X509Certificate[] { rootCAX509Cert };
         } catch (GeneralSecurityException | IOException e) {
             throw new RuntimeException(e);

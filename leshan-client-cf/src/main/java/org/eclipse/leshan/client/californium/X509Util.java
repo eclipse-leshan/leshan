@@ -125,7 +125,7 @@ public class X509Util {
     /**
      * Convert array of {@link Certificate} to array of {@link X509Certificate}
      */
-    public static X509Certificate[] asX509Certificates(Certificate[] certificates) throws CertificateException {
+    public static X509Certificate[] asX509Certificates(Certificate... certificates) throws CertificateException {
         ArrayList<X509Certificate> x509Certificates = new ArrayList<>();
 
         for (Certificate cert : certificates) {

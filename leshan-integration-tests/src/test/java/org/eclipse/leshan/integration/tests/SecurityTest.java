@@ -29,19 +29,17 @@ import static org.eclipse.leshan.integration.tests.util.Credentials.clientPrivat
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientPrivateKeyFromCert;
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientPublicKey;
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientTrustStore;
-import static org.eclipse.leshan.integration.tests.util.Credentials.clientX509Cert;
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientX509CertNotTrusted;
+import static org.eclipse.leshan.integration.tests.util.Credentials.clientX509CertSignedByRoot;
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientX509CertWithBadCN;
 import static org.eclipse.leshan.integration.tests.util.Credentials.rootCAX509Cert;
-import static org.eclipse.leshan.integration.tests.util.Credentials.serverIntPrivateKeyFromCert;
-import static org.eclipse.leshan.integration.tests.util.Credentials.serverIntX509CertChain;
-import static org.eclipse.leshan.integration.tests.util.Credentials.serverIntX509CertSelfSigned;
 import static org.eclipse.leshan.integration.tests.util.Credentials.serverPrivateKey;
 import static org.eclipse.leshan.integration.tests.util.Credentials.serverPrivateKeyFromCert;
 import static org.eclipse.leshan.integration.tests.util.Credentials.serverPublicKey;
-import static org.eclipse.leshan.integration.tests.util.Credentials.serverX509Cert;
+import static org.eclipse.leshan.integration.tests.util.Credentials.serverX509CertChainWithIntermediateCa;
 import static org.eclipse.leshan.integration.tests.util.Credentials.serverX509CertSelfSigned;
-import static org.eclipse.leshan.integration.tests.util.Credentials.trustedCertificates;
+import static org.eclipse.leshan.integration.tests.util.Credentials.serverX509CertSignedByRoot;
+import static org.eclipse.leshan.integration.tests.util.Credentials.trustedCertificatesByServer;
 import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertArg;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
@@ -614,14 +612,14 @@ public class SecurityTest {
         // Create X509 server & start it
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverX509Cert, serverPrivateKeyFromCert)//
-                .trusting(trustedCertificates).build();
+                .using(serverX509CertSignedByRoot, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         // Create X509 Client
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverX509Cert).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertSignedByRoot).build();
 
         // Add client credentials to the server
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
@@ -652,14 +650,14 @@ public class SecurityTest {
         // Create X509 server & start it
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverX509Cert, serverPrivateKeyFromCert)//
-                .trusting(trustedCertificates).build();
+                .using(serverX509CertSignedByRoot, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         // Create X509 Client
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverX509Cert).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertSignedByRoot).build();
 
         // Add client credentials to the server
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
@@ -688,12 +686,12 @@ public class SecurityTest {
         server = givenServer //
                 .actingAsServerOnly()//
                 .using(serverX509CertSelfSigned, serverPrivateKeyFromCert)//
-                .trusting(trustedCertificates).build();
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         // Create X509 Client
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
                 .trusting(serverX509CertSelfSigned).build();
 
         // Add client credentials to the server
@@ -723,14 +721,14 @@ public class SecurityTest {
         // Create X509 server & start it
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverX509Cert, serverPrivateKeyFromCert)//
-                .trusting(trustedCertificates).build();
+                .using(serverX509CertSignedByRoot, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         // Create X509 Client
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverX509Cert).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertSignedByRoot).build();
 
         // Add client credentials to the server
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(BAD_ENDPOINT));
@@ -750,15 +748,15 @@ public class SecurityTest {
         // Create X509 server & start it
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverX509Cert, serverPrivateKeyFromCert)//
-                .trusting(trustedCertificates).build();
+                .using(serverX509CertSignedByRoot, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         // Create X509 Client
         client = givenClient.connectingTo(server) //
                 .named(BAD_ENDPOINT)//
                 .using(clientX509CertWithBadCN, clientPrivateKeyFromCert)//
-                .trusting(serverX509Cert).build();
+                .trusting(serverX509CertSignedByRoot).build();
 
         // Add client credentials to the server
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
@@ -779,16 +777,16 @@ public class SecurityTest {
         // Create X509 server & start it
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverX509Cert, serverPrivateKeyFromCert)//
-                .trusting(trustedCertificates).build();
+                .using(serverX509CertSignedByRoot, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         // Create X509 Client
         // we use the RPK private key as bad key, this key will not be compatible with the client certificate
         PrivateKey badPrivateKey = clientPrivateKey;
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, badPrivateKey)//
-                .trusting(serverX509Cert).build();
+                .using(clientX509CertSignedByRoot, badPrivateKey)//
+                .trusting(serverX509CertSignedByRoot).build();
 
         // Add client credentials to the server
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
@@ -809,14 +807,14 @@ public class SecurityTest {
         // Create X509 server & start it
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverX509Cert, serverPrivateKeyFromCert)//
-                .trusting(trustedCertificates).build();
+                .using(serverX509CertSignedByRoot, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         // Create X509 Client
         client = givenClient.connectingTo(server) //
                 .using(clientX509CertNotTrusted, clientPrivateKeyFromCert)//
-                .trusting(serverX509Cert).build();
+                .trusting(serverX509CertSignedByRoot).build();
 
         // Add client credentials to the server
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
@@ -836,14 +834,14 @@ public class SecurityTest {
         // Create X509 server & start it
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverX509Cert, serverPrivateKeyFromCert)//
-                .trusting(trustedCertificates).build();
+                .using(serverX509CertSignedByRoot, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         // Create X509 Client
         client = givenClient.connectingTo(server) //
                 .using(Credentials.clientX509CertSelfSigned, clientPrivateKeyFromCert)//
-                .trusting(serverX509Cert).build();
+                .trusting(serverX509CertSignedByRoot).build();
 
         // Add client credentials to the server
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
@@ -872,18 +870,18 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_ca(
-            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
+    public void registered_device_with_x509cert_using_ca_constraint_with_direct_trust(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertChainWithIntermediateCa)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverIntX509CertChain[0], CA_CONSTRAINT, clientTrustStore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertChainWithIntermediateCa[0], CA_CONSTRAINT, clientTrustStore).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -906,19 +904,19 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_ca_intca_given(
-            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
+    public void registered_device_with_x509cert_with_intermediate_ca_as_ca_contraint(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
 
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertChainWithIntermediateCa)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverIntX509CertChain[1], CA_CONSTRAINT, clientTrustStore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertChainWithIntermediateCa[1], CA_CONSTRAINT, clientTrustStore).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -946,22 +944,22 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_empty_truststore_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_ca_intca_given(
-            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
+    public void registered_device_with_x509cert_using_ca_constraint_like_trust_anchor(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertChainWithIntermediateCa)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         // create a not empty trustore which does not contains any certificate of server certchain.
-        X509Certificate[] truststore = new X509Certificate[] { serverIntX509CertSelfSigned };
+        X509Certificate[] truststore = new X509Certificate[] { serverX509CertSelfSigned };
         // e.g. we use a selfsigned certificate not used in certchain of this test.
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverIntX509CertChain[1], CA_CONSTRAINT, truststore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertChainWithIntermediateCa[1], CA_CONSTRAINT, truststore).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -971,35 +969,32 @@ public class SecurityTest {
     }
 
     /**
-     * // *
-     *
      * <pre>
-     * //     * Test scenario:
-     * //     * - Certificate Usage = CA constraint
-     * //     * - Server Certificate = root CA certificate (not end-entity certificate)
-     * //     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
-     * //     * - Server accepts client
-     * //     * - Client Trust Store = root CA
-     * //     *
-     * //     * Expected outcome:
-     * //     * - Client is able to connect (root CA cert is part of the chain)
-     * //     *
+     * Test scenario:
+     * - Certificate Usage = CA constraint
+     * - Server Certificate = root CA certificate (not end-entity certificate)
+     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
+     * - Server accepts client
+     * - Client Trust Store = root CA
+     *
+     * Expected outcome:
+     * - Client is able to connect (root CA cert is part of the chain)
+     *
      * </pre>
      *
-     * //
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_ca_domain_root_ca_given(
-            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
+    public void registered_device_with_x509cert_with_root_as_ca_contraint(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertChainWithIntermediateCa)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
                 .trusting(rootCAX509Cert, CA_CONSTRAINT, clientTrustStore).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
@@ -1018,40 +1013,6 @@ public class SecurityTest {
      * <pre>
      * Test scenario:
      * - Certificate Usage = CA constraint
-     * - Server Certificate = other end-entity certificate with same dns name signed by same root ca
-     * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
-     * - Server accepts client
-     * - Client Trust Store = root CA
-     *
-     * Expected outcome:
-     * - Client denied the connection
-     * </pre>
-     */
-    @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_ca_other_server_cert_given(
-            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
-            throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        server = givenServer //
-                .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
-                .trusting(trustedCertificates).build();
-        server.start();
-
-        client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverX509Cert, CA_CONSTRAINT, clientTrustStore).build();
-
-        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
-
-        assertThat(client).isNotRegisteredAt(server);
-        client.start();
-        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
-    }
-
-    /**
-     * <pre>
-     * Test scenario:
-     * - Certificate Usage = CA constraint
      * - Server Certificate = self signed certificate given
      * - Server's TLS Server Certificate = intermediate signed certificate (with SAN DNS entry)
      * - Server accepts client
@@ -1062,18 +1023,18 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_ca_selfsigned_server_cert_given(
+    public void registered_device_with_x509cert_with_server_self_signed_certificate_as_ca_contraint_which_is_not_in_certhchain(
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertChainWithIntermediateCa)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverIntX509CertSelfSigned, CA_CONSTRAINT, clientTrustStore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertSelfSigned, CA_CONSTRAINT, clientTrustStore).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -1087,7 +1048,7 @@ public class SecurityTest {
      * Test scenario:
      * - Certificate Usage = CA constraint
      * - Server Certificate = self signed certificate
-     * - Server's TLS Server Certificate = self signed certificate (with SAN DNS entry)
+     * - Server's TLS Server Certificate = self signed certificate
      * - Server accepts client
      * - Client Trust Store = root CA
      *
@@ -1096,52 +1057,18 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_selfsigned_certificate_usage_ca_selfsigned_server_cert_given(
+    public void registered_device_with_x509cert_with_server_self_signed_certificate_as_ca_contraint(
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertSelfSigned)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertSelfSigned)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverIntX509CertSelfSigned, CA_CONSTRAINT, clientTrustStore).build();
-
-        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
-
-        assertThat(client).isNotRegisteredAt(server);
-        client.start();
-        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
-    }
-
-    /**
-     * <pre>
-     * Test scenario:
-     * - Certificate Usage = CA constraint
-     * - Server Certificate = intermediate signed certificate/wo chain
-     * - Server's TLS Server Certificate = intermediate signed certificate/wo chain (with SAN DNS entry)
-     * - Server accepts client
-     * - Client Trust Store = root CA
-     *
-     * Expected outcome:
-     * - Client denied the connection  (direct trust is not allowed with "CA constraint" usage)
-     * </pre>
-     */
-    @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_server_certificate_usage_ca_server_cert_wo_chain_given(
-            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
-            throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        server = givenServer //
-                .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain[0])//
-                .trusting(trustedCertificates).build();
-        server.start();
-
-        client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverIntX509CertChain[0], CA_CONSTRAINT, clientTrustStore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertSelfSigned, CA_CONSTRAINT, clientTrustStore).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -1166,18 +1093,19 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_service(
-            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
+    public void registered_device_with_x509cert_using_service_certificate_constraint(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertChainWithIntermediateCa)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverIntX509CertChain[0], SERVICE_CERTIFICATE_CONSTRAINT, clientTrustStore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertChainWithIntermediateCa[0], SERVICE_CERTIFICATE_CONSTRAINT, clientTrustStore)
+                .build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -1205,17 +1133,17 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_service_domain_root_ca_given(
-            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
+    public void registered_device_with_x509cert_using_root_ca_as_service_certificate_constraint(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertChainWithIntermediateCa)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
                 .trusting(rootCAX509Cert, SERVICE_CERTIFICATE_CONSTRAINT, clientTrustStore).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
@@ -1239,18 +1167,18 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_service_other_server_cert_given(
+    public void registered_device_with_x509cert_using_another_certificate_as_service_certificate_constraint(
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertChainWithIntermediateCa)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverX509Cert, SERVICE_CERTIFICATE_CONSTRAINT, clientTrustStore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertSignedByRoot, SERVICE_CERTIFICATE_CONSTRAINT, clientTrustStore).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -1273,18 +1201,18 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_service_selfsigned_server_cert_given(
+    public void registered_device_with_x509cert_using_server_self_signed_cert_as_service_certificate_constraint_which_is_not_in_certhchain(
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertChainWithIntermediateCa)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverIntX509CertSelfSigned, SERVICE_CERTIFICATE_CONSTRAINT, clientTrustStore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertSelfSigned, SERVICE_CERTIFICATE_CONSTRAINT, clientTrustStore).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -1298,7 +1226,7 @@ public class SecurityTest {
      * Test scenario:
      * - Certificate Usage = service certificate constraint
      * - Server Certificate = self signed certificate
-     * - Server's TLS Server Certificate = self signed certificate (with SAN DNS entry)
+     * - Server's TLS Server Certificate = self signed certificate
      * - Server accepts client
      * - Client Trust Store = root CA
      *
@@ -1307,18 +1235,18 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_selfsigned_certificate_usage_service_selfsigned_server_cert_given(
+    public void registered_device_with_x509cert_using_server_self_signed_cert_as_service_certificate_constraint(
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertSelfSigned)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertSelfSigned)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverIntX509CertSelfSigned, SERVICE_CERTIFICATE_CONSTRAINT, clientTrustStore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertSelfSigned, SERVICE_CERTIFICATE_CONSTRAINT, clientTrustStore).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -1341,18 +1269,19 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_server_certificate_usage_service_server_cert_wo_chain_given(
+    public void registered_device_with_x509cert_using_service_certificate_constraint_with_missing_intermediate_certificate_in_chain(
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain[0])//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertChainWithIntermediateCa[0])//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverIntX509CertChain[0], SERVICE_CERTIFICATE_CONSTRAINT, clientTrustStore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertChainWithIntermediateCa[0], SERVICE_CERTIFICATE_CONSTRAINT, clientTrustStore)
+                .build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -1378,18 +1307,18 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_taa(
-            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
+    public void registered_device_with_x509cert_using_trust_anchor_assertion_with_direct_trust(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertChainWithIntermediateCa)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverIntX509CertChain[0], TRUST_ANCHOR_ASSERTION, clientTrustStore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertChainWithIntermediateCa[0], TRUST_ANCHOR_ASSERTION, clientTrustStore).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -1412,18 +1341,18 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_taa_intca_given(
-            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
+    public void registered_device_with_x509cert_with_intermediate_cert_as_trust_anchor_assertion(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertChainWithIntermediateCa)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverIntX509CertChain[1], TRUST_ANCHOR_ASSERTION, clientTrustStore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertChainWithIntermediateCa[1], TRUST_ANCHOR_ASSERTION).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -1451,18 +1380,18 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_taa_domain_root_ca_given(
-            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
+    public void registered_device_with_x509cert_with_root_ca_cert_as_trust_anchor_assertion(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertChainWithIntermediateCa)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(rootCAX509Cert, TRUST_ANCHOR_ASSERTION, clientTrustStore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(rootCAX509Cert, TRUST_ANCHOR_ASSERTION).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -1490,18 +1419,18 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_taa_other_server_cert_given(
+    public void registered_device_with_x509cert_with_trust_anchor_assertion_which_is_not_in_certchain(
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertChainWithIntermediateCa)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverX509Cert, TRUST_ANCHOR_ASSERTION, clientTrustStore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertSignedByRoot, TRUST_ANCHOR_ASSERTION, clientTrustStore).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -1524,18 +1453,18 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_taa_selfsigned_server_cert_given(
+    public void registered_device_with_x509cert_with_server_self_signed__cert_as_trust_anchor_assertion(
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertChainWithIntermediateCa)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverIntX509CertSelfSigned, TRUST_ANCHOR_ASSERTION, clientTrustStore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertSelfSigned, TRUST_ANCHOR_ASSERTION, clientTrustStore).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -1558,18 +1487,18 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_selfsigned_certificate_usage_taa_selfsigned_server_cert_given(
+    public void registered_device_with_x509cert_using_direct_trust_with_self_signed_certificate_as_trust_anchor_assertion(
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertSelfSigned)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertSelfSigned)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverIntX509CertSelfSigned, TRUST_ANCHOR_ASSERTION, clientTrustStore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertSelfSigned, TRUST_ANCHOR_ASSERTION, clientTrustStore).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -1592,18 +1521,18 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_server_certificate_usage_taa_server_cert_wo_chain_given(
+    public void registered_device_with_x509cert_using_direct_trust_with_certificate_signed_by_ca_as_trust_anchor_assertion(
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain[0])//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertChainWithIntermediateCa[0])//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverIntX509CertChain[0], TRUST_ANCHOR_ASSERTION, clientTrustStore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertChainWithIntermediateCa[0], TRUST_ANCHOR_ASSERTION, clientTrustStore).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -1628,18 +1557,18 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_domain(
+    public void registered_device_with_x509cert_with_server_certificate_signed_by_ca_as_domain_issuer_certificate(
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertChainWithIntermediateCa)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverIntX509CertChain[0], DOMAIN_ISSUER_CERTIFICATE, clientTrustStore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertChainWithIntermediateCa[0], DOMAIN_ISSUER_CERTIFICATE).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -1667,17 +1596,17 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_domain_root_ca_given(
+    public void registered_device_with_x509cert_using_no_end_entity_certificate_as_domain_issuer_certificate(
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertChainWithIntermediateCa)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
                 .trusting(rootCAX509Cert, DOMAIN_ISSUER_CERTIFICATE, clientTrustStore).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
@@ -1701,18 +1630,18 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_domain_other_server_cert_given(
+    public void registered_device_with_x509cert_using_another_end_entity_certificate_as_domain_issuer_certificate(
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertChainWithIntermediateCa)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverX509Cert, DOMAIN_ISSUER_CERTIFICATE, clientTrustStore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertSignedByRoot, DOMAIN_ISSUER_CERTIFICATE, clientTrustStore).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -1735,18 +1664,18 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_rootca_certificate_usage_domain_selfsigned_server_cert_given(
+    public void registered_device_with_x509cert_using_unexpected_self_signed_certificate_as_domain_issuer_certificate(
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertChainWithIntermediateCa)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverIntX509CertSelfSigned, DOMAIN_ISSUER_CERTIFICATE, clientTrustStore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertSelfSigned, DOMAIN_ISSUER_CERTIFICATE, clientTrustStore).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -1769,18 +1698,18 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_selfsigned_certificate_usage_domain_selfsigned_server_cert_given(
+    public void registered_device_with_x509cert_using_expected_self_signed_certificate_as_domain_issuer_certificate(
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertSelfSigned)//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertSelfSigned)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverIntX509CertSelfSigned, DOMAIN_ISSUER_CERTIFICATE, clientTrustStore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertSelfSigned, DOMAIN_ISSUER_CERTIFICATE).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -1808,18 +1737,18 @@ public class SecurityTest {
      * </pre>
      */
     @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_x509cert_server_certificate_usage_domain_server_cert_wo_chain_given(
+    public void registered_device_with_x509cert_using_server_certificate_signed_by_ca_as_domain_issuer_certificate(
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverIntPrivateKeyFromCert, serverIntX509CertChain[0])//
-                .trusting(trustedCertificates).build();
+                .using(serverPrivateKeyFromCert, serverX509CertChainWithIntermediateCa[0])//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverIntX509CertChain[0], DOMAIN_ISSUER_CERTIFICATE, clientTrustStore).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertChainWithIntermediateCa[0], DOMAIN_ISSUER_CERTIFICATE).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 
@@ -1839,15 +1768,15 @@ public class SecurityTest {
     public void registered_device_with_x509cert_to_server_with_rpk(Protocol givenProtocol,
             String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        server = givenServer.using(serverX509Cert.getPublicKey(), serverPrivateKeyFromCert).build();
+        server = givenServer.using(serverX509CertSignedByRoot.getPublicKey(), serverPrivateKeyFromCert).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverX509Cert).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertSignedByRoot).build();
 
-        server.getSecurityStore()
-                .add(SecurityInfo.newRawPublicKeyInfo(client.getEndpointName(), clientX509Cert.getPublicKey()));
+        server.getSecurityStore().add(
+                SecurityInfo.newRawPublicKeyInfo(client.getEndpointName(), clientX509CertSignedByRoot.getPublicKey()));
 
         assertThat(client).isNotRegisteredAt(server);
         client.start();
@@ -1860,13 +1789,13 @@ public class SecurityTest {
             throws NonUniqueSecurityInfoException, InterruptedException {
         server = givenServer //
                 .actingAsServerOnly()//
-                .using(serverX509Cert, serverPrivateKeyFromCert)//
-                .trusting(trustedCertificates).build();
+                .using(serverX509CertSignedByRoot, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         client = givenClient.connectingTo(server) //
                 .using(clientPublicKey, clientPrivateKey)//
-                .trusting(serverX509Cert.getPublicKey()).build();
+                .trusting(serverX509CertSignedByRoot.getPublicKey()).build();
 
         server.getSecurityStore().add(SecurityInfo.newRawPublicKeyInfo(client.getEndpointName(), clientPublicKey));
 

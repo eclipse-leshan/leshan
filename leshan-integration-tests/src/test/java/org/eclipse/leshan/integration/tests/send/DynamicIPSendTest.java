@@ -22,12 +22,12 @@ import static org.eclipse.leshan.integration.tests.util.Credentials.GOOD_PSK_KEY
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientPrivateKey;
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientPrivateKeyFromCert;
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientPublicKey;
-import static org.eclipse.leshan.integration.tests.util.Credentials.clientX509Cert;
+import static org.eclipse.leshan.integration.tests.util.Credentials.clientX509CertSignedByRoot;
 import static org.eclipse.leshan.integration.tests.util.Credentials.serverPrivateKey;
 import static org.eclipse.leshan.integration.tests.util.Credentials.serverPrivateKeyFromCert;
 import static org.eclipse.leshan.integration.tests.util.Credentials.serverPublicKey;
-import static org.eclipse.leshan.integration.tests.util.Credentials.serverX509Cert;
-import static org.eclipse.leshan.integration.tests.util.Credentials.trustedCertificates;
+import static org.eclipse.leshan.integration.tests.util.Credentials.serverX509CertSignedByRoot;
+import static org.eclipse.leshan.integration.tests.util.Credentials.trustedCertificatesByServer;
 import static org.eclipse.leshan.integration.tests.util.LeshanProxyBuilder.givenReverseProxyFor;
 import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
@@ -254,16 +254,16 @@ public class DynamicIPSendTest {
         // Start Client and Server
         server = givenServerUsing(givenProtocol).with(givenServerEndpointProvider)//
                 .actingAsServerOnly()//
-                .using(serverX509Cert, serverPrivateKeyFromCert)//
-                .trusting(trustedCertificates).build();
+                .using(serverX509CertSignedByRoot, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificatesByServer).build();
         server.start();
 
         proxy = givenReverseProxyFor(server, givenProtocol);
         proxy.start();
 
         client = givenClientUsing(givenProtocol).with(givenClientEndpointProvider).connectingTo(server).behind(proxy)
-                .using(clientX509Cert, clientPrivateKeyFromCert)//
-                .trusting(serverX509Cert).build();
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertSignedByRoot).build();
 
         server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
 

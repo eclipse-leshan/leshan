@@ -187,8 +187,7 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
                 // LWM2M v1.1.1 - 5.2.8.7. Certificate Usage Field
                 //
                 // 0: Certificate usage 0 ("CA constraint")
-                // - trustStore is combination of client's configured trust store and provided certificate in server
-                // info
+                // - trustStore is client's configured trust store
                 // - must do PKIX validation with trustStore to build certPath
                 // - must check that given certificate is part of certPath
                 // - validate server name
