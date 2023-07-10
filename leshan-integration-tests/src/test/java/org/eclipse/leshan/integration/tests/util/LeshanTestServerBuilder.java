@@ -35,6 +35,8 @@ import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
+import org.eclipse.leshan.integration.tests.util.cf.CertPair;
+import org.eclipse.leshan.integration.tests.util.cf.MapBasedCertificateProvider;
 import org.eclipse.leshan.integration.tests.util.cf.MapBasedRawPublicKeyProvider;
 import org.eclipse.leshan.server.LeshanServerBuilder;
 import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointFactory;
@@ -65,6 +67,7 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
     private boolean serverOnly = false;
     private boolean useSNI = false;
     private final Map<String, KeyPair> keyPairs = new HashMap<>();
+    private final Map<String, CertPair> CertPairs = new HashMap<>();
 
     public LeshanTestServerBuilder(Protocol protocolToUse) {
         this();
@@ -158,6 +161,11 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
         return this;
     }
 
+    public LeshanTestServerBuilder using(String host, PrivateKey serverPrivateKey, X509Certificate... certChain) {
+        CertPairs.put(host, new CertPair(certChain, serverPrivateKey));
+        return this;
+    }
+
     public LeshanTestServerBuilder using(X509Certificate serverCertificate, PrivateKey serverPrivateKey) {
         this.setPrivateKey(serverPrivateKey);
         this.setCertificateChain(new X509Certificate[] { serverCertificate });
@@ -202,6 +210,8 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
             return new CoapsServerProtocolProvider(dtlsConfig -> {
                 if (!keyPairs.isEmpty()) {
                     dtlsConfig.setCertificateIdentityProvider(new MapBasedRawPublicKeyProvider(keyPairs));
+                } else if (!CertPairs.isEmpty()) {
+                    dtlsConfig.setCertificateIdentityProvider(new MapBasedCertificateProvider(CertPairs));
                 }
             }) {
 

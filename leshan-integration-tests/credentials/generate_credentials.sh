@@ -92,6 +92,16 @@ keytool -certreq -alias server -dname 'CN=localhost' -keystore $SERVER_STORE -st
           -ext ExtendedkeyUsage=serverAuth | \
     keytool -importcert -alias server_signed_by_root -keystore $SERVER_STORE -storepass $SERVER_STORE_PWD
 echo
+echo
+echo "${H2}Creating server certificate signed by root CA with 'virtualhost.org' as CN...${RESET}"
+keytool -certreq -alias server -dname 'CN=virtualhost.org' -keystore $SERVER_STORE -storepass $SERVER_STORE_PWD | \
+  keytool -gencert -alias rootCA -keystore $TRUSTED_CA_STORE -storepass $TRUSTED_CA_STORE_PWD \
+          -validity $VALIDITY \
+          -ext BasicConstraints=ca:false \
+          -ext KeyUsage:critical=digitalSignature,keyAgreement \
+          -ext ExtendedkeyUsage=serverAuth | \
+    keytool -importcert -alias virtualhost_signed_by_root -keystore $SERVER_STORE -storepass $SERVER_STORE_PWD
+echo
 echo "${H2}Creating server certificate signed by intermediate CA...${RESET}"
 keytool -certreq -alias server -dname 'CN=Server signed with Intermediate CA' -ext san=dns:localhost -keystore $SERVER_STORE -storepass $SERVER_STORE_PWD | \
   keytool -gencert -alias intermediateCA -keystore $TRUSTED_CA_STORE -storepass $TRUSTED_CA_STORE_PWD \
@@ -101,7 +111,16 @@ keytool -certreq -alias server -dname 'CN=Server signed with Intermediate CA' -e
           -ext ExtendedkeyUsage=serverAuth \
           -ext san=dns:localhost | \
     keytool -importcert -alias server_signed_by_intermediate_ca -keystore $SERVER_STORE -storepass $SERVER_STORE_PWD
-
+echo
+echo "${H2}Creating server certificate signed by intermediate CA with 'virtualhost.org' as sandns...${RESET}"
+keytool -certreq -alias server -dname 'CN=Server signed with Intermediate CA' -ext san=dns:virtualhost.org -keystore $SERVER_STORE -storepass $SERVER_STORE_PWD | \
+  keytool -gencert -alias intermediateCA -keystore $TRUSTED_CA_STORE -storepass $TRUSTED_CA_STORE_PWD \
+          -validity $VALIDITY \
+          -ext BasicConstraints=ca:false \
+          -ext KeyUsage:critical=digitalSignature,keyAgreement \
+          -ext ExtendedkeyUsage=serverAuth \
+          -ext san=dns:virtualhost.org | \
+    keytool -importcert -alias virutalhost_signed_by_intermediate_ca -keystore $SERVER_STORE -storepass $SERVER_STORE_PWD
 echo
 echo "${H1}Client Keystore : ${RESET}"
 echo "${H1}==================${RESET}"

@@ -87,10 +87,14 @@ public class Credentials {
     public static final PrivateKey serverPrivateKeyFromCert;
     // server certificate signed by rootCA
     public static final X509Certificate serverX509CertSignedByRoot;
+    public static final X509Certificate virtualHostX509CertSignedByRoot; // same as above but with "virtualhost.org" CN
     // server certificate signed by intermediateCA
     public static final X509Certificate[] serverX509CertChainWithIntermediateCa;
+    public static final X509Certificate[] virtualHostX509CertChainWithIntermediateCa; // same as above but with
+                                                                                      // "virtualhost.org" dnsname
     // self-signed server certificate
     public static final X509Certificate serverX509CertSelfSigned;
+    // server certificate signed by rootCA with virtualhost.org as CN
 
     // rootCA used by the server
     public static final X509Certificate rootCAX509Cert;
@@ -156,9 +160,14 @@ public class Credentials {
             serverPrivateKeyFromCert = (PrivateKey) serverKeyStore.getKey("server", serverKeyStorePwd);
             rootCAX509Cert = (X509Certificate) serverKeyStore.getCertificate("rootCA");
             serverX509CertSignedByRoot = (X509Certificate) serverKeyStore.getCertificate("server_signed_by_root");
+            virtualHostX509CertSignedByRoot = (X509Certificate) serverKeyStore
+                    .getCertificate("virtualhost_signed_by_root");
             serverX509CertSelfSigned = (X509Certificate) serverKeyStore.getCertificate("server_self_signed");
             serverX509CertChainWithIntermediateCa = X509Util.asX509Certificates( //
                     serverKeyStore.getCertificate("server_signed_by_intermediate_ca"), //
+                    serverKeyStore.getCertificate("intermediateCA"));
+            virtualHostX509CertChainWithIntermediateCa = X509Util.asX509Certificates( //
+                    serverKeyStore.getCertificate("virutalhost_signed_by_intermediate_ca"), //
                     serverKeyStore.getCertificate("intermediateCA"));
             trustedCertificatesByServer[0] = rootCAX509Cert;
             clientTrustStore = new X509Certificate[] { rootCAX509Cert };
