@@ -127,6 +127,13 @@ Contributors:
     <!-- stuck to 9.4.x for java8 compliance -->
     <jetty.version>9.4.49.v20220914</jetty.version>
     <jackson.version>2.14.0</jackson.version>
+    <picocli.version>4.6.3</picocli.version>
+    <junit.version>5.9.2</junit.version>
+    <!-- 
+      For Mockito we are stucked to 4.x version because we need Java8 support
+      See https://github.com/mockito/mockito/releases/tag/v5.0.0
+    -->
+    <mockito.version>4.11.0</mockito.version>
   </properties>
 
   <dependencyManagement>
@@ -242,12 +249,12 @@ Contributors:
       <dependency>
         <groupId>info.picocli</groupId>
         <artifactId>picocli</artifactId>
-        <version>4.6.3</version>
+        <version>${picocli.version}</version>
       </dependency>
       <dependency>
         <groupId>info.picocli</groupId>
         <artifactId>picocli-shell-jline2</artifactId>
-        <version>4.6.3</version>
+        <version>${picocli.version}</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
@@ -269,27 +276,23 @@ Contributors:
       <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-engine</artifactId>
-        <version>5.9.2</version>
+        <version>${junit.version}</version>
       </dependency>
       <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-params</artifactId>
-        <version>5.9.2</version>
+        <version>${junit.version}</version>
       </dependency>
-      <!-- 
-        For Mockito we are stucked to 4.x version because we need Java8 support
-        See https://github.com/mockito/mockito/releases/tag/v5.0.0
-      -->
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>4.11.0</version>
+        <version>${mockito.version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-junit-jupiter</artifactId>
-        <version>4.11.0</version>
+        <version>${mockito.version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
