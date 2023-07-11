@@ -10,6 +10,6 @@ mvn surefire:test
 ```
 To launch integration tests only : 
 ```
-mvn surefire:test '-Dtest=org.eclipse.leshan.integration.tests.**,!**/Redis*.java' -DfailIfNoTests=false
+mvn surefire:test '-Dtest=org.eclipse.leshan.integration.tests.**,!**/Redis*.java' -Dsurefire.failIfNoSpecifiedTests=false
 ```
 Currently, some of our integration tests are flaky :unamused: ,so do not hesitate to re-run in case of failure. 

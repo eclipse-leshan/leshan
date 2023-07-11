@@ -12,7 +12,7 @@ runs:
   - name: Run Integration Tests 
     id: main
     shell: bash
-    run: mvn -B surefire:test '-Dtest=org.eclipse.leshan.integration.tests.**,!**/Redis*.java' -Dsurefire.rerunFailingTestsCount=10 -DfailIfNoTests=false 
+    run: mvn -B surefire:test '-Dtest=org.eclipse.leshan.integration.tests.**,!**/Redis*.java' -Dsurefire.rerunFailingTestsCount=10 -Dsurefire.failIfNoSpecifiedTests=false 
 
     # Store Step status in Build Status Properties file
   - name: Store Step Status
