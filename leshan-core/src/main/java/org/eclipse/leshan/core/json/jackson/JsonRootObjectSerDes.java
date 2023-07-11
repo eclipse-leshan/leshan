@@ -28,11 +28,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class JsonRootObjectSerDes extends JacksonJsonSerDes<JsonRootObject> {
 
-    private JsonArrayEntrySerDes serDes = new JsonArrayEntrySerDes();
+    private final JsonArrayEntrySerDes serDes = new JsonArrayEntrySerDes();
 
     @Override
     public JsonNode jSerialize(JsonRootObject jro) throws JsonException {
-        ObjectNode o = JsonNodeFactory.withExactBigDecimals(true).objectNode();
+        ObjectNode o = JsonNodeFactory.instance.objectNode();
 
         if (jro.getBaseName() != null)
             o.put("bn", jro.getBaseName());

@@ -32,7 +32,7 @@ public class JsonArrayEntrySerDes extends JacksonJsonSerDes<JsonArrayEntry> {
 
     @Override
     public JsonNode jSerialize(JsonArrayEntry jae) throws JsonException {
-        ObjectNode o = JsonNodeFactory.withExactBigDecimals(true).objectNode();
+        ObjectNode o = JsonNodeFactory.instance.objectNode();
         if (jae.getName() != null)
             o.put("n", jae.getName());
         Type type = jae.getType();

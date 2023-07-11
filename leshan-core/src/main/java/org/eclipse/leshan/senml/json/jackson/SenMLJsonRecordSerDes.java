@@ -53,7 +53,7 @@ public class SenMLJsonRecordSerDes extends JacksonJsonSerDes<SenMLRecord> {
 
     @Override
     public JsonNode jSerialize(SenMLRecord record) throws JsonException {
-        ObjectNode jsonObj = JsonNodeFactory.withExactBigDecimals(true).objectNode();
+        ObjectNode jsonObj = JsonNodeFactory.instance.objectNode();
 
         if (record.getBaseName() != null && record.getBaseName().length() > 0) {
             jsonObj.put("bn", record.getBaseName());

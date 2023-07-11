@@ -26,6 +26,7 @@ import org.eclipse.leshan.core.json.LwM2mJsonException;
 import org.eclipse.leshan.core.util.json.JsonException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.cfg.JsonNodeFeature;
 
 /**
  * Helper for encoding/decoding LWM2M JSON format using jackson
@@ -33,7 +34,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class LwM2mJsonJacksonEncoderDecoder implements LwM2mJsonDecoder, LwM2mJsonEncoder {
 
     private static final JsonRootObjectSerDes serDes = new JsonRootObjectSerDes();
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = new ObjectMapper()
+            .configure(JsonNodeFeature.STRIP_TRAILING_BIGDECIMAL_ZEROES, false);
 
     @Override
     public String toJsonLwM2m(JsonRootObject jro) throws LwM2mJsonException {

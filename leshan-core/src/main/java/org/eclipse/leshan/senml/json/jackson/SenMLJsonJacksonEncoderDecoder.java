@@ -34,13 +34,15 @@ import org.eclipse.leshan.senml.SenMLRecord;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.cfg.JsonNodeFeature;
 
 /**
  * Helper for encoding/decoding SenML JSON using Jackson
  */
 public class SenMLJsonJacksonEncoderDecoder implements SenMLDecoder, SenMLEncoder {
     private final JacksonJsonSerDes<SenMLRecord> serDes;
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = new ObjectMapper()
+            .configure(JsonNodeFeature.STRIP_TRAILING_BIGDECIMAL_ZEROES, false);
 
     public SenMLJsonJacksonEncoderDecoder() {
         this(false);
