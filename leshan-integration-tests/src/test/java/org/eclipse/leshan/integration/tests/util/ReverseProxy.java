@@ -121,6 +121,18 @@ public class ReverseProxy {
                 logAndRaiseException("Unexpected IO Exception when running proxy", e);
             }
         });
+
+        // Wait until proxy is really running
+        for (int i = 0; i < 10 && running; i++) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                LOGGER.debug("Start was interrupted", e);
+            }
+        }
+        if (!running) {
+            LOGGER.error("Unable to start ReverseProxy");
+        }
     }
 
     private void handleClientPackets() throws IOException {
@@ -234,7 +246,7 @@ public class ReverseProxy {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                LOGGER.debug("Change Server Side Proxy Address was interrupted", e);
             }
         }
     }
