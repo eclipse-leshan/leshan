@@ -266,9 +266,10 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void onError(Registration registration, Exception error) {
+        public void onError(Registration registration, String errorMessage, Exception error) {
             if (LOG.isWarnEnabled()) {
-                LOG.warn(String.format("Unable to handle Send Request from [%s].", registration), error);
+                LOG.warn(String.format("Unable to handle Send Request from [%s] : %s.", registration, errorMessage),
+                        error);
             }
         }
     };

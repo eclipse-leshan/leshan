@@ -273,7 +273,7 @@ public class LeshanTestServer extends LeshanServer {
     public Exception waitForSendDataError(String clientEndpoint, int timeout, TimeUnit unit) {
         final ArgumentCaptor<Exception> c = ArgumentCaptor.forClass(Exception.class);
         sendEventInOrder.verify(sendListener, timeout(unit.toMillis(timeout)).times(1))
-                .onError(assertArg(reg -> assertThat(reg.getEndpoint()).isEqualTo(clientEndpoint)), c.capture());
+                .onError(assertArg(reg -> assertThat(reg.getEndpoint()).isEqualTo(clientEndpoint)), any(), c.capture());
         awakeEventInOrder.verifyNoMoreInteractions();
         return c.getValue();
     }
