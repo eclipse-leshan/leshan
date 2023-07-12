@@ -57,6 +57,10 @@ public class SendResponse extends AbstractLwM2mResponse {
         return new SendResponse(ResponseCode.NOT_FOUND, null);
     }
 
+    public static SendResponse notFound(String errorMessage) {
+        return new SendResponse(ResponseCode.NOT_FOUND, errorMessage);
+    }
+
     public static SendResponse internalServerError(String errorMessage) {
         return new SendResponse(ResponseCode.INTERNAL_SERVER_ERROR, errorMessage);
     }

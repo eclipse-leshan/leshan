@@ -45,7 +45,8 @@ public class DefaultUplinkRequestReceiver implements UplinkRequestReceiver {
     public void onError(LwM2mPeer sender, ClientProfile senderProfile, Exception exception,
             Class<? extends UplinkRequest<? extends LwM2mResponse>> requestType, URI serverEndpointUri) {
         if (requestType.equals(SendRequest.class)) {
-            sendHandler.onError(senderProfile.getRegistration(), exception);
+            sendHandler.onError(senderProfile.getRegistration(),
+                    exception.getMessage() != null ? exception.getMessage() : null, exception);
         }
     }
 

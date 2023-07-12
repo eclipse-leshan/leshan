@@ -40,7 +40,8 @@ public interface SendListener {
      * payload or any unexpected error).
      *
      * @param registration Registration of the client which send the data.
-     * @param error The cause of the error.
+     * @param errorMessage the cause of the error.
+     * @param error the related exception which caused the error, it could be {@code null}.
      */
-    void onError(Registration registration, Exception error);
+    void onError(Registration registration, String errorMessage, Exception error);
 }

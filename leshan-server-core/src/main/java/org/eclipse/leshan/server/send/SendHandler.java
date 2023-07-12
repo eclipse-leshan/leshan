@@ -16,8 +16,11 @@
 package org.eclipse.leshan.server.send;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.SendRequest;
@@ -67,22 +70,33 @@ public class SendHandler implements SendService {
         try {
             updatedRegistration = updateRegistration(sender, registration);
         } catch (Exception e) {
-            SendableResponse<SendResponse> response = new SendableResponse<>(
-                    SendResponse.internalServerError("unable to update registration"), new Runnable() {
+            String errMsg = "unable to update registration";
+            SendableResponse<SendResponse> response = new SendableResponse<>(SendResponse.internalServerError(errMsg),
+                    new Runnable() {
                         @Override
                         public void run() {
-                            onError(registration, e);
+                            onError(registration, errMsg, e);
                         }
                     });
             return response;
         }
 
         // Send Response to send request on success
-        SendableResponse<SendResponse> response = new SendableResponse<>(SendResponse.success(), new Runnable() {
+        final SendResponse sendResponse = validateSendRequest(updatedRegistration, request);
+        SendableResponse<SendResponse> response = new SendableResponse<>(sendResponse, new Runnable() {
+
             @Override
             public void run() {
-                fireDataReceived(updatedRegistration, request.getTimestampedNodes(), request);
+                if (sendResponse.isSuccess()) {
+                    fireDataReceived(updatedRegistration, request.getTimestampedNodes(), request);
+                } else {
+                    onError(updatedRegistration, String.format("Invalid Send Request, server returns %s %s", //
+                            sendResponse.getCode().getName(), //
+                            sendResponse.getErrorMessage() != null ? "because" + sendResponse.getErrorMessage() : ""),
+                            null);
+                }
             }
+
         });
         return response;
 
@@ -111,9 +125,31 @@ public class SendHandler implements SendService {
         }
     }
 
-    public void onError(Registration registration, Exception error) {
+    public void onError(Registration registration, String errorMessage, Exception error) {
         for (SendListener listener : listeners) {
-            listener.onError(registration, error);
+            listener.onError(registration, errorMessage, error);
         }
+    }
+
+    protected SendResponse validateSendRequest(Registration registration, SendRequest request) {
+        // check if all data of Send request are registered by LwM2M device.
+        // see : https://github.com/eclipse-leshan/leshan/issues/1472
+        TimestampedLwM2mNodes timestampedNodes = request.getTimestampedNodes();
+        Map<LwM2mPath, LwM2mNode> nodes = timestampedNodes.getNodes();
+        for (LwM2mPath path : nodes.keySet()) {
+            if (path.isRoot()) {
+                continue;
+            } else if (path.isObject()) {
+                if (registration.getSupportedVersion(path.getObjectId()) == null) {
+                    return SendResponse.notFound(String.format("object %s not registered", path));
+                }
+            } else {
+                LwM2mPath instancePath = path.toObjectInstancePath();
+                if (!registration.getAvailableInstances().contains(instancePath)) {
+                    return SendResponse.notFound(String.format("object instance %s not registered", instancePath));
+                }
+            }
+        }
+        return SendResponse.success();
     }
 }
