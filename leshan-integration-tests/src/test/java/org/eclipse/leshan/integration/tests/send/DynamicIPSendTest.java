@@ -16,7 +16,7 @@
 package org.eclipse.leshan.integration.tests.send;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.eclipse.leshan.core.ResponseCode.NOT_FOUND;
+import static org.eclipse.leshan.core.ResponseCode.BAD_REQUEST;
 import static org.eclipse.leshan.integration.tests.util.Credentials.GOOD_PSK_ID;
 import static org.eclipse.leshan.integration.tests.util.Credentials.GOOD_PSK_KEY;
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientPrivateKey;
@@ -142,7 +142,7 @@ public class DynamicIPSendTest {
                 Arrays.asList("/3/0/1", "/3/0/2"), 1000);
 
         // it should failed !
-        assertThat(response).hasCode(NOT_FOUND);
+        assertThat(response).hasCode(BAD_REQUEST);
     }
 
     // TODO OSCORE implement a test with OSCORE

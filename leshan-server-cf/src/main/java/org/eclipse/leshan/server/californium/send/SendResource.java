@@ -61,7 +61,7 @@ public class SendResource extends LwM2mCoapResource {
 
         // check we have a registration for this identity
         if (clientProfile == null) {
-            exchange.respond(ResponseCode.NOT_FOUND, "no registration found");
+            exchange.respond(ResponseCode.BAD_REQUEST, "no registration found");
             return;
         }
 
