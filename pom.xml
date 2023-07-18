@@ -360,7 +360,7 @@ Contributors:
         </plugin>
         <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
-          <version>3.4.2</version>
+          <version>3.6.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-enforcer-plugin</artifactId>
@@ -414,6 +414,9 @@ Contributors:
         <plugin>
           <artifactId>maven-resources-plugin</artifactId>
           <version>3.3.0</version>
+          <configuration>
+            <propertiesEncoding>${project.build.sourceEncoding}</propertiesEncoding>
+          </configuration>
           <!-- This goal is used to configure eclipse, but we don't want to execute it on aggregator -->
           <executions>
             <execution>
@@ -433,7 +436,7 @@ Contributors:
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>flatten-maven-plugin</artifactId>
-          <version>1.3.0</version>
+          <version>1.5.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-checkstyle-plugin</artifactId>
@@ -471,17 +474,17 @@ Contributors:
         <plugin>
           <groupId>org.apache.felix</groupId>
           <artifactId>maven-bundle-plugin</artifactId>
-          <version>5.1.8</version>
+          <version>5.1.9</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>buildnumber-maven-plugin</artifactId>
-          <version>3.0.0</version>
+          <version>3.2.0</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>animal-sniffer-maven-plugin</artifactId>
-          <version>1.22</version>
+          <version>1.23</version>
         </plugin>
         <plugin>
           <groupId>org.revapi</groupId>

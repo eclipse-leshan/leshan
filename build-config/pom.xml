@@ -42,8 +42,7 @@ Contributors:
             <source>1.8</source>
             <target>1.8</target>
             <debug>true</debug>
-            <optimize>true</optimize>
-            <showDeprecations>true</showDeprecations>
+            <showDeprecation>true</showDeprecation>
           </configuration>
         </plugin>
         <plugin>
