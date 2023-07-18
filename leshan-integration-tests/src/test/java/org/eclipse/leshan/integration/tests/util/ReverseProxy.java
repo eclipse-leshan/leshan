@@ -66,8 +66,9 @@ public class ReverseProxy {
     private Selector selector;
 
     private final ExecutorService executor = Executors.newFixedThreadPool(1);
-    private volatile boolean running;
-    private volatile boolean changeServerSideProxyAddress = false;
+    private volatile boolean running = false; // true if reserver proxy is running
+    private volatile boolean stop = false; // true if we asked to stop reserve proxy
+    private volatile boolean changeServerSideProxyAddress = false; // true if we ask to change server side proxy address
 
     public ReverseProxy(InetSocketAddress clientSideProxyAddress, InetSocketAddress serverAddress) {
         this.clientSideProxyAddress = clientSideProxyAddress;
@@ -93,7 +94,7 @@ public class ReverseProxy {
                 running = true;
 
                 LOGGER.debug("Reverse Proxy Started");
-                while (running) {
+                while (!stop) {
                     selector.select();
                     // Handle events if any
                     Set<SelectionKey> selecteds = selector.selectedKeys();
@@ -115,6 +116,7 @@ public class ReverseProxy {
                 LOGGER.trace("Stopping Reverse Proxy");
                 clientToProxyChannel.close();
                 proxyToServerChannel.close();
+                running = false;
                 LOGGER.debug("Reverse Proxy stopped");
 
             } catch (IOException e) {
@@ -123,15 +125,18 @@ public class ReverseProxy {
         });
 
         // Wait until proxy is really running
-        for (int i = 0; i < 10 && running; i++) {
+        for (int i = 0; i < 10 && !running; i++) {
             try {
-                Thread.sleep(10);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 LOGGER.debug("Start was interrupted", e);
             }
         }
         if (!running) {
+            stop = true;
+            executor.shutdownNow();
             LOGGER.error("Unable to start ReverseProxy");
+            throw new IllegalStateException("Unable to start ReserveProxy");
         }
     }
 
@@ -252,7 +257,7 @@ public class ReverseProxy {
     }
 
     public void stop() {
-        running = false;
+        stop = true;
         executor.shutdown();
     }
 }
