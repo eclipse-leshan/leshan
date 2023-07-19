@@ -11,11 +11,6 @@ pipeline {
     disableConcurrentBuilds()
   }
   stages {
-    stage('Checkout') {
-      steps {
-        checkout poll: false, scm: scmGit(branches: [[name: '*/master']], userRemoteConfigs: [[url: 'https://github.com/eclipse/leshan.git']])
-      }
-    }
     stage('Maven build') {
       steps {
         sh '''
