@@ -40,6 +40,8 @@ public class ConnectionCleaner {
     }
 
     public void cleanConnectionFor(final SecurityInfo... infos) {
+        // TODO remove depreacated code
+        // See : https://github.com/eclipse-californium/californium/issues/2160#issuecomment-1645715343
         connector.startTerminateConnectionsForPrincipal(new Predicate<Principal>() {
             @Override
             public boolean accept(Principal principal) {
