@@ -28,12 +28,6 @@ pipeline {
         git url: 'git@github.com:eclipse-leshan/leshan.git',
             credentialsId: 'github-bot-ssh',
             branch: '${BRANCH}'
-        sh '''mvn versions:set -B -PallPom -f pom.xml -DnewVersion=${RELEASE_VERSION}'''
-        sh '''shopt -s globstar
-git add **/pom.xml
-shopt -u globstar
-git commit -m "Bump version to ${RELEASE_VERSION}"
-git tag leshan-${RELEASE_VERSION} '''
       }
     }
     
@@ -66,7 +60,7 @@ done'''
     stage('Commit and tag release version') {
       steps {
         withCredentials([
-          gitUsernamePassword(credentialsId: 'github-bot-ssh')
+          usernamePassword(credentialsId: 'github-bot-ssh', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')
           ]) {
           sh '''shopt -s globstar
 git add **/pom.xml
