@@ -29,6 +29,11 @@ Contributors:
   <name>leshan - shared demo build config</name>
   <description>Shared Maven configuration for all Leshan demos</description>
 
+  <properties>
+    <node-version>v12.22.5</node-version>
+    <yarn-version>v1.22.19</yarn-version>
+  </properties>
+
   <build>
     <pluginManagement>
       <plugins>
@@ -61,8 +66,8 @@ Contributors:
           <artifactId>frontend-maven-plugin</artifactId>
           <configuration>
             <workingDirectory>webapp</workingDirectory>
-            <nodeVersion>v12.22.5</nodeVersion>
-            <yarnVersion>v1.22.19</yarnVersion>
+            <nodeVersion>${node-version}</nodeVersion>
+            <yarnVersion>${yarn-version}</yarnVersion>
           </configuration>
           <executions>
             <execution>
@@ -105,15 +110,54 @@ Contributors:
   <profiles>
     <profile>
       <id>eclipseJenkins</id>
+      <properties>
+        <download-eclipse-path>/home/data/httpd/download.eclipse.org/leshan/</download-eclipse-path>
+        <download-remote-publish-path>genie.leshan@projects-storage.eclipse.org:${download-eclipse-path}</download-remote-publish-path>
+        <node-yarn-mirror-folder>build/mirror/</node-yarn-mirror-folder>
+        <node-folder>${node-yarn-mirror-folder}node/</node-folder>
+        <yarn-folder>${node-yarn-mirror-folder}yarn/</yarn-folder>
+        <node-download-root>https://nodejs.org/dist/</node-download-root>
+        <yarn-download-root>https://sourceforge.net/projects/yarn.mirror/files/</yarn-download-root>
+        <node-source-url>${node-download-root}${node-version}/node-${node-version}-linux-x64.tar.gz</node-source-url>
+        <yarn-source-url>${yarn-download-root}${yarn-version}/yarn-${yarn-version}.tar.gz</yarn-source-url>
+        <download-eclipse-url>https://download.eclipse.org/leshan/</download-eclipse-url>
+      </properties>
       <build>
         <pluginManagement>
           <plugins>
             <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>wagon-maven-plugin</artifactId>
+              <executions>
+                <execution>
+                  <id>prepare-build</id>
+                  <goals>
+                    <goal>sshexec</goal>
+                  </goals>
+                  <phase>initialize</phase>
+                  <configuration>
+                    <url>scpexe://${download-remote-publish-path}</url>
+                    <commands>
+                      <command>mkdir -p ${download-eclipse-path}${node-folder}${node-version}</command>
+                      <command>wget -nc ${node-source-url} -P ${download-eclipse-path}${node-folder}${node-version}</command>
+                      <command>mkdir -p ${download-eclipse-path}${yarn-folder}${yarn-version}</command>
+                      <command>wget -nc ${yarn-source-url} -P ${download-eclipse-path}${yarn-folder}${yarn-version}</command>
+                    </commands>
+                    <displayCommandOutputs>true</displayCommandOutputs>
+                  </configuration>
+                </execution>
+              </executions>
+            </plugin>
+            <plugin>
               <groupId>com.github.eirslett</groupId>
               <artifactId>frontend-maven-plugin</artifactId>
               <configuration>
-                <!-- See why we use a mirror : https://gitlab.eclipse.org/eclipsefdn/helpdesk/-/issues/1032 -->
-                <yarnDownloadRoot>https://sourceforge.net/projects/yarn.mirror/files/</yarnDownloadRoot>
+                <!-- See why we use a mirror : 
+                     https://gitlab.eclipse.org/eclipsefdn/helpdesk/-/issues/1032
+                     https://gitlab.eclipse.org/eclipsefdn/helpdesk/-/issues/3429#note_1184525
+                -->
+                <nodeDownloadRoot>${download-eclipse-url}${node-folder}</nodeDownloadRoot>
+                <yarnDownloadRoot>${download-eclipse-url}${yarn-folder}</yarnDownloadRoot>
               </configuration>
             </plugin>
           </plugins>

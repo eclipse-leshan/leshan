@@ -20,9 +20,12 @@ pipeline {
     stage('Build') {
       steps {
         // Build 
-        sh ''' mvn -B com.github.ekryd.sortpom:sortpom-maven-plugin:verify -PallPom 
-               mvn -B clean install javadoc:javadoc -PeclipseJenkins 
-        '''
+        sh ''' mvn -B com.github.ekryd.sortpom:sortpom-maven-plugin:verify -PallPom ''' 
+        // This ssh agent is needed to cache yarn/node to download.eclipse.org when using -PeclipseJenkins
+        // see : https://github.com/eclipse-leshan/leshan/pull/1484
+        sshagent ( ['projects-storage.eclipse.org-bot-ssh']) {
+          sh ''' mvn -B clean install javadoc:javadoc -PeclipseJenkins '''
+        }
         // Copy artifacts
         sh ''' cp leshan-server-demo/target/leshan-server-demo-*-jar-with-dependencies.jar leshan-server-demo.jar
                cp leshan-bsserver-demo/target/leshan-bsserver-demo-*-jar-with-dependencies.jar leshan-bsserver-demo.jar

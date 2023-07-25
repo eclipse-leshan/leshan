@@ -67,7 +67,11 @@ pipeline {
         // Update to release version and build artifacts 
         sh '''mvn -B versions:set -PallPom -DnewVersion=${RELEASE_VERSION}'''
         sh '''mvn -B com.github.ekryd.sortpom:sortpom-maven-plugin:verify -PallPom'''
-        sh '''mvn -B clean install javadoc:javadoc -PeclipseJenkins'''
+        // This ssh agent is needed to cache yarn/node to download.eclipse.org when using -PeclipseJenkins
+        // see : https://github.com/eclipse-leshan/leshan/pull/1484
+        sshagent ( ['projects-storage.eclipse.org-bot-ssh']) {
+            sh '''mvn -B clean install javadoc:javadoc -PeclipseJenkins'''
+        }
         
         // Commit new version change
         sshagent(['github-bot-ssh']) {
