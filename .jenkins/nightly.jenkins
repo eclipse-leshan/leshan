@@ -1,0 +1,54 @@
+/************************************************************************************
+  
+  Nightly Build : 
+  Build current branch and deploy it to eclipse nexus instance at : 
+  https://repo.eclipse.org/content/repositories/leshan-snapshots/
+  
+*************************************************************************************/
+pipeline {
+  agent any
+  tools {
+    maven 'apache-maven-latest'
+    jdk 'adoptopenjdk-hotspot-jdk8-latest'
+  }
+  options {
+    timeout (time: 30, unit: 'MINUTES')
+    buildDiscarder(logRotator(numToKeepStr: '3'))
+    disableConcurrentBuilds()
+    durabilityHint('PERFORMANCE_OPTIMIZED')
+  }
+  triggers {
+    pollSCM ignorePostCommitHooks: true, scmpoll_spec: 'H H * * *'
+  }
+  stages {
+    stage('Build') {
+      steps {
+        // Build
+        sh ''' mvn -B com.github.ekryd.sortpom:sortpom-maven-plugin:verify -PallPom 
+               mvn -B clean install javadoc:javadoc -PeclipseJenkins 
+        '''
+      }
+    }
+    stage('Deploy') {
+      steps {
+        // Build 
+        sh '''mvn -B deploy -Prelease-nightly -DskipTests -Dskip.yarn'''
+      }
+    }
+  }
+  post {
+    unsuccessful {
+      mail to: 'sbernard@sierrawireless.com',
+           subject: "Build ${env.BUILD_TAG} failed!",
+           body: "Check console output at ${env.BUILD_URL} to view the results."
+    }
+    fixed {
+      mail to: 'sbernard@sierrawireless.com',
+           subject: "Build ${env.BUILD_TAG} back to normal.",
+           body: "Check console output at ${env.BUILD_URL} to view the results."
+    }
+    always {
+      junit '**/target/surefire-reports/*.xml'
+    }
+  }
+}

@@ -1,0 +1,111 @@
+/************************************************************************************
+
+  Manual job used to release Leshan to maven central.
+  Take 4 parameters (BRANCH, RELEASE_VERSION,NEXT_VERSION, DRY_RUN).
+
+    Checks out current ${BRANCH}'s HEAD
+    Change version to ${RELEASE_VERSION}
+    Builds and tests it : mvn clean install javadoc:javadoc
+    Tags it with ${RELEASE_VERSION}
+    Deploys artifacts to Maven Central's staging repo with autoReleaseAfterClose=true 
+    Change version to ${NEXT_VERSION}
+    Pushes newly created tags to GitHub
+    
+  DRY_RUN can be used to skip auto-close/auto-release 
+  and avoid to push commit on git ${BRANCH}.
+  
+*************************************************************************************/
+pipeline {
+  agent any
+  parameters {
+    string(
+        name: 'BRANCH',
+        defaultValue: 'master',
+        description: 'The branch to build and release from. Examples: master, 1.x')
+    string(
+        name: 'RELEASE_VERSION',
+        defaultValue: '2.0.0-M10',
+        description: 'The version identifier to use for the artifacts built by this job. Examples: `2.0.0-M10`, `2.0.0-RC1`, `2.0.1`')
+    string(
+        name: 'NEXT_VERSION',
+        defaultValue: '2.0.0-SNAPSHOT',
+        description: 'The version identifier to use during development of the next version. Examples: 2.0.0-SNAPSHOT 2.1.0-SNAPSHOT')
+    booleanParam(
+        name: 'DRY_RUN',
+        defaultValue: true,
+        description: 'When DRY_RUN is used, commits/tags are not pushed to git repo & sonatype repository is not automatically closed')
+  }
+  tools {
+    maven 'apache-maven-latest'
+    jdk 'oracle-jdk8-latest'
+  }
+  options {
+    timeout (time: 30, unit: 'MINUTES')
+    buildDiscarder(logRotator(numToKeepStr: '3'))
+    disableConcurrentBuilds()
+    skipDefaultCheckout()
+    durabilityHint('PERFORMANCE_OPTIMIZED')
+  }
+  stages {
+    stage('Build') {
+      steps {
+        // Get Key to sign artifacts
+        withCredentials([file(credentialsId: 'secret-subkeys.asc', variable: 'KEYRING')]) {
+          sh '''gpg --batch --import "${KEYRING}"
+                for fpr in $(gpg --list-keys --with-colons  | awk -F: \'/fpr:/ {print $10}\' | sort -u);
+                do
+                  echo -e "5\\ny\\n" |  gpg --batch --command-fd 0 --expert --edit-key $fpr trust;
+                done
+          '''
+        }
+
+        // Checkout code
+        git url: 'git@github.com:eclipse-leshan/leshan.git',
+            credentialsId: 'github-bot-ssh',
+            branch: '${BRANCH}'
+
+        // Update to release version and build artifacts 
+        sh '''mvn -B versions:set -PallPom -DnewVersion=${RELEASE_VERSION}'''
+        sh '''mvn -B com.github.ekryd.sortpom:sortpom-maven-plugin:verify -PallPom'''
+        sh '''mvn -B clean install javadoc:javadoc -PeclipseJenkins'''
+        
+        // Commit new version change
+        sshagent(['github-bot-ssh']) {
+          sh '''git config user.email "leshan-bot@eclipse.orgg"
+                git config user.name "Leshan Bot"
+                shopt -s globstar
+                git add **/pom.xml
+                shopt -u globstar
+                git config user.email "leshan-bot@eclipse.orgg"
+                git config user.name "Leshan Bot"
+                git commit -m "Bump version to ${RELEASE_VERSION}"
+                git tag leshan-${RELEASE_VERSION} 
+          '''
+        }
+      }
+    }
+
+    stage('Deploy') {
+      steps {
+        // deploy then update to post release version
+        sh '''mvn -B deploy -Prelease -DskipTests -Dskip.yarn -DskipStagingRepositoryClose=${DRY_RUN}'''
+        sh '''mvn -B versions:set -PallPom -DnewVersion=${NEXT_VERSION}'''
+        
+        // Commit post release version change and push if not dry-run
+        sshagent(['github-bot-ssh']) {
+          sh '''shopt -s globstar
+                git add **/pom.xml
+                shopt -u globstar
+                git commit -m "Bump version to ${NEXT_VERSION}"
+          '''
+          sh '''if [ "$DRY_RUN" == "false" ]
+                then
+                  git push --set-upstream origin ${BRANCH}
+                  git push --tags
+                fi
+          '''
+        }
+      }
+    }
+  }
+}

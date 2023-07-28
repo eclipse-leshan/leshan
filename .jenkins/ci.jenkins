@@ -1,0 +1,50 @@
+/************************************************************************************
+
+  Simple build to check all is OK
+  This job do  : clean install javadoc:javadoc
+  
+*************************************************************************************/
+pipeline {
+  agent any
+  tools {
+    maven 'apache-maven-latest'
+    jdk 'adoptopenjdk-hotspot-jdk8-latest'
+  }
+  options {
+    timeout (time: 30, unit: 'MINUTES')
+    buildDiscarder(logRotator(numToKeepStr: '3'))
+    disableConcurrentBuilds()
+    durabilityHint('PERFORMANCE_OPTIMIZED')
+  }
+  stages {
+    stage('Build') {
+      steps {
+        // Build 
+        sh ''' mvn -B com.github.ekryd.sortpom:sortpom-maven-plugin:verify -PallPom 
+               mvn -B clean install javadoc:javadoc -PeclipseJenkins 
+        '''
+        // Copy artifacts
+        sh ''' cp leshan-server-demo/target/leshan-server-demo-*-jar-with-dependencies.jar leshan-server-demo.jar
+               cp leshan-bsserver-demo/target/leshan-bsserver-demo-*-jar-with-dependencies.jar leshan-bsserver-demo.jar
+               cp leshan-client-demo/target/leshan-client-demo-*-jar-with-dependencies.jar leshan-client-demo.jar
+        '''
+      }
+    }
+  }
+  post {
+    unsuccessful {
+      mail to: 'sbernard@sierrawireless.com',
+           subject: "Build ${env.BUILD_TAG} failed!",
+           body: "Check console output at ${env.BUILD_URL} to view the results."
+    }
+    fixed {
+      mail to: 'sbernard@sierrawireless.com',
+           subject: "Build ${env.BUILD_TAG} back to normal.",
+           body: "Check console output at ${env.BUILD_URL} to view the results."
+    }
+    always {
+      junit '**/target/surefire-reports/*.xml'
+      archiveArtifacts artifacts: 'leshan-server-demo.jar,leshan-bsserver-demo.jar,leshan-client-demo.jar'
+    }
+  }
+}
