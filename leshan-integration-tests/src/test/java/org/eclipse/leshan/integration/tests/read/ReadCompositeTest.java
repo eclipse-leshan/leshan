@@ -23,12 +23,16 @@ import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.ass
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
+import org.eclipse.leshan.core.node.LwM2mRoot;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
@@ -107,6 +111,32 @@ public class ReadCompositeTest {
     /*---------------------------------/
      *  Tests
      * -------------------------------*/
+
+    @TestAllCases
+    public void can_read_root(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws InterruptedException {
+        // read root object
+        ReadCompositeResponse response = server.send(currentRegistration,
+                new ReadCompositeRequest(requestContentFormat, responseContentFormat, "/"));
+
+        // verify result
+        // assertEquals(CONTENT, response.getCode());
+        // assertContentFormat(responseContentFormat, response);
+
+        assertThat(response) //
+                .hasCode(CONTENT) //
+                .hasCode(response.getCode()).hasContentFormat(responseContentFormat, givenServerEndpointProvider);
+
+        LwM2mRoot root = (LwM2mRoot) response.getContent("/");
+        Set<Integer> objectIdsFromRootObject = root.getObjects().keySet();
+        Set<Integer> objectIdsFromObjectTree = new HashSet<>(Arrays.asList(1, 3, 3442));
+
+        // assertEquals(objectIdsFromObjectTree, objectIdsFromRootObject);
+        assertThat(objectIdsFromObjectTree).isEqualTo(objectIdsFromRootObject);
+
+    }
+
     @TestAllCases
     public void can_read_resources(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)

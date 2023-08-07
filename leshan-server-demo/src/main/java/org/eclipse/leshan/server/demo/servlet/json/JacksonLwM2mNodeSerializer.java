@@ -30,6 +30,7 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
+import org.eclipse.leshan.core.node.LwM2mRoot;
 import org.eclipse.leshan.core.util.Hex;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -53,39 +54,89 @@ public class JacksonLwM2mNodeSerializer extends StdSerializer<LwM2mNode> {
     @Override
     public void serialize(LwM2mNode src, JsonGenerator gen, SerializerProvider provider) throws IOException {
         Map<String, Object> element = new HashMap<>();
+        Map<String, Object> element1 = new HashMap<>();
 
-        element.put("id", src.getId());
+        if (src instanceof LwM2mRoot) {
 
-        if (src instanceof LwM2mObject) {
-            element.put("kind", "obj");
-            element.put("instances", ((LwM2mObject) src).getInstances().values());
-        } else if (src instanceof LwM2mObjectInstance) {
-            element.put("kind", "instance");
-            element.put("resources", ((LwM2mObjectInstance) src).getResources().values());
-        } else if (src instanceof LwM2mResource) {
-            LwM2mResource rsc = (LwM2mResource) src;
-            if (rsc.isMultiInstances()) {
-                Map<String, Object> values = new HashMap<>();
-                for (Entry<Integer, LwM2mResourceInstance> entry : rsc.getInstances().entrySet()) {
-                    values.put(entry.getKey().toString(), convertValue(rsc.getType(), entry.getValue().getValue()));
+            element1.put("id", "root");
+            gen.writeObject(element1);
+
+            for (Entry<Integer, LwM2mObject> entry : ((LwM2mRoot) src).getObjects().entrySet()) {
+
+                LwM2mNode src1 = entry.getValue();
+
+                element1.put("id", src1.getId());
+
+                if (src1 instanceof LwM2mObject) {
+                    element1.put("kind", "obj");
+                    element1.put("instances", ((LwM2mObject) src1).getInstances().values());
+                } else if (src1 instanceof LwM2mObjectInstance) {
+                    element1.put("kind", "instance");
+                    element1.put("resources", ((LwM2mObjectInstance) src1).getResources().values());
+                } else if (src1 instanceof LwM2mResource) {
+                    LwM2mResource rsc = (LwM2mResource) src1;
+                    if (rsc.isMultiInstances()) {
+                        Map<String, Object> values = new HashMap<>();
+                        for (Entry<Integer, LwM2mResourceInstance> entry1 : rsc.getInstances().entrySet()) {
+                            values.put(entry.getKey().toString(),
+                                    convertValue(rsc.getType(), entry1.getValue().getValue()));
+                        }
+                        element1.put("kind", "multiResource");
+                        element1.put("values", values);
+                        element1.put("type", rsc.getType());
+                    } else {
+                        element1.put("kind", "singleResource");
+                        element1.put("type", rsc.getType());
+                        element1.put("value", convertValue(rsc.getType(), rsc.getValue()));
+                    }
+                } else if (src1 instanceof LwM2mResourceInstance) {
+                    element1.put("kind", "resourceInstance");
+                    LwM2mResourceInstance rsc = (LwM2mResourceInstance) src1;
+                    element1.put("type", rsc.getType());
+                    element1.put("value", convertValue(rsc.getType(), rsc.getValue()));
+
                 }
-                element.put("kind", "multiResource");
-                element.put("values", values);
-                element.put("type", rsc.getType());
-            } else {
-                element.put("kind", "singleResource");
+
+                gen.writeFieldName(entry.getKey().toString());
+                gen.writeObject(element1);
+
+            }
+
+        } else {
+
+            element.put("id", src.getId());
+
+            if (src instanceof LwM2mObject) {
+                element.put("kind", "obj");
+                element.put("instances", ((LwM2mObject) src).getInstances().values());
+            } else if (src instanceof LwM2mObjectInstance) {
+                element.put("kind", "instance");
+                element.put("resources", ((LwM2mObjectInstance) src).getResources().values());
+            } else if (src instanceof LwM2mResource) {
+                LwM2mResource rsc = (LwM2mResource) src;
+                if (rsc.isMultiInstances()) {
+                    Map<String, Object> values = new HashMap<>();
+                    for (Entry<Integer, LwM2mResourceInstance> entry : rsc.getInstances().entrySet()) {
+                        values.put(entry.getKey().toString(), convertValue(rsc.getType(), entry.getValue().getValue()));
+                    }
+                    element.put("kind", "multiResource");
+                    element.put("values", values);
+                    element.put("type", rsc.getType());
+                } else {
+                    element.put("kind", "singleResource");
+                    element.put("type", rsc.getType());
+                    element.put("value", convertValue(rsc.getType(), rsc.getValue()));
+                }
+            } else if (src instanceof LwM2mResourceInstance) {
+                element.put("kind", "resourceInstance");
+                LwM2mResourceInstance rsc = (LwM2mResourceInstance) src;
                 element.put("type", rsc.getType());
                 element.put("value", convertValue(rsc.getType(), rsc.getValue()));
+
             }
-        } else if (src instanceof LwM2mResourceInstance) {
-            element.put("kind", "resourceInstance");
-            LwM2mResourceInstance rsc = (LwM2mResourceInstance) src;
-            element.put("type", rsc.getType());
-            element.put("value", convertValue(rsc.getType(), rsc.getValue()));
 
+            gen.writeObject(element);
         }
-
-        gen.writeObject(element);
     }
 
     private Object convertValue(Type type, Object value) {
