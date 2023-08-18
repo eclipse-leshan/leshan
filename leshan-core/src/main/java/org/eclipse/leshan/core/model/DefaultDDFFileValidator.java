@@ -30,6 +30,8 @@ import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.util.Validate;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 
 /**
  * A DDF File Validator.
@@ -95,7 +97,30 @@ public class DefaultDDFFileValidator implements DDFFileValidator {
     protected Schema getEmbeddedLwM2mSchema() throws SAXException {
         InputStream inputStream = DDFFileValidator.class.getResourceAsStream(schema);
         Source source = new StreamSource(inputStream);
-        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        SchemaFactory schemaFactory = createSchemaFactory();
         return schemaFactory.newSchema(source);
+    }
+
+    protected SchemaFactory createSchemaFactory() {
+        SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        try {
+            // Create Safe SchemaFactory (not vulnerable to XXE Attacks)
+            // --------------------------------------------------------
+            // There is several recommendation from different source we try to apply all, even if some are maybe
+            // redundant.
+
+            // from :
+            // https://semgrep.dev/docs/cheat-sheets/java-xxe/
+            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
+            // from :
+            // https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html#schemafactory
+            factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            factory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+
+        } catch (SAXNotRecognizedException | SAXNotSupportedException e) {
+            throw new IllegalStateException("Unable to create SchemaFactory", e);
+        }
+        return factory;
     }
 }
