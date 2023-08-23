@@ -41,7 +41,7 @@ public interface RegistrationService {
      * Returns an iterator over all registrations. There are no guarantees concerning the order in which the elements
      * are returned.
      *
-     * @return an <tt>Iterator</tt> over registrations
+     * @return an {@link Iterator} over registrations
      */
     Iterator<Registration> getAllRegistrations();
 

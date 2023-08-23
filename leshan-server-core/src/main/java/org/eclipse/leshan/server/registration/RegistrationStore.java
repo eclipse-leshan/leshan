@@ -84,7 +84,7 @@ public interface RegistrationStore {
      * Returns an iterator over the registration of this store. There are no guarantees concerning the order in which
      * the elements are returned (unless the implementation provides a guarantee).
      *
-     * @return an <tt>Iterator</tt> over the registration in this store
+     * @return an {@link Iterator} over the registration in this store
      */
     Iterator<Registration> getAllRegistrations();
 
