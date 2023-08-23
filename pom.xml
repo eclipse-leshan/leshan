@@ -387,8 +387,7 @@ Contributors:
         <plugin>
           <groupId>com.github.ekryd.sortpom</groupId>
           <artifactId>sortpom-maven-plugin</artifactId>
-          <!-- can not upgrade because of we stuck with java8 : https://github.com/Ekryd/sortpom/issues/225 -->
-          <version>3.0.1</version>
+          <version>3.3.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
@@ -440,21 +439,19 @@ Contributors:
         </plugin>
         <plugin>
           <artifactId>maven-checkstyle-plugin</artifactId>
-          <version>3.2.0</version>
+          <version>3.3.0</version>
           <dependencies>
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <!--  stuck to 9.x for java8 compatibility -->
-              <version>9.3</version>
+              <version>10.12.2</version>
             </dependency>
           </dependencies>
         </plugin>
         <plugin>
           <groupId>net.revelc.code</groupId>
           <artifactId>impsort-maven-plugin</artifactId>
-          <!--  stuck to 1.6.x for java8 compatibility -->
-          <version>1.6.2</version>
+          <version>1.9.0</version>
           <dependencies>
             <!-- Needed because of maven 3.9.0 backward compatibility issue,
                  See : https://github.com/eclipse/leshan/issues/1410 -->
@@ -468,8 +465,9 @@ Contributors:
         <plugin>
           <groupId>net.revelc.code.formatter</groupId>
           <artifactId>formatter-maven-plugin</artifactId>
-          <!--  stuck to 2.16.0 for java8 compatibility -->
-          <version>2.16.0</version>
+          <!-- stuck to 2.18, because higher version seems to detected bad formatting, 
+               need to investigate before to upgrade -->
+          <version>2.18.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.felix</groupId>
