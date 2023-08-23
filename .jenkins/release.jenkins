@@ -37,7 +37,7 @@ pipeline {
   }
   tools {
     maven 'apache-maven-latest'
-    jdk 'oracle-jdk8-latest'
+    jdk 'oracle-jdk11-latest'
   }
   options {
     timeout (time: 30, unit: 'MINUTES')

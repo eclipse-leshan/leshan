@@ -537,6 +537,9 @@ Contributors:
           <rules>
             <requireUpperBoundDeps></requireUpperBoundDeps>
             <dependencyConvergence></dependencyConvergence>
+            <requireJavaVersion>
+              <version>1.11</version>
+            </requireJavaVersion>
             <requireMavenVersion>
               <version>3.6.0</version>
             </requireMavenVersion>
