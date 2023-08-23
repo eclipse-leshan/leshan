@@ -354,8 +354,7 @@ Contributors:
                 </plugin>
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <!--  stuck to 3.0.0-M5 because of java7 constraint -->
-                    <version>3.0.0-M5</version>
+                    <version>3.1.2</version>
                     <configuration>
                         <systemPropertyVariables>
                              <logback.configurationFile>logback-leshan-test.xml</logback.configurationFile>
