@@ -37,7 +37,7 @@ pipeline {
   }
   tools {
     maven 'apache-maven-latest'
-    jdk 'oracle-jdk8-latest'
+    jdk 'oracle-jdk11-latest'
   }
   options {
     timeout (time: 30, unit: 'MINUTES')
@@ -65,8 +65,8 @@ pipeline {
             branch: '${BRANCH}'
 
         // Update to release version and build artifacts 
-        sh '''mvn -B versions:set -PuseToolchain -DnewVersion=${RELEASE_VERSION}'''
-        sh '''mvn -B clean install javadoc:javadoc -PuseToolchain'''
+        sh '''mvn -B versions:set -DnewVersion=${RELEASE_VERSION}'''
+        sh '''mvn -B clean install javadoc:javadoc '''
         
         // Commit new version change
         sshagent(['github-bot-ssh']) {
@@ -87,8 +87,8 @@ pipeline {
     stage('Deploy') {
       steps {
         // deploy then update to post release version
-        sh '''mvn -B deploy -PuseToolchain,release -DskipTests -DskipStagingRepositoryClose=${DRY_RUN}'''
-        sh '''mvn -B versions:set -PuseToolchain -DnewVersion=${NEXT_VERSION}'''
+        sh '''mvn -B deploy -Prelease -DskipTests -DskipStagingRepositoryClose=${DRY_RUN}'''
+        sh '''mvn -B versions:set -DnewVersion=${NEXT_VERSION}'''
         
         // Commit post release version change and push if not dry-run
         sshagent(['github-bot-ssh']) {

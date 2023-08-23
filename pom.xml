@@ -346,8 +346,7 @@ Contributors:
                     <version>3.10.1</version>
                     <configuration>
                         <encoding>UTF-8</encoding>
-                        <source>1.7</source>
-                        <target>1.7</target>
+                        <release>7</release>
                         <debug>true</debug>
                         <optimize>true</optimize>
                         <showDeprecations>true</showDeprecations>
@@ -535,6 +534,9 @@ Contributors:
                     <rules>
                         <requireUpperBoundDeps/>
                         <dependencyConvergence/>
+                        <requireJavaVersion>
+                           <version>1.11</version>
+                        </requireJavaVersion>
                         <requireMavenVersion>
                             <version>3.5.0</version>
                         </requireMavenVersion>

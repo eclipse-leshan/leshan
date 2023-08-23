@@ -8,7 +8,7 @@ pipeline {
   agent any
   tools {
     maven 'apache-maven-latest'
-    jdk 'adoptopenjdk-hotspot-jdk8-latest'
+    jdk 'adoptopenjdk-hotspot-jdk11-latest'
   }
   options {
     timeout (time: 30, unit: 'MINUTES')
@@ -20,7 +20,7 @@ pipeline {
     stage('Build') {
       steps {
         // Build 
-        sh ''' mvn -B clean install javadoc:javadoc -PuseToolchain '''
+        sh ''' mvn -B clean install javadoc:javadoc '''
 
         // Copy artifacts
         sh ''' cp leshan-server-demo/target/leshan-server-demo-*-jar-with-dependencies.jar leshan-server-demo.jar

@@ -9,7 +9,7 @@ pipeline {
   agent any
   tools {
     maven 'apache-maven-latest'
-    jdk 'adoptopenjdk-hotspot-jdk8-latest'
+    jdk 'adoptopenjdk-hotspot-jdk11-latest'
   }
   options {
     timeout (time: 30, unit: 'MINUTES')
@@ -24,13 +24,13 @@ pipeline {
     stage('Build') {
       steps {
         // Build 
-        sh ''' mvn -B clean install javadoc:javadoc -PuseToolchain '''
+        sh ''' mvn -B clean install javadoc:javadoc '''
       }
     }
     stage('Deploy') {
       steps {
         // Build 
-        sh '''mvn -B deploy -PuseToolchain,release-nightly -DskipTests -Dskip.yarn'''
+        sh '''mvn -B deploy -Prelease-nightly -DskipTests -Dskip.yarn'''
       }
     }
   }
