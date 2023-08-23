@@ -30,7 +30,7 @@ Contributors:
   <description>Shared Maven configuration for all Leshan demos</description>
 
   <properties>
-    <node-version>v12.22.5</node-version>
+    <node-version>v18.13.0</node-version>
     <yarn-version>v1.22.19</yarn-version>
   </properties>
 

@@ -5,6 +5,7 @@ module.exports = {
   outputDir: process.env.MAVEN_OUTPUT_DIR
     ? process.env.MAVEN_OUTPUT_DIR
     : "../target/dist",
+  parallel: false,
   publicPath: "./",
   transpileDependencies: ["vuetify"],
   devServer: {
