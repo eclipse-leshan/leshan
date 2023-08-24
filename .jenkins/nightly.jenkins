@@ -9,7 +9,7 @@ pipeline {
   agent any
   tools {
     maven 'apache-maven-latest'
-    jdk 'adoptopenjdk-hotspot-jdk11-latest'
+    jdk 'temurin-jdk11-latest'
   }
   options {
     timeout (time: 30, unit: 'MINUTES')
