@@ -27,6 +27,8 @@ Test Server Sandbox
 
 You can try live our servers demos instances:
 
+:warning: live demos are using **in development** Leshan version which means this is not Leshan v1.x :warning:
+
 * The **lwm2m server** at https://leshan.eclipseprojects.io/  
    _(coap://leshan.eclipseprojects.io:5683  and coaps://leshan.eclipseprojects.io:5684)_  
 * The **bootstrap server** at https://leshan.eclipseprojects.io/bs/  
@@ -60,12 +62,12 @@ Compile Leshan & Run Demos
 Get sources :
 ```bash
 #using ssh
-git clone git@github.com:eclipse/leshan.git
+git clone -b 1.x git@github.com:eclipse/leshan.git
 ```
 or
 ```
 #using https
-git clone https://github.com/eclipse/leshan.git
+git clone -b 1.x https://github.com/eclipse/leshan.git
 
 ```
 
