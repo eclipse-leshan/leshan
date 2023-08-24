@@ -1,4 +1,4 @@
-[Build Status](https://hudson.eclipse.org/leshan/)
+[Build Status](https://ci.eclipse.org/leshan/job/leshan-ci/job/1.x/)
 
 ![Leshan](https://eclipse.org/leshan/img/multicolor-leshan.png)
 
@@ -40,17 +40,17 @@ Test Leshan Demos locally
 -----------------------
 Get and run the last binary of our demo **server** :
 ```
-wget https://ci.eclipse.org/leshan/job/leshan/lastSuccessfulBuild/artifact/leshan-server-demo.jar
+wget https://ci.eclipse.org/leshan/job/leshan-ci/job/1.x/lastSuccessfulBuild/artifact/leshan-server-demo.jar
 java -jar ./leshan-server-demo.jar
 ```
 Get and run the last binary of our demo **client** :
 ```
-wget https://ci.eclipse.org/leshan/job/leshan/lastSuccessfulBuild/artifact/leshan-client-demo.jar
+wget https://ci.eclipse.org/leshan/job/leshan-ci/job/1.x/lastSuccessfulBuild/artifact/leshan-client-demo.jar
 java -jar ./leshan-client-demo.jar
 ```
 Get and run the last binary of our **bootstrap** demo server :
 ```
-wget https://ci.eclipse.org/leshan/job/leshan/lastSuccessfulBuild/artifact/leshan-bsserver-demo.jar
+wget https://ci.eclipse.org/leshan/job/leshan-ci/job/1.x/lastSuccessfulBuild/artifact/leshan-bsserver-demo.jar
 java -jar ./leshan-bsserver-demo.jar
 ```
 :information_source: : _All the demos have a `--help` option._
