@@ -15,18 +15,14 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.model;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import java.io.IOException;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 public class DDFFileParserTest {
 
-    @Test
+    @Test(expected = InvalidDDFFileException.class)
     public void test_xxe_injection_failed() throws IOException, InvalidModelException, InvalidDDFFileException {
-        assertThrows(InvalidDDFFileException.class, () -> {
-            ObjectLoader.loadDdfResources("/models/", new String[] { "xxe_injection.xml" }, true);
-        });
+        ObjectLoader.loadDdfResources("/models/", new String[] { "xxe_injection.xml" }, true);
     }
 }

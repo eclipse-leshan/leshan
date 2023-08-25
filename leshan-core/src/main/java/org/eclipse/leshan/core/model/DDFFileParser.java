@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -59,9 +60,36 @@ public class DDFFileParser {
      * @since 1.1
      */
     public DDFFileParser(DDFFileValidator ddfValidator) {
-        factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
+        factory = createDocumentBuilderFactory();
         this.ddfValidator = ddfValidator;
+    }
+
+    protected DocumentBuilderFactory createDocumentBuilderFactory() {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        try {
+            // Create Safe DocumentBuilderFactory (not vulnerable to XXE Attacks)
+            // -----------------------------------------------------------------
+            // There is several recommendation from different source we try to apply all, even if some are maybe
+            // redundant.
+
+            // from :
+            // https://semgrep.dev/docs/cheat-sheets/java-xxe/
+            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
+            // from :
+            // https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html#jaxp-documentbuilderfactory-saxparserfactory-and-dom4j
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true); // Disable DTDs
+            factory.setXIncludeAware(false); // Disable XML Inclusions
+
+            // from :
+            // https://community.veracode.com/s/article/Java-Remediation-Guidance-for-XXE
+            factory.setExpandEntityReferences(false); // disable expand entity reference nodes
+
+        } catch (ParserConfigurationException e) {
+            throw new IllegalStateException("Unable to create DocumentBuilderFactory", e);
+        }
+        factory.setNamespaceAware(true);
+        return factory;
     }
 
     /**
