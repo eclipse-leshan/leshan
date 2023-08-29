@@ -30,11 +30,17 @@ List of  version which are not affected by known vulnerability.
 
 | Version              |                    |
 | -------------------- | ------------------ |
-| 2.0.0-M9 +           | :heavy_check_mark: |
-| 1.4.2 +              | :heavy_check_mark: |
+| 2.0.0-M13 +           | :heavy_check_mark: |
+| 1.5.0 +              | :heavy_check_mark: |
+
+This is an exhaustive list of known security issue affecting leshan library :
+
+| CVE/ID                                                                                                                                                                                       |  Leshan version concerned                | artifacts            | Affect |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| ---------------------------------------- | ---------------------| ------ |
+| [CVE-2023-41034](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-41034) <br> [GHSA-wc9j-gc65-3cm7](https://github.com/eclipse-leshan/leshan/security/advisories/GHSA-wc9j-gc65-3cm7) | 2.0.0-M1 -> 2.0.0-M12 <br> 1.0.0 -> 1.4.2| leshan-core          | if you parse untrusted DDF files <br> (e.g. if they let external users provide their own model), |
 
 
-This is a not exhaustive list of security issue from Leshan dependencies which could affect Leshan.
+This is a not exhaustive list of security issue from Leshan dependencies which could affect Leshan :
 
 | CVE/ID                                                                                                  |  Leshan version concerned                | Source               | Affect |
 | --------------------------------------------------------------------------------------------------------| ---------------------------------------- | ---------------------| ------ |
