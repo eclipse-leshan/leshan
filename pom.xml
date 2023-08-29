@@ -132,28 +132,16 @@ Contributors:
             </properties>
         </profile>
         <profile>
-            <!-- This profile activate the usage of toolchain to compile using JDK 1.7-->
+            <!-- This profile launch tests with minimal supported jdk version using toolchain -->
             <id>useToolchain</id>
-            <properties>
-                <javadoc.doclint></javadoc.doclint>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>maven-toolchains-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>toolchain</goal>
-                                </goals>
-                            </execution>
-                        </executions>
+                        <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <toolchains>
-                                <jdk>
-                                    <version>1.7</version>
-                                </jdk>
-                            </toolchains>
+                            <jdkToolchain>
+                                <version>1.7</version>
+                            </jdkToolchain>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -354,7 +342,8 @@ Contributors:
                 </plugin>
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.1.2</version>
+                    <!--  stuck to 3.0.0-M5 because of java7 constraint -->
+                    <version>3.0.0-M5</version>
                     <configuration>
                         <systemPropertyVariables>
                              <logback.configurationFile>logback-leshan-test.xml</logback.configurationFile>

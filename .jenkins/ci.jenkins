@@ -20,7 +20,7 @@ pipeline {
     stage('Build') {
       steps {
         // Build 
-        sh ''' mvn -B clean install javadoc:javadoc '''
+        sh ''' mvn -B clean install -PuseToolchain javadoc:javadoc '''
 
         // Copy artifacts
         sh ''' cp leshan-server-demo/target/leshan-server-demo-*-jar-with-dependencies.jar leshan-server-demo.jar
