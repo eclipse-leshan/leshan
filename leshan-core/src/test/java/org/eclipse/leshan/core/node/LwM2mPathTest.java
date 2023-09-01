@@ -19,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
+
 public class LwM2mPathTest {
 
     @Test
@@ -72,5 +74,13 @@ public class LwM2mPathTest {
         assertTrue(new LwM2mPath(path1).compareTo(new LwM2mPath(path2)) == -1);
         assertTrue(new LwM2mPath(path2).compareTo(new LwM2mPath(path1)) == 1);
 
+    }
+
+    @Test
+    public void assertEqualsHashcode() {
+        // TODO we should not use EqualsVerifier.simple()
+        // But implement a right hashcode/equals way
+        // see : https://github.com/eclipse-leshan/leshan/issues/1504
+        EqualsVerifier.simple().forClass(LwM2mPath.class).verify();
     }
 }
