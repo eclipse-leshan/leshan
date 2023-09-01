@@ -330,7 +330,7 @@ public class ClientServlet extends HttpServlet {
                     // create & process request WriteAttributes request
                     target = StringUtils.removeEnd(target, path[path.length - 1]);
                     LwM2mAttributeSet attributes = new LwM2mAttributeSet(
-                            attributeParser.parseQueryParams(req.getQueryString()));
+                            attributeParser.parseUriQuery(req.getQueryString()));
                     WriteAttributesRequest request = new WriteAttributesRequest(target, attributes);
                     WriteAttributesResponse cResponse = server.send(registration, request, extractTimeout(req));
                     processDeviceResponse(req, resp, cResponse);
