@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.eclipse.jetty.servlets.EventSource;
 import org.eclipse.jetty.servlets.EventSourceServlet;
+import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -44,6 +45,7 @@ import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpoint;
 import org.eclipse.leshan.server.demo.servlet.json.JacksonLinkSerializer;
 import org.eclipse.leshan.server.demo.servlet.json.JacksonLwM2mNodeSerializer;
 import org.eclipse.leshan.server.demo.servlet.json.JacksonRegistrationSerializer;
+import org.eclipse.leshan.server.demo.servlet.json.JacksonVersionSerializer;
 import org.eclipse.leshan.server.demo.servlet.log.CoapMessage;
 import org.eclipse.leshan.server.demo.servlet.log.CoapMessageListener;
 import org.eclipse.leshan.server.demo.servlet.log.CoapMessageTracer;
@@ -299,7 +301,10 @@ public class EventServlet extends EventSourceServlet {
         SimpleModule module = new SimpleModule();
         module.addSerializer(Link.class, new JacksonLinkSerializer());
         module.addSerializer(Registration.class, new JacksonRegistrationSerializer(server.getPresenceService()));
+        // TODO like we have a dedicated serializer for Registration, we maybe need one for RegistrationUpdate
+        // needed for : registrationListener.updated(RegistrationUpdate, Registration, Registration)
         module.addSerializer(LwM2mNode.class, new JacksonLwM2mNodeSerializer());
+        module.addSerializer(Version.class, new JacksonVersionSerializer());
         mapper.registerModule(module);
         this.mapper = mapper;
     }
