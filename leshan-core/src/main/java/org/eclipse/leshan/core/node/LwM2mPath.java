@@ -253,7 +253,7 @@ public class LwM2mPath {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + objectId;
+        result = prime * result + ((objectId == null) ? 0 : objectId.hashCode());
         result = prime * result + ((objectInstanceId == null) ? 0 : objectInstanceId.hashCode());
         result = prime * result + ((resourceId == null) ? 0 : resourceId.hashCode());
         result = prime * result + ((resourceInstanceId == null) ? 0 : resourceInstanceId.hashCode());
