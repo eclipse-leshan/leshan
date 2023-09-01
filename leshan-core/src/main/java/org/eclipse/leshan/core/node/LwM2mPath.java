@@ -17,6 +17,7 @@ package org.eclipse.leshan.core.node;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.leshan.core.util.Validate;
 
@@ -331,56 +332,21 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + objectId;
-        result = prime * result + ((objectInstanceId == null) ? 0 : objectInstanceId.hashCode());
-        result = prime * result + ((resourceId == null) ? 0 : resourceId.hashCode());
-        result = prime * result + ((resourceInstanceId == null) ? 0 : resourceInstanceId.hashCode());
-        return result;
+        return Objects.hash(objectId, objectInstanceId, resourceId, resourceInstanceId);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
+        if (this == obj)
             return true;
-        }
-        if (obj == null) {
+        if (obj == null)
             return false;
-        }
-        if (getClass() != obj.getClass()) {
+        if (getClass() != obj.getClass())
             return false;
-        }
         LwM2mPath other = (LwM2mPath) obj;
-        if (objectId == null) {
-            if (other.objectId != null) {
-                return false;
-            }
-        } else if (!objectId.equals(other.objectId)) {
-            return false;
-        }
-        if (objectInstanceId == null) {
-            if (other.objectInstanceId != null) {
-                return false;
-            }
-        } else if (!objectInstanceId.equals(other.objectInstanceId)) {
-            return false;
-        }
-        if (resourceId == null) {
-            if (other.resourceId != null) {
-                return false;
-            }
-        } else if (!resourceId.equals(other.resourceId)) {
-            return false;
-        }
-        if (resourceInstanceId == null) {
-            if (other.resourceInstanceId != null) {
-                return false;
-            }
-        } else if (!resourceInstanceId.equals(other.resourceInstanceId)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(objectId, other.objectId) && Objects.equals(objectInstanceId, other.objectInstanceId)
+                && Objects.equals(resourceId, other.resourceId)
+                && Objects.equals(resourceInstanceId, other.resourceInstanceId);
     }
 
     @Override
