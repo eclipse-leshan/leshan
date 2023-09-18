@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.config.DtlsConfig;
@@ -59,6 +60,7 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.send.ManualDataSender;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.californium.PrincipalMdcConnectionListener;
 import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
@@ -66,8 +68,13 @@ import org.eclipse.leshan.core.demo.cli.interactive.InteractiveCLI;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
+import org.eclipse.leshan.core.node.codec.text.LwM2mNodeTextDecoder;
+import org.eclipse.leshan.core.request.BootstrapWriteRequest;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.transport.javacoap.client.endpoint.JavaCoapClientEndpointsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -320,6 +327,16 @@ public class LeshanClientDemo {
         builder.setBootstrapAdditionalAttributes(cli.main.bsAdditionalAttributes);
         final LeshanClient client = builder.build();
 
+        if (cli.main.factoryBootstrap != null) {
+            LwM2mNodeTextDecoder lwM2mNodeTextDecoder = new LwM2mNodeTextDecoder();
+            for (Map.Entry<LwM2mPath, String> entry : cli.main.factoryBootstrap.entrySet()) {
+                LwM2mPath lwM2mPath = entry.getKey();
+                LwM2mSingleResource decodedResource = lwM2mNodeTextDecoder.decode(entry.getValue().getBytes(),
+                        lwM2mPath, repository.getLwM2mModel(), LwM2mSingleResource.class);
+                client.getObjectTree().getObjectEnabler(lwM2mPath.getObjectId()).write(LwM2mServer.SYSTEM,
+                        new BootstrapWriteRequest(lwM2mPath, decodedResource, ContentFormat.TEXT));
+            }
+        }
         client.getObjectTree().addListener(new ObjectsListenerAdapter() {
 
             @Override
