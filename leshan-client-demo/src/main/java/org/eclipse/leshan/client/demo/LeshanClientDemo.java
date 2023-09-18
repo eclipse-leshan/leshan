@@ -59,6 +59,7 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.send.ManualDataSender;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.californium.PrincipalMdcConnectionListener;
 import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
@@ -66,8 +67,13 @@ import org.eclipse.leshan.core.demo.cli.interactive.InteractiveCLI;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
+import org.eclipse.leshan.core.node.codec.text.LwM2mNodeTextDecoder;
+import org.eclipse.leshan.core.request.BootstrapWriteRequest;
+import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.transport.javacoap.client.endpoint.JavaCoapClientEndpointsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -320,6 +326,34 @@ public class LeshanClientDemo {
         builder.setBootstrapAdditionalAttributes(cli.main.bsAdditionalAttributes);
         final LeshanClient client = builder.build();
 
+        // Handle Factory Bootstrap option
+        if (cli.main.factoryBootstrap != null) {
+            LwM2mNodeTextDecoder textDecoder = new LwM2mNodeTextDecoder();
+            cli.main.factoryBootstrap.forEach((resourcePath, resourceValue) -> {
+                BootstrapWriteResponse response = null;
+                try {
+                    // get resource from string resource value
+                    LwM2mSingleResource resource = textDecoder.decode(resourceValue.getBytes(), resourcePath,
+                            repository.getLwM2mModel(), LwM2mSingleResource.class);
+                    // try to write this resource
+                    response = client.getObjectTree().getObjectEnabler(resourcePath.getObjectId()).write(
+                            LwM2mServer.SYSTEM, new BootstrapWriteRequest(resourcePath, resource, ContentFormat.TEXT));
+                } catch (RuntimeException e) {
+                    // catch any error
+                    throw new IllegalStateException(
+                            String.format(" --factory-bootstrap failed : unable to write resource %s", resourcePath),
+                            e);
+                }
+                // Raise error if bootstrap write request failed
+                if (response == null || !response.isSuccess()) {
+                    throw new IllegalStateException(
+                            String.format("--factory-bootstrap failed : unable to write resource %s%s", resourcePath,
+                                    response.getErrorMessage() == null ? "" : " : " + response.getErrorMessage()));
+                }
+            });
+        }
+
+        // Add some log about object tree life cycle.
         client.getObjectTree().addListener(new ObjectsListenerAdapter() {
 
             @Override

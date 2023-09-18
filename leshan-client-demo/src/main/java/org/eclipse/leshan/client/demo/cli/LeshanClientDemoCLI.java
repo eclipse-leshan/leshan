@@ -29,7 +29,9 @@ import org.eclipse.leshan.core.demo.cli.StandardHelpOptions;
 import org.eclipse.leshan.core.demo.cli.VersionProvider;
 import org.eclipse.leshan.core.demo.cli.converters.CIDConverter;
 import org.eclipse.leshan.core.demo.cli.converters.InetAddressConverter;
+import org.eclipse.leshan.core.demo.cli.converters.ResourcePathConverter;
 import org.eclipse.leshan.core.demo.cli.converters.StrictlyPositiveIntegerConverter;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.util.StringUtils;
 
 import picocli.CommandLine.ArgGroup;
@@ -155,6 +157,18 @@ public class LeshanClientDemoCLI implements Runnable {
                 description = { //
                         "Use java-coap for CoAP protocol instead of Californium." })
         public boolean useJavaCoap;
+
+        @Option(names = { "-fb", "--factory-bootstrap" },
+                description = { //
+                        "Can be used to initialize existing resource with custom value.", //
+                        "LWM2M Text Content format encoding should be used for resource value", //
+                        "E.g. to change Short Server ID :", //
+                        " -fb /0/0/10=1234,/1/0/0=1234", //
+                },
+                split = ",",
+                converter = ResourcePathConverter.class)
+
+        public Map<LwM2mPath, String> factoryBootstrap;
     }
 
     /* ********************************** Location Section ******************************** */
