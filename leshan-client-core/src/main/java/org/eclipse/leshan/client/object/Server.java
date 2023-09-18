@@ -115,7 +115,13 @@ public class Server extends BaseInstanceEnabler {
 
         switch (resourceid) {
         case 0:
-            if (value.getType() != Type.INTEGER) {
+            if (value.getType() == Type.STRING) {
+                int previousShortServerId = shortServerId;
+                shortServerId = Integer.valueOf(value.getValue().toString());
+                if (previousShortServerId != shortServerId)
+                    fireResourceChange(resourceid);
+                return WriteResponse.success();
+            } else if (value.getType() != Type.INTEGER) {
                 return WriteResponse.badRequest("invalid type");
             }
             int previousShortServerId = shortServerId;
@@ -125,7 +131,13 @@ public class Server extends BaseInstanceEnabler {
             return WriteResponse.success();
 
         case 1:
-            if (value.getType() != Type.INTEGER) {
+            if (value.getType() == Type.STRING) {
+                long previousLifetime = lifetime;
+                lifetime = Integer.valueOf(value.getValue().toString());
+                if (previousLifetime != lifetime)
+                    fireResourceChange(resourceid);
+                return WriteResponse.success();
+            } else if (value.getType() != Type.INTEGER) {
                 return WriteResponse.badRequest("invalid type");
             }
             long previousLifetime = lifetime;

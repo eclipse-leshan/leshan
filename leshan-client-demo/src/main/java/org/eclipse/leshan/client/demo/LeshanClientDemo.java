@@ -34,6 +34,7 @@ import static org.eclipse.leshan.core.LwM2mId.SERVER;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.config.DtlsConfig;
@@ -56,6 +57,7 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.send.ManualDataSender;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.californium.PrincipalMdcConnectionListener;
 import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
@@ -63,8 +65,12 @@ import org.eclipse.leshan.core.demo.cli.interactive.InteractiveCLI;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
+import org.eclipse.leshan.core.request.BootstrapWriteRequest;
+import org.eclipse.leshan.core.request.ContentFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -191,31 +197,34 @@ public class LeshanClientDemo {
                 initializer.setClassForObject(SERVER, Server.class);
             }
         } else {
+            int shortServerId = cli.main.initResources == null || cli.main.initResources.get("/1/0/0") == null ? 123
+                    : Integer.valueOf(cli.main.initResources.get("/1/0/0"));
             if (cli.identity.isPSK()) {
                 // TODO OSCORE support OSCORE with DTLS/PSK
-                initializer.setInstancesForObject(SECURITY, psk(cli.main.url, 123,
+                initializer.setInstancesForObject(SECURITY, psk(cli.main.url, shortServerId,
                         cli.identity.getPsk().identity.getBytes(), cli.identity.getPsk().sharekey.getBytes()));
-                initializer.setInstancesForObject(SERVER, new Server(123, cli.main.lifetimeInSec));
+                initializer.setInstancesForObject(SERVER, new Server(shortServerId, cli.main.lifetimeInSec));
             } else if (cli.identity.isRPK()) {
                 // TODO OSCORE support OSCORE with DTLS/RPK
                 initializer.setInstancesForObject(SECURITY,
-                        rpk(cli.main.url, 123, cli.identity.getRPK().cpubk.getEncoded(),
+                        rpk(cli.main.url, shortServerId, cli.identity.getRPK().cpubk.getEncoded(),
                                 cli.identity.getRPK().cprik.getEncoded(), cli.identity.getRPK().spubk.getEncoded()));
-                initializer.setInstancesForObject(SERVER, new Server(123, cli.main.lifetimeInSec));
+                initializer.setInstancesForObject(SERVER, new Server(shortServerId, cli.main.lifetimeInSec));
             } else if (cli.identity.isx509()) {
                 // TODO OSCORE support OSCORE with DTLS/X509
                 initializer.setInstancesForObject(SECURITY,
-                        x509(cli.main.url, 123, cli.identity.getX509().ccert.getEncoded(),
+                        x509(cli.main.url, shortServerId, cli.identity.getX509().ccert.getEncoded(),
                                 cli.identity.getX509().cprik.getEncoded(), cli.identity.getX509().scert.getEncoded(),
                                 cli.identity.getX509().certUsage.code));
-                initializer.setInstancesForObject(SERVER, new Server(123, cli.main.lifetimeInSec));
+                initializer.setInstancesForObject(SERVER, new Server(shortServerId, cli.main.lifetimeInSec));
             } else {
                 if (oscoreObjectInstanceId != null) {
-                    initializer.setInstancesForObject(SECURITY, oscoreOnly(cli.main.url, 123, oscoreObjectInstanceId));
+                    initializer.setInstancesForObject(SECURITY,
+                            oscoreOnly(cli.main.url, shortServerId, oscoreObjectInstanceId));
                 } else {
-                    initializer.setInstancesForObject(SECURITY, noSec(cli.main.url, 123));
+                    initializer.setInstancesForObject(SECURITY, noSec(cli.main.url, shortServerId));
                 }
-                initializer.setInstancesForObject(SERVER, new Server(123, cli.main.lifetimeInSec));
+                initializer.setInstancesForObject(SERVER, new Server(shortServerId, cli.main.lifetimeInSec));
             }
         }
         initializer.setInstancesForObject(DEVICE, new MyDevice());
@@ -304,6 +313,14 @@ public class LeshanClientDemo {
         builder.setBootstrapAdditionalAttributes(cli.main.bsAdditionalAttributes);
         final LeshanClient client = builder.build();
 
+        if (cli.main.initResources != null)
+            for (Map.Entry<String, String> entry : cli.main.initResources.entrySet()) {
+                LwM2mPath lwM2mPath = new LwM2mPath(entry.getKey());
+                client.getObjectTree().getObjectEnabler(lwM2mPath.getObjectId()).write(LwM2mServer.SYSTEM,
+                        new BootstrapWriteRequest(lwM2mPath,
+                                LwM2mSingleResource.newResource(lwM2mPath.getObjectId(), entry.getValue()),
+                                ContentFormat.TEXT));
+            }
         client.getObjectTree().addListener(new ObjectsListenerAdapter() {
 
             @Override

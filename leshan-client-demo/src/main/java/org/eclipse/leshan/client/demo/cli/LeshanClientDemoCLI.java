@@ -150,6 +150,15 @@ public class LeshanClientDemoCLI implements Runnable {
                         "Activate support of old/unofficial content format.", //
                         "See https://github.com/eclipse/leshan/pull/720" })
         public boolean supportOldFormat;
+
+        @Option(names = { "-ir", "--init-resources" },
+                description = { //
+                        "Use additional init resources.", //
+                        "syntax is :", //
+                        " -ir attrName1=attrValue1,attrName2=\\\"attrValue2\\\"" },
+                split = ",")
+
+        public Map<String, String> initResources;
     }
 
     /* ********************************** Location Section ******************************** */
