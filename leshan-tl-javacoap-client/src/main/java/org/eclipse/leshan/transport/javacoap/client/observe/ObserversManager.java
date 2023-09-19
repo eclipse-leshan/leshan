@@ -63,7 +63,22 @@ public class ObserversManager implements Filter.SimpleFilter<CoapRequest, CoapRe
 
     @Override
     public CompletableFuture<CoapResponse> apply(CoapRequest request, Service<CoapRequest, CoapResponse> service) {
-        return service.apply(request).thenApply(resp -> subscribe(request, resp));
+        CompletableFuture<CoapResponse> coapResponse = service.apply(request);
+        if (coapResponse != null)
+            return coapResponse.thenApply(resp -> subscribe(request, resp));
+        return null;
+    }
+
+    public boolean contains(CoapRequest req) {
+        return observersStore.contains(req);
+    }
+
+    public void addListener(ObserversListener listener) {
+        observersStore.addListener(listener);
+    }
+
+    public void removeListener(ObserversListener listener) {
+        observersStore.removeListener(listener);
     }
 
     private CoapResponse subscribe(CoapRequest req, CoapResponse resp) {
@@ -90,9 +105,15 @@ public class ObserversManager implements Filter.SimpleFilter<CoapRequest, CoapRe
     }
 
     private void sendObservation(CoapRequest observeRequest, Service<CoapRequest, CoapResponse> responseBuilder) {
+        CompletableFuture<CoapResponse> coapResponse = responseBuilder.apply(observeRequest);
+        if (coapResponse != null) {
+            sendObservation(observeRequest, coapResponse);
+        }
+    }
+
+    public void sendObservation(CoapRequest observeRequest, CompletableFuture<CoapResponse> response) {
         int currentObserveSequence = observeSeq.incrementAndGet();
-        responseBuilder.apply(observeRequest)
-                .thenApply(obsResponse -> toSeparateResponse(obsResponse, currentObserveSequence, observeRequest))
+        response.thenApply(obsResponse -> toSeparateResponse(obsResponse, currentObserveSequence, observeRequest))
                 .thenAccept(separateResponse -> sendObservation(observeRequest, separateResponse));
     }
 

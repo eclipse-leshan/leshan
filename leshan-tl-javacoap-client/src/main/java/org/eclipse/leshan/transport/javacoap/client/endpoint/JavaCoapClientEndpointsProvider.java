@@ -24,6 +24,7 @@ import java.util.List;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpoint;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
+import org.eclipse.leshan.client.notification.NotificationManager;
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.servers.LwM2mServer;
@@ -73,7 +74,7 @@ public class JavaCoapClientEndpointsProvider implements LwM2mClientEndpointsProv
 
     @Override
     public void init(LwM2mObjectTree objectTree, DownlinkRequestReceiver requestReceiver,
-            ClientEndpointToolbox toolbox) {
+            NotificationManager notificationManager, ClientEndpointToolbox toolbox) {
         this.objectTree = objectTree;
         this.toolbox = toolbox;
 
@@ -122,14 +123,23 @@ public class JavaCoapClientEndpointsProvider implements LwM2mClientEndpointsProv
         routerBuilder //
                 .any("/", observersManager.then(new RootResource(requestReceiver, toolbox, identityExtractor))) //
                 .any("/bs", new BootstrapResource(requestReceiver, identityExtractor)) //
-                .any("/*", observersManager.then(new ObjectResource(requestReceiver, "/", toolbox, identityExtractor)));
+                .any("/*", observersManager.then(new ObjectResource(requestReceiver, "/", toolbox, identityExtractor,
+                        notificationManager, observersManager)));
         router = routerBuilder.build();
 
         // Create notification handler
         NotificationHandler notificationHandler = new NotificationHandler(
-                // use router but change Observe request in Read request
-                req -> router.apply(req.withOptions(coapOptionsBuilder -> coapOptionsBuilder.observe(null))), //
-                observersManager);
+                // use router but change Observe request in Read request and also flag request as notification
+                req -> {
+                    TransportContext extendedContext = req.getTransContext() //
+                            .with(LwM2mKeys.LESHAN_NOTIFICATION, true);
+
+                    CoapRequest newReq = new CoapRequest(req.getMethod(), req.getToken(), req.options(),
+                            req.getPayload(), req.getPeerAddress(), extendedContext);
+
+                    return router.apply(newReq.withOptions(coapOptionsBuilder -> coapOptionsBuilder.observe(null)));
+                } //
+                , observersManager);
         objectTree.addListener(notificationHandler);
     }
 

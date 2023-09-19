@@ -40,6 +40,7 @@ import org.eclipse.leshan.client.californium.endpoint.coap.CoapClientProtocolPro
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpoint;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
+import org.eclipse.leshan.client.notification.NotificationManager;
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.servers.LwM2mServer;
@@ -146,7 +147,7 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
 
     @Override
     public void init(LwM2mObjectTree objectTree, DownlinkRequestReceiver requestReceiver,
-            ClientEndpointToolbox toolbox) {
+            NotificationManager notificationManager, ClientEndpointToolbox toolbox) {
         this.objectTree = objectTree;
 
         // create coap server
@@ -160,7 +161,7 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
 
         // create resources
         List<Resource> resources = messagetranslator.createResources(coapServer, identityHandlerProvider,
-                identityExtrator, requestReceiver, toolbox, objectTree);
+                identityExtrator, requestReceiver, notificationManager, toolbox, objectTree);
         coapServer.add(resources.toArray(new Resource[resources.size()]));
     }
 

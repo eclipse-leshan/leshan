@@ -28,17 +28,23 @@ import java.util.List;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.core.observe.ObserveRelation;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.californium.core.server.resources.ResourceObserverAdapter;
 import org.eclipse.leshan.client.californium.LwM2mClientCoapResource;
 import org.eclipse.leshan.client.californium.endpoint.ServerIdentityExtractor;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
+import org.eclipse.leshan.client.notification.NotificationManager;
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.resource.NotificationSender;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
+import org.eclipse.leshan.core.link.lwm2m.attributes.InvalidAttributesException;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -75,22 +81,57 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A CoAP {@link Resource} in charge of handling requests targeting a lwM2M Object.
  */
 public class ObjectResource extends LwM2mClientCoapResource implements ObjectListener {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ObjectResource.class);
+
     protected DownlinkRequestReceiver requestReceiver;
     protected ClientEndpointToolbox toolbox;
+    protected NotificationManager notificationManager;
 
     public ObjectResource(int objectId, IdentityHandlerProvider identityHandlerProvider,
             ServerIdentityExtractor serverIdentityExtractor, DownlinkRequestReceiver requestReceiver,
-            ClientEndpointToolbox toolbox) {
+            NotificationManager notificationManager, ClientEndpointToolbox toolbox) {
         super(Integer.toString(objectId), identityHandlerProvider, serverIdentityExtractor);
         this.requestReceiver = requestReceiver;
+        this.notificationManager = notificationManager;
         this.toolbox = toolbox;
         setObservable(true);
+
+        this.addObserver(new ResourceObserverAdapter() {
+
+            @Override
+            public void removedObserveRelation(ObserveRelation relation) {
+                // Get object URI
+                Request request = relation.getExchange().getRequest();
+                String URI = request.getOptions().getUriPathString();
+                // we don't manage observation on root path
+                if (URI == null)
+                    return;
+
+                // Get Server identity
+                LwM2mServer extractIdentity = extractIdentity(relation.getExchange(), request);
+
+                // handle content format for Read and Observe Request
+                ContentFormat requestedContentFormat = null;
+                if (request.getOptions().hasAccept()) {
+                    // If an request ask for a specific content format, use it (if we support it)
+                    requestedContentFormat = ContentFormat.fromCode(request.getOptions().getAccept());
+                }
+
+                // Create Observe request
+                ObserveRequest observeRequest = new ObserveRequest(requestedContentFormat, URI, request);
+
+                // Remove notification data for this request
+                notificationManager.clear(extractIdentity, observeRequest);
+            }
+        });
     }
 
     @Override
@@ -143,16 +184,44 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
             // Manage Observe Request
             if (exchange.getRequestOptions().hasObserve()) {
                 ObserveRequest observeRequest = new ObserveRequest(requestedContentFormat, URI, coapRequest);
-                ObserveResponse response = requestReceiver.requestReceived(server, observeRequest).getResponse();
-                if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CONTENT) {
-                    LwM2mPath path = getPath(URI);
-                    LwM2mNode content = response.getContent();
-                    ContentFormat format = getContentFormat(observeRequest, requestedContentFormat);
-                    exchange.respond(ResponseCode.CONTENT,
-                            toolbox.getEncoder().encode(content, format, path, toolbox.getModel()), format.getCode());
-                    return;
+
+                boolean isObserveRelationEstablishement = coapRequest.isObserve()
+                        && (exchange.advanced().getRelation() == null
+                                || !exchange.advanced().getRelation().isEstablished());
+                boolean isActiveObserveCancellation = coapRequest.isObserveCancel();
+                if (isObserveRelationEstablishement || isActiveObserveCancellation) {
+                    // Handle observe request
+                    ObserveResponse response = requestReceiver.requestReceived(server, observeRequest).getResponse();
+                    if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CONTENT) {
+                        LwM2mPath path = getPath(URI);
+                        LwM2mNode content = response.getContent();
+                        ContentFormat format = getContentFormat(observeRequest, requestedContentFormat);
+
+                        // change notification manager state
+                        if (isObserveRelationEstablishement) {
+                            try {
+                                notificationManager.initRelation(server, observeRequest, content,
+                                        createNotificationSender(exchange, server, observeRequest,
+                                                requestedContentFormat));
+                            } catch (InvalidAttributesException e) {
+                                exchange.respond(
+                                        toCoapResponseCode(org.eclipse.leshan.core.ResponseCode.INTERNAL_SERVER_ERROR),
+                                        "Invalid Attributes state : " + e.getMessage());
+                            }
+                        }
+
+                        // send response
+                        exchange.respond(ResponseCode.CONTENT,
+                                toolbox.getEncoder().encode(content, format, path, toolbox.getModel()),
+                                format.getCode());
+                    } else {
+                        exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+                        return;
+                    }
                 } else {
-                    exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+                    // Handle notifications
+                    notificationManager.notificationTriggered(server, observeRequest,
+                            createNotificationSender(exchange, server, observeRequest, requestedContentFormat));
                     return;
                 }
             } else {
@@ -192,6 +261,39 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                 }
             }
         }
+    }
+
+    protected NotificationSender createNotificationSender(CoapExchange exchange, LwM2mServer server,
+            ObserveRequest observeRequest, ContentFormat requestedContentFormat) {
+        return new NotificationSender() {
+            @Override
+            public boolean sendNotification(ObserveResponse response) {
+                try {
+                    if (exchange.advanced().getRelation() != null && !exchange.advanced().getRelation().isCanceled()) {
+                        if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CONTENT) {
+                            LwM2mPath path = observeRequest.getPath();
+                            LwM2mNode content = response.getContent();
+                            ContentFormat format = getContentFormat(observeRequest, requestedContentFormat);
+                            Response coapResponse = new Response(ResponseCode.CONTENT);
+                            coapResponse
+                                    .setPayload(toolbox.getEncoder().encode(content, format, path, toolbox.getModel()));
+                            coapResponse.getOptions().setContentFormat(format.getCode());
+                            exchange.respond(coapResponse);
+                            return true;
+                        } else {
+                            exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+                            return false;
+                        }
+                    }
+                    return false;
+                } catch (Exception e) {
+                    LOG.error("Exception while sending notification [{}] for [{}] to {}", response, observeRequest,
+                            server, e);
+                    exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR, "failure sending notification");
+                    return false;
+                }
+            }
+        };
     }
 
     protected ContentFormat getContentFormat(DownlinkRequest<?> request, ContentFormat requestedContentFormat) {

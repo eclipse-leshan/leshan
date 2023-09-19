@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.link.attributes.AttributeSet;
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 
 /**
@@ -90,25 +91,65 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
         };
     }
 
-    public void validate(LwM2mPath path) {
-        // Can all attributes be assigned to this path
-        for (LwM2mAttribute<?> attr : getLwM2mAttributes()) {
-            String errorMessage = attr.getModel().getApplicabilityError(path, null);
-            if (errorMessage != null) {
-                throw new IllegalArgumentException(errorMessage);
-            }
+    public void validate() throws InvalidAttributesException {
+        // check some consistency about attribute set
+        // pmin SHOULD BE LESSER or EQUAL TO pmax
+        // https://datatracker.ietf.org/doc/html/draft-ietf-core-dynlink-07#section-4.2
+        LwM2mAttribute<Long> pmin = this.getLwM2mAttribute(LwM2mAttributes.MINIMUM_PERIOD);
+        LwM2mAttribute<Long> pmax = this.getLwM2mAttribute(LwM2mAttributes.MAXIMUM_PERIOD);
+        if ((pmin != null) && (pmax != null) //
+                && pmin.hasValue() && pmax.hasValue() //
+                && !(pmin.getValue() <= pmax.getValue())) {
+            throw new InvalidAttributesException("Attributes doesn't fulfill '%s'<= '%s' condition", pmin.getName(),
+                    pmax.getName());
+        }
+
+        // epmin SHOULD BE LESSER or EQUAL TO epmax
+        // https://datatracker.ietf.org/doc/html/draft-ietf-core-conditional-attributes-06#section-3.2.4
+        LwM2mAttribute<Long> epmin = this.getLwM2mAttribute(LwM2mAttributes.EVALUATE_MINIMUM_PERIOD);
+        LwM2mAttribute<Long> epmax = this.getLwM2mAttribute(LwM2mAttributes.EVALUATE_MAXIMUM_PERIOD);
+        if ((epmin != null) && (epmax != null) //
+                && epmin.hasValue() && epmax.hasValue() //
+                && !(epmin.getValue() <= epmax.getValue())) {
+            throw new InvalidAttributesException("Attributes doesn't fulfill '%s'<= '%s' condition", epmin.getName(),
+                    epmax.getName());
+        }
+
+        // "lt" value < "gt" value MUST BE TRUE
+        // https://www.openmobilealliance.org/release/LightweightM2M/V1_2_1-20221209-A/HTML-Version/OMA-TS-LightweightM2M_Core-V1_2_1-20221209-A.html#7-3-0-73-Attributes
+        LwM2mAttribute<Double> lt = this.getLwM2mAttribute(LwM2mAttributes.LESSER_THAN);
+        LwM2mAttribute<Double> gt = this.getLwM2mAttribute(LwM2mAttributes.GREATER_THAN);
+        if ((lt != null) && (gt != null) //
+                && lt.hasValue() && gt.hasValue() //
+                && !(lt.getValue() < gt.getValue())) {
+            throw new InvalidAttributesException("Attributes doesn't fulfill '%s'< '%s' condition", lt.getName(),
+                    gt.getName());
+        }
+
+        // ("lt" value + 2*"st" values) <"gt" value MUST BE TRUE
+        // https://www.openmobilealliance.org/release/LightweightM2M/V1_2_1-20221209-A/HTML-Version/OMA-TS-LightweightM2M_Core-V1_2_1-20221209-A.html#7-3-0-73-Attributes
+        LwM2mAttribute<Double> st = this.getLwM2mAttribute(LwM2mAttributes.STEP);
+        if ((lt != null) && (gt != null) && (st != null) ///
+                && lt.hasValue() && gt.hasValue() && st.hasValue() //
+                && !(lt.getValue() + 2 * st.getValue() < gt.getValue())) {
+            throw new InvalidAttributesException(
+                    "Attributes doesn't fulfill  (\"lt\" value + 2*\"st\" values) <\"gt\") condition");
         }
     }
 
-    // TODO not sure we still need this function
-    public void validate(Attachment attachment) {
-        // Can all attributes be assigned to this level?
+    public void validate(LwM2mPath path) throws InvalidAttributesException {
+        validate(path, null);
+    }
+
+    public void validate(LwM2mPath path, ObjectModel objectModel) throws InvalidAttributesException {
+        // Can all attributes be assigned to this path
         for (LwM2mAttribute<?> attr : getLwM2mAttributes()) {
-            if (!attr.canBeAttachedTo(attachment)) {
-                throw new IllegalArgumentException(String.format("Attribute '%s' cannot be attached to level %s",
-                        attr.getName(), attachment.name()));
+            String errorMessage = attr.getModel().getApplicabilityError(path, objectModel);
+            if (errorMessage != null) {
+                throw new InvalidAttributesException(errorMessage);
             }
         }
+        validate();
     }
 
     /**
@@ -126,7 +167,44 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
         }
         if (attributes != null) {
             for (LwM2mAttribute<?> attr : attributes.getLwM2mAttributes()) {
-                merged.put(attr.getName(), attr);
+                if (attr.hasValue()) {
+                    merged.put(attr.getName(), attr);
+                } else {
+                    merged.remove(attr.getName());
+                }
+            }
+        }
+        return new LwM2mAttributeSet(merged.values());
+    }
+
+    /**
+     * Creates a new AttributeSet by merging given attributes.
+     *
+     * @param attributes the array that should be merged onto this instance. Attributes in this array will overwrite
+     *        existing attribute values, if present. If this is null, the new attribute set will effectively be a clone
+     *        of the existing one
+     * @return the merged AttributeSet
+     */
+    public LwM2mAttributeSet merge(LwM2mAttribute<?>... attributes) {
+        return this.merge(new LwM2mAttributeSet(attributes));
+    }
+
+    /**
+     * Like {@link #merge(LwM2mAttributeSet)} except if a given {@link LwM2mAttribute} has no value, it will remove this
+     * attribute from final result.
+     */
+    public LwM2mAttributeSet apply(LwM2mAttributeSet attributes) {
+        Map<String, LwM2mAttribute<?>> merged = new LinkedHashMap<>();
+        for (LwM2mAttribute<?> attr : getLwM2mAttributes()) {
+            merged.put(attr.getName(), attr);
+        }
+        if (attributes != null) {
+            for (LwM2mAttribute<?> attr : attributes.getLwM2mAttributes()) {
+                if (attr.hasValue()) {
+                    merged.put(attr.getName(), attr);
+                } else {
+                    merged.remove(attr.getName());
+                }
             }
         }
         return new LwM2mAttributeSet(merged.values());

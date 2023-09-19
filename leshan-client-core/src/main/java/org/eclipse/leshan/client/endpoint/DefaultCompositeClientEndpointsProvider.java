@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.leshan.client.notification.NotificationManager;
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.servers.LwM2mServer;
@@ -46,9 +47,9 @@ public class DefaultCompositeClientEndpointsProvider implements CompositeClientE
 
     @Override
     public void init(LwM2mObjectTree objectTree, DownlinkRequestReceiver requestReceiver,
-            ClientEndpointToolbox toolbox) {
+            NotificationManager notificationManager, ClientEndpointToolbox toolbox) {
         for (LwM2mClientEndpointsProvider provider : providers) {
-            provider.init(objectTree, requestReceiver, toolbox);
+            provider.init(objectTree, requestReceiver, notificationManager, toolbox);
         }
     }
 
