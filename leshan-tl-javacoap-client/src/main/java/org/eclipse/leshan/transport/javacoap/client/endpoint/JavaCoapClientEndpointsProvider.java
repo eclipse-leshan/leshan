@@ -24,6 +24,7 @@ import java.util.List;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpoint;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
+import org.eclipse.leshan.client.notification.NotificationManager;
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.servers.LwM2mServer;
@@ -73,7 +74,7 @@ public class JavaCoapClientEndpointsProvider implements LwM2mClientEndpointsProv
 
     @Override
     public void init(LwM2mObjectTree objectTree, DownlinkRequestReceiver requestReceiver,
-            ClientEndpointToolbox toolbox) {
+            NotificationManager notificationManager, ClientEndpointToolbox toolbox) {
         this.objectTree = objectTree;
         this.toolbox = toolbox;
 
