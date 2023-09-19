@@ -33,8 +33,10 @@ import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.client.californium.LwM2mClientCoapResource;
 import org.eclipse.leshan.client.californium.endpoint.ServerIdentityExtractor;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
+import org.eclipse.leshan.client.notification.NotificationManager;
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.resource.NotificationSender;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
@@ -83,12 +85,14 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
 
     protected DownlinkRequestReceiver requestReceiver;
     protected ClientEndpointToolbox toolbox;
+    protected NotificationManager notificationManager;
 
     public ObjectResource(int objectId, IdentityHandlerProvider identityHandlerProvider,
             ServerIdentityExtractor serverIdentityExtractor, DownlinkRequestReceiver requestReceiver,
-            ClientEndpointToolbox toolbox) {
+            NotificationManager notificationManager, ClientEndpointToolbox toolbox) {
         super(Integer.toString(objectId), identityHandlerProvider, serverIdentityExtractor);
         this.requestReceiver = requestReceiver;
+        this.notificationManager = notificationManager;
         this.toolbox = toolbox;
         setObservable(true);
     }
@@ -143,16 +147,29 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
             // Manage Observe Request
             if (exchange.getRequestOptions().hasObserve()) {
                 ObserveRequest observeRequest = new ObserveRequest(requestedContentFormat, URI, coapRequest);
-                ObserveResponse response = requestReceiver.requestReceived(server, observeRequest).getResponse();
-                if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CONTENT) {
-                    LwM2mPath path = getPath(URI);
-                    LwM2mNode content = response.getContent();
-                    ContentFormat format = getContentFormat(observeRequest, requestedContentFormat);
-                    exchange.respond(ResponseCode.CONTENT,
-                            toolbox.getEncoder().encode(content, format, path, toolbox.getModel()), format.getCode());
-                    return;
+
+                // TODO handle active cancel observe, we must call : notificationManager.clear(server, observeRequest);
+                if (exchange.advanced().getRelation() == null || !exchange.advanced().getRelation().isEstablished()) {
+                    // Handle observe request
+                    ObserveResponse response = requestReceiver.requestReceived(server, observeRequest).getResponse();
+                    if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CONTENT) {
+                        LwM2mPath path = getPath(URI);
+                        LwM2mNode content = response.getContent();
+                        ContentFormat format = getContentFormat(observeRequest, requestedContentFormat);
+                        exchange.respond(ResponseCode.CONTENT,
+                                toolbox.getEncoder().encode(content, format, path, toolbox.getModel()),
+                                format.getCode());
+
+                        notificationManager.initRelation(server, observeRequest, content,
+                                createNotificationSender(exchange, server, observeRequest, requestedContentFormat));
+                    } else {
+                        exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+                        return;
+                    }
                 } else {
-                    exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+                    // Handle notifications
+                    notificationManager.notificationTriggered(server, observeRequest,
+                            createNotificationSender(exchange, server, observeRequest, requestedContentFormat));
                     return;
                 }
             } else {
@@ -192,6 +209,37 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                 }
             }
         }
+    }
+
+    protected NotificationSender createNotificationSender(CoapExchange exchange, LwM2mServer server,
+            ObserveRequest observeRequest, ContentFormat requestedContentFormat) {
+        return new NotificationSender() {
+            @Override
+            public boolean sendNotification(ObserveResponse response) {
+                try {
+                    if (exchange.advanced().getRelation() != null && !exchange.advanced().getRelation().isCanceled()) {
+                        if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CONTENT) {
+                            LwM2mPath path = observeRequest.getPath();
+                            LwM2mNode content = response.getContent();
+                            ContentFormat format = getContentFormat(observeRequest, requestedContentFormat);
+                            exchange.respond(ResponseCode.CONTENT,
+                                    toolbox.getEncoder().encode(content, format, path, toolbox.getModel()),
+                                    format.getCode());
+                            return true;
+                        } else {
+                            exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
+                            return false;
+                        }
+                    }
+                    return false;
+                } catch (Exception e) {
+                    LOGGER.error("Exception while sending notification [{}] for [{}] to {}", response, observeRequest,
+                            server, e);
+                    exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR, "failure sending notification");
+                    return false;
+                }
+            }
+        };
     }
 
     protected ContentFormat getContentFormat(DownlinkRequest<?> request, ContentFormat requestedContentFormat) {

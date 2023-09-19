@@ -30,6 +30,7 @@ import org.eclipse.leshan.client.californium.object.ObjectResource;
 import org.eclipse.leshan.client.californium.request.CoapRequestBuilder;
 import org.eclipse.leshan.client.californium.request.LwM2mResponseBuilder;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
+import org.eclipse.leshan.client.notification.NotificationManager;
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
@@ -89,7 +90,7 @@ public class ClientCoapMessageTranslator {
 
     public List<Resource> createResources(CoapServer coapServer, IdentityHandlerProvider identityHandlerProvider,
             ServerIdentityExtractor identityExtrator, DownlinkRequestReceiver requestReceiver,
-            ClientEndpointToolbox toolbox, LwM2mObjectTree objectTree) {
+            NotificationManager notificationManager, ClientEndpointToolbox toolbox, LwM2mObjectTree objectTree) {
         ArrayList<Resource> resources = new ArrayList<>();
 
         // create bootstrap resource
@@ -97,8 +98,8 @@ public class ClientCoapMessageTranslator {
 
         // create object resources
         for (LwM2mObjectEnabler enabler : objectTree.getObjectEnablers().values()) {
-            resources.add(
-                    createObjectResource(enabler, identityHandlerProvider, identityExtrator, requestReceiver, toolbox));
+            resources.add(createObjectResource(enabler, identityHandlerProvider, identityExtrator, requestReceiver,
+                    notificationManager, toolbox));
         }
 
         // link resource to object tree
@@ -106,7 +107,7 @@ public class ClientCoapMessageTranslator {
             @Override
             public void objectAdded(LwM2mObjectEnabler object) {
                 CoapResource clientObject = createObjectResource(object, identityHandlerProvider, identityExtrator,
-                        requestReceiver, toolbox);
+                        requestReceiver, notificationManager, toolbox);
                 coapServer.add(clientObject);
             }
 
@@ -124,9 +125,10 @@ public class ClientCoapMessageTranslator {
 
     public CoapResource createObjectResource(LwM2mObjectEnabler objectEnabler,
             IdentityHandlerProvider identityHandlerProvider, ServerIdentityExtractor identityExtractor,
-            DownlinkRequestReceiver requestReceiver, ClientEndpointToolbox toolbox) {
+            DownlinkRequestReceiver requestReceiver, NotificationManager notificationManager,
+            ClientEndpointToolbox toolbox) {
         ObjectResource objectResource = new ObjectResource(objectEnabler.getId(), identityHandlerProvider,
-                identityExtractor, requestReceiver, toolbox);
+                identityExtractor, requestReceiver, notificationManager, toolbox);
         objectEnabler.addListener(objectResource);
         return objectResource;
     }
