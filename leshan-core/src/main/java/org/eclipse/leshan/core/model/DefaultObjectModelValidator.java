@@ -48,14 +48,19 @@ public class DefaultObjectModelValidator implements ObjectModelValidator {
 
         // validate id
         validateModelFieldNotNull(object, modelName, object.id, "id");
-        if (!(0 <= object.id && object.id <= 42768)) {
+        if (!(0 <= object.id && object.id <= 65534)) {
             throw new InvalidModelException(
-                    "Model for Object (%d) in %s is invalid : Object id MUST be between 0 and 42768", object.id,
+                    "Model for Object (%d) in %s is invalid : Object id MUST be between 0 and 65534", object.id,
                     modelName);
         }
         if (1024 <= object.id && object.id <= 2047) {
             throw new InvalidModelException(
                     "Model for Object (%d) in %s is invalid : Object id is in reserved range (1024-2047)", object.id,
+                    modelName);
+        }
+        if (42801 <= object.id && object.id <= 65534) {
+            throw new InvalidModelException(
+                    "Model for Object (%d) in %s is invalid : Object id is in reserved range (42801-65534)", object.id,
                     modelName);
         }
 
@@ -136,6 +141,14 @@ public class DefaultObjectModelValidator implements ObjectModelValidator {
     }
 
     protected void validateURN(String urn, ObjectModel object, String modelName) throws InvalidModelException {
+        String urnCategory = URN.getUrnKind(object.id);
+        if (urnCategory == URN.TEST_LABEL) {
+            // skip validation for Test category.
+            // See : https://github.com/OpenMobileAlliance/lwm2m-registry/issues/737
+            return;
+        }
+
+        // Validate URN for other category
         if (!urn.startsWith("urn:oma:lwm2m:")) {
             throw new InvalidModelException(
                     "Model for Object %s(%d) in %s is invalid : URN (%s) MUST start with urn:oma:lwm2m.", object.name,
@@ -154,7 +167,7 @@ public class DefaultObjectModelValidator implements ObjectModelValidator {
                     object.name, object.id, modelName, urn);
         }
         String kind = urnParts[3];
-        String expectedKind = URN.getUrnKind(object.id);
+        String expectedKind = urnCategory;
         if (!expectedKind.equals(kind)) {
             throw new InvalidModelException(
                     "Model for Object %s(%d) in %s is invalid : URN (%s) kind MUST be %s instead of %s", object.name,

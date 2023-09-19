@@ -24,6 +24,7 @@ public class URN {
     public static final String OMA_LABEL = "oma";
     public static final String EXT_LABEL = "ext";
     public static final String X_LABEL = "x";
+    public static final String TEST_LABEL = "test";
     public static final String INVALID_LABEL = "invalid";
     public static final String RESERVED_LABEL = "reserved";
 
@@ -42,8 +43,8 @@ public class URN {
     /**
      * Return URN "kind" from object id.
      *
-     * @return {@link #OMA_LABEL}, {@link #EXT_LABEL} or {@link #X_LABEL} for valid object id. {@link #INVALID_LABEL} is
-     *         returned for invalid id and {@link #RESERVED_LABEL} for reserved range.
+     * @return {@link #OMA_LABEL}, {@link #EXT_LABEL} or {@link #X_LABEL} or {@link #TEST_LABEL} for valid object id.
+     *         {@link #INVALID_LABEL} is returned for invalid id and {@link #RESERVED_LABEL} for reserved range.
      *
      * @see <a href="http://www.openmobilealliance.org/wp/OMNA/LwM2M/LwM2MRegistry.html">OMA LightweightM2M (LwM2M)
      *      Object and Resource Registry </a>
@@ -57,6 +58,10 @@ public class URN {
             return EXT_LABEL;
         if (10241 <= objectId && objectId <= 42768)
             return X_LABEL;
+        if (42769 <= objectId && objectId <= 42800)
+            return TEST_LABEL;
+        if (42801 <= objectId && objectId <= 65534)
+            return RESERVED_LABEL;
         return INVALID_LABEL;
     }
 }
