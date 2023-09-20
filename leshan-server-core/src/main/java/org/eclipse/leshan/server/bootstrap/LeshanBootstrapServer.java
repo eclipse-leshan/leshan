@@ -16,6 +16,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.leshan.core.Destroyable;
@@ -143,6 +145,12 @@ public class LeshanBootstrapServer {
 
     public List<LwM2mBootstrapServerEndpoint> getEndpoints() {
         return endpointsProvider.getEndpoints();
+    }
+
+    public Collection<LwM2mBootstrapServerEndpointsProvider> getEndpointsProvider() {
+        // TODO current we support only 1 endpoints provider but we will add support for multiple endpoints provider
+        // soon
+        return Arrays.asList(endpointsProvider);
     }
 
     public LwM2mBootstrapServerEndpoint getEndpoint(Protocol protocol) {

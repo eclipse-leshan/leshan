@@ -76,6 +76,10 @@ public class CaliforniumBootstrapServerEndpointsProvider implements LwM2mBootstr
         this.endpoints = new ArrayList<CaliforniumBootstrapServerEndpoint>();
     }
 
+    public CoapServer getCoapServer() {
+        return coapServer;
+    }
+
     @Override
     public List<LwM2mBootstrapServerEndpoint> getEndpoints() {
         return Collections.unmodifiableList(endpoints);

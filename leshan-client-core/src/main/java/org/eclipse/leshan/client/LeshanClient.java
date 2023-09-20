@@ -17,6 +17,8 @@
 package org.eclipse.leshan.client;
 
 import java.security.cert.Certificate;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -310,6 +312,12 @@ public class LeshanClient implements LwM2mClient {
      */
     public Map<String, LwM2mServer> getRegisteredServers() {
         return engine.getRegisteredServers();
+    }
+
+    public Collection<LwM2mClientEndpointsProvider> getEndpointsProvider() {
+        // TODO current we support only 1 endpoints provider but we will add support for multiple endpoints provider
+        // soon
+        return Arrays.asList(endpointsProvider);
     }
 
     public LwM2mClientEndpoint getEndpoint(LwM2mServer server) {
