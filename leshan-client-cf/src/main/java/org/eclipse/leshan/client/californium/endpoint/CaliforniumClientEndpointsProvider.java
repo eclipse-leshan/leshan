@@ -255,6 +255,10 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
         }
     }
 
+    public CoapServer getCoapServer() {
+        return coapServer;
+    }
+
     @Override
     public LwM2mClientEndpoint getEndpoint(LwM2mServer server) {
         if (currentServer.equals(server)) {

@@ -17,6 +17,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -372,6 +373,12 @@ public class LeshanServer {
      */
     public LwM2mModelProvider getModelProvider() {
         return this.modelProvider;
+    }
+
+    public Collection<LwM2mServerEndpointsProvider> getEndpointsProvider() {
+        // TODO current we support only 1 endpoints provider but we will add support for multiple endpoints provider
+        // soon
+        return Arrays.asList(endpointsProvider);
     }
 
     public List<LwM2mServerEndpoint> getEndpoints() {

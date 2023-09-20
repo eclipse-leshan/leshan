@@ -89,6 +89,10 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
         this.endpoints = new ArrayList<CaliforniumServerEndpoint>();
     }
 
+    public CoapServer getCoapServer() {
+        return coapServer;
+    }
+
     @Override
     public List<LwM2mServerEndpoint> getEndpoints() {
         return Collections.unmodifiableList(endpoints);
