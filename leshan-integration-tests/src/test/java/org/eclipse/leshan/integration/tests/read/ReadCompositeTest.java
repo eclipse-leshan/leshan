@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mObject;
+import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mRoot;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
@@ -136,6 +137,84 @@ public class ReadCompositeTest {
         assertThat(objectIdsFromObjectTree).isEqualTo(objectIdsFromRootObject);
 
     }
+
+    @TestAllCases
+    public void can_read_root_single_resource(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws InterruptedException {
+        // read device model number
+        ReadCompositeResponse response = server.send(currentRegistration,
+                new ReadCompositeRequest(requestContentFormat, responseContentFormat, "/"));
+
+        // verify result
+        assertThat(response) //
+                .hasCode(CONTENT) //
+                .hasContentFormat(responseContentFormat, givenServerEndpointProvider);
+
+        LwM2mRoot root = (LwM2mRoot) response.getContent("/");
+        LwM2mResource resource1 = root.getObjects().get(1).getInstance(0).getResource(1);
+        assertThat(resource1.getId()).isEqualTo(1);
+        assertThat(resource1.getValue()).isEqualTo(300L);
+        assertThat(resource1.getType()).isEqualTo(Type.INTEGER);
+
+        LwM2mResource resource110 = root.getObjects().get(3442).getInstance(0).getResource(110);
+        assertThat(resource110.getId()).isEqualTo(110);
+        assertThat(resource110.getValue()).isEqualTo("initial value");
+        assertThat(resource110.getType()).isEqualTo(Type.STRING);
+
+        LwM2mResource resource0 = root.getObjects().get(3).getInstance(0).getResource(0);
+        assertThat(resource0.getId()).isEqualTo(0);
+        assertThat(resource0.getValue()).isEqualTo("Eclipse Leshan");
+        assertThat(resource0.getType()).isEqualTo(Type.STRING);
+    }
+
+    @TestAllCases
+    public void can_read_root_multiple_resource(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws InterruptedException {
+        // read device model number
+        ReadCompositeResponse response = server.send(currentRegistration,
+                new ReadCompositeRequest(requestContentFormat, responseContentFormat, "/"));
+
+        // verify result
+        assertThat(response) //
+                .hasCode(CONTENT) //
+                .hasContentFormat(responseContentFormat, givenServerEndpointProvider);
+
+        LwM2mRoot root = (LwM2mRoot) response.getContent("/");
+        LwM2mResource resource = root.getObjects().get(3442).getInstance(0).getResource(1140);
+
+        LwM2mResourceInstance instance = resource.getInstance(0);
+        assertThat(instance.getId()).isEqualTo(0);
+        assertThat(instance.getValue()).isEqualTo(true);
+        assertThat(instance.getType()).isEqualTo(Type.BOOLEAN);
+    }
+
+    @TestAllCases
+    public void can_read_root_single_and_multiple_resource(ContentFormat requestContentFormat,
+            ContentFormat responseContentFormat, Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InterruptedException {
+        // read device model number
+        ReadCompositeResponse response = server.send(currentRegistration,
+                new ReadCompositeRequest(requestContentFormat, responseContentFormat, "/"));
+
+        // verify result
+        assertThat(response) //
+                .hasCode(CONTENT) //
+                .hasContentFormat(responseContentFormat, givenServerEndpointProvider);
+
+        LwM2mRoot root = (LwM2mRoot) response.getContent("/");
+
+        LwM2mResource resource = root.getObjects().get(3442).getInstance(0).getResource(1120);
+        assertThat(resource.getId()).isEqualTo(1120);
+        assertThat(resource.getType()).isEqualTo(Type.INTEGER);
+
+        LwM2mResourceInstance instance = resource.getInstance(0);
+        assertThat(instance.getId()).isEqualTo(0);
+        assertThat(instance.getValue()).isEqualTo(1024L);
+        assertThat(instance.getType()).isEqualTo(Type.INTEGER);
+    }
+
 
     @TestAllCases
     public void can_read_resources(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
