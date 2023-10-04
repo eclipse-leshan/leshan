@@ -29,7 +29,9 @@ import org.eclipse.leshan.core.demo.cli.StandardHelpOptions;
 import org.eclipse.leshan.core.demo.cli.VersionProvider;
 import org.eclipse.leshan.core.demo.cli.converters.CIDConverter;
 import org.eclipse.leshan.core.demo.cli.converters.InetAddressConverter;
+import org.eclipse.leshan.core.demo.cli.converters.LwM2mPathConverter;
 import org.eclipse.leshan.core.demo.cli.converters.StrictlyPositiveIntegerConverter;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.util.StringUtils;
 
 import picocli.CommandLine.ArgGroup;
@@ -151,14 +153,15 @@ public class LeshanClientDemoCLI implements Runnable {
                         "See https://github.com/eclipse/leshan/pull/720" })
         public boolean supportOldFormat;
 
-        @Option(names = { "-ir", "--init-resources" },
+        @Option(names = { "-fb", "factory-bootstrap" },
                 description = { //
-                        "Use additional init resources.", //
+                        "Use additional factory bootstrap.", //
                         "syntax is :", //
-                        " -ir attrName1=attrValue1,attrName2=\\\"attrValue2\\\"" },
-                split = ",")
+                        " -ir resourcePath1=resourceValue1,resourcePath2=\\\"resourceValue2\\\"" },
+                split = ",",
+                converter = LwM2mPathConverter.class)
 
-        public Map<String, String> initResources;
+        public Map<LwM2mPath, String> factoryBootstrap;
     }
 
     /* ********************************** Location Section ******************************** */

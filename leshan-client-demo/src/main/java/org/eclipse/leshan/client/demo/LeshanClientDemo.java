@@ -69,6 +69,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
+import org.eclipse.leshan.core.node.codec.text.LwM2mNodeTextDecoder;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.slf4j.Logger;
@@ -197,8 +198,9 @@ public class LeshanClientDemo {
                 initializer.setClassForObject(SERVER, Server.class);
             }
         } else {
-            int shortServerId = cli.main.initResources == null || cli.main.initResources.get("/1/0/0") == null ? 123
-                    : Integer.valueOf(cli.main.initResources.get("/1/0/0"));
+            int shortServerId = cli.main.factoryBootstrap == null || cli.main.factoryBootstrap.get("/1/0/0") == null
+                    ? 123
+                    : Integer.valueOf(cli.main.factoryBootstrap.get("/1/0/0"));
             if (cli.identity.isPSK()) {
                 // TODO OSCORE support OSCORE with DTLS/PSK
                 initializer.setInstancesForObject(SECURITY, psk(cli.main.url, shortServerId,
@@ -313,12 +315,15 @@ public class LeshanClientDemo {
         builder.setBootstrapAdditionalAttributes(cli.main.bsAdditionalAttributes);
         final LeshanClient client = builder.build();
 
-        if (cli.main.initResources != null)
-            for (Map.Entry<String, String> entry : cli.main.initResources.entrySet()) {
-                LwM2mPath lwM2mPath = new LwM2mPath(entry.getKey());
-                client.getObjectTree().getObjectEnabler(lwM2mPath.getObjectId()).write(LwM2mServer.SYSTEM,
+        if (cli.main.factoryBootstrap != null)
+            for (Map.Entry<LwM2mPath, String> entry : cli.main.factoryBootstrap.entrySet()) {
+                LwM2mPath lwM2mPath = entry.getKey();
+                LwM2mNodeTextDecoder lwM2mNodeTextDecoder = new LwM2mNodeTextDecoder();
+                LwM2mSingleResource decodedResource = lwM2mNodeTextDecoder.decode(entry.getValue().getBytes(), lwM2mPath,
+                        repository.getLwM2mModel(), LwM2mSingleResource.class);
+                client.getObjectTree().getObjectEnabler(decodedResource.getId()).write(LwM2mServer.SYSTEM,
                         new BootstrapWriteRequest(lwM2mPath,
-                                LwM2mSingleResource.newResource(lwM2mPath.getObjectId(), entry.getValue()),
+                                LwM2mSingleResource.newResource(decodedResource.getId(), decodedResource.getValue()),
                                 ContentFormat.TEXT));
             }
         client.getObjectTree().addListener(new ObjectsListenerAdapter() {
