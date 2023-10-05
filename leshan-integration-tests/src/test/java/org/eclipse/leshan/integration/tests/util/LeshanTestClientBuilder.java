@@ -248,17 +248,17 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
     }
 
     public LeshanTestClientBuilder with(LwM2mClientEndpointsProvider endpointsProvider) {
-        setEndpointsProvider(endpointsProvider);
+        setEndpointsProviders(endpointsProvider);
         return this;
     }
 
     public LeshanTestClientBuilder with(String endpointProvider) {
         if (endpointProvider.equals("Californium")) {
-            setEndpointsProvider(
+            setEndpointsProviders(
                     new CaliforniumClientEndpointsProvider.Builder(getCaliforniumProtocolProvider(protocolToUse))
                             .build());
         } else if (endpointProvider.equals("Californium-OSCORE")) {
-            setEndpointsProvider(new CaliforniumClientEndpointsProvider.Builder(
+            setEndpointsProviders(new CaliforniumClientEndpointsProvider.Builder(
                     getCaliforniumProtocolProviderSupportingOscore(protocolToUse)).build());
         }
         return this;

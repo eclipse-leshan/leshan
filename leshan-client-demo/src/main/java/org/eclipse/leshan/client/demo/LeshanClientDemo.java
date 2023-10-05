@@ -291,7 +291,7 @@ public class LeshanClientDemo {
         // Create client
         LeshanClientBuilder builder = new LeshanClientBuilder(cli.main.endpoint);
         builder.setObjects(enablers);
-        builder.setEndpointsProvider(endpointsBuilder.build());
+        builder.setEndpointsProviders(endpointsBuilder.build());
         builder.setDataSenders(new ManualDataSender());
         if (cli.identity.isx509())
             builder.setTrustStore(cli.identity.getX509().trustStore);

@@ -147,7 +147,7 @@ public class ServerOnlySecurityTest {
         };
         CaliforniumClientEndpointsProvider endpointsProvider = new CaliforniumClientEndpointsProvider.Builder(
                 coapsProtocolProvider).build();
-        givenClient.setEndpointsProvider(endpointsProvider);
+        givenClient.setEndpointsProviders(endpointsProvider);
     }
 
     @AfterEach

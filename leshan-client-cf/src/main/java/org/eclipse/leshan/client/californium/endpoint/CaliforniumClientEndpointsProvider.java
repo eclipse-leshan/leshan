@@ -261,7 +261,7 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
 
     @Override
     public LwM2mClientEndpoint getEndpoint(LwM2mServer server) {
-        if (currentServer.equals(server)) {
+        if (currentServer != null && currentServer.equals(server)) {
             return endpoint;
         }
         return null;

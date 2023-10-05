@@ -19,6 +19,7 @@ package org.eclipse.leshan.client;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.leshan.client.bootstrap.BootstrapConsistencyChecker;
 import org.eclipse.leshan.client.bootstrap.DefaultBootstrapConsistencyChecker;
+import org.eclipse.leshan.client.endpoint.DefaultCompositeClientEndpointsProvider;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
@@ -266,10 +268,28 @@ public class LeshanClientBuilder {
     }
 
     /**
-     * @return the builder for fluent client creation.
+     * By default LeshanClient doesn't support any protocol. Users need to provide 1 or several
+     * {@link LwM2mClientEndpointsProvider} implementation.
+     * <p>
+     * Leshan project provides {@code coap} and {@code coaps} support based on Californium/Scandium in
+     * <strong>leshan-client-cf</strong>.
      */
-    public LeshanClientBuilder setEndpointsProvider(LwM2mClientEndpointsProvider endpointsProvider) {
-        this.endpointsProvider = endpointsProvider;
+    public LeshanClientBuilder setEndpointsProviders(LwM2mClientEndpointsProvider... endpointsProvider) {
+        return setEndpointsProviders(Arrays.asList(endpointsProvider));
+    }
+
+    /**
+     * @see #setEndpointsProviders(LwM2mClientEndpointsProvider...)
+     */
+    public LeshanClientBuilder setEndpointsProviders(Collection<LwM2mClientEndpointsProvider> providers) {
+        if (providers == null || providers.isEmpty()) {
+            throw new IllegalStateException("At least one endpoint provider should be set");
+        }
+        if (providers.size() == 1) {
+            endpointsProvider = providers.iterator().next();
+        } else {
+            endpointsProvider = new DefaultCompositeClientEndpointsProvider(providers);
+        }
         return this;
     }
 
