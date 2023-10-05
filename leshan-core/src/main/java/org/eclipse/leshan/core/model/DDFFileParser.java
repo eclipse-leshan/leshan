@@ -39,7 +39,9 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  * A parser for Object DDF files.
@@ -137,7 +139,7 @@ public class DDFFileParser {
 
         try {
             // Parse XML file
-            DocumentBuilder builder = factory.newDocumentBuilder();
+            DocumentBuilder builder = createDocumentBuilder(factory);
             Document document = builder.parse(inputStream);
 
             // Get DDF file validator
@@ -166,9 +168,45 @@ public class DDFFileParser {
             return objects;
         } catch (InvalidDDFFileException | SAXException e) {
             throw new InvalidDDFFileException(e, "Invalid DDF file %s", streamName);
+        }
+    }
+
+    protected DocumentBuilder createDocumentBuilder(DocumentBuilderFactory factory) {
+        DocumentBuilder builder;
+        try {
+            builder = factory.newDocumentBuilder();
+            builder.setErrorHandler(new ErrorHandler() {
+                @Override
+                public void warning(SAXParseException exception) throws SAXException {
+                    LOG.trace("WARNING exception while trying to parse DDF File", exception);
+                    if (!ignoreNonFatalXmlParsingError())
+                        throw exception;
+                }
+
+                @Override
+                public void error(SAXParseException exception) throws SAXException {
+                    LOG.trace("ERROR exception while trying to parse DDF File", exception);
+                    if (!ignoreNonFatalXmlParsingError())
+                        throw exception;
+                }
+
+                @Override
+                public void fatalError(SAXParseException exception) throws SAXException {
+                    LOG.trace("FATAL-ERROR exception while trying to parse DDF File", exception);
+                    throw exception;
+                }
+            });
         } catch (ParserConfigurationException e) {
             throw new IllegalStateException("Unable to create Document Builder", e);
         }
+        return builder;
+    }
+
+    protected boolean ignoreNonFatalXmlParsingError() {
+        // When DDFFileParser is called without any kind of validator,
+        // we suppose user consider files as trusted. (Probably checked before)
+        // So we ignore none fatal-error XML parsing exception.
+        return ddfValidatorFactory == null && ddfValidator == null;
     }
 
     private ObjectModel parseObject(Node object, String streamName, LwM2mVersion schemaVersion, boolean validate)

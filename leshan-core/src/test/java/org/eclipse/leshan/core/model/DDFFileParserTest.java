@@ -25,8 +25,14 @@ public class DDFFileParserTest {
 
     @Test
     public void test_xxe_injection_failed() throws IOException, InvalidModelException, InvalidDDFFileException {
+        // check with validation
         assertThrows(InvalidDDFFileException.class, () -> {
             ObjectLoader.loadDdfResources("/models/", new String[] { "xxe_injection.xml" }, true);
+        });
+
+        // check without validation
+        assertThrows(InvalidDDFFileException.class, () -> {
+            ObjectLoader.loadDdfResources("/models/", new String[] { "xxe_injection.xml" }, false);
         });
     }
 }
