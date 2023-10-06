@@ -214,6 +214,11 @@ public class ObservationServiceTest {
             }
 
             @Override
+            public String getDescription() {
+                return null;
+            }
+
+            @Override
             public Protocol getProtocol() {
                 return null;
             }

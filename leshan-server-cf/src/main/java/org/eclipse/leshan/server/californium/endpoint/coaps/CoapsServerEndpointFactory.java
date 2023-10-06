@@ -94,6 +94,11 @@ public class CoapsServerEndpointFactory implements CaliforniumServerEndpointFact
         return Protocol.COAPS;
     }
 
+    @Override
+    public String getEndpointDescription() {
+        return "CoAP over DTLS endpoint based on Californium/Scandium library";
+    }
+
     public static void applyDefaultValue(Configuration configuration) {
         configuration.set(CoapConfig.MID_TRACKER, TrackerMode.NULL);
         // Do no allow Server to initiated Handshake by default, for U device request will be allowed to initiate

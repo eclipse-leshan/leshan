@@ -32,6 +32,8 @@ public interface CaliforniumServerEndpointFactory {
 
     URI getUri();
 
+    String getEndpointDescription();
+
     CoapEndpoint createCoapEndpoint(Configuration defaultCaliforniumConfiguration,
             ServerSecurityInfo serverSecurityInfo, LwM2mNotificationReceiver notificationReceiver, LeshanServer server);
 

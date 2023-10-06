@@ -32,6 +32,8 @@ public interface LwM2mServerEndpoint {
 
     URI getURI();
 
+    String getDescription();
+
     <T extends LwM2mResponse> T send(ClientProfile destination, DownlinkRequest<T> request,
             LowerLayerConfig lowerLayerConfig, long timeoutInMs) throws InterruptedException;
 

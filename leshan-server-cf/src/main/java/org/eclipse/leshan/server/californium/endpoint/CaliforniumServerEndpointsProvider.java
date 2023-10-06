@@ -138,8 +138,8 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
 
                 // create LWM2M endpoint
                 CaliforniumServerEndpoint lwm2mEndpoint = new CaliforniumServerEndpoint(endpointFactory.getProtocol(),
-                        coapEndpoint, messagetranslator, toolbox, notificatonReceiver, identityHandler,
-                        exceptionTranslator, executor);
+                        endpointFactory.getEndpointDescription(), coapEndpoint, messagetranslator, toolbox,
+                        notificatonReceiver, identityHandler, exceptionTranslator, executor);
                 endpoints.add(lwm2mEndpoint);
 
                 // add Californium endpoint to coap server

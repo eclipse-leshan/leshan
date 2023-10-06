@@ -85,6 +85,11 @@ public class CoapServerEndpointFactory implements CaliforniumServerEndpointFacto
     }
 
     @Override
+    public String getEndpointDescription() {
+        return "CoAP over UDP endpoint based on Californium library";
+    }
+
+    @Override
     public URI getUri() {
         return endpointUri;
     }

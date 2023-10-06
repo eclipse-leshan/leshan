@@ -261,7 +261,7 @@ public class LeshanServer {
         if (LOG.isInfoEnabled()) {
             LOG.info("LWM2M server started.");
             for (LwM2mServerEndpoint endpoint : endpointsProvider.getEndpoints()) {
-                LOG.info("{} endpoint available at {}.", endpoint.getProtocol().getName(), endpoint.getURI());
+                LOG.info("{} available at {}.", endpoint.getDescription(), endpoint.getURI());
             }
         }
     }

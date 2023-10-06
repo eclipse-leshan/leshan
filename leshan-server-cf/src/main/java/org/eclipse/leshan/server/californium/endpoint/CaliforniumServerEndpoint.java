@@ -51,6 +51,7 @@ import org.eclipse.leshan.server.request.LowerLayerConfig;
 public class CaliforniumServerEndpoint implements LwM2mServerEndpoint {
 
     private final Protocol protocol;
+    private final String description;
     private final ScheduledExecutorService executor;
     private final CoapEndpoint endpoint;
     private final ServerEndpointToolbox toolbox;
@@ -63,11 +64,12 @@ public class CaliforniumServerEndpoint implements LwM2mServerEndpoint {
     // This is used to be able to cancel request
     private final ConcurrentNavigableMap<String/* sessionId#requestId */, Request /* ongoing coap Request */> ongoingRequests = new ConcurrentSkipListMap<>();
 
-    public CaliforniumServerEndpoint(Protocol protocol, CoapEndpoint endpoint, ServerCoapMessageTranslator translator,
-            ServerEndpointToolbox toolbox, LwM2mNotificationReceiver notificationReceiver,
-            IdentityHandler identityHandler, ExceptionTranslator exceptionTranslator,
-            ScheduledExecutorService executor) {
+    public CaliforniumServerEndpoint(Protocol protocol, String description, CoapEndpoint endpoint,
+            ServerCoapMessageTranslator translator, ServerEndpointToolbox toolbox,
+            LwM2mNotificationReceiver notificationReceiver, IdentityHandler identityHandler,
+            ExceptionTranslator exceptionTranslator, ScheduledExecutorService executor) {
         this.protocol = protocol;
+        this.description = description;
         this.translator = translator;
         this.toolbox = toolbox;
         this.endpoint = endpoint;
@@ -85,6 +87,11 @@ public class CaliforniumServerEndpoint implements LwM2mServerEndpoint {
     @Override
     public URI getURI() {
         return EndpointUriUtil.createUri(protocol.getUriScheme(), endpoint.getAddress());
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
     }
 
     public CoapEndpoint getCoapEndpoint() {
