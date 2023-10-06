@@ -17,8 +17,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.leshan.core.Destroyable;
@@ -42,6 +42,7 @@ import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.util.Validate;
+import org.eclipse.leshan.server.endpoint.CompositeServerEndpointsProvider;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
 import org.eclipse.leshan.server.endpoint.ServerEndpointToolbox;
@@ -376,9 +377,10 @@ public class LeshanServer {
     }
 
     public Collection<LwM2mServerEndpointsProvider> getEndpointsProvider() {
-        // TODO current we support only 1 endpoints provider but we will add support for multiple endpoints provider
-        // soon
-        return Arrays.asList(endpointsProvider);
+        if (endpointsProvider instanceof CompositeServerEndpointsProvider) {
+            return ((CompositeServerEndpointsProvider) endpointsProvider).getProviders();
+        }
+        return Collections.singleton(endpointsProvider);
     }
 
     public List<LwM2mServerEndpoint> getEndpoints() {

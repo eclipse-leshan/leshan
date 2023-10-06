@@ -41,7 +41,7 @@ public class LeshanServerTest {
     public void testStartStopStart() throws InterruptedException {
         Builder EndpointProviderbuilder = new CaliforniumServerEndpointsProvider.Builder();
         EndpointProviderbuilder.addEndpoint(new InetSocketAddress(0), Protocol.COAP);
-        LeshanServer server = new LeshanServerBuilder().setEndpointsProvider(EndpointProviderbuilder.build()).build();
+        LeshanServer server = new LeshanServerBuilder().setEndpointsProviders(EndpointProviderbuilder.build()).build();
 
         server.start();
         Thread.sleep(100);
@@ -57,7 +57,7 @@ public class LeshanServerTest {
 
         Builder EndpointProviderbuilder = new CaliforniumServerEndpointsProvider.Builder();
         EndpointProviderbuilder.addEndpoint(new InetSocketAddress(0), Protocol.COAP);
-        LeshanServer server = new LeshanServerBuilder().setEndpointsProvider(EndpointProviderbuilder.build()).build();
+        LeshanServer server = new LeshanServerBuilder().setEndpointsProviders(EndpointProviderbuilder.build()).build();
 
         server.start();
         Thread.sleep(100);
@@ -78,7 +78,7 @@ public class LeshanServerTest {
 
         Builder EndpointProviderbuilder = new CaliforniumServerEndpointsProvider.Builder();
         EndpointProviderbuilder.addEndpoint(new InetSocketAddress(0), Protocol.COAP);
-        LeshanServer server = new LeshanServerBuilder().setEndpointsProvider(EndpointProviderbuilder.build()).build();
+        LeshanServer server = new LeshanServerBuilder().setEndpointsProviders(EndpointProviderbuilder.build()).build();
 
         server.start();
         Thread.sleep(100);
@@ -101,7 +101,7 @@ public class LeshanServerTest {
 
         Builder EndpointProviderbuilder = new CaliforniumServerEndpointsProvider.Builder();
         EndpointProviderbuilder.addEndpoint(new InetSocketAddress(0), Protocol.COAP);
-        LeshanServer server = new LeshanServerBuilder().setEndpointsProvider(EndpointProviderbuilder.build())
+        LeshanServer server = new LeshanServerBuilder().setEndpointsProviders(EndpointProviderbuilder.build())
                 .disableQueueModeSupport().build();
         server.start();
         Thread.sleep(100);

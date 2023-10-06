@@ -23,6 +23,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.Collection;
 
 import javax.security.auth.login.Configuration;
 
@@ -35,6 +37,7 @@ import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.exception.ClientSleepingException;
+import org.eclipse.leshan.server.endpoint.DefaultCompositeServerEndpointsProvider;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.StandardModelProvider;
@@ -82,7 +85,7 @@ public class LeshanServerBuilder {
     private boolean updateRegistrationOnNotification = false;
     private boolean updateRegistrationOnSend = false;
 
-    private LwM2mServerEndpointsProvider endpointProvider;
+    private LwM2mServerEndpointsProvider endpointsProvider;
 
     /**
      * <p>
@@ -296,8 +299,29 @@ public class LeshanServerBuilder {
         return this;
     }
 
-    public LeshanServerBuilder setEndpointsProvider(LwM2mServerEndpointsProvider endpointProvider) {
-        this.endpointProvider = endpointProvider;
+    /**
+     * By default LeshanServer doesn't support any protocol. Users need to provide 1 or several
+     * {@link LwM2mServerEndpointsProvider} implementation.
+     * <p>
+     * Leshan project provides {@code coap} and {@code coaps} support based on Californium/Scandium in
+     * <strong>leshan-server-cf</strong>.
+     */
+    public LeshanServerBuilder setEndpointsProviders(LwM2mServerEndpointsProvider... endpointsProvider) {
+        return setEndpointsProviders(Arrays.asList(endpointsProvider));
+    }
+
+    /**
+     * @see #setEndpointsProviders(LwM2mServerEndpointsProvider...)
+     */
+    public LeshanServerBuilder setEndpointsProviders(Collection<LwM2mServerEndpointsProvider> providers) {
+        if (providers == null || providers.isEmpty()) {
+            throw new IllegalStateException("At least one endpoint provider should be set");
+        }
+        if (providers.size() == 1) {
+            this.endpointsProvider = providers.iterator().next();
+        } else {
+            this.endpointsProvider = new DefaultCompositeServerEndpointsProvider(providers);
+        }
         return this;
     }
 
@@ -335,7 +359,7 @@ public class LeshanServerBuilder {
         ServerSecurityInfo serverSecurityInfo = new ServerSecurityInfo(privateKey, publicKey, certificateChain,
                 trustedCertificates);
 
-        return createServer(endpointProvider, registrationStore, securityStore, authorizer, modelProvider, encoder,
+        return createServer(endpointsProvider, registrationStore, securityStore, authorizer, modelProvider, encoder,
                 decoder, noQueueMode, awakeTimeProvider, registrationIdProvider, registrationDataExtractor, linkParser,
                 serverSecurityInfo, updateRegistrationOnNotification, updateRegistrationOnSend);
     }

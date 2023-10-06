@@ -90,7 +90,7 @@ public class LeshanServerBuilderTest {
 
     @Test
     public void create_server_with_default_californiumEndpointsProvider() {
-        builder.setEndpointsProvider(new CaliforniumServerEndpointsProvider());
+        builder.setEndpointsProviders(new CaliforniumServerEndpointsProvider());
         server = builder.build();
 
         assertEquals(1, server.getEndpoints().size());
@@ -101,7 +101,7 @@ public class LeshanServerBuilderTest {
     public void create_server_without_securityStore() {
         Builder endpointsBuilder = new CaliforniumServerEndpointsProvider.Builder(new CoapServerProtocolProvider(),
                 new CoapsServerProtocolProvider());
-        builder.setEndpointsProvider(endpointsBuilder.build());
+        builder.setEndpointsProviders(endpointsBuilder.build());
         server = builder.build();
 
         assertEquals(1, server.getEndpoints().size());
@@ -113,7 +113,7 @@ public class LeshanServerBuilderTest {
     public void create_server_with_securityStore() {
         Builder endpointsBuilder = new CaliforniumServerEndpointsProvider.Builder(new CoapServerProtocolProvider(),
                 new CoapsServerProtocolProvider());
-        builder.setEndpointsProvider(endpointsBuilder.build());
+        builder.setEndpointsProviders(endpointsBuilder.build());
         builder.setSecurityStore(new InMemorySecurityStore());
         server = builder.build();
 
@@ -126,7 +126,7 @@ public class LeshanServerBuilderTest {
     @Test
     public void create_server_with_coaps_only() {
         Builder endpointsBuilder = new CaliforniumServerEndpointsProvider.Builder(new CoapsServerProtocolProvider());
-        builder.setEndpointsProvider(endpointsBuilder.build());
+        builder.setEndpointsProviders(endpointsBuilder.build());
         builder.setSecurityStore(new InMemorySecurityStore());
         server = builder.build();
 
@@ -146,7 +146,7 @@ public class LeshanServerBuilderTest {
         builder.setPrivateKey(privateKey);
         builder.setPublicKey(publicKey);
         builder.setSecurityStore(new InMemorySecurityStore());
-        builder.setEndpointsProvider(endpointsBuilder.build());
+        builder.setEndpointsProviders(endpointsBuilder.build());
 
         server = builder.build();
 
