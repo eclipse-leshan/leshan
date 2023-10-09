@@ -22,7 +22,7 @@
       </v-card-text>
     </v-card>
     <v-row>
-      <v-col md="3" cols="12">
+      <v-col md="12" cols="12" v-if="endpoints">
         <v-card outlined>
           <v-list-item three-line>
             <v-list-item-content>
@@ -38,21 +38,20 @@
           </v-list-item>
           <v-card-text>
             <ul>
-              <li>
+              <li v-for="endpoint in endpoints" :key="endpoint.full">
                 <code
-                  ><strong>{{ coapurl }}</strong> </code
-                >: CoAP over UDP.
-              </li>
-              <li>
-                <code
-                  ><strong>{{ coapsurl }}</strong> </code
-                >: CoAP over DTLS.
+                  ><strong
+                    >{{ endpoint.uri.scheme }}://{{ hostname() }}:{{
+                      endpoint.uri.port
+                    }}</strong
+                  > </code
+                >: <span v-html="endpoint.description" />.
               </li>
             </ul>
           </v-card-text>
         </v-card>
       </v-col>
-      <v-col md="4" cols="12" v-if="pubkey">
+      <v-col md="6" cols="12" v-if="pubkey">
         <v-card outlined>
           <v-list-item three-line>
             <v-list-item-content>
@@ -109,7 +108,7 @@
           </v-card-text>
         </v-card>
       </v-col>
-      <v-col md="5" cols="12" v-if="certificate">
+      <v-col md="6" cols="12" v-if="certificate">
         <v-card outlined>
           <v-list-item three-line>
             <v-list-item-content>
@@ -161,8 +160,7 @@ export default {
   props: { pubkeyFileName: String, certFileName: String },
   data() {
     return {
-      coapurl: "",
-      coapsurl: "",
+      endpoints: {},
       certificate: {},
       pubkey: {},
     };
@@ -172,11 +170,42 @@ export default {
       var blob = new Blob([bytes], { type: "application/octet-stream" });
       saveAs(blob, filename);
     },
+    hostname() {
+      return location.hostname;
+    },
   },
   beforeMount() {
     this.axios.get("api/server/endpoint").then((response) => {
-      this.coapurl = `coap://${location.hostname}:${response.data.unsecuredEndpointPort}`;
-      this.coapsurl = `coaps://${location.hostname}:${response.data.securedEndpointPort}`;
+      let eps = response.data;
+
+      // bold key word
+      const keywords = [
+        "CoAP",
+        "UDP",
+        "DTLS",
+        "OSCORE",
+        "Californium",
+        "Scandium",
+        "java-coap",
+      ];
+      const strongKeywords = ["experimental"];
+
+      eps.forEach((ep) => {
+        keywords.forEach((keyword) => {
+          ep.description = ep.description.replace(
+            keyword,
+            `<span  class="text--primary font-weight-bold">${keyword}</span>`
+          );
+        });
+        strongKeywords.forEach((keyword) => {
+          ep.description = ep.description.replace(
+            keyword,
+            `<span  class="text--primary font-weight-black text-decoration-underline"><strong>${keyword}</strong></span>`
+          );
+        });
+      });
+
+      this.endpoints = eps;
     });
     this.axios.get("api/server/security").then((response) => {
       if (response.data.certificate) {
