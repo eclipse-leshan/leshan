@@ -63,7 +63,7 @@ public class LeshanBootstrapServerTest {
                 return config;
             }
         });
-        builder.setEndpointsProvider(new CaliforniumBootstrapServerEndpointsProvider());
+        builder.setEndpointsProviders(new CaliforniumBootstrapServerEndpointsProvider());
         return builder.build();
 
     }

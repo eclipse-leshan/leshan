@@ -199,7 +199,7 @@ public class LeshanBootstrapServerDemo {
         endpointsBuilder.addEndpoint(coapsAddr, Protocol.COAPS);
 
         // Create LWM2M server
-        builder.setEndpointsProvider(endpointsBuilder.build());
+        builder.setEndpointsProviders(endpointsBuilder.build());
         return builder.build();
     }
 

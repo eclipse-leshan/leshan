@@ -16,8 +16,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.bootstrap;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.leshan.core.Destroyable;
@@ -29,11 +29,13 @@ import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.bootstrap.endpoint.BootstrapServerEndpointToolbox;
+import org.eclipse.leshan.server.bootstrap.endpoint.CompositeBootstrapServerEndpointsProvider;
 import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpoint;
 import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpointsProvider;
 import org.eclipse.leshan.server.bootstrap.request.BootstrapDownlinkRequestSender;
 import org.eclipse.leshan.server.bootstrap.request.DefaultBootstrapDownlinkRequestSender;
 import org.eclipse.leshan.server.bootstrap.request.DefaultBootstrapUplinkRequestReceiver;
+import org.eclipse.leshan.server.endpoint.CompositeServerEndpointsProvider;
 import org.eclipse.leshan.server.security.BootstrapSecurityStore;
 import org.eclipse.leshan.server.security.ServerSecurityInfo;
 import org.slf4j.Logger;
@@ -148,9 +150,10 @@ public class LeshanBootstrapServer {
     }
 
     public Collection<LwM2mBootstrapServerEndpointsProvider> getEndpointsProvider() {
-        // TODO current we support only 1 endpoints provider but we will add support for multiple endpoints provider
-        // soon
-        return Arrays.asList(endpointsProvider);
+        if (endpointsProvider instanceof CompositeServerEndpointsProvider) {
+            return ((CompositeBootstrapServerEndpointsProvider) endpointsProvider).getProviders();
+        }
+        return Collections.singleton(endpointsProvider);
     }
 
     public LwM2mBootstrapServerEndpoint getEndpoint(Protocol protocol) {

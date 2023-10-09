@@ -104,7 +104,7 @@ public class LeshanBootstrapServerBuilderTest {
 
     @Test
     public void create_server_with_default_californiumEndpointsProvider() {
-        builder.setEndpointsProvider(new CaliforniumBootstrapServerEndpointsProvider());
+        builder.setEndpointsProviders(new CaliforniumBootstrapServerEndpointsProvider());
         server = builder.build();
 
         assertEquals(1, server.getEndpoints().size());
@@ -115,7 +115,7 @@ public class LeshanBootstrapServerBuilderTest {
     public void create_server_without_securityStore() {
         Builder endpointsBuilder = new CaliforniumBootstrapServerEndpointsProvider.Builder(
                 new CoapBootstrapServerProtocolProvider(), new CoapsBootstrapServerProtocolProvider());
-        builder.setEndpointsProvider(endpointsBuilder.build());
+        builder.setEndpointsProviders(endpointsBuilder.build());
         server = builder.build();
 
         assertEquals(1, server.getEndpoints().size());
@@ -127,7 +127,7 @@ public class LeshanBootstrapServerBuilderTest {
     public void create_server_with_securityStore() {
         Builder endpointsBuilder = new CaliforniumBootstrapServerEndpointsProvider.Builder(
                 new CoapBootstrapServerProtocolProvider(), new CoapsBootstrapServerProtocolProvider());
-        builder.setEndpointsProvider(endpointsBuilder.build());
+        builder.setEndpointsProviders(endpointsBuilder.build());
         builder.setSecurityStore(new BootstrapSecurityStore() {
             @Override
             public SecurityInfo getByIdentity(String pskIdentity) {
@@ -156,7 +156,7 @@ public class LeshanBootstrapServerBuilderTest {
     public void create_server_with_coaps_only() {
         Builder endpointsBuilder = new CaliforniumBootstrapServerEndpointsProvider.Builder(
                 new CoapsBootstrapServerProtocolProvider());
-        builder.setEndpointsProvider(endpointsBuilder.build());
+        builder.setEndpointsProviders(endpointsBuilder.build());
         builder.setSecurityStore(new BootstrapSecurityStore() {
             @Override
             public SecurityInfo getByIdentity(String pskIdentity) {
@@ -187,7 +187,7 @@ public class LeshanBootstrapServerBuilderTest {
         endpointsBuilder.setConfiguration(c -> {
             c.setAsList(DtlsConfig.DTLS_CIPHER_SUITES, CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8);
         });
-        builder.setEndpointsProvider(endpointsBuilder.build());
+        builder.setEndpointsProviders(endpointsBuilder.build());
 
         builder.setPrivateKey(privateKey);
         builder.setPublicKey(publicKey);

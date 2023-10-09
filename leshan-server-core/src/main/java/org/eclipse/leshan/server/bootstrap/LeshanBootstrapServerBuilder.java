@@ -21,6 +21,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.Collection;
 
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
@@ -29,6 +31,7 @@ import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
+import org.eclipse.leshan.server.bootstrap.endpoint.DefaultCompositeBootstrapServerEndpointsProvider;
 import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpointsProvider;
 import org.eclipse.leshan.server.bootstrap.request.BootstrapDownlinkRequestSender;
 import org.eclipse.leshan.server.model.LwM2mBootstrapModelProvider;
@@ -255,8 +258,31 @@ public class LeshanBootstrapServerBuilder {
         return this;
     }
 
-    public LeshanBootstrapServerBuilder setEndpointsProvider(LwM2mBootstrapServerEndpointsProvider endpointsProvider) {
-        this.endpointsProvider = endpointsProvider;
+    /**
+     * By default LeshanBootstrapServer doesn't support any protocol. Users need to provide 1 or several
+     * {@link LwM2mBootstrapServerEndpointsProvider} implementation.
+     * <p>
+     * Leshan project provides {@code coap} and {@code coaps} support based on Californium/Scandium in
+     * <strong>leshan-server-cf</strong>.
+     */
+    public LeshanBootstrapServerBuilder setEndpointsProviders(
+            LwM2mBootstrapServerEndpointsProvider... endpointsProvider) {
+        return setEndpointsProviders(Arrays.asList(endpointsProvider));
+    }
+
+    /**
+     * @see #setEndpointsProviders(LwM2mBootstrapServerEndpointsProvider...)
+     */
+    public LeshanBootstrapServerBuilder setEndpointsProviders(
+            Collection<LwM2mBootstrapServerEndpointsProvider> providers) {
+        if (providers == null || providers.isEmpty()) {
+            throw new IllegalStateException("At least one endpoint provider should be set");
+        }
+        if (providers.size() == 1) {
+            this.endpointsProvider = providers.iterator().next();
+        } else {
+            this.endpointsProvider = new DefaultCompositeBootstrapServerEndpointsProvider(providers);
+        }
         return this;
     }
 
