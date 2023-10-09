@@ -49,6 +49,11 @@ public class CoapOscoreBootstrapServerEndpointFactory extends CoapBootstrapServe
         super(uri);
     }
 
+    @Override
+    public String getEndpointDescription() {
+        return super.getEndpointDescription() + " with very experimental support of OSCORE";
+    }
+
     /**
      * This method is intended to be overridden.
      *

@@ -124,8 +124,8 @@ public class CaliforniumBootstrapServerEndpointsProvider implements LwM2mBootstr
 
                 // create LWM2M endpoint
                 CaliforniumBootstrapServerEndpoint lwm2mEndpoint = new CaliforniumBootstrapServerEndpoint(
-                        endpointFactory.getProtocol(), coapEndpoint, messagetranslator, toolbox, identityHandler,
-                        exceptionTranslator, executor);
+                        endpointFactory.getProtocol(), endpointFactory.getEndpointDescription(), coapEndpoint,
+                        messagetranslator, toolbox, identityHandler, exceptionTranslator, executor);
                 endpoints.add(lwm2mEndpoint);
 
                 // add Californium endpoint to coap server

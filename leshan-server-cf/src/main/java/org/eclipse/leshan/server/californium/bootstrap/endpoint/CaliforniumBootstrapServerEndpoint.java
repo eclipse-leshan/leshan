@@ -45,6 +45,7 @@ import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpoint
 public class CaliforniumBootstrapServerEndpoint implements LwM2mBootstrapServerEndpoint {
 
     private final Protocol protocol;
+    private final String description;
     private final ScheduledExecutorService executor;
     private final CoapEndpoint endpoint;
     private final BootstrapServerEndpointToolbox toolbox;
@@ -56,11 +57,12 @@ public class CaliforniumBootstrapServerEndpoint implements LwM2mBootstrapServerE
     // This is used to be able to cancel request
     private final ConcurrentNavigableMap<String/* sessionId#requestId */, Request /* ongoing coap Request */> ongoingRequests = new ConcurrentSkipListMap<>();
 
-    public CaliforniumBootstrapServerEndpoint(Protocol protocol, CoapEndpoint endpoint,
+    public CaliforniumBootstrapServerEndpoint(Protocol protocol, String description, CoapEndpoint endpoint,
             BootstrapServerCoapMessageTranslator translator, BootstrapServerEndpointToolbox toolbox,
             IdentityHandler identityHandler, ExceptionTranslator exceptionTranslator,
             ScheduledExecutorService executor) {
         this.protocol = protocol;
+        this.description = description;
         this.translator = translator;
         this.toolbox = toolbox;
         this.endpoint = endpoint;
@@ -77,6 +79,11 @@ public class CaliforniumBootstrapServerEndpoint implements LwM2mBootstrapServerE
     @Override
     public URI getURI() {
         return EndpointUriUtil.createUri(protocol.getUriScheme(), endpoint.getAddress());
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
     }
 
     public CoapEndpoint getCoapEndpoint() {

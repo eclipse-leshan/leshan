@@ -31,6 +31,8 @@ public interface CaliforniumBootstrapServerEndpointFactory {
 
     URI getUri();
 
+    String getEndpointDescription();
+
     CoapEndpoint createCoapEndpoint(Configuration defaultCaliforniumConfiguration,
             ServerSecurityInfo serverSecurityInfo, LeshanBootstrapServer server);
 

@@ -84,6 +84,11 @@ public class CoapsBootstrapServerEndpointFactory implements CaliforniumBootstrap
         return Protocol.COAPS;
     }
 
+    @Override
+    public String getEndpointDescription() {
+        return "CoAP over DTLS endpoint based on Californium/Scandium library";
+    }
+
     public static void applyDefaultValue(Configuration configuration) {
         configuration.set(CoapConfig.MID_TRACKER, TrackerMode.NULL);
         configuration.set(DtlsConfig.DTLS_ROLE, DtlsRole.SERVER_ONLY);

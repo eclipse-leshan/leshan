@@ -104,7 +104,7 @@ public class LeshanBootstrapServer {
         if (LOG.isInfoEnabled()) {
             LOG.info("Bootstrap server started.");
             for (LwM2mBootstrapServerEndpoint endpoint : endpointsProvider.getEndpoints()) {
-                LOG.info("{} endpoint available at {}.", endpoint.getProtocol().getName(), endpoint.getURI());
+                LOG.info("{} available at {}.", endpoint.getDescription(), endpoint.getURI());
             }
         }
     }

@@ -30,6 +30,8 @@ public interface LwM2mBootstrapServerEndpoint {
 
     URI getURI();
 
+    String getDescription();
+
     <T extends LwM2mResponse> T send(BootstrapSession destination, BootstrapDownlinkRequest<T> request,
             long timeoutInMs) throws InterruptedException;
 

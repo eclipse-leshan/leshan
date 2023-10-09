@@ -85,6 +85,11 @@ public class CoapBootstrapServerEndpointFactory implements CaliforniumBootstrapS
         return endpointUri;
     }
 
+    @Override
+    public String getEndpointDescription() {
+        return "CoAP over UDP endpoint based on Californium library";
+    }
+
     protected String getLoggingTag() {
         if (loggingTagPrefix != null) {
             return String.format("[%s-%s]", loggingTagPrefix, getUri().toString());
