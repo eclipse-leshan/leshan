@@ -32,6 +32,8 @@ public interface CaliforniumClientEndpointFactory {
 
     Protocol getProtocol();
 
+    String getEndpointDescription();
+
     CoapEndpoint createCoapEndpoint(InetAddress clientAddress, Configuration defaultConfiguration,
             ServerInfo serverInfo, boolean clientInitiatedOnly, List<Certificate> trustStore,
             ClientEndpointToolbox toolbox);
@@ -41,5 +43,4 @@ public interface CaliforniumClientEndpointFactory {
     IdentityHandler createIdentityHandler();
 
     ExceptionTranslator createExceptionTranslator();
-
 }

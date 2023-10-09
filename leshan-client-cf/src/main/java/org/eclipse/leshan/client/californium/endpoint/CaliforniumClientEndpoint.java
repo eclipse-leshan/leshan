@@ -48,6 +48,7 @@ public class CaliforniumClientEndpoint implements LwM2mClientEndpoint {
     private final Logger LOG = LoggerFactory.getLogger(CaliforniumClientEndpoint.class);
 
     private final Protocol protocol;
+    private final String description;
     private final ScheduledExecutorService executor;
     private final CoapEndpoint endpoint;
     private final ClientEndpointToolbox toolbox;
@@ -57,11 +58,12 @@ public class CaliforniumClientEndpoint implements LwM2mClientEndpoint {
     private final LwM2mModel model;
     private final ExceptionTranslator exceptionTranslator;
 
-    public CaliforniumClientEndpoint(Protocol protocol, CoapEndpoint endpoint, ClientCoapMessageTranslator translator,
-            ClientEndpointToolbox toolbox, IdentityHandler identityHandler,
+    public CaliforniumClientEndpoint(Protocol protocol, String description, CoapEndpoint endpoint,
+            ClientCoapMessageTranslator translator, ClientEndpointToolbox toolbox, IdentityHandler identityHandler,
             CaliforniumConnectionController connectionController, LwM2mModel model,
             ExceptionTranslator exceptionTranslator, ScheduledExecutorService executor) {
         this.protocol = protocol;
+        this.description = description;
         this.translator = translator;
         this.toolbox = toolbox;
         this.endpoint = endpoint;
@@ -84,9 +86,13 @@ public class CaliforniumClientEndpoint implements LwM2mClientEndpoint {
                     getCoapEndpoint().getAddress().getPort(), null, null, null);
         } catch (URISyntaxException e) {
             // TODO TL : handle this properly
-            e.printStackTrace();
             throw new IllegalStateException(e);
         }
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
     }
 
     @Override

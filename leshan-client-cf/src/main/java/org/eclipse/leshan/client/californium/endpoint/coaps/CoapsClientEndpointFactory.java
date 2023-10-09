@@ -93,6 +93,11 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
         this("LWM2M Client");
     }
 
+    @Override
+    public String getEndpointDescription() {
+        return "CoAP over DTLS endpoint based on Californium/Scandium library";
+    }
+
     public CoapsClientEndpointFactory(String loggingTagPrefix) {
         this.loggingTagPrefix = loggingTagPrefix;
     }

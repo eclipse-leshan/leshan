@@ -30,6 +30,8 @@ public interface LwM2mClientEndpoint {
 
     URI getURI();
 
+    String getDescription();
+
     void forceReconnection(LwM2mServer server, boolean resume);
 
     long getMaxCommunicationPeriodFor(long lifetimeInMs);

@@ -56,6 +56,11 @@ public class CoapClientEndpointFactory implements CaliforniumClientEndpointFacto
         return Protocol.COAP;
     }
 
+    @Override
+    public String getEndpointDescription() {
+        return "CoAP over UDP endpoint based on Californium library";
+    }
+
     protected String getLoggingTag(URI uri) {
         if (loggingTagPrefix != null) {
             return String.format("[%s-%s]", loggingTagPrefix, uri);

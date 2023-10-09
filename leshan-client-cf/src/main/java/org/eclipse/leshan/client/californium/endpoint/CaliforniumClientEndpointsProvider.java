@@ -182,9 +182,10 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
                     identityHandlerProvider.addIdentityHandler(coapEndpoint, identityHandler);
 
                     // create LWM2M endpoint
-                    endpoint = new CaliforniumClientEndpoint(endpointFactory.getProtocol(), coapEndpoint,
-                            messagetranslator, toolbox, identityHandler, endpointFactory.createConnectionController(),
-                            objectTree.getModel(), endpointFactory.createExceptionTranslator(), executor);
+                    endpoint = new CaliforniumClientEndpoint(endpointFactory.getProtocol(),
+                            endpointFactory.getEndpointDescription(), coapEndpoint, messagetranslator, toolbox,
+                            identityHandler, endpointFactory.createConnectionController(), objectTree.getModel(),
+                            endpointFactory.createExceptionTranslator(), executor);
 
                     // add Californium endpoint to coap server
                     coapServer.addEndpoint(coapEndpoint);
@@ -194,8 +195,8 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
                         coapServer.start();
                         try {
                             coapEndpoint.start();
-                            LOG.info("New endpoint created for server {} at {}", currentServer.getUri(),
-                                    coapEndpoint.getUri());
+                            LOG.info("New {} created, \n for server {} at {}.", endpoint.getDescription(),
+                                    currentServer.getUri(), coapEndpoint.getUri());
                         } catch (IOException e) {
                             throw new RuntimeException("Unable to start endpoint", e);
                         }

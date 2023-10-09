@@ -51,6 +51,11 @@ public class CoapOscoreClientEndpointFactory extends CoapClientEndpointFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(CoapOscoreClientEndpointFactory.class);
 
+    @Override
+    public String getEndpointDescription() {
+        return super.getEndpointDescription() + " with very experimental support of OSCORE";
+    }
+
     /**
      * This method is intended to be overridden.
      *
