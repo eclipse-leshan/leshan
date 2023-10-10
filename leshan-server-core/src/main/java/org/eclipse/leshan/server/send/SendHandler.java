@@ -24,6 +24,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.SendRequest;
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.SendResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.server.registration.Registration;
@@ -90,10 +91,11 @@ public class SendHandler implements SendService {
                 if (sendResponse.isSuccess()) {
                     fireDataReceived(updatedRegistration, request.getTimestampedNodes(), request);
                 } else {
-                    onError(updatedRegistration, String.format("Invalid Send Request, server returns %s %s", //
+                    String errorMsg = String.format("Invalid Send Request, server returns %s %s", //
                             sendResponse.getCode().getName(), //
-                            sendResponse.getErrorMessage() != null ? "because" + sendResponse.getErrorMessage() : ""),
-                            null);
+                            sendResponse.getErrorMessage() != null ? "because" + sendResponse.getErrorMessage() : "");
+                    onError(updatedRegistration, errorMsg,
+                            new InvalidRequestException(sendResponse.getErrorMessage() != null ? errorMsg : ""));
                 }
             }
 
