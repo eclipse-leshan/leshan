@@ -19,10 +19,11 @@ import java.net.URI;
 
 import org.eclipse.leshan.core.demo.cli.StandardHelpOptions;
 import org.eclipse.leshan.core.demo.cli.VersionProvider;
-import org.eclipse.leshan.core.demo.cli.converters.PortConverter;
 import org.eclipse.leshan.server.core.demo.cli.DtlsSection;
 import org.eclipse.leshan.server.core.demo.cli.GeneralSection;
 import org.eclipse.leshan.server.core.demo.cli.IdentitySection;
+import org.eclipse.leshan.server.demo.transport.TransportCommand;
+import org.eclipse.leshan.server.demo.transport.californium.CaliforniumCommand;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -41,11 +42,15 @@ import redis.clients.jedis.JedisPool;
          description = "%n"//
                  + "@|italic " //
                  + "This is a LWM2M Server demo implemented with Leshan library.%n" //
-                 + "You can launch it without any option.%n" //
+                 + "You can launch it without any option.|@%n" //
                  + "%n" //
-                 + "Californium is used as CoAP library and some CoAP parameters can be tweaked in 'Californium.properties' file." //
-                 + "|@%n%n",
-         versionProvider = VersionProvider.class)
+                 + CaliforniumCommand.DEFAULT_DESCRIPTION //
+                 + "%n" //
+                 + "You can use @|bold transport|@ command to configure available endpoints.%n"
+                 + "Launch @|bold transport -h|@ for more details.%n" //
+                 + "%n",
+         versionProvider = VersionProvider.class,
+         subcommands = { TransportCommand.class })
 public class LeshanServerDemoCLI implements Runnable {
 
     @Mixin
@@ -56,18 +61,6 @@ public class LeshanServerDemoCLI implements Runnable {
     public ServerGeneralSection main = new ServerGeneralSection();
 
     public static class ServerGeneralSection extends GeneralSection {
-        @Option(names = { "-jh", "--java-coap-host" },
-                description = { //
-                        "Set the local CoAP address of endpoint based on java-coap library.", //
-                        "Default: any local address." })
-        public String jlocalAddress;
-
-        @Option(names = { "-jp", "--java-coap-port" },
-                description = { //
-                        "Set the local CoAP port of endpoint based on java-coap library.", //
-                        "Default: ${DEFAULT-VALUE}" },
-                converter = PortConverter.class)
-        public Integer jlocalPort = 5685;
 
         @Option(names = { "-r", "--redis" },
                 description = { //

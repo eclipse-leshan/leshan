@@ -29,6 +29,24 @@ public class PicocliUtil {
     /**
      * Apply given function to any <strong>called</strong> sub-command which implement given type.
      * <p>
+     * (This is apply to whole direct and indirect children)
+     */
+    public static <T> void applyRecursivelyTo(ParseResult result, Class<T> searchedType,
+            BiConsumer<ParseResult, T> functionToApply) {
+
+        if (result.hasSubcommand()) {
+            for (CommandLine cmd : result.asCommandLineList()) {
+                Object userDefinedCommand = cmd.getCommandSpec().userObject();
+                if (searchedType.isInstance(userDefinedCommand)) {
+                    functionToApply.accept(cmd.getParseResult(), searchedType.cast(userDefinedCommand));
+                }
+            }
+        }
+    }
+
+    /**
+     * Apply given function to any <strong>called</strong> sub-command which implement given type.
+     * <p>
      * (This is direct sub-command, not recursive search here)
      */
     public static <T> void applyTo(ParseResult result, Class<T> searchedType,

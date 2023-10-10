@@ -17,55 +17,44 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.demo;
 
-import java.io.File;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.List;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
 
-import org.eclipse.californium.core.config.CoapConfig;
-import org.eclipse.californium.elements.config.Configuration;
-import org.eclipse.californium.elements.util.CertPathUtil;
-import org.eclipse.californium.scandium.config.DtlsConfig;
-import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.eclipse.leshan.core.californium.PrincipalMdcConnectionListener;
 import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
+import org.eclipse.leshan.core.demo.cli.PicocliUtil;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
-import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.LeshanServerBuilder;
-import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointsProvider;
-import org.eclipse.leshan.server.californium.endpoint.coap.CoapOscoreServerEndpointFactory;
-import org.eclipse.leshan.server.californium.endpoint.coap.CoapServerProtocolProvider;
-import org.eclipse.leshan.server.californium.endpoint.coaps.CoapsServerProtocolProvider;
 import org.eclipse.leshan.server.core.demo.json.servlet.SecurityServlet;
 import org.eclipse.leshan.server.demo.cli.LeshanServerDemoCLI;
 import org.eclipse.leshan.server.demo.servlet.ClientServlet;
 import org.eclipse.leshan.server.demo.servlet.EventServlet;
 import org.eclipse.leshan.server.demo.servlet.ObjectSpecServlet;
 import org.eclipse.leshan.server.demo.servlet.ServerServlet;
+import org.eclipse.leshan.server.demo.transport.TransportCommand;
+import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.VersionedModelProvider;
 import org.eclipse.leshan.server.redis.RedisRegistrationStore;
 import org.eclipse.leshan.server.redis.RedisSecurityStore;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.FileSecurityStore;
-import org.eclipse.leshan.transport.javacoap.server.endpoint.JavaCoapServerEndpointsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import picocli.CommandLine;
+import picocli.CommandLine.RunAll;
 
 public class LeshanServerDemo {
 
@@ -78,25 +67,26 @@ public class LeshanServerDemo {
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServerDemo.class);
-    private static final String CF_CONFIGURATION_FILENAME = "Californium3.server.properties";
-    private static final String CF_CONFIGURATION_HEADER = "Leshan Server Demo - " + Configuration.DEFAULT_HEADER;
 
     public static void main(String[] args) {
 
         // Parse command line
         LeshanServerDemoCLI cli = new LeshanServerDemoCLI();
-        CommandLine command = new CommandLine(cli).setParameterExceptionHandler(new ShortErrorMessageHandler());
+        CommandLine command = new CommandLine(cli) //
+                .setExecutionStrategy(new RunAll()).setParameterExceptionHandler(new ShortErrorMessageHandler());
+
         // Handle exit code error
         int exitCode = command.execute(args);
         if (exitCode != 0)
             System.exit(exitCode);
         // Handle help or version command
-        if (command.isUsageHelpRequested() || command.isVersionHelpRequested())
+        if (command.isUsageHelpRequested() || command.isVersionHelpRequested() || PicocliUtil.isHelpRequested(command))
             System.exit(0);
 
         try {
             // Create LWM2M Server
-            LeshanServer lwm2mServer = createLeshanServer(cli);
+            List<LwM2mServerEndpointsProvider> endpointProviders = createEndpointsProviders(cli, command);
+            LeshanServer lwm2mServer = createLeshanServer(cli, endpointProviders);
 
             // Create Web Server
             Server webServer = createJettyServer(cli, lwm2mServer);
@@ -138,7 +128,22 @@ public class LeshanServerDemo {
         }
     }
 
-    public static LeshanServer createLeshanServer(LeshanServerDemoCLI cli) throws Exception {
+    private static List<LwM2mServerEndpointsProvider> createEndpointsProviders(LeshanServerDemoCLI cli,
+            CommandLine commandLine) {
+        // Get transport command
+        CommandLine transportCommand = commandLine.getSubcommands().get("transport");
+        List<LwM2mServerEndpointsProvider> providers = ((TransportCommand) transportCommand.getCommandSpec()
+                .userObject()).createEndpointsProviders(cli, transportCommand);
+
+        if (providers == null || providers.isEmpty()) {
+            throw new IllegalStateException("Something goes wrong provider should not be null or empty");
+        }
+
+        return providers;
+    }
+
+    public static LeshanServer createLeshanServer(LeshanServerDemoCLI cli,
+            List<LwM2mServerEndpointsProvider> endpointProviders) throws Exception {
         // Prepare LWM2M server
         LeshanServerBuilder builder = new LeshanServerBuilder();
 
@@ -177,87 +182,8 @@ public class LeshanServerDemo {
             builder.setPrivateKey(cli.identity.getPrivateKey());
         }
 
-        // Create Californium Endpoints Provider:
-        // ------------------
-        // Create Server Endpoints Provider
-        CaliforniumServerEndpointsProvider.Builder endpointsBuilder = new CaliforniumServerEndpointsProvider.Builder(
-                // Add coap Protocol support
-                new CoapServerProtocolProvider(),
-
-                // Add coaps protocol support
-                new CoapsServerProtocolProvider(c -> {
-                    // Add MDC for connection logs
-                    if (cli.helpsOptions.getVerboseLevel() > 0)
-                        c.setConnectionListener(new PrincipalMdcConnectionListener());
-
-                }));
-
-        // Create Californium Configuration
-        Configuration serverCoapConfig = endpointsBuilder.createDefaultConfiguration();
-
-        // Set some DTLS stuff
-        // These configuration values are always overwritten by CLI therefore set them to transient.
-        serverCoapConfig.setTransient(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY);
-        serverCoapConfig.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, !cli.dtls.supportDeprecatedCiphers);
-        serverCoapConfig.setTransient(DtlsConfig.DTLS_CONNECTION_ID_LENGTH);
-        if (cli.dtls.cid != null) {
-            serverCoapConfig.set(DtlsConfig.DTLS_CONNECTION_ID_LENGTH, cli.dtls.cid);
-        }
-
-        // Persist configuration
-        File configFile = new File(CF_CONFIGURATION_FILENAME);
-        if (configFile.isFile()) {
-            serverCoapConfig.load(configFile);
-        } else {
-            serverCoapConfig.store(configFile, CF_CONFIGURATION_HEADER);
-        }
-
-        // Enforce DTLS role to ServerOnly if needed
-        if (cli.identity.isx509()) {
-            X509Certificate serverCertificate = cli.identity.getCertChain()[0];
-            if (serverCoapConfig.get(DtlsConfig.DTLS_ROLE) == DtlsRole.BOTH) {
-                if (serverCertificate != null) {
-                    if (CertPathUtil.canBeUsedForAuthentication(serverCertificate, false)) {
-                        if (!CertPathUtil.canBeUsedForAuthentication(serverCertificate, true)) {
-                            serverCoapConfig.set(DtlsConfig.DTLS_ROLE, DtlsRole.SERVER_ONLY);
-                            LOG.warn("Server certificate does not allow Client Authentication usage."
-                                    + "\nThis will prevent this LWM2M server to initiate DTLS connection."
-                                    + "\nSee : https://github.com/eclipse/leshan/wiki/Server-Failover#about-connections");
-                        }
-                    }
-                }
-            }
-        }
-
-        // Set Californium Configuration
-        endpointsBuilder.setConfiguration(serverCoapConfig);
-
-        // Create CoAP endpoint
-        int coapPort = cli.main.localPort == null ? serverCoapConfig.get(CoapConfig.COAP_PORT) : cli.main.localPort;
-        InetSocketAddress coapAddr = cli.main.localAddress == null ? new InetSocketAddress(coapPort)
-                : new InetSocketAddress(cli.main.localAddress, coapPort);
-        if (cli.main.disableOscore) {
-            endpointsBuilder.addEndpoint(coapAddr, Protocol.COAP);
-        } else {
-            endpointsBuilder.addEndpoint(new CoapOscoreServerEndpointFactory(
-                    EndpointUriUtil.createUri(Protocol.COAP.getUriScheme(), coapAddr)));
-        }
-
-        // Create CoAP over DTLS endpoint
-        int coapsPort = cli.main.secureLocalPort == null ? serverCoapConfig.get(CoapConfig.COAP_SECURE_PORT)
-                : cli.main.secureLocalPort;
-        InetSocketAddress coapsAddr = cli.main.secureLocalAddress == null ? new InetSocketAddress(coapsPort)
-                : new InetSocketAddress(cli.main.secureLocalAddress, coapsPort);
-        endpointsBuilder.addEndpoint(coapsAddr, Protocol.COAPS);
-
-        // Create CoAP endpoint based on java-coap
-        int jcoapPort = cli.main.jlocalPort;
-        InetSocketAddress jcoapAddr = cli.main.secureLocalAddress == null ? new InetSocketAddress(jcoapPort)
-                : new InetSocketAddress(cli.main.jlocalAddress, jcoapPort);
-        JavaCoapServerEndpointsProvider javacoapEndpointsProvider = new JavaCoapServerEndpointsProvider(jcoapAddr);
-
         // Create LWM2M server
-        builder.setEndpointsProviders(endpointsBuilder.build(), javacoapEndpointsProvider);
+        builder.setEndpointsProviders(endpointProviders);
         return builder.build();
     }
 
