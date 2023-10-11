@@ -198,9 +198,10 @@ public class LeshanClientDemo {
                 initializer.setClassForObject(SERVER, Server.class);
             }
         } else {
-            int shortServerId = cli.main.factoryBootstrap == null || cli.main.factoryBootstrap.get("/1/0/0") == null
+            LwM2mPath lwM2mPath = new LwM2mPath("/1/0/0");
+            int shortServerId = cli.main.factoryBootstrap == null || cli.main.factoryBootstrap.get(lwM2mPath) == null
                     ? 123
-                    : Integer.valueOf(cli.main.factoryBootstrap.get("/1/0/0"));
+                    : Integer.valueOf(cli.main.factoryBootstrap.get(lwM2mPath));
             if (cli.identity.isPSK()) {
                 // TODO OSCORE support OSCORE with DTLS/PSK
                 initializer.setInstancesForObject(SECURITY, psk(cli.main.url, shortServerId,
@@ -319,8 +320,8 @@ public class LeshanClientDemo {
             for (Map.Entry<LwM2mPath, String> entry : cli.main.factoryBootstrap.entrySet()) {
                 LwM2mPath lwM2mPath = entry.getKey();
                 LwM2mNodeTextDecoder lwM2mNodeTextDecoder = new LwM2mNodeTextDecoder();
-                LwM2mSingleResource decodedResource = lwM2mNodeTextDecoder.decode(entry.getValue().getBytes(), lwM2mPath,
-                        repository.getLwM2mModel(), LwM2mSingleResource.class);
+                LwM2mSingleResource decodedResource = lwM2mNodeTextDecoder.decode(entry.getValue().getBytes(),
+                        lwM2mPath, repository.getLwM2mModel(), LwM2mSingleResource.class);
                 client.getObjectTree().getObjectEnabler(decodedResource.getId()).write(LwM2mServer.SYSTEM,
                         new BootstrapWriteRequest(lwM2mPath,
                                 LwM2mSingleResource.newResource(decodedResource.getId(), decodedResource.getValue()),
