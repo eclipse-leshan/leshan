@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class LwM2mRoot implements LwM2mNode {
     private final Map<Integer, LwM2mObject> objects;
@@ -43,23 +44,65 @@ public class LwM2mRoot implements LwM2mNode {
 
     @Override
     public void accept(LwM2mNodeVisitor visitor) {
-        // TODO: visitors currently don't support a visit from LwM2mRoot
         visitor.visit(this);
     }
 
     @Override
     public String toPrettyString(LwM2mPath path) {
-        return null;
+        return appendPrettyNode(new StringBuilder(), path).toString();
     }
 
     @Override
     public StringBuilder appendPrettyNode(StringBuilder b, LwM2mPath path) {
-        return null;
+        if (!path.isRoot())
+            throw new IllegalArgumentException("Path must be a root path");
+        if (path.getObjectId() != getId())
+            throw new IllegalArgumentException("Path id must match this LwM2mMultipleResource id");
+
+        if (objects.isEmpty()) {
+            b.append(path).append(" : {}");
+        } else {
+            boolean first = true;
+            for (Map.Entry<Integer, LwM2mObject> entry : new TreeMap<>(objects).entrySet()) {
+                if (first) {
+                    first = false;
+                } else {
+                    b.append("\n");
+                }
+                entry.getValue().appendPrettyNode(b, path.append(entry.getKey()));
+            }
+        }
+        return b;
     }
 
     public Map<Integer, LwM2mObject> getObjects() {
         return objects;
     }
 
-    // TODO: add compare and other stuff that a LwM2m node should have
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        LwM2mRoot other = (LwM2mRoot) obj;
+        if (objects == null) {
+            if (other.objects != null)
+                return false;
+        } else if (!objects.equals(other.objects))
+            return false;
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + getId();
+        result = prime * result + ((objects == null) ? 0 : objects.hashCode());
+        return result;
+    }
+
 }

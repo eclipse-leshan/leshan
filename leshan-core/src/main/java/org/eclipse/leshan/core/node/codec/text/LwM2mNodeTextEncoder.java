@@ -86,7 +86,10 @@ public class LwM2mNodeTextEncoder implements NodeEncoder {
 
         @Override
         public void visit(LwM2mObject object) {
-            throw new CodecException("Object %s cannot be encoded in text format", path);
+            if (path.isRoot())
+                throw new CodecException("Root %s cannot be encoded in text format", path);
+            else
+                throw new CodecException("Object %s cannot be encoded in text format", path);
         }
 
         @Override

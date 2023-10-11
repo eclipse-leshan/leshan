@@ -233,7 +233,9 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
         public void visit(LwM2mObject object) {
             LOG.trace("Encoding Object {} into SenML", object);
             // Validate request path
-            if (!requestPath.isObject()) {
+            if (requestPath.isRoot()) {
+                throw new CodecException("Invalid request path %s for root encoding", requestPath);
+            } else if (!requestPath.isObject()) {
                 throw new CodecException("Invalid request path %s for object encoding", requestPath);
             }
 

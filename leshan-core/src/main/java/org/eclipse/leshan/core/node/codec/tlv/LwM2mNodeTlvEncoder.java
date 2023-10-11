@@ -92,6 +92,9 @@ public class LwM2mNodeTlvEncoder implements NodeEncoder {
         public void visit(LwM2mObject object) {
             LOG.trace("Encoding object {} into TLV", object);
 
+            if (path.isRoot())
+                throw new CodecException("Path is root. Invalid request path %s for JSON instance encoding", path);
+
             Tlv[] tlvs;
 
             // encoded as an array of instances

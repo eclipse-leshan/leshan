@@ -82,7 +82,10 @@ public class LwM2mNodeCborEncoder implements NodeEncoder {
 
         @Override
         public void visit(LwM2mObject object) {
-            throw new CodecException("Object %s cannot be encoded in cbor format", path);
+            if (path.isRoot())
+                throw new CodecException("Root %s cannot be encoded in cbor format", path);
+            else
+                throw new CodecException("Object %s cannot be encoded in cbor format", path);
         }
 
         @Override

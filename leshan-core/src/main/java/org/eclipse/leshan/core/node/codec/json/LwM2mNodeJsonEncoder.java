@@ -152,9 +152,12 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
         public void visit(LwM2mObject object) {
             LOG.trace("Encoding Object {} into JSON", object);
             // Validate request path
-            if (!requestPath.isObject()) {
+            if (requestPath.isRoot()) {
+                throw new CodecException("Invalid request path %s for JSON root encoding", requestPath);
+            } else if (!requestPath.isObject()) {
                 throw new CodecException("Invalid request path %s for JSON object encoding", requestPath);
             }
+
             baseName = requestPath.toString() + "/";
 
             // Create resources

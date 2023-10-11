@@ -60,7 +60,10 @@ public class LwM2mNodeOpaqueEncoder implements NodeEncoder {
 
         @Override
         public void visit(LwM2mObject object) {
-            throw new CodecException("Object %s cannot be encoded in opaque format", path);
+            if (path.isRoot())
+                throw new CodecException("Root %s cannot be encoded in opaque forma", path);
+            else
+                throw new CodecException("Object %s cannot be encoded in opaque format", path);
         }
 
         @Override
