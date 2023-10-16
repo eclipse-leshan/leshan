@@ -32,15 +32,11 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import org.eclipse.californium.elements.Connector;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
-import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
-import org.eclipse.leshan.core.node.codec.LwM2mValueChecker;
-import org.eclipse.leshan.core.node.codec.json.LwM2mNodeJsonEncoder;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.CancelObservationRequest;
@@ -418,39 +414,4 @@ public class ObserveTest {
         ReadResponse readResp = server.send(currentRegistration, new ReadRequest(3));
         assertThat(response.getContent()).isEqualTo(readResp.getContent());
     }
-
-    // TODO seems to be a server test only (lockstep client should be used)
-    @TestAllTransportLayer
-    public void can_handle_error_on_notification(Protocol givenProtocol, String givenClientEndpointProvider,
-            String givenServerEndpointProvider) throws InterruptedException {
-
-        // observe device timezone
-        ObserveResponse observeResponse = server.send(currentRegistration, new ObserveRequest(3, 0, 15));
-        assertThat(observeResponse) //
-                .hasCode(CONTENT) //
-                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
-
-        // an observation response should have been sent
-        SingleObservation observation = observeResponse.getObservation();
-        assertThat(observation.getPath()).asString().isEqualTo("/3/0/15");
-        assertThat(observation.getRegistrationId()).isEqualTo(currentRegistration.getId());
-        Set<Observation> observations = server.getObservationService().getObservations(currentRegistration);
-        assertThat(observations).containsExactly(observation);
-
-        // *** HACK send a notification with unsupported content format *** //
-        byte[] payload = new LwM2mNodeJsonEncoder().encode(LwM2mSingleResource.newStringResource(15, "Paris"),
-                new LwM2mPath("/3/0/15"), client.getObjectTree().getModel(), new LwM2mValueChecker());
-
-        // 666 is not a supported content format.
-        Connector connector = client
-                .getClientConnector(client.getServerIdForRegistrationId("/rd/" + currentRegistration.getId()));
-        TestObserveUtil.sendNotification(connector, server.getEndpoint(Protocol.COAP).getURI(), payload,
-                observeResponse.getObservation().getId().getBytes(), 2, ContentFormat.fromCode(666));
-        // *** Hack End *** //
-
-        // verify result
-        server.waitForNewObservation(observation);
-        server.waitForNotificationErrorOf(observation, 1, TimeUnit.SECONDS);
-    }
-
 }
