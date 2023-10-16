@@ -69,7 +69,7 @@ public class DynamicIPObserveTest {
     /*---------------------------------/
      *  Parameterized Tests
      * -------------------------------*/
-    @ParameterizedTest(name = "{0} over {1} - Client using {2} - Server using {3}")
+    @ParameterizedTest(name = "{0} - Client using {1} - Server using {2}")
     @MethodSource("noTlsTransports")
     @Retention(RetentionPolicy.RUNTIME)
     private @interface TestNoTlsTransport {
