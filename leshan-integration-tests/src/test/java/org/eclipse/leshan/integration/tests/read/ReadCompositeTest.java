@@ -68,6 +68,8 @@ public class ReadCompositeTest {
                 // {request content format, response content format}
                 { ContentFormat.SENML_JSON, ContentFormat.SENML_JSON }, //
                 { ContentFormat.SENML_CBOR, ContentFormat.SENML_CBOR }, //
+                { ContentFormat.SENML_CBOR, ContentFormat.SENML_JSON }, //
+                { ContentFormat.SENML_JSON, ContentFormat.SENML_CBOR }, //
         };
 
         // for each transport, create 1 test by format.
