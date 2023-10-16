@@ -19,6 +19,7 @@ import java.net.URI;
 
 import org.eclipse.leshan.core.demo.cli.StandardHelpOptions;
 import org.eclipse.leshan.core.demo.cli.VersionProvider;
+import org.eclipse.leshan.core.demo.cli.converters.PortConverter;
 import org.eclipse.leshan.server.core.demo.cli.DtlsSection;
 import org.eclipse.leshan.server.core.demo.cli.GeneralSection;
 import org.eclipse.leshan.server.core.demo.cli.IdentitySection;
@@ -55,6 +56,19 @@ public class LeshanServerDemoCLI implements Runnable {
     public ServerGeneralSection main = new ServerGeneralSection();
 
     public static class ServerGeneralSection extends GeneralSection {
+        @Option(names = { "-jh", "--java-coap-host" },
+                description = { //
+                        "Set the local CoAP address of endpoint based on java-coap library.", //
+                        "Default: any local address." })
+        public String jlocalAddress;
+
+        @Option(names = { "-jp", "--java-coap-port" },
+                description = { //
+                        "Set the local CoAP port of endpoint based on java-coap library.", //
+                        "Default: ${DEFAULT-VALUE}" },
+                converter = PortConverter.class)
+        public Integer jlocalPort = 5685;
+
         @Option(names = { "-r", "--redis" },
                 description = { //
                         "Use redis to store registration and securityInfo.", //

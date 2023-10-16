@@ -61,6 +61,7 @@ import org.eclipse.leshan.server.redis.RedisRegistrationStore;
 import org.eclipse.leshan.server.redis.RedisSecurityStore;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.FileSecurityStore;
+import org.eclipse.leshan.transport.javacoap.server.endpoint.JavaCoapServerEndpointsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -249,8 +250,14 @@ public class LeshanServerDemo {
                 : new InetSocketAddress(cli.main.secureLocalAddress, coapsPort);
         endpointsBuilder.addEndpoint(coapsAddr, Protocol.COAPS);
 
+        // Create CoAP endpoint based on java-coap
+        int jcoapPort = cli.main.jlocalPort;
+        InetSocketAddress jcoapAddr = cli.main.secureLocalAddress == null ? new InetSocketAddress(jcoapPort)
+                : new InetSocketAddress(cli.main.jlocalAddress, jcoapPort);
+        JavaCoapServerEndpointsProvider javacoapEndpointsProvider = new JavaCoapServerEndpointsProvider(jcoapAddr);
+
         // Create LWM2M server
-        builder.setEndpointsProviders(endpointsBuilder.build());
+        builder.setEndpointsProviders(endpointsBuilder.build(), javacoapEndpointsProvider);
         return builder.build();
     }
 
