@@ -150,6 +150,11 @@ public class LeshanClientDemoCLI implements Runnable {
                         "Activate support of old/unofficial content format.", //
                         "See https://github.com/eclipse/leshan/pull/720" })
         public boolean supportOldFormat;
+
+        @Option(names = { "-jc", "--use-java-coap" },
+                description = { //
+                        "Use java-coap for CoAP protocol instead of Californium." })
+        public boolean useJavaCoap;
     }
 
     /* ********************************** Location Section ******************************** */

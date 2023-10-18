@@ -33,6 +33,7 @@ import static org.eclipse.leshan.core.LwM2mId.SERVER;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.californium.elements.config.Configuration;
@@ -43,11 +44,13 @@ import org.eclipse.leshan.client.LeshanClient;
 import org.eclipse.leshan.client.LeshanClientBuilder;
 import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpointFactory;
 import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpointsProvider;
+import org.eclipse.leshan.client.californium.endpoint.ClientProtocolProvider;
 import org.eclipse.leshan.client.californium.endpoint.coap.CoapOscoreProtocolProvider;
 import org.eclipse.leshan.client.californium.endpoint.coaps.CoapsClientEndpointFactory;
 import org.eclipse.leshan.client.californium.endpoint.coaps.CoapsClientProtocolProvider;
 import org.eclipse.leshan.client.demo.cli.LeshanClientDemoCLI;
 import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands;
+import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.LwM2mTestObject;
 import org.eclipse.leshan.client.object.Oscore;
@@ -65,6 +68,7 @@ import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
+import org.eclipse.leshan.transport.javacoap.client.endpoint.JavaCoapClientEndpointsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -259,8 +263,13 @@ public class LeshanClientDemo {
         };
 
         // Create client endpoints Provider
+        List<ClientProtocolProvider> protocolProvider = new ArrayList<>();
+        if (!cli.main.useJavaCoap) {
+            protocolProvider.add(new CoapOscoreProtocolProvider());
+        }
+        protocolProvider.add(customCoapsProtocolProvider);
         CaliforniumClientEndpointsProvider.Builder endpointsBuilder = new CaliforniumClientEndpointsProvider.Builder(
-                new CoapOscoreProtocolProvider(), customCoapsProtocolProvider);
+                protocolProvider.toArray(new ClientProtocolProvider[protocolProvider.size()]));
 
         // Create Californium Configuration
         Configuration clientCoapConfig = endpointsBuilder.createDefaultConfiguration();
@@ -285,13 +294,20 @@ public class LeshanClientDemo {
 
         // Set Californium Configuration
         endpointsBuilder.setConfiguration(clientCoapConfig);
-
         endpointsBuilder.setClientAddress(cli.main.localAddress);
+
+        // creates EndpointsProvider
+        List<LwM2mClientEndpointsProvider> endpointsProvider = new ArrayList<>();
+        endpointsProvider.add(endpointsBuilder.build());
+        if (cli.main.useJavaCoap) {
+            endpointsProvider.add(new JavaCoapClientEndpointsProvider());
+        }
 
         // Create client
         LeshanClientBuilder builder = new LeshanClientBuilder(cli.main.endpoint);
         builder.setObjects(enablers);
-        builder.setEndpointsProviders(endpointsBuilder.build());
+        builder.setEndpointsProviders(
+                endpointsProvider.toArray(new LwM2mClientEndpointsProvider[endpointsProvider.size()]));
         builder.setDataSenders(new ManualDataSender());
         if (cli.identity.isx509())
             builder.setTrustStore(cli.identity.getX509().trustStore);
