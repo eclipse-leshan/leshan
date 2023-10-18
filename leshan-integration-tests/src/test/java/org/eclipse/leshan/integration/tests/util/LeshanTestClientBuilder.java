@@ -17,6 +17,7 @@ package org.eclipse.leshan.integration.tests.util;
 
 import static org.eclipse.leshan.core.LwM2mId.OSCORE;
 
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -436,11 +437,14 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
     private URI getServerUri() {
         LwM2mServerEndpoint endpoint = server.getEndpoint(protocolToUse);
         URI serverUri = endpoint.getURI();
+        // we force usage of "localhost" as hostname to be sure that X.509 test works.
+        // see : https://github.com/eclipse-leshan/leshan/issues/1461#issuecomment-1631143202
         if (proxy != null) {
             // if server is behind a proxy we use its URI
-            return EndpointUriUtil.replaceAddress(serverUri, proxy.getClientSideProxyAddress());
+            return EndpointUriUtil.replaceAddress(serverUri,
+                    new InetSocketAddress("localhost", proxy.getClientSideProxyAddress().getPort()));
         } else {
-            return serverUri;
+            return EndpointUriUtil.replaceAddress(serverUri, new InetSocketAddress("localhost", serverUri.getPort()));
         }
     }
 }
