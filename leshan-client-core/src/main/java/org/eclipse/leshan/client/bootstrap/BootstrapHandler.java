@@ -67,7 +67,12 @@ public class BootstrapHandler {
             Runnable whenSent = new Runnable() {
                 @Override
                 public void run() {
-                    bootstrappingLatch.countDown();
+                    CountDownLatch countDownLatch = bootstrappingLatch;
+                    // Latch can be null if we sent event is raised after bootstrap session is closed (e.g. if
+                    // session timeout)
+                    if (countDownLatch != null) {
+                        bootstrappingLatch.countDown();
+                    }
                 }
             };
 
