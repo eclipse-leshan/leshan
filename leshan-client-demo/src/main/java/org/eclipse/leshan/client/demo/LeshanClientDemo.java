@@ -198,36 +198,31 @@ public class LeshanClientDemo {
                 initializer.setClassForObject(SERVER, Server.class);
             }
         } else {
-            LwM2mPath lwM2mPath = new LwM2mPath("/1/0/0");
-            int shortServerId = cli.main.factoryBootstrap == null || cli.main.factoryBootstrap.get(lwM2mPath) == null
-                    ? 123
-                    : Integer.valueOf(cli.main.factoryBootstrap.get(lwM2mPath));
             if (cli.identity.isPSK()) {
                 // TODO OSCORE support OSCORE with DTLS/PSK
-                initializer.setInstancesForObject(SECURITY, psk(cli.main.url, shortServerId,
+                initializer.setInstancesForObject(SECURITY, psk(cli.main.url, 123,
                         cli.identity.getPsk().identity.getBytes(), cli.identity.getPsk().sharekey.getBytes()));
-                initializer.setInstancesForObject(SERVER, new Server(shortServerId, cli.main.lifetimeInSec));
+                initializer.setInstancesForObject(SERVER, new Server(123, cli.main.lifetimeInSec));
             } else if (cli.identity.isRPK()) {
                 // TODO OSCORE support OSCORE with DTLS/RPK
                 initializer.setInstancesForObject(SECURITY,
-                        rpk(cli.main.url, shortServerId, cli.identity.getRPK().cpubk.getEncoded(),
+                        rpk(cli.main.url, 123, cli.identity.getRPK().cpubk.getEncoded(),
                                 cli.identity.getRPK().cprik.getEncoded(), cli.identity.getRPK().spubk.getEncoded()));
-                initializer.setInstancesForObject(SERVER, new Server(shortServerId, cli.main.lifetimeInSec));
+                initializer.setInstancesForObject(SERVER, new Server(123, cli.main.lifetimeInSec));
             } else if (cli.identity.isx509()) {
                 // TODO OSCORE support OSCORE with DTLS/X509
                 initializer.setInstancesForObject(SECURITY,
-                        x509(cli.main.url, shortServerId, cli.identity.getX509().ccert.getEncoded(),
+                        x509(cli.main.url, 123, cli.identity.getX509().ccert.getEncoded(),
                                 cli.identity.getX509().cprik.getEncoded(), cli.identity.getX509().scert.getEncoded(),
                                 cli.identity.getX509().certUsage.code));
-                initializer.setInstancesForObject(SERVER, new Server(shortServerId, cli.main.lifetimeInSec));
+                initializer.setInstancesForObject(SERVER, new Server(123, cli.main.lifetimeInSec));
             } else {
                 if (oscoreObjectInstanceId != null) {
-                    initializer.setInstancesForObject(SECURITY,
-                            oscoreOnly(cli.main.url, shortServerId, oscoreObjectInstanceId));
+                    initializer.setInstancesForObject(SECURITY, oscoreOnly(cli.main.url, 123, oscoreObjectInstanceId));
                 } else {
-                    initializer.setInstancesForObject(SECURITY, noSec(cli.main.url, shortServerId));
+                    initializer.setInstancesForObject(SECURITY, noSec(cli.main.url, 123));
                 }
-                initializer.setInstancesForObject(SERVER, new Server(shortServerId, cli.main.lifetimeInSec));
+                initializer.setInstancesForObject(SERVER, new Server(123, cli.main.lifetimeInSec));
             }
         }
         initializer.setInstancesForObject(DEVICE, new MyDevice());
@@ -316,17 +311,16 @@ public class LeshanClientDemo {
         builder.setBootstrapAdditionalAttributes(cli.main.bsAdditionalAttributes);
         final LeshanClient client = builder.build();
 
-        if (cli.main.factoryBootstrap != null)
+        if (cli.main.factoryBootstrap != null) {
+            LwM2mNodeTextDecoder lwM2mNodeTextDecoder = new LwM2mNodeTextDecoder();
             for (Map.Entry<LwM2mPath, String> entry : cli.main.factoryBootstrap.entrySet()) {
                 LwM2mPath lwM2mPath = entry.getKey();
-                LwM2mNodeTextDecoder lwM2mNodeTextDecoder = new LwM2mNodeTextDecoder();
                 LwM2mSingleResource decodedResource = lwM2mNodeTextDecoder.decode(entry.getValue().getBytes(),
                         lwM2mPath, repository.getLwM2mModel(), LwM2mSingleResource.class);
-                client.getObjectTree().getObjectEnabler(decodedResource.getId()).write(LwM2mServer.SYSTEM,
-                        new BootstrapWriteRequest(lwM2mPath,
-                                LwM2mSingleResource.newResource(decodedResource.getId(), decodedResource.getValue()),
-                                ContentFormat.TEXT));
+                client.getObjectTree().getObjectEnabler(lwM2mPath.getObjectId()).write(LwM2mServer.SYSTEM,
+                        new BootstrapWriteRequest(lwM2mPath, decodedResource, ContentFormat.TEXT));
             }
+        }
         client.getObjectTree().addListener(new ObjectsListenerAdapter() {
 
             @Override
