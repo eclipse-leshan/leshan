@@ -82,7 +82,7 @@ public class JavaCoapServerEndpoint implements LwM2mServerEndpoint {
 
     @Override
     public String getDescription() {
-        return "CoAP over UDP based on java-coap library";
+        return "CoAP over UDP endpoint based on java-coap library";
     }
 
     @Override
