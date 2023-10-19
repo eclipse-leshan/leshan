@@ -55,7 +55,14 @@ public class DefaultEndpointsManager implements EndpointsManager {
         endpointProvider.destroyEndpoints();
 
         // Create new endpoint
-        return endpointProvider.createEndpoint(serverInfo, clientInitiatedOnly, trustStore, toolbox);
+        LwM2mServer server = endpointProvider.createEndpoint(serverInfo, clientInitiatedOnly, trustStore, toolbox);
+        if (server != null) {
+            LwM2mClientEndpoint endpoint = endpointProvider.getEndpoint(server);
+            LOG.info("New {} created, \n for server {} at {}.", endpoint.getDescription(), server.getUri(),
+                    endpoint.getURI());
+
+        }
+        return server;
     }
 
     @Override

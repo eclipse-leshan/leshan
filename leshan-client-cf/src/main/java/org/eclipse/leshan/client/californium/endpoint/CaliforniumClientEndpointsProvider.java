@@ -195,8 +195,6 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
                         coapServer.start();
                         try {
                             coapEndpoint.start();
-                            LOG.info("New {} created, \n for server {} at {}.", endpoint.getDescription(),
-                                    currentServer.getUri(), coapEndpoint.getUri());
                         } catch (IOException e) {
                             throw new RuntimeException("Unable to start endpoint", e);
                         }
