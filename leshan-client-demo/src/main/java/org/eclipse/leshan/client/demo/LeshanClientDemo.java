@@ -68,6 +68,7 @@ import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
+import org.eclipse.leshan.transport.javacoap.client.coaptcp.endpoint.JavaCoapTcpClientEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.client.endpoint.JavaCoapClientEndpointsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -302,6 +303,7 @@ public class LeshanClientDemo {
         if (cli.main.useJavaCoap) {
             endpointsProvider.add(new JavaCoapClientEndpointsProvider());
         }
+        endpointsProvider.add(new JavaCoapTcpClientEndpointsProvider());
 
         // Create client
         LeshanClientBuilder builder = new LeshanClientBuilder(cli.main.endpoint);

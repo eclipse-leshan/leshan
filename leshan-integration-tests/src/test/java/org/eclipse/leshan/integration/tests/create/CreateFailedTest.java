@@ -58,7 +58,8 @@ public class CreateFailedTest {
                 arguments(Protocol.COAP, "Californium", "Californium"), //
                 arguments(Protocol.COAP, "Californium", "java-coap"), //
                 arguments(Protocol.COAP, "java-coap", "Californium"), //
-                arguments(Protocol.COAP, "java-coap", "java-coap"));
+                arguments(Protocol.COAP, "java-coap", "java-coap"), //
+                arguments(Protocol.COAP_TCP, "java-coap", "java-coap"));
     }
 
     /*---------------------------------/
