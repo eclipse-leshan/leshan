@@ -183,10 +183,13 @@ export default {
         "CoAP",
         "UDP",
         "DTLS",
+        "TCP",
+        "TLS",
         "OSCORE",
         "Californium",
         "Scandium",
         "java-coap",
+        "netty",
       ];
       const strongKeywords = ["experimental"];
 

@@ -54,6 +54,10 @@ Contributors:
       <artifactId>leshan-tl-javacoap-server</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.eclipse.leshan</groupId>
+      <artifactId>leshan-tl-javacoap-server-coaptcp</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.eclipse.californium</groupId>
       <artifactId>californium-core</artifactId>
     </dependency>
