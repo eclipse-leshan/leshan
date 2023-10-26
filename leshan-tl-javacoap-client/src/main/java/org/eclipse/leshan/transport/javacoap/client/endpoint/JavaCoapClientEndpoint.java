@@ -49,6 +49,8 @@ import com.mbed.coap.server.CoapServer;
 
 public class JavaCoapClientEndpoint implements LwM2mClientEndpoint {
 
+    private final Protocol supportedProtocol;
+    private final String endpointDescription;
     private final CoapServer coapServer;
     private final ClientCoapMessageTranslator translator;
     private final ClientEndpointToolbox toolbox;
@@ -56,8 +58,11 @@ public class JavaCoapClientEndpoint implements LwM2mClientEndpoint {
     private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1,
             new NamedThreadFactory("Leshan Async Request timeout"));
 
-    public JavaCoapClientEndpoint(CoapServer coapServer, ClientCoapMessageTranslator translator,
-            ClientEndpointToolbox toolbox, LwM2mModel model) {
+    public JavaCoapClientEndpoint(Protocol protocol, String endpointDescription, CoapServer coapServer,
+            ClientCoapMessageTranslator translator, ClientEndpointToolbox toolbox, LwM2mModel model) {
+        this.supportedProtocol = protocol;
+        this.endpointDescription = endpointDescription;
+
         this.coapServer = coapServer;
         this.translator = translator;
         this.toolbox = toolbox;
@@ -66,12 +71,12 @@ public class JavaCoapClientEndpoint implements LwM2mClientEndpoint {
 
     @Override
     public Protocol getProtocol() {
-        return Protocol.COAP;
+        return supportedProtocol;
     }
 
     @Override
     public String getDescription() {
-        return "CoAP over UDP endpoint based on java-coap library";
+        return endpointDescription;
     }
 
     @Override

@@ -21,10 +21,11 @@ import java.util.Optional;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.ObservationIdentifier;
 import org.eclipse.leshan.core.peer.LwM2mIdentity;
-import org.eclipse.leshan.core.peer.SocketIdentity;
+import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
+import org.eclipse.leshan.transport.javacoap.identity.IdentityHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,10 +38,13 @@ public class LwM2mObservationsStore implements ObservationsStore {
 
     private final RegistrationStore store;
     private final LwM2mNotificationReceiver notificationReceiver;
+    private final IdentityHandler identityHandler;
 
-    public LwM2mObservationsStore(RegistrationStore store, LwM2mNotificationReceiver notificationReceiver) {
+    public LwM2mObservationsStore(RegistrationStore store, LwM2mNotificationReceiver notificationReceiver,
+            IdentityHandler identityHandler) {
         this.store = store;
         this.notificationReceiver = notificationReceiver;
+        this.identityHandler = identityHandler;
     }
 
     @Override
@@ -61,6 +65,7 @@ public class LwM2mObservationsStore implements ObservationsStore {
 
         Collection<Observation> removed = null;
         try {
+            LOG.debug("Add new Observation for registration {} : {} ", registration.getId(), observation);
             removed = store.addObservation(registration.getId(), observation, false);
         } catch (Exception e) {
             LOG.warn("Unable to add observation {}", observation, e);
@@ -78,21 +83,30 @@ public class LwM2mObservationsStore implements ObservationsStore {
 
     @Override
     public Optional<String> resolveUriPath(SeparateResponse obs) {
+
         // Try to find observation for given token
         ObservationIdentifier observationIdentifier = new ObservationIdentifier(obs.getToken().getBytes());
+        LOG.debug("Search observation for  identifier {} ", observationIdentifier);
         Observation observation = store.getObservation(observationIdentifier);
-
         // TODO should we use PeerIdentity in ObservationIdentifier.
-        if (observation == null)
+        if (observation == null) {
+            LOG.debug("Observation not found");
             return Optional.empty();
+        }
         Registration registration = store.getRegistration(observation.getRegistrationId());
-        if (registration == null)
+        if (registration == null) {
+            LOG.debug("No registration for observation {}, {}", observationIdentifier, observation);
             return Optional.empty();
-        LwM2mIdentity identity = registration.getClientTransportData().getIdentity();
-        if (!(identity instanceof SocketIdentity))
+        }
+        // extract identity from notification
+        LwM2mPeer notificationIdentity = identityHandler.getIdentity(obs);
+        LwM2mIdentity registrationIdentity = registration.getClientTransportData().getIdentity();
+
+        if (!(registrationIdentity.equals(notificationIdentity.getIdentity()))) {
+            LOG.debug("Notification reveiced from peer with unexpected identity : should be {} but was {}",
+                    registrationIdentity, notificationIdentity.getIdentity());
             return Optional.empty();
-        if (!((SocketIdentity) identity).getSocketAddress().equals(obs.getPeerAddress()))
-            return Optional.empty();
+        }
 
         return ObservationUtil.getPath(observation);
     }

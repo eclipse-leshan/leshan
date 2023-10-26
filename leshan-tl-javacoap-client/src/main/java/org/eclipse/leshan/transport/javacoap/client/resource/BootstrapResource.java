@@ -24,6 +24,7 @@ import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.response.BootstrapFinishResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
+import org.eclipse.leshan.transport.javacoap.identity.IdentityHandler;
 import org.eclipse.leshan.transport.javacoap.resource.LwM2mCoapResource;
 
 import com.mbed.coap.packet.CoapRequest;
@@ -36,8 +37,9 @@ public class BootstrapResource extends LwM2mClientCoapResource {
 
     protected DownlinkRequestReceiver requestReceiver;
 
-    public BootstrapResource(DownlinkRequestReceiver requestReceiver, ServerIdentityExtractor serverIdentityExtractor) {
-        super("bs", serverIdentityExtractor);
+    public BootstrapResource(DownlinkRequestReceiver requestReceiver, IdentityHandler identityHandler,
+            ServerIdentityExtractor serverIdentityExtractor) {
+        super("bs", identityHandler, serverIdentityExtractor);
         this.requestReceiver = requestReceiver;
     }
 

@@ -37,6 +37,7 @@ import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.core.response.UpdateResponse;
 import org.eclipse.leshan.server.request.UplinkRequestReceiver;
+import org.eclipse.leshan.transport.javacoap.identity.IdentityHandler;
 import org.eclipse.leshan.transport.javacoap.request.ResponseCodeUtil;
 import org.eclipse.leshan.transport.javacoap.resource.LwM2mCoapResource;
 import org.eclipse.leshan.transport.javacoap.server.endpoint.EndpointUriProvider;
@@ -66,8 +67,8 @@ public class RegistrationResource extends LwM2mCoapResource {
     private final EndpointUriProvider endpointUriProvider;
 
     public RegistrationResource(UplinkRequestReceiver receiver, LinkParser linkParser,
-            EndpointUriProvider endpointUriProvider) {
-        super(RESOURCE_URI);
+            EndpointUriProvider endpointUriProvider, IdentityHandler identityHandler) {
+        super(RESOURCE_URI, identityHandler);
         this.receiver = receiver;
         this.linkParser = linkParser;
         this.endpointUriProvider = endpointUriProvider;

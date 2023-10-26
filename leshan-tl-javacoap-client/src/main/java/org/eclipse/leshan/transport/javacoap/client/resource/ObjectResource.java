@@ -66,6 +66,7 @@ import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.transport.javacoap.client.observe.LwM2mKeys;
 import org.eclipse.leshan.transport.javacoap.client.observe.ObserversListener;
 import org.eclipse.leshan.transport.javacoap.client.observe.ObserversManager;
+import org.eclipse.leshan.transport.javacoap.identity.IdentityHandler;
 import org.eclipse.leshan.transport.javacoap.request.ResponseCodeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,9 +86,9 @@ public class ObjectResource extends LwM2mClientCoapResource {
     protected ObserversManager observersManager;
 
     public ObjectResource(DownlinkRequestReceiver requestReceiver, String uri, ClientEndpointToolbox toolbox,
-            ServerIdentityExtractor serverIdentityExtractor, NotificationManager notificationManager,
-            ObserversManager observersManager) {
-        super(uri, serverIdentityExtractor);
+            IdentityHandler identityHandler, ServerIdentityExtractor serverIdentityExtractor,
+            NotificationManager notificationManager, ObserversManager observersManager) {
+        super(uri, identityHandler, serverIdentityExtractor);
         this.requestReceiver = requestReceiver;
         this.toolbox = toolbox;
         this.notificationManager = notificationManager;
