@@ -22,6 +22,9 @@ public class Protocol {
     public static final Protocol COAP_TCP = new Protocol("COAP_TCP", "coap+tcp");
     public static final Protocol COAPS_TCP = new Protocol("COAPS_TCP", "coaps+tcp");
 
+    private static final Protocol[] knownProtocols = new Protocol[] { Protocol.COAP, Protocol.COAPS, Protocol.COAP_TCP,
+            Protocol.COAPS_TCP };
+
     private final String name;
     private final String uriScheme;
 
@@ -66,5 +69,14 @@ public class Protocol {
     @Override
     public String toString() {
         return getName();
+    }
+
+    public static Protocol fromUri(String uri) {
+        for (Protocol protocol : knownProtocols) {
+            if (uri.startsWith(protocol.getUriScheme() + ":")) {
+                return protocol;
+            }
+        }
+        return null;
     }
 }

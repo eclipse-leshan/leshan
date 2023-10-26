@@ -18,6 +18,7 @@ package org.eclipse.leshan.core.request;
 import java.util.EnumSet;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
+import org.eclipse.leshan.core.endpoint.Protocol;
 
 /**
  * Transport binding and Queue Mode
@@ -77,6 +78,15 @@ public enum BindingMode {
             throw new IllegalArgumentException("No enum constant " + c + ".");
 
         }
+    }
+
+    public static BindingMode fromProtocol(Protocol protocol) {
+        if (protocol.equals(Protocol.COAP) || protocol.equals(Protocol.COAPS)) {
+            return BindingMode.U;
+        } else if (protocol.equals(Protocol.COAP_TCP) || protocol.equals(Protocol.COAPS_TCP)) {
+            return BindingMode.T;
+        }
+        throw new IllegalArgumentException("Unknown Protocol " + protocol);
     }
 
     /**

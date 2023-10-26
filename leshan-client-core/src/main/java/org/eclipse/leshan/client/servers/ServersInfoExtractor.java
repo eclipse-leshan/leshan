@@ -281,8 +281,8 @@ public class ServersInfoExtractor {
         }
     }
 
-    public static EnumSet<BindingMode> getDeviceSupportedBindingMode(LwM2mObjectEnabler serverEnabler, int instanceId) {
-        ReadResponse response = serverEnabler.read(LwM2mServer.SYSTEM,
+    public static EnumSet<BindingMode> getDeviceSupportedBindingMode(LwM2mObjectEnabler deviceEnabler, int instanceId) {
+        ReadResponse response = deviceEnabler.read(LwM2mServer.SYSTEM,
                 new ReadRequest(DEVICE, instanceId, DVC_SUPPORTED_BINDING));
         if (response.isSuccess()) {
             return BindingMode.parse((String) ((LwM2mResource) response.getContent()).getValue());

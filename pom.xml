@@ -90,6 +90,8 @@ Contributors:
     <module>leshan-tl-javacoap-core</module>
     <module>leshan-tl-javacoap-server</module>
     <module>leshan-tl-javacoap-client</module>
+    <module>leshan-tl-javacoap-server-coaptcp</module>
+    <module>leshan-tl-javacoap-client-coaptcp</module>
 
     <!--  integration tests -->
     <module>leshan-integration-tests</module>
@@ -123,6 +125,7 @@ Contributors:
     <californium.version>3.10.0</californium.version>
     <logback.version>1.3.12</logback.version>
     <javacoap.version>6.19.0</javacoap.version>
+    <netty.version>4.1.109.Final</netty.version>
     <slf4j.api.version>2.0.9</slf4j.api.version>
     <!-- stuck to 9.4.x for java8 compliance -->
     <jetty.version>9.4.53.v20231009</jetty.version>
@@ -190,6 +193,16 @@ Contributors:
         <artifactId>leshan-tl-javacoap-client</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-tl-javacoap-server-coaptcp</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-tl-javacoap-client-coaptcp</artifactId>
+        <version>${project.version}</version>
+      </dependency>
       <!-- demo -->
       <dependency>
         <groupId>${project.groupId}</groupId>
@@ -246,6 +259,21 @@ Contributors:
         <groupId>io.github.open-coap</groupId>
         <artifactId>coap-core</artifactId>
         <version>${javacoap.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.github.open-coap</groupId>
+        <artifactId>coap-tcp</artifactId>
+        <version>${javacoap.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-handler</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-transport</artifactId>
+        <version>${netty.version}</version>
       </dependency>
 
       <!-- Demos, examples and tests dependencies -->
