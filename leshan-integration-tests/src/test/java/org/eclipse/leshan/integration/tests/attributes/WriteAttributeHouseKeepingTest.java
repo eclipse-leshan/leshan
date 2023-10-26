@@ -19,6 +19,7 @@ import static org.eclipse.leshan.core.util.TestLwM2mId.MULTIPLE_INTEGER_VALUE;
 import static org.eclipse.leshan.core.util.TestLwM2mId.TEST_OBJECT;
 import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.lang.annotation.Retention;
@@ -77,7 +78,8 @@ public class WriteAttributeHouseKeepingTest {
                 arguments(Protocol.COAP, "Californium", "Californium"), //
                 arguments(Protocol.COAP, "java-coap", "Californium"), //
                 arguments(Protocol.COAP, "Californium", "java-coap"), //
-                arguments(Protocol.COAP, "java-coap", "java-coap"));
+                arguments(Protocol.COAP, "java-coap", "java-coap"), //
+                arguments(Protocol.COAP_TCP, "java-coap", "java-coap"));
     }
 
     /*---------------------------------/
@@ -193,6 +195,8 @@ public class WriteAttributeHouseKeepingTest {
     public void write_attribute_then_observe_object_then_passive_cancel_then_check_no_more_notification_data(
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws InterruptedException {
+
+        assumeFalse(givenProtocol.equals(Protocol.COAP_TCP)); // there is no passive cancel with CoAP TCP
         write_attribute_then_observe_then_passive_cancel_then_check_no_more_notification_data(
                 new LwM2mPath(TEST_OBJECT));
     }
@@ -202,6 +206,7 @@ public class WriteAttributeHouseKeepingTest {
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws InterruptedException {
 
+        assumeFalse(givenProtocol.equals(Protocol.COAP_TCP)); // there is no passive cancel with CoAP TCP
         write_attribute_then_observe_then_passive_cancel_then_check_no_more_notification_data(
                 new LwM2mPath(TEST_OBJECT, 0));
     }
@@ -211,6 +216,7 @@ public class WriteAttributeHouseKeepingTest {
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws InterruptedException {
 
+        assumeFalse(givenProtocol.equals(Protocol.COAP_TCP)); // there is no passive cancel with CoAP TCP
         write_attribute_then_observe_then_passive_cancel_then_check_no_more_notification_data(
                 new LwM2mPath(TEST_OBJECT, 0, MULTIPLE_INTEGER_VALUE));
     }
@@ -220,6 +226,7 @@ public class WriteAttributeHouseKeepingTest {
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws InterruptedException {
 
+        assumeFalse(givenProtocol.equals(Protocol.COAP_TCP)); // there is no passive cancel with CoAP TCP
         write_attribute_then_observe_then_passive_cancel_then_check_no_more_notification_data(
                 new LwM2mPath(TEST_OBJECT, 0, MULTIPLE_INTEGER_VALUE, 0));
     }
