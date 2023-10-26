@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mResource;
+import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.argument.Arguments;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -200,7 +202,7 @@ public class MyDevice extends BaseInstanceEnabler implements Destroyable {
     }
 
     private String getSupportedBinding() {
-        return "U";
+        return BindingMode.toString(EnumSet.of(BindingMode.U, BindingMode.T));
     }
 
     private String getDeviceType() {
