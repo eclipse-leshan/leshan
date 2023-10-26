@@ -19,6 +19,7 @@ import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.endpoint.ServerEndpointToolbox;
 import org.eclipse.leshan.server.profile.ClientProfile;
+import org.eclipse.leshan.transport.javacoap.identity.IdentityHandler;
 import org.eclipse.leshan.transport.javacoap.server.request.CoapRequestBuilder;
 import org.eclipse.leshan.transport.javacoap.server.request.LwM2mResponseBuilder;
 
@@ -27,12 +28,18 @@ import com.mbed.coap.packet.CoapResponse;
 
 public class ServerCoapMessageTranslator {
 
+    private final IdentityHandler identityHandler;
+
+    public ServerCoapMessageTranslator(IdentityHandler identityHandler) {
+        this.identityHandler = identityHandler;
+    }
+
     public CoapRequest createCoapRequest(ClientProfile clientProfile,
             DownlinkRequest<? extends LwM2mResponse> lwm2mRequest, ServerEndpointToolbox toolbox) {
 
         CoapRequestBuilder builder = new CoapRequestBuilder(clientProfile.getRegistration(),
                 clientProfile.getTransportData(), clientProfile.getRootPath(), clientProfile.getModel(),
-                toolbox.getEncoder());
+                toolbox.getEncoder(), identityHandler);
         lwm2mRequest.accept(builder);
         return builder.getRequest();
     }

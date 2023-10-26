@@ -54,6 +54,8 @@ import com.mbed.coap.server.CoapServer;
 
 public class JavaCoapServerEndpoint implements LwM2mServerEndpoint {
 
+    private final Protocol supportedProtocol;
+    private final String endpointDescription;
     private final CoapServer coapServer;
     private final ServerCoapMessageTranslator translator;
     private final ServerEndpointToolbox toolbox;
@@ -68,8 +70,10 @@ public class JavaCoapServerEndpoint implements LwM2mServerEndpoint {
             CompletableFuture<? extends LwM2mResponse>> // future of the ongoing Coap Request
     ongoingRequests = new ConcurrentSkipListMap<>();
 
-    public JavaCoapServerEndpoint(CoapServer coapServer, ServerCoapMessageTranslator translator,
-            ServerEndpointToolbox toolbox) {
+    public JavaCoapServerEndpoint(Protocol protocol, String endpointDescription, CoapServer coapServer,
+            ServerCoapMessageTranslator translator, ServerEndpointToolbox toolbox) {
+        this.supportedProtocol = protocol;
+        this.endpointDescription = endpointDescription;
         this.coapServer = coapServer;
         this.translator = translator;
         this.toolbox = toolbox;
@@ -77,12 +81,12 @@ public class JavaCoapServerEndpoint implements LwM2mServerEndpoint {
 
     @Override
     public Protocol getProtocol() {
-        return Protocol.COAP;
+        return supportedProtocol;
     }
 
     @Override
     public String getDescription() {
-        return "CoAP over UDP endpoint based on java-coap library";
+        return endpointDescription;
     }
 
     @Override

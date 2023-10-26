@@ -25,6 +25,7 @@ import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
+import org.eclipse.leshan.transport.javacoap.identity.IdentityHandler;
 import org.eclipse.leshan.transport.javacoap.request.ResponseCodeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,9 +44,11 @@ public abstract class LwM2mCoapResource implements Service<CoapRequest, CoapResp
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mCoapResource.class);
 
     private final String uri;
+    IdentityHandler identityHandler;
 
-    public LwM2mCoapResource(String uri) {
+    public LwM2mCoapResource(String uri, IdentityHandler identityHandler) {
         this.uri = uri;
+        this.identityHandler = identityHandler;
     }
 
     @Override
@@ -122,7 +125,7 @@ public abstract class LwM2mCoapResource implements Service<CoapRequest, CoapResp
     }
 
     protected IpPeer getForeignPeerIdentity(CoapRequest coapRequest) {
-        return new IpPeer(coapRequest.getPeerAddress());
+        return (IpPeer) identityHandler.getIdentity(coapRequest);
     }
 
     protected IpPeer extractIdentitySafely(CoapRequest coapRequest) {
