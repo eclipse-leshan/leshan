@@ -60,7 +60,8 @@ public class WriteAttributeFailedTest {
                 { Protocol.COAP, "Californium", "Californium" }, //
                 { Protocol.COAP, "Californium", "java-coap" }, //
                 { Protocol.COAP, "java-coap", "Californium" }, //
-                { Protocol.COAP, "java-coap", "java-coap" } };
+                { Protocol.COAP, "java-coap", "java-coap" }, //
+                { Protocol.COAP_TCP, "java-coap", "java-coap" } };
 
         Object[][] testCases = new Object[][] { //
                 // targeted path - initial state - invalid attributes to write

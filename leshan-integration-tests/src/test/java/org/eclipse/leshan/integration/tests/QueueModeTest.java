@@ -20,6 +20,7 @@ package org.eclipse.leshan.integration.tests;
 import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
 import static org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder.givenServerUsing;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.lang.annotation.Retention;
@@ -61,7 +62,8 @@ public class QueueModeTest {
                 arguments(Protocol.COAP, "Californium", "Californium"), //
                 arguments(Protocol.COAP, "Californium", "java-coap"), //
                 arguments(Protocol.COAP, "java-coap", "Californium"), //
-                arguments(Protocol.COAP, "java-coap", "java-coap"));
+                arguments(Protocol.COAP, "java-coap", "java-coap"), //
+                arguments(Protocol.COAP_TCP, "java-coap", "java-coap"));
     }
 
     /*---------------------------------/
@@ -182,6 +184,13 @@ public class QueueModeTest {
     @TestAllTransportLayer
     public void sleeping_if_timeout(Protocol givenProtocol, String givenClientEndpointProvider,
             String givenServerEndpointProvider) throws InterruptedException {
+
+        // TODO this test should be adapted to support COAP+TCP
+        // with coap with tcp we SHOULD get a UnconnectedPeerException instead of timeout
+        // leshan code based on javacoap for coap+tcp code should be adapted too.
+        // (currently it doesn't send an UnconnectedPeerException)
+        assumeTrue(Protocol.COAP.equals(givenProtocol));
+
         // Check client is not registered
         assertThat(client).isNotRegisteredAt(server);
 
