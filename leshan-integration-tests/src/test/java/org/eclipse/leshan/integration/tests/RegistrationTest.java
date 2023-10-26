@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertArg;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -78,7 +79,8 @@ public class RegistrationTest {
                 arguments(Protocol.COAP, "Californium", "Californium"), //
                 arguments(Protocol.COAP, "Californium", "java-coap"), //
                 arguments(Protocol.COAP, "java-coap", "Californium"), //
-                arguments(Protocol.COAP, "java-coap", "java-coap"));
+                arguments(Protocol.COAP, "java-coap", "java-coap"), //
+                arguments(Protocol.COAP_TCP, "java-coap", "java-coap"));
     }
 
     /*---------------------------------/
@@ -144,6 +146,12 @@ public class RegistrationTest {
     @TestAllTransportLayer
     public void deregister_cancel_multiple_pending_request(Protocol protocol, String clientEndpointProvider,
             String serverEndpointProvider) throws InterruptedException, LinkParseException {
+        // This test written like this, can not work with coap+tcp
+        // because when we stop client, tcp connection is close
+        // and so when we send a request we get an exception instead of waiting until cancelation.
+        // TODO I don't know what we should do.
+        assumeFalse(Protocol.COAP_TCP.equals(protocol));
+
         // Check client is not registered
         client = givenClient.build();
         assertThat(client).isNotRegisteredAt(server);
@@ -189,7 +197,6 @@ public class RegistrationTest {
         for (int index = 0; index < numberOfRequests; ++index) {
             verify(responseCallbacks.get(index), never()).onResponse(any());
         }
-
     }
 
     @TestAllTransportLayer

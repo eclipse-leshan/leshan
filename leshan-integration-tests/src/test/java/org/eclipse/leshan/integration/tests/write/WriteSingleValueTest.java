@@ -80,7 +80,8 @@ public class WriteSingleValueTest {
                 { Protocol.COAP, "Californium", "Californium" }, //
                 { Protocol.COAP, "Californium", "java-coap" }, //
                 { Protocol.COAP, "java-coap", "Californium" }, //
-                { Protocol.COAP, "java-coap", "java-coap" } };
+                { Protocol.COAP, "java-coap", "java-coap" }, //
+                { Protocol.COAP_TCP, "java-coap", "java-coap" } };
 
         Object[] contentFormats = new Object[] { //
                 ContentFormat.TEXT, //

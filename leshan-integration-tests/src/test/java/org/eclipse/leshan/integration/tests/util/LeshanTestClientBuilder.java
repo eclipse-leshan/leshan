@@ -81,6 +81,7 @@ import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
 import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpoint;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
+import org.eclipse.leshan.transport.javacoap.client.coaptcp.endpoint.JavaCoapTcpClientEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.client.endpoint.JavaCoapClientEndpointsProvider;
 
 public class LeshanTestClientBuilder extends LeshanClientBuilder {
@@ -266,7 +267,7 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
             setEndpointsProviders(new CaliforniumClientEndpointsProvider.Builder(
                     getCaliforniumProtocolProviderSupportingOscore(protocolToUse)).build());
         } else if (endpointProvider.equals("java-coap")) {
-            setEndpointsProviders(new JavaCoapClientEndpointsProvider());
+            setEndpointsProviders(getJavaCoapProtocolProvider(protocolToUse));
         }
         return this;
     }
@@ -293,6 +294,15 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
         }
         throw new IllegalStateException(
                 String.format("No Californium Protocol Provider supporting OSCORE for protocol %s", protocol));
+    }
+
+    protected LwM2mClientEndpointsProvider getJavaCoapProtocolProvider(Protocol protocol) {
+        if (protocolToUse.equals(Protocol.COAP)) {
+            return new JavaCoapClientEndpointsProvider();
+        } else if (protocolToUse.equals(Protocol.COAP_TCP)) {
+            return new JavaCoapTcpClientEndpointsProvider();
+        }
+        throw new IllegalStateException(String.format("No Californium Protocol Provider for protocol %s", protocol));
     }
 
     public LeshanTestClientBuilder withAdditiontalAttributes(Map<String, String> attrs) {
