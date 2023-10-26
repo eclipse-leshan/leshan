@@ -41,6 +41,7 @@ import org.eclipse.leshan.client.send.DataSender;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2mId;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.DefaultLinkSerializer;
 import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.link.lwm2m.attributes.DefaultLwM2mAttributeParser;
@@ -299,11 +300,14 @@ public class LeshanClientBuilder {
     public LeshanClient build() {
         if (objectEnablers == null) {
             ObjectsInitializer initializer = new ObjectsInitializer();
-            initializer.setInstancesForObject(LwM2mId.SECURITY,
-                    Security.noSec("coap://leshan.eclipseprojects.io:5683", 12345));
-            initializer.setInstancesForObject(LwM2mId.SERVER, new Server(12345, 5 * 60));
+            String defaultServerUri = "coap://leshan.eclipseprojects.io:5683";
+            BindingMode serverBindingMode = BindingMode.fromProtocol(Protocol.fromUri(defaultServerUri));
+
+            initializer.setInstancesForObject(LwM2mId.SECURITY, Security.noSec(defaultServerUri, 12345));
+            initializer.setInstancesForObject(LwM2mId.SERVER,
+                    new Server(12345, 5 * 60, EnumSet.of(serverBindingMode), false, serverBindingMode));
             initializer.setInstancesForObject(LwM2mId.DEVICE,
-                    new Device("Eclipse Leshan", "model12345", "12345", EnumSet.of(BindingMode.U)));
+                    new Device("Eclipse Leshan", "model12345", "12345", EnumSet.of(serverBindingMode)));
             objectEnablers = initializer.createAll();
         }
         if (dataSenders == null)
