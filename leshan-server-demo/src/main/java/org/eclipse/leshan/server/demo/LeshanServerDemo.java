@@ -252,7 +252,7 @@ public class LeshanServerDemo {
 
         // Create CoAP endpoint based on java-coap
         int jcoapPort = cli.main.jlocalPort;
-        InetSocketAddress jcoapAddr = cli.main.secureLocalAddress == null ? new InetSocketAddress(jcoapPort)
+        InetSocketAddress jcoapAddr = cli.main.jlocalAddress == null ? new InetSocketAddress(jcoapPort)
                 : new InetSocketAddress(cli.main.jlocalAddress, jcoapPort);
         JavaCoapServerEndpointsProvider javacoapEndpointsProvider = new JavaCoapServerEndpointsProvider(jcoapAddr);
 
