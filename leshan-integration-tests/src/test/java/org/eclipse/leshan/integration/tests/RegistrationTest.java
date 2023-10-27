@@ -29,11 +29,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.net.InetSocketAddress;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,18 +38,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import org.eclipse.californium.core.coap.CoAP.Code;
-import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.core.coap.Response;
-import org.eclipse.californium.core.config.CoapConfig;
-import org.eclipse.californium.core.network.CoapEndpoint;
-import org.eclipse.californium.elements.AddressEndpointContext;
-import org.eclipse.californium.elements.config.Configuration;
-import org.eclipse.californium.elements.config.SystemConfig;
-import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.LinkParseException;
-import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.response.ErrorCallback;
@@ -294,37 +281,5 @@ public class RegistrationTest {
         Registration registration = server.getRegistrationFor(client);
         assertThat(registration.getAdditionalRegistrationAttributes())
                 .containsExactlyEntriesOf(expectedAdditionalAttributes);
-    }
-
-    // TODO should maybe moved as it only tests server
-    @TestAllTransportLayer
-    public void register_with_invalid_request(Protocol protocol, String clientEndpointProvider,
-            String serverEndpointProvider) throws InterruptedException, IOException {
-        // Check client is not registered
-        client = givenClient.build();
-        assertThat(client).isNotRegisteredAt(server);
-
-        // create a register request without the list of supported object
-        Request coapRequest = new Request(Code.POST);
-        URI destinationURI = server.getEndpoint(Protocol.COAP).getURI();
-        coapRequest
-                .setDestinationContext(new AddressEndpointContext(destinationURI.getHost(), destinationURI.getPort()));
-        coapRequest.getOptions().setContentFormat(ContentFormat.LINK.getCode());
-        coapRequest.getOptions().addUriPath("rd");
-        coapRequest.getOptions().addUriQuery("ep=" + client.getEndpointName());
-
-        // send request
-        CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
-        builder.setConfiguration(
-                new Configuration(CoapConfig.DEFINITIONS, UdpConfig.DEFINITIONS, SystemConfig.DEFINITIONS));
-        builder.setInetSocketAddress(new InetSocketAddress(0));
-        CoapEndpoint coapEndpoint = builder.build();
-        coapEndpoint.start();
-        coapEndpoint.sendRequest(coapRequest);
-
-        // check response
-        Response response = coapRequest.waitForResponse(1000);
-        assertThat(response.getCode()).isEqualTo(org.eclipse.californium.core.coap.CoAP.ResponseCode.BAD_REQUEST);
-        coapEndpoint.stop();
     }
 }

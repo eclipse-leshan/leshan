@@ -33,6 +33,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.time.Duration;
 import java.util.EnumSet;
 import java.util.Set;
@@ -42,11 +43,13 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.config.CoapConfig;
+import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.LinkParser;
@@ -156,6 +159,25 @@ public class LockStepTest {
     /*---------------------------------/
      *  Tests
      * -------------------------------*/
+    @TestAllTransportLayer
+    public void register_with_invalid_request(String givenServerEndpointProvider) throws Exception {
+
+        LockStepLwM2mClient client = new LockStepLwM2mClient(server.getEndpoint(Protocol.COAP).getURI());
+
+        // create a register request without the list of supported object
+        Request invalidRegisterRequest = new Request(Code.POST);
+        URI destinationURI = server.getEndpoint(Protocol.COAP).getURI();
+        invalidRegisterRequest
+                .setDestinationContext(new AddressEndpointContext(destinationURI.getHost(), destinationURI.getPort()));
+        invalidRegisterRequest.getOptions().setContentFormat(ContentFormat.LINK.getCode());
+        invalidRegisterRequest.getOptions().addUriPath("rd");
+        invalidRegisterRequest.getOptions().addUriQuery("ep=" + client.getEndpointName());
+
+        // send request and check it is rejected
+        Token token = client.sendCoapRequest(invalidRegisterRequest);
+        client.expectResponse().token(token).code(ResponseCode.BAD_REQUEST).go();
+    }
+
     @TestAllTransportLayer
     public void register_with_uq_binding_in_lw_1_0(String givenServerEndpointProvider) throws Exception {
         // Register client
