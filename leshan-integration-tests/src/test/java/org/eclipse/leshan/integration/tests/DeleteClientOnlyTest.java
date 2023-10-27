@@ -59,7 +59,8 @@ public class DeleteClientOnlyTest {
     static Stream<org.junit.jupiter.params.provider.Arguments> transports() {
         return Stream.of(//
                 // ProtocolUsed - Client Endpoint Provider
-                arguments(Protocol.COAP, "Californium"));
+                arguments(Protocol.COAP, "Californium"), //
+                arguments(Protocol.COAP, "java-coap"));
     }
 
     /*---------------------------------/
