@@ -160,11 +160,14 @@ public class LeshanClientDemoCLI implements Runnable {
 
         @Option(names = { "-fb", "--factory-bootstrap" },
                 description = { //
-                        "Use additional factory bootstrap.", //
-                        "syntax is :", //
-                        " -fb resourcePath1=resourceValue1,resourcePath2=\\\"resourceValue2\\\"" },
+                        "Can be used to initialize existing resource with custom value.", //
+                        "LWM2M Text Content format encoding should be used for resource value", //
+                        "E.g. to change Short Server ID :", //
+                        " -fb /0/0/10=1234,/1/0/0=1234", //
+                },
                 split = ",",
                 converter = ResourceConverter.class)
+
         public Map<LwM2mPath, String> factoryBootstrap;
     }
 
