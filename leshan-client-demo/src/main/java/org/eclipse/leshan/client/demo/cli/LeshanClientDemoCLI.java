@@ -158,7 +158,7 @@ public class LeshanClientDemoCLI implements Runnable {
                         "Use java-coap for CoAP protocol instead of Californium." })
         public boolean useJavaCoap;
 
-        @Option(names = { "-fb", "factory-bootstrap" },
+        @Option(names = { "-fb", "--factory-bootstrap" },
                 description = { //
                         "Use additional factory bootstrap.", //
                         "syntax is :", //
