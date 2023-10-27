@@ -17,7 +17,7 @@ package org.eclipse.leshan.core.demo.cli.converters;
 import org.eclipse.leshan.core.node.LwM2mNodeException;
 import org.eclipse.leshan.core.node.LwM2mPath;
 
-public class ResourceConverter extends LwM2mPathConverter {
+public class ResourcePathConverter extends LwM2mPathConverter {
 
     @Override
     public LwM2mPath convert(String path) {

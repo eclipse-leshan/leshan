@@ -29,7 +29,7 @@ import org.eclipse.leshan.core.demo.cli.StandardHelpOptions;
 import org.eclipse.leshan.core.demo.cli.VersionProvider;
 import org.eclipse.leshan.core.demo.cli.converters.CIDConverter;
 import org.eclipse.leshan.core.demo.cli.converters.InetAddressConverter;
-import org.eclipse.leshan.core.demo.cli.converters.ResourceConverter;
+import org.eclipse.leshan.core.demo.cli.converters.ResourcePathConverter;
 import org.eclipse.leshan.core.demo.cli.converters.StrictlyPositiveIntegerConverter;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.util.StringUtils;
@@ -166,7 +166,7 @@ public class LeshanClientDemoCLI implements Runnable {
                         " -fb /0/0/10=1234,/1/0/0=1234", //
                 },
                 split = ",",
-                converter = ResourceConverter.class)
+                converter = ResourcePathConverter.class)
 
         public Map<LwM2mPath, String> factoryBootstrap;
     }
