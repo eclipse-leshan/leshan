@@ -21,7 +21,7 @@ public class ResourceConverter extends LwM2mPathConverter {
 
     @Override
     public LwM2mPath convert(String path) {
-        LwM2mPath lwM2mPath = new LwM2mPath(path);
+        LwM2mPath lwM2mPath = super.convert(path);
         if (!lwM2mPath.isResource())
             throw new LwM2mNodeException("Created path is not a path identifying a resource");
         return lwM2mPath;
