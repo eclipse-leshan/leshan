@@ -16,6 +16,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.resource;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,10 +30,12 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
+import org.eclipse.leshan.core.node.LwM2mRoot;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
@@ -74,9 +78,22 @@ public class RootEnabler implements LwM2mRootEnabler {
     @Override
     public ReadCompositeResponse read(LwM2mServer server, ReadCompositeRequest request) {
         List<LwM2mPath> paths = request.getPaths();
+        // TODO: add checks for failure and log it
         if (paths.size() == 1 && paths.get(0).isRoot()) {
-            // TODO implement read for "/" use case.
-            return ReadCompositeResponse.internalServerError("Not implemented yet");
+            Map<Integer, LwM2mObjectEnabler> objectEnablers = tree.getObjectEnablers();
+            List<LwM2mObject> lwM2mObjects = new ArrayList<>();
+
+            for (Map.Entry<Integer, LwM2mObjectEnabler> entry : objectEnablers.entrySet()) {
+                LwM2mObjectEnabler objectEnabler = entry.getValue();
+                ReadRequest readRequest = new ReadRequest(request.getRequestContentFormat(),
+                        new LwM2mPath(entry.getKey()), request.getCoapRequest());
+                ReadResponse readResponse = objectEnabler.read(server, readRequest);
+                if (readResponse.isSuccess()) {
+                    lwM2mObjects.add((LwM2mObject) readResponse.getContent());
+                }
+            }
+            LwM2mRoot lwM2mRoot = new LwM2mRoot(lwM2mObjects);
+            return ReadCompositeResponse.success(Collections.singletonMap(paths.get(0), lwM2mRoot));
         }
 
         // Read Nodes
