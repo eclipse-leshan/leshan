@@ -33,6 +33,7 @@ import org.eclipse.leshan.client.send.ManualDataSender;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.node.LwM2mChildNode;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
@@ -130,7 +131,7 @@ public class SendTimestampedTest {
             Map<LwM2mPath, LwM2mNode> pathNodeMap = data.getNodesAt(ts);
             assertThat(pathNodeMap).containsKey(getExamplePath());
 
-            LwM2mNode node = pathNodeMap.get(getExamplePath());
+            LwM2mChildNode node = (LwM2mChildNode) pathNodeMap.get(getExamplePath());
             assertThat(node.getId()).isEqualTo(TestLwM2mId.FLOAT_VALUE);
             assertThat(node).isInstanceOfSatisfying(LwM2mSingleResource.class,
                     n -> assertThat(n.getType()).isEqualTo(Type.FLOAT));

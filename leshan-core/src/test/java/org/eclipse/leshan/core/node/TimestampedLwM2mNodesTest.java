@@ -46,7 +46,6 @@ public class TimestampedLwM2mNodesTest {
         // then
         assertNotNull(tsNodesMap);
         assertTrue(tsNodesMap.containsKey(new LwM2mPath("/0/0/1")));
-        assertEquals(1L, tsNodesMap.get(new LwM2mPath("/0/0/1")).getId());
     }
 
     @Test
@@ -60,7 +59,6 @@ public class TimestampedLwM2mNodesTest {
         // then
         assertNotNull(tsNodesMap);
         assertTrue(tsNodesMap.containsKey(new LwM2mPath("/0/0/2")));
-        assertEquals(2L, tsNodesMap.get(new LwM2mPath("/0/0/2")).getId());
     }
 
     @Test
@@ -87,8 +85,6 @@ public class TimestampedLwM2mNodesTest {
         assertNotNull(tsNodesMap);
         assertTrue(tsNodesMap.containsKey(new LwM2mPath("/0/0/1")));
         assertTrue(tsNodesMap.containsKey(new LwM2mPath("/0/0/2")));
-        assertEquals(1L, tsNodesMap.get(new LwM2mPath("/0/0/1")).getId());
-        assertEquals(2L, tsNodesMap.get(new LwM2mPath("/0/0/2")).getId());
     }
 
     @Test

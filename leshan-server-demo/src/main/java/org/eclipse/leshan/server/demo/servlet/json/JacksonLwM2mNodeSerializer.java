@@ -25,6 +25,7 @@ import org.eclipse.leshan.core.link.DefaultLinkSerializer;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.node.LwM2mChildNode;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -40,7 +41,7 @@ public class JacksonLwM2mNodeSerializer extends StdSerializer<LwM2mNode> {
 
     private static final long serialVersionUID = 1L;
 
-    private LinkSerializer linkSerializer = new DefaultLinkSerializer();
+    private final LinkSerializer linkSerializer = new DefaultLinkSerializer();
 
     protected JacksonLwM2mNodeSerializer(Class<LwM2mNode> t) {
         super(t);
@@ -51,19 +52,24 @@ public class JacksonLwM2mNodeSerializer extends StdSerializer<LwM2mNode> {
     }
 
     @Override
-    public void serialize(LwM2mNode src, JsonGenerator gen, SerializerProvider provider) throws IOException {
+    public void serialize(LwM2mNode node, JsonGenerator gen, SerializerProvider provider) throws IOException {
         Map<String, Object> element = new HashMap<>();
 
-        element.put("id", src.getId());
+        // Handle root node
+        if (!(node instanceof LwM2mChildNode))
+            throw new UnsupportedOperationException("can only serialize child node");
 
-        if (src instanceof LwM2mObject) {
+        // Handle child node
+        LwM2mChildNode childNode = (LwM2mChildNode) node;
+        element.put("id", childNode.getId());
+        if (childNode instanceof LwM2mObject) {
             element.put("kind", "obj");
-            element.put("instances", ((LwM2mObject) src).getInstances().values());
-        } else if (src instanceof LwM2mObjectInstance) {
+            element.put("instances", ((LwM2mObject) childNode).getInstances().values());
+        } else if (childNode instanceof LwM2mObjectInstance) {
             element.put("kind", "instance");
-            element.put("resources", ((LwM2mObjectInstance) src).getResources().values());
-        } else if (src instanceof LwM2mResource) {
-            LwM2mResource rsc = (LwM2mResource) src;
+            element.put("resources", ((LwM2mObjectInstance) childNode).getResources().values());
+        } else if (childNode instanceof LwM2mResource) {
+            LwM2mResource rsc = (LwM2mResource) childNode;
             if (rsc.isMultiInstances()) {
                 Map<String, Object> values = new HashMap<>();
                 for (Entry<Integer, LwM2mResourceInstance> entry : rsc.getInstances().entrySet()) {
@@ -77,14 +83,12 @@ public class JacksonLwM2mNodeSerializer extends StdSerializer<LwM2mNode> {
                 element.put("type", rsc.getType());
                 element.put("value", convertValue(rsc.getType(), rsc.getValue()));
             }
-        } else if (src instanceof LwM2mResourceInstance) {
+        } else if (childNode instanceof LwM2mResourceInstance) {
             element.put("kind", "resourceInstance");
-            LwM2mResourceInstance rsc = (LwM2mResourceInstance) src;
+            LwM2mResourceInstance rsc = (LwM2mResourceInstance) childNode;
             element.put("type", rsc.getType());
             element.put("value", convertValue(rsc.getType(), rsc.getValue()));
-
         }
-
         gen.writeObject(element);
     }
 

@@ -27,7 +27,7 @@ import org.eclipse.leshan.core.util.datatype.ULong;
  * A resource could be a {@link LwM2mSingleResource} or a {@link LwM2mMultipleResource}.
  * </p>
  */
-public interface LwM2mResource extends LwM2mNode {
+public interface LwM2mResource extends LwM2mChildNode {
 
     /**
      * @return the type of the resource.

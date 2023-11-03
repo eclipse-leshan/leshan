@@ -16,12 +16,13 @@
 package org.eclipse.leshan.core.response;
 
 import org.eclipse.leshan.core.ResponseCode;
+import org.eclipse.leshan.core.node.LwM2mChildNode;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 
 public class BootstrapReadResponse extends AbstractLwM2mResponse {
 
-    protected final LwM2mNode content;
+    protected final LwM2mChildNode content;
 
     public BootstrapReadResponse(ResponseCode code, LwM2mNode content, String errorMessage) {
         this(code, content, errorMessage, null);
@@ -33,8 +34,13 @@ public class BootstrapReadResponse extends AbstractLwM2mResponse {
         if (ResponseCode.CONTENT.equals(code)) {
             if (content == null)
                 throw new InvalidResponseException("Content is mandatory for successful response");
+
+            if (!(content instanceof LwM2mChildNode))
+                throw new InvalidResponseException("Invalid Content : node should be a LwM2mChildNode not a %s",
+                        content.getClass().getSimpleName());
         }
-        this.content = content;
+
+        this.content = (LwM2mChildNode) content;
     }
 
     @Override
@@ -63,7 +69,7 @@ public class BootstrapReadResponse extends AbstractLwM2mResponse {
      *
      * @return the value or <code>null</code> if the client returned an error response.
      */
-    public LwM2mNode getContent() {
+    public LwM2mChildNode getContent() {
         return content;
     }
 
@@ -77,7 +83,7 @@ public class BootstrapReadResponse extends AbstractLwM2mResponse {
 
     // Syntactic sugar static constructors :
 
-    public static BootstrapReadResponse success(LwM2mNode content) {
+    public static BootstrapReadResponse success(LwM2mChildNode content) {
         return new BootstrapReadResponse(ResponseCode.CONTENT, content, null, null);
     }
 

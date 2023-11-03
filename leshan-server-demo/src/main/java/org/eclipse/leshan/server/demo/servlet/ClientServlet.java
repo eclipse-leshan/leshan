@@ -38,6 +38,7 @@ import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.eclipse.leshan.core.link.lwm2m.attributes.DefaultLwM2mAttributeParser;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
+import org.eclipse.leshan.core.node.LwM2mChildNode;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -467,7 +468,7 @@ public class ClientServlet extends HttpServlet {
                             : null;
 
                     // create & process request
-                    LwM2mNode node = extractLwM2mNode(target, req, new LwM2mPath(target));
+                    LwM2mChildNode node = extractLwM2mNode(target, req, new LwM2mPath(target));
                     if (node instanceof LwM2mObjectInstance) {
                         CreateRequest request;
                         if (node.getId() == LwM2mObjectInstance.UNDEFINED) {
@@ -572,7 +573,7 @@ public class ClientServlet extends HttpServlet {
         }
     }
 
-    private LwM2mNode extractLwM2mNode(String target, HttpServletRequest req, LwM2mPath path) throws IOException {
+    private LwM2mChildNode extractLwM2mNode(String target, HttpServletRequest req, LwM2mPath path) throws IOException {
         String contentType = StringUtils.substringBefore(req.getContentType(), ";");
         if ("application/json".equals(contentType)) {
             String content = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
@@ -582,7 +583,11 @@ public class ClientServlet extends HttpServlet {
             } catch (JsonProcessingException e) {
                 throw new InvalidRequestException(e, "unable to parse json to tlv:%s", e.getMessage());
             }
-            return node;
+            if (!(node instanceof LwM2mChildNode)) {
+                throw new InvalidRequestException(String.format(
+                        "Can not handle %s : Only LwM2m Child Node is supported", node.getClass().getSimpleName()));
+            }
+            return (LwM2mChildNode) node;
         } else if ("text/plain".equals(contentType)) {
             String content = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
             int rscId = Integer.valueOf(target.substring(target.lastIndexOf("/") + 1));

@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.node.LwM2mChildNode;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
@@ -55,7 +56,7 @@ public class WriteRequest extends AbstractSimpleDownlinkRequest<WriteResponse> {
         UPDATE
     }
 
-    private final LwM2mNode node;
+    private final LwM2mChildNode node;
     private final ContentFormat contentFormat;
     private final Mode mode;
 
@@ -464,7 +465,7 @@ public class WriteRequest extends AbstractSimpleDownlinkRequest<WriteResponse> {
             }
         }
 
-        this.node = node;
+        this.node = (LwM2mChildNode) node;
         if (format == null) {
             this.contentFormat = ContentFormat.TLV; // use TLV as default content type
         } else {
@@ -487,7 +488,7 @@ public class WriteRequest extends AbstractSimpleDownlinkRequest<WriteResponse> {
         return mode == Mode.UPDATE;
     }
 
-    public LwM2mNode getNode() {
+    public LwM2mChildNode getNode() {
         return node;
     }
 

@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.node.LwM2mChildNode;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
@@ -29,7 +30,7 @@ import org.eclipse.leshan.core.util.datatype.ULong;
 
 public class ReadResponse extends AbstractLwM2mResponse {
 
-    protected final LwM2mNode content;
+    protected final LwM2mChildNode content;
 
     public ReadResponse(ResponseCode code, LwM2mNode content, String errorMessage) {
         this(code, content, errorMessage, null);
@@ -41,8 +42,12 @@ public class ReadResponse extends AbstractLwM2mResponse {
         if (ResponseCode.CONTENT.equals(code)) {
             if (content == null)
                 throw new InvalidResponseException("Content is mandatory for successful response");
+
+            if (!(content instanceof LwM2mChildNode))
+                throw new InvalidResponseException("Invalid Content : node should be a LwM2mChildNode not a %s",
+                        content.getClass().getSimpleName());
         }
-        this.content = content;
+        this.content = (LwM2mChildNode) content;
     }
 
     @Override
@@ -71,7 +76,7 @@ public class ReadResponse extends AbstractLwM2mResponse {
      *
      * @return the value or <code>null</code> if the client returned an error response.
      */
-    public LwM2mNode getContent() {
+    public LwM2mChildNode getContent() {
         return content;
     }
 

@@ -26,7 +26,7 @@ import org.eclipse.leshan.core.util.datatype.ULong;
 /**
  * An instance of {@link LwM2mMultipleResource}.
  */
-public class LwM2mResourceInstance implements LwM2mNode {
+public class LwM2mResourceInstance implements LwM2mChildNode {
 
     private final int id;
     private final Object value;

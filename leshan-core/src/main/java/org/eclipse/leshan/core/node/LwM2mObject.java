@@ -29,9 +29,9 @@ import java.util.TreeMap;
  * An Objects defines a grouping of Resources and may consist of multiple instances.
  * </p>
  */
-public class LwM2mObject implements LwM2mNode {
+public class LwM2mObject implements LwM2mChildNode {
 
-    private int id;
+    private final int id;
 
     private final Map<Integer, LwM2mObjectInstance> instances;
 

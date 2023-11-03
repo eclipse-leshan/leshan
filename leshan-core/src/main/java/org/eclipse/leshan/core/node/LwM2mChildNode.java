@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2015 Sierra Wireless and others.
+ * Copyright (c) 2023 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -16,12 +16,27 @@
 package org.eclipse.leshan.core.node;
 
 /**
- * A node in the LWM2M resource tree: Root, Objects, Object instances, Resources or Resource instances.
+ * A child node in the LWM2M resource tree: Objects, Object instances, Resources or Resource instances.
  */
-public interface LwM2mNode {
+public interface LwM2mChildNode extends LwM2mNode {
 
     /**
-     * Accept a visitor for this node.
+     * @return the node identifier
      */
-    void accept(LwM2mNodeVisitor visitor);
+    int getId();
+
+    /**
+     * Convert node to pretty string
+     *
+     * @param path of this node;
+     */
+    String toPrettyString(LwM2mPath path);
+
+    /**
+     * Append pretty node to given {@link StringBuilder}
+     *
+     * @param b string builder to which node should be appended
+     * @param path of this node;
+     */
+    StringBuilder appendPrettyNode(StringBuilder b, LwM2mPath path);
 }

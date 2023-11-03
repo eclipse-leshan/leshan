@@ -29,7 +29,7 @@ import org.eclipse.leshan.core.util.Validate;
 /**
  * An instance of {@link LwM2mObject}.
  */
-public class LwM2mObjectInstance implements LwM2mNode {
+public class LwM2mObjectInstance implements LwM2mChildNode {
 
     /** Undefined instance Id */
     public static final int UNDEFINED = -1;
