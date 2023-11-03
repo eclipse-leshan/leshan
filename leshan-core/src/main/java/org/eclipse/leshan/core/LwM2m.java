@@ -22,9 +22,9 @@ public interface LwM2m {
      */
     public class LwM2mVersion extends Version {
 
-        public static LwM2mVersion V1_0 = new LwM2mVersion("1.0", true);
-        public static LwM2mVersion V1_1 = new LwM2mVersion("1.1", true);
-        private static LwM2mVersion[] supportedVersions = new LwM2mVersion[] { V1_0, V1_1 };
+        public static final LwM2mVersion V1_0 = new LwM2mVersion("1.0", true);
+        public static final LwM2mVersion V1_1 = new LwM2mVersion("1.1", true);
+        private static final LwM2mVersion[] supportedVersions = new LwM2mVersion[] { V1_0, V1_1 };
 
         private final boolean supported;
 
@@ -91,35 +91,45 @@ public interface LwM2m {
      */
     public class Version implements Comparable<Version> {
 
-        public static Version V1_0 = new Version("1.0");
-        public static final Version MAX = new Version(Short.MAX_VALUE, Short.MIN_VALUE);
+        public static final Version V1_0 = new Version("1.0");
+        public static final Version MAX = new Version(Short.MAX_VALUE, Short.MAX_VALUE);
 
-        protected final Short major;
-        protected final Short minor;
-
-        public Version(int major, int minor) {
-            this.major = (short) major;
-            this.minor = (short) minor;
+        private static short toShortExact(int value, String format, Object... args) {
+            if ((short) value != value) {
+                throw new IllegalArgumentException(String.format(format, args));
+            }
+            return (short) value;
         }
 
-        public Version(Short major, Short minor) {
+        protected final short major;
+        protected final short minor;
+
+        public Version(int major, int minor) {
+            this(toShortExact(major, "version (%d.%d) major part (%d) is not a valid short", major, minor, major),
+                    toShortExact(minor, "version (%d.%d) minor part (%d) is not a valid short", major, minor, minor));
+        }
+
+        public Version(short major, short minor) {
             this.major = major;
+            if (this.major < 0) {
+                throw new IllegalArgumentException(
+                        String.format("version (%d.%d) major part (%d) must not be negative", major, minor, major));
+            }
             this.minor = minor;
+            if (this.minor < 0) {
+                throw new IllegalArgumentException(
+                        String.format("version (%d.%d) minor part (%d) must not be negative", major, minor, minor));
+            }
         }
 
         public Version(String version) {
-            try {
-                String[] versionPart = version.split("\\.");
-                this.major = Short.parseShort(versionPart[0]);
-                this.minor = Short.parseShort(versionPart[1]);
-            } catch (RuntimeException e) {
-                String err = Version.validate(version);
-                if (err != null) {
-                    throw new IllegalArgumentException(err);
-                } else {
-                    throw e;
-                }
+            String err = Version.validate(version);
+            if (err != null) {
+                throw new IllegalArgumentException(err);
             }
+            String[] versionPart = version.split("\\.");
+            this.major = Short.parseShort(versionPart[0]);
+            this.minor = Short.parseShort(versionPart[1]);
         }
 
         @Override
@@ -133,16 +143,16 @@ public interface LwM2m {
 
         public static String validate(String version) {
             if (version == null || version.isEmpty())
-                return "version  MUST NOT be null or empty";
+                return "version MUST NOT be null or empty";
             String[] versionPart = version.split("\\.");
             if (versionPart.length != 2) {
                 return String.format("version (%s) MUST be composed of 2 parts", version);
             }
             for (int i = 0; i < 2; i++) {
                 try {
-                    Short parsedShort = Short.parseShort(versionPart[i]);
+                    short parsedShort = Short.parseShort(versionPart[i]);
                     if (parsedShort < 0) {
-                        return String.format("version (%s) part %d (%s) is not a valid short", version, i + 1,
+                        return String.format("version (%s) part %d (%s) must not be negative", version, i + 1,
                                 versionPart[i]);
                     }
                 } catch (Exception e) {
@@ -157,8 +167,8 @@ public interface LwM2m {
         public int hashCode() {
             final int prime = 31;
             int result = 1;
-            result = prime * result + ((major == null) ? 0 : major.hashCode());
-            result = prime * result + ((minor == null) ? 0 : minor.hashCode());
+            result = prime * result + major;
+            result = prime * result + minor;
             return result;
         }
 
@@ -171,15 +181,9 @@ public interface LwM2m {
             if (getClass() != obj.getClass())
                 return false;
             Version other = (Version) obj;
-            if (major == null) {
-                if (other.major != null)
-                    return false;
-            } else if (!major.equals(other.major))
+            if (major != other.major)
                 return false;
-            if (minor == null) {
-                if (other.minor != null)
-                    return false;
-            } else if (!minor.equals(other.minor))
+            if (minor != other.minor)
                 return false;
             return true;
         }
@@ -188,7 +192,6 @@ public interface LwM2m {
         public int compareTo(Version other) {
             if (major != other.major)
                 return major - other.major;
-
             return minor - other.minor;
         }
 
