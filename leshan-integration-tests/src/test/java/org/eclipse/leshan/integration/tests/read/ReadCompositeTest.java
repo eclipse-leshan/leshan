@@ -20,16 +20,25 @@ import static org.eclipse.leshan.core.ResponseCode.CONTENT;
 import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
 import static org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder.givenServerUsing;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.net.InetSocketAddress;
+import java.util.*;
 import java.util.stream.Stream;
 
+import org.eclipse.leshan.core.LwM2m;
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
+import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.LinkParseException;
+import org.eclipse.leshan.core.link.LinkParser;
+import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
-import org.eclipse.leshan.core.node.LwM2mObject;
-import org.eclipse.leshan.core.node.LwM2mResourceInstance;
-import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.*;
+import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
 import org.eclipse.leshan.core.response.ReadCompositeResponse;
@@ -38,7 +47,9 @@ import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
 import org.eclipse.leshan.integration.tests.util.junit5.extensions.ArgumentsUtil;
 import org.eclipse.leshan.integration.tests.util.junit5.extensions.BeforeEachParameterizedResolver;
+import org.eclipse.leshan.server.registration.DefaultRegistrationDataExtractor;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationDataExtractor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,6 +59,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 @ExtendWith(BeforeEachParameterizedResolver.class)
 public class ReadCompositeTest {
+
+    private final LinkParser linkParser = new DefaultLwM2mLinkParser();
 
     /*---------------------------------/
      *  Parameterized Tests
@@ -112,6 +125,57 @@ public class ReadCompositeTest {
     /*---------------------------------/
      *  Tests
      * -------------------------------*/
+
+    @TestAllCases
+    public void can_read_root(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws InterruptedException {
+        // read root object
+        ReadCompositeResponse response = server.send(currentRegistration,
+                new ReadCompositeRequest(requestContentFormat, responseContentFormat, "/"));
+
+        // verify result
+        // assertEquals(CONTENT, response.getCode());
+        // assertContentFormat(responseContentFormat, response);
+
+        assertThat(response) //
+                .hasCode(CONTENT) //
+                .hasCode(response.getCode()).hasContentFormat(responseContentFormat, givenServerEndpointProvider);
+
+        LwM2mRoot root = (LwM2mRoot) response.getContent("/");
+        Set<Integer> objectIdsFromRootObject = root.getObjects().keySet();
+        Set<Integer> objectIdsFromObjectTree = new HashSet<>(Arrays.asList(1, 3, 3442));
+
+        // assertEquals(objectIdsFromObjectTree, objectIdsFromRootObject);
+        assertThat(objectIdsFromObjectTree).isEqualTo(objectIdsFromRootObject);
+
+    }
+
+    @TestAllCases
+    public void can_read_root_object(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws InterruptedException, LinkParseException {
+
+        Registration reg = registration("</1/0>,</3/0>");
+
+        Map<Integer, LwM2m.Version> supportedObject = reg.getSupportedObject();
+        assertEquals(2, supportedObject.size());
+        assertEquals(LwM2m.Version.getDefault(), supportedObject.get(1));
+        assertEquals(LwM2m.Version.getDefault(), supportedObject.get(3));
+
+        // ensure available instances are correct
+        Set<LwM2mPath> availableInstances = reg.getAvailableInstances();
+        assertEquals(2, availableInstances.size());
+        assertTrue(availableInstances.containsAll(Arrays.asList(new LwM2mPath(1, 0), new LwM2mPath(3, 0))));
+
+        ReadCompositeResponse response = server.send(currentRegistration,
+                new ReadCompositeRequest(requestContentFormat, responseContentFormat, "/1/0", "/3/0"));
+
+        response.getContent().forEach((lwM2mPath, lwM2mNode) -> {
+            assertThat(lwM2mPath.getObjectInstanceId()).isEqualTo(0);
+        });
+    }
+
     @TestAllCases
     public void can_read_resources(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
@@ -174,5 +238,23 @@ public class ReadCompositeTest {
         LwM2mObject object = (LwM2mObject) response.getContent("/1");
         assertThat(object.getId()).isEqualTo(1);
         assertThat(object.getInstances()).hasSize(1);
+    }
+
+    private Registration registration(String objectLinks) throws LinkParseException {
+        Registration.Builder builder = new Registration.Builder("id", "endpoint",
+                new IpPeer(InetSocketAddress.createUnresolved("localhost", 0)),
+                EndpointUriUtil.createUri("coap://localhost:5683"));
+
+        Link[] links = linkParser.parseCoreLinkFormat(objectLinks.getBytes());
+        builder.objectLinks(links);
+
+        RegistrationDataExtractor.RegistrationData dataFromObjectLinks = new DefaultRegistrationDataExtractor()
+                .extractDataFromObjectLinks(links, LwM2m.LwM2mVersion.V1_0);
+        builder.rootPath(dataFromObjectLinks.getAlternatePath());
+        builder.supportedContentFormats(dataFromObjectLinks.getSupportedContentFormats());
+        builder.supportedObjects(dataFromObjectLinks.getSupportedObjects());
+        builder.availableInstances(dataFromObjectLinks.getAvailableInstances());
+
+        return builder.build();
     }
 }
