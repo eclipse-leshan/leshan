@@ -40,6 +40,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
+import org.eclipse.leshan.core.node.LwM2mRoot;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
@@ -65,7 +66,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeSenMLDecoder.class);
 
     private final SenMLDecoder decoder;
-    private boolean permissiveNumberConversion;
+    private final boolean permissiveNumberConversion;
     // parser used for core link data type
     private final LinkParser linkParser;
 
@@ -223,12 +224,28 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
 
         LOG.trace("Parsing SenML records for path {}: {}", path, records);
 
-        // Group records by instance
-        Map<Integer, Collection<LwM2mResolvedSenMLRecord>> recordsByInstanceId = groupRecordsByInstanceId(records);
-
         // Create lwm2m node
         LwM2mNode node = null;
-        if (nodeClass == LwM2mObject.class) {
+        if (nodeClass == LwM2mRoot.class) {
+            Map<Integer, Collection<LwM2mResolvedSenMLRecord>> recordsByObjectId = groupRecordsByObjectId(records);
+
+            Collection<LwM2mObject> objects = new ArrayList<>();
+            for (Entry<Integer, Collection<LwM2mResolvedSenMLRecord>> entryByObjectId : recordsByObjectId.entrySet()) {
+                Collection<LwM2mObjectInstance> instances = new ArrayList<>();
+                Map<Integer, Collection<LwM2mResolvedSenMLRecord>> recordsByInstanceId = groupRecordsByInstanceId(
+                        entryByObjectId.getValue());
+                for (Entry<Integer, Collection<LwM2mResolvedSenMLRecord>> entryByInstanceId : recordsByInstanceId
+                        .entrySet()) {
+                    Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(entryByInstanceId.getValue(), path,
+                            model);
+                    instances.add(new LwM2mObjectInstance(entryByInstanceId.getKey(), resourcesMap.values()));
+                }
+                objects.add(new LwM2mObject(entryByObjectId.getKey(), instances));
+            }
+            node = new LwM2mRoot(objects);
+        } else if (nodeClass == LwM2mObject.class) {
+            Map<Integer, Collection<LwM2mResolvedSenMLRecord>> recordsByInstanceId = groupRecordsByInstanceId(records);
+
             Collection<LwM2mObjectInstance> instances = new ArrayList<>();
             for (Entry<Integer, Collection<LwM2mResolvedSenMLRecord>> entryByInstanceId : recordsByInstanceId
                     .entrySet()) {
@@ -240,6 +257,8 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
 
             node = new LwM2mObject(path.getObjectId(), instances);
         } else if (nodeClass == LwM2mObjectInstance.class) {
+            Map<Integer, Collection<LwM2mResolvedSenMLRecord>> recordsByInstanceId = groupRecordsByInstanceId(records);
+
             // validate we have resources for only 1 instance
             if (recordsByInstanceId.size() != 1)
                 throw new CodecException("One instance expected in the payload [path:%s]", path);
@@ -252,6 +271,8 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
             // Create instance
             node = new LwM2mObjectInstance(instanceEntry.getKey(), resourcesMap.values());
         } else if (nodeClass == LwM2mResource.class) {
+            Map<Integer, Collection<LwM2mResolvedSenMLRecord>> recordsByInstanceId = groupRecordsByInstanceId(records);
+
             // validate we have resources for only 1 instance
             if (recordsByInstanceId.size() > 1)
                 throw new CodecException("Only one instance expected in the payload [path:%s]", path);
@@ -278,6 +299,8 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                 node = resourcesMap.values().iterator().next();
             }
         } else if (nodeClass == LwM2mResourceInstance.class) {
+            Map<Integer, Collection<LwM2mResolvedSenMLRecord>> recordsByInstanceId = groupRecordsByInstanceId(records);
+
             // validate we have resources for only 1 instance
             if (recordsByInstanceId.size() > 1)
                 throw new CodecException("Only one instance expected in the payload [path:%s]", path);
@@ -427,6 +450,28 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
 
             // Add it to the list
             recordForInstance.add(record);
+        }
+        return result;
+    }
+
+    /**
+     * Group all SenML record by objectId
+     *
+     * @return a map (objectId => collection of SenML Record)
+     */
+    private Map<Integer, Collection<LwM2mResolvedSenMLRecord>> groupRecordsByObjectId(
+            Collection<LwM2mResolvedSenMLRecord> records) throws CodecException {
+        Map<Integer, Collection<LwM2mResolvedSenMLRecord>> result = new HashMap<>();
+        for (LwM2mResolvedSenMLRecord record : records) {
+            // Get SenML records for this object
+            Collection<LwM2mResolvedSenMLRecord> recordForObject = result.get(record.getPath().getObjectId());
+            if (recordForObject == null) {
+                recordForObject = new ArrayList<>();
+                result.put(record.getPath().getObjectId(), recordForObject);
+            }
+
+            // Add it to the list
+            recordForObject.add(record);
         }
         return result;
     }
