@@ -20,19 +20,26 @@ import static org.eclipse.leshan.core.ResponseCode.CONTENT;
 import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
 import static org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder.givenServerUsing;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mObject;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
+import org.eclipse.leshan.core.node.LwM2mRoot;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
+import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadCompositeResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
@@ -112,6 +119,57 @@ public class ReadCompositeTest {
     /*---------------------------------/
      *  Tests
      * -------------------------------*/
+
+    @TestAllCases
+    public void can_read_root(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws InterruptedException {
+        // read root object
+        ReadCompositeResponse response = server.send(currentRegistration,
+                new ReadCompositeRequest(requestContentFormat, responseContentFormat, "/"));
+
+        // verify result
+        assertThat(response) //
+                .hasCode(CONTENT) //
+                .hasCode(response.getCode()).hasContentFormat(responseContentFormat, givenServerEndpointProvider);
+
+        assertThat(response.getContent("/")).isInstanceOfSatisfying(LwM2mRoot.class, (root) -> {
+            Set<LwM2mPath> availableInstances = currentRegistration.getAvailableInstances();
+
+            // check we get expected object ids
+            Set<Integer> expectedObjectIds = availableInstances.stream() //
+                    .map(path -> path.getObjectId()) //
+                    .collect(Collectors.toSet());
+            assertThat(root.getObjects()).containsOnlyKeys(expectedObjectIds);
+
+            // check we get expected instance ids
+            for (Integer objectId : expectedObjectIds) {
+                Set<Integer> expectedInstanceIds = availableInstances.stream() //
+                        .filter(path -> path.getObjectId() == objectId) //
+                        .map(path -> path.getObjectInstanceId()) //
+                        .collect(Collectors.toSet());
+
+                assertThat(root.getObjects().get(objectId).getInstances()).containsOnlyKeys(expectedInstanceIds);
+            }
+
+            // check we right value
+            for (LwM2mPath path : availableInstances) {
+                // get expected value
+                try {
+                    ReadResponse readResponse = server.send(currentRegistration,
+                            new ReadRequest(ContentFormat.SENML_JSON, path.toString()));
+                    assertThat(readResponse).hasCode(CONTENT);
+
+                    // compare it to read composite result
+                    assertThat(root.getObjects().get(path.getObjectId()).getInstances().get(path.getObjectInstanceId()))
+                            .isEqualTo(readResponse.getContent());
+                } catch (InterruptedException e) {
+                    fail(e);
+                }
+            }
+        });
+    }
+
     @TestAllCases
     public void can_read_resources(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
