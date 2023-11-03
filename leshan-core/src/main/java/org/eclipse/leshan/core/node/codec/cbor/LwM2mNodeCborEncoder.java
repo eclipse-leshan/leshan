@@ -30,6 +30,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
+import org.eclipse.leshan.core.node.LwM2mRoot;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
@@ -79,6 +80,11 @@ public class LwM2mNodeCborEncoder implements NodeEncoder {
 
         // visitor output
         private byte[] encoded = null;
+
+        @Override
+        public void visit(LwM2mRoot root) {
+            throw new CodecException("LWM2M Root Node cannot be encoded in cbor format");
+        }
 
         @Override
         public void visit(LwM2mObject object) {

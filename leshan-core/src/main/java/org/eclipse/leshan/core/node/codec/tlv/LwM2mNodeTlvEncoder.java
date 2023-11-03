@@ -35,6 +35,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
+import org.eclipse.leshan.core.node.LwM2mRoot;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mValueConverter;
@@ -86,7 +87,12 @@ public class LwM2mNodeTlvEncoder implements NodeEncoder {
         private LwM2mValueConverter converter;
 
         // visitor output
-        private ByteArrayOutputStream out = new ByteArrayOutputStream();
+        private final ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        @Override
+        public void visit(LwM2mRoot root) {
+            throw new CodecException("LWM2M Root Node cannot be encoded in TLV format");
+        }
 
         @Override
         public void visit(LwM2mObject object) {

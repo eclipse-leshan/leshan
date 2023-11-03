@@ -20,6 +20,8 @@ package org.eclipse.leshan.core.node;
  */
 public interface LwM2mNodeVisitor {
 
+    void visit(LwM2mRoot root);
+
     void visit(LwM2mObject object);
 
     void visit(LwM2mObjectInstance instance);

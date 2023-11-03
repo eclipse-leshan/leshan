@@ -34,6 +34,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
+import org.eclipse.leshan.core.node.LwM2mRoot;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
@@ -207,6 +208,11 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
 
         // visitor output
         private ArrayList<SenMLRecord> records = new ArrayList<>();
+
+        @Override
+        public void visit(LwM2mRoot root) {
+            throw new CodecException("LWM2M Root Node cannot be encoded in SenML format");
+        }
 
         @Override
         public void visit(LwM2mObject object) {
