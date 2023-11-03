@@ -16,6 +16,7 @@
 package org.eclipse.leshan.core;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
@@ -39,5 +40,22 @@ public class VersionTest {
         assertTrue(new Version("1.2").compareTo(new Version("1.2")) == 0);
         assertTrue(new Version("1.3").compareTo(new Version("1.2")) > 0);
         assertTrue(new Version("2.0").compareTo(new Version("1.2")) > 0);
+        assertTrue(new Version("128.0").compareTo(new Version("128.2")) < 0);
+        assertTrue(new Version("128.0").compareTo(new Version("128.0")) == 0);
+        assertTrue(new Version("128.2").compareTo(new Version("128.0")) > 0);
+    }
+
+    @Test
+    public void short_overflow_tests() {
+        assertThrows(ArithmeticException.class, () -> new Version(Short.MIN_VALUE - 1, Short.MIN_VALUE));
+        assertThrows(ArithmeticException.class, () -> new Version(Short.MIN_VALUE, Short.MIN_VALUE - 1));
+        assertThrows(ArithmeticException.class, () -> new Version(Short.MAX_VALUE + 1, Short.MAX_VALUE));
+        assertThrows(ArithmeticException.class, () -> new Version(Short.MAX_VALUE, Short.MAX_VALUE + 1));
+    }
+
+    @Test
+    public void negative_number_tests() {
+        assertThrows(IllegalArgumentException.class, () -> new Version("-1.0"));
+        assertThrows(IllegalArgumentException.class, () -> new Version("1.-1"));
     }
 }
