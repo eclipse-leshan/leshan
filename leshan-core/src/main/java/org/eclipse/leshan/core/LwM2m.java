@@ -94,22 +94,36 @@ public interface LwM2m {
         public static final Version V1_0 = new Version("1.0");
         public static final Version MAX = new Version(Short.MAX_VALUE, Short.MAX_VALUE);
 
+        private static short toShortExact(int value, String format, Object... args) {
+            if ((short) value != value) {
+                throw new IllegalArgumentException(String.format(format, args));
+            }
+            return (short) value;
+        }
+
         protected final short major;
         protected final short minor;
 
         public Version(int major, int minor) {
-            this((short) major, (short) minor);
-            if (this.major != major) {
-                throw new ArithmeticException("short overflow");
-            }
-            if (this.minor != minor) {
-                throw new ArithmeticException("short overflow");
-            }
+            this(
+                    toShortExact(major, "version (%d.%d) major part (%d) is not a valid short",
+                            major, minor, major),
+                    toShortExact(minor, "version (%d.%d) minor part (%d) is not a valid short",
+                            major, minor, minor)
+            );
         }
 
         public Version(short major, short minor) {
             this.major = major;
+            if (this.major < 0) {
+                throw new IllegalArgumentException(String.format("version (%d.%d) major part (%d) must not be negative",
+                        major, minor, major));
+            }
             this.minor = minor;
+            if (this.minor < 0) {
+                throw new IllegalArgumentException(String.format("version (%d.%d) minor part (%d) must not be negative",
+                        major, minor, minor));
+            }
         }
 
         public Version(String version) {
@@ -157,8 +171,8 @@ public interface LwM2m {
         public int hashCode() {
             final int prime = 31;
             int result = 1;
-            result = prime * result + (int) major;
-            result = prime * result + (int) minor;
+            result = prime * result + major;
+            result = prime * result + minor;
             return result;
         }
 

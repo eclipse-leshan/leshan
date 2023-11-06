@@ -15,13 +15,16 @@
  *******************************************************************************/
 package org.eclipse.leshan.core;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class VersionTest {
     @Test
@@ -36,26 +39,68 @@ public class VersionTest {
     @Test
     public void compare_tests() {
         assertTrue(new Version("1.0").compareTo(new Version("1.2")) < 0);
+        assertTrue(new Version("1.0").olderThan(new Version("1.2")));
+        assertNotEquals(new Version("1.0").hashCode(), new Version("1.2").hashCode());
+
         assertTrue(new Version("0.9").compareTo(new Version("1.2")) < 0);
-        assertTrue(new Version("1.2").compareTo(new Version("1.2")) == 0);
-        assertTrue(new Version("1.3").compareTo(new Version("1.2")) > 0);
-        assertTrue(new Version("2.0").compareTo(new Version("1.2")) > 0);
+        assertTrue(new Version("0.9").olderThan(new Version("1.2")));
+        assertNotEquals(new Version("0.9"), new Version("1.2"));
+
         assertTrue(new Version("128.0").compareTo(new Version("128.2")) < 0);
+        assertTrue(new Version("128.0").olderThan(new Version("128.2")));
+        assertNotEquals(new Version("128.0"), new Version("128.2"));
+
+        assertTrue(new Version("1.2").compareTo(new Version("1.2")) == 0);
+        assertEquals(new Version("1.2"), new Version("1.2"));
+        assertEquals(new Version("1.2").hashCode(), new Version("1.2").hashCode());
+
         assertTrue(new Version("128.0").compareTo(new Version("128.0")) == 0);
+        assertEquals(new Version("128.0"), new Version("128.0"));
+        assertEquals(new Version("128.0").hashCode(), new Version("128.0").hashCode());
+
+        assertTrue(new Version("1.3").compareTo(new Version("1.2")) > 0);
+        assertTrue(new Version("1.3").newerThan(new Version("1.2")));
+
+        assertTrue(new Version("2.0").compareTo(new Version("1.2")) > 0);
+        assertTrue(new Version("2.0").newerThan(new Version("1.2")));
+
         assertTrue(new Version("128.2").compareTo(new Version("128.0")) > 0);
+        assertTrue(new Version("128.2").newerThan(new Version("128.0")));
+        assertNotEquals(new Version("128.2"), new Version("128.0"));
     }
 
-    @Test
-    public void short_overflow_tests() {
-        assertThrows(ArithmeticException.class, () -> new Version(Short.MIN_VALUE - 1, Short.MIN_VALUE));
-        assertThrows(ArithmeticException.class, () -> new Version(Short.MIN_VALUE, Short.MIN_VALUE - 1));
-        assertThrows(ArithmeticException.class, () -> new Version(Short.MAX_VALUE + 1, Short.MAX_VALUE));
-        assertThrows(ArithmeticException.class, () -> new Version(Short.MAX_VALUE, Short.MAX_VALUE + 1));
+    @ParameterizedTest
+    @MethodSource("illegal_arguments")
+    public void illegal_argument_tests(Executable executable, String expectedMessage) {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, executable);
+        assertEquals(expectedMessage, e.getMessage());
     }
 
-    @Test
-    public void negative_number_tests() {
-        assertThrows(IllegalArgumentException.class, () -> new Version("-1.0"));
-        assertThrows(IllegalArgumentException.class, () -> new Version("1.-1"));
+    private static Stream<Arguments> illegal_arguments() {
+        return Stream.of(
+                args(() -> new Version(null), "version MUST NOT be null or empty"),
+                args(() -> new Version(""), "version MUST NOT be null or empty"),
+                args(() -> new Version("foo"), "version (foo) MUST be composed of 2 parts"),
+                args(() -> new Version("1.0.0"), "version (1.0.0) MUST be composed of 2 parts"),
+                args(() -> new Version("-1.0"), "version (-1.0) part 1 (-1) must not be negative"),
+                args(() -> new Version("1.-1"), "version (1.-1) part 2 (-1) must not be negative"),
+                args(() -> new Version("-1.0"), "version (-1.0) part 1 (-1) must not be negative"),
+                args(() -> new Version("1.-1"), "version (1.-1) part 2 (-1) must not be negative"),
+                args(() -> new Version("a.0"), "version (a.0) part 1 (a) is not a valid short"),
+                args(() -> new Version("32768.32767"), "version (32768.32767) part 1 (32768) is not a valid short"),
+                args(() -> new Version("32767.32768"), "version (32767.32768) part 2 (32768) is not a valid short"),
+                args(() -> new Version(-32769, -32768), "version (-32769.-32768) major part (-32769) is not a valid short"),
+                args(() -> new Version(-32768, -32769), "version (-32768.-32769) minor part (-32769) is not a valid short"),
+                args(() -> new Version(32768, 32767), "version (32768.32767) major part (32768) is not a valid short"),
+                args(() -> new Version(32767, 32768), "version (32767.32768) minor part (32768) is not a valid short"),
+                args(() -> new Version(-1, 0), "version (-1.0) major part (-1) must not be negative"),
+                args(() -> new Version(1, -1), "version (1.-1) minor part (-1) must not be negative"),
+                args(() -> new Version((short) -1, (short) 0), "version (-1.0) major part (-1) must not be negative"),
+                args(() -> new Version((short) 1, (short) -1), "version (1.-1) minor part (-1) must not be negative")
+        );
+    }
+
+    private static Arguments args(Executable executable, String expectedMessage) {
+        return Arguments.of(executable, expectedMessage);
     }
 }
