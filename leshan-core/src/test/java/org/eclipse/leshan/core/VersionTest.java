@@ -84,8 +84,6 @@ public class VersionTest {
                 args(() -> new Version("1.0.0"), "version (1.0.0) MUST be composed of 2 parts"),
                 args(() -> new Version("-1.0"), "version (-1.0) part 1 (-1) must not be negative"),
                 args(() -> new Version("1.-1"), "version (1.-1) part 2 (-1) must not be negative"),
-                args(() -> new Version("-1.0"), "version (-1.0) part 1 (-1) must not be negative"),
-                args(() -> new Version("1.-1"), "version (1.-1) part 2 (-1) must not be negative"),
                 args(() -> new Version("a.0"), "version (a.0) part 1 (a) is not a valid short"),
                 args(() -> new Version("32768.32767"), "version (32768.32767) part 1 (32768) is not a valid short"),
                 args(() -> new Version("32767.32768"), "version (32767.32768) part 2 (32768) is not a valid short"),
