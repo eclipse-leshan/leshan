@@ -248,9 +248,12 @@ public class LwM2mSingleResource implements LwM2mResource {
         int result = 1;
         result = prime * result + id;
         result = prime * result + ((type == null) ? 0 : type.hashCode());
+
+        // Custom hashcode to handle arrays
         if (type == Type.OPAQUE) {
-            // Custom hashcode to handle byte arrays
             result = prime * result + ((value == null) ? 0 : Arrays.hashCode((byte[]) value));
+        } else if (type == Type.CORELINK) {
+            result = prime * result + ((value == null) ? 0 : Arrays.hashCode((Link[]) value));
         } else {
             result = prime * result + ((value == null) ? 0 : value.hashCode());
         }
@@ -274,9 +277,14 @@ public class LwM2mSingleResource implements LwM2mResource {
             if (other.value != null)
                 return false;
         } else {
-            // Custom equals to handle byte arrays
-            return type == Type.OPAQUE ? Arrays.equals((byte[]) value, (byte[]) other.value)
-                    : value.equals(other.value);
+            // Custom equals to handle arrays
+            if (type == Type.OPAQUE) {
+                return Arrays.equals((byte[]) value, (byte[]) other.value);
+            } else if (type == Type.CORELINK) {
+                return Arrays.equals((Link[]) value, (Link[]) other.value);
+            } else {
+                return value.equals(other.value);
+            }
         }
         return true;
     }
