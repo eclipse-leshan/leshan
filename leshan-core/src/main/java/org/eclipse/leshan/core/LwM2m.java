@@ -105,24 +105,20 @@ public interface LwM2m {
         protected final short minor;
 
         public Version(int major, int minor) {
-            this(
-                    toShortExact(major, "version (%d.%d) major part (%d) is not a valid short",
-                            major, minor, major),
-                    toShortExact(minor, "version (%d.%d) minor part (%d) is not a valid short",
-                            major, minor, minor)
-            );
+            this(toShortExact(major, "version (%d.%d) major part (%d) is not a valid short", major, minor, major),
+                    toShortExact(minor, "version (%d.%d) minor part (%d) is not a valid short", major, minor, minor));
         }
 
         public Version(short major, short minor) {
             this.major = major;
             if (this.major < 0) {
-                throw new IllegalArgumentException(String.format("version (%d.%d) major part (%d) must not be negative",
-                        major, minor, major));
+                throw new IllegalArgumentException(
+                        String.format("version (%d.%d) major part (%d) must not be negative", major, minor, major));
             }
             this.minor = minor;
             if (this.minor < 0) {
-                throw new IllegalArgumentException(String.format("version (%d.%d) minor part (%d) must not be negative",
-                        major, minor, minor));
+                throw new IllegalArgumentException(
+                        String.format("version (%d.%d) minor part (%d) must not be negative", major, minor, minor));
             }
         }
 
@@ -196,7 +192,6 @@ public interface LwM2m {
         public int compareTo(Version other) {
             if (major != other.major)
                 return major - other.major;
-
             return minor - other.minor;
         }
 
