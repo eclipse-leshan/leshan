@@ -66,7 +66,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeSenMLDecoder.class);
 
     private final SenMLDecoder decoder;
-    private boolean permissiveNumberConversion;
+    private final boolean permissiveNumberConversion;
     // parser used for core link data type
     private final LinkParser linkParser;
 
@@ -224,17 +224,16 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
 
         LOG.trace("Parsing SenML records for path {}: {}", path, records);
 
-        // Group records by instance
-        Map<Integer, Collection<LwM2mResolvedSenMLRecord>> recordsByInstanceId = groupRecordsByInstanceId(records);
-
         // Create lwm2m node
         LwM2mNode node = null;
         if (nodeClass == LwM2mRoot.class) {
-            Collection<LwM2mObject> objects = new ArrayList<>();
             Map<Integer, Collection<LwM2mResolvedSenMLRecord>> recordsByObjectId = groupRecordsByObjectId(records);
+
+            Collection<LwM2mObject> objects = new ArrayList<>();
             for (Entry<Integer, Collection<LwM2mResolvedSenMLRecord>> entryByObjectId : recordsByObjectId.entrySet()) {
                 Collection<LwM2mObjectInstance> instances = new ArrayList<>();
-                recordsByInstanceId = groupRecordsByInstanceId(entryByObjectId.getValue());
+                Map<Integer, Collection<LwM2mResolvedSenMLRecord>> recordsByInstanceId = groupRecordsByInstanceId(
+                        entryByObjectId.getValue());
                 for (Entry<Integer, Collection<LwM2mResolvedSenMLRecord>> entryByInstanceId : recordsByInstanceId
                         .entrySet()) {
                     Map<Integer, LwM2mResource> resourcesMap = extractLwM2mResources(entryByInstanceId.getValue(), path,
@@ -245,6 +244,8 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
             }
             node = new LwM2mRoot(objects);
         } else if (nodeClass == LwM2mObject.class) {
+            Map<Integer, Collection<LwM2mResolvedSenMLRecord>> recordsByInstanceId = groupRecordsByInstanceId(records);
+
             Collection<LwM2mObjectInstance> instances = new ArrayList<>();
             for (Entry<Integer, Collection<LwM2mResolvedSenMLRecord>> entryByInstanceId : recordsByInstanceId
                     .entrySet()) {
@@ -256,6 +257,8 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
 
             node = new LwM2mObject(path.getObjectId(), instances);
         } else if (nodeClass == LwM2mObjectInstance.class) {
+            Map<Integer, Collection<LwM2mResolvedSenMLRecord>> recordsByInstanceId = groupRecordsByInstanceId(records);
+
             // validate we have resources for only 1 instance
             if (recordsByInstanceId.size() != 1)
                 throw new CodecException("One instance expected in the payload [path:%s]", path);
@@ -268,6 +271,8 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
             // Create instance
             node = new LwM2mObjectInstance(instanceEntry.getKey(), resourcesMap.values());
         } else if (nodeClass == LwM2mResource.class) {
+            Map<Integer, Collection<LwM2mResolvedSenMLRecord>> recordsByInstanceId = groupRecordsByInstanceId(records);
+
             // validate we have resources for only 1 instance
             if (recordsByInstanceId.size() > 1)
                 throw new CodecException("Only one instance expected in the payload [path:%s]", path);
@@ -294,6 +299,8 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                 node = resourcesMap.values().iterator().next();
             }
         } else if (nodeClass == LwM2mResourceInstance.class) {
+            Map<Integer, Collection<LwM2mResolvedSenMLRecord>> recordsByInstanceId = groupRecordsByInstanceId(records);
+
             // validate we have resources for only 1 instance
             if (recordsByInstanceId.size() > 1)
                 throw new CodecException("Only one instance expected in the payload [path:%s]", path);
