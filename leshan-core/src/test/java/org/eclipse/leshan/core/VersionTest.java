@@ -42,7 +42,7 @@ public class VersionTest {
     }
 
     @Test
-    public void compare_tests() {
+    public void compare_to_tests() {
         assertTrue(new Version("1.0").compareTo(new Version("1.2")) < 0);
         assertTrue(new Version("0.9").compareTo(new Version("1.2")) < 0);
         assertTrue(new Version("128.0").compareTo(new Version("128.2")) < 0);
@@ -74,13 +74,13 @@ public class VersionTest {
     }
 
     @Test
-    public void older_then_tests() {
+    public void older_than_tests() {
         assertTrue(new Version("1.0").olderThan(new Version("1.1")));
         assertTrue(new Version("0.9").olderThan(new Version("1.1")));
     }
 
     @Test
-    public void newer_then_tests() {
+    public void newer_than_tests() {
         assertTrue(new Version("1.1").newerThan(new Version("1.0")));
         assertTrue(new Version("1.0").newerThan(new Version("0.9")));
     }
