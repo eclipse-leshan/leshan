@@ -22,10 +22,16 @@ import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.leshan.core.link.DefaultLinkParser;
+import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.LinkParseException;
+import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.junit.jupiter.api.Test;
 
 public class LwM2MResourceTest {
+
+    private final LinkParser linkParser = new DefaultLinkParser();
 
     @Test
     public void two_identical_strings_are_equal() {
@@ -53,6 +59,36 @@ public class LwM2MResourceTest {
                 LwM2mSingleResource.newBinaryResource(10, "world".getBytes()));
         assertNotEquals(LwM2mSingleResource.newBinaryResource(11, "hello".getBytes()),
                 LwM2mSingleResource.newBinaryResource(10, "hello".getBytes()));
+    }
+
+    @Test
+    public void two_identical_corelink_are_equal() throws LinkParseException {
+        assertEquals(
+                LwM2mSingleResource.newCoreLinkResource(10, linkParser.parseCoreLinkFormat(
+                        "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1/0>,</2>,</3/0>,</3442/0>"
+                                .getBytes())),
+                LwM2mSingleResource.newCoreLinkResource(10, linkParser.parseCoreLinkFormat(
+                        "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1/0>,</2>,</3/0>,</3442/0>"
+                                .getBytes())));
+    }
+
+    @Test
+    public void two_non_identical_corelink_are_not_equal() throws LinkParseException {
+        assertNotEquals(
+                LwM2mSingleResource.newCoreLinkResource(10, linkParser.parseCoreLinkFormat(
+                        "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1/0>,</2>,</3/0>,</3442/0>"
+                                .getBytes())),
+                LwM2mSingleResource.newCoreLinkResource(10, linkParser.parseCoreLinkFormat(
+                        "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1/0>,</2>,</3/0>,</3333/0>"
+                                .getBytes())));
+
+        assertNotEquals(
+                LwM2mSingleResource.newCoreLinkResource(11, linkParser.parseCoreLinkFormat(
+                        "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1/0>,</2>,</3/0>,</3442/0>"
+                                .getBytes())),
+                LwM2mSingleResource.newCoreLinkResource(10, linkParser.parseCoreLinkFormat(
+                        "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1/0>,</2>,</3/0>,</3442/0>"
+                                .getBytes())));
     }
 
     @Test
@@ -107,6 +143,42 @@ public class LwM2MResourceTest {
                 LwM2mMultipleResource.newBinaryResource(10, values2));
         assertNotEquals(LwM2mMultipleResource.newBinaryResource(11, values1),
                 LwM2mMultipleResource.newBinaryResource(10, values1));
+    }
+
+    @Test
+    public void two_identical_multiple_corelink_are_equal() throws LinkParseException {
+        Map<Integer, Link[]> values1 = new HashMap<>();
+        values1.put(0,
+                linkParser.parseCoreLinkFormat(
+                        "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1/0>,</2>,</3/0>,</3442/0>"
+                                .getBytes()));
+        Map<Integer, Link[]> values2 = new HashMap<>();
+        values2.put(0,
+                linkParser.parseCoreLinkFormat(
+                        "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1/0>,</2>,</3/0>,</3442/0>"
+                                .getBytes()));
+
+        assertEquals(LwM2mMultipleResource.newCoreLinkResource(10, values1),
+                LwM2mMultipleResource.newCoreLinkResource(10, values2));
+    }
+
+    @Test
+    public void two_non_identical_multiple_corelink_are_not_equal() throws LinkParseException {
+        Map<Integer, Link[]> values1 = new HashMap<>();
+        values1.put(0,
+                linkParser.parseCoreLinkFormat(
+                        "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1/0>,</2>,</3/0>,</3442/0>"
+                                .getBytes()));
+        Map<Integer, Link[]> values2 = new HashMap<>();
+        values2.put(0,
+                linkParser.parseCoreLinkFormat(
+                        "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1/0>,</2>,</3/0>,</3333/0>"
+                                .getBytes()));
+
+        assertNotEquals(LwM2mMultipleResource.newCoreLinkResource(10, values1),
+                LwM2mMultipleResource.newCoreLinkResource(10, values2));
+        assertNotEquals(LwM2mMultipleResource.newCoreLinkResource(11, values1),
+                LwM2mMultipleResource.newCoreLinkResource(10, values1));
     }
 
     @Test
