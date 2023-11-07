@@ -76,60 +76,75 @@ public class RootEnabler implements LwM2mRootEnabler {
     }
 
     @Override
-    public ReadCompositeResponse read(LwM2mServer server, ReadCompositeRequest request) {
-        List<LwM2mPath> paths = request.getPaths();
-        // TODO: add checks for failure and log it
+    public ReadCompositeResponse read(LwM2mServer server, ReadCompositeRequest readCompositeRequest) {
+        List<LwM2mPath> paths = readCompositeRequest.getPaths();
         if (paths.size() == 1 && paths.get(0).isRoot()) {
+            // Handle special case of Read Composite on root path
+            LwM2mPath rootPath = paths.get(0);
             Map<Integer, LwM2mObjectEnabler> objectEnablers = tree.getObjectEnablers();
+
+            // Reads object
             List<LwM2mObject> lwM2mObjects = new ArrayList<>();
-
-            for (Map.Entry<Integer, LwM2mObjectEnabler> entry : objectEnablers.entrySet()) {
-                LwM2mObjectEnabler objectEnabler = entry.getValue();
-                ReadRequest readRequest = new ReadRequest(request.getRequestContentFormat(),
-                        new LwM2mPath(entry.getKey()), request.getCoapRequest());
-                ReadResponse readResponse = objectEnabler.read(server, readRequest);
-                if (readResponse.isSuccess()) {
-                    lwM2mObjects.add((LwM2mObject) readResponse.getContent());
-                }
-            }
-            LwM2mRoot lwM2mRoot = new LwM2mRoot(lwM2mObjects);
-            return ReadCompositeResponse.success(Collections.singletonMap(paths.get(0), lwM2mRoot));
-        }
-
-        // Read Nodes
-        Map<LwM2mPath, LwM2mNode> content = new HashMap<>();
-        boolean isEmpty = true; // true if don't succeed to read any of requested path
-        for (LwM2mPath path : paths) {
-            // Get corresponding object enabler
-            Integer objectId = path.getObjectId();
-            LwM2mObjectEnabler objectEnabler = tree.getObjectEnabler(objectId);
-
-            LwM2mNode node = null;
-            if (objectEnabler != null) {
-                ReadResponse response = objectEnabler.read(server,
-                        new ReadRequest(request.getResponseContentFormat(), path, request.getCoapRequest()));
+            objectEnablers.forEach((objectId, objectEnabler) -> {
+                ReadResponse response = objectEnabler.read(server, new ReadRequest( //
+                        readCompositeRequest.getRequestContentFormat(), //
+                        rootPath.append(objectId), //
+                        readCompositeRequest.getCoapRequest()//
+                ));
                 if (response.isSuccess()) {
-                    node = response.getContent();
-                    isEmpty = false;
+                    lwM2mObjects.add((LwM2mObject) response.getContent());
                 } else {
                     LOG.debug("Server {} try to read node {} in a Read-Composite Request {} but it failed for {} {}",
-                            server, path, paths, response.getCode(), response.getErrorMessage());
+                            server, paths.get(0), paths, response.getCode(), response.getErrorMessage());
                 }
-            } else {
-                LOG.debug(
-                        "Server {} try to read node {} in a Read-Composite Request {} but it failed because Object {} is not supported",
-                        server, path, paths, objectId);
-            }
-            // LWM2M specification says that "Read-Composite operation is treated as
-            // non-atomic and handled as best effort by the client. That is, if any of the requested resources do not
-            // have a valid value to return, they will not be included in the response".
-            // So If we are not able to read a node (error or not supported we just ignore it) and add NULL to the list.
-            content.put(path, node);
-        }
-        if (isEmpty) {
-            return ReadCompositeResponse.notFound();
+            });
+
+            // Create response
+            LwM2mRoot lwM2mRoot = new LwM2mRoot(lwM2mObjects);
+            return ReadCompositeResponse.success(Collections.singletonMap(paths.get(0), lwM2mRoot));
+
         } else {
-            return ReadCompositeResponse.success(content);
+
+            // Handle regular (not root) Read Composite case
+            Map<LwM2mPath, LwM2mNode> content = new HashMap<>();
+            boolean isEmpty = true; // true if don't succeed to read any of requested path
+            for (LwM2mPath path : paths) {
+                // Get corresponding object enabler
+                Integer objectId = path.getObjectId();
+                LwM2mObjectEnabler objectEnabler = tree.getObjectEnabler(objectId);
+
+                // Read Object
+                LwM2mNode node = null;
+                if (objectEnabler != null) {
+                    ReadResponse response = objectEnabler.read(server,
+                            new ReadRequest(readCompositeRequest.getResponseContentFormat(), path,
+                                    readCompositeRequest.getCoapRequest()));
+                    if (response.isSuccess()) {
+                        node = response.getContent();
+                        isEmpty = false;
+                    } else {
+                        LOG.debug(
+                                "Server {} try to read node {} in a Read-Composite Request {} but it failed for {} {}",
+                                server, path, paths, response.getCode(), response.getErrorMessage());
+                    }
+                } else {
+                    LOG.debug(
+                            "Server {} try to read node {} in a Read-Composite Request {} but it failed because Object {} is not supported",
+                            server, path, paths, objectId);
+                }
+                // LWM2M specification says that "Read-Composite operation is treated as
+                // non-atomic and handled as best effort by the client. That is, if any of the requested resources do
+                // not
+                // have a valid value to return, they will not be included in the response".
+                // So If we are not able to read a node (error or not supported we just ignore it) and add NULL to the
+                // list.
+                content.put(path, node);
+            }
+            if (isEmpty) {
+                return ReadCompositeResponse.notFound();
+            } else {
+                return ReadCompositeResponse.success(content);
+            }
         }
     }
 
