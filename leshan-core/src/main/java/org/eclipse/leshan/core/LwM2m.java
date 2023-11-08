@@ -144,20 +144,25 @@ public interface LwM2m {
         public static String validate(String version) {
             if (version == null || version.isEmpty())
                 return "version MUST NOT be null or empty";
-            String[] versionPart = version.split("\\.");
-            if (versionPart.length != 2) {
+            // We use split with limit = -1 to be sure "split" will discard trailing empty strings
+            String[] versionParts = version.split("\\.", -1);
+            if (versionParts.length != 2) {
                 return String.format("version (%s) MUST be composed of 2 parts", version);
             }
             for (int i = 0; i < 2; i++) {
+                String versionPart = versionParts[i];
                 try {
-                    short parsedShort = Short.parseShort(versionPart[i]);
+                    if (versionPart.length() > 1 && versionPart.startsWith("0")) {
+                        return String.format("version (%s) part %d (%s) must not be prefixed by 0", version, i + 1,
+                                versionPart);
+                    }
+                    short parsedShort = Short.parseShort(versionPart);
                     if (parsedShort < 0) {
                         return String.format("version (%s) part %d (%s) must not be negative", version, i + 1,
-                                versionPart[i]);
+                                versionPart);
                     }
                 } catch (Exception e) {
-                    return String.format("version (%s) part %d (%s) is not a valid short", version, i + 1,
-                            versionPart[i]);
+                    return String.format("version (%s) part %d (%s) is not a valid short", version, i + 1, versionPart);
                 }
             }
             return null;
