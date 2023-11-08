@@ -42,7 +42,8 @@ public class DefaultLwM2mAttributeParser extends DefaultAttributeParser implemen
         if (uriQueries == null)
             return null;
 
-        String[] queriesArray = uriQueries.split("&");
+        // We use split with limit = -1 to be sure "split" will discard trailing empty strings
+        String[] queriesArray = uriQueries.split("&", -1);
         return parseQueryParams(queriesArray);
     }
 
@@ -57,21 +58,23 @@ public class DefaultLwM2mAttributeParser extends DefaultAttributeParser implemen
         ArrayList<LwM2mAttribute<?>> attributes = new ArrayList<>();
 
         for (String param : queryParams) {
-            String[] keyAndValue = param.split("=");
+            int indexOfEqual = param.indexOf('=');
             Attribute attr;
-            if (keyAndValue.length == 1) {
-                attr = parseQueryParamValue(keyAndValue[0], null);
-            } else if (keyAndValue.length == 2) {
-                attr = parseQueryParamValue(keyAndValue[0], keyAndValue[1]);
+            if (indexOfEqual == -1) {
+                attr = parseQueryParamValue(param, null);
+            } else if (indexOfEqual == param.length() - 1) {
+                throw new InvalidAttributeException("Cannot parse query param '%s', value is expected after '=", param);
             } else {
-                throw new InvalidAttributeException("Cannot parse query param '%s'", param);
+                String paramName = param.substring(0, indexOfEqual);
+                String paramValue = param.substring(indexOfEqual + 1);
+                attr = parseQueryParamValue(paramName, paramValue);
             }
 
             if (attr instanceof LwM2mAttribute<?>) {
                 attributes.add((LwM2mAttribute<?>) attr);
             } else {
                 throw new InvalidAttributeException("Cannot parse query param '%s', param %s is not a LWM2M attribute",
-                        param, keyAndValue[0]);
+                        param, attr.getName());
             }
         }
         return attributes;
@@ -80,6 +83,10 @@ public class DefaultLwM2mAttributeParser extends DefaultAttributeParser implemen
     @Override
     public Attribute parseQueryParamValue(String attributeName, String attributeValue)
             throws InvalidAttributeException {
+
+        if (attributeName == null || attributeName.isEmpty()) {
+            throw new InvalidAttributeException("unable to parse an attribute without name");
+        }
 
         // search model
         AttributeModel<?> model = getKnownAttributes().get(attributeName);
