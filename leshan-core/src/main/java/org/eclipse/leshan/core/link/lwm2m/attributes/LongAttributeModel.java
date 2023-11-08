@@ -31,13 +31,16 @@ public class LongAttributeModel extends LwM2mAttributeModel<Long> {
 
     /**
      * <pre>
-     * 1 * DIGIT
+     * ["-"] 1 * DIGIT
      * </pre>
      */
     @Override
     public <E extends Throwable> LwM2mAttribute<Long> consumeAttributeValue(StringParser<E> parser) throws E {
         // parse Value
         int start = parser.getPosition();
+        if (parser.nextCharIs('-')) {
+            parser.consumeNextChar();
+        }
         parser.consumeDIGIT();
         while (parser.nextCharIsDIGIT()) {
             parser.consumeNextChar();
@@ -53,7 +56,7 @@ public class LongAttributeModel extends LwM2mAttributeModel<Long> {
                     parser.getStringToParse());
             return null;
         } catch (IllegalArgumentException e) {
-            parser.raiseException(e, "%s value '%s' is not a valid in %s", getName(), strValue,
+            parser.raiseException(e, "%s value '%s' is not a valid long in %s", getName(), strValue,
                     parser.getStringToParse());
             return null;
         }

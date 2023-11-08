@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
 
+import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
+import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -29,7 +31,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 public final class LwM2mAttributes {
 
     // dim
-    public static final LongAttributeModel DIMENSION = new LongAttributeModel(//
+    public static final LwM2mAttributeModel<Long> DIMENSION = new PositiveLongAttributeModel(//
             "dim", //
             Attachment.RESOURCE, //
             EnumSet.of(AssignationLevel.RESOURCE), //
@@ -60,7 +62,7 @@ public final class LwM2mAttributes {
         };
     };
     // ssid
-    public static final LongAttributeModel SHORT_SERVER_ID = new LongAttributeModel(//
+    public static final LwM2mAttributeModel<Long> SHORT_SERVER_ID = new PositiveLongAttributeModel(//
             "ssid", //
             Attachment.OBJECT_INSTANCE, //
             EnumSet.of(AssignationLevel.OBJECT_INSTANCE), //
@@ -95,7 +97,7 @@ public final class LwM2mAttributes {
         };
     };
     // uri
-    public static final StringAttributeModel SERVER_URI = new StringAttributeModel(//
+    public static final LwM2mAttributeModel<String> SERVER_URI = new StringAttributeModel(//
             "uri", //
             Attachment.OBJECT_INSTANCE, //
             EnumSet.of(AssignationLevel.OBJECT_INSTANCE), //
@@ -116,11 +118,13 @@ public final class LwM2mAttributes {
         };
     };
     // ver
-    public static final ObjectVersionAttributeModel OBJECT_VERSION = new ObjectVersionAttributeModel();
+    public static final LwM2mAttributeModel<Version> OBJECT_VERSION = new ObjectVersionAttributeModel();
     // lwm2m
-    public static final LwM2mVersionAttributeModel ENABLER_VERSION = new LwM2mVersionAttributeModel();
+    public static final LwM2mAttributeModel<LwM2mVersion> ENABLER_VERSION = new LwM2mVersionAttributeModel();
     // pmin
-    public static final LwM2mAttributeModel<Long> MINIMUM_PERIOD = new LongAttributeModel(//
+    // TODO : wait for confirmation before to move to PositiveDouble
+    // See : https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/563
+    public static final LwM2mAttributeModel<Long> MINIMUM_PERIOD = new PositiveLongAttributeModel(//
             "pmin", //
             Attachment.RESOURCE, //
             EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.OBJECT_INSTANCE, AssignationLevel.RESOURCE), //
@@ -146,7 +150,9 @@ public final class LwM2mAttributes {
         };
     };
     // pmax
-    public static final LongAttributeModel MAXIMUM_PERIOD = new LongAttributeModel( //
+    // TODO : wait for confirmation before to move to PositiveDouble
+    // See : https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/563
+    public static final LwM2mAttributeModel<Long> MAXIMUM_PERIOD = new PositiveLongAttributeModel( //
             "pmax", //
             Attachment.RESOURCE, //
             EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.OBJECT_INSTANCE, AssignationLevel.RESOURCE), //
@@ -172,6 +178,8 @@ public final class LwM2mAttributes {
         };
     };
     // gt
+    // LWM2M v1.1.1 doesn't allow negative value but this is a bug in the specification
+    // See : https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/563
     public static final LwM2mAttributeModel<Double> GREATER_THAN = new DoubleAttributeModel(//
             "gt", //
             Attachment.RESOURCE, //
@@ -203,6 +211,8 @@ public final class LwM2mAttributes {
         };
     };
     // lt
+    // LWM2M v1.1.1 doesn't allow negative value but this is a bug in the specification
+    // See : https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/563
     public static final LwM2mAttributeModel<Double> LESSER_THAN = new DoubleAttributeModel( //
             "lt", //
             Attachment.RESOURCE, //
@@ -234,7 +244,7 @@ public final class LwM2mAttributes {
         };
     };
     // st
-    public static final LwM2mAttributeModel<Double> STEP = new DoubleAttributeModel(//
+    public static final LwM2mAttributeModel<Double> STEP = new PositiveDoubleAttributeModel(//
             "st", //
             Attachment.RESOURCE, //
             EnumSet.of(AssignationLevel.RESOURCE), //
@@ -265,7 +275,9 @@ public final class LwM2mAttributes {
         };
     };
     // epmin
-    public static final LwM2mAttributeModel<Long> EVALUATE_MINIMUM_PERIOD = new LongAttributeModel(//
+    // TODO : wait for confirmation before to move to PositiveDouble
+    // See : https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/563
+    public static final LwM2mAttributeModel<Long> EVALUATE_MINIMUM_PERIOD = new PositiveLongAttributeModel(//
             "epmin", //
             Attachment.RESOURCE, //
             EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.OBJECT_INSTANCE, AssignationLevel.RESOURCE), //
@@ -291,7 +303,9 @@ public final class LwM2mAttributes {
         };
     };
     // epmax
-    public static final LwM2mAttributeModel<Long> EVALUATE_MAXIMUM_PERIOD = new LongAttributeModel( //
+    // TODO : wait for confirmation before to move to PositiveDouble
+    // See : https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/563
+    public static final LwM2mAttributeModel<Long> EVALUATE_MAXIMUM_PERIOD = new PositiveLongAttributeModel( //
             "epmax", //
             Attachment.RESOURCE,
             EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.OBJECT_INSTANCE, AssignationLevel.RESOURCE), //

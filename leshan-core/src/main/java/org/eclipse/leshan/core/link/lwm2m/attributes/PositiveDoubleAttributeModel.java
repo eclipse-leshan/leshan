@@ -20,27 +20,32 @@ import java.util.Set;
 import org.eclipse.leshan.core.parser.StringParser;
 
 /**
- * A Generic Attribute of type Double.
+ * A Generic Attribute of type Double (for positive value only).
  */
-public class DoubleAttributeModel extends LwM2mAttributeModel<Double> {
+public class PositiveDoubleAttributeModel extends LwM2mAttributeModel<Double> {
 
-    public DoubleAttributeModel(String coRELinkParam, Attachment attachment, Set<AssignationLevel> assignationLevels,
-            AccessMode accessMode, AttributeClass attributeClass) {
+    public PositiveDoubleAttributeModel(String coRELinkParam, Attachment attachment,
+            Set<AssignationLevel> assignationLevels, AccessMode accessMode, AttributeClass attributeClass) {
         super(coRELinkParam, attachment, assignationLevels, accessMode, attributeClass);
+    }
+
+    @Override
+    public String getInvalidValueCause(Double value) {
+        if (value < 0) {
+            return String.format("'%s' attribute value must not be negative", getName());
+        }
+        return null;
     }
 
     /**
      * <pre>
-     * ["-"] 1*DIGIT ["." 1*DIGIT]
+     * 1*DIGIT ["." 1*DIGIT]
      * </pre>
      */
     @Override
     public <E extends Throwable> LwM2mAttribute<Double> consumeAttributeValue(StringParser<E> parser) throws E {
         // parse Value
         int start = parser.getPosition();
-        if (parser.nextCharIs('-')) {
-            parser.consumeNextChar();
-        }
         parser.consumeDIGIT();
         while (parser.nextCharIsDIGIT()) {
             parser.consumeNextChar();
@@ -59,11 +64,11 @@ public class DoubleAttributeModel extends LwM2mAttributeModel<Double> {
         try {
             return new LwM2mAttribute<Double>(this, Double.parseDouble(strValue));
         } catch (NumberFormatException e) {
-            parser.raiseException(e, "%s value '%s' is not a valid Double in %s", getName(), strValue,
+            parser.raiseException(e, "%s value '%s' is not a valid positive double in %s", getName(), strValue,
                     parser.getStringToParse());
             return null;
         } catch (IllegalArgumentException e) {
-            parser.raiseException(e, "%s value '%s' is not a valid Double in %s", getName(), strValue,
+            parser.raiseException(e, "%s value '%s' is not a valid positive double in %s", getName(), strValue,
                     parser.getStringToParse());
             return null;
         }
