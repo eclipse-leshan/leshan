@@ -491,6 +491,10 @@ public class ClientServlet extends HttpServlet {
             }
             return;
         }
+
+        // nothing match
+        resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
+        return;
     }
 
     @Override
