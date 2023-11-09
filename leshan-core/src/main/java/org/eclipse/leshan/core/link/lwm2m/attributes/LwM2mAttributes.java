@@ -127,7 +127,8 @@ public final class LwM2mAttributes {
     public static final LwM2mAttributeModel<Long> MINIMUM_PERIOD = new PositiveLongAttributeModel(//
             "pmin", //
             Attachment.RESOURCE, //
-            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.OBJECT_INSTANCE, AssignationLevel.RESOURCE), //
+            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.OBJECT_INSTANCE, AssignationLevel.RESOURCE,
+                    AssignationLevel.RESOURCE_INTANCE), //
             AccessMode.RW, //
             AttributeClass.NOTIFICATION) {
         @Override
@@ -155,7 +156,8 @@ public final class LwM2mAttributes {
     public static final LwM2mAttributeModel<Long> MAXIMUM_PERIOD = new PositiveLongAttributeModel( //
             "pmax", //
             Attachment.RESOURCE, //
-            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.OBJECT_INSTANCE, AssignationLevel.RESOURCE), //
+            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.OBJECT_INSTANCE, AssignationLevel.RESOURCE,
+                    AssignationLevel.RESOURCE_INTANCE), //
             AccessMode.RW, //
             AttributeClass.NOTIFICATION) {
         @Override
@@ -183,7 +185,7 @@ public final class LwM2mAttributes {
     public static final LwM2mAttributeModel<Double> GREATER_THAN = new DoubleAttributeModel(//
             "gt", //
             Attachment.RESOURCE, //
-            EnumSet.of(AssignationLevel.RESOURCE), //
+            EnumSet.of(AssignationLevel.RESOURCE, AssignationLevel.RESOURCE_INTANCE), //
             AccessMode.RW, //
             AttributeClass.NOTIFICATION) {
         @Override
@@ -216,7 +218,7 @@ public final class LwM2mAttributes {
     public static final LwM2mAttributeModel<Double> LESSER_THAN = new DoubleAttributeModel( //
             "lt", //
             Attachment.RESOURCE, //
-            EnumSet.of(AssignationLevel.RESOURCE), //
+            EnumSet.of(AssignationLevel.RESOURCE, AssignationLevel.RESOURCE_INTANCE), //
             AccessMode.RW, //
             AttributeClass.NOTIFICATION) {
         @Override
@@ -247,7 +249,7 @@ public final class LwM2mAttributes {
     public static final LwM2mAttributeModel<Double> STEP = new PositiveDoubleAttributeModel(//
             "st", //
             Attachment.RESOURCE, //
-            EnumSet.of(AssignationLevel.RESOURCE), //
+            EnumSet.of(AssignationLevel.RESOURCE, AssignationLevel.RESOURCE_INTANCE), //
             AccessMode.RW, //
             AttributeClass.NOTIFICATION) {
         @Override
@@ -280,7 +282,8 @@ public final class LwM2mAttributes {
     public static final LwM2mAttributeModel<Long> EVALUATE_MINIMUM_PERIOD = new PositiveLongAttributeModel(//
             "epmin", //
             Attachment.RESOURCE, //
-            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.OBJECT_INSTANCE, AssignationLevel.RESOURCE), //
+            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.OBJECT_INSTANCE, AssignationLevel.RESOURCE,
+                    AssignationLevel.RESOURCE_INTANCE), //
             AccessMode.RW, //
             AttributeClass.NOTIFICATION) {
         @Override
@@ -308,7 +311,8 @@ public final class LwM2mAttributes {
     public static final LwM2mAttributeModel<Long> EVALUATE_MAXIMUM_PERIOD = new PositiveLongAttributeModel( //
             "epmax", //
             Attachment.RESOURCE,
-            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.OBJECT_INSTANCE, AssignationLevel.RESOURCE), //
+            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.OBJECT_INSTANCE, AssignationLevel.RESOURCE,
+                    AssignationLevel.RESOURCE_INTANCE), //
             AccessMode.RW, //
             AttributeClass.NOTIFICATION) {
         @Override
