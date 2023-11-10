@@ -204,6 +204,17 @@ class Store {
 
   /**
    * @param {String} endpoint endpoint of the client
+   * @param {Array} objects Array of objects
+   * @param {Boolean} supposed true means the value is supposed (not really send by the client)
+   */
+  newRootValue(endpoint, objects, supposed = false) {
+    objects.forEach((obj) => {
+      this.newObjectValue(endpoint, "/" + obj.id, obj.instances, supposed);
+    });
+  }
+
+  /**
+   * @param {String} endpoint endpoint of the client
    * @param {String} path path to the node (object, instance, resource or resource instance)
    * @param {Array} node the node value
    * @param {Boolean} supposed true means the value is supposed (not really send by the client)
@@ -224,6 +235,8 @@ class Store {
       this.newInstanceValue(endpoint, path, node.resources, supposed);
     } else if (node.kind === "obj") {
       this.newObjectValue(endpoint, path, node.instances, supposed);
+    } else if (node.kind === "root") {
+      this.newRootValue(endpoint, node.objects, supposed);
     } else {
       console.log(node.kind, " not yet supported");
     }
@@ -314,7 +327,7 @@ class Store {
 const _store = new Store();
 
 let StorePlugin = {};
-StorePlugin.install = function(Vue) {
+StorePlugin.install = function (Vue) {
   Object.defineProperties(Vue.prototype, {
     $store: {
       get() {

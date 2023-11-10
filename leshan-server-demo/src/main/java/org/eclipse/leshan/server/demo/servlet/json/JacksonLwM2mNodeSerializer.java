@@ -31,6 +31,7 @@ import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
+import org.eclipse.leshan.core.node.LwM2mRoot;
 import org.eclipse.leshan.core.util.Hex;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -55,39 +56,47 @@ public class JacksonLwM2mNodeSerializer extends StdSerializer<LwM2mNode> {
     public void serialize(LwM2mNode node, JsonGenerator gen, SerializerProvider provider) throws IOException {
         Map<String, Object> element = new HashMap<>();
 
-        // Handle root node
-        if (!(node instanceof LwM2mChildNode))
-            throw new UnsupportedOperationException("can only serialize child node");
-
-        // Handle child node
-        LwM2mChildNode childNode = (LwM2mChildNode) node;
-        element.put("id", childNode.getId());
-        if (childNode instanceof LwM2mObject) {
-            element.put("kind", "obj");
-            element.put("instances", ((LwM2mObject) childNode).getInstances().values());
-        } else if (childNode instanceof LwM2mObjectInstance) {
-            element.put("kind", "instance");
-            element.put("resources", ((LwM2mObjectInstance) childNode).getResources().values());
-        } else if (childNode instanceof LwM2mResource) {
-            LwM2mResource rsc = (LwM2mResource) childNode;
-            if (rsc.isMultiInstances()) {
-                Map<String, Object> values = new HashMap<>();
-                for (Entry<Integer, LwM2mResourceInstance> entry : rsc.getInstances().entrySet()) {
-                    values.put(entry.getKey().toString(), convertValue(rsc.getType(), entry.getValue().getValue()));
-                }
-                element.put("kind", "multiResource");
-                element.put("values", values);
-                element.put("type", rsc.getType());
+        if (!(node instanceof LwM2mChildNode)) {
+            // Handle root node
+            if (node instanceof LwM2mRoot) {
+                element.put("kind", "root");
+                element.put("objects", ((LwM2mRoot) node).getObjects().values());
             } else {
-                element.put("kind", "singleResource");
+                throw new UnsupportedOperationException("Unsupported node : " + node.getClass().getSimpleName());
+            }
+        } else {
+            // Handle child node
+            LwM2mChildNode childNode = (LwM2mChildNode) node;
+            element.put("id", childNode.getId());
+            if (childNode instanceof LwM2mObject) {
+                element.put("kind", "obj");
+                element.put("instances", ((LwM2mObject) childNode).getInstances().values());
+            } else if (childNode instanceof LwM2mObjectInstance) {
+                element.put("kind", "instance");
+                element.put("resources", ((LwM2mObjectInstance) childNode).getResources().values());
+            } else if (childNode instanceof LwM2mResource) {
+                LwM2mResource rsc = (LwM2mResource) childNode;
+                if (rsc.isMultiInstances()) {
+                    Map<String, Object> values = new HashMap<>();
+                    for (Entry<Integer, LwM2mResourceInstance> entry : rsc.getInstances().entrySet()) {
+                        values.put(entry.getKey().toString(), convertValue(rsc.getType(), entry.getValue().getValue()));
+                    }
+                    element.put("kind", "multiResource");
+                    element.put("values", values);
+                    element.put("type", rsc.getType());
+                } else {
+                    element.put("kind", "singleResource");
+                    element.put("type", rsc.getType());
+                    element.put("value", convertValue(rsc.getType(), rsc.getValue()));
+                }
+            } else if (childNode instanceof LwM2mResourceInstance) {
+                element.put("kind", "resourceInstance");
+                LwM2mResourceInstance rsc = (LwM2mResourceInstance) childNode;
                 element.put("type", rsc.getType());
                 element.put("value", convertValue(rsc.getType(), rsc.getValue()));
+            } else {
+                throw new UnsupportedOperationException("Unsupported node : " + node.getClass().getSimpleName());
             }
-        } else if (childNode instanceof LwM2mResourceInstance) {
-            element.put("kind", "resourceInstance");
-            LwM2mResourceInstance rsc = (LwM2mResourceInstance) childNode;
-            element.put("type", rsc.getType());
-            element.put("value", convertValue(rsc.getType(), rsc.getValue()));
         }
         gen.writeObject(element);
     }

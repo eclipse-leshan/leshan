@@ -184,12 +184,22 @@ export default {
     lwm2mNodes() {
       if (!this.objectdefs || this.objectdefs.length == 0) return {};
 
-      let nodesArray = this.compositeObject.paths.map((p) => {
+      let paths = this.compositeObject.paths;
+      // Handle specical case of root path
+      if (paths.length == 1 && new LwM2mPath(paths[0]).type == "root") {
+        paths = [];
+        Object.keys(this.allInstances).forEach(function (key) {
+          paths.push("/" + key);
+        });
+      }
+
+      let nodesArray = paths.map((p) => {
         let path = new LwM2mPath(p);
         // handle invalid path
         if (path.type == "invalid") {
           return { path: path };
         }
+
         // get object definition
         let objectdef = null;
         if (path.objectid != null) {
@@ -231,7 +241,6 @@ export default {
             };
           }
           case "objectinstance": {
-            // check if instance is available
             return {
               path: path,
               objectdef: objectdef,
