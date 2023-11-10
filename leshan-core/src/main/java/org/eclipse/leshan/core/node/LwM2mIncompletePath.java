@@ -82,7 +82,7 @@ public class LwM2mIncompletePath extends LwM2mPath {
     @Override
     public LwM2mPath toObjectInstancePath() {
         throw new IllegalStateException(
-                String.format("an resource path can not be created from incomplete path %s", this));
+                String.format("a instance path can not be created from incomplete path %s", this));
     }
 
     @Override
