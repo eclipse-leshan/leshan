@@ -74,14 +74,27 @@ _axios.interceptors.response.use(
     let message;
     if (error.response) {
       console.log(
-        `${error.message}[${error.response.status}]:${error.response.data}`
+        `${error.message}[${error.response.status}], full error :`,
+        error
       );
-      message = error.response.data ? error.response.data : error.message;
+      if (typeof error.response.data == "string") {
+        message = error.response.data;
+      } else if (
+        typeof error.response.data == "object" &&
+        typeof error.response.data.message == "string"
+      ) {
+        message = error.response.data.message;
+      } else {
+        message = error.message;
+      }
     } else if (error.request) {
-      console.log(`${error.message}:${error.request.data}`);
-      message = error.request.data ? error.request.data : error.message;
+      console.log(`${error.message}:, full error :`, error);
+      message =
+        typeof error.request.data == "string"
+          ? error.request.data
+          : error.message;
     } else {
-      console.log(error.message);
+      console.log(`${error.message}:, full error :`, error);
       message = error.message;
     }
     Vue.prototype.$dialog.notify.error(escapeHTML(message), {
