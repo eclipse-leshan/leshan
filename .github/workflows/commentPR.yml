@@ -20,7 +20,8 @@ jobs:
   add_comment:
     runs-on: ubuntu-latest
     # we don't want to run workflow if "Check Pull Request" is skipped or cancelled
-    if: ${{ github.event.workflow_run.event == 'pull_request' && (github.event.workflow_run.conclusion == 'success' || github.event.workflow_run.conclusion == 'failure')}} 
+    # and we don't run this workflow in forks 
+    if: ${{ github.repository == 'eclipse-leshan/leshan' && github.event.workflow_run.event == 'pull_request' && (github.event.workflow_run.conclusion == 'success' || github.event.workflow_run.conclusion == 'failure')}} 
     strategy:
       # Maybe we could create this matrix dynamically  : 
       # See : https://tomasvotruba.com/blog/2020/11/16/how-to-make-dynamic-matrix-in-github-actions/
