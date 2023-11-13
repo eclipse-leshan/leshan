@@ -1,0 +1,23 @@
+# This jobs aims to add transitive dependency to dependabot analysis
+# See for more details : https://gitlab.eclipse.org/eclipsefdn/helpdesk/-/issues/3640
+name: Dependency Update
+
+on:
+  push:
+    branches:
+      - 'master'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  dependency:
+    # don't run this workflow in forks
+    if: github.repository == 'eclipse-leshan/leshan'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      - name: Submit Dependency Snapshot
+        uses: advanced-security/maven-dependency-submission-action@fcd7eab6b6d22946badc98d1e62665cdee93e0ae # v3.0.3
