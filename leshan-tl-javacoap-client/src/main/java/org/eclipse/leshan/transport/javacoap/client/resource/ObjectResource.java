@@ -100,10 +100,12 @@ public class ObjectResource extends LwM2mClientCoapResource {
                 if (response.getCode().isError()) {
                     return errorMessage(response.getCode(), response.getErrorMessage());
                 } else {
-                    return completedFuture(CoapResponse.of( //
-                            ResponseCodeUtil.toCoapResponseCode(response.getCode()), //
-                            Opaque.of(toolbox.getLinkSerializer().serializeCoreLinkFormat(response.getObjectLinks())), //
-                            MediaTypes.CT_APPLICATION_LINK__FORMAT));
+                    return completedFuture(CoapResponse //
+                            .coapResponse(ResponseCodeUtil.toCoapResponseCode(response.getCode())) //
+                            .payload(Opaque
+                                    .of(toolbox.getLinkSerializer().serializeCoreLinkFormat(response.getObjectLinks())))
+                            .contentFormat(MediaTypes.CT_APPLICATION_LINK__FORMAT) //
+                            .build());
                 }
             } else {
                 // Manage Discover Request
@@ -112,10 +114,12 @@ public class ObjectResource extends LwM2mClientCoapResource {
                 if (response.getCode().isError()) {
                     return errorMessage(response.getCode(), response.getErrorMessage());
                 } else {
-                    return completedFuture(CoapResponse.of( //
-                            ResponseCodeUtil.toCoapResponseCode(response.getCode()), //
-                            Opaque.of(toolbox.getLinkSerializer().serializeCoreLinkFormat(response.getObjectLinks())), //
-                            MediaTypes.CT_APPLICATION_LINK__FORMAT));
+                    return completedFuture(CoapResponse //
+                            .coapResponse(ResponseCodeUtil.toCoapResponseCode(response.getCode())) //
+                            .payload(Opaque
+                                    .of(toolbox.getLinkSerializer().serializeCoreLinkFormat(response.getObjectLinks()))) //
+                            .contentFormat(MediaTypes.CT_APPLICATION_LINK__FORMAT) //
+                            .build());
                 }
             }
         } else {

@@ -38,7 +38,7 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
     private final List<Entry<RequestMatcher, Service<CoapRequest, CoapResponse>>> prefixedHandlers;
 
     public final static Service<CoapRequest, CoapResponse> NOT_FOUND_SERVICE = request -> completedFuture(
-            CoapResponse.notFound());
+            CoapResponse.notFound().build());
 
     public static RouteBuilder builder() {
         return new RouteBuilder();

@@ -105,7 +105,12 @@ public class JavaCoapClientEndpointsProvider implements LwM2mClientEndpointsProv
                     // optimization for LWM2M Composite Observe : to not decode LWM2M paths each time
                     TransportContext extendedContext = observeRequest.getTransContext() //
                             .with(LwM2mKeys.LESHAN_OBSERVED_PATHS, paths);
-                    super.add(observeRequest.context(extendedContext));
+
+                    CoapRequest modifiedObservedRequest = new CoapRequest(observeRequest.getMethod(),
+                            observeRequest.getToken(), observeRequest.options(), observeRequest.getPayload(),
+                            observeRequest.getPeerAddress(), extendedContext);
+
+                    super.add(modifiedObservedRequest);
                 } else {
                     super.add(observeRequest);
                 }
@@ -123,7 +128,7 @@ public class JavaCoapClientEndpointsProvider implements LwM2mClientEndpointsProv
         // Create notification handler
         NotificationHandler notificationHandler = new NotificationHandler(
                 // use router but change Observe request in Read request
-                req -> router.apply(req.options(coapOptionsBuilder -> coapOptionsBuilder.observe(null))), //
+                req -> router.apply(req.withOptions(coapOptionsBuilder -> coapOptionsBuilder.observe(null))), //
                 observersManager);
         objectTree.addListener(notificationHandler);
     }

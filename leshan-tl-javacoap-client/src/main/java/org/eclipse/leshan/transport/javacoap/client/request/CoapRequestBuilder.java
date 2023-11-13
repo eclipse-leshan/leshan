@@ -46,8 +46,7 @@ import com.mbed.coap.packet.Opaque;
  */
 public class CoapRequestBuilder implements UplinkRequestVisitor {
 
-    // protected Request coapRequest;
-    protected CoapRequest coapRequest;
+    protected CoapRequest.Builder coapRequestBuilder;
     protected final IpPeer server;
     protected final LwM2mEncoder encoder;
     protected final LwM2mModel model;
@@ -63,7 +62,7 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
 
     @Override
     public void visit(BootstrapRequest request) {
-        coapRequest = CoapRequest.post("/bs").address(getAddress());
+        coapRequestBuilder = CoapRequest.post("/bs");
 
         // Create map of attributes
         HashMap<String, String> attributes = new HashMap<>();
@@ -77,13 +76,12 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
         String uriQuery = attributes.entrySet().stream() //
                 .map(e -> e.getKey() + "=" + e.getValue()) //
                 .collect(Collectors.joining("&"));
-        coapRequest.options().setUriQuery(uriQuery.toString());
-
+        coapRequestBuilder.query(uriQuery.toString());
     }
 
     @Override
     public void visit(RegisterRequest request) {
-        coapRequest = CoapRequest.post("/rd").address(getAddress());
+        coapRequestBuilder = CoapRequest.post("/rd");
 
         // Create map of attributes
         HashMap<String, String> attributes = new HashMap<>();
@@ -115,19 +113,19 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
         String uriQuery = attributes.entrySet().stream() //
                 .map(e -> e.getValue() == null ? e.getKey() : e.getKey() + "=" + e.getValue()) //
                 .collect(Collectors.joining("&"));
-        coapRequest.options().setUriQuery(uriQuery.toString());
+        coapRequestBuilder.query(uriQuery.toString());
 
         // Add Object links as Payload
         Link[] objectLinks = request.getObjectLinks();
         if (objectLinks != null) {
             String payload = linkSerializer.serializeCoreLinkFormat(objectLinks);
-            coapRequest = coapRequest.payload(Opaque.of(payload), (short) ContentFormat.LINK.getCode());
+            coapRequestBuilder.payload(Opaque.of(payload), (short) ContentFormat.LINK.getCode());
         }
     }
 
     @Override
     public void visit(UpdateRequest request) {
-        coapRequest = CoapRequest.post(request.getRegistrationId()).address(getAddress());
+        coapRequestBuilder = CoapRequest.post(request.getRegistrationId());
 
         // Create map of attributes
         HashMap<String, String> attributes = new HashMap<>();
@@ -148,32 +146,34 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
         String uriQuery = attributes.entrySet().stream() //
                 .map(e -> e.getValue() == null ? e.getKey() : e.getKey() + "=" + e.getValue()) //
                 .collect(Collectors.joining("&"));
-        coapRequest.options().setUriQuery(uriQuery.toString());
+        coapRequestBuilder.query(uriQuery.toString());
 
         // Add Object links as Payload
         Link[] linkObjects = request.getObjectLinks();
         if (linkObjects != null) {
-            coapRequest = coapRequest.payload(Opaque.of(linkSerializer.serializeCoreLinkFormat(linkObjects)),
+            coapRequestBuilder.payload(Opaque.of(linkSerializer.serializeCoreLinkFormat(linkObjects)),
                     (short) ContentFormat.LINK.getCode());
         }
+
     }
 
     @Override
     public void visit(DeregisterRequest request) {
-        coapRequest = CoapRequest.delete(request.getRegistrationId()).address(getAddress());
+        coapRequestBuilder = CoapRequest.delete(request.getRegistrationId());
     }
 
     @Override
     public void visit(SendRequest request) {
-        coapRequest = CoapRequest.post("/dp").address(getAddress());
-
         ContentFormat format = request.getFormat();
         Opaque payload = Opaque.of(encoder.encodeTimestampedNodes(request.getTimestampedNodes(), format, model));
-        coapRequest = coapRequest.payload(payload, (short) format.getCode());
+
+        coapRequestBuilder = CoapRequest.post("/dp") //
+                .payload(payload) //
+                .contentFormat((short) format.getCode());
     }
 
     public CoapRequest getRequest() {
-        return coapRequest;
+        return coapRequestBuilder.address(getAddress()).build();
     }
 
     protected InetSocketAddress getAddress() {

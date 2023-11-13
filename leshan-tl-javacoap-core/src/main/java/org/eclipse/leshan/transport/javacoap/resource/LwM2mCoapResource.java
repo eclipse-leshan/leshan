@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
+import com.mbed.coap.packet.CoapResponse.Builder;
 import com.mbed.coap.packet.Code;
 import com.mbed.coap.packet.MediaTypes;
 import com.mbed.coap.packet.Opaque;
@@ -164,29 +165,31 @@ public abstract class LwM2mCoapResource implements Service<CoapRequest, CoapResp
             }
         }
 
-        CoapResponse coapResponse = CoapResponse.of(Code.C400_BAD_REQUEST);
+        Builder coapResponseBuilder = CoapResponse.coapResponse(Code.C400_BAD_REQUEST);
         if (message != null) {
-            coapResponse.payload(Opaque.of(message));
-            coapResponse.options().setContentFormat(MediaTypes.CT_TEXT_PLAIN);
+            coapResponseBuilder.payload(Opaque.of(message));
+            coapResponseBuilder.contentFormat(MediaTypes.CT_TEXT_PLAIN);
         }
-        return completedFuture(coapResponse);
+        return completedFuture(coapResponseBuilder.build());
     }
 
     protected CompletableFuture<CoapResponse> errorMessage(ResponseCode errorCode, String message) {
-        CoapResponse coapResponse = CoapResponse.of(ResponseCodeUtil.toCoapResponseCode(errorCode));
+        Builder coapResponseBuilder = CoapResponse.coapResponse(ResponseCodeUtil.toCoapResponseCode(errorCode));
         if (message != null) {
-            coapResponse = coapResponse.payload(Opaque.of(message));
-            coapResponse.options().setContentFormat(MediaTypes.CT_TEXT_PLAIN);
+            coapResponseBuilder //
+                    .payload(Opaque.of(message)) //
+                    .contentFormat(MediaTypes.CT_TEXT_PLAIN);
         }
-        return completedFuture(coapResponse);
+        return completedFuture(coapResponseBuilder.build());
     }
 
     public CompletableFuture<CoapResponse> responseWithPayload(ResponseCode code, ContentFormat format,
             byte[] payload) {
-        return completedFuture(CoapResponse.of( //
-                ResponseCodeUtil.toCoapResponseCode(code), //
-                Opaque.of(payload), //
-                (short) format.getCode()));
+        return completedFuture(CoapResponse //
+                .coapResponse(ResponseCodeUtil.toCoapResponseCode(code)) //
+                .payload(Opaque.of(payload)) //
+                .contentFormat((short) format.getCode()) //
+                .build());
     }
 
     public CompletableFuture<CoapResponse> emptyResponse(ResponseCode code) {

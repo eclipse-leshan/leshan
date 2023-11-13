@@ -249,7 +249,7 @@ Contributors:
       <dependency>
         <groupId>io.github.open-coap</groupId>
         <artifactId>coap-core</artifactId>
-        <version>6.18.0</version>
+        <version>6.19.0</version>
       </dependency>
 
       <!-- Demos, examples and tests dependencies -->

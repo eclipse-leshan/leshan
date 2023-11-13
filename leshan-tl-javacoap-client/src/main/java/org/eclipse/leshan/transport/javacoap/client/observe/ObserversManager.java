@@ -74,13 +74,13 @@ public class ObserversManager implements Filter.SimpleFilter<CoapRequest, CoapRe
         if (resp.getCode() == Code.C205_CONTENT && Objects.equals(0, req.options().getObserve())) {
             observersStore.add(req);
             if (resp.options().getObserve() == null) {
-                return resp.options(b -> b.observe(observeSeq.get()));
+                return resp.withOptions(b -> b.observe(observeSeq.get()));
             }
             return resp;
         } else if (Objects.equals(1, req.options().getObserve())) {
             observersStore.remove(req);
         }
-        return resp.options(it -> it.observe(null));
+        return resp.withOptions(it -> it.observe(null));
     }
 
     public void sendObservation(Predicate<CoapRequest> observersFilter,
