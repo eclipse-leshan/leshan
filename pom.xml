@@ -126,13 +126,13 @@ Contributors:
     <!-- we use properties for version when there are used more than once -->
     <!-- dependencies version -->
     <californium.version>3.9.1</californium.version>
-    <logback.version>1.3.4</logback.version>
+    <logback.version>1.3.11</logback.version>
     <slf4j.api.version>2.0.9</slf4j.api.version>
     <!-- stuck to 9.4.x for java8 compliance -->
-    <jetty.version>9.4.51.v20230217</jetty.version>
-    <jackson.version>2.15.2</jackson.version>
-    <picocli.version>4.7.4</picocli.version>
-    <junit.version>5.9.3</junit.version>
+    <jetty.version>9.4.53.v20231009</jetty.version>
+    <jackson.version>2.15.3</jackson.version>
+    <picocli.version>4.7.5</picocli.version>
+    <junit.version>5.10.1</junit.version>
     <!-- 
       For Mockito we are stucked to 4.x version because we need Java8 support
       See https://github.com/mockito/mockito/releases/tag/v5.0.0
@@ -227,7 +227,7 @@ Contributors:
       <dependency>
         <groupId>redis.clients</groupId>
         <artifactId>jedis</artifactId>
-        <version>4.4.3</version>
+        <version>4.4.6</version>
       </dependency>
       <!-- californium -->
       <dependency>
@@ -274,7 +274,7 @@ Contributors:
       <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
-        <version>2.13.0</version>
+        <version>2.15.0</version>
       </dependency>
       <dependency>
         <groupId>info.picocli</groupId>
@@ -340,7 +340,7 @@ Contributors:
       <dependency>
         <groupId>nl.jqno.equalsverifier</groupId>
         <artifactId>equalsverifier</artifactId>
-        <version>3.15.1</version>
+        <version>3.15.3</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
