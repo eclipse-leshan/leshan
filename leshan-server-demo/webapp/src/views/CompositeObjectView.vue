@@ -23,7 +23,7 @@
           :nodes="lwm2mNodes"
         />
         <v-icon
-          class="pl-3"
+          class="mr-3"
           small
           v-show="state.compositeObserved[compositeObservationKey]"
           :title="compositeObservationKey + ' observed'"
