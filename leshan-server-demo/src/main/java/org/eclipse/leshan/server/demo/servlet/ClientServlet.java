@@ -254,27 +254,27 @@ public class ClientServlet extends HttpServlet {
                 || e instanceof ClientSleepingException) {
             LOG.warn("Invalid request", e);
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            resp.getWriter().append("Invalid request:").append(e.getMessage()).flush();
+            resp.getWriter().append("Invalid request: ").append(e.getMessage()).flush();
         } else if (e instanceof RequestRejectedException) {
             LOG.warn("Request rejected", e);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().append("Request rejected:").append(e.getMessage()).flush();
+            resp.getWriter().append("Request rejected: ").append(e.getMessage()).flush();
         } else if (e instanceof RequestCanceledException) {
             LOG.warn("Request cancelled", e);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().append("Request cancelled:").append(e.getMessage()).flush();
+            resp.getWriter().append("Request cancelled: ").append(e.getMessage()).flush();
         } else if (e instanceof InvalidResponseException) {
             LOG.warn("Invalid response", e);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().append("Invalid Response:").append(e.getMessage()).flush();
+            resp.getWriter().append("Invalid Response: ").append(e.getMessage()).flush();
         } else if (e instanceof InterruptedException) {
             LOG.warn("Thread Interrupted", e);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().append("Thread Interrupted:").append(e.getMessage()).flush();
+            resp.getWriter().append("Thread Interrupted: ").append(e.getMessage()).flush();
         } else {
             LOG.warn("Unexpected exception", e);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().append("Unexpected exception:").append(e.getMessage()).flush();
+            resp.getWriter().append("Unexpected exception: ").append(e.getMessage()).flush();
         }
     }
 
