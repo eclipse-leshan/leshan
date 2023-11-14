@@ -75,7 +75,7 @@ public abstract class AbstractSimpleDownlinkRequest<T extends LwM2mResponse> ext
         try {
             return new LwM2mPath(objectId);
         } catch (InvalidLwM2mPathException e) {
-            throw new InvalidRequestException();
+            throw new InvalidRequestException(e);
         }
     }
 
@@ -83,7 +83,7 @@ public abstract class AbstractSimpleDownlinkRequest<T extends LwM2mResponse> ext
         try {
             return new LwM2mPath(objectId, objectInstanceId);
         } catch (InvalidLwM2mPathException e) {
-            throw new InvalidRequestException();
+            throw new InvalidRequestException(e);
         }
     }
 
@@ -91,7 +91,7 @@ public abstract class AbstractSimpleDownlinkRequest<T extends LwM2mResponse> ext
         try {
             return new LwM2mPath(objectId, objectInstanceId, resourceId);
         } catch (InvalidLwM2mPathException e) {
-            throw new InvalidRequestException();
+            throw new InvalidRequestException(e);
         }
     }
 
@@ -100,7 +100,7 @@ public abstract class AbstractSimpleDownlinkRequest<T extends LwM2mResponse> ext
         try {
             return new LwM2mPath(objectId, objectInstanceId, resourceId, resourceInstancId);
         } catch (InvalidLwM2mPathException e) {
-            throw new InvalidRequestException();
+            throw new InvalidRequestException(e);
         }
     }
 
@@ -108,7 +108,7 @@ public abstract class AbstractSimpleDownlinkRequest<T extends LwM2mResponse> ext
         try {
             return new LwM2mPath(path);
         } catch (InvalidLwM2mPathException e) {
-            throw new InvalidRequestException();
+            throw new InvalidRequestException(e);
         }
     }
 

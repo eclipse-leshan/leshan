@@ -115,7 +115,7 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
         }
         String[] p = path.split("/");
         if (0 > p.length || p.length > 4) {
-            throw new InvalidLwM2mPathException("Invalid length for path: ", path);
+            throw new InvalidLwM2mPathException("Invalid length for path %s", path);
         }
         try {
             this.objectId = (p.length >= 1 && !p[0].isEmpty()) ? Integer.valueOf(p[0]) : null;
@@ -124,7 +124,7 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
             this.resourceInstanceId = (p.length == 4) ? Integer.valueOf(p[3]) : null;
             validate();
         } catch (NumberFormatException e) {
-            throw new InvalidLwM2mPathException(e, "Invalid elements in path: ", path);
+            throw new InvalidLwM2mPathException(e, "Invalid elements in path %s", path);
         }
     }
 
