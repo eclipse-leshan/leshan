@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -44,6 +46,11 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.codec.CodecException;
+import org.eclipse.leshan.core.observation.CompositeObservation;
+import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.SingleObservation;
+import org.eclipse.leshan.core.request.CancelCompositeObservationRequest;
+import org.eclipse.leshan.core.request.CancelObservationRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
@@ -62,6 +69,8 @@ import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
+import org.eclipse.leshan.core.response.CancelCompositeObservationResponse;
+import org.eclipse.leshan.core.response.CancelObservationResponse;
 import org.eclipse.leshan.core.response.CreateResponse;
 import org.eclipse.leshan.core.response.DeleteResponse;
 import org.eclipse.leshan.core.response.DiscoverResponse;
@@ -98,6 +107,8 @@ public class ClientServlet extends HttpServlet {
     private static final String FORMAT_PARAM = "format";
     private static final String TIMEOUT_PARAM = "timeout";
     private static final String REPLACE_PARAM = "replace";
+
+    private static final String ACTIVE_CANCEL = "active";
 
     // for composite operation
     private static final String PATH_PARAM = "paths";
@@ -512,13 +523,35 @@ public class ClientServlet extends HttpServlet {
                     String pathParam = req.getParameter(PATH_PARAM);
                     String[] paths = pathParam.split(",");
 
-                    server.getObservationService().cancelCompositeObservations(registration, paths);
-                    resp.setStatus(HttpServletResponse.SC_OK);
+                    String active = req.getParameter(ACTIVE_CANCEL);
+                    if (active != null) {
+                        Set<Observation> observations = server.getObservationService().getObservations(registration);
+                        Optional<Observation> observation = observations.stream()
+                                .filter(obs -> obs instanceof CompositeObservation && ((CompositeObservation) obs)
+                                        .getPaths().equals(LwM2mPath.getLwM2mPathList(Arrays.asList(paths))))
+                                .findFirst();
+                        if (observation.isPresent()) {
+                            CancelCompositeObservationResponse response = server.send(registration,
+                                    new CancelCompositeObservationRequest((CompositeObservation) observation.get()),
+                                    extractTimeout(req));
+                            processDeviceResponse(req, resp, response);
+                            if (response.isSuccess()) {
+                                server.getObservationService().cancelCompositeObservations(registration, paths);
+                            }
+                        } else {
+                            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                            resp.getWriter().format("no composite observation for paths %s for  client '%s'",
+                                    Arrays.toString(paths), clientEndpoint).flush();
+                        }
+                    } else {
+                        server.getObservationService().cancelCompositeObservations(registration, paths);
+                        resp.setStatus(HttpServletResponse.SC_OK);
+                    }
                 } else {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
                 }
-            } catch (RuntimeException e) {
+            } catch (RuntimeException | InterruptedException e) {
                 handleException(e, resp);
             }
             return;
@@ -530,13 +563,36 @@ public class ClientServlet extends HttpServlet {
                 String target = StringUtils.substringsBetween(req.getPathInfo(), clientEndpoint, "/observe")[0];
                 Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
                 if (registration != null) {
-                    server.getObservationService().cancelObservations(registration, target);
-                    resp.setStatus(HttpServletResponse.SC_OK);
+                    String active = req.getParameter(ACTIVE_CANCEL);
+                    if (active != null) {
+                        Set<Observation> observations = server.getObservationService().getObservations(registration);
+                        Optional<Observation> observation = observations.stream()
+                                .filter(obs -> obs instanceof SingleObservation
+                                        && ((SingleObservation) obs).getPath().equals(new LwM2mPath(target)))
+                                .findFirst();
+                        if (observation.isPresent()) {
+                            CancelObservationResponse response = server.send(registration,
+                                    new CancelObservationRequest((SingleObservation) observation.get()),
+                                    extractTimeout(req));
+                            processDeviceResponse(req, resp, response);
+                            if (response.isSuccess()) {
+                                server.getObservationService().cancelObservations(registration, target);
+                            }
+                        } else {
+                            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                            resp.getWriter()
+                                    .format("no observation for path %s for  client '%s'", target, clientEndpoint)
+                                    .flush();
+                        }
+                    } else {
+                        server.getObservationService().cancelObservations(registration, target);
+                        resp.setStatus(HttpServletResponse.SC_OK);
+                    }
                 } else {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
                 }
-            } catch (RuntimeException e) {
+            } catch (RuntimeException | InterruptedException e) {
                 handleException(e, resp);
             }
             return;
