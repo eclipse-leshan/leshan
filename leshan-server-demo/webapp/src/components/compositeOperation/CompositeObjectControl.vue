@@ -180,7 +180,6 @@ export default {
         );
         return restNodes;
       }, {});
-      console.log(data);
       // send Request
       this.axios
         .put(`${this.requestPath()}${this.requestOption()}`, data)
