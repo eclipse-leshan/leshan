@@ -45,6 +45,7 @@ import org.eclipse.leshan.core.request.WriteCompositeRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
+import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadCompositeResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteCompositeResponse;
@@ -243,37 +244,63 @@ public class RootEnabler implements LwM2mRootEnabler {
     @Override
     public synchronized ObserveCompositeResponse observe(LwM2mServer server, ObserveCompositeRequest request) {
         List<LwM2mPath> paths = request.getPaths();
+        if (paths.size() == 1 && paths.get(0).isRoot()) {
+            Map<Integer, LwM2mObjectEnabler> objectEnablers = tree.getObjectEnablers();
+            List<LwM2mObject> lwM2mObjects = new ArrayList<>();
 
-        // Read Nodes
-        Map<LwM2mPath, LwM2mNode> content = new HashMap<>();
-        boolean isEmpty = true; // true if don't succeed to read any of requested path
-        for (LwM2mPath path : paths) {
-            // Get corresponding object enabler
-            Integer objectId = path.getObjectId();
-            LwM2mObjectEnabler objectEnabler = tree.getObjectEnabler(objectId);
-
-            LwM2mNode node = null;
-            if (objectEnabler != null) {
-                ReadResponse response = objectEnabler.observe(server,
-                        new ObserveRequest(request.getResponseContentFormat(), path, request.getCoapRequest()));
-                if (response.isSuccess()) {
-                    node = response.getContent();
-                    isEmpty = false;
+            for (Map.Entry<Integer, LwM2mObjectEnabler> entry : objectEnablers.entrySet()) {
+                LwM2mObjectEnabler objectEnabler = entry.getValue();
+                ObserveRequest observeRequest = new ObserveRequest(request.getRequestContentFormat(),
+                        new LwM2mPath(entry.getKey()), request.getCoapRequest());
+                ObserveResponse observeResponse = objectEnabler.observe(server, observeRequest);
+                if (observeResponse.isSuccess()) {
+                    lwM2mObjects.add((LwM2mObject) observeResponse.getContent());
                 } else {
-                    LOG.debug("Server {} try to read node {} in a Observe-Composite Request {} but it failed for {} "
-                            + "{}", server, path, paths, response.getCode(), response.getErrorMessage());
+                    LOG.debug(
+                            "Server {} try to observe node {} in a Observe-Composite Request {} but it failed for {} {}",
+                            server, paths.get(0), paths, observeResponse.getCode(), observeResponse.getErrorMessage());
                 }
-            } else {
-                LOG.debug("Server {} try to read node {} in a Observe-Composite Request {} but it failed because "
-                        + "Object {} is not supported", server, path, paths, objectId);
             }
 
-            content.put(path, node);
-        }
-        if (isEmpty) {
-            return ObserveCompositeResponse.notFound();
+            // Create response
+            LwM2mRoot lwM2mRoot = new LwM2mRoot(lwM2mObjects);
+            return ObserveCompositeResponse.success(Collections.singletonMap(paths.get(0), lwM2mRoot));
+
         } else {
-            return ObserveCompositeResponse.success(content);
+
+            // Read Nodes
+            Map<LwM2mPath, LwM2mNode> content = new HashMap<>();
+            boolean isEmpty = true; // true if don't succeed to read any of requested path
+            for (LwM2mPath path : paths) {
+                // Get corresponding object enabler
+                Integer objectId = path.getObjectId();
+                LwM2mObjectEnabler objectEnabler = tree.getObjectEnabler(objectId);
+
+                LwM2mNode node = null;
+                if (objectEnabler != null) {
+                    ReadResponse response = objectEnabler.observe(server,
+                            new ObserveRequest(request.getResponseContentFormat(), path, request.getCoapRequest()));
+                    if (response.isSuccess()) {
+                        node = response.getContent();
+                        isEmpty = false;
+                    } else {
+                        LOG.debug(
+                                "Server {} try to read node {} in a Observe-Composite Request {} but it failed for {} "
+                                        + "{}",
+                                server, path, paths, response.getCode(), response.getErrorMessage());
+                    }
+                } else {
+                    LOG.debug("Server {} try to read node {} in a Observe-Composite Request {} but it failed because "
+                            + "Object {} is not supported", server, path, paths, objectId);
+                }
+
+                content.put(path, node);
+            }
+            if (isEmpty) {
+                return ObserveCompositeResponse.notFound();
+            } else {
+                return ObserveCompositeResponse.success(content);
+            }
         }
     }
 

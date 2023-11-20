@@ -22,6 +22,7 @@ import static org.eclipse.leshan.core.ResponseCode.CONTENT;
 import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
 import static org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder.givenServerUsing;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.lang.annotation.Retention;
@@ -30,11 +31,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.LwM2mRoot;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
@@ -251,6 +254,73 @@ public class ObserveCompositeTest {
         assertThat(response.getContent()).containsOnly(
                 entry(new LwM2mPath("/3/0/15"), LwM2mSingleResource.newStringResource(15, "Europe/Paris")),
                 entry(new LwM2mPath("/3/0/14"), LwM2mSingleResource.newStringResource(14, "+11")));
+    }
+
+    @TestAllTransportLayer
+    public void can_composite_observe_on_root(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InterruptedException {
+        // Send ObserveCompositeRequest
+        ObserveCompositeResponse observeResponse = server.send(currentRegistration,
+                new ObserveCompositeRequest(ContentFormat.SENML_JSON, ContentFormat.SENML_JSON, "/"));
+        CompositeObservation observation = observeResponse.getObservation();
+
+        // Assert that ObserveCompositeResponse is valid
+        assertThat(observeResponse).hasCode(CONTENT).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
+        assertThat(observation).isNotNull();
+
+        // Assert that there is one valid observation
+        server.waitForNewObservation(observation);
+        assertThat(observation.getRegistrationId()).isEqualTo(currentRegistration.getId());
+        Set<Observation> observations = server.getObservationService().getObservations(currentRegistration);
+        assertThat(observations).containsExactly(observation);
+        assertObserveResponseContainsExpectedValue(observeResponse, currentRegistration);
+
+        // Write something to trigger new notification
+        LwM2mResponse writeResponse = server.send(currentRegistration, new WriteRequest(3, 0, 15, "Europe/Paris"));
+        assertThat(writeResponse).hasCode(CHANGED);
+
+        // Assert that there is one valid observation
+        observeResponse = server.waitForNotificationOf(observation);
+        assertObserveResponseContainsExpectedValue(observeResponse, currentRegistration);
+    }
+
+    private void assertObserveResponseContainsExpectedValue(ObserveCompositeResponse observeResponse,
+            Registration currentRegistration) {
+        assertThat(observeResponse.getContent("/")).isInstanceOfSatisfying(LwM2mRoot.class, (root) -> {
+            Set<LwM2mPath> availableInstances = currentRegistration.getAvailableInstances();
+
+            // check to get expected object ids
+            Set<Integer> expectedObjectIds = availableInstances.stream() //
+                    .map(path -> path.getObjectId()) //
+                    .collect(Collectors.toSet());
+            assertThat(root.getObjects()).containsOnlyKeys(expectedObjectIds);
+
+            // check to get expected instance ids
+            for (Integer objectId : expectedObjectIds) {
+                Set<Integer> expectedInstanceIds = availableInstances.stream() //
+                        .filter(path -> path.getObjectId() == objectId) //
+                        .map(path -> path.getObjectInstanceId()) //
+                        .collect(Collectors.toSet());
+
+                assertThat(root.getObjects().get(objectId).getInstances()).containsOnlyKeys(expectedInstanceIds);
+            }
+
+            // check right value
+            for (LwM2mPath path : availableInstances) {
+                // get expected value
+                try {
+                    ReadResponse response = server.send(currentRegistration,
+                            new ReadRequest(ContentFormat.SENML_JSON, path.toString()));
+                    assertThat(response).hasCode(CONTENT);
+
+                    // compare it to observe composite result
+                    assertThat(root.getObjects().get(path.getObjectId()).getInstances().get(path.getObjectInstanceId()))
+                            .isEqualTo(response.getContent());
+                } catch (InterruptedException e) {
+                    fail(e);
+                }
+            }
+        });
     }
 
     @TestAllTransportLayer
