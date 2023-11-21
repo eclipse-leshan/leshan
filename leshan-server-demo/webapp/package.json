@@ -2,18 +2,18 @@
   "name": "leshan-server-demo",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "serve": "vue-cli-service serve --port 8088",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint",
-    "report": "vue-cli-service build --report"
+    "serve": "vite",
+    "build": "vite build --emptyOutDir",
+    "preview": "vite preview",
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src"
   },
   "dependencies": {
     "@fontsource/roboto": "^4.5.0",
     "axios": "^1.6.0",
-    "core-js": "^3.18.0",
     "file-saver": "^2.0.5",
-    "vue": "^2.6.0",
+    "vue": "^2.7.0",
     "vue-moment": "^4.1.0",
     "vue-preferences": "^3.0.0",
     "vue-router": "^3.2.0",
@@ -22,33 +22,26 @@
     "vuetify-dialog": "^2.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.16",
-    "@babel/eslint-parser": "^7.12.16",
+    "@rollup/plugin-node-resolve": "^15.2.3",
     "@mdi/js": "^6.6.96",
-    "@vue/cli-plugin-babel": "~5.0.0",
-    "@vue/cli-plugin-eslint": "~5.0.0",
-    "@vue/cli-service": "~5.0.0",
-    "eslint": "^7.32.0",
-    "eslint-plugin-vue": "^8.0.3",
+    "@vitejs/plugin-vue2": "^2.2.0",
+    "browserslist-to-esbuild": "^1.2.0",
+    "eslint": "^8.0.0",
+    "eslint-plugin-vue": "^8.0.0",
     "sass": "~1.32.0",
-    "sass-loader": "^10.0.0",
-    "vue-cli-plugin-vuetify": "~2.5.1",
-    "vue-template-compiler": "^2.6.14",
-    "vuetify-loader": "^1.7.0",
-    "webpack": "^5.0.0"
+    "unplugin-vue-components ": "^0.25.2",
+    "vite": "^5.0.0"
   },
   "eslintConfig": {
     "root": true,
     "env": {
-      "node": true
+      "node": true,
+      "es2022": true
     },
     "extends": [
       "plugin:vue/essential",
       "eslint:recommended"
     ],
-    "parserOptions": {
-      "parser": "@babel/eslint-parser"
-    },
     "rules": {
       "vue/valid-v-slot": [
         "error",

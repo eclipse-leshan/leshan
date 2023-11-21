@@ -1,8 +1,8 @@
 # webapp
 
-The **leshan-server-demo** webapp is based on [Vue.js](https://vuejs.org/).  
+The **leshan-server-demo** webapp is based on [Vue 2](https://v2.vuejs.org/).  
 To be able to enjoy the "single file component" feature we need to use a modern module build system for JavaScript.  
-Here we are using [Yarn](https://yarnpkg.com/) and [Babel](https://babeljs.io/) tooling. 
+Here we are using [Yarn](https://yarnpkg.com/) and [Vite](https://vitejs.dev/) tooling. 
 
 The JavaScript build is integrated in Maven thanks to [frontend-maven-plugin](https://github.com/eirslett/frontend-maven-plugin) and so there is nothing special to do at build time. The classic `mvn clean install` works.
 
@@ -32,8 +32,8 @@ Then launch :
 ```
 yarn serve
 ```
-This will start a dev server (based on webpack-dev-server ) that comes with Hot-Module-Replacement (HMR) working out of the box. Meaning now each time you modify a fronted webapp file, the modification will be automatically applied. So just edit your files and see the changes in your browser.  
-_Note that :_ webapp is available on a different pot 8088 instead of default 8080. (see vue.config.js)
+This will start a dev serve that comes with Hot-Module-Replacement (HMR) working out of the box. Meaning now each time you modify a fronted webapp file, the modification will be automatically applied. So just edit your files and see the changes in your browser.  
+_Note that :_ webapp is available on a different pot 8088 instead of default 8080. (see vite.config.js)
 
 ## To go further
 
@@ -45,33 +45,20 @@ This doesn't make to much sense to do that as this is done automatically by Mave
 yarn build
 ```
 
+Once it is built you can preview it on port 8088 with : 
+```
+yarn preview
+```
+
 ### Lints and fixes files
 
-This is generally automatically do by your IDE (like Vscodium) but you can launch it manually like this : 
+This is generally automatically do by your IDE (like vscodium) but you can launch it manually like this : 
 
 ```
 yarn lint
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
-
 ### Common maintenance tasks
-
-#### Update browser list 
-
-When building we could face this message:
-
-```
-Browserslist: caniuse-lite is outdated. Please run:
-   npx update-browserslist-db@latest
-   Why you should do it regularly: https://github.com/browserslist/update-db#readme
- All browser targets in the browserslist configuration have supported ES module.
-Therefore we don't build two separate bundles for differential loading.
-```
-
-That's means it's time to update browser data. All is said in message just above.
-
 
 #### Update direct dependencies
 

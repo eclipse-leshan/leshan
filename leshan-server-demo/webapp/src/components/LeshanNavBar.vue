@@ -13,7 +13,7 @@
 <template>
   <v-app-bar dark flat dense max-height="48">
     <v-toolbar-title v-if="$vuetify.breakpoint.smAndUp">
-      <v-img src="@/assets/image/logo.png" max-height="32" contain></v-img>
+      <v-img :src="require('@/assets/image/logo.png')" max-height="32" contain></v-img>
     </v-toolbar-title>
 
     <!-- See more details about why we hide-slider and replace it by custom css (active-class="active") :

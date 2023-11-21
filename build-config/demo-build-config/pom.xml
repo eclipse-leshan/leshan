@@ -95,8 +95,8 @@ Contributors:
                   <!-- this variable will be used by webapp/vue.config.js -->
                   <MAVEN_OUTPUT_DIR>${project.build.outputDirectory}/webapp</MAVEN_OUTPUT_DIR>
                   <!-- this variable is used by the webapp -->
-                  <VUE_APP_COMMIT_ID>${buildNumber}</VUE_APP_COMMIT_ID>
-                  <VUE_APP_VERSION>${project.version}</VUE_APP_VERSION>
+                  <VITE_APP_COMMIT_ID>${buildNumber}</VITE_APP_COMMIT_ID>
+                  <VITE_APP_VERSION>${project.version}</VITE_APP_VERSION>
                 </environmentVariables>
                 <arguments>build</arguments>
               </configuration>
