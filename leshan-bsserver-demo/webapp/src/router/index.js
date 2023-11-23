@@ -13,10 +13,10 @@
 
 import Vue from "vue";
 import VueRouter from "vue-router";
-import Bootstrap from "../views/Bootstrap.vue";
-import About from "@leshan-server-core-demo/views/About.vue";
-import Client from "../views/Client.vue";
-import Server from "@leshan-server-core-demo/views/Server.vue";
+const Bootstrap = () => import("../views/Bootstrap.vue");
+const About = () => import("@leshan-server-core-demo/views/About.vue");
+const Client = () => import("../views/Client.vue");
+const Server = () => import("@leshan-server-core-demo/views/Server.vue");
 
 Vue.use(VueRouter);
 

@@ -13,15 +13,17 @@
 
 import Vue from "vue";
 import VueRouter from "vue-router";
-import Clients from "../views/Clients.vue";
-import Client from "../views/Client.vue";
-import CompositeOperationView from "../views/CompositeOperationView.vue";
-import CompositeObjectView from "../views/CompositeObjectView.vue";
-import ObjectView from "../views/ObjectView.vue";
 
-import Security from "../views/Security.vue";
-import Server from "@leshan-server-core-demo/views/Server.vue";
-import About from "@leshan-server-core-demo/views/About.vue";
+const Clients = () => import("../views/Clients.vue");
+const Client = () => import("../views/Client.vue");
+const CompositeOperationView = () =>
+  import("../views/CompositeOperationView.vue");
+const CompositeObjectView = () => import("../views/CompositeObjectView.vue");
+const ObjectView = () => import("../views/ObjectView.vue");
+
+const Security = () => import("../views/Security.vue");
+const Server = () => import("@leshan-server-core-demo/views/Server.vue");
+const About = () => import("@leshan-server-core-demo/views/About.vue");
 
 Vue.use(VueRouter);
 
