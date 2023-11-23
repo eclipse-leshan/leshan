@@ -22,7 +22,7 @@ import org.eclipse.leshan.core.parser.StringParser;
  */
 public abstract class AttributeModel<T extends Attribute> {
 
-    private String name;
+    private final String name;
 
     public AttributeModel(String name) {
         this.name = name;
@@ -54,5 +54,10 @@ public abstract class AttributeModel<T extends Attribute> {
      */
     public boolean linkAttributeCanBeValueless() {
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 }
