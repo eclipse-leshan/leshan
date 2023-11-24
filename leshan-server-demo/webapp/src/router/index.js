@@ -16,12 +16,12 @@ import VueRouter from "vue-router";
 import Clients from "../views/Clients.vue";
 import Client from "../views/Client.vue";
 import CompositeOperationView from "../views/CompositeOperationView.vue";
-import CompositeObjectView from "../views/CompositeObjectView.vue"
+import CompositeObjectView from "../views/CompositeObjectView.vue";
 import ObjectView from "../views/ObjectView.vue";
 
 import Security from "../views/Security.vue";
 import Server from "@leshan-server-core-demo/views/Server.vue";
-import About from "../views/About.vue";
+import About from "@leshan-server-core-demo/views/About.vue";
 
 Vue.use(VueRouter);
 
@@ -73,6 +73,9 @@ const routes = [
     path: "/about",
     name: "About",
     component: About,
+    props: {
+      appName: "LWM2M Server Demo",
+    },
   },
 ];
 

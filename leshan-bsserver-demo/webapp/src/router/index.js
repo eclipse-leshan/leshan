@@ -14,7 +14,7 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 import Bootstrap from "../views/Bootstrap.vue";
-import About from "../views/About.vue";
+import About from "@leshan-server-core-demo/views/About.vue";
 import Client from "../views/Client.vue";
 import Server from "@leshan-server-core-demo/views/Server.vue";
 
@@ -38,12 +38,18 @@ const routes = [
     path: "/server",
     name: "Server",
     component: Server,
-    props: { pubkeyFileName: "bsServerPubKey.der", certFileName: "bsServerCertificate.der" },
+    props: {
+      pubkeyFileName: "bsServerPubKey.der",
+      certFileName: "bsServerCertificate.der",
+    },
   },
   {
     path: "/about",
     name: "About",
     component: About,
+    props: {
+      appName: "LWM2M Bootstrap Server Demo",
+    },
   },
 ];
 

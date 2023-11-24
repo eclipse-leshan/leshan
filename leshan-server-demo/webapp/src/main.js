@@ -12,15 +12,15 @@
  *******************************************************************************/
 
 import Vue from "vue";
-import "./plugins/axios";
+import "@leshan-server-core-demo/plugins/axios";
 import "./plugins/store";
 import "./plugins/icons";
-import "./plugins/sse";
-import "./plugins/moment";
-import "./plugins/preferences";
-import "./plugins/dialog";
+import "@leshan-server-core-demo/plugins/sse";
+import "@leshan-server-core-demo/plugins/moment";
+import "@leshan-server-core-demo/plugins/preferences";
+import "@leshan-server-core-demo/plugins/dialog";
 import App from "./App.vue";
-import vuetify from "./plugins/vuetify";
+import vuetify from "@leshan-server-core-demo/plugins/vuetify";
 import router from "./router";
 
 Vue.config.productionTip = false;

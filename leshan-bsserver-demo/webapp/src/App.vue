@@ -13,11 +13,11 @@
 <template>
   <div id="app">
     <v-app>
-      <leshan-nav-bar/>
-      
+      <leshan-nav-bar :pages="pages" />
+
       <v-main>
         <v-container fluid class="pa-0">
-          <router-view >  </router-view>  
+          <router-view> </router-view>
         </v-container>
       </v-main>
     </v-app>
@@ -25,11 +25,32 @@
 </template>
 
 <script>
-import LeshanNavBar from "@/components/LeshanNavBar.vue";
+import LeshanNavBar from "@leshan-server-core-demo/components/LeshanNavBar.vue";
 
 export default {
   components: {
     LeshanNavBar,
+  },
+  data: function () {
+    return {
+      pages: [
+        {
+          title: "Bootstrap",
+          route: "/bootstrap",
+          icon: this.$icons.mdiDevices,
+        },
+        {
+          title: "Server",
+          route: "/server",
+          icon: this.$icons.mdiServerSecurity,
+        },
+        {
+          title: "About",
+          route: "/about",
+          icon: this.$icons.mdiInformationOutline,
+        },
+      ],
+    };
   },
 };
 </script>
