@@ -30,7 +30,8 @@
     "eslint-plugin-vue": "^8.0.0",
     "sass": "~1.32.0",
     "unplugin-vue-components ": "^0.25.2",
-    "vite": "^5.0.0"
+    "vite": "^5.0.0",
+    "vite-plugin-compression": "^0.5.1"
   },
   "eslintConfig": {
     "root": true,

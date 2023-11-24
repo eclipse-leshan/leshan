@@ -4,6 +4,7 @@ import { nodeResolve } from "@rollup/plugin-node-resolve";
 import { VuetifyResolver } from "unplugin-vue-components/resolvers";
 import Components from "unplugin-vue-components/vite";
 import browserslistToEsbuild from "browserslist-to-esbuild";
+import viteCompression from "vite-plugin-compression";
 
 import path from "path";
 
@@ -23,6 +24,7 @@ export default defineConfig({
     nodeResolve({
       modulePaths: [path.resolve("./node_modules")],
     }),
+    viteCompression(),
   ],
   build: {
     outDir: process.env.MAVEN_OUTPUT_DIR

@@ -28,8 +28,9 @@ import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.leshan.core.californium.PrincipalMdcConnectionListener;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
@@ -213,11 +214,20 @@ public class LeshanBootstrapServerDemo {
             jettyAddr = new InetSocketAddress(cli.main.webhost, cli.main.webPort);
         }
         Server server = new Server(jettyAddr);
-        WebAppContext root = new WebAppContext();
-        root.setContextPath("/");
-        root.setResourceBase(LeshanBootstrapServerDemo.class.getClassLoader().getResource("webapp").toExternalForm());
-        root.setParentLoaderPriority(true);
+        ServletContextHandler root = new ServletContextHandler(null, "/", true, false);
+        server.setHandler(root);
 
+        // Create static Servlet
+        DefaultServlet staticServelt = new DefaultServlet();
+        ServletHolder staticHolder = new ServletHolder(staticServelt);
+        staticHolder.setInitParameter("resourceBase",
+                LeshanBootstrapServerDemo.class.getClassLoader().getResource("webapp").toExternalForm());
+        staticHolder.setInitParameter("pathInfoOnly", "true");
+        staticHolder.setInitParameter("gzip", "true");
+        staticHolder.setInitParameter("cacheControl", "public, max-age=31536000");
+        root.addServlet(staticHolder, "/*");
+
+        // Create REST API Servlets
         ServletHolder bsServletHolder = new ServletHolder(new BootstrapServlet(bsStore));
         root.addServlet(bsServletHolder, "/api/bootstrap/*");
 

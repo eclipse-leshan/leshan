@@ -34,8 +34,9 @@ import org.eclipse.californium.elements.util.CertPathUtil;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.leshan.core.californium.PrincipalMdcConnectionListener;
 import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
 import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
@@ -270,13 +271,20 @@ public class LeshanServerDemo {
             jettyAddr = new InetSocketAddress(cli.main.webhost, cli.main.webPort);
         }
         Server server = new Server(jettyAddr);
-        WebAppContext root = new WebAppContext();
-        root.setContextPath("/");
-        root.setResourceBase(LeshanServerDemo.class.getClassLoader().getResource("webapp").toExternalForm());
-        root.setParentLoaderPriority(true);
+        ServletContextHandler root = new ServletContextHandler(null, "/", true, false);
         server.setHandler(root);
 
-        // Create Servlet
+        // Create static Servlet
+        DefaultServlet staticServelt = new DefaultServlet();
+        ServletHolder staticHolder = new ServletHolder(staticServelt);
+        staticHolder.setInitParameter("resourceBase",
+                LeshanServerDemo.class.getClassLoader().getResource("webapp").toExternalForm());
+        staticHolder.setInitParameter("pathInfoOnly", "true");
+        staticHolder.setInitParameter("gzip", "true");
+        staticHolder.setInitParameter("cacheControl", "public, max-age=31536000");
+        root.addServlet(staticHolder, "/*");
+
+        // Create REST API Servlets
         // EventServlet eventServlet = new EventServlet(lwServer, lwServer.getSecuredAddress().getPort());
         EventServlet eventServlet = new EventServlet(lwServer, 5684);
         ServletHolder eventServletHolder = new ServletHolder(eventServlet);
