@@ -1,8 +1,7 @@
 ---
 # As defined in https://aquasecurity.github.io/trivy/latest/docs/references/configuration/config-file/
-format: json
+format: table
 exit-code: 1
-output: trivy.json
 severity:
   - HIGH
   - CRITICAL
