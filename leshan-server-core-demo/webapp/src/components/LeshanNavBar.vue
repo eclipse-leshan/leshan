@@ -33,6 +33,7 @@
         fixed-tabs
         :to="page.route"
         active-class="active"
+        :aria-label="page.title"
       >
         <v-icon>{{ page.icon }}</v-icon
         ><span class="pl-2" v-if="$vuetify.breakpoint.smAndUp">
