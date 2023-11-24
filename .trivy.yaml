@@ -1,0 +1,17 @@
+---
+# As defined in https://aquasecurity.github.io/trivy/latest/docs/references/configuration/config-file/
+format: json
+exit-code: 1
+output: trivy.json
+severity:
+  - HIGH
+  - CRITICAL
+insecure: true
+scan:
+  scanners:
+    - vuln
+vulnerability:
+  type:
+    - os
+    - library
+  ignore-unfixed: false

@@ -120,6 +120,13 @@ jobs:
       uses: ./.github/actions/integrationtests
       with:
          build_status_filename: ${{env.build_status_filename}}
+    - name: Vulnerability Scan
+      id: vulnccan
+      uses: aquasecurity/trivy-action@2b6a709cf9c4025c5438138008beaddbb02086f0  # 0.14.0
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        trivy-config: .trivy.yml
 
     # ------------- End of :  Build Steps -------------
 
