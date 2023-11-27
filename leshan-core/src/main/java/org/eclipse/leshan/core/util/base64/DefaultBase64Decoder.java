@@ -180,21 +180,21 @@ public class DefaultBase64Decoder implements Base64Decoder {
         } else if (nbCharInFinalQuantum == 2) {
             // if final quantum size is 8 bits, only the first two bits of the last char are used, 4 others should be 0.
             // So only valid char are :
-            // - A(000000), Q(010000), g(100000), W(110000).
+            // - A(000000), Q(010000), g(100000), w(110000).
             // See : https://en.wikipedia.org/wiki/Base64#Base64_table_from_RFC_4648
-            validChar = new char[] { 'A', 'Q', 'g', 'W' };
+            validChar = new char[] { 'A', 'Q', 'g', 'w' };
 
         } else if (nbCharInFinalQuantum == 3) {
             // if final quantum size is 16 bits, only the first four bits of the last char are used, 2 other should be
             // 0.
             // So only valid char are :
-            // - A(000000), Q(010000), g(100000), W(110000),
+            // - A(000000), Q(010000), g(100000), w(110000),
             // - E(000100), U(010100), k(100100), 0(110100),
             // - I(001000), Y(011000), o(101000), 4(111000)
             // - M(001100), c(011100), s(101100), 8(111100).
             // See : https://en.wikipedia.org/wiki/Base64#Base64_table_from_RFC_4648
 
-            validChar = new char[] { 'A', 'Q', 'g', 'W', 'E', 'U', 'k', '0', 'I', 'Y', 'o', '4', 'M', 'c', 's', '8' };
+            validChar = new char[] { 'A', 'Q', 'g', 'w', 'E', 'U', 'k', '0', 'I', 'Y', 'o', '4', 'M', 'c', 's', '8' };
         } else {
             throw new InvalidBase64Exception("Invlaid number of character is final quantum must be 2 or 3 [%s]",
                     new String(encoded));
