@@ -49,10 +49,10 @@
       </template>
       <!-- custom display for date column -->
       <template v-slot:item.registrationDate="{ item }">
-        {{ new Date(item.registrationDate) | moment("MMM D, h:mm:ss A") }}
+        {{ $date(item.registrationDate).format("MMM D, h:mm:ss a") }}
       </template>
       <template v-slot:item.lastUpdate="{ item }">
-        {{ new Date(item.lastUpdate) | moment("MMM D, h:mm:ss A") }}
+        {{ $date(item.lastUpdate).format("MMM D, h:mm:ss a") }}
       </template>
       <template v-slot:item.infos="{ item }">
         <client-info :registration="item" tooltipleft />

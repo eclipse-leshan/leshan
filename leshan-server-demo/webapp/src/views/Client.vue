@@ -40,11 +40,13 @@
           <div>Reg. ID: {{ registration.registrationId }}</div>
           <div>
             Registered:
-            {{ registration.registrationDate | moment("MMM D, h:mm:ss A") }}
+            {{
+              $date(registration.registrationDate).format("MMM D, h:mm:ss a")
+            }}
           </div>
           <div>
             Updated:
-            {{ registration.lastUpdate | moment("MMM D, h:mm:ss A") }}
+            {{ $date(registration.lastUpdate).format("MMM D, h:mm:ss a") }}
           </div>
         </div>
         <v-divider />

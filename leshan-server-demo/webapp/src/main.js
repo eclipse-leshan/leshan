@@ -16,7 +16,7 @@ import "@leshan-server-core-demo/plugins/axios";
 import "./plugins/store";
 import "./plugins/icons";
 import "@leshan-server-core-demo/plugins/sse";
-import "@leshan-server-core-demo/plugins/moment";
+import "@leshan-server-core-demo/plugins/dayjs";
 import "@leshan-server-core-demo/plugins/preferences";
 import "@leshan-server-core-demo/plugins/dialog";
 import App from "./App.vue";

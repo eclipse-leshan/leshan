@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021 Sierra Wireless and others.
+ * Copyright (c) 2023 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -10,22 +10,13 @@
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  *******************************************************************************/
-
 import Vue from "vue";
-import "@leshan-server-core-demo/plugins/axios";
-import "./plugins/icons";
-import "@leshan-server-core-demo/plugins/dialog";
-import "@leshan-server-core-demo/plugins/dayjs";
-import "@leshan-server-core-demo//plugins/sse";
-import "@leshan-server-core-demo/plugins/preferences";
-import App from "./App.vue";
-import vuetify from "@leshan-server-core-demo/plugins/vuetify";
-import router from "./router";
+import dayjs from "dayjs";
 
-Vue.config.productionTip = false;
-
-new Vue({
-  vuetify,
-  router,
-  render: (h) => h(App),
-}).$mount("#app");
+Object.defineProperties(Vue.prototype, {
+  $date: {
+    get() {
+      return dayjs;
+    },
+  },
+});

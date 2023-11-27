@@ -36,9 +36,7 @@
           :icon="event.icon"
         >
           <template v-slot:opposite>
-            <span>{{
-              new Date(event.time) | moment("MMM D, h:mm:ss.SSS A")
-            }}</span>
+            <span>{{ $date(event.time).format("MMM D, h:mm:ss.SSS A") }}</span>
           </template>
           <div>
             <div class="font-weight-normal">

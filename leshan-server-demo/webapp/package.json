@@ -13,9 +13,9 @@
   "dependencies": {
     "@fontsource/roboto": "^4.5.0",
     "axios": "^1.6.0",
+    "dayjs": "^1.11.10",
     "file-saver": "^2.0.5",
     "vue": "^2.7.0",
-    "vue-moment": "^4.1.0",
     "vue-preferences": "^3.0.0",
     "vue-router": "^3.2.0",
     "vue-sse": "^2.2.0",
