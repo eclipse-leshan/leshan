@@ -284,7 +284,7 @@ public class EventServlet extends EventSourceServlet {
         return path;
     }
 
-    public EventServlet(LeshanServer server, int securePort) {
+    public EventServlet(LeshanServer server) {
         server.getRegistrationService().addListener(this.registrationListener);
         server.getObservationService().addListener(this.observationListener);
         server.getPresenceService().addListener(this.presenceListener);

@@ -285,8 +285,7 @@ public class LeshanServerDemo {
         root.addServlet(staticHolder, "/*");
 
         // Create REST API Servlets
-        // EventServlet eventServlet = new EventServlet(lwServer, lwServer.getSecuredAddress().getPort());
-        EventServlet eventServlet = new EventServlet(lwServer, 5684);
+        EventServlet eventServlet = new EventServlet(lwServer);
         ServletHolder eventServletHolder = new ServletHolder(eventServlet);
         root.addServlet(eventServletHolder, "/api/event/*");
 
