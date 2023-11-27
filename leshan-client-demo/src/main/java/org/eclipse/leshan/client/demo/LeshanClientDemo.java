@@ -286,9 +286,6 @@ public class LeshanClientDemo {
         clientCoapConfig.setTransient(DtlsConfig.DTLS_CONNECTION_ID_LENGTH);
         clientCoapConfig.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, !cli.dtls.supportDeprecatedCiphers);
         clientCoapConfig.set(DtlsConfig.DTLS_CONNECTION_ID_LENGTH, cli.dtls.cid);
-        if (cli.dtls.ciphers != null) {
-            clientCoapConfig.set(DtlsConfig.DTLS_CIPHER_SUITES, cli.dtls.ciphers);
-        }
 
         // Persist configuration
         File configFile = new File(CF_CONFIGURATION_FILENAME);
@@ -296,6 +293,9 @@ public class LeshanClientDemo {
             clientCoapConfig.load(configFile);
         } else {
             clientCoapConfig.store(configFile, CF_CONFIGURATION_HEADER);
+        }
+        if (cli.dtls.ciphers != null) {
+            clientCoapConfig.set(DtlsConfig.DTLS_CIPHER_SUITES, cli.dtls.ciphers);
         }
 
         // Set Californium Configuration
