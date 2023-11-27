@@ -5,8 +5,13 @@ import { VuetifyResolver } from "unplugin-vue-components/resolvers";
 import Components from "unplugin-vue-components/vite";
 import browserslistToEsbuild from "browserslist-to-esbuild";
 import viteCompression from "vite-plugin-compression";
+import { visualizer } from "rollup-plugin-visualizer";
 
 import path from "path";
+
+const outputDir = process.env.MAVEN_OUTPUT_DIR
+  ? process.env.MAVEN_OUTPUT_DIR
+  : "../target/dist";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -24,12 +29,18 @@ export default defineConfig({
     nodeResolve({
       modulePaths: [path.resolve("./node_modules")],
     }),
-    viteCompression(),
+    !process.env.REPORT ? viteCompression() : null,
+    process.env.REPORT
+      ? visualizer({
+          template: "treemap", //"sunburst",
+          filename: outputDir + "/stats.html",
+          open: true,
+          gzipSize: true,
+        })
+      : null,
   ],
   build: {
-    outDir: process.env.MAVEN_OUTPUT_DIR
-      ? process.env.MAVEN_OUTPUT_DIR
-      : "../target/dist",
+    outDir: outputDir,
     target: browserslistToEsbuild(),
   },
   preview: {

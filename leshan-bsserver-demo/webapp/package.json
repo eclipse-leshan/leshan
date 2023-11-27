@@ -7,7 +7,8 @@
     "serve": "vite",
     "build": "vite build --emptyOutDir",
     "preview": "vite preview",
-    "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src"
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src",
+    "report": "REPORT=true vite build --emptyOutDir"
   },
   "dependencies": {
     "@fontsource/roboto": "^4.5.0",
@@ -22,12 +23,13 @@
     "vuetify-dialog": "^2.0.0"
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.2.3",
     "@mdi/js": "^6.6.96",
+    "@rollup/plugin-node-resolve": "^15.2.3",
     "@vitejs/plugin-vue2": "^2.2.0",
     "browserslist-to-esbuild": "^1.2.0",
     "eslint": "^8.0.0",
     "eslint-plugin-vue": "^8.0.0",
+    "rollup-plugin-visualizer": "^5.9.3",
     "sass": "~1.32.0",
     "unplugin-vue-components ": "^0.25.2",
     "vite": "^5.0.0",
