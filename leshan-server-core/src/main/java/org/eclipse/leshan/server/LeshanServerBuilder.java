@@ -289,6 +289,8 @@ public class LeshanServerBuilder {
      * <p>
      * With this option you can allow Leshan to update Registration on Send Operation. This is clearly OUT OF
      * SPECIFICATION and so this is not recommended and should be used only if there is no other way.
+     * <p>
+     * This only works when using protocol with authentication, e.g. this can not work with {@code coap://}.
      *
      * @see <a href=
      *      "https://github.com/eclipse/leshan/wiki/LWM2M-Devices-with-Dynamic-IP#is-the-update-request-mandatory--should-i-update-registration-on-notification-">Dynamic
