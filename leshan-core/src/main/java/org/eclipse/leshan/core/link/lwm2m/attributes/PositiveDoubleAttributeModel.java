@@ -31,7 +31,7 @@ public class PositiveDoubleAttributeModel extends LwM2mAttributeModel<Double> {
 
     @Override
     public String getInvalidValueCause(Double value) {
-        if (value != null && value < 0) {
+        if (value < 0) {
             return String.format("'%s' attribute value must not be negative", getName());
         }
         return null;

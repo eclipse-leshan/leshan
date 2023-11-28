@@ -18,7 +18,6 @@ package org.eclipse.leshan.core.link.lwm2m.attributes;
 import java.util.Set;
 
 import org.eclipse.leshan.core.link.attributes.AttributeModel;
-import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 
@@ -68,9 +67,16 @@ public abstract class LwM2mAttributeModel<T> extends AttributeModel<LwM2mAttribu
     /**
      * @return <code>true</code> if the Attribute can be used without value in a query param Format.
      */
-    public boolean queryParamCanBeValueless() throws InvalidAttributeException {
+    public boolean queryParamCanBeValueless() {
         // AFAIK, only writable value can be null. (mainly to remove write attributes)
         return accessMode.isWritable() && attributeClass == AttributeClass.NOTIFICATION;
+    }
+
+    /**
+     * @return <code>true</code> if the Attribute can be used without value.
+     */
+    public boolean canBeValueless() {
+        return queryParamCanBeValueless() || linkAttributeCanBeValueless();
     }
 
     /**

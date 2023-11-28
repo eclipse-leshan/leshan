@@ -191,6 +191,11 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
             if (attr.getValue() != null) {
                 queries.add(String.format("%s=%s", attr.getName(), attr.getValue()));
             } else {
+                if (attr instanceof LwM2mAttribute<?>
+                        && !((LwM2mAttribute<?>) attr).getModel().queryParamCanBeValueless()) {
+                    throw new IllegalStateException(String.format(
+                            "Attribute %s can not have null value when serialized in query params", attr.getName()));
+                }
                 queries.add(attr.getName());
             }
         }

@@ -74,6 +74,9 @@ public class WriteAttributesRequest extends AbstractSimpleDownlinkRequest<WriteA
                 throw new InvalidRequestException("Attribute %s is not writable (access mode %s).", attribute.getName(),
                         attribute.getModel().getAccessMode());
             }
+            if (attribute.getValue() == null && !(attribute.getModel().queryParamCanBeValueless())) {
+                throw new InvalidRequestException("Attribute %s can have null value.", attribute.getName());
+            }
         }
         try {
             attributes.validate(path);

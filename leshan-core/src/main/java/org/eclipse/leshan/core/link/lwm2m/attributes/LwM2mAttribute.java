@@ -35,9 +35,7 @@ public class LwM2mAttribute<T> implements Attribute {
      * @see LwM2mAttributes
      */
     public LwM2mAttribute(LwM2mAttributeModel<T> model) {
-        Validate.notNull(model);
-        this.model = model;
-        this.value = null;
+        this(model, null);
     }
 
     /**
@@ -52,9 +50,15 @@ public class LwM2mAttribute<T> implements Attribute {
         Validate.notNull(model);
         this.model = model;
         this.value = value;
-        String errorMessage = model.getInvalidValueCause(value);
-        if (errorMessage != null) {
-            throw new IllegalArgumentException(errorMessage);
+        if (value == null) {
+            if (!model.canBeValueless()) {
+                throw new IllegalArgumentException(String.format("Attribute %s must have a value", model.getName()));
+            }
+        } else {
+            String errorMessage = model.getInvalidValueCause(value);
+            if (errorMessage != null) {
+                throw new IllegalArgumentException(errorMessage);
+            }
         }
     }
 
@@ -88,7 +92,12 @@ public class LwM2mAttribute<T> implements Attribute {
         if (hasValue()) {
             return getName() + "=" + getCoreLinkValue();
         } else {
-            return getName();
+            if (getModel().linkAttributeCanBeValueless()) {
+                return getName();
+            } else {
+                throw new IllegalStateException(
+                        String.format("Attribute %s can not have null value when serialized in CoreLink", getName()));
+            }
         }
     }
 

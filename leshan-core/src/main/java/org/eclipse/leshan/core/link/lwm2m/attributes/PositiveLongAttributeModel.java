@@ -31,7 +31,7 @@ public class PositiveLongAttributeModel extends LwM2mAttributeModel<Long> {
 
     @Override
     public String getInvalidValueCause(Long value) {
-        if (value != null && value < 0) {
+        if (value < 0) {
             return String.format("'%s' attribute value must not be negative", getName());
         }
         return null;

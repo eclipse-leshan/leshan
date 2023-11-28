@@ -40,7 +40,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
  */
 public class DefaultLwM2mLinkParser implements LwM2mLinkParser {
 
-    private LinkParser parser;
+    private final LinkParser parser;
 
     public DefaultLwM2mLinkParser() {
         // Define all supported Attributes
@@ -149,7 +149,7 @@ public class DefaultLwM2mLinkParser implements LwM2mLinkParser {
                     attributes.validate(lwm2mPath);
 
                     // create link and replace it
-                    links[i] = new MixedLwM2mLink(rootPath, LwM2mPath.parse(path, rootPath), attributes);
+                    links[i] = new MixedLwM2mLink(rootPath, lwm2mPath, attributes);
                 } catch (IllegalArgumentException e) {
                     String strLink = new String(bytes, StandardCharsets.UTF_8);
                     throw new LinkParseException(e, "Unable to parse link %s in %s", links[i], strLink);

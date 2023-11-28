@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.stream.Stream;
 
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -66,12 +65,10 @@ public class LwM2mAttributesTest {
         );
     }
 
-    @Disabled
     @ParameterizedTest(name = "Tests {index} : {0}")
     @MethodSource("doesntSupportNullAttributes")
-    // TODO implement this correctly : https://github.com/eclipse-leshan/leshan/issues/1542
     public void check_attribute_can_not_be_created_with_null_value(LwM2mAttributeModel<?> model) {
-        assertThrows(InvalidAttributeException.class, () -> LwM2mAttributes.create(model));
-        assertThrows(InvalidAttributeException.class, () -> LwM2mAttributes.create(model, null));
+        assertThrows(IllegalArgumentException.class, () -> LwM2mAttributes.create(model));
+        assertThrows(IllegalArgumentException.class, () -> LwM2mAttributes.create(model, null));
     }
 }

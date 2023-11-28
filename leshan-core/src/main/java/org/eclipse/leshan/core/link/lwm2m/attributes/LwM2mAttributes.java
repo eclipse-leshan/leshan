@@ -23,7 +23,6 @@ import java.util.Map;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.LwM2mId;
-import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -347,7 +346,11 @@ public final class LwM2mAttributes {
         return new LwM2mAttribute<>(model, value);
     }
 
-    public static <T> LwM2mAttribute<T> create(LwM2mAttributeModel<T> model) throws InvalidAttributeException {
-        return model.createEmptyAttribute();
+    public static <T> LwM2mAttribute<T> create(LwM2mAttributeModel<T> model) {
+        try {
+            return model.createEmptyAttribute();
+        } catch (UnsupportedOperationException e) {
+            throw new IllegalArgumentException(String.format("Attribute %s must have a value", model.getName()));
+        }
     }
 }
