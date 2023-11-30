@@ -15,7 +15,13 @@
     <request-button @on-click="observe" title="Composite Observe"
       >Obs</request-button
     >
-    <request-button @on-click="stopObserve" title="Passive Cancel Obverse">
+    <request-button
+      @on-click="stopPassiveObserve"
+      title="Passive Cancel Obverse"
+    >
+      <v-icon dense small>{{ $icons.mdiEyeOffOutline }}</v-icon></request-button
+    >
+    <request-button @on-click="stopActiveObserve" title="Active Cancel Obverse">
       <v-icon dense small>{{
         $icons.mdiEyeRemoveOutline
       }}</v-icon></request-button
@@ -145,7 +151,7 @@ export default {
           requestButton.resetState();
         });
     },
-    stopObserve(requestButton) {
+    stopPassiveObserve(requestButton) {
       this.axios
         .delete(
           `${this.requestPath()}/observe?paths=${this.compositeObject.paths.join(
@@ -154,12 +160,33 @@ export default {
         )
         .then(() => {
           requestButton.changeState("success");
-          this.$store.setObserved(this.endpoint, this.path, false);
           this.$store.setCompositeObjectObserved(
             this.endpoint,
             this.compositeObject,
             false
           );
+        })
+        .catch(() => {
+          requestButton.resetState();
+        });
+    },
+    stopActiveObserve(requestButton) {
+      this.axios
+        .delete(
+          `${this.requestPath()}/observe?paths=${this.compositeObject.paths.join(
+            ","
+          )}&active&timeout=${timeout.get()}`
+        )
+        .then((response) => {
+          this.updateState(response.data, requestButton);
+          if (response.data.success) {
+            this.$store.newNodes(this.endpoint, response.data.content);
+            this.$store.setCompositeObjectObserved(
+              this.endpoint,
+              this.compositeObject,
+              false
+            );
+          }
         })
         .catch(() => {
           requestButton.resetState();

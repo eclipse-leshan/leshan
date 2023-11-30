@@ -19,9 +19,16 @@
       >Obs</request-button
     >
     <request-button
-      @on-click="stopObserve"
+      @on-click="stopPassiveObserve"
       v-if="readable"
       :title="'Passive Cancel Obverse ' + path"
+    >
+      <v-icon dense small>{{ $icons.mdiEyeOffOutline }}</v-icon></request-button
+    >
+    <request-button
+      @on-click="stopActiveObserve"
+      v-if="readable"
+      :title="'Active Cancel Obverse ' + path"
     >
       <v-icon dense small>{{
         $icons.mdiEyeRemoveOutline
@@ -152,12 +159,30 @@ export default {
           requestButton.resetState();
         });
     },
-    stopObserve(requestButton) {
+    stopPassiveObserve(requestButton) {
       this.axios
         .delete(this.requestPath() + "/observe")
         .then(() => {
           requestButton.changeState("success");
           this.$store.setObserved(this.endpoint, this.path, false);
+        })
+        .catch(() => {
+          requestButton.resetState();
+        });
+    },
+    stopActiveObserve(requestButton) {
+      this.axios
+        .delete(this.requestPath() + `/observe?active&timeout=${timeout.get()}`)
+        .then((response) => {
+          this.updateState(response.data, requestButton);
+          if (response.data.success) {
+            this.$store.newResourceValue(
+              this.endpoint,
+              this.path,
+              response.data.content
+            );
+            this.$store.setObserved(this.endpoint, this.path, false);
+          }
         })
         .catch(() => {
           requestButton.resetState();
