@@ -15,9 +15,27 @@
     <request-button
       @on-click="openCreateDialog"
       ref="C"
-      :title="'Create Instance /' + objectdef.id"
+      :title="'Create Instance ' + path"
       >Create</request-button
     >
+    <request-button @on-click="observe" :title="'Observe ' + path"
+      >Obs</request-button
+    >
+    <request-button
+      @on-click="stopPassiveObserve"
+      :title="'Passive Cancel Obverse ' + path"
+    >
+      <v-icon dense small>{{ $icons.mdiEyeOffOutline }}</v-icon></request-button
+    >
+    <request-button
+      @on-click="stopActiveObserve"
+      :title="'Active Cancel Obverse ' + path"
+    >
+      <v-icon dense small>{{
+        $icons.mdiEyeRemoveOutline
+      }}</v-icon></request-button
+    >
+    <request-button @on-click="read" :title="'Read ' + path">R</request-button>
     <instance-create-dialog
       v-model="showDialog"
       :objectdef="objectdef"
@@ -43,6 +61,9 @@ export default {
     };
   },
   computed: {
+    path() {
+      return "/" + this.objectdef.id;
+    },
     showDialog: {
       get() {
         return this.dialog;
@@ -55,9 +76,10 @@ export default {
   },
   methods: {
     requestPath() {
-      return `api/clients/${encodeURIComponent(this.endpoint)}/${
-        this.objectdef.id
-      }?timeout=${timeout.get()}&format=${format.get()}`;
+      return `api/clients/${encodeURIComponent(this.endpoint)}${this.path}`;
+    },
+    requestOption() {
+      return `?timeout=${timeout.get()}&format=${format.get()}`;
     },
     updateState(content, requestButton) {
       let state = !content.valid
@@ -74,9 +96,73 @@ export default {
       let requestButton = this.$refs.C;
       let data = instanceToREST(this.objectdef, value.id, value.resources);
       this.axios
-        .post(this.requestPath(), data)
+        .post(`${this.requestPath()}${this.requestOption()}`, data)
         .then((response) => {
           this.updateState(response.data, requestButton);
+        })
+        .catch(() => {
+          requestButton.resetState();
+        });
+    },
+    read(requestButton) {
+      this.axios
+        .get(`${this.requestPath()}${this.requestOption()}`)
+        .then((response) => {
+          this.updateState(response.data, requestButton);
+          if (response.data.success) {
+            this.$store.newObjectValue(
+              this.endpoint,
+              this.path,
+              response.data.content.instances
+            );
+          }
+        })
+        .catch(() => {
+          requestButton.resetState();
+        });
+    },
+    observe(requestButton) {
+      this.axios
+        .post(`${this.requestPath()}/observe${this.requestOption()}`)
+        .then((response) => {
+          this.updateState(response.data, requestButton);
+          if (response.data.success) {
+            this.$store.newObjectValue(
+              this.endpoint,
+              this.path,
+              response.data.content.instances
+            );
+            this.$store.setObserved(this.endpoint, this.path, true);
+          }
+        })
+        .catch(() => {
+          requestButton.resetState();
+        });
+    },
+    stopPassiveObserve(requestButton) {
+      this.axios
+        .delete(this.requestPath() + "/observe")
+        .then(() => {
+          requestButton.changeState("success");
+          this.$store.setObserved(this.endpoint, this.path, false);
+        })
+        .catch(() => {
+          requestButton.resetState();
+        });
+    },
+    stopActiveObserve(requestButton) {
+      this.axios
+        .delete(this.requestPath() + `/observe?active&timeout=${timeout.get()}`)
+        .then((response) => {
+          this.updateState(response.data, requestButton);
+          if (response.data.success) {
+            this.$store.newObjectValue(
+              this.endpoint,
+              this.path,
+              response.data.content.instances
+            );
+            this.$store.setObserved(this.endpoint, this.path, false);
+          }
         })
         .catch(() => {
           requestButton.resetState();

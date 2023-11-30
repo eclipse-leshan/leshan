@@ -194,7 +194,14 @@ export default {
             true
           );
         } else if (msg.kind == "single") {
-          if (msg.val.kind === "instance") {
+          if (msg.val.kind === "obj") {
+            this.$store.newObjectValue(
+              this.$route.params.endpoint,
+              msg.res,
+              msg.val.instances,
+              false
+            );
+          } else if (msg.val.kind === "instance") {
             this.$store.newInstanceValue(
               this.$route.params.endpoint,
               msg.res,
