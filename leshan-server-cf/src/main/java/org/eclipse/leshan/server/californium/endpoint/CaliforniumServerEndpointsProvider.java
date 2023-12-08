@@ -165,7 +165,7 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
 
                         // create Observe Response
                         try {
-                            AbstractLwM2mResponse response = messagetranslator.createObservation(observation,
+                            AbstractLwM2mResponse response = messagetranslator.createObserveResponse(observation,
                                     coapResponse, toolbox, profile);
                             if (observation instanceof SingleObservation) {
                                 notificatonReceiver.onNotification((SingleObservation) observation, client, profile,

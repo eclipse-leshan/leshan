@@ -98,27 +98,35 @@ public class ObserversManager implements Filter.SimpleFilter<CoapRequest, CoapRe
 
     private static SeparateResponse toSeparateResponse(CoapResponse obsResponse, int currentObserveSequence,
             CoapRequest subscribeRequest) {
-        obsResponse.options().setObserve(currentObserveSequence);
+        if (obsResponse.getCode() == Code.C205_CONTENT) {
+            // TODO would be better to check if this is a success instead of 205 content
+            obsResponse.options().setObserve(currentObserveSequence);
+        }
         return obsResponse.toSeparate(subscribeRequest.getToken(), subscribeRequest.getPeerAddress());
     }
 
     private void sendObservation(CoapRequest observeRequest, SeparateResponse separateResponse) {
         InetSocketAddress peerAddress = separateResponse.getPeerAddress();
 
-        notificationSender.apply(separateResponse).whenComplete((result, exception) -> {
-            if (exception != null) {
-                observersStore.remove(observeRequest);
-                LOGGER.warn("[{}#{}] Removed observation relation, got exception: {}", peerAddress,
-                        separateResponse.getToken(), exception.toString());
-            } else if (!result) {
-                observersStore.remove(observeRequest);
-                LOGGER.info("[{}#{}] Removed observation relation, got reset", peerAddress,
-                        separateResponse.getToken());
-            }
-        });
+        try {
+            notificationSender.apply(separateResponse).whenComplete((result, exception) -> {
+                if (exception != null) {
+                    observersStore.remove(observeRequest);
+                    LOGGER.warn("[{}#{}] Removed observation relation, got exception: {}", peerAddress,
+                            separateResponse.getToken(), exception.toString());
+                } else if (!result) {
+                    observersStore.remove(observeRequest);
+                    LOGGER.info("[{}#{}] Removed observation relation, got reset", peerAddress,
+                            separateResponse.getToken());
+                }
+            });
 
-        if (separateResponse.getCode() != Code.C205_CONTENT) {
-            observersStore.remove(observeRequest);
+            if (separateResponse.getCode() != Code.C205_CONTENT) {
+                observersStore.remove(observeRequest);
+            }
+        } catch (RuntimeException e) {
+            LOGGER.warn("Unexpected Exception when sending Notification(%s) to %s", peerAddress,
+                    separateResponse.getToken(), e);
         }
     }
 

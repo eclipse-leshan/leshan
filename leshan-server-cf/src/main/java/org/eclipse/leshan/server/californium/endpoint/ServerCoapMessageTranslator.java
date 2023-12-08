@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.Resource;
@@ -84,15 +83,8 @@ public class ServerCoapMessageTranslator {
                         identityHandlerProvider));
     }
 
-    public AbstractLwM2mResponse createObservation(Observation observation, Response coapResponse,
+    public AbstractLwM2mResponse createObserveResponse(Observation observation, Response coapResponse,
             ServerEndpointToolbox toolbox, ClientProfile profile) {
-        // CHANGED response is supported for backward compatibility with old spec.
-        if (coapResponse.getCode() != CoAP.ResponseCode.CHANGED
-                && coapResponse.getCode() != CoAP.ResponseCode.CONTENT) {
-            throw new InvalidResponseException("Unexpected response code [%s] for %s", coapResponse.getCode(),
-                    observation);
-        }
-
         // get content format
         ContentFormat contentFormat = null;
         if (coapResponse.getOptions().hasContentFormat()) {
@@ -107,25 +99,34 @@ public class ServerCoapMessageTranslator {
             if (observation instanceof SingleObservation) {
                 SingleObservation singleObservation = (SingleObservation) observation;
 
-                List<TimestampedLwM2mNode> timestampedNodes = toolbox.getDecoder().decodeTimestampedData(
-                        coapResponse.getPayload(), contentFormat, singleObservation.getPath(), profile.getModel());
-
-                // create lwm2m response
-                if (timestampedNodes.size() == 1 && !timestampedNodes.get(0).isTimestamped()) {
-                    return new ObserveResponse(responseCode, timestampedNodes.get(0).getNode(), null, singleObservation,
-                            null, coapResponse);
-                } else {
-                    return new ObserveResponse(responseCode, null, timestampedNodes, singleObservation, null,
+                if (responseCode.isError()) {
+                    return new ObserveResponse(responseCode, null, null, null, coapResponse.getPayloadString(),
                             coapResponse);
+                } else {
+                    List<TimestampedLwM2mNode> timestampedNodes = toolbox.getDecoder().decodeTimestampedData(
+                            coapResponse.getPayload(), contentFormat, singleObservation.getPath(), profile.getModel());
+
+                    // create lwm2m response
+                    if (timestampedNodes.size() == 1 && !timestampedNodes.get(0).isTimestamped()) {
+                        return new ObserveResponse(responseCode, timestampedNodes.get(0).getNode(), null,
+                                singleObservation, null, coapResponse);
+                    } else {
+                        return new ObserveResponse(responseCode, null, timestampedNodes, singleObservation, null,
+                                coapResponse);
+                    }
                 }
             } else if (observation instanceof CompositeObservation) {
 
                 CompositeObservation compositeObservation = (CompositeObservation) observation;
 
-                Map<LwM2mPath, LwM2mNode> nodes = toolbox.getDecoder().decodeNodes(coapResponse.getPayload(),
-                        contentFormat, compositeObservation.getPaths(), profile.getModel());
-
-                return new ObserveCompositeResponse(responseCode, nodes, null, coapResponse, compositeObservation);
+                if (responseCode.isError()) {
+                    return new ObserveCompositeResponse(responseCode, null, coapResponse.getPayloadString(),
+                            coapResponse, null);
+                } else {
+                    Map<LwM2mPath, LwM2mNode> nodes = toolbox.getDecoder().decodeNodes(coapResponse.getPayload(),
+                            contentFormat, compositeObservation.getPaths(), profile.getModel());
+                    return new ObserveCompositeResponse(responseCode, nodes, null, coapResponse, compositeObservation);
+                }
             }
 
             throw new IllegalStateException(
