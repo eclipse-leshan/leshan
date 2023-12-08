@@ -316,6 +316,21 @@ public class LeshanTestServer extends LeshanServer {
         return c.getValue();
     }
 
+    public ObserveResponse waitForNotificationThenCancelled(SingleObservation obs) {
+        return waitForNotificationThenCancelled(obs, 1, TimeUnit.SECONDS);
+    }
+
+    public ObserveResponse waitForNotificationThenCancelled(SingleObservation obs, int timeout, TimeUnit unit) {
+        final ArgumentCaptor<ObserveResponse> c = ArgumentCaptor.forClass(ObserveResponse.class);
+        notificationEventInOrder.verify(notificationListener, timeout(unit.toMillis(timeout)).times(1)).onResponse(
+                assertArg(o -> assertThat(o).isEqualTo(obs)), //
+                assertArg(reg -> assertThat(reg.getId()).isEqualTo(obs.getRegistrationId())), //
+                c.capture());
+        notificationEventInOrder.verify(notificationListener, timeout(unit.toMillis(timeout)).times(1)).cancelled(obs);
+        notificationEventInOrder.verifyNoMoreInteractions();
+        return c.getValue();
+    }
+
     public ObserveCompositeResponse waitForNotificationOf(CompositeObservation obs) {
         return waitForNotificationOf(obs, 1, TimeUnit.SECONDS);
     }

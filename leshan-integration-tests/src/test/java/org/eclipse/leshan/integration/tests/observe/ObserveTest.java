@@ -24,15 +24,19 @@ import static org.eclipse.leshan.core.ResponseCode.CHANGED;
 import static org.eclipse.leshan.core.ResponseCode.CONTENT;
 import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.endpoint.Protocol;
+import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
@@ -173,6 +177,41 @@ public class ObserveTest {
         ObserveResponse response = server.waitForNotificationOf(observation);
         assertThat(response.getContent()).isEqualTo(LwM2mResourceInstance.newStringInstance(0, "a new string"));
         assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
+    }
+
+    @TestAllTransportLayer
+    public void observe_resource_instance_then_delete_it(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InterruptedException {
+
+        // skip java-coap client because of not fixed bug : https://github.com/open-coap/java-coap/issues/76
+        assumeFalse(givenClientEndpointProvider.equals("java-coap"));
+        assumeFalse(givenServerEndpointProvider.equals("java-coap"));
+
+        // multi instance string
+        String expectedPath = "/" + TestLwM2mId.TEST_OBJECT + "/0/" + TestLwM2mId.MULTIPLE_STRING_VALUE + "/0";
+        ObserveResponse observeResponse = server.send(currentRegistration, new ObserveRequest(expectedPath));
+        assertThat(observeResponse) //
+                .hasCode(CONTENT) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
+
+        // an observation response should have been sent
+        SingleObservation observation = observeResponse.getObservation();
+        assertThat(observation.getPath()).asString().isEqualTo(expectedPath);
+        assertThat(observation.getRegistrationId()).isEqualTo(currentRegistration.getId());
+        Set<Observation> observations = server.getObservationService().getObservations(currentRegistration);
+        assertThat(observations).containsExactly(observation);
+        server.waitForNewObservation(observation);
+
+        // Write empty resoures <=> delete all instances
+        LwM2mResponse writeResponse = server.send(currentRegistration, new WriteRequest(Mode.REPLACE, ContentFormat.TLV,
+                TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_STRING_VALUE, Collections.emptyMap(), Type.STRING));
+        assertThat(writeResponse).hasCode(CHANGED);
+
+        // verify result
+        ObserveResponse response = server.waitForNotificationThenCancelled(observation);
+        assertThat(response).hasCode(ResponseCode.NOT_FOUND);
+        assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
+
     }
 
     @TestAllTransportLayer
