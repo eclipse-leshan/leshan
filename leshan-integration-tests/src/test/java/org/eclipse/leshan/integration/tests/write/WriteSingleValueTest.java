@@ -38,7 +38,6 @@ import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
-import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -304,6 +303,26 @@ public class WriteSingleValueTest {
     }
 
     @TestAllCases
+    public void write_objlnk_resource(ContentFormat contentFormat, Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider) throws InterruptedException {
+        // write resource
+        ObjectLink expectedValue = new ObjectLink(10245, 1);
+        WriteResponse response = server.send(currentRegistration,
+                new WriteRequest(contentFormat, TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.OBJLINK_VALUE, expectedValue));
+
+        // verify result
+        assertThat(response) //
+                .hasCode(CHANGED) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
+
+        // read resource to check the value changed
+        ReadResponse readResponse = server.send(currentRegistration,
+                new ReadRequest(TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.OBJLINK_VALUE));
+        LwM2mResource resource = (LwM2mResource) readResponse.getContent();
+        assertThat(resource.getValue()).isEqualTo(expectedValue);
+    }
+
+    @TestAllCases
     public void can_write_single_instance_objlnk_resource(ContentFormat contentFormat, Protocol givenProtocol,
             String givenClientEndpointProvider, String givenServerEndpointProvider) throws InterruptedException {
 
@@ -311,7 +330,7 @@ public class WriteSingleValueTest {
 
         // Write objlnk resource
         WriteResponse response = server.send(currentRegistration, new WriteRequest(contentFormat,
-                TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_OBJLINK_VALUE, expectedValue));
+                TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_OBJLINK_VALUE, 0, expectedValue, Type.OBJLNK));
 
         // Verify Write result
         assertThat(response) //
@@ -320,8 +339,8 @@ public class WriteSingleValueTest {
 
         // Reading back the written OBJLNK value
         ReadResponse readResponse = server.send(currentRegistration,
-                new ReadRequest(TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_OBJLINK_VALUE));
-        LwM2mSingleResource resource = (LwM2mSingleResource) readResponse.getContent();
+                new ReadRequest(TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_OBJLINK_VALUE, 0));
+        LwM2mResourceInstance resource = (LwM2mResourceInstance) readResponse.getContent();
         assertThat(resource.getValue()).isEqualTo(expectedValue);
     }
 
