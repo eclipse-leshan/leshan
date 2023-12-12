@@ -348,7 +348,9 @@ Contributors:
                 </plugin>
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.1.2</version>
+                    <!-- Stuck to 3.0.0-M5 version of surefire because of :
+                         https://issues.apache.org/jira/browse/SUREFIRE-1923 -->
+                    <version>3.0.0-M5</version>
                     <configuration>
                         <systemPropertyVariables>
                              <logback.configurationFile>logback-leshan-test.xml</logback.configurationFile>
