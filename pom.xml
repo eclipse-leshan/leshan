@@ -628,5 +628,27 @@ Contributors:
         <sort.skip>true</sort.skip>
       </properties>
     </profile>
+    <profile>
+      <!-- This profile launch tests with given jdk version using toolchain -->
+      <id>useToolchain</id>
+      <properties>
+        <!-- Default value is minimal supported version, but another version can be used with : 
+            mvn clean install -PuseToolchain -Dtoolchain.version=11
+        -->
+        <toolchain.version>1.8</toolchain.version>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <jdkToolchain>
+                <version>${toolchain.version}</version>
+              </jdkToolchain>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>
