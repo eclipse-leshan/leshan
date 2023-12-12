@@ -32,12 +32,12 @@ pipeline {
   }
   post {
     unsuccessful {
-      mail to: 'sbernard@sierrawireless.com',
+      mail to: 'code@simonbernard.eu',
            subject: "Build ${env.BUILD_TAG} failed!",
            body: "Check console output at ${env.BUILD_URL} to view the results."
     }
     fixed {
-      mail to: 'sbernard@sierrawireless.com',
+      mail to: 'code@simonbernard.eu',
            subject: "Build ${env.BUILD_TAG} back to normal.",
            body: "Check console output at ${env.BUILD_URL} to view the results."
     }
