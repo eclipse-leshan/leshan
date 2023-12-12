@@ -20,22 +20,27 @@ import java.util.Map;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 
 public class CancelCompositeObservationResponse extends ObserveCompositeResponse {
 
-    public CancelCompositeObservationResponse(ResponseCode code, Map<LwM2mPath, LwM2mNode> content, String errorMessage,
-            Object coapResponse, CompositeObservation observation) {
-        super(code, content, errorMessage, coapResponse, observation);
+    public CancelCompositeObservationResponse(ResponseCode code, Map<LwM2mPath, LwM2mNode> content,
+            TimestampedLwM2mNodes timestampedValues, CompositeObservation observation, String errorMessage,
+            Object coapResponse) {
+        super(code, content, null, observation, errorMessage, coapResponse);
     }
 
     @Override
     public String toString() {
-        if (errorMessage != null) {
-            return String.format("CancelCompositeObservationResponse [code=%s, errormessage=%s]", code, errorMessage);
-        } else {
-            return String.format("CancelCompositeObservationResponse [code=%s, content=%s, observation=%s]", code,
-                    content, observation);
-        }
+        if (errorMessage != null)
+            return String.format("CancelCompositeObservationResponse [code=%s, errorMessage=%s]", code, errorMessage);
+        else if (timestampedValues != null)
+            return String.format(
+                    "CancelCompositeObservationResponse [code=%s, content=%s, observation=%s, timestampedValues= %d values]",
+                    code, content, observation, timestampedValues.getTimestamps().size());
+        else
+            return String.format("CancelCompositeObservationResponse [code=%s,  content=%s, observation=%s]", code,
+                    observation, content);
     }
 }

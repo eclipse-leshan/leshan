@@ -1354,7 +1354,7 @@ public class LwM2mNodeDecoderTest {
 
         // when
         TimestampedLwM2mNodes data = decoder.decodeTimestampedNodes(b.toString().getBytes(), ContentFormat.SENML_JSON,
-                model);
+                null, model);
 
         // then
         Instant timestamp = Instant.ofEpochSecond(268600000);

@@ -17,14 +17,12 @@ package org.eclipse.leshan.transport.javacoap.server.observation;
 
 import java.net.InetSocketAddress;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.leshan.core.ResponseCode;
-import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.observation.CompositeObservation;
@@ -166,10 +164,19 @@ public class CoapNotificationReceiver implements NotificationsReceiver {
             CompositeObservation compositeObservation = (CompositeObservation) observation;
 
             ContentFormat contentFormat = ContentFormat.fromCode(coapResponse.options().getContentFormat());
-            Map<LwM2mPath, LwM2mNode> nodes = decoder.decodeNodes(coapResponse.getPayload().getBytes(), contentFormat,
-                    compositeObservation.getPaths(), profile.getModel());
+            TimestampedLwM2mNodes timestampedNodes = decoder.decodeTimestampedNodes(
+                    coapResponse.getPayload().getBytes(), contentFormat, compositeObservation.getPaths(),
+                    profile.getModel());
 
-            return new ObserveCompositeResponse(responseCode, nodes, null, coapResponse, compositeObservation);
+            if (timestampedNodes.getTimestamps().size() == 1
+                    && timestampedNodes.getTimestamps().iterator().next() == null) {
+
+                return new ObserveCompositeResponse(responseCode, timestampedNodes.getNodes(), null,
+                        compositeObservation, null, coapResponse);
+            } else {
+                return new ObserveCompositeResponse(responseCode, null, timestampedNodes, compositeObservation, null,
+                        coapResponse);
+            }
         }
         return null;
     }

@@ -19,7 +19,6 @@ import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toLwM2mRespon
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
@@ -27,9 +26,8 @@ import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
-import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
@@ -120,15 +118,24 @@ public class ServerCoapMessageTranslator {
                 CompositeObservation compositeObservation = (CompositeObservation) observation;
 
                 if (responseCode.isError()) {
-                    return new ObserveCompositeResponse(responseCode, null, coapResponse.getPayloadString(),
-                            coapResponse, null);
+                    return new ObserveCompositeResponse(responseCode, null, null, null, coapResponse.getPayloadString(),
+                            coapResponse);
                 } else {
-                    Map<LwM2mPath, LwM2mNode> nodes = toolbox.getDecoder().decodeNodes(coapResponse.getPayload(),
-                            contentFormat, compositeObservation.getPaths(), profile.getModel());
-                    return new ObserveCompositeResponse(responseCode, nodes, null, coapResponse, compositeObservation);
+                    TimestampedLwM2mNodes timestampedNodes = toolbox.getDecoder().decodeTimestampedNodes(
+                            coapResponse.getPayload(), contentFormat, compositeObservation.getPaths(),
+                            profile.getModel());
+
+                    if (timestampedNodes.getTimestamps().size() == 1
+                            && timestampedNodes.getTimestamps().iterator().next() == null) {
+
+                        return new ObserveCompositeResponse(responseCode, timestampedNodes.getNodes(), null,
+                                compositeObservation, null, coapResponse);
+                    } else {
+                        return new ObserveCompositeResponse(responseCode, null, timestampedNodes, compositeObservation,
+                                null, coapResponse);
+                    }
                 }
             }
-
             throw new IllegalStateException(
                     "observation must be a CompositeObservation or a SingleObservation but was " + observation == null
                             ? null

@@ -78,7 +78,7 @@ public class SendResource extends LwM2mCoapResource {
                 return;
             }
 
-            TimestampedLwM2mNodes data = decoder.decodeTimestampedNodes(payload, contentFormat,
+            TimestampedLwM2mNodes data = decoder.decodeTimestampedNodes(payload, contentFormat, null,
                     clientProfile.getModel());
 
             // Handle "send op request

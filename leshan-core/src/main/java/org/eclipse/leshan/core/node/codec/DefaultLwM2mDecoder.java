@@ -207,8 +207,8 @@ public class DefaultLwM2mDecoder implements LwM2mDecoder {
     }
 
     @Override
-    public TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, ContentFormat format, LwM2mModel model)
-            throws CodecException {
+    public TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, ContentFormat format, List<LwM2mPath> paths,
+            LwM2mModel model) throws CodecException {
         LOG.trace("Decoding value for format {}: {}", format, content);
 
         if (format == null) {
@@ -221,10 +221,10 @@ public class DefaultLwM2mDecoder implements LwM2mDecoder {
         }
 
         if (decoder instanceof TimestampedMultiNodeDecoder) {
-            return ((TimestampedMultiNodeDecoder) decoder).decodeTimestampedNodes(content, model);
+            return ((TimestampedMultiNodeDecoder) decoder).decodeTimestampedNodes(content, paths, model);
         } else if (decoder instanceof MultiNodeDecoder) {
-            return new TimestampedLwM2mNodes.Builder()
-                    .addNodes(((MultiNodeDecoder) decoder).decodeNodes(content, null, model)).build();
+            return new TimestampedLwM2mNodes.Builder(paths)
+                    .addNodes(((MultiNodeDecoder) decoder).decodeNodes(content, paths, model)).build();
         } else {
             throw new CodecException(
                     "Decoder does not support multiple nodes decoding for this content format %s [%s] ", format);
