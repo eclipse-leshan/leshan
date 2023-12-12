@@ -28,25 +28,32 @@ pipeline {
         // This ssh agent is needed to cache yarn/node to download.eclipse.org when using -PeclipseJenkins
         // see : https://github.com/eclipse-leshan/leshan/pull/1484
         sshagent ( ['projects-storage.eclipse.org-bot-ssh']) {
-          sh ''' mvn -B clean install javadoc:javadoc -PeclipseJenkins '''
+          sh ''' mvn -B clean install javadoc:javadoc -PeclipseJenkins -DskipTests'''
         }
+        
+        // test with minimal supported version
+        sh '''mvn -B test -PuseToolchain  -Dskip.yarn'''
+        // test with all LTS version
+        sh '''mvn -B test -PuseToolchain  -Dskip.yarn -Dtoolchain.version=11'''
+        sh '''mvn -B test -PuseToolchain  -Dskip.yarn -Dtoolchain.version=17'''
+        sh '''mvn -B test -PuseToolchain  -Dskip.yarn -Dtoolchain.version=21'''
       }
     }
     stage('Deploy') {
       steps {
-        // Build 
+        // Deploy 
         sh '''mvn -B deploy -Prelease-nightly -DskipTests -Dskip.yarn'''
       }
     }
   }
   post {
     unsuccessful {
-      mail to: 'sbernard@sierrawireless.com',
+      mail to: 'code@simonbernard.eu',
            subject: "Build ${env.BUILD_TAG} failed!",
            body: "Check console output at ${env.BUILD_URL} to view the results."
     }
     fixed {
-      mail to: 'sbernard@sierrawireless.com',
+      mail to: 'code@simonbernard.eu',
            subject: "Build ${env.BUILD_TAG} back to normal.",
            body: "Check console output at ${env.BUILD_URL} to view the results."
     }
