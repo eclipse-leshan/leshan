@@ -36,7 +36,8 @@ public class ObserveCompositeResponseTest {
         exampleContent.put(new LwM2mPath("/2/3/4"), newResource(16, "example 2"));
 
         // when
-        ObserveCompositeResponse response = new ObserveCompositeResponse(CONTENT, exampleContent, null, null, null);
+        ObserveCompositeResponse response = new ObserveCompositeResponse(CONTENT, exampleContent, null, null, null,
+                null);
 
         // then
         assertEquals(exampleContent, response.getContent());

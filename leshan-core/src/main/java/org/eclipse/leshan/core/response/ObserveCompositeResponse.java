@@ -20,6 +20,7 @@ import java.util.Map;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 
 /**
@@ -30,11 +31,13 @@ import org.eclipse.leshan.core.observation.CompositeObservation;
 public class ObserveCompositeResponse extends ReadCompositeResponse {
 
     protected final CompositeObservation observation;
+    protected final TimestampedLwM2mNodes timestampedValues;
 
     public ObserveCompositeResponse(ResponseCode code, Map<LwM2mPath, LwM2mNode> content, String errorMessage,
-            Object coapResponse, CompositeObservation observation) {
+            Object coapResponse, CompositeObservation observation, TimestampedLwM2mNodes timestampedValues) {
         super(code, content, errorMessage, coapResponse);
         this.observation = observation;
+        this.timestampedValues = timestampedValues;
     }
 
     public CompositeObservation getObservation() {
@@ -69,30 +72,38 @@ public class ObserveCompositeResponse extends ReadCompositeResponse {
     // Syntactic sugar static constructors:
 
     public static ObserveCompositeResponse success(Map<LwM2mPath, LwM2mNode> content) {
-        return new ObserveCompositeResponse(ResponseCode.CONTENT, content, null, null, null);
+        return new ObserveCompositeResponse(ResponseCode.CONTENT, content, null, null, null, null);
+    }
+
+    public static ObserveCompositeResponse success(TimestampedLwM2mNodes timestampedValues) {
+        return new ObserveCompositeResponse(ResponseCode.CONTENT, null, null, null, null, timestampedValues);
     }
 
     public static ObserveCompositeResponse badRequest(String errorMessage) {
-        return new ObserveCompositeResponse(ResponseCode.BAD_REQUEST, null, errorMessage, null, null);
+        return new ObserveCompositeResponse(ResponseCode.BAD_REQUEST, null, errorMessage, null, null, null);
     }
 
     public static ObserveCompositeResponse notFound() {
-        return new ObserveCompositeResponse(ResponseCode.NOT_FOUND, null, null, null, null);
+        return new ObserveCompositeResponse(ResponseCode.NOT_FOUND, null, null, null, null, null);
     }
 
     public static ObserveCompositeResponse unauthorized() {
-        return new ObserveCompositeResponse(ResponseCode.UNAUTHORIZED, null, null, null, null);
+        return new ObserveCompositeResponse(ResponseCode.UNAUTHORIZED, null, null, null, null, null);
     }
 
     public static ObserveCompositeResponse methodNotAllowed() {
-        return new ObserveCompositeResponse(ResponseCode.METHOD_NOT_ALLOWED, null, null, null, null);
+        return new ObserveCompositeResponse(ResponseCode.METHOD_NOT_ALLOWED, null, null, null, null, null);
     }
 
     public static ObserveCompositeResponse notAcceptable() {
-        return new ObserveCompositeResponse(ResponseCode.UNSUPPORTED_CONTENT_FORMAT, null, null, null, null);
+        return new ObserveCompositeResponse(ResponseCode.UNSUPPORTED_CONTENT_FORMAT, null, null, null, null, null);
     }
 
     public static ObserveCompositeResponse internalServerError(String errorMessage) {
-        return new ObserveCompositeResponse(ResponseCode.INTERNAL_SERVER_ERROR, null, errorMessage, null, null);
+        return new ObserveCompositeResponse(ResponseCode.INTERNAL_SERVER_ERROR, null, errorMessage, null, null, null);
+    }
+
+    public TimestampedLwM2mNodes getTimestampedLwM2mNodes() {
+        return timestampedValues;
     }
 }
