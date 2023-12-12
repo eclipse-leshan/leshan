@@ -1,0 +1,72 @@
+/************************************************************************************
+
+  Manual job used to test to build a branch on jenkins
+  Take 1 parameters (BRANCH).
+
+    Checks out current ${BRANCH}'s HEAD
+  
+*************************************************************************************/
+pipeline {
+  agent any
+  parameters {
+    string(
+        name: 'BRANCH',
+        defaultValue: 'master',
+        description: 'The branch to build. Examples: master, 1.x')
+    booleanParam(
+        name: 'TEST_WITH_TOOLCHAIN',
+        defaultValue: false,
+        description: 'To execute tests using toolchain')
+    string(
+        name: 'JDK_TOOLCHAIN_VERSION',
+        defaultValue: '',
+        description: 'The jdk version used to execute tests when `TEST_WITH_TOOLCHAIN` is used. (e.g. 1.7 1.8 11 17 21 ...). By default, this is an empty string which means use minimal supported java version')
+  }
+  tools {
+    maven 'apache-maven-latest'
+    jdk 'temurin-jdk11-latest'
+  }
+  options {
+    timeout (time: 30, unit: 'MINUTES')
+    buildDiscarder(logRotator(numToKeepStr: '3'))
+    disableConcurrentBuilds()
+    skipDefaultCheckout()
+    durabilityHint('PERFORMANCE_OPTIMIZED')
+  }
+  stages {
+        stage('Build') {
+      steps {
+        // Checkout code
+        git url: 'git@github.com:eclipse-leshan/leshan.git',
+            credentialsId: 'github-bot-ssh',
+            branch: '${BRANCH}'
+      
+        // Build 
+        sh ''' mvn -B clean install javadoc:javadoc -DskipTests'''
+      
+        
+        // test with 
+        // - given toolchain version
+        // - OR minimal version supported
+        // - OR jvm used to build. 
+        sh ''' 
+            if [[ $TEST_WITH_TOOLCHAIN == true ]]; then
+                if [[ -n $JDK_TOOLCHAIN_VERSION ]]; then
+                    mvn -B test -PuseToolchain -Dtoolchain.version="${JDK_TOOLCHAIN_VERSION}"
+                else
+                    mvn -B test -PuseToolchain
+                fi
+            else
+                mvn -B test
+            fi
+        '''
+        
+        // Copy artifacts
+        sh ''' cp leshan-server-demo/target/leshan-server-demo-*-jar-with-dependencies.jar leshan-server-demo.jar
+               cp leshan-bsserver-demo/target/leshan-bsserver-demo-*-jar-with-dependencies.jar leshan-bsserver-demo.jar
+               cp leshan-client-demo/target/leshan-client-demo-*-jar-with-dependencies.jar leshan-client-demo.jar
+        '''
+      }
+    }
+  }
+}
