@@ -173,9 +173,11 @@ public class TimestampedLwM2mNodes {
 
             for (InternalNode internalNode : nodes) {
                 // validate path is consistent with Node
-                String cause = LwM2mNodeUtil.getInvalidPathForNodeCause(internalNode.node, internalNode.path);
-                if (cause != null) {
-                    throw new IllegalArgumentException(cause);
+                if (internalNode.node != null) {
+                    String cause = LwM2mNodeUtil.getInvalidPathForNodeCause(internalNode.node, internalNode.path);
+                    if (cause != null) {
+                        throw new IllegalArgumentException(cause);
+                    }
                 }
 
                 // add to the map
