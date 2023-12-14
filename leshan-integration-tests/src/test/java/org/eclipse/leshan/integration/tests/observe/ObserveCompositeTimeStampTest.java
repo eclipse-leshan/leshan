@@ -123,37 +123,36 @@ public class ObserveCompositeTimeStampTest {
     @TestAllCases
     public void can_observecomposite_timestamped_resource(ContentFormat contentFormat,
             String givenServerEndpointProvider) throws InterruptedException {
-        // observe device timezone
 
-        // LwM2mPaths
+        // Paths to observe
         List<LwM2mPath> paths = new ArrayList<>();
         paths.add(new LwM2mPath("/1/0/1"));
         paths.add(new LwM2mPath("/3/0/15"));
 
+        // Send Observe Request
         ObserveCompositeResponse observeResponse = server.send(currentRegistration,
                 new ObserveCompositeRequest(contentFormat, contentFormat, paths));
         assertThat(observeResponse) //
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
-        // an observation response should have been sent
+        // Check Observation
         CompositeObservation observation = observeResponse.getObservation();
-
-        assertThat(observation.getPaths()).asString().isEqualTo("[/1/0/1, /3/0/15]");
+        assertThat(observation.getPaths()).containsExactlyElementsOf(paths);
         assertThat(observation.getRegistrationId()).isEqualTo(currentRegistration.getId());
         Set<Observation> observations = server.getObservationService().getObservations(currentRegistration);
         assertThat(observations).containsExactly(observation);
+        server.waitForNewObservation(observation);
 
         // *** HACK send time-stamped notification as Leshan client does not support it *** //
         // create time-stamped nodes
-
         TimestampedLwM2mNodes.Builder builder = new TimestampedLwM2mNodes.Builder();
-        Map<LwM2mPath, LwM2mNode> currentValues = new HashMap<>();
-        currentValues.put(paths.get(0), LwM2mSingleResource.newIntegerResource(1, 3600));
-        builder.addNodes(Instant.ofEpochMilli(System.currentTimeMillis()), currentValues);
-        currentValues.clear();
-        currentValues.put(paths.get(1), LwM2mSingleResource.newStringResource(15, "Europe/Belgrade"));
-        builder.addNodes(Instant.ofEpochMilli(System.currentTimeMillis()), currentValues);
+        Instant t1 = Instant.now();
+        Instant t2 = Instant.now().minusSeconds(2000);
+        builder.put(t1, paths.get(0), LwM2mSingleResource.newIntegerResource(1, 3600));
+        builder.put(t1, paths.get(1), LwM2mSingleResource.newStringResource(15, "Europe/Belgrade"));
+        builder.put(t2, paths.get(0), LwM2mSingleResource.newIntegerResource(1, 500));
+        builder.put(t2, paths.get(1), LwM2mSingleResource.newStringResource(15, "Europe/Paris"));
         TimestampedLwM2mNodes timestampednodes = builder.build();
 
         byte[] payload = encoder.encodeTimestampedNodes(timestampednodes, contentFormat,
@@ -166,13 +165,60 @@ public class ObserveCompositeTimeStampTest {
         // *** Hack End *** //
 
         // verify result
-        server.waitForNewObservation(observation);
         ObserveCompositeResponse response = server.waitForNotificationOf(observation);
         assertThat(response).hasContentFormat(contentFormat, givenServerEndpointProvider);
-        assertThat(response.getContent().get(new LwM2mPath("/1/0/1")))
-                .isEqualTo(timestampednodes.getNodes().get(new LwM2mPath("/1/0/1")));
-        assertThat(response.getContent().get(new LwM2mPath("/3/0/15")))
-                .isEqualTo(timestampednodes.getNodes().get(new LwM2mPath("/3/0/15")));
+        assertThat(response.getContent()).containsExactlyEntriesOf(timestampednodes.getNodes());
+        assertThat(response.getTimestampedLwM2mNodes()).isEqualTo(timestampednodes);
+    }
+
+    @TestAllCases
+    public void can_observecomposite_timestamped_resource_with_empty_value(ContentFormat contentFormat,
+            String givenServerEndpointProvider) throws InterruptedException {
+
+        // Paths to observe
+        List<LwM2mPath> paths = new ArrayList<>();
+        paths.add(new LwM2mPath("/1/0/1"));
+        paths.add(new LwM2mPath("/3/0/15"));
+
+        // Send Observe Request
+        ObserveCompositeResponse observeResponse = server.send(currentRegistration,
+                new ObserveCompositeRequest(contentFormat, contentFormat, paths));
+        assertThat(observeResponse) //
+                .hasCode(CONTENT) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
+
+        // Check Observation
+        CompositeObservation observation = observeResponse.getObservation();
+        assertThat(observation.getPaths()).containsExactlyElementsOf(paths);
+        assertThat(observation.getRegistrationId()).isEqualTo(currentRegistration.getId());
+        Set<Observation> observations = server.getObservationService().getObservations(currentRegistration);
+        assertThat(observations).containsExactly(observation);
+        server.waitForNewObservation(observation);
+
+        // *** HACK send time-stamped notification as Leshan client does not support it *** //
+        // create time-stamped nodes
+        TimestampedLwM2mNodes.Builder builder = new TimestampedLwM2mNodes.Builder();
+        Instant t1 = Instant.now();
+        Instant t2 = Instant.now().minusSeconds(2000);
+        builder.put(t1, paths.get(0), null);
+        builder.put(t1, paths.get(1), LwM2mSingleResource.newStringResource(15, "Europe/Belgrade"));
+        builder.put(t2, paths.get(0), LwM2mSingleResource.newIntegerResource(1, 500));
+        builder.put(t2, paths.get(1), null);
+        TimestampedLwM2mNodes timestampednodes = builder.build();
+
+        byte[] payload = encoder.encodeTimestampedNodes(timestampednodes, contentFormat,
+                client.getObjectTree().getModel());
+
+        TestObserveUtil.sendNotification(
+                client.getClientConnector(client.getServerIdForRegistrationId("/rd/" + currentRegistration.getId())),
+                server.getEndpoint(Protocol.COAP).getURI(), payload,
+                observeResponse.getObservation().getId().getBytes(), 2, contentFormat);
+        // *** Hack End *** //
+
+        // verify result
+        ObserveCompositeResponse response = server.waitForNotificationOf(observation);
+        assertThat(response).hasContentFormat(contentFormat, givenServerEndpointProvider);
+        assertThat(response.getContent()).containsExactlyEntriesOf(timestampednodes.getNodes());
         assertThat(response.getTimestampedLwM2mNodes()).isEqualTo(timestampednodes);
     }
 
