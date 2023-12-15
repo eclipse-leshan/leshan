@@ -541,6 +541,14 @@ Contributors:
           <artifactId>wagon-maven-plugin</artifactId>
           <version>2.0.2</version>
         </plugin>
+        <plugin>
+          <groupId>org.owasp</groupId>
+          <artifactId>dependency-check-maven</artifactId>
+          <version>9.0.6</version>
+          <configuration>
+            <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
 
