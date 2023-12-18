@@ -27,7 +27,7 @@ pipeline {
     jdk 'temurin-jdk11-latest'
   }
   options {
-    timeout (time: 30, unit: 'MINUTES')
+    timeout (time: 180, unit: 'MINUTES')
     buildDiscarder(logRotator(numToKeepStr: '3'))
     disableConcurrentBuilds()
     skipDefaultCheckout()
@@ -50,28 +50,22 @@ pipeline {
         }
 
         
-        // test with 
-        // - given toolchain version
-        // - OR minimal version supported
-        // - OR jvm used to build. 
-        sh ''' 
-            if [[ $TEST_WITH_TOOLCHAIN == true ]]; then
-                if [[ -n $JDK_TOOLCHAIN_VERSION ]]; then
-                    mvn -B test -PuseToolchain  -Dskip.yarn -Dtoolchain.version="${JDK_TOOLCHAIN_VERSION}"
-                else
-                    mvn -B test -PuseToolchain -Dskip.yarn
-                fi
-            else
-                mvn -B test -Dskip.yarn
-            fi
-        '''
-        
-        // Copy artifacts
-        sh ''' cp leshan-server-demo/target/leshan-server-demo-*-jar-with-dependencies.jar leshan-server-demo.jar
-               cp leshan-bsserver-demo/target/leshan-bsserver-demo-*-jar-with-dependencies.jar leshan-bsserver-demo.jar
-               cp leshan-client-demo/target/leshan-client-demo-*-jar-with-dependencies.jar leshan-client-demo.jar
-        '''
+        // check for vulnerability
+        sh '''mvn -B -Paggregate  dependency-check:aggregate'''  
       }
+    }
+  }
+  post {
+    always {
+      // publish HTML report
+      publishHTML target: [
+            allowMissing: false,
+            alwaysLinkToLastBuild: false,
+            keepAll: true,
+            reportDir: 'leshan/target/',
+            reportFiles: 'dependency-check-report.htm',
+            reportName: 'Vulnerability Report'
+          ]
     }
   }
 }
