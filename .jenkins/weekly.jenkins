@@ -1,0 +1,61 @@
+/************************************************************************************
+  
+  Weekly Build : 
+  Checks for vulnerability
+  
+*************************************************************************************/
+pipeline {
+  agent any
+  tools {
+    maven 'apache-maven-latest'
+    jdk 'temurin-jdk11-latest'
+  }
+  options {
+    timeout (time: 30, unit: 'MINUTES')
+    buildDiscarder(logRotator(numToKeepStr: '3'))
+    disableConcurrentBuilds()
+    durabilityHint('PERFORMANCE_OPTIMIZED')
+  }
+  triggers {
+    pollSCM ignorePostCommitHooks: true, scmpoll_spec: 'H H * * Sun'
+  }
+  stages {
+    stage('Build') {
+      steps {
+        // Build 
+        sh ''' mvn -B com.github.ekryd.sortpom:sortpom-maven-plugin:verify -PallPom ''' 
+        // This ssh agent is needed to cache yarn/node to download.eclipse.org when using -PeclipseJenkins
+        // see : https://github.com/eclipse-leshan/leshan/pull/1484
+        sshagent ( ['projects-storage.eclipse.org-bot-ssh']) {
+          sh ''' mvn -B clean install javadoc:javadoc -PeclipseJenkins -DskipTests'''
+        }
+        
+        // check for vulnerability
+        sh '''mvn -B -Paggregate  dependency-check:aggregate'''    
+      }
+    }
+  }
+  post {
+    unsuccessful {
+      mail to: 'code@simonbernard.eu',
+           subject: "Build ${env.BUILD_TAG} failed!",
+           body: "Check console output at ${env.BUILD_URL} to view the results."
+    }
+    fixed {
+      mail to: 'code@simonbernard.eu',
+           subject: "Build ${env.BUILD_TAG} back to normal.",
+           body: "Check console output at ${env.BUILD_URL} to view the results."
+    }
+    always {
+      // publish HTML report
+      publishHTML target: [
+            allowMissing: false,
+            alwaysLinkToLastBuild: false,
+            keepAll: true,
+            reportDir: 'leshan/target/',
+            reportFiles: 'dependency-check-report.htm',
+            reportName: 'Vulnerability Report'
+          ]
+    }
+  }
+}
