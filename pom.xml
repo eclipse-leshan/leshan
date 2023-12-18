@@ -666,6 +666,8 @@ Contributors:
             <groupId>org.owasp</groupId>
             <artifactId>dependency-check-maven</artifactId>
             <configuration>
+              <!--format>JENKINS</format-->
+              <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
               <scanSet>
                 <fileSet>
                   <directory>${project.basedir}/leshan-server-demo/webapp</directory>
