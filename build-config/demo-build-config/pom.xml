@@ -103,6 +103,22 @@ Contributors:
             </execution>
           </executions>
         </plugin>
+        <plugin>
+          <groupId>org.owasp</groupId>
+          <artifactId>dependency-check-maven</artifactId>
+          <configuration>
+            <scanSet>
+              <fileSet>
+                <directory>${project.basedir}/webapp</directory>
+                <includes>
+                  <include>package.json</include>
+                  <include>yarn.lock</include>
+                </includes>
+              </fileSet>
+            </scanSet>
+            <pathToYarn>${project.basedir}/webapp/node/yarn/dist/bin/yarn</pathToYarn>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
