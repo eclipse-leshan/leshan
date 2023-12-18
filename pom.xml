@@ -658,5 +658,35 @@ Contributors:
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>aggregate</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.owasp</groupId>
+            <artifactId>dependency-check-maven</artifactId>
+            <configuration>
+              <scanSet>
+                <fileSet>
+                  <directory>${project.basedir}/leshan-server-demo/webapp</directory>
+                  <includes>
+                    <include>package.json</include>
+                    <include>yarn.lock</include>
+                  </includes>
+                </fileSet>
+                <fileSet>
+                  <directory>${project.basedir}/leshan-bsserver-demo/webapp</directory>
+                  <includes>
+                    <include>package.json</include>
+                    <include>yarn.lock</include>
+                  </includes>
+                </fileSet>
+              </scanSet>
+              <pathToYarn>${project.basedir}/leshan-server-demo/webapp/node/yarn/dist/bin/yarn</pathToYarn>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>
