@@ -34,7 +34,7 @@ pipeline {
     durabilityHint('PERFORMANCE_OPTIMIZED')
   }
   stages {
-        stage('Build') {
+    stage('Build') {
       steps {
         // Checkout code
         git url: 'git@github.com:eclipse-leshan/leshan.git',
@@ -51,7 +51,9 @@ pipeline {
 
         
         // check for vulnerability
-        sh '''mvn -B -Paggregate  dependency-check:aggregate'''  
+        sh '''ls ./leshan-server-demo/webapp/node/yarn/dist/bin/ -alh'''
+        sh '''export PATH=./leshan-server-demo/webapp/node:$PATH && ./leshan-server-demo/webapp/node/yarn/dist/bin/yarn --help'''
+        sh '''export PATH=./leshan-server-demo/webapp/node:$PATH && mvn -B -Paggregate  dependency-check:aggregate'''  
       }
     }
   }
