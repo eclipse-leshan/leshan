@@ -57,7 +57,12 @@ public class TimestampedLwM2mNodes {
     public Map<LwM2mPath, LwM2mNode> getNodes() {
         Map<LwM2mPath, LwM2mNode> result = new HashMap<>();
         for (Map.Entry<Instant, Map<LwM2mPath, LwM2mNode>> entry : timestampedPathNodesMap.entrySet()) {
-            result.putAll(entry.getValue());
+
+            for (Map.Entry<LwM2mPath, LwM2mNode> subentry : entry.getValue().entrySet()) {
+                if (subentry.getValue() != null)
+                    result.put(subentry.getKey(), subentry.getValue());
+
+            }
         }
         return Collections.unmodifiableMap(result);
     }
@@ -124,6 +129,7 @@ public class TimestampedLwM2mNodes {
 
         private final List<InternalNode> nodes = new ArrayList<>();
         private boolean noDuplicate = true;
+        private List<LwM2mPath> paths = null;
 
         public Builder raiseExceptionOnDuplicate(boolean raiseException) {
             noDuplicate = raiseException;
@@ -164,6 +170,11 @@ public class TimestampedLwM2mNodes {
             return this;
         }
 
+        public Builder setPaths(List<LwM2mPath> paths) {
+            this.paths = paths;
+            return this;
+        }
+
         /**
          * Build the {@link TimestampedLwM2mNodes} and raise {@link IllegalArgumentException} if builder inputs are
          * invalid.
@@ -192,6 +203,17 @@ public class TimestampedLwM2mNodes {
                         throw new IllegalArgumentException(String.format(
                                 "Unable to create TimestampedLwM2mNodes : duplicate value for path %s. (%s, %s)",
                                 internalNode.path, internalNode.node, previous));
+                    }
+                }
+            }
+
+            if (paths != null) {
+                // add null values for every requested path if they are not present in response for observe composite
+                for (Instant timestamp : timestampToPathToNode.keySet()) {
+                    for (LwM2mPath requestedpath : paths) {
+                        if (!timestampToPathToNode.get(timestamp).containsKey(requestedpath)) {
+                            timestampToPathToNode.get(timestamp).put(requestedpath, null);
+                        }
                     }
                 }
             }
