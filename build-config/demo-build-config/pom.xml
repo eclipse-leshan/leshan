@@ -101,6 +101,23 @@ Contributors:
                 <arguments>build</arguments>
               </configuration>
             </execution>
+            <execution>
+              <?m2e ignore?>
+              <id>yarn audit</id>
+              <goals>
+                <goal>yarn</goal>
+              </goals>
+              <configuration>
+                <environmentVariables>
+                  <!-- this variable will be used by webapp/vue.config.js -->
+                  <MAVEN_OUTPUT_DIR>${project.build.outputDirectory}/webapp</MAVEN_OUTPUT_DIR>
+                  <!-- this variable is used by the webapp -->
+                  <VITE_APP_COMMIT_ID>${buildNumber}</VITE_APP_COMMIT_ID>
+                  <VITE_APP_VERSION>${project.version}</VITE_APP_VERSION>
+                </environmentVariables>
+                <arguments>audit</arguments>
+              </configuration>
+            </execution>
           </executions>
         </plugin>
         <plugin>
