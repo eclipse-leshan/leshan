@@ -1,0 +1,72 @@
+/************************************************************************************
+  
+  Weekly Build : 
+  Checks for vulnerability
+  
+*************************************************************************************/
+pipeline {
+  agent any
+  tools {
+    maven 'apache-maven-latest'
+    jdk 'temurin-jdk11-latest'
+  }
+  options {
+    timeout (time: 30, unit: 'MINUTES')
+    buildDiscarder(logRotator(numToKeepStr: '3'))
+    disableConcurrentBuilds()
+    durabilityHint('PERFORMANCE_OPTIMIZED')
+  }
+  triggers {
+    // every night between Saturday and Sunday
+    cron 'H H * * 6'
+  }
+  environment {
+    PATH = "${env.HOME}/bin:${env.PATH}"
+  }
+  stages {
+    stage('Build') {
+      steps {
+        // install trivy
+        sh ''' curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b ~/bin v0.48.2 '''
+      
+        // Build (optional)
+        sh ''' mvn -B com.github.ekryd.sortpom:sortpom-maven-plugin:verify -PallPom ''' 
+        // This ssh agent is needed to cache yarn/node to download.eclipse.org when using -PeclipseJenkins
+        // see : https://github.com/eclipse-leshan/leshan/pull/1484
+        sshagent ( ['projects-storage.eclipse.org-bot-ssh']) {
+          sh ''' mvn -B clean install javadoc:javadoc -PeclipseJenkins -DskipTests'''
+        }
+        
+        // Generate SBOM for maven 
+        sh ''' mvn org.cyclonedx:cyclonedx-maven-plugin:makeBom '''
+        
+        // Generate SBOM for yarn with trivy
+        // Ideally we would like to use a specific integrated tools like : https://github.com/CycloneDX/cyclonedx-node-yarn
+        // But project is not really active and is searching for contributor : https://github.com/CycloneDX/cyclonedx-node-yarn/issues/12
+        // OR maybe we should move from Yarn To NPM : https://github.com/eclipse-leshan/leshan/issues/1550#issuecomment-1878802371
+        sh ''' trivy fs leshan-server-demo/webapp --format cyclonedx --output leshan-server-demo/target/bom-frontend.json  --include-dev-deps '''
+        sh ''' trivy fs leshan-bsserver-demo/webapp --format cyclonedx --output leshan-bsserver-demo/target/bom-frontend.json  --include-dev-deps '''
+        
+        // check for vulnerabilities
+        // "find" to search file
+        // xargs to get correct exit code (find always return 0) 
+        sh ''' find . -type f -path '*/target/bom*.json' -print0 | xargs -0 -I {} sh -c 'echo "Scanning "{}""; trivy -q --exit-code 1 sbom "{}"' '''  
+
+        // check licenses
+        // TODO add dash-licenses check when cycloneDx will be supported : https://github.com/eclipse/dash-licenses/issues/191     
+      }
+    }
+  }
+  post {
+    unsuccessful {
+      mail to: 'code@simonbernard.eu',
+           subject: "Build ${env.BUILD_TAG} failed!",
+           body: "Check console output at ${env.BUILD_URL} to view the results."
+    }
+    fixed {
+      mail to: 'code@simonbernard.eu',
+           subject: "Build ${env.BUILD_TAG} back to normal.",
+           body: "Check console output at ${env.BUILD_URL} to view the results."
+    }
+  }
+}
