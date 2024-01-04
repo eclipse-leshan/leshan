@@ -1,0 +1,52 @@
+/************************************************************************************
+  
+  Weekly Build : 
+  Checks for vulnerability
+  
+*************************************************************************************/
+pipeline {
+  agent any
+  tools {
+    maven 'apache-maven-latest'
+    jdk 'temurin-jdk11-latest'
+  }
+  options {
+    timeout (time: 30, unit: 'MINUTES')
+    buildDiscarder(logRotator(numToKeepStr: '3'))
+    disableConcurrentBuilds()
+    durabilityHint('PERFORMANCE_OPTIMIZED')
+  }
+  triggers {
+    // every night between Saturday and Sunday
+    cron 'H H * * 6'
+  }
+  environment {
+    PATH = "${env.HOME}/bin:${env.PATH}"
+  }
+  stages {
+    stage('Build') {
+      steps {
+        // install trivy
+        sh 'curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b ~/bin v0.48.1'
+      
+        // Build 
+        sh ''' mvn -B clean install javadoc:javadoc -DskipTests ''' 
+        
+        // check for vulnerabilities
+        sh 'trivy -f table --scanners vuln fs . --include-dev-deps --exit-code 1'     
+      }
+    }
+  }
+  post {
+    unsuccessful {
+      mail to: 'code@simonbernard.eu',
+           subject: "Build ${env.BUILD_TAG} failed!",
+           body: "Check console output at ${env.BUILD_URL} to view the results."
+    }
+    fixed {
+      mail to: 'code@simonbernard.eu',
+           subject: "Build ${env.BUILD_TAG} back to normal.",
+           body: "Check console output at ${env.BUILD_URL} to view the results."
+    }
+  }
+}
