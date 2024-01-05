@@ -23,6 +23,15 @@ Only Leshan library is concerned. The demos are not covered.
 Note: ℹ️ **1.x** version depends on californium 2.x version where support is not clear.   
 See : https://github.com/eclipse/californium/security/policy
 
+## About Leshan Demo
+
+As said previously **Leshan demos are not covered by Security Policy**.
+
+It is strongly discouraged to use Leshan demos v1.x on public server because they are using no longer maintained javascript library like : 
+- **bootstrap.js** (pkg:javascript/bootstrap@3.4.1) : Bootstrap before 4.0.0 is end-of-life and no longer maintained.
+- **jquery-2.2.4.js** (pkg:javascript/jquery@2.2.4) : CVE-2015-9251, CVE-2019-11358, CVE-2020-11022, CVE-2020-11023, jQuery 1.x and 2.x are End-of-Life and no longer receiving security updates
+
+Concerning Leshan demos v2.x, some minimal efforts are made to update dependencies when vulnerabilities are detected but keep in mind that demos are not production ready tools. 
 
 ## Versions Security State
 
