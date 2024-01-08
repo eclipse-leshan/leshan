@@ -199,7 +199,13 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
             // Decode SenML pack
             SenMLPack pack = decoder.fromSenML(content);
 
-            TimestampedLwM2mNodes.Builder nodes = TimestampedLwM2mNodes.builder();
+            TimestampedLwM2mNodes.Builder nodes;
+
+            if (paths != null && paths.size() > 1) {
+                nodes = TimestampedLwM2mNodes.builder(paths);
+            } else {
+                nodes = TimestampedLwM2mNodes.builder();
+            }
 
             LwM2mSenMLResolver resolver = new LwM2mSenMLResolver();
             for (SenMLRecord record : pack.getRecords()) {
@@ -209,9 +215,6 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                         DefaultLwM2mDecoder.nodeClassFromPath(path));
                 nodes.put(TimestampUtil.fromSeconds(resolvedRecord.getTimeStamp()), path, node);
             }
-
-            if (paths != null && paths.size() > 1)
-                nodes.setPaths(paths);
 
             return nodes.build();
 

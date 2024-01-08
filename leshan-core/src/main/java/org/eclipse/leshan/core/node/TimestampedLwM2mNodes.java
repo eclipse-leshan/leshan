@@ -113,7 +113,19 @@ public class TimestampedLwM2mNodes {
         return new Builder();
     }
 
+    public static Builder builder(List<LwM2mPath> paths) {
+        return new Builder(paths);
+    }
+
     public static class Builder {
+
+        public Builder(List<LwM2mPath> paths) {
+            this.paths = paths;
+        }
+
+        public Builder() {
+            this.paths = null;
+        }
 
         private static class InternalNode {
             Instant timestamp;
@@ -129,7 +141,7 @@ public class TimestampedLwM2mNodes {
 
         private final List<InternalNode> nodes = new ArrayList<>();
         private boolean noDuplicate = true;
-        private List<LwM2mPath> paths = null;
+        private final List<LwM2mPath> paths;
 
         public Builder raiseExceptionOnDuplicate(boolean raiseException) {
             noDuplicate = raiseException;
@@ -167,11 +179,6 @@ public class TimestampedLwM2mNodes {
                     nodes.add(new InternalNode(timestamp, pathNodeEntry.getKey(), pathNodeEntry.getValue()));
                 }
             }
-            return this;
-        }
-
-        public Builder setPaths(List<LwM2mPath> paths) {
-            this.paths = paths;
             return this;
         }
 
