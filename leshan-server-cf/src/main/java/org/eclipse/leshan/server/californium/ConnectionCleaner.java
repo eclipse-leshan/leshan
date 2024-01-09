@@ -23,7 +23,7 @@ import javax.security.auth.x500.X500Principal;
 import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.auth.X509CertPath;
-import org.eclipse.californium.elements.util.LeastRecentlyUsedCache.Predicate;
+import org.eclipse.californium.elements.util.Filter;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.leshan.core.util.X509CertUtil;
 import org.eclipse.leshan.server.security.SecurityInfo;
@@ -40,9 +40,7 @@ public class ConnectionCleaner {
     }
 
     public void cleanConnectionFor(final SecurityInfo... infos) {
-        // TODO remove depreacated code
-        // See : https://github.com/eclipse-californium/californium/issues/2160#issuecomment-1645715343
-        connector.startTerminateConnectionsForPrincipal(new Predicate<Principal>() {
+        connector.startTerminateConnectionsForPrincipal(new Filter<Principal>() {
             @Override
             public boolean accept(Principal principal) {
                 if (principal != null) {
