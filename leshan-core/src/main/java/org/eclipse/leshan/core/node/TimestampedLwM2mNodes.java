@@ -57,12 +57,7 @@ public class TimestampedLwM2mNodes {
     public Map<LwM2mPath, LwM2mNode> getNodes() {
         Map<LwM2mPath, LwM2mNode> result = new HashMap<>();
         for (Map.Entry<Instant, Map<LwM2mPath, LwM2mNode>> entry : timestampedPathNodesMap.entrySet()) {
-
-            for (Map.Entry<LwM2mPath, LwM2mNode> subentry : entry.getValue().entrySet()) {
-                if (subentry.getValue() != null)
-                    result.put(subentry.getKey(), subentry.getValue());
-
-            }
+            result.putAll(entry.getValue());
         }
         return Collections.unmodifiableMap(result);
     }
