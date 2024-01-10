@@ -114,6 +114,39 @@ public class TimestampedLwM2mNodes {
 
     public static class Builder {
 
+        /**
+         * Create a Builder to create timestamped nodes for given paths.
+         * <p>
+         * If there is not exactly one entry for each path by timestamp for each given <code>paths</code>, then an
+         * {@link IllegalArgumentException} will be raised on {@link #build()}.
+         * <p>
+         * e.g. if you provide "/1/0/1" and "/3/0/15" as path
+         *
+         * <pre>
+         * // valid
+         * t1 => {
+         *   "/1/0/1"     => LwM2mResource
+         *   "/3/0/15"    => LwM2mResource
+         * },
+         * // valid
+         * t2 => {
+         *   "/1/0/1"     => LwM2mResource
+         *   "/3/0/15"    => null
+         * },
+         * // invalid  : 3/0/15 is missing
+         * t3 => {
+         *   "/1/0/1"     => LwM2mResource
+         * },
+         * // invalid : 3/0/1 should not be here
+         * t4 => {
+         *   "/1/0/1"     => LwM2mResource
+         *   "/3/0/1"     => LwM2mResource
+         *   "/3/0/15"    => LwM2mResource
+         * }
+         * </pre>
+         *
+         * @param paths list of allowed {@link LwM2mPath}
+         */
         public Builder(List<LwM2mPath> paths) {
             this.paths = paths;
         }
@@ -193,6 +226,13 @@ public class TimestampedLwM2mNodes {
                     }
                 }
 
+                // validate path is included in expected paths
+                if (paths != null && !paths.contains(internalNode.path)) {
+                    throw new IllegalArgumentException(String.format(
+                            "Unable to create TimestampedLwM2mNodes : Unexpected path  %s, only %s are expected.",
+                            internalNode.path, paths));
+                }
+
                 // add to the map
                 Map<LwM2mPath, LwM2mNode> pathToNode = timestampToPathToNode.get(internalNode.timestamp);
                 if (pathToNode == null) {
@@ -201,6 +241,7 @@ public class TimestampedLwM2mNodes {
                     pathToNode.put(internalNode.path, internalNode.node);
                 } else {
                     LwM2mNode previous = pathToNode.put(internalNode.path, internalNode.node);
+                    // check for duplicate
                     if (noDuplicate && previous != null) {
                         throw new IllegalArgumentException(String.format(
                                 "Unable to create TimestampedLwM2mNodes : duplicate value for path %s. (%s, %s)",
@@ -209,15 +250,15 @@ public class TimestampedLwM2mNodes {
                 }
             }
 
+            // When paths is provided, validate there is not missing path
             if (paths != null) {
-                // add null values for every requested path if they are not present in response for observe composite
-                for (Instant timestamp : timestampToPathToNode.keySet()) {
-                    for (LwM2mPath requestedpath : paths) {
-                        if (!timestampToPathToNode.get(timestamp).containsKey(requestedpath)) {
-                            timestampToPathToNode.get(timestamp).put(requestedpath, null);
-                        }
+                timestampToPathToNode.forEach((timestamp, pathToNodes) -> {
+                    if (!pathToNodes.keySet().containsAll(paths)) {
+                        throw new IllegalArgumentException(String.format(
+                                "Unable to create TimestampedLwM2mNodes : Some path are missing for timestamp %s, expected %s but get %s.",
+                                timestamp, paths, pathToNodes.keySet()));
                     }
-                }
+                });
             }
             return new TimestampedLwM2mNodes(timestampToPathToNode);
         }
