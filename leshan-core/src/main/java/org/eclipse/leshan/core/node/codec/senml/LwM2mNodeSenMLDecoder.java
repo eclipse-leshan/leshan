@@ -127,7 +127,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
 
             Map<LwM2mPath, LwM2mNode> nodes = new HashMap<>();
             if (paths != null) {
-                // Resolve records & Group it by time-stamp
+                // Resolve records & Group it by path
                 Map<LwM2mPath, Collection<LwM2mResolvedSenMLRecord>> recordsByPath = groupByPath(pack.getRecords(),
                         paths);
 
@@ -203,17 +203,45 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
 
             if (paths != null && paths.size() > 1) {
                 nodes = TimestampedLwM2mNodes.builder(paths);
+
+                // Group by time-stamp
+                SortedMap<BigDecimal, Collection<LwM2mResolvedSenMLRecord>> recordsByTimestamp = groupRecordByTimestamp(
+                        pack.getRecords(), null);
+
+                // For each time-stamp
+                for (Entry<BigDecimal, Collection<LwM2mResolvedSenMLRecord>> entryByTimestamp : recordsByTimestamp
+                        .entrySet()) {
+                    // Group records by path
+                    Map<LwM2mPath, Collection<LwM2mResolvedSenMLRecord>> recordsByPath = groupResolvedRecordByPath(
+                            entryByTimestamp.getValue(), paths);
+
+                    for (LwM2mPath path : paths) {
+                        Collection<LwM2mResolvedSenMLRecord> records = recordsByPath.get(path);
+                        if (records.isEmpty()) {
+                            // Node can be null as the LWM2M specification says that "Read-Composite operation is
+                            // treated as non-atomic and handled as best effort by the client. That is, if any of the
+                            // requested
+                            // resources do not have a valid value to return, they will not be included in the
+                            // response".
+                            // Meaning that a given path could have no corresponding value.
+                            nodes.put(TimestampUtil.fromSeconds(entryByTimestamp.getKey()), path, null);
+                        } else {
+                            LwM2mNode node = parseRecords(records, path, model,
+                                    DefaultLwM2mDecoder.nodeClassFromPath(path));
+                            nodes.put(TimestampUtil.fromSeconds(entryByTimestamp.getKey()), path, node);
+                        }
+                    }
+                }
             } else {
                 nodes = TimestampedLwM2mNodes.builder();
-            }
-
-            LwM2mSenMLResolver resolver = new LwM2mSenMLResolver();
-            for (SenMLRecord record : pack.getRecords()) {
-                LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(record);
-                LwM2mPath path = resolvedRecord.getPath();
-                LwM2mNode node = parseRecords(Arrays.asList(resolvedRecord), path, model,
-                        DefaultLwM2mDecoder.nodeClassFromPath(path));
-                nodes.put(TimestampUtil.fromSeconds(resolvedRecord.getTimeStamp()), path, node);
+                LwM2mSenMLResolver resolver = new LwM2mSenMLResolver();
+                for (SenMLRecord record : pack.getRecords()) {
+                    LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(record);
+                    LwM2mPath path = resolvedRecord.getPath();
+                    LwM2mNode node = parseRecords(Arrays.asList(resolvedRecord), path, model,
+                            DefaultLwM2mDecoder.nodeClassFromPath(path));
+                    nodes.put(TimestampUtil.fromSeconds(resolvedRecord.getTimeStamp()), path, node);
+                }
             }
 
             return nodes.build();
@@ -371,6 +399,33 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
     }
 
     /**
+     * Group Resolved Record by LwM2mPath
+     */
+    private Map<LwM2mPath, Collection<LwM2mResolvedSenMLRecord>> groupResolvedRecordByPath(
+            Collection<LwM2mResolvedSenMLRecord> records, List<LwM2mPath> paths) throws SenMLException {
+
+        // Prepare map result
+        Map<LwM2mPath, Collection<LwM2mResolvedSenMLRecord>> result = new HashMap<>(paths.size());
+        for (LwM2mPath path : paths) {
+            result.put(path, new ArrayList<LwM2mResolvedSenMLRecord>());
+        }
+
+        // Add it to the map
+        for (LwM2mResolvedSenMLRecord resolvedRecord : records) {
+
+            // Find the corresponding path for this record.
+            LwM2mPath selectedPath = selectPath(resolvedRecord.getPath(), paths);
+            if (selectedPath == null) {
+                throw new CodecException("Invalid path [%s] for resource, it should start by one of %s",
+                        resolvedRecord.getPath(), paths);
+            }
+
+            result.get(selectedPath).add(resolvedRecord);
+        }
+        return result;
+    }
+
+    /**
      * Search in the list <code>paths<code> which one is a "start" for the given path.
      * <p>
      * E.g. for recordPath="/3/0/1" and paths=["/1/0","/2/0/","/3"] result will be "/3"
@@ -387,6 +442,8 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
     /**
      * Resolved record then group it by time-stamp
      *
+     * @param records list of records to group
+     * @param requestPath If not <code>null</code> then all record should belong to this path
      * @return a sorted map (timestamp => collection of record) order by descending time-stamp (most recent one at first
      *         place). If null time-stamp (meaning no time information) exists it always at first place.
      */
@@ -417,7 +474,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                         "Invalid path [%s] for resource, it should be a resource or a resource instance path",
                         resolvedRecord.getName());
             }
-            if (!resolvedRecord.getPath().startWith(requestPath)) {
+            if (requestPath != null && !resolvedRecord.getPath().startWith(requestPath)) {
                 throw new CodecException("Invalid path [%s] for resource, it should start by %s",
                         resolvedRecord.getName(), requestPath);
             }
