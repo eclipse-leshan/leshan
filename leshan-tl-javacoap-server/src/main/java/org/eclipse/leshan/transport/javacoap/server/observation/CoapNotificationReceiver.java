@@ -25,6 +25,7 @@ import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
@@ -32,6 +33,7 @@ import org.eclipse.leshan.core.observation.ObservationIdentifier;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.response.AbstractLwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
@@ -127,6 +129,10 @@ public class CoapNotificationReceiver implements NotificationsReceiver {
                 } else {
                     throw new IllegalStateException("unexpected behavior when handling notification");
                 }
+            } catch (CodecException exception) {
+                // TODO should we stop observe relation ?
+                notificationReceiver.onError(observation, sender, clientProfile, new InvalidResponseException(exception,
+                        "Unable to decode notification payload  of observation %s", observation));
             } catch (Exception exception) {
                 // TODO should we stop observe relation ?
                 notificationReceiver.onError(observation, sender, clientProfile, exception);
