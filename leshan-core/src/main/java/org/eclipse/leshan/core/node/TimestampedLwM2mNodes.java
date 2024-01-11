@@ -123,6 +123,7 @@ public class TimestampedLwM2mNodes {
          * e.g. if you provide "/1/0/1" and "/3/0/15" as path
          *
          * <pre>
+         * {@code
          * // valid
          * t1 => {
          *   "/1/0/1"     => LwM2mResource
@@ -142,6 +143,7 @@ public class TimestampedLwM2mNodes {
          *   "/1/0/1"     => LwM2mResource
          *   "/3/0/1"     => LwM2mResource
          *   "/3/0/15"    => LwM2mResource
+         * }
          * }
          * </pre>
          *
