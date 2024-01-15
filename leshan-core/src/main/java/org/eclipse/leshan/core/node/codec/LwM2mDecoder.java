@@ -105,11 +105,14 @@ public interface LwM2mDecoder {
      * @param content the content
      * @param format the content format
      * @param model the collection of supported object models
+     * @param paths the list of path of node to build. The list of path can be <code>null</code> meaning that we don't
+     *        know which kind of {@link LwM2mNode} is encoded. In this case, let's assume this is a list of
+     *        {@link LwM2mSingleResource} or {@link LwM2mResourceInstance}.
      * @return the decoded timestamped nodes represented by {@link TimestampedLwM2mNodes}
      * @throws CodecException if content is malformed.
      */
-    TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, ContentFormat format, LwM2mModel model,
-            List<LwM2mPath> paths) throws CodecException;
+    TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, ContentFormat format, List<LwM2mPath> paths,
+            LwM2mModel model) throws CodecException;
 
     /**
      * Deserializes a binary content into a list of {@link LwM2mPath}.

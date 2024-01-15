@@ -126,8 +126,8 @@ public class ServerCoapMessageTranslator {
                             coapResponse, null, null);
                 } else {
                     TimestampedLwM2mNodes timestampedNodes = toolbox.getDecoder().decodeTimestampedNodes(
-                            coapResponse.getPayload(), contentFormat, profile.getModel(),
-                            compositeObservation.getPaths());
+                            coapResponse.getPayload(), contentFormat, compositeObservation.getPaths(),
+                            profile.getModel());
 
                     if (timestampedNodes != null && !timestampedNodes.isEmpty()
                             && !timestampedNodes.getTimestamps().stream().noneMatch(Objects::nonNull)) {

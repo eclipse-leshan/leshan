@@ -169,8 +169,8 @@ public class CoapNotificationReceiver implements NotificationsReceiver {
 
             ContentFormat contentFormat = ContentFormat.fromCode(coapResponse.options().getContentFormat());
             TimestampedLwM2mNodes timestampedNodes = decoder.decodeTimestampedNodes(
-                    coapResponse.getPayload().getBytes(), contentFormat, profile.getModel(),
-                    compositeObservation.getPaths());
+                    coapResponse.getPayload().getBytes(), contentFormat, compositeObservation.getPaths(),
+                    profile.getModel());
             if (timestampedNodes != null && !timestampedNodes.isEmpty()
                     && !timestampedNodes.getTimestamps().stream().noneMatch(Objects::nonNull)) {
 
