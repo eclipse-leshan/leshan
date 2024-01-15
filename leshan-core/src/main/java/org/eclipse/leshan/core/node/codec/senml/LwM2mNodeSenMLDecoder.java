@@ -201,7 +201,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
 
             TimestampedLwM2mNodes.Builder nodes;
 
-            if (paths != null && paths.size() > 1) {
+            if (paths != null && !paths.isEmpty()) {
                 nodes = TimestampedLwM2mNodes.builder(paths);
 
                 // Group by time-stamp

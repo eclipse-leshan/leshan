@@ -19,8 +19,6 @@ import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toLwM2mRespon
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
@@ -28,8 +26,6 @@ import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
-import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.CodecException;
@@ -129,18 +125,14 @@ public class ServerCoapMessageTranslator {
                             coapResponse.getPayload(), contentFormat, compositeObservation.getPaths(),
                             profile.getModel());
 
-                    if (timestampedNodes != null && !timestampedNodes.isEmpty()
-                            && !timestampedNodes.getTimestamps().stream().noneMatch(Objects::nonNull)) {
+                    if (timestampedNodes.getTimestamps().size() == 1
+                            && timestampedNodes.getTimestamps().iterator().next() == null) {
 
-                        return new ObserveCompositeResponse(responseCode, timestampedNodes.getNodes(), timestampedNodes,
+                        return new ObserveCompositeResponse(responseCode, timestampedNodes.getNodes(), null,
                                 compositeObservation, null, coapResponse);
                     } else {
-
-                        Map<LwM2mPath, LwM2mNode> nodes = toolbox.getDecoder().decodeNodes(coapResponse.getPayload(),
-                                contentFormat, compositeObservation.getPaths(), profile.getModel());
-
-                        return new ObserveCompositeResponse(responseCode, nodes, null, compositeObservation, null,
-                                coapResponse);
+                        return new ObserveCompositeResponse(responseCode, null, timestampedNodes, compositeObservation,
+                                null, coapResponse);
                     }
                 }
             }

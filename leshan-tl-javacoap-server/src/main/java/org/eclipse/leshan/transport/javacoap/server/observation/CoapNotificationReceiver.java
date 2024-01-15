@@ -17,14 +17,10 @@ package org.eclipse.leshan.transport.javacoap.server.observation;
 
 import java.net.InetSocketAddress;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.leshan.core.ResponseCode;
-import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.CodecException;
@@ -171,15 +167,14 @@ public class CoapNotificationReceiver implements NotificationsReceiver {
             TimestampedLwM2mNodes timestampedNodes = decoder.decodeTimestampedNodes(
                     coapResponse.getPayload().getBytes(), contentFormat, compositeObservation.getPaths(),
                     profile.getModel());
-            if (timestampedNodes != null && !timestampedNodes.isEmpty()
-                    && !timestampedNodes.getTimestamps().stream().noneMatch(Objects::nonNull)) {
 
-                return new ObserveCompositeResponse(responseCode, timestampedNodes.getNodes(), timestampedNodes,
+            if (timestampedNodes.getTimestamps().size() == 1
+                    && timestampedNodes.getTimestamps().iterator().next() == null) {
+
+                return new ObserveCompositeResponse(responseCode, timestampedNodes.getNodes(), null,
                         compositeObservation, null, coapResponse);
             } else {
-                Map<LwM2mPath, LwM2mNode> nodes = decoder.decodeNodes(coapResponse.getPayload().getBytes(),
-                        contentFormat, compositeObservation.getPaths(), profile.getModel());
-                return new ObserveCompositeResponse(responseCode, nodes, null, compositeObservation, null,
+                return new ObserveCompositeResponse(responseCode, null, timestampedNodes, compositeObservation, null,
                         coapResponse);
             }
         }
