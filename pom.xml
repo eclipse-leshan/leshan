@@ -29,14 +29,9 @@ Contributors:
   <url>http://eclipse.org/leshan</url>
   <licenses>
     <license>
-      <name>Eclipse Public License (EPL), Version 2.0</name>
-      <url>http://www.eclipse.org/legal/epl-v20.html</url>
+      <name>EPL-2.0 OR BSD-3-Clause</name>
       <distribution>repo</distribution>
-    </license>
-    <license>
-      <name>Eclipse Distribution License (EDL), Version 1.0</name>
-      <url>http://www.eclipse.org/org/documents/edl-v10.html</url>
-      <distribution>repo</distribution>
+      <comments>Leshan is dual-licensed under the Eclipse Public License v2.0 and Eclipse Distribution License v1.0. A consumer can choose between that 2 licenses.</comments>
     </license>
   </licenses>
 
