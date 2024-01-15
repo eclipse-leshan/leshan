@@ -193,7 +193,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
     }
 
     @Override
-    public TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, LwM2mModel model, List<LwM2mPath> paths)
+    public TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, List<LwM2mPath> paths, LwM2mModel model)
             throws CodecException {
         try {
             // Decode SenML pack

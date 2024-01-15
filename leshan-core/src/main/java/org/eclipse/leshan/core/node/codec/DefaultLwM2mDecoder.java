@@ -221,7 +221,7 @@ public class DefaultLwM2mDecoder implements LwM2mDecoder {
         }
 
         if (decoder instanceof TimestampedMultiNodeDecoder) {
-            return ((TimestampedMultiNodeDecoder) decoder).decodeTimestampedNodes(content, model, paths);
+            return ((TimestampedMultiNodeDecoder) decoder).decodeTimestampedNodes(content, paths, model);
         } else if (decoder instanceof MultiNodeDecoder) {
             return new TimestampedLwM2mNodes.Builder()
                     .addNodes(((MultiNodeDecoder) decoder).decodeNodes(content, null, model)).build();

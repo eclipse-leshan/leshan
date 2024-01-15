@@ -18,7 +18,10 @@ package org.eclipse.leshan.core.node.codec;
 import java.util.List;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.LwM2mResourceInstance;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 
 /**
@@ -32,11 +35,14 @@ public interface TimestampedMultiNodeDecoder {
      * <p>
      *
      * @param content the content
+     * @param paths the list of path of node to build. The list of path can be <code>null</code> meaning that we don't
+     *        know which kind of {@link LwM2mNode} is encoded. In this case, let's assume this is a list of
+     *        {@link LwM2mSingleResource} or {@link LwM2mResourceInstance}.
      * @param model the collection of supported object models
      * @return the decoded timestamped nodes represented by {@link TimestampedLwM2mNodes}
      * @throws CodecException if content is malformed.
      */
-    TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, LwM2mModel model, List<LwM2mPath> paths)
+    TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, List<LwM2mPath> paths, LwM2mModel model)
             throws CodecException;
 
 }
