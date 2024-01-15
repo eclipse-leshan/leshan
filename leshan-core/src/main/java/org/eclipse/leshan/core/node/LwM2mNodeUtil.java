@@ -269,8 +269,12 @@ public class LwM2mNodeUtil {
 
     public static String getInvalidPathForNodeCause(LwM2mNode node, LwM2mPath path) {
         // Handle Root Node
-        if (!(node instanceof LwM2mChildNode))
-            return String.format("Invalid Path %s : path does not target a root node for %s", path, node);
+        if (!(node instanceof LwM2mChildNode)) {
+            if (!path.isRoot()) {
+                return String.format("Invalid Path %s : path does not target a root node for %s", path, node);
+            }
+            return null;
+        }
 
         // Handle child Node
         LwM2mChildNode childNode = (LwM2mChildNode) node;
