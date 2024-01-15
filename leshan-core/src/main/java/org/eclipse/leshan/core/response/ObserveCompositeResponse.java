@@ -36,7 +36,8 @@ public class ObserveCompositeResponse extends ReadCompositeResponse {
     public ObserveCompositeResponse(ResponseCode code, Map<LwM2mPath, LwM2mNode> content,
             TimestampedLwM2mNodes timestampedValues, CompositeObservation observation, String errorMessage,
             Object coapResponse) {
-        super(code, content, errorMessage, coapResponse);
+        super(code, timestampedValues != null && !timestampedValues.isEmpty() ? timestampedValues.getNodes() : content,
+                errorMessage, coapResponse);
         this.observation = observation;
         this.timestampedValues = timestampedValues;
     }
@@ -45,12 +46,20 @@ public class ObserveCompositeResponse extends ReadCompositeResponse {
         return observation;
     }
 
+    public TimestampedLwM2mNodes getTimestampedLwM2mNodes() {
+        return timestampedValues;
+    }
+
     @Override
     public String toString() {
         if (errorMessage != null)
             return String.format("ObserveCompositeResponse [code=%s, errorMessage=%s]", code, errorMessage);
+        else if (timestampedValues != null)
+            return String.format(
+                    "ObserveCompositeResponse [code=%s, content=%s, observation=%s, timestampedValues= %d values]",
+                    code, content, observation, timestampedValues.getTimestamps().size());
         else
-            return String.format("ObserveCompositeResponse [code=%s, observation=%s, content=%s]", code, observation,
+            return String.format("ObserveCompositeResponse [code=%s,  content=%s, observation=%s]", code, observation,
                     content);
     }
 
@@ -102,9 +111,5 @@ public class ObserveCompositeResponse extends ReadCompositeResponse {
 
     public static ObserveCompositeResponse internalServerError(String errorMessage) {
         return new ObserveCompositeResponse(ResponseCode.INTERNAL_SERVER_ERROR, null, null, null, errorMessage, null);
-    }
-
-    public TimestampedLwM2mNodes getTimestampedLwM2mNodes() {
-        return timestampedValues;
     }
 }

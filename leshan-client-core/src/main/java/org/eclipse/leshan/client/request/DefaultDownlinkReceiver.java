@@ -373,7 +373,7 @@ public class DefaultDownlinkReceiver implements DownlinkRequestReceiver {
         @Override
         public void visit(CancelCompositeObservationRequest request) {
             // TODO TL : we should check if this is really handle
-            response = new CancelCompositeObservationResponse(code, null, errorMessage, null, null);
+            response = new CancelCompositeObservationResponse(code, null, null, null, errorMessage, null);
         }
 
         @Override
