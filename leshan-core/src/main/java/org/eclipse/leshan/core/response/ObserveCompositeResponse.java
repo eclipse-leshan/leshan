@@ -33,8 +33,9 @@ public class ObserveCompositeResponse extends ReadCompositeResponse {
     protected final CompositeObservation observation;
     protected final TimestampedLwM2mNodes timestampedValues;
 
-    public ObserveCompositeResponse(ResponseCode code, Map<LwM2mPath, LwM2mNode> content, String errorMessage,
-            Object coapResponse, CompositeObservation observation, TimestampedLwM2mNodes timestampedValues) {
+    public ObserveCompositeResponse(ResponseCode code, Map<LwM2mPath, LwM2mNode> content,
+            TimestampedLwM2mNodes timestampedValues, CompositeObservation observation, String errorMessage,
+            Object coapResponse) {
         super(code, content, errorMessage, coapResponse);
         this.observation = observation;
         this.timestampedValues = timestampedValues;
@@ -76,11 +77,11 @@ public class ObserveCompositeResponse extends ReadCompositeResponse {
     }
 
     public static ObserveCompositeResponse success(TimestampedLwM2mNodes timestampedValues) {
-        return new ObserveCompositeResponse(ResponseCode.CONTENT, null, null, null, null, timestampedValues);
+        return new ObserveCompositeResponse(ResponseCode.CONTENT, null, timestampedValues, null, null, null);
     }
 
     public static ObserveCompositeResponse badRequest(String errorMessage) {
-        return new ObserveCompositeResponse(ResponseCode.BAD_REQUEST, null, errorMessage, null, null, null);
+        return new ObserveCompositeResponse(ResponseCode.BAD_REQUEST, null, null, null, errorMessage, null);
     }
 
     public static ObserveCompositeResponse notFound() {
@@ -100,7 +101,7 @@ public class ObserveCompositeResponse extends ReadCompositeResponse {
     }
 
     public static ObserveCompositeResponse internalServerError(String errorMessage) {
-        return new ObserveCompositeResponse(ResponseCode.INTERNAL_SERVER_ERROR, null, errorMessage, null, null, null);
+        return new ObserveCompositeResponse(ResponseCode.INTERNAL_SERVER_ERROR, null, null, null, errorMessage, null);
     }
 
     public TimestampedLwM2mNodes getTimestampedLwM2mNodes() {

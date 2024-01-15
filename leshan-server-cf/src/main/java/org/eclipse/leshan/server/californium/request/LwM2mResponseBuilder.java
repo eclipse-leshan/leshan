@@ -317,8 +317,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     public void visit(ObserveCompositeRequest request) {
         if (coapResponse.isError()) {
             // handle error response:
-            lwM2mresponse = new ObserveCompositeResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
-                    coapResponse.getPayloadString(), coapResponse, null, null);
+            lwM2mresponse = new ObserveCompositeResponse(toLwM2mResponseCode(coapResponse.getCode()), null, null, null,
+                    coapResponse.getPayloadString(), coapResponse);
 
         } else if (isResponseCodeContent()) {
             // handle success response:
@@ -331,7 +331,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 observation = ObserveUtil.createLwM2mCompositeObservation(coapRequest);
             }
             lwM2mresponse = new ObserveCompositeResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null,
-                    coapResponse, observation, null);
+                    observation, null, coapResponse);
         } else {
             // handle unexpected response:
             handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);

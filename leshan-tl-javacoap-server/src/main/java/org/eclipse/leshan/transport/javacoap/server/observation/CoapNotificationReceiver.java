@@ -174,13 +174,13 @@ public class CoapNotificationReceiver implements NotificationsReceiver {
             if (timestampedNodes != null && !timestampedNodes.isEmpty()
                     && !timestampedNodes.getTimestamps().stream().noneMatch(Objects::nonNull)) {
 
-                return new ObserveCompositeResponse(responseCode, timestampedNodes.getNodes(), null, coapResponse,
-                        compositeObservation, timestampedNodes);
+                return new ObserveCompositeResponse(responseCode, timestampedNodes.getNodes(), timestampedNodes,
+                        compositeObservation, null, coapResponse);
             } else {
                 Map<LwM2mPath, LwM2mNode> nodes = decoder.decodeNodes(coapResponse.getPayload().getBytes(),
                         contentFormat, compositeObservation.getPaths(), profile.getModel());
-                return new ObserveCompositeResponse(responseCode, nodes, null, coapResponse, compositeObservation,
-                        null);
+                return new ObserveCompositeResponse(responseCode, nodes, null, compositeObservation, null,
+                        coapResponse);
             }
         }
         return null;

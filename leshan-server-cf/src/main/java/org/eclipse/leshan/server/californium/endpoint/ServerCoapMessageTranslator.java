@@ -122,8 +122,8 @@ public class ServerCoapMessageTranslator {
                 CompositeObservation compositeObservation = (CompositeObservation) observation;
 
                 if (responseCode.isError()) {
-                    return new ObserveCompositeResponse(responseCode, null, coapResponse.getPayloadString(),
-                            coapResponse, null, null);
+                    return new ObserveCompositeResponse(responseCode, null, null, null, coapResponse.getPayloadString(),
+                            coapResponse);
                 } else {
                     TimestampedLwM2mNodes timestampedNodes = toolbox.getDecoder().decodeTimestampedNodes(
                             coapResponse.getPayload(), contentFormat, compositeObservation.getPaths(),
@@ -132,15 +132,15 @@ public class ServerCoapMessageTranslator {
                     if (timestampedNodes != null && !timestampedNodes.isEmpty()
                             && !timestampedNodes.getTimestamps().stream().noneMatch(Objects::nonNull)) {
 
-                        return new ObserveCompositeResponse(responseCode, timestampedNodes.getNodes(), null,
-                                coapResponse, compositeObservation, timestampedNodes);
+                        return new ObserveCompositeResponse(responseCode, timestampedNodes.getNodes(), timestampedNodes,
+                                compositeObservation, null, coapResponse);
                     } else {
 
                         Map<LwM2mPath, LwM2mNode> nodes = toolbox.getDecoder().decodeNodes(coapResponse.getPayload(),
                                 contentFormat, compositeObservation.getPaths(), profile.getModel());
 
-                        return new ObserveCompositeResponse(responseCode, nodes, null, coapResponse,
-                                compositeObservation, null);
+                        return new ObserveCompositeResponse(responseCode, nodes, null, compositeObservation, null,
+                                coapResponse);
                     }
                 }
             }
