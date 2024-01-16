@@ -25,6 +25,7 @@ import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.ass
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -130,8 +131,8 @@ public class ObserveCompositeTimeStampTest {
 
         // and expected Time-stamped nodes
         TimestampedLwM2mNodes.Builder builder = new TimestampedLwM2mNodes.Builder();
-        Instant t1 = Instant.now();
-        Instant t2 = Instant.now().minusSeconds(2000);
+        Instant t1 = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+        Instant t2 = Instant.now().truncatedTo(ChronoUnit.MILLIS).minusSeconds(2000);
         builder.put(t1, paths.get(0), LwM2mSingleResource.newIntegerResource(1, 3600));
         builder.put(t1, paths.get(1), LwM2mSingleResource.newStringResource(15, "Europe/Belgrade"));
         builder.put(t2, paths.get(0), LwM2mSingleResource.newIntegerResource(1, 500));
@@ -153,8 +154,8 @@ public class ObserveCompositeTimeStampTest {
 
         // and expected Time-stamped nodes
         TimestampedLwM2mNodes.Builder builder = new TimestampedLwM2mNodes.Builder();
-        Instant t1 = Instant.now();
-        Instant t2 = Instant.now().minusSeconds(2000);
+        Instant t1 = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+        Instant t2 = Instant.now().truncatedTo(ChronoUnit.MILLIS).minusSeconds(2000);
         builder.put(t1, paths.get(0), null);
         builder.put(t1, paths.get(1), LwM2mSingleResource.newStringResource(15, "Europe/Belgrade"));
         builder.put(t2, paths.get(0), LwM2mSingleResource.newIntegerResource(1, 500));
@@ -194,7 +195,7 @@ public class ObserveCompositeTimeStampTest {
         deviceresources.add(LwM2mSingleResource.newIntegerResource(21, 20500736));
 
         TimestampedLwM2mNodes.Builder builder = new TimestampedLwM2mNodes.Builder();
-        Instant t1 = Instant.now();
+        Instant t1 = Instant.now().truncatedTo(ChronoUnit.MILLIS);
         builder.put(t1, paths.get(0), LwM2mSingleResource.newIntegerResource(1, 3600));
         builder.put(t1, paths.get(1), new LwM2mObjectInstance(0, deviceresources));
         TimestampedLwM2mNodes timestampednodes = builder.build();
@@ -232,7 +233,7 @@ public class ObserveCompositeTimeStampTest {
         deviceresources.add(LwM2mSingleResource.newIntegerResource(21, 20500736));
 
         TimestampedLwM2mNodes.Builder builder = new TimestampedLwM2mNodes.Builder();
-        Instant t1 = Instant.now();
+        Instant t1 = Instant.now().truncatedTo(ChronoUnit.MILLIS);
         builder.put(t1, paths.get(0), LwM2mSingleResource.newIntegerResource(1, 3600));
         builder.put(t1, paths.get(1), new LwM2mObject(3, new LwM2mObjectInstance(0, deviceresources)));
         TimestampedLwM2mNodes timestampednodes = builder.build();
@@ -287,8 +288,8 @@ public class ObserveCompositeTimeStampTest {
 
         // and expected Time-stamped nodes
         TimestampedLwM2mNodes.Builder builder = new TimestampedLwM2mNodes.Builder();
-        Instant t1 = Instant.now();
-        Instant t2 = Instant.now().minusSeconds(2000);
+        Instant t1 = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+        Instant t2 = Instant.now().truncatedTo(ChronoUnit.MILLIS).minusSeconds(2000);
         builder.put(t1, paths.get(0), LwM2mSingleResource.newIntegerResource(1, 3600));
         builder.put(t1, paths.get(1), LwM2mSingleResource.newStringResource(15, "Europe/Belgrade"));
         builder.put(t1, new LwM2mPath(1, 0, 0), LwM2mSingleResource.newIntegerResource(0, 123));
@@ -331,7 +332,7 @@ public class ObserveCompositeTimeStampTest {
         deviceresources.add(LwM2mSingleResource.newIntegerResource(21, 20500736));
 
         TimestampedLwM2mNodes.Builder builder = new TimestampedLwM2mNodes.Builder();
-        Instant t1 = Instant.now();
+        Instant t1 = Instant.now().truncatedTo(ChronoUnit.MILLIS);
         builder.put(t1, paths.get(0), LwM2mSingleResource.newIntegerResource(1, 3600));
         builder.put(t1, paths.get(1), new LwM2mObjectInstance(0, deviceresources));
         builder.put(t1, new LwM2mPath(3, 1), new LwM2mObjectInstance(1, deviceresources));
