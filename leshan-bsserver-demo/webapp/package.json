@@ -8,7 +8,9 @@
     "build": "vite build --emptyOutDir",
     "preview": "vite preview",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src",
-    "report": "REPORT=true vite build --emptyOutDir"
+    "report": "REPORT=true vite build --emptyOutDir",
+    "sbom": "cyclonedx-npm --output-format json --output-file ../target/sbom-frontend.json",
+    "sbom_maven": "cyclonedx-npm --output-format ${OUTPUT_FORMAT} --output-file ${OUTPUT_BOM_DIRECTORY}/${OUTPUT_BOM_NAME}.${OUTPUT_FORMAT}"
   },
   "dependencies": {
     "@fontsource/roboto": "^4.5.0",
@@ -33,7 +35,8 @@
     "sass": "~1.32.0",
     "unplugin-vue-components": "^0.25.2",
     "vite": "^5.0.0",
-    "vite-plugin-compression": "^0.5.1"
+    "vite-plugin-compression": "^0.5.1",
+    "@cyclonedx/cyclonedx-npm": "^1.16.0"
   },
   "eslintConfig": {
     "root": true,

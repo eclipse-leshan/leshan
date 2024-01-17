@@ -30,7 +30,7 @@ Contributors:
   <description>Shared Maven configuration for all Leshan demos</description>
 
   <properties>
-    <node-version>v18.13.0</node-version>
+    <node-version>v21.5.0</node-version>
     <yarn-version>v1.22.19</yarn-version>
   </properties>
 
@@ -67,28 +67,27 @@ Contributors:
           <configuration>
             <workingDirectory>webapp</workingDirectory>
             <nodeVersion>${node-version}</nodeVersion>
-            <yarnVersion>${yarn-version}</yarnVersion>
           </configuration>
           <executions>
             <execution>
               <?m2e ignore?>
-              <id>install node and yarn</id>
+              <id>install node and npm</id>
               <goals>
-                <goal>install-node-and-yarn</goal>
+                <goal>install-node-and-npm</goal>
               </goals>
             </execution>
             <execution>
               <?m2e ignore?>
-              <id>yarn install</id>
+              <id>npm install</id>
               <goals>
-                <goal>yarn</goal>
+                <goal>npm</goal>
               </goals>
             </execution>
             <execution>
               <?m2e ignore?>
-              <id>yarn build</id>
+              <id>npm build</id>
               <goals>
-                <goal>yarn</goal>
+                <goal>npm</goal>
               </goals>
               <configuration>
                 <environmentVariables>
@@ -98,7 +97,23 @@ Contributors:
                   <VITE_APP_COMMIT_ID>${buildNumber}</VITE_APP_COMMIT_ID>
                   <VITE_APP_VERSION>${project.version}</VITE_APP_VERSION>
                 </environmentVariables>
-                <arguments>build</arguments>
+                <arguments>run build</arguments>
+              </configuration>
+            </execution>
+            <execution>
+              <?m2e ignore?>
+              <id>npm sbom</id>
+              <goals>
+                <goal>npm</goal>
+              </goals>
+              <configuration>
+                <environmentVariables>
+                  <!-- this variable will be used by webapp/vue.config.js -->
+                  <OUTPUT_FORMAT>json</OUTPUT_FORMAT>
+                  <OUTPUT_BOM_NAME>bom-frontend</OUTPUT_BOM_NAME>
+                  <OUTPUT_BOM_DIRECTORY>${project.build.directory}</OUTPUT_BOM_DIRECTORY>
+                </environmentVariables>
+                <arguments>run sbom_maven</arguments>
               </configuration>
             </execution>
           </executions>
@@ -109,6 +124,7 @@ Contributors:
 
   <profiles>
     <profile>
+      <!-- TODO update to cache npm instead of yarn -->
       <id>eclipseJenkins</id>
       <properties>
         <download-eclipse-path>/home/data/httpd/download.eclipse.org/leshan/</download-eclipse-path>

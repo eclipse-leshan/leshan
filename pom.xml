@@ -443,7 +443,7 @@ Contributors:
         <plugin>
           <groupId>com.github.eirslett</groupId>
           <artifactId>frontend-maven-plugin</artifactId>
-          <version>1.13.4</version>
+          <version>1.15.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-resources-plugin</artifactId>
@@ -588,6 +588,17 @@ Contributors:
             <id>enforce-maven</id>
             <goals>
               <goal>enforce</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>makeBom</goal>
             </goals>
           </execution>
         </executions>
