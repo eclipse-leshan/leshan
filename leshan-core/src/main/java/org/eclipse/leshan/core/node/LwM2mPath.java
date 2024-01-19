@@ -309,6 +309,25 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
     }
 
     /**
+     * @return parent path. E.g. for path <code>/3/0/0</code> return <code>3/0</code>, for <code>/2/1</code> return
+     *         <code>/2</code>. For root path return <code>null</code>
+     */
+    public LwM2mPath toParenPath() {
+        if (isResourceInstance()) {
+            return toResourcePath();
+        } else if (isResource()) {
+            return toObjectInstancePath();
+        } else if (isObjectInstance()) {
+            return toObjectPath();
+        } else if (isObject()) {
+            return ROOTPATH;
+        } else if (isRoot()) {
+            return null;
+        }
+        throw new IllegalStateException("Unsupported kind of path :" + this.toString());
+    }
+
+    /**
      * The string representation of the path: /{Object ID}/{ObjectInstance ID}/{Resource ID}/{ResourceInstance ID}
      */
     @Override

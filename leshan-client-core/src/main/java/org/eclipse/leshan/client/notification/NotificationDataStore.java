@@ -15,12 +15,16 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.notification;
 
+import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ScheduledFuture;
 
 import org.eclipse.leshan.client.servers.LwM2mServer;
-import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
+import org.eclipse.leshan.core.link.lwm2m.attributes.NotificationAttributeTree;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ObserveRequest;
+import org.eclipse.leshan.core.util.Validate;
 
 /**
  * This class store information needed to handle write attributes behavior.
@@ -29,17 +33,15 @@ import org.eclipse.leshan.core.request.ObserveRequest;
  */
 public class NotificationDataStore {
 
-    // TODO create a real data structure
-    // for testing purpose we only store 1 NotificationData
-    private NotificationData data;
+    private final ConcurrentNavigableMap<NotificationDataKey, NotificationData> store = new ConcurrentSkipListMap<>();
 
     public NotificationData getNotificationData(LwM2mServer server, ObserveRequest request) {
-        return data;
+        return store.get(toKey(server, request));
     }
 
     public NotificationData addNotificationData(LwM2mServer server, ObserveRequest request, NotificationData data) {
         // cancel task of previous data
-        NotificationData previousData = this.data;
+        NotificationData previousData = store.put(toKey(server, request), data);
         if (previousData != null) {
             if (previousData.getPminFuture() != null) {
                 previousData.getPminFuture().cancel(false);
@@ -48,20 +50,83 @@ public class NotificationDataStore {
                 previousData.getPmaxFuture().cancel(false);
             }
         }
-        // update data
-        this.data = data;
-
         return previousData;
     }
 
+    public void removeNotificationData(LwM2mServer server, ObserveRequest request) {
+        store.remove(toKey(server, request));
+    }
+
+    public void clearAllNotificationDataFor(LwM2mServer server) {
+        store.subMap(floorKeyFor(server), ceilKeyFor(server)).clear();
+    }
+
+    public void clearAllNotificationData() {
+        store.clear();
+    }
+
+    private NotificationDataKey floorKeyFor(LwM2mServer server) {
+        // TODO should be replaced by a ObservationRelationIdentifier probably based on Token
+        return new NotificationDataKey(server.getId(), LwM2mPath.ROOTPATH);
+    }
+
+    private NotificationDataKey ceilKeyFor(LwM2mServer server) {
+        // TODO should be replaced by a ObservationRelationIdentifier probably based on Token
+        return new NotificationDataKey(server.getId() + 1, LwM2mPath.ROOTPATH);
+    }
+
+    private NotificationDataKey toKey(LwM2mServer server, ObserveRequest request) {
+        // TODO should be replaced by a ObservationRelationIdentifier probably based on Token
+        return new NotificationDataKey(server.getId(), request.getPath());
+    }
+
+    private static class NotificationDataKey implements Comparable<NotificationDataKey> {
+
+        private final Long serverId;
+        // TODO should be replaced by a ObservationRelationIdentifier probably based on Token
+        private final LwM2mPath path;
+
+        public NotificationDataKey(Long serverId, LwM2mPath path) {
+            Validate.notNull(serverId);
+            Validate.notNull(path);
+            this.serverId = serverId;
+            this.path = path;
+        }
+
+        @Override
+        public int compareTo(NotificationDataKey o) {
+            // check for null
+            if (o == null) {
+                // object can not be null following Comparable javadoc
+                throw new NullPointerException();
+            }
+
+            // compare server Id
+            int r = getServerId().compareTo(o.getServerId());
+            if (r != 0)
+                return r;
+
+            // if server id equals, then compare path
+            return path.compareTo(o.getPath());
+        }
+
+        public Long getServerId() {
+            return serverId;
+        }
+
+        public LwM2mPath getPath() {
+            return path;
+        }
+    }
+
     public static class NotificationData {
-        private final LwM2mAttributeSet attributes;
+        private final NotificationAttributeTree attributes;
         private final Long lastSendingTime; // time of last sent notification
         private final LwM2mNode lastSentValue; // last value sent
         private final ScheduledFuture<Void> pminTask; // task which will send delayed notification for pmin.
         private final ScheduledFuture<Void> pmaxTask; // task which will send delayed notification for pmax.
 
-        public NotificationData(LwM2mAttributeSet attributes, Long lastSendingTime, LwM2mNode lastSentValue,
+        public NotificationData(NotificationAttributeTree attributes, Long lastSendingTime, LwM2mNode lastSentValue,
                 ScheduledFuture<Void> nextNotification) {
             this.attributes = attributes;
             this.lastSendingTime = lastSendingTime;
@@ -78,7 +143,7 @@ public class NotificationDataStore {
             this.pmaxTask = previous.getPmaxFuture();
         }
 
-        public LwM2mAttributeSet getAttributes() {
+        public NotificationAttributeTree getAttributes() {
             return attributes;
         }
 
@@ -100,6 +165,10 @@ public class NotificationDataStore {
 
         public boolean usePmin() {
             return lastSendingTime != null;
+        }
+
+        public boolean hasCriteriaBasedOnValue() {
+            return lastSentValue != null;
         }
 
         public boolean pminTaskScheduled() {

@@ -150,6 +150,27 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
     }
 
     /**
+     * Like {@link #merge(LwM2mAttributeSet)} except if a given {@link LwM2mAttribute} has no value, it will remove this
+     * attribute from final result.
+     */
+    public LwM2mAttributeSet apply(LwM2mAttributeSet attributes) {
+        Map<String, LwM2mAttribute<?>> merged = new LinkedHashMap<>();
+        for (LwM2mAttribute<?> attr : getLwM2mAttributes()) {
+            merged.put(attr.getName(), attr);
+        }
+        if (attributes != null) {
+            for (LwM2mAttribute<?> attr : attributes.getLwM2mAttributes()) {
+                if (attr.hasValue()) {
+                    merged.put(attr.getName(), attr);
+                } else {
+                    merged.remove(attr.getName());
+                }
+            }
+        }
+        return new LwM2mAttributeSet(merged.values());
+    }
+
+    /**
      * Returns the attributes as a map with the CoRELinkParam as key and the attribute value as map value.
      *
      * @return the attributes map
