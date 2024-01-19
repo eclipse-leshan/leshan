@@ -34,6 +34,8 @@ import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
+import org.eclipse.leshan.core.link.lwm2m.attributes.NotificationAttributeTree;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
@@ -79,6 +81,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     private LwM2mClient lwm2mClient;
     private LinkFormatHelper linkFormatHelper;
+    private final NotificationAttributeTree assignedAttributes = new NotificationAttributeTree();
 
     public BaseObjectEnabler(int id, ObjectModel objectModel) {
         this.id = id;
@@ -390,9 +393,23 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         if (server.isLwm2mBootstrapServer()) {
             return WriteAttributesResponse.methodNotAllowed();
         }
-        // TODO should be implemented here to be available for all object enabler
-        // This should be a not implemented error, but this is not defined in the spec.
-        return WriteAttributesResponse.internalServerError("not implemented");
+
+        // apply new attribute values
+        LwM2mAttributeSet currentAttributes = assignedAttributes.get(request.getPath());
+        LwM2mAttributeSet newValue;
+        if (currentAttributes != null)
+            newValue = currentAttributes.apply(request.getAttributes());
+        else
+            newValue = request.getAttributes();
+
+        // TODO validate new value based on model.
+        if (newValue.isEmpty()) {
+            assignedAttributes.remove(request.getPath());
+        } else {
+            assignedAttributes.put(request.getPath(), newValue);
+        }
+
+        return WriteAttributesResponse.success();
     }
 
     @Override
@@ -562,5 +579,15 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     @Override
     public ContentFormat getDefaultEncodingFormat(DownlinkRequest<?> request) {
         return ContentFormat.DEFAULT;
+    }
+
+    @Override
+    public NotificationAttributeTree getAttributesFor(LwM2mPath path) {
+        // check we ask for supported path
+        if (!path.startWith(new LwM2mPath(id))) {
+            throw new IllegalStateException("Path doesn't concern object " + getId());
+        }
+
+        return assignedAttributes;
     }
 }

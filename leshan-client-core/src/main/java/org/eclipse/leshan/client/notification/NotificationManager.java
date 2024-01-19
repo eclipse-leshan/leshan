@@ -28,8 +28,8 @@ import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.resource.NotificationSender;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.servers.LwM2mServer;
-import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
-import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
+import org.eclipse.leshan.core.link.lwm2m.attributes.NotificationAttributeTree;
+import org.eclipse.leshan.core.node.LwM2mChildNode;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ObserveRequest;
@@ -47,6 +47,7 @@ public class NotificationManager {
     private final DownlinkRequestReceiver receiver;
     private final NotificationDataStore store;
     private final LwM2mObjectTree objectTree;
+    private final NotificationStrategy strategy = new NotificationStrategy();
     // TODO should be configurable and should be destroyed when needed.
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
@@ -73,7 +74,7 @@ public class NotificationManager {
     public synchronized void initRelation(LwM2mServer server, ObserveRequest request, LwM2mNode node,
             NotificationSender sender) {
         // Get Attributes from ObjectTree
-        LwM2mAttributeSet attributes = getAttributes(server, request);
+        NotificationAttributeTree attributes = getAttributes(server, request);
 
         // If there is no attributes this is just classic observe so nothing to do.
         if (attributes == null)
@@ -85,15 +86,17 @@ public class NotificationManager {
         updateNotificationData(server, request, attributes, node, sender);
     }
 
-    protected LwM2mAttributeSet getAttributes(LwM2mServer server, ObserveRequest request) {
+    protected NotificationAttributeTree getAttributes(LwM2mServer server, ObserveRequest request) {
         // TODO use objectTree to get attribute;
         // for testing, we return hardcoded value for resource 6/0/1
-        if (request.getPath().equals(new LwM2mPath(6, 0, 1))) {
-            return new LwM2mAttributeSet( //
-                    LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 5l),
-                    LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, 10l));
+
+        LwM2mObjectEnabler objectEnabler = objectTree.getObjectEnabler(request.getPath().getObjectId());
+        if (objectEnabler == null)
+            return null;
+        else {
+            return objectEnabler.getAttributesFor(request.getPath());
         }
-        return null;
+
     }
 
     // TODO an optimization could be to synchronize by observe relation (identify by server / request)
@@ -111,15 +114,25 @@ public class NotificationManager {
         }
 
         // ELSE handle Notification Attributes.
-        LwM2mAttributeSet attributes = notificationData.getAttributes();
+        NotificationAttributeTree attributes = notificationData.getAttributes();
 
-        // if previous value
-        // Get new value
-        // check LT / GT / ST criteria
-        // Then send notification if criteria doesn't match, stop
+        // if there is criteria based on value
+        if (notificationData.hasCriteriaBasedOnValue()) {
+            ObserveResponse response = createResponse(server, request);
+            if (response.isSuccess()) {
+                LwM2mChildNode newValue = response.getContent();
+
+                // if criteria doesn't match do not raise any event.
+                if (!strategy.shouldTriggerNotificationBasedOnValueChange(request.getPath(), attributes,
+                        notificationData.getLastSentValue(), newValue)) {
+                    return;
+                }
+            }
+            // TODO handle error ?
+        }
 
         // TODO use case where PMIN == PMAX
-        // If PMIN is used
+        // If PMIN is used check if we need to delay this notification.
         if (notificationData.usePmin()) {
             LOG.trace("handle pmin for observe relation of {} / {}", server, request);
 
@@ -131,7 +144,7 @@ public class NotificationManager {
             // calculate time since last notification
             Long timeSinceLastNotification = TimeUnit.SECONDS
                     .convert(System.nanoTime() - notificationData.getLastSendingTime(), TimeUnit.NANOSECONDS);
-            Long pmin = attributes.get(LwM2mAttributes.MINIMUM_PERIOD).getValue();
+            Long pmin = strategy.getPmin(request.getPath(), attributes);
             if (timeSinceLastNotification < pmin) {
                 ScheduledFuture<Void> pminTask = executor.schedule(new Callable<Void>() {
                     @Override
@@ -152,45 +165,49 @@ public class NotificationManager {
     // TODO an optimization could be to synchronize by observe relation (identify by server / request)
     public synchronized void clear(LwM2mServer server, ObserveRequest request) {
         // remove all data about observe relation for given server / request.
+        store.removeNotificationData(server, request);
     }
 
     // TODO an optimization could be to synchronize by observe relation (identify by server / request)
     public synchronized void clear(LwM2mServer server) {
         // remove all data about observe relation for given server.
+        store.clearAllNotificationDataFor(server);
     }
 
     // TODO an optimization could be to synchronize by observe relation (identify by server / request)
     public synchronized void clear() {
         // remove all data about observe relation.
+        store.clearAllNotificationData();
     }
 
     // TODO an optimization could be to synchronize by observe relation (identify by server / request)
     protected synchronized void updateNotificationData(LwM2mServer server, ObserveRequest request,
-            LwM2mAttributeSet attributes, LwM2mNode newValue, NotificationSender sender) {
+            NotificationAttributeTree attributes, LwM2mNode newValue, NotificationSender sender) {
+        // Get Request Path
+        LwM2mPath path = request.getPath();
 
         // Store last sending time if needed
         Long lastSendingTime = null;
-        if (attributes.contains(LwM2mAttributes.MINIMUM_PERIOD)) {
+        if (strategy.hasPmin(attributes, path)) {
             lastSendingTime = System.nanoTime();
         }
 
         // Store last value sent if needed;
         LwM2mNode lastValue = null;
-        if (attributes.contains(LwM2mAttributes.GREATER_THAN) || attributes.contains(LwM2mAttributes.LESSER_THAN)
-                || attributes.contains(LwM2mAttributes.STEP)) {
+        if (strategy.hasCriteriaBasedOnValue(path, attributes)) {
             lastValue = newValue;
         }
 
         // Schedule notification for Max Period if needed
         ScheduledFuture<Void> pmaxTask = null;
-        if (attributes.contains(LwM2mAttributes.MAXIMUM_PERIOD)) {
+        if (strategy.hasPmax(path, attributes)) {
             pmaxTask = executor.schedule(new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
                     sendNotification(server, request, attributes, sender);
                     return null;
                 }
-            }, attributes.getLwM2mAttribute(LwM2mAttributes.MAXIMUM_PERIOD).getValue(), TimeUnit.SECONDS);
+            }, strategy.getPmax(path, attributes), TimeUnit.SECONDS);
         }
 
         // Create State for this observe relation
@@ -198,7 +215,7 @@ public class NotificationManager {
                 new NotificationData(attributes, lastSendingTime, lastValue, pmaxTask));
     }
 
-    protected void sendNotification(LwM2mServer server, ObserveRequest request, LwM2mAttributeSet attributes,
+    protected void sendNotification(LwM2mServer server, ObserveRequest request, NotificationAttributeTree attributes,
             NotificationSender sender) {
         ObserveResponse observeResponse = createResponse(server, request);
         if (!sender.sendNotification(observeResponse)) {

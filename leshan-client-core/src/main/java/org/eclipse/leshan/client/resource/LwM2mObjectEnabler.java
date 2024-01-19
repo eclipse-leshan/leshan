@@ -25,7 +25,9 @@ import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
+import org.eclipse.leshan.core.link.lwm2m.attributes.NotificationAttributeTree;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.BootstrapReadRequest;
@@ -115,4 +117,6 @@ public interface LwM2mObjectEnabler {
     void endTransaction(byte level);
 
     ContentFormat getDefaultEncodingFormat(DownlinkRequest<?> request);
+
+    NotificationAttributeTree getAttributesFor(LwM2mPath path);
 }
