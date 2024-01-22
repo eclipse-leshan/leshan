@@ -77,11 +77,15 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A CoAP {@link Resource} in charge of handling requests targeting a lwM2M Object.
  */
 public class ObjectResource extends LwM2mClientCoapResource implements ObjectListener {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ObjectResource.class);
 
     protected DownlinkRequestReceiver requestReceiver;
     protected ClientEndpointToolbox toolbox;
@@ -233,7 +237,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                     }
                     return false;
                 } catch (Exception e) {
-                    LOGGER.error("Exception while sending notification [{}] for [{}] to {}", response, observeRequest,
+                    LOG.error("Exception while sending notification [{}] for [{}] to {}", response, observeRequest,
                             server, e);
                     exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR, "failure sending notification");
                     return false;
