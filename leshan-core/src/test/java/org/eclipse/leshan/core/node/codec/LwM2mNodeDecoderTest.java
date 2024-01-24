@@ -1094,6 +1094,43 @@ public class LwM2mNodeDecoderTest {
     }
 
     @Test
+    public void senml_timestamped_resources_with_several_bn() throws CodecException {
+        // given
+        StringBuilder b = new StringBuilder();
+        b.append("[");
+        b.append("{\"bn\": \"/3303/0/5700\",");
+        b.append("\"bt\": 1699877805.766,");
+        b.append("\"v\": -128.8");
+        b.append("},");
+        b.append("{\"bn\": \"/6/0/0\",");
+        b.append("\"t\": 0.101,");
+        b.append("\"v\": -39.0");
+        b.append("}");
+        b.append("]");
+
+        // when
+        Instant baseInstant = Instant.ofEpochSecond(1699877805, 766 * 1000000);
+        TimestampedLwM2mNodes timestampedLwM2mNodes = decoder.decodeTimestampedNodes(b.toString().getBytes(),
+                ContentFormat.SENML_JSON, null, model);
+        LwM2mSingleResource resource3303 = (LwM2mSingleResource) timestampedLwM2mNodes.getNodesAt(baseInstant)
+                .get(new LwM2mPath("/3303/0/5700"));
+        LwM2mSingleResource resource600 = (LwM2mSingleResource) timestampedLwM2mNodes
+                .getNodesAt(baseInstant.plusMillis(101)).get(new LwM2mPath("/6/0/0"));
+
+        // then
+        assertEquals(2, timestampedLwM2mNodes.getNodes().size());
+        assertEquals(2, timestampedLwM2mNodes.getTimestamps().size());
+
+        assertEquals(5700, resource3303.getId());
+        assertEquals(-128.8, resource3303.getValue());
+        assertEquals(Type.FLOAT, resource3303.getType());
+
+        assertEquals(0, resource600.getId());
+        assertEquals(-39.0, resource600.getValue());
+        assertEquals(Type.FLOAT, resource600.getType());
+    }
+
+    @Test
     public void senml_timestamped_instances() throws CodecException {
         // json content for instance 0 of device object
         StringBuilder b = new StringBuilder();
