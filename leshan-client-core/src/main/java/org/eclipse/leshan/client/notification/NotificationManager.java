@@ -83,12 +83,11 @@ public class NotificationManager {
         LOG.debug("Handle observe relation for {} / {}", server, request);
 
         // Store needed data for this observe relation.
+        attributes = strategy.selectNotificationsAttributes(request.getPath(), attributes);
         updateNotificationData(server, request, attributes, node, sender);
     }
 
     protected NotificationAttributeTree getAttributes(LwM2mServer server, ObserveRequest request) {
-        // TODO use objectTree to get attribute;
-        // for testing, we return hardcoded value for resource 6/0/1
 
         LwM2mObjectEnabler objectEnabler = objectTree.getObjectEnabler(request.getPath().getObjectId());
         if (objectEnabler == null)
@@ -115,12 +114,13 @@ public class NotificationManager {
 
         // ELSE handle Notification Attributes.
         NotificationAttributeTree attributes = notificationData.getAttributes();
+        ObserveResponse candidateNotificationToSend = null;
 
         // if there is criteria based on value
         if (notificationData.hasCriteriaBasedOnValue()) {
-            ObserveResponse response = createResponse(server, request);
-            if (response.isSuccess()) {
-                LwM2mChildNode newValue = response.getContent();
+            candidateNotificationToSend = createResponse(server, request);
+            if (candidateNotificationToSend.isSuccess()) {
+                LwM2mChildNode newValue = candidateNotificationToSend.getContent();
 
                 // if criteria doesn't match do not raise any event.
                 if (!strategy.shouldTriggerNotificationBasedOnValueChange(request.getPath(), attributes,
@@ -149,7 +149,7 @@ public class NotificationManager {
                 ScheduledFuture<Void> pminTask = executor.schedule(new Callable<Void>() {
                     @Override
                     public Void call() throws Exception {
-                        sendNotification(server, request, attributes, sender);
+                        sendNotification(server, request, null, attributes, sender);
                         return null;
                     }
                 }, pmin - timeSinceLastNotification, TimeUnit.SECONDS);
@@ -159,7 +159,7 @@ public class NotificationManager {
             }
         }
 
-        sendNotification(server, request, attributes, sender);
+        sendNotification(server, request, candidateNotificationToSend, attributes, sender);
     }
 
     // TODO an optimization could be to synchronize by observe relation (identify by server / request)
@@ -204,7 +204,7 @@ public class NotificationManager {
             pmaxTask = executor.schedule(new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
-                    sendNotification(server, request, attributes, sender);
+                    sendNotification(server, request, null, attributes, sender);
                     return null;
                 }
             }, strategy.getPmax(path, attributes), TimeUnit.SECONDS);
@@ -215,15 +215,17 @@ public class NotificationManager {
                 new NotificationData(attributes, lastSendingTime, lastValue, pmaxTask));
     }
 
-    protected void sendNotification(LwM2mServer server, ObserveRequest request, NotificationAttributeTree attributes,
-            NotificationSender sender) {
-        ObserveResponse observeResponse = createResponse(server, request);
+    protected void sendNotification(LwM2mServer server, ObserveRequest request, ObserveResponse observeResponse,
+            NotificationAttributeTree attributes, NotificationSender sender) {
+        if (observeResponse == null) {
+            observeResponse = createResponse(server, request);
+        }
         if (!sender.sendNotification(observeResponse)) {
             // remove data as relation doesn't exist anymore
             clear(server, request);
         } else {
             if (observeResponse.isFailure()) {
-                // remove data as relation must removed on failure
+                // remove data as relation must be removed on failure
                 clear(server, request);
             } else {
                 updateNotificationData(server, request, attributes, observeResponse.getContent(), sender);
