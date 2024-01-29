@@ -36,6 +36,16 @@ public abstract class AbstractLwM2mResponseAssert<SELF extends AbstractLwM2mResp
         return (SELF) this;
     }
 
+    public SELF isSuccess() {
+        isNotNull();
+
+        if (!actual.isSuccess()) {
+            failWithMessage("Expected successful Response");
+        }
+
+        return mySelf();
+    }
+
     public SELF hasCode(ResponseCode expectedCode) {
         isNotNull();
 
