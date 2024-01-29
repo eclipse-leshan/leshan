@@ -32,8 +32,8 @@ public class IntegerChecker implements CriteriaBasedOnValueChecker {
             Double lessThan = attributes.get(LwM2mAttributes.LESSER_THAN).getValue();
             return lastSentLong >= lessThan && newLong < lessThan;
         } else if (attributes.contains(LwM2mAttributes.GREATER_THAN)) {
-            Double greaterThan = attributes.get(LwM2mAttributes.LESSER_THAN).getValue();
-            return lastSentLong <= greaterThan && newLong < greaterThan;
+            Double greaterThan = attributes.get(LwM2mAttributes.GREATER_THAN).getValue();
+            return lastSentLong <= greaterThan && newLong > greaterThan;
         }
         return true;
     }
