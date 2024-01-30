@@ -36,6 +36,7 @@ import org.eclipse.leshan.client.resource.DummyInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectEnabler;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.link.DefaultLinkSerializer;
 import org.eclipse.leshan.core.link.Link;
@@ -60,7 +61,8 @@ public class LinkFormatHelperTest {
         ObjectModel locationModel = getObjectModel(6);
 
         LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
-        Link[] links = linkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), null);
+        Link[] links = linkFormatHelper.getObjectDescription(LwM2mServer.SYSTEM, createObjectEnabler(locationModel),
+                null);
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         assertEquals("</6>,</6/0>,</6/0/0>,</6/0/1>,</6/0/2>,</6/0/3>,</6/0/4>,</6/0/5>,</6/0/6>", strLinks);
@@ -71,7 +73,8 @@ public class LinkFormatHelperTest {
         ObjectModel locationModel = getObjectModel(6);
 
         LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
-        Link[] links = linkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "/rp");
+        Link[] links = linkFormatHelper.getObjectDescription(LwM2mServer.SYSTEM, createObjectEnabler(locationModel),
+                "/rp");
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         assertEquals(
@@ -84,7 +87,8 @@ public class LinkFormatHelperTest {
         ObjectModel locationModel = getObjectModel(6);
 
         LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
-        Link[] links = linkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "");
+        Link[] links = linkFormatHelper.getObjectDescription(LwM2mServer.SYSTEM, createObjectEnabler(locationModel),
+                "");
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         assertEquals("</6>,</6/0>,</6/0/0>,</6/0/1>,</6/0/2>,</6/0/3>,</6/0/4>,</6/0/5>,</6/0/6>", strLinks);
@@ -95,7 +99,8 @@ public class LinkFormatHelperTest {
         ObjectModel locationModel = getObjectModel(6);
 
         LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
-        Link[] links = linkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "/");
+        Link[] links = linkFormatHelper.getObjectDescription(LwM2mServer.SYSTEM, createObjectEnabler(locationModel),
+                "/");
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         assertEquals("</6>,</6/0>,</6/0/0>,</6/0/1>,</6/0/2>,</6/0/3>,</6/0/4>,</6/0/5>,</6/0/6>", strLinks);
@@ -106,7 +111,8 @@ public class LinkFormatHelperTest {
         ObjectModel locationModel = getVersionedObjectModel(6, "2.0");
 
         LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
-        Link[] links = linkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "/");
+        Link[] links = linkFormatHelper.getObjectDescription(LwM2mServer.SYSTEM, createObjectEnabler(locationModel),
+                "/");
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         assertEquals("</6>;ver=2.0,</6/0>,</6/0/0>,</6/0/1>,</6/0/2>,</6/0/3>,</6/0/4>,</6/0/5>,</6/0/6>", strLinks);
@@ -117,7 +123,8 @@ public class LinkFormatHelperTest {
         ObjectModel locationModel = getObjectModel(6);
 
         LinkFormatHelper linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_0);
-        Link[] links = linkFormatHelper.getObjectDescription(createObjectEnabler(locationModel), "/r/t");
+        Link[] links = linkFormatHelper.getObjectDescription(LwM2mServer.SYSTEM, createObjectEnabler(locationModel),
+                "/r/t");
         String strLinks = serializer.serializeCoreLinkFormat(links);
 
         assertEquals(

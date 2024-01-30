@@ -26,11 +26,17 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.HashMap;
 import java.util.stream.Stream;
 
+import org.eclipse.leshan.client.object.Device;
+import org.eclipse.leshan.client.servers.LwM2mServer;
+import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.endpoint.Protocol;
+import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.response.DiscoverResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
 import org.eclipse.leshan.integration.tests.util.junit5.extensions.BeforeEachParameterizedResolver;
@@ -65,6 +71,27 @@ public class DiscoverTest {
     /*---------------------------------/
      *  Set-up and Tear-down Tests
      * -------------------------------*/
+    private static class DiscoverTestDevice extends Device {
+        HashMap<Integer, Long> errorCode;
+
+        public DiscoverTestDevice() {
+            super("test_manufacturer", "model_number", "serial");
+            errorCode = new HashMap<>();
+            errorCode.put(1, 10l);
+            errorCode.put(3, 25l);
+        }
+
+        @Override
+        public ReadResponse read(LwM2mServer server, int resourceid) {
+
+            switch (resourceid) {
+            case 11: // error codes
+                return ReadResponse.success(resourceid, errorCode, Type.INTEGER);
+            default:
+                return super.read(server, resourceid);
+            }
+        }
+    }
 
     LeshanTestServer server;
     LeshanTestClient client;
@@ -74,7 +101,10 @@ public class DiscoverTest {
     public void start(Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider) {
         server = givenServerUsing(givenProtocol).with(givenServerEndpointProvider).build();
         server.start();
-        client = givenClientUsing(givenProtocol).with(givenClientEndpointProvider).connectingTo(server).build();
+        client = givenClientUsing(givenProtocol)
+                // we create client with a custom device to be able to test multi instance resource
+                .withInstancesForObject(LwM2mId.DEVICE, new DiscoverTestDevice()) //
+                .with(givenClientEndpointProvider).connectingTo(server).build();
         client.start();
         server.waitForNewRegistrationOf(client);
         client.waitForRegistrationTo(server);
@@ -104,7 +134,8 @@ public class DiscoverTest {
         assertThat(response) //
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider) // */
-                .hasObjectLinksLike("</3>,</3/0>,</3/0/0>,</3/0/1>,</3/0/2>,</3/0/11>,</3/0/14>,</3/0/15>,</3/0/16>");
+                .hasObjectLinksLike(
+                        "</3>,</3/0>,</3/0/0>,</3/0/1>,</3/0/2>,</3/0/11>;dim=2,</3/0/14>,</3/0/15>,</3/0/16>");
 
     }
 
@@ -130,7 +161,7 @@ public class DiscoverTest {
         assertThat(response) //
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider) //
-                .hasObjectLinksLike("</3/0>,</3/0/0>,</3/0/1>,</3/0/2>,</3/0/11>,</3/0/14>,</3/0/15>,</3/0/16>");
+                .hasObjectLinksLike("</3/0>,</3/0/0>,</3/0/1>,</3/0/2>,</3/0/11>;dim=2,</3/0/14>,</3/0/15>,</3/0/16>");
     }
 
     @TestAllTransportLayer
@@ -146,7 +177,7 @@ public class DiscoverTest {
     }
 
     @TestAllTransportLayer
-    public void can_discover_resource(Protocol givenProtocol, String givenClientEndpointProvider,
+    public void can_discover_single_resource(Protocol givenProtocol, String givenClientEndpointProvider,
             String givenServerEndpointProvider) throws InterruptedException {
         // read ACL object
         DiscoverResponse response = server.send(currentRegistration, new DiscoverRequest(3, 0, 0));
@@ -156,8 +187,19 @@ public class DiscoverTest {
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider) //
                 .hasObjectLinksLike("</3/0/0>");
+    }
 
-        assertThat(response.getObjectLinks()).isLikeLwM2mLinks("</3/0/0>");
+    @TestAllTransportLayer
+    public void can_discover_multi_instance_resource(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InterruptedException {
+        // read ACL object
+        DiscoverResponse response = server.send(currentRegistration, new DiscoverRequest(3, 0, 11));
+
+        // verify result
+        assertThat(response) //
+                .hasCode(CONTENT) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider) //
+                .hasObjectLinksLike("</3/0/11>;dim=2,</3/0/11/1>,</3/0/11/3>");
     }
 
     @TestAllTransportLayer

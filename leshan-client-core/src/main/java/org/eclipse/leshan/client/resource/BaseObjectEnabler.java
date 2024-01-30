@@ -36,6 +36,7 @@ import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
@@ -105,6 +106,25 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         ArrayList<Integer> resourceIds = new ArrayList<>(objectModel.resources.keySet());
         Collections.sort(resourceIds);
         return resourceIds;
+    }
+
+    @Override
+    public List<Integer> getAvailableInstanceResourceIds(int instanceId, int multipleResourceId) {
+        // by default we do a read on the resource to get this information but implementer can optimize this.
+        ResourceModel resourceModel = objectModel.resources.get(multipleResourceId);
+        if (resourceModel == null || !resourceModel.multiple) {
+            return Collections.emptyList();
+        }
+        if (getAvailableInstanceIds().contains(instanceId)) {
+            ReadResponse response = read(LwM2mServer.SYSTEM, new ReadRequest(getId(), instanceId, multipleResourceId));
+            if (response.isSuccess()) {
+                LwM2mMultipleResource multiResource = (LwM2mMultipleResource) response.getContent();
+                ArrayList<Integer> resourceInstanceIds = new ArrayList<>(multiResource.getInstances().keySet());
+                Collections.sort(resourceInstanceIds);
+                return resourceInstanceIds;
+            }
+        }
+        return Collections.emptyList();
     }
 
     @Override
@@ -395,7 +415,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         LwM2mPath path = request.getPath();
         if (path.isObject()) {
             // Manage discover on object
-            LwM2mLink[] ObjectLinks = linkFormatHelper.getObjectDescription(this, null);
+            LwM2mLink[] ObjectLinks = linkFormatHelper.getObjectDescription(server, this, null);
             return DiscoverResponse.success(ObjectLinks);
 
         } else if (path.isObjectInstance()) {
@@ -403,7 +423,8 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             if (!getAvailableInstanceIds().contains(path.getObjectInstanceId()))
                 return DiscoverResponse.notFound();
 
-            LwM2mLink[] instanceLink = linkFormatHelper.getInstanceDescription(this, path.getObjectInstanceId(), null);
+            LwM2mLink[] instanceLink = linkFormatHelper.getInstanceDescription(server, this, path.getObjectInstanceId(),
+                    null);
             return DiscoverResponse.success(instanceLink);
 
         } else if (path.isResource()) {
@@ -418,9 +439,9 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             if (!getAvailableResourceIds(path.getObjectInstanceId()).contains(path.getResourceId()))
                 return DiscoverResponse.notFound();
 
-            LwM2mLink resourceLink = linkFormatHelper.getResourceDescription(this, path.getObjectInstanceId(),
+            LwM2mLink[] resourceLink = linkFormatHelper.getResourceDescription(server, this, path.getObjectInstanceId(),
                     path.getResourceId(), null);
-            return DiscoverResponse.success(new LwM2mLink[] { resourceLink });
+            return DiscoverResponse.success(resourceLink);
         }
         return DiscoverResponse.badRequest(null);
     }

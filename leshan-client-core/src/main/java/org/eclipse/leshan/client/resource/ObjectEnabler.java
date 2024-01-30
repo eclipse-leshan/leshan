@@ -35,6 +35,8 @@ import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.ResourceModel;
+import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -106,6 +108,26 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
         } else {
             return Collections.emptyList();
         }
+    }
+
+    @Override
+    public List<Integer> getAvailableInstanceResourceIds(int instanceId, int multipleResourceId) {
+        // by default we do a read on the resource to get this information but implementer can optimize this.
+        ResourceModel resourceModel = objectModel.resources.get(multipleResourceId);
+        if (resourceModel == null || !resourceModel.multiple) {
+            return Collections.emptyList();
+        }
+        if (instances.containsKey(instanceId)) {
+            LwM2mInstanceEnabler instanceEnabler = instances.get(instanceId);
+            ReadResponse response = instanceEnabler.read(LwM2mServer.SYSTEM, multipleResourceId);
+            if (response.isSuccess() && response.getContent() instanceof LwM2mMultipleResource) {
+                LwM2mMultipleResource multiResource = (LwM2mMultipleResource) response.getContent();
+                ArrayList<Integer> resourceInstanceIds = new ArrayList<>(multiResource.getInstances().keySet());
+                Collections.sort(resourceInstanceIds);
+                return resourceInstanceIds;
+            }
+        }
+        return Collections.emptyList();
     }
 
     public synchronized void addInstance(int instanceId, LwM2mInstanceEnabler newInstance) {

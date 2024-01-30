@@ -42,6 +42,7 @@ import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.model.LwM2mCoreObjectVersionRegistry;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.node.LwM2mNodeLevel;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -151,7 +152,12 @@ public class LinkFormatHelper {
         return oscoreAttributes;
     }
 
-    public LwM2mLink[] getObjectDescription(LwM2mObjectEnabler objectEnabler, String rootPath) {
+    public LwM2mLink[] getObjectDescription(LwM2mServer server, LwM2mObjectEnabler objectEnabler, String rootPath) {
+        return getObjectDescription(server, objectEnabler, rootPath, LwM2mNodeLevel.RESOURCE);
+    }
+
+    public LwM2mLink[] getObjectDescription(LwM2mServer server, LwM2mObjectEnabler objectEnabler, String rootPath,
+            LwM2mNodeLevel depth) {
         List<LwM2mLink> links = new ArrayList<>();
 
         // create link for "object"
@@ -159,8 +165,10 @@ public class LinkFormatHelper {
         links.add(new LwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId()), objectAttributes));
 
         // create links for each available instance
-        for (Integer instanceId : objectEnabler.getAvailableInstanceIds()) {
-            links.addAll(Arrays.asList(getInstanceDescription(objectEnabler, instanceId, rootPath)));
+        if (depth.isDeeperOrEqualThan(LwM2mNodeLevel.OBJECT_INSTANCE)) {
+            for (Integer instanceId : objectEnabler.getAvailableInstanceIds()) {
+                links.addAll(Arrays.asList(getInstanceDescription(server, objectEnabler, instanceId, rootPath, depth)));
+            }
         }
 
         return links.toArray(new LwM2mLink[links.size()]);
@@ -237,23 +245,56 @@ public class LinkFormatHelper {
         return links;
     }
 
-    public LwM2mLink[] getInstanceDescription(LwM2mObjectEnabler objectEnabler, int instanceId, String rootPath) {
+    public LwM2mLink[] getInstanceDescription(LwM2mServer server, LwM2mObjectEnabler objectEnabler, int instanceId,
+            String rootPath) {
+        return getInstanceDescription(server, objectEnabler, instanceId, rootPath, LwM2mNodeLevel.RESOURCE);
+    }
+
+    public LwM2mLink[] getInstanceDescription(LwM2mServer server, LwM2mObjectEnabler objectEnabler, int instanceId,
+            String rootPath, LwM2mNodeLevel depth) {
         List<LwM2mLink> links = new ArrayList<>();
 
         // create link for "instance"
         links.add(new LwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId(), instanceId)));
 
         // create links for each available resource
-        for (Integer resourceId : objectEnabler.getAvailableResourceIds(instanceId)) {
-            links.add(getResourceDescription(objectEnabler, instanceId, resourceId, rootPath));
+        if (depth.isDeeperOrEqualThan(LwM2mNodeLevel.RESOURCE)) {
+            for (Integer resourceId : objectEnabler.getAvailableResourceIds(instanceId)) {
+                links.addAll(Arrays.asList(
+                        getResourceDescription(server, objectEnabler, instanceId, resourceId, rootPath, depth)));
+            }
         }
         return links.toArray(new LwM2mLink[links.size()]);
     }
 
-    public LwM2mLink getResourceDescription(LwM2mObjectEnabler objectEnabler, int instanceId, int resourceId,
-            String rootPath) {
+    public LwM2mLink[] getResourceDescription(LwM2mServer server, LwM2mObjectEnabler objectEnabler, int instanceId,
+            int resourceId, String rootPath) {
+        return getResourceDescription(server, objectEnabler, instanceId, resourceId, rootPath,
+                LwM2mNodeLevel.RESOURCE_INSTANCE);
+    }
+
+    public LwM2mLink[] getResourceDescription(LwM2mServer server, LwM2mObjectEnabler objectEnabler, int instanceId,
+            int resourceId, String rootPath, LwM2mNodeLevel depth) {
+        List<LwM2mLink> links = new ArrayList<>();
+
         // create link for "resource"
-        return new LwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId(), instanceId, resourceId));
+        List<Integer> availableInstanceResourceIds = objectEnabler.getAvailableInstanceResourceIds(instanceId,
+                resourceId);
+        if (!availableInstanceResourceIds.isEmpty()) {
+            links.add(new LwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId(), instanceId, resourceId),
+                    LwM2mAttributes.create(LwM2mAttributes.DIMENSION, (long) availableInstanceResourceIds.size())));
+        } else {
+            links.add(new LwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId(), instanceId, resourceId)));
+        }
+
+        // create links for each available instance resource
+        if (!availableInstanceResourceIds.isEmpty() && depth.isResourceInstance()) {
+            for (Integer resourceInstanceId : availableInstanceResourceIds) {
+                links.add(new LwM2mLink(rootPath,
+                        new LwM2mPath(objectEnabler.getId(), instanceId, resourceId, resourceInstanceId)));
+            }
+        }
+        return links.toArray(new LwM2mLink[links.size()]);
     }
 
     protected List<LwM2mAttribute<?>> getObjectAttributes(ObjectModel objectModel) {
