@@ -38,7 +38,10 @@ import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
 import org.eclipse.leshan.core.link.lwm2m.MixedLwM2mLink;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
+import org.eclipse.leshan.core.link.lwm2m.attributes.MixedLwM2mAttributeSet;
+import org.eclipse.leshan.core.link.lwm2m.attributes.NotificationAttributeTree;
 import org.eclipse.leshan.core.model.LwM2mCoreObjectVersionRegistry;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -92,9 +95,10 @@ public class LinkFormatHelper {
 
             List<Integer> availableInstance = objectEnabler.getAvailableInstanceIds();
             // Include an object link if there are no instances or there are object attributes (e.g. "ver")
-            List<LwM2mAttribute<?>> objectAttributes = getObjectAttributes(objectEnabler.getObjectModel());
-            if (availableInstance.isEmpty() || (objectAttributes != null)) {
-                links.add(new MixedLwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId()), objectAttributes));
+            LwM2mAttributeSet objectAttributes = getObjectAttributes(objectEnabler.getObjectModel());
+            if (availableInstance.isEmpty() || (!objectAttributes.isEmpty())) {
+                links.add(new MixedLwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId()),
+                        new MixedLwM2mAttributeSet(objectAttributes.asCollection())));
             }
             for (Integer instanceId : objectEnabler.getAvailableInstanceIds()) {
                 links.add(new MixedLwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId(), instanceId)));
@@ -161,8 +165,10 @@ public class LinkFormatHelper {
         List<LwM2mLink> links = new ArrayList<>();
 
         // create link for "object"
-        List<LwM2mAttribute<?>> objectAttributes = getObjectAttributes(objectEnabler.getObjectModel());
-        links.add(new LwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId()), objectAttributes));
+        LwM2mPath objectPath = new LwM2mPath(objectEnabler.getId());
+        LwM2mAttributeSet objectAttributes = getObjectAttributes(objectEnabler.getObjectModel());
+        LwM2mAttributeSet notificationAttributes = getNotificationAttributeFor(server, objectEnabler, objectPath);
+        links.add(new LwM2mLink(rootPath, objectPath, objectAttributes.merge(notificationAttributes)));
 
         // create links for each available instance
         if (depth.isDeeperOrEqualThan(LwM2mNodeLevel.OBJECT_INSTANCE)) {
@@ -255,7 +261,9 @@ public class LinkFormatHelper {
         List<LwM2mLink> links = new ArrayList<>();
 
         // create link for "instance"
-        links.add(new LwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId(), instanceId)));
+        LwM2mPath instancePath = new LwM2mPath(objectEnabler.getId(), instanceId);
+        LwM2mAttributeSet instanceAttributes = getNotificationAttributeFor(server, objectEnabler, instancePath);
+        links.add(new LwM2mLink(rootPath, instancePath, instanceAttributes));
 
         // create links for each available resource
         if (depth.isDeeperOrEqualThan(LwM2mNodeLevel.RESOURCE)) {
@@ -278,34 +286,53 @@ public class LinkFormatHelper {
         List<LwM2mLink> links = new ArrayList<>();
 
         // create link for "resource"
+        LwM2mPath resourcePath = new LwM2mPath(objectEnabler.getId(), instanceId, resourceId);
+        LwM2mAttributeSet resourceAttributes = getNotificationAttributeFor(server, objectEnabler, resourcePath);
+
         List<Integer> availableInstanceResourceIds = objectEnabler.getAvailableInstanceResourceIds(instanceId,
                 resourceId);
         if (!availableInstanceResourceIds.isEmpty()) {
-            links.add(new LwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId(), instanceId, resourceId),
-                    LwM2mAttributes.create(LwM2mAttributes.DIMENSION, (long) availableInstanceResourceIds.size())));
+            links.add(new LwM2mLink(rootPath, resourcePath, resourceAttributes.merge(
+                    LwM2mAttributes.create(LwM2mAttributes.DIMENSION, (long) availableInstanceResourceIds.size()))));
         } else {
-            links.add(new LwM2mLink(rootPath, new LwM2mPath(objectEnabler.getId(), instanceId, resourceId)));
+            links.add(new LwM2mLink(rootPath, resourcePath, resourceAttributes));
         }
 
         // create links for each available instance resource
         if (!availableInstanceResourceIds.isEmpty() && depth.isResourceInstance()) {
             for (Integer resourceInstanceId : availableInstanceResourceIds) {
-                links.add(new LwM2mLink(rootPath,
-                        new LwM2mPath(objectEnabler.getId(), instanceId, resourceId, resourceInstanceId)));
+                LwM2mPath resourceInstancePath = new LwM2mPath(objectEnabler.getId(), instanceId, resourceId,
+                        resourceInstanceId);
+                LwM2mAttributeSet resourceInstanceAttributes = getNotificationAttributeFor(server, objectEnabler,
+                        resourceInstancePath);
+                links.add(new LwM2mLink(rootPath, resourceInstancePath, resourceInstanceAttributes));
             }
         }
         return links.toArray(new LwM2mLink[links.size()]);
     }
 
-    protected List<LwM2mAttribute<?>> getObjectAttributes(ObjectModel objectModel) {
+    protected LwM2mAttributeSet getNotificationAttributeFor(LwM2mServer server, LwM2mObjectEnabler objectEnabler,
+            LwM2mPath path) {
+        NotificationAttributeTree attributeTree = objectEnabler.getAttributesFor(server);
+        if (attributeTree == null) {
+            return new LwM2mAttributeSet();
+        }
+        LwM2mAttributeSet attributes = attributeTree.get(path);
+        if (attributes == null) {
+            return new LwM2mAttributeSet();
+        }
+        return attributes;
+    }
+
+    protected LwM2mAttributeSet getObjectAttributes(ObjectModel objectModel) {
         Version version = getVersion(objectModel);
         if (version == null) {
-            return null;
+            return new LwM2mAttributeSet();
         }
 
         List<LwM2mAttribute<?>> attributes = new ArrayList<>();
         attributes.add(LwM2mAttributes.create(LwM2mAttributes.OBJECT_VERSION, version));
-        return attributes;
+        return new LwM2mAttributeSet(attributes);
     }
 
     protected Version getVersion(ObjectModel objectModel) {
