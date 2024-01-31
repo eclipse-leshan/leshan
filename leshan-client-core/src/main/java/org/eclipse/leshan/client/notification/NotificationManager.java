@@ -93,7 +93,7 @@ public class NotificationManager {
         if (objectEnabler == null)
             return null;
         else {
-            return objectEnabler.getAttributesFor(request.getPath());
+            return objectEnabler.getAttributesFor(server);
         }
 
     }
