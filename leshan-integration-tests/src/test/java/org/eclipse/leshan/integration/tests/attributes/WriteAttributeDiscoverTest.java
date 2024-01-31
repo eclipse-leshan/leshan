@@ -25,18 +25,22 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
 import org.eclipse.leshan.client.object.Device;
+import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.response.DiscoverResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
@@ -81,14 +85,29 @@ public class WriteAttributeDiscoverTest {
     private static class WriteAttributeTestDevice extends Device {
 
         private static final List<Integer> supportedResources = Arrays.asList(0, 7, 9, 16);
+        HashMap<Integer, Long> powerSourceVoltage;
 
         public WriteAttributeTestDevice() {
             super("test_manufacturer", "model_number", "serial");
+            powerSourceVoltage = new HashMap<>();
+            powerSourceVoltage.put(0, 55l);
+            powerSourceVoltage.put(1, 65l);
         }
 
         @Override
         public List<Integer> getAvailableResourceIds(ObjectModel model) {
             return supportedResources;
+        }
+
+        @Override
+        public ReadResponse read(LwM2mServer server, int resourceid) {
+
+            switch (resourceid) {
+            case 7: // error codes
+                return ReadResponse.success(resourceid, powerSourceVoltage, Type.INTEGER);
+            default:
+                return super.read(server, resourceid);
+            }
         }
     }
 
@@ -128,7 +147,7 @@ public class WriteAttributeDiscoverTest {
         assertThat(response) //
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider) //
-                .hasObjectLinksLike("</3>,</3/0>,</3/0/0>,</3/0/7>,</3/0/9>,</3/0/16>");
+                .hasObjectLinksLike("</3>,</3/0>,</3/0/0>,</3/0/7>;dim=2,</3/0/9>,</3/0/16>");
 
         // Write some attributes
         WriteAttributesResponse writeAttributesResponse = server.send(currentRegistration,
@@ -145,7 +164,7 @@ public class WriteAttributeDiscoverTest {
         assertThat(response) //
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider) //
-                .hasObjectLinksLike("</3>;pmin=100;pmax=200,</3/0>,</3/0/0>,</3/0/7>,</3/0/9>,</3/0/16>");
+                .hasObjectLinksLike("</3>;pmin=100;pmax=200,</3/0>,</3/0/0>,</3/0/7>;dim=2,</3/0/9>,</3/0/16>");
 
         // override attribute
         writeAttributesResponse = server.send(currentRegistration,
@@ -161,7 +180,7 @@ public class WriteAttributeDiscoverTest {
         assertThat(response) //
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider) //
-                .hasObjectLinksLike("</3>;pmin=150;pmax=200,</3/0>,</3/0/0>,</3/0/7>,</3/0/9>,</3/0/16>");
+                .hasObjectLinksLike("</3>;pmin=150;pmax=200,</3/0>,</3/0/0>,</3/0/7>;dim=2,</3/0/9>,</3/0/16>");
 
         // remove attribute
         writeAttributesResponse = server.send(currentRegistration,
@@ -177,7 +196,7 @@ public class WriteAttributeDiscoverTest {
         assertThat(response) //
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider) //
-                .hasObjectLinksLike("</3>;pmin=150,</3/0>,</3/0/0>,</3/0/7>,</3/0/9>,</3/0/16>");
+                .hasObjectLinksLike("</3>;pmin=150,</3/0>,</3/0/0>,</3/0/7>;dim=2,</3/0/9>,</3/0/16>");
 
         // add + override attribute
         writeAttributesResponse = server.send(currentRegistration,
@@ -194,7 +213,7 @@ public class WriteAttributeDiscoverTest {
         assertThat(response) //
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider) //
-                .hasObjectLinksLike("</3>;pmin=300;pmax=600,</3/0>,</3/0/0>,</3/0/7>,</3/0/9>,</3/0/16>");
+                .hasObjectLinksLike("</3>;pmin=300;pmax=600,</3/0>,</3/0/0>,</3/0/7>;dim=2,</3/0/9>,</3/0/16>");
     }
 
     @TestAllTransportLayer
@@ -206,7 +225,7 @@ public class WriteAttributeDiscoverTest {
         assertThat(response) //
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider) //
-                .hasObjectLinksLike("</3/0>,</3/0/0>,</3/0/7>,</3/0/9>,</3/0/16>");
+                .hasObjectLinksLike("</3/0>,</3/0/0>,</3/0/7>;dim=2,</3/0/9>,</3/0/16>");
 
         // Write some attributes
         WriteAttributesResponse writeAttributesResponse = server.send(currentRegistration,
@@ -223,14 +242,14 @@ public class WriteAttributeDiscoverTest {
         assertThat(response) //
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider) //
-                .hasObjectLinksLike("</3>,</3/0>;pmin=100;pmax=200,</3/0/0>,</3/0/7>,</3/0/9>,</3/0/16>");
+                .hasObjectLinksLike("</3>,</3/0>;pmin=100;pmax=200,</3/0/0>,</3/0/7>;dim=2,</3/0/9>,</3/0/16>");
 
         // Check those attributes are now visible when discovering at object instance level
         response = server.send(currentRegistration, new DiscoverRequest(LwM2mId.DEVICE, 0));
         assertThat(response) //
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider) //
-                .hasObjectLinksLike("</3/0>;pmin=100;pmax=200,</3/0/0>,</3/0/7>,</3/0/9>,</3/0/16>");
+                .hasObjectLinksLike("</3/0>;pmin=100;pmax=200,</3/0/0>,</3/0/7>;dim=2,</3/0/9>,</3/0/16>");
 
     }
 
@@ -249,7 +268,7 @@ public class WriteAttributeDiscoverTest {
         WriteAttributesResponse writeAttributesResponse = server.send(currentRegistration,
                 new WriteAttributesRequest(3, 0, 9, new LwM2mAttributeSet( //
                         LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 100l), //
-                        LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 200l), //
+                        LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, 200l), //
                         LwM2mAttributes.create(LwM2mAttributes.STEP, 1d), //
                         LwM2mAttributes.create(LwM2mAttributes.LESSER_THAN, 20d), //
                         LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN, 50d) //
@@ -264,14 +283,15 @@ public class WriteAttributeDiscoverTest {
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider) //
                 .hasObjectLinksLike(
-                        "</3>,</3/0>,</3/0/0>,</3/0/7>,</3/0/9>;pmin=100;pmax=200;st=1;lt=20;gt=50,</3/0/16>");
+                        "</3>,</3/0>,</3/0/0>,</3/0/7>;dim=2,</3/0/9>;pmin=100;pmax=200;st=1;lt=20;gt=50,</3/0/16>");
 
         // Check those attributes are now visible when discovering at object instance level
         response = server.send(currentRegistration, new DiscoverRequest(3, 0));
         assertThat(response) //
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider) //
-                .hasObjectLinksLike("</3/0>,</3/0/0>,</3/0/7>,</3/0/9>;pmin=100;pmax=200;st=1;lt=20;gt=50,</3/0/16>");
+                .hasObjectLinksLike(
+                        "</3/0>,</3/0/0>,</3/0/7>;dim=2,</3/0/9>;pmin=100;pmax=200;st=1;lt=20;gt=50,</3/0/16>");
 
         // Check those attributes are now visible when discovering at resource level
         response = server.send(currentRegistration, new DiscoverRequest(3, 0, 9));
@@ -296,7 +316,7 @@ public class WriteAttributeDiscoverTest {
         WriteAttributesResponse writeAttributesResponse = server.send(currentRegistration,
                 new WriteAttributesRequest(3, 0, 7, 0, new LwM2mAttributeSet( //
                         LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 100l), //
-                        LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 200l), //
+                        LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, 200l), //
                         LwM2mAttributes.create(LwM2mAttributes.STEP, 1d), //
                         LwM2mAttributes.create(LwM2mAttributes.LESSER_THAN, 20d), //
                         LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN, 50d) //
@@ -310,14 +330,14 @@ public class WriteAttributeDiscoverTest {
         assertThat(response) //
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider) //
-                .hasObjectLinksLike("</3>,</3/0>,</3/0/0>,</3/0/7>,</3/0/9>,</3/0/16>");
+                .hasObjectLinksLike("</3>,</3/0>,</3/0/0>,</3/0/7>;dim=2,</3/0/9>,</3/0/16>");
 
         // Check those attributes are now visible when discovering at object instance level
         response = server.send(currentRegistration, new DiscoverRequest(3, 0));
         assertThat(response) //
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider) //
-                .hasObjectLinksLike("</3/0>,</3/0/0>,</3/0/7>,</3/0/9></3/0/16>");
+                .hasObjectLinksLike("</3/0>,</3/0/0>,</3/0/7>;dim=2,</3/0/9>,</3/0/16>");
 
         // Check those attributes are now visible when discovering at resource level
         response = server.send(currentRegistration, new DiscoverRequest(3, 0, 7));
@@ -336,7 +356,7 @@ public class WriteAttributeDiscoverTest {
         assertThat(response) //
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider) //
-                .hasObjectLinksLike("</3>,</3/0>,</3/0/0>,</3/0/7>,</3/0/9>,</3/0/16>");
+                .hasObjectLinksLike("</3>,</3/0>,</3/0/0>,</3/0/7>;dim=2,</3/0/9>,</3/0/16>");
 
         // Write some attributes at object level
         WriteAttributesResponse writeAttributesResponse = server.send(currentRegistration,
@@ -360,7 +380,7 @@ public class WriteAttributeDiscoverTest {
         writeAttributesResponse = server.send(currentRegistration,
                 new WriteAttributesRequest(3, 0, 7, new LwM2mAttributeSet( //
                         LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 10l), //
-                        LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 20l), //
+                        LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, 20l), //
                         LwM2mAttributes.create(LwM2mAttributes.STEP, 10d), //
                         LwM2mAttributes.create(LwM2mAttributes.LESSER_THAN, 200d), //
                         LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN, 500d) //
@@ -372,7 +392,7 @@ public class WriteAttributeDiscoverTest {
         writeAttributesResponse = server.send(currentRegistration,
                 new WriteAttributesRequest(3, 0, 7, 0, new LwM2mAttributeSet( //
                         LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 1l), //
-                        LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 2l), //
+                        LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, 2l), //
                         LwM2mAttributes.create(LwM2mAttributes.STEP, 1d), //
                         LwM2mAttributes.create(LwM2mAttributes.LESSER_THAN, 20d), //
                         LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN, 50d) //
@@ -387,7 +407,7 @@ public class WriteAttributeDiscoverTest {
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider) //
                 .hasObjectLinksLike(
-                        "</3>;pmin=1000;pmax=2000,</3/0>;pmin=100;pmax=200,</3/0/0>,</3/0/7>;dim=2;pmin=10;pmax=20;st=10;lt=200;gt=500,</3/0/9></3/0/16>");
+                        "</3>;pmin=1000;pmax=2000,</3/0>;pmin=100;pmax=200,</3/0/0>,</3/0/7>;dim=2;pmin=10;pmax=20;st=10;lt=200;gt=500,</3/0/9>,</3/0/16>");
 
         // Check those attributes are now visible when discovering at object instance level
         response = server.send(currentRegistration, new DiscoverRequest(3, 0));
@@ -395,7 +415,7 @@ public class WriteAttributeDiscoverTest {
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider) //
                 .hasObjectLinksLike(
-                        "</3/0>;pmin=100;pmax=200,</3/0/0>,</3/0/7>;dim=2;pmin=10;pmax=20;st=10;lt=200;gt=500,</3/0/9></3/0/16>");
+                        "</3/0>;pmin=100;pmax=200,</3/0/0>,</3/0/7>;dim=2;pmin=10;pmax=20;st=10;lt=200;gt=500,</3/0/9>,</3/0/16>");
 
         // Check those attributes are now visible when discovering at resource level
         response = server.send(currentRegistration, new DiscoverRequest(3, 0, 7));

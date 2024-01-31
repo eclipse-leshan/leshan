@@ -126,10 +126,26 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
         }
         if (attributes != null) {
             for (LwM2mAttribute<?> attr : attributes.getLwM2mAttributes()) {
-                merged.put(attr.getName(), attr);
+                if (attr.hasValue()) {
+                    merged.put(attr.getName(), attr);
+                } else {
+                    merged.remove(attr.getName());
+                }
             }
         }
         return new LwM2mAttributeSet(merged.values());
+    }
+
+    /**
+     * Creates a new AttributeSet by merging given attributes.
+     *
+     * @param attributes the array that should be merged onto this instance. Attributes in this array will overwrite
+     *        existing attribute values, if present. If this is null, the new attribute set will effectively be a clone
+     *        of the existing one
+     * @return the merged AttributeSet
+     */
+    public LwM2mAttributeSet merge(LwM2mAttribute<?>... attributes) {
+        return this.merge(new LwM2mAttributeSet(attributes));
     }
 
     /**

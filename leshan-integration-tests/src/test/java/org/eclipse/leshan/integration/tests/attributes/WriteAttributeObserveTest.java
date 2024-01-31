@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 Sierra Wireless and others.
+ * Copyright (c) 2024 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -10,6 +10,8 @@
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  *
+ * Contributors:
+ *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
 
 package org.eclipse.leshan.integration.tests.attributes;
