@@ -582,12 +582,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public NotificationAttributeTree getAttributesFor(LwM2mPath path) {
-        // check we ask for supported path
-        if (!path.startWith(new LwM2mPath(id))) {
-            throw new IllegalStateException("Path doesn't concern object " + getId());
-        }
-
+    public NotificationAttributeTree getAttributesFor(LwM2mServer server) {
         return assignedAttributes;
     }
 }
