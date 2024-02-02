@@ -179,16 +179,28 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         stop(false); // Stop without de-register
         synchronized (this) {
             started = true;
-            // Try factory bootstrap
-            // TODO support multi server
-            LwM2mServer dmServer = factoryBootstrap();
-
+            // TODO support multiple servers
+            LwM2mServer dmServer;
+            if (registeredServers.isEmpty()) {
+                // Try factory bootstrap
+                dmServer = factoryBootstrap();
+            } else {
+                dmServer = registeredServers.entrySet().iterator().next().getValue();
+            }
             if (dmServer == null) {
                 // If it failed try client initiated bootstrap
                 if (!scheduleClientInitiatedBootstrap(NOW))
                     throw new IllegalStateException("Unable to start client : No valid server available!");
             } else {
-                registerFuture = schedExecutor.submit(new RegistrationTask(dmServer));
+                // If there exists a registered server already, we try to send a registration update
+                if (!registeredServers.isEmpty()) {
+                    String registrationId = registeredServers.entrySet().iterator().next().getKey();
+                    UpdateRegistrationTask updateTask = new DefaultRegistrationEngine.UpdateRegistrationTask(dmServer,
+                            registrationId, new RegistrationUpdate());
+                    updateFuture = schedExecutor.submit(updateTask);
+                } else {
+                    registerFuture = schedExecutor.submit(new DefaultRegistrationEngine.RegistrationTask(dmServer));
+                }
             }
         }
     }
