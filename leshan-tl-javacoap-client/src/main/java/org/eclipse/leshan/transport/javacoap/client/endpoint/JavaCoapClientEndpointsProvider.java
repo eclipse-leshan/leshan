@@ -123,14 +123,23 @@ public class JavaCoapClientEndpointsProvider implements LwM2mClientEndpointsProv
         routerBuilder //
                 .any("/", observersManager.then(new RootResource(requestReceiver, toolbox, identityExtractor))) //
                 .any("/bs", new BootstrapResource(requestReceiver, identityExtractor)) //
-                .any("/*", observersManager.then(new ObjectResource(requestReceiver, "/", toolbox, identityExtractor)));
+                .any("/*", observersManager.then(new ObjectResource(requestReceiver, "/", toolbox, identityExtractor,
+                        notificationManager, observersManager)));
         router = routerBuilder.build();
 
         // Create notification handler
         NotificationHandler notificationHandler = new NotificationHandler(
-                // use router but change Observe request in Read request
-                req -> router.apply(req.withOptions(coapOptionsBuilder -> coapOptionsBuilder.observe(null))), //
-                observersManager);
+                // use router but change Observe request in Read request and also flag request as notification
+                req -> {
+                    TransportContext extendedContext = req.getTransContext() //
+                            .with(LwM2mKeys.LESHAN_NOTIFICATION, true);
+
+                    CoapRequest newReq = new CoapRequest(req.getMethod(), req.getToken(), req.options(),
+                            req.getPayload(), req.getPeerAddress(), extendedContext);
+
+                    return router.apply(newReq.withOptions(coapOptionsBuilder -> coapOptionsBuilder.observe(null)));
+                } //
+                , observersManager);
         objectTree.addListener(notificationHandler);
     }
 
