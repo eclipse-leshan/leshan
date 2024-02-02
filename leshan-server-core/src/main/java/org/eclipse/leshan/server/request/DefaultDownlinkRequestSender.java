@@ -17,6 +17,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.request;
 
+import java.util.stream.Collectors;
+
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
@@ -84,7 +86,7 @@ public class DefaultDownlinkRequestSender implements DownlinkRequestSender {
             LowerLayerConfig lowerLayerConfig, long timeoutInMs) throws InterruptedException {
 
         // find endpoint to use
-        LwM2mServerEndpoint endpoint = endpointsProvider.getEndpoint(destination.getLastEndpointUsed());
+        LwM2mServerEndpoint endpoint = getEndpoint(destination);
 
         // Retrieve the objects definition
         final LwM2mModel model = modelProvider.getObjectModel(destination);
@@ -128,7 +130,7 @@ public class DefaultDownlinkRequestSender implements DownlinkRequestSender {
             ErrorCallback errorCallback) {
 
         // find endpoint to use
-        LwM2mServerEndpoint endpoint = endpointsProvider.getEndpoint(destination.getLastEndpointUsed());
+        LwM2mServerEndpoint endpoint = getEndpoint(destination);
 
         // Retrieve the objects definition
         final LwM2mModel model = modelProvider.getObjectModel(destination);
@@ -147,5 +149,22 @@ public class DefaultDownlinkRequestSender implements DownlinkRequestSender {
         for (LwM2mServerEndpoint endpoint : endpointsProvider.getEndpoints()) {
             endpoint.cancelRequests(registration.getId());
         }
+    }
+
+    protected LwM2mServerEndpoint getEndpoint(Registration registration) {
+        LwM2mServerEndpoint lastEndpointUsed = endpointsProvider.getEndpoint(registration.getLastEndpointUsed());
+
+        if (lastEndpointUsed == null) {
+            String endpoints = endpointsProvider.getEndpoints().stream().map(endpoint -> endpoint.getURI().toString())
+                    .collect(Collectors.joining("\n"));
+
+            String message = String.format(
+                    "Client %s register itself to %s endpoint, but it seems there is no available endpoints identified byt this URI.%nAvailable endpoints are : \n%s",
+                    registration.getEndpoint(), registration.getLastEndpointUsed(), endpoints);
+
+            throw new IllegalStateException(message);
+        }
+
+        return lastEndpointUsed;
     }
 }
