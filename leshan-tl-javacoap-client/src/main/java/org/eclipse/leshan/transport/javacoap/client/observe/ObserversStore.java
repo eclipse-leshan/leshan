@@ -22,4 +22,6 @@ public interface ObserversStore extends Iterable<CoapRequest> {
     void add(CoapRequest observeRequest);
 
     void remove(CoapRequest observeRequest);
+
+    boolean contains(CoapRequest observeRequest);
 }

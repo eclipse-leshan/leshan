@@ -42,6 +42,11 @@ public class HashMapObserversStore implements ObserversStore {
         store.remove(toKey(observeRequest));
     }
 
+    @Override
+    public boolean contains(CoapRequest observeRequest) {
+        return store.containsKey(toKey(observeRequest));
+    }
+
     protected Object toKey(CoapRequest observeRequest) {
         return new ObserverKey(observeRequest.getToken(), observeRequest.getPeerAddress());
     }
@@ -71,6 +76,12 @@ public class HashMapObserversStore implements ObserversStore {
                 return false;
             ObserverKey other = (ObserverKey) obj;
             return Objects.equals(peerAddress, other.peerAddress) && Objects.equals(token, other.token);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("ObserverKey [token=%s, peerAddress=%s]", token != null ? token.toHex() : "null",
+                    peerAddress);
         }
     }
 }
