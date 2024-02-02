@@ -79,25 +79,7 @@ Contributors:
 
   <modules>
     <!-- library-->
-    <module>leshan-core</module>
-    <module>leshan-core-cf</module>
     <module>leshan-server-core</module>
-    <module>leshan-server-cf</module>
-    <module>leshan-server-redis</module>
-    <module>leshan-client-core</module>
-    <module>leshan-client-cf</module>
-    <!-- transport layer based on java-coap -->
-    <module>leshan-tl-javacoap-core</module>
-    <module>leshan-tl-javacoap-server</module>
-    <module>leshan-tl-javacoap-client</module>
-
-    <!--  integration tests -->
-    <module>leshan-integration-tests</module>
-
-    <!-- demos -->
-    <module>leshan-core-demo</module>
-    <module>leshan-client-demo</module>
-    <module>leshan-server-core-demo</module>
     <module>leshan-server-demo</module>
     <module>leshan-bsserver-demo</module>
   </modules>

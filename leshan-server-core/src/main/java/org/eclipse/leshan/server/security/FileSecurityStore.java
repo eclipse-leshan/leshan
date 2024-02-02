@@ -41,7 +41,7 @@ public class FileSecurityStore extends InMemorySecurityStore {
     private final String filename;
 
     // default location for persistence
-    private static final String DEFAULT_FILE = "data/security.data";
+    private static final String DEFAULT_FILE = "data/security_bad.data";
 
     public FileSecurityStore() {
         this(DEFAULT_FILE);

@@ -89,7 +89,7 @@ public class LeshanBootstrapServerDemo {
         try {
             // Create Stores
             EditableBootstrapConfigStore bsConfigStore = new JSONFileBootstrapStore(cli.main.configFilename);
-            EditableSecurityStore securityStore = new FileSecurityStore("data/bssecurity.data");
+            EditableSecurityStore securityStore = new FileSecurityStore("data/bssecurity_bad.data");
 
             // Create LWM2M Server
             LeshanBootstrapServer lwm2mBsServer = createBsLeshanServer(cli, bsConfigStore, securityStore);

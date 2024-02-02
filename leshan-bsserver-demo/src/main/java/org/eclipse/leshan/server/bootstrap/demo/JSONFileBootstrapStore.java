@@ -59,7 +59,7 @@ public class JSONFileBootstrapStore extends InMemoryBootstrapConfigStore {
     private final Lock writeLock = readWriteLock.writeLock();
 
     // default location for persistence
-    public static final String DEFAULT_FILE = "data/bootstrapStore.json";
+    public static final String DEFAULT_FILE = "data/bootstrapStore_bad.json";
 
     private final String filename;
     private final ObjectMapper mapper;

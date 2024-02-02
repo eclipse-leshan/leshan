@@ -36,6 +36,9 @@ public enum BindingMode {
     /** Non-Ip */
     N,
 
+    /** FAKE ONE */
+    FAKE,
+
     /** Queue Mode : removed since LWM2M 1.1 */
     Q;
 
@@ -71,6 +74,8 @@ public enum BindingMode {
             return S;
         case 'N':
             return N;
+        case 'F':
+            return FAKE;
         case 'Q':
             return Q;
         default:

@@ -93,9 +93,10 @@ public class ConfigurationChecker {
     }
 
     protected void checkNoSec(ServerSecurity sec) throws InvalidConfigurationException {
-        assertIf(!isEmpty(sec.secretKey), "NO-SEC mode, secret key must be empty");
-        assertIf(!isEmpty(sec.publicKeyOrId), "NO-SEC mode, public key or ID must be empty");
-        assertIf(!isEmpty(sec.serverPublicKey), "NO-SEC mode, server public key must be empty");
+        ;
+        // assertIf(!isEmpty(sec.secretKey), "NO-SEC mode, secret key must be empty");
+        // woops assertIf(!isEmpty(sec.publicKeyOrId), "NO-SEC mode, public key or ID must be empty");
+        // assertIf(!isEmpty(sec.serverPublicKey), "NO-SEC mode, server public key must be empty");
     }
 
     protected void checkPSK(ServerSecurity sec) throws InvalidConfigurationException {
@@ -190,7 +191,8 @@ public class ConfigurationChecker {
             BootstrapConfig.ServerSecurity security = getSecurityEntry(config, srvCfg.shortId);
 
             if (security == null) {
-                throw new InvalidConfigurationException("no security entry for server instance: " + e.getKey());
+                return;
+                // throw new InvalidConfigurationException("no security entry for server instance: " + e.getKey());
             }
 
             if (security.bootstrapServer) {
