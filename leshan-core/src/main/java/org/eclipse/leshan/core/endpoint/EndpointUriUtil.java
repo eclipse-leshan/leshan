@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.endpoint;
 
+import java.net.Inet6Address;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -33,7 +35,7 @@ public class EndpointUriUtil {
 
     public static URI createUri(String scheme, InetSocketAddress addr) {
         try {
-            return new URI(scheme, null, addr.getHostString(), addr.getPort(), null, null, null);
+            return new URI(scheme, null, toUriHostName(addr), addr.getPort(), null, null, null);
         } catch (URISyntaxException e) {
             throw new IllegalStateException(e);
         }
@@ -49,7 +51,7 @@ public class EndpointUriUtil {
 
     public static URI replaceAddress(URI originalUri, InetSocketAddress newAddress) {
         try {
-            return new URI(originalUri.getScheme(), null, newAddress.getHostString(), newAddress.getPort(), null, null,
+            return new URI(originalUri.getScheme(), null, toUriHostName(newAddress), newAddress.getPort(), null, null,
                     null);
         } catch (URISyntaxException e) {
             throw new IllegalStateException(e);
@@ -74,5 +76,32 @@ public class EndpointUriUtil {
         if (uri.getPort() == -1) {
             throw new IllegalArgumentException(String.format("Invalid URI[%s]: Post MUST NOT be undefined", uri));
         }
+    }
+
+    /**
+     * This convert socket address in URI hostname.
+     * <p>
+     * Following https://www.rfc-editor.org/rfc/rfc6874#section-2, zone id (also called scope id) in URI should be
+     * prefixed by <code>%25</code>
+     */
+    private static String toUriHostName(InetSocketAddress socketAddr) {
+        if (socketAddr == null) {
+            Validate.notNull(socketAddr);
+        }
+        InetAddress addr = socketAddr.getAddress();
+        String host = addr.getHostAddress();
+        if (addr instanceof Inet6Address) {
+            Inet6Address address6 = (Inet6Address) addr;
+            if (address6.getScopedInterface() != null || address6.getScopeId() > 0) {
+                int pos = host.indexOf('%');
+                if (pos > 0 && pos + 1 < host.length()) {
+                    String separator = "%25";
+                    String scope = host.substring(pos + 1);
+                    String hostAddress = host.substring(0, pos);
+                    host = hostAddress + separator + scope;
+                }
+            }
+        }
+        return host;
     }
 }

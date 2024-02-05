@@ -32,7 +32,6 @@ import org.eclipse.leshan.core.californium.AsyncRequestObserver;
 import org.eclipse.leshan.core.californium.ExceptionTranslator;
 import org.eclipse.leshan.core.californium.SyncRequestObserver;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.DownlinkRequest;
@@ -86,7 +85,7 @@ public class CaliforniumServerEndpoint implements LwM2mServerEndpoint {
 
     @Override
     public URI getURI() {
-        return EndpointUriUtil.createUri(protocol.getUriScheme(), endpoint.getAddress());
+        return endpoint.getUri();
     }
 
     @Override
