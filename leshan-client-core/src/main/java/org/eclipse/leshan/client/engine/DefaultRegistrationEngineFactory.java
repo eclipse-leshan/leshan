@@ -52,11 +52,28 @@ public class DefaultRegistrationEngineFactory implements RegistrationEngineFacto
             EndpointsManager endpointsManager, UplinkRequestSender requestSender, BootstrapHandler bootstrapState,
             LwM2mClientObserver observer, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, Set<ContentFormat> supportedContentFormat,
-            ScheduledExecutorService sharedExecutor, LinkFormatHelper linkFormatHelper) {
-        return new DefaultRegistrationEngine(endpoint, objectTree, endpointsManager, requestSender, bootstrapState,
-                observer, additionalAttributes, bsAdditionalAttributes, sharedExecutor, requestTimeoutInMs,
+            ScheduledExecutorService sharedExecutor, LinkFormatHelper linkFormatHelper)
+
+    {
+        return doCreate(endpoint, objectTree, endpointsManager, requestSender, bootstrapState, observer,
+                additionalAttributes, bsAdditionalAttributes, sharedExecutor, requestTimeoutInMs,
                 deregistrationTimeoutInMs, bootstrapSessionTimeoutInSec, retryWaitingTimeInMs, communicationPeriodInMs,
                 reconnectOnUpdate, resumeOnConnect, queueMode, preferredContentFormat, supportedContentFormat,
+                linkFormatHelper);
+    }
+
+    protected RegistrationEngine doCreate(String endpoint, LwM2mObjectTree objectTree,
+            EndpointsManager endpointsManager, UplinkRequestSender requestSender, BootstrapHandler bootstrapState,
+            LwM2mClientObserver observer, Map<String, String> additionalAttributes,
+            Map<String, String> bsAdditionalAttributes, ScheduledExecutorService executor, long requestTimeoutInMs,
+            long deregistrationTimeoutInMs, int bootstrapSessionTimeoutInSec, int retryWaitingTimeInMs,
+            Integer communicationPeriodInMs, boolean reconnectOnUpdate, boolean resumeOnConnect, boolean useQueueMode,
+            ContentFormat preferredContentFormat, Set<ContentFormat> supportedContentFormats,
+            LinkFormatHelper linkFormatHelper) {
+        return new DefaultRegistrationEngine(endpoint, objectTree, endpointsManager, requestSender, bootstrapState,
+                observer, additionalAttributes, bsAdditionalAttributes, executor, requestTimeoutInMs,
+                deregistrationTimeoutInMs, bootstrapSessionTimeoutInSec, retryWaitingTimeInMs, communicationPeriodInMs,
+                reconnectOnUpdate, resumeOnConnect, useQueueMode, preferredContentFormat, supportedContentFormats,
                 linkFormatHelper);
     }
 
