@@ -253,8 +253,10 @@ public class RegistrationTest {
         assertThat(client).isRegisteredAt(server);
 
         // check new registration
+        Registration registrationUpdated = server.getRegistrationFor(client);
         client.start();
-        server.waitForReRegistrationOf(registration);
+        // server.waitForReRegistrationOf(registration);
+        server.waitForUpdateOf(registrationUpdated);
         assertThat(client).isRegisteredAt(server);
     }
 

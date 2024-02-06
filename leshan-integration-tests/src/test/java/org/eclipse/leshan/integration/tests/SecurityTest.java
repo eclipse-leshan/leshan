@@ -250,9 +250,12 @@ public class SecurityTest {
         assertThat(client).after(500, TimeUnit.MILLISECONDS).isRegisteredAt(server);
 
         // check new registration
+        Registration updatedRegistration = server.getRegistrationFor(client);
         client.start();
-        server.waitForReRegistrationOf(registration);
-        client.waitForRegistrationTo(server);
+        server.waitForUpdateOf(updatedRegistration);
+        client.waitForUpdateTo(server, 1, TimeUnit.SECONDS);
+        // server.waitForReRegistrationOf(registration);
+        // client.waitForRegistrationTo(server);
         assertThat(client).isRegisteredAt(server);
     }
 
