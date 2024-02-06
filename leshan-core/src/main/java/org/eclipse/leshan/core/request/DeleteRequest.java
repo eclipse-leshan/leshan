@@ -56,6 +56,16 @@ public class DeleteRequest extends AbstractSimpleDownlinkRequest<DeleteResponse>
         this(newPath(path), coapRequest);
     }
 
+    /**
+     * Creates a request for deleting a particular object instance implemented by a client.
+     *
+     * @param path the path of the instance to delete
+     * @exception InvalidRequestException if the path is not valid.
+     */
+    public DeleteRequest(LwM2mPath path) {
+        this(path, null);
+    }
+
     private DeleteRequest(LwM2mPath target, Object coapRequest) {
         super(target, coapRequest);
         if (target.isRoot())

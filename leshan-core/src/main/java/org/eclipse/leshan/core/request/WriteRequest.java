@@ -377,6 +377,19 @@ public class WriteRequest extends AbstractSimpleDownlinkRequest<WriteResponse> {
      * @param contentFormat Format of the payload (TLV,JSON,TEXT,OPAQUE ..).
      * @param path the path of the LWM2M node to write (object instance or resource).
      * @param node the {@link LwM2mNode} to write.
+     * @exception InvalidRequestException if parameters are invalid.
+     */
+    public WriteRequest(Mode mode, ContentFormat contentFormat, LwM2mPath path, LwM2mNode node) {
+        this(mode, contentFormat, path, node, null);
+    }
+
+    /**
+     * A generic constructor to write request.
+     *
+     * @param mode the mode of the request : replace or update.
+     * @param contentFormat Format of the payload (TLV,JSON,TEXT,OPAQUE ..).
+     * @param path the path of the LWM2M node to write (object instance or resource).
+     * @param node the {@link LwM2mNode} to write.
      * @param coapRequest the underlying request
      *
      * @exception InvalidRequestException if parameters are invalid.

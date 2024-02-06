@@ -33,25 +33,29 @@ public class WriteAttributesRequest extends AbstractSimpleDownlinkRequest<WriteA
 
     public WriteAttributesRequest(int objectId, int objectInstanceId, LwM2mAttributeSet attributes)
             throws InvalidRequestException {
-        this(newPath(objectId, objectInstanceId), attributes, null);
+        this(newPath(objectId, objectInstanceId), attributes);
     }
 
     public WriteAttributesRequest(int objectId, int objectInstanceId, int resourceId, LwM2mAttributeSet attributes)
             throws InvalidRequestException {
-        this(newPath(objectId, objectInstanceId, resourceId), attributes, null);
+        this(newPath(objectId, objectInstanceId, resourceId), attributes);
     }
 
     public WriteAttributesRequest(int objectId, int objectInstanceId, int resourceId, int resourceInstanceId,
             LwM2mAttributeSet attributes) throws InvalidRequestException {
-        this(newPath(objectId, objectInstanceId, resourceId, resourceInstanceId), attributes, null);
+        this(newPath(objectId, objectInstanceId, resourceId, resourceInstanceId), attributes);
     }
 
     public WriteAttributesRequest(String path, LwM2mAttributeSet attributes) {
-        this(newPath(path), attributes, null);
+        this(newPath(path), attributes);
     }
 
     public WriteAttributesRequest(String path, LwM2mAttributeSet attributes, Object coapRequest) {
         this(newPath(path), attributes, coapRequest);
+    }
+
+    public WriteAttributesRequest(LwM2mPath path, LwM2mAttributeSet attributes) {
+        this(path, attributes, null);
     }
 
     private WriteAttributesRequest(LwM2mPath path, LwM2mAttributeSet attributes, Object coapRequest)

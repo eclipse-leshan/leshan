@@ -170,6 +170,10 @@ public class ObserveRequest extends AbstractSimpleDownlinkRequest<ObserveRespons
         this(format, newPath(path), context, null);
     }
 
+    public ObserveRequest(LwM2mPath path) throws InvalidRequestException {
+        this(null, path, null, null);
+    }
+
     public ObserveRequest(ContentFormat format, LwM2mPath path, Object coapRequest) throws InvalidRequestException {
         this(format, path, null, coapRequest);
     }
