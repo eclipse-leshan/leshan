@@ -32,8 +32,8 @@ public class FloatChecker implements CriteriaBasedOnValueChecker {
             Double lessThan = attributes.get(LwM2mAttributes.LESSER_THAN).getValue();
             return lastSentDouble >= lessThan && newDouble < lessThan;
         } else if (attributes.contains(LwM2mAttributes.GREATER_THAN)) {
-            Double greaterThan = attributes.get(LwM2mAttributes.LESSER_THAN).getValue();
-            return lastSentDouble <= greaterThan && newDouble < greaterThan;
+            Double greaterThan = attributes.get(LwM2mAttributes.GREATER_THAN).getValue();
+            return lastSentDouble <= greaterThan && newDouble > greaterThan;
         }
         return true;
     }
