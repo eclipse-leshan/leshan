@@ -43,7 +43,19 @@ public class AttributeSetTest {
                 LwM2mAttributes.create(LwM2mAttributes.EVALUATE_MAXIMUM_PERIOD, 45L),
                 LwM2mAttributes.create(LwM2mAttributes.LESSER_THAN, 10D),
                 LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN, 20.10D));
-        assertEquals("ver=1.1&pmin=5&pmax=60&epmin=30&epmax=45&lt=10.0&gt=20.1", sut.toString());
+        assertEquals("ver=1.1&pmin=5&pmax=60&epmin=30&epmax=45&lt=10&gt=20.1", sut.toString());
+
+        LwM2mAttributeSet res = new LwM2mAttributeSet(parser.parseUriQuery(sut.toString()));
+        assertEquals(sut, res);
+    }
+
+    @Test
+    public void test_query_params_does_not_use_scientific_notation() throws InvalidAttributeException {
+        LwM2mAttributeSet sut = new LwM2mAttributeSet( //
+                LwM2mAttributes.create(LwM2mAttributes.LESSER_THAN, 10000000000000000000d),
+                LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN, 0.0000000000009223372d),
+                LwM2mAttributes.create(LwM2mAttributes.STEP, 10000000000000000000d));
+        assertEquals("lt=10000000000000000000&gt=0.0000000000009223372&st=10000000000000000000", sut.toString());
 
         LwM2mAttributeSet res = new LwM2mAttributeSet(parser.parseUriQuery(sut.toString()));
         assertEquals(sut, res);
