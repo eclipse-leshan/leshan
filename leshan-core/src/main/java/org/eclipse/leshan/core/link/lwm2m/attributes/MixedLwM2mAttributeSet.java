@@ -188,15 +188,12 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
     public String[] toQueryParams() {
         List<String> queries = new LinkedList<>();
         for (Attribute attr : asCollection()) {
-            if (attr.getValue() != null) {
-                queries.add(String.format("%s=%s", attr.getName(), attr.getValue()));
+            if (attr instanceof LwM2mAttribute<?>) {
+                queries.add(((LwM2mAttribute<?>) attr).toQueryParamFormat());
             } else {
-                if (attr instanceof LwM2mAttribute<?>
-                        && !((LwM2mAttribute<?>) attr).getModel().queryParamCanBeValueless()) {
-                    throw new IllegalStateException(String.format(
-                            "Attribute %s can not have null value when serialized in query params", attr.getName()));
-                }
-                queries.add(attr.getName());
+                throw new IllegalStateException(String.format(
+                        "only LwM2mAttribute %s can be converted to query parameters, attribute %s is a %s",
+                        attr.getName(), attr.getClass().getSimpleName()));
             }
         }
         return queries.toArray(new String[queries.size()]);

@@ -48,6 +48,10 @@ public abstract class LwM2mAttributeModel<T> extends AttributeModel<LwM2mAttribu
         return attr.getValue().toString();
     }
 
+    public String toQueryParemValue(LwM2mAttribute<T> lwM2mAttribute) {
+        return toCoreLinkValue(lwM2mAttribute);
+    }
+
     public AccessMode getAccessMode() {
         return accessMode;
     }
