@@ -265,13 +265,13 @@ public class WriteAttributeObserveTest {
                 // target LWM2M node : initial value is 9223372036854775808
                 new LwM2mPath(TEST_OBJECT, 0, UNSIGNED_INTEGER_VALUE),
                 // "GREATER THAN" attribute value
-                new LwM2mAttributeSet(LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN, 9999999999999999900d)),
+                new LwM2mAttributeSet(LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN, 10000000000000000000d)),
                 // value which doesn't cross the greater_than limit
                 LwM2mSingleResource.newUnsignedIntegerResource(UNSIGNED_INTEGER_VALUE,
                         ULong.valueOf("9999999999999990000")),
                 // value which crosses the greater_than limit
                 LwM2mSingleResource.newUnsignedIntegerResource(UNSIGNED_INTEGER_VALUE,
-                        ULong.valueOf("9999999999999999999")));
+                        ULong.valueOf("10000000000000010000")));
     }
 
     @TestAllTransportLayer
