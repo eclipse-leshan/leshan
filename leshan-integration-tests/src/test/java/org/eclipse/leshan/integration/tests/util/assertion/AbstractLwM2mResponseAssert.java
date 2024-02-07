@@ -40,7 +40,7 @@ public abstract class AbstractLwM2mResponseAssert<SELF extends AbstractLwM2mResp
         isNotNull();
 
         if (!actual.isSuccess()) {
-            failWithMessage("Expected successful Response");
+            failWithMessage("Expected successful Response but was %s %s", actual.getCode(), actual.getErrorMessage());
         }
 
         return mySelf();
