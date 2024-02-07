@@ -87,6 +87,31 @@ public class LwM2mAttribute<T> implements Attribute {
         return model.toCoreLinkValue(this);
     }
 
+    /**
+     * @return the value as it should be serialized for the query parameter format in URL.
+     */
+    public String getQueryParamValue() {
+        return model.toQueryParemValue(this);
+    }
+
+    /**
+     * @return a attribute String as it should be serialized for the query parameter format in URL.
+     *         <p>
+     *         It should looks like : <code>"getName()=getQueryParamValue()"</code>
+     */
+    public String toQueryParamFormat() {
+        if (hasValue()) {
+            return getName() + "=" + getQueryParamValue();
+        } else {
+            if (getModel().queryParamCanBeValueless()) {
+                return getName();
+            } else {
+                throw new IllegalStateException(String
+                        .format("Attribute %s can not have null value when serialized in query param", getName()));
+            }
+        }
+    }
+
     @Override
     public String toCoreLinkFormat() {
         if (hasValue()) {
