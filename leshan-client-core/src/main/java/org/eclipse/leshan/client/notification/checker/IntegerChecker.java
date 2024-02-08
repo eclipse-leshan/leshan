@@ -29,10 +29,10 @@ public class IntegerChecker implements CriteriaBasedOnValueChecker {
         if (attributes.contains(LwM2mAttributes.STEP)) {
             return Math.abs(lastSentLong - newLong) >= attributes.get(LwM2mAttributes.STEP).getValue();
         } else if (attributes.contains(LwM2mAttributes.LESSER_THAN)) {
-            Double lessThan = attributes.get(LwM2mAttributes.LESSER_THAN).getValue();
+            long lessThan = (long) Math.ceil(attributes.get(LwM2mAttributes.LESSER_THAN).getValue());
             return lastSentLong >= lessThan && newLong < lessThan;
         } else if (attributes.contains(LwM2mAttributes.GREATER_THAN)) {
-            Double greaterThan = attributes.get(LwM2mAttributes.GREATER_THAN).getValue();
+            long greaterThan = (long) Math.floor(attributes.get(LwM2mAttributes.GREATER_THAN).getValue());
             return lastSentLong <= greaterThan && newLong > greaterThan;
         }
         return true;
