@@ -52,9 +52,14 @@ public class NotificationManager {
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
     public NotificationManager(LwM2mObjectTree objectTree, DownlinkRequestReceiver requestReceiver) {
+        this(objectTree, requestReceiver, new NotificationDataStore());
+    }
+
+    public NotificationManager(LwM2mObjectTree objectTree, DownlinkRequestReceiver requestReceiver,
+            NotificationDataStore store) {
         this.receiver = requestReceiver;
         this.objectTree = objectTree;
-        this.store = new NotificationDataStore();
+        this.store = store;
 
         // Housekeeping
         objectTree.addListener(new ObjectsListenerAdapter() {
