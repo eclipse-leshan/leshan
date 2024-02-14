@@ -41,8 +41,12 @@ import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpoint;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpoint;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
+import org.eclipse.leshan.client.notification.NotificationDataStore;
+import org.eclipse.leshan.client.notification.NotificationManager;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
+import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.send.DataSender;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
@@ -63,6 +67,7 @@ public class LeshanTestClient extends LeshanClient {
     private final String endpointName;
     private final InOrder inOrder;
     private final ReverseProxy proxy;
+    private NotificationDataStore notificationDataStore;
 
     public LeshanTestClient(String endpoint, List<? extends LwM2mObjectEnabler> objectEnablers,
             List<DataSender> dataSenders, List<Certificate> trustStore, RegistrationEngineFactory engineFactory,
@@ -84,6 +89,17 @@ public class LeshanTestClient extends LeshanClient {
         addObserver(clientObserver);
         inOrder = inOrder(clientObserver);
     }
+
+    @Override
+    protected NotificationManager createNotificationManager(LwM2mObjectTree objectTree,
+            DownlinkRequestReceiver requestReceiver) {
+        notificationDataStore = new NotificationDataStore();
+        return new NotificationManager(objectTree, requestReceiver, notificationDataStore);
+    }
+
+    public NotificationDataStore getNotificationDataStore() {
+        return notificationDataStore;
+    };
 
     public String getEndpointName() {
         return endpointName;

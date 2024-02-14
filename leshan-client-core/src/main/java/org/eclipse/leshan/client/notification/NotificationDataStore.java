@@ -65,6 +65,10 @@ public class NotificationDataStore {
         store.clear();
     }
 
+    public boolean isEmpty() {
+        return store.isEmpty();
+    }
+
     private NotificationDataKey floorKeyFor(LwM2mServer server) {
         // TODO should be replaced by a ObservationRelationIdentifier probably based on Token
         return new NotificationDataKey(server.getId(), LwM2mPath.ROOTPATH);

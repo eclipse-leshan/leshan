@@ -18,6 +18,11 @@ package org.eclipse.leshan.integration.tests.util.assertion;
 import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.AbstractAssert;
+import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.servers.LwM2mServer;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
+import org.eclipse.leshan.core.link.lwm2m.attributes.NotificationAttributeTree;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
 import org.eclipse.leshan.server.LeshanServer;
@@ -96,6 +101,61 @@ public class LeshanTestClientAssert extends AbstractAssert<LeshanTestClientAsser
             failWithMessage("Expected <%s> client was sleeping", actual.getEndpointName());
         }
         return this;
+    }
+
+    public void hasNoAttributeSetFor(LwM2mServer server, LwM2mPath path) {
+        Integer objectId = path.getObjectId();
+        if (objectId == null) {
+            throw new IllegalArgumentException("Path hasn't any object id");
+        }
+        LwM2mObjectEnabler objectEnabler = actual.getObjectTree().getObjectEnabler(objectId);
+
+        if (objectEnabler != null) {
+            NotificationAttributeTree attributeTree = objectEnabler.getAttributesFor(server);
+            LwM2mAttributeSet attributeSet = attributeTree.get(path);
+            if (attributeSet != null && !attributeSet.isEmpty()) {
+                failWithMessage("Attribute Set for path %s of server %s was expected to be empty but was %s", path,
+                        server.getId(), attributeSet);
+            }
+        }
+        // else if there is no object enabler, there is no more attribute attached.
+    }
+
+    public void hasAttributesFor(LwM2mServer server, LwM2mPath path, LwM2mAttributeSet expectedAttributeSet) {
+        Integer objectId = path.getObjectId();
+        if (objectId == null) {
+            throw new IllegalArgumentException("Path hasn't any object id");
+        }
+        LwM2mObjectEnabler objectEnabler = actual.getObjectTree().getObjectEnabler(objectId);
+        if (objectEnabler == null) {
+            failWithMessage("%s attribute set was expected for path %s of server %s but there is not object with id %s",
+                    expectedAttributeSet, path, server.getId(), objectId);
+        } else {
+            NotificationAttributeTree attributeTree = objectEnabler.getAttributesFor(server);
+            LwM2mAttributeSet attributeSet = attributeTree.get(path);
+            if (attributeSet == null || attributeSet.isEmpty()) {
+                failWithMessage("%s attribute set was expected for path %s of server %s  but it is empty",
+                        expectedAttributeSet, path, server.getId());
+            } else {
+                if (!attributeSet.equals(expectedAttributeSet)) {
+                    failWithMessage("%s attribute set was expected for path %s of server %s  but it was %s",
+                            expectedAttributeSet, path, server.getId(), attributeSet);
+                }
+            }
+        }
+
+    }
+
+    public void hasNoNotificationData() {
+        if (!actual.getNotificationDataStore().isEmpty()) {
+            failWithMessage("Notificatoin Data store should be empty");
+        }
+    }
+
+    public void hasNotificationData() {
+        if (actual.getNotificationDataStore().isEmpty()) {
+            failWithMessage("Notificatoin Data store should NOT be empty");
+        }
     }
 
 }
