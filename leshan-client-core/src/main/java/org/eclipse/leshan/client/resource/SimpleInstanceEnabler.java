@@ -132,6 +132,11 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
                 }
             });
 
+            // also add resource path as we can consider that modifying child is a modification.
+            if (!changedResources.isEmpty()) {
+                changedResources.add(getResourcePath(resourceid));
+            }
+
         } else {
             if (!newValue.equals(previousValue)) {
                 changedResources.add(getResourcePath(resourceid));
