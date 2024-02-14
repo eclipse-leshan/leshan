@@ -130,7 +130,7 @@ public class ObserveServerOnlyTest {
 
         // 666 is not a supported content format.
         Connector connector = client
-                .getClientConnector(client.getServerIdForRegistrationId("/rd/" + currentRegistration.getId()));
+                .getClientConnector(client.getServerIdForRegistrationId(currentRegistration.getId()));
         TestObserveUtil.sendNotification(connector, server.getEndpoint(Protocol.COAP).getURI(), payload,
                 observeResponse.getObservation().getId().getBytes(), 2, ContentFormat.fromCode(666));
         // *** Hack End *** //

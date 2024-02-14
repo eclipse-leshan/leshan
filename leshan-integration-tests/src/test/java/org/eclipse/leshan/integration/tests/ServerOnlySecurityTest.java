@@ -196,7 +196,7 @@ public class ServerOnlySecurityTest {
         // Create new session with new credentials at client side.
         // Get connector
         DTLSConnector connector = (DTLSConnector) client
-                .getClientConnector(client.getServerIdForRegistrationId("/rd/" + registration.getId()));
+                .getClientConnector(client.getServerIdForRegistrationId(registration.getId()));
         // Clear DTLS session to force new handshake
         connector.clearConnectionState();
         // Change PSK id

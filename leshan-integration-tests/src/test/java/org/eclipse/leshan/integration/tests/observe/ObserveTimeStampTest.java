@@ -143,7 +143,7 @@ public class ObserveTimeStampTest {
                 client.getObjectTree().getModel());
 
         TestObserveUtil.sendNotification(
-                client.getClientConnector(client.getServerIdForRegistrationId("/rd/" + currentRegistration.getId())),
+                client.getClientConnector(client.getServerIdForRegistrationId(currentRegistration.getId())),
                 server.getEndpoint(Protocol.COAP).getURI(), payload,
                 observeResponse.getObservation().getId().getBytes(), 2, contentFormat);
         // *** Hack End *** //
@@ -184,7 +184,7 @@ public class ObserveTimeStampTest {
                 client.getObjectTree().getModel());
 
         TestObserveUtil.sendNotification(
-                client.getClientConnector(client.getServerIdForRegistrationId("/rd/" + currentRegistration.getId())),
+                client.getClientConnector(client.getServerIdForRegistrationId(currentRegistration.getId())),
                 server.getEndpoint(Protocol.COAP).getURI(), payload,
                 observeResponse.getObservation().getId().getBytes(), 2, contentFormat);
         // *** Hack End *** //
@@ -225,7 +225,7 @@ public class ObserveTimeStampTest {
                 client.getObjectTree().getModel());
 
         TestObserveUtil.sendNotification(
-                client.getClientConnector(client.getServerIdForRegistrationId("/rd/" + currentRegistration.getId())),
+                client.getClientConnector(client.getServerIdForRegistrationId(currentRegistration.getId())),
                 server.getEndpoint(Protocol.COAP).getURI(), payload,
                 observeResponse.getObservation().getId().getBytes(), 2, contentFormat);
         // *** Hack End *** //

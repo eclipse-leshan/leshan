@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.leshan.client.LeshanClient;
@@ -92,7 +91,7 @@ public class LeshanTestClient extends LeshanClient {
 
     public Connector getClientConnector(LwM2mServer server) {
         CaliforniumClientEndpoint endpoint = (CaliforniumClientEndpoint) getEndpoint(server);
-        return ((CoapEndpoint) endpoint.getCoapEndpoint()).getConnector();
+        return endpoint.getCoapEndpoint().getConnector();
     }
 
     public void clearSecurityContextFor(LwM2mServer server) {
@@ -115,7 +114,7 @@ public class LeshanTestClient extends LeshanClient {
     public LwM2mServer getServerIdForRegistrationId(String regId) {
         Map<String, LwM2mServer> registeredServers = getRegisteredServers();
         if (registeredServers != null && !registeredServers.isEmpty()) {
-            return registeredServers.get(regId);
+            return registeredServers.get("/rd/" + regId);
         }
         return null;
     }
