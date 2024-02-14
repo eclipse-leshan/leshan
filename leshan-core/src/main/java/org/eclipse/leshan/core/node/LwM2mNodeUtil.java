@@ -25,6 +25,12 @@ import org.eclipse.leshan.core.model.ResourceModel.Type;
  */
 public class LwM2mNodeUtil {
 
+    public static final int MAX_OBJECT_ID = 65535;
+    // MAX_ID 65535 is a reserved value and MUST NOT be used for identifying an Object Instance.
+    public static final int MAX_OBJECT_INSTANCE_ID = 65534;
+    public static final int MAX_RESOURCE_ID = 65535;
+    public static final int MAX_RESOURCE_INSTANCE_ID = 65535;
+
     public static void validateNotNull(Object value, String message, Object... args) throws LwM2mNodeException {
         if (value == null) {
             throw new LwM2mNodeException(message, args);
@@ -52,7 +58,11 @@ public class LwM2mNodeUtil {
     }
 
     public static boolean isUnsignedInt(Integer id) {
-        return id != null && 0 <= id && id <= 65535;
+        return isUnsignedInt(id, 65535);
+    }
+
+    public static boolean isUnsignedInt(Integer id, int maxValue) {
+        return id != null && 0 <= id && id <= maxValue;
     }
 
     public static void valueToPrettyString(StringBuilder b, Object value, Type type) {
@@ -76,7 +86,7 @@ public class LwM2mNodeUtil {
     // --------------------------
 
     public static boolean isValidObjectId(Integer id) {
-        return isUnsignedInt(id);
+        return isUnsignedInt(id, MAX_OBJECT_ID);
     }
 
     private static String getInvalidObjectIdCause(Integer id) {
@@ -97,8 +107,8 @@ public class LwM2mNodeUtil {
     // --------------------------
 
     public static boolean isValidObjectInstanceId(Integer id) {
-        // MAX_ID 65535 is a reserved value and MUST NOT be used for identifying an Object Instance.
-        return id != null && 0 <= id && id <= 65534;
+        return isUnsignedInt(id, MAX_OBJECT_INSTANCE_ID);
+
     }
 
     private static String getInvalidObjectInstanceIdCause(Integer id) {
@@ -132,7 +142,7 @@ public class LwM2mNodeUtil {
     // --------------------------
 
     public static boolean isValidResourceId(Integer id) {
-        return isUnsignedInt(id);
+        return isUnsignedInt(id, MAX_RESOURCE_ID);
     }
 
     private static String getInvalidResourceIdCause(Integer id) {
@@ -153,7 +163,7 @@ public class LwM2mNodeUtil {
     // --------------------------
 
     public static boolean isValidResourceInstanceId(Integer id) {
-        return isUnsignedInt(id);
+        return isUnsignedInt(id, MAX_RESOURCE_INSTANCE_ID);
     }
 
     private static String getInvalidResourceInstanceIdCause(Integer id) {

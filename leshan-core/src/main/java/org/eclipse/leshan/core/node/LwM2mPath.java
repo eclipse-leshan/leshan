@@ -17,6 +17,7 @@ package org.eclipse.leshan.core.node;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NavigableMap;
 import java.util.Objects;
 
 import org.eclipse.leshan.core.util.Validate;
@@ -306,6 +307,54 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
         if (getResourceId() != null)
             return new LwM2mPath(getObjectId(), getObjectInstanceId(), getResourceId());
         throw new IllegalStateException(String.format("an resource path can not be created from %s", this));
+    }
+
+    /**
+     * @return parent path. E.g. for path <code>/3/0/0</code> return <code>3/0</code>, for <code>/2/1</code> return
+     *         <code>/2</code>. For root path return <code>null</code>
+     */
+    public LwM2mPath toParenPath() {
+        if (isResourceInstance()) {
+            return toResourcePath();
+        } else if (isResource()) {
+            return toObjectInstancePath();
+        } else if (isObjectInstance()) {
+            return toObjectPath();
+        } else if (isObject()) {
+            return ROOTPATH;
+        } else if (isRoot()) {
+            return null;
+        }
+        throw new IllegalStateException("Unsupported kind of path :" + this.toString());
+    }
+
+    /**
+     * This methods is generally useful when {@link LwM2mPath} is used as key in a {@link NavigableMap}
+     *
+     * @return the more deeper descendant. E.g. For /3 it will returns
+     *         <code>/3/MAX_VALUE_FOR_INSTANCE_ID/MAX_VALUE_FOR_RESOURCE_ID/MAX_VALUE_FOR_RESOURCE_INSTANCE_ID</code>
+     */
+    public LwM2mPath toMaxDescendant() {
+        LwM2mPath result = this;
+        while (!result.isResourceInstance()) {
+            result = result.getMaxChild();
+        }
+        return result;
+    }
+
+    private LwM2mPath getMaxChild() {
+        if (isResourceInstance()) {
+            throw new IllegalStateException("resource instance can not have child. Path=" + this);
+        } else if (isResource()) {
+            return this.append(LwM2mNodeUtil.MAX_RESOURCE_INSTANCE_ID);
+        } else if (isObjectInstance()) {
+            return this.append(LwM2mNodeUtil.MAX_RESOURCE_ID);
+        } else if (isObject()) {
+            return this.append(LwM2mNodeUtil.MAX_OBJECT_INSTANCE_ID);
+        } else if (isRoot()) {
+            return this.append(LwM2mNodeUtil.MAX_OBJECT_ID);
+        }
+        throw new IllegalStateException("unknow kind of path for " + this);
     }
 
     /**
