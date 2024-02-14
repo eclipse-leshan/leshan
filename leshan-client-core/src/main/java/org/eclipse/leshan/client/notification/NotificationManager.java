@@ -60,12 +60,14 @@ public class NotificationManager {
         objectTree.addListener(new ObjectsListenerAdapter() {
             @Override
             public void objectInstancesRemoved(LwM2mObjectEnabler object, int... instanceIds) {
-                // TODO cleaning remove data
+                object.getAvailableInstanceIds().forEach(id -> objectTree.removeObjectEnabler(id));
+                LOG.info("{} instances disabled", instanceIds.length);
             }
 
             @Override
             public void objectRemoved(LwM2mObjectEnabler object) {
-                // TODO cleaning remove data
+                objectTree.removeObjectEnabler(object.getId());
+                LOG.info("Object {} v{} disabled.", object.getId(), object.getObjectModel().version);
             }
         });
     }
@@ -234,8 +236,9 @@ public class NotificationManager {
     }
 
     protected ObserveResponse createResponse(LwM2mServer server, ObserveRequest request) {
-        // TODO maybe we can remove "receiver" dependencie and directly use ObjectTree ?
-        return receiver.requestReceived(server, request).getResponse();
+        LwM2mPath path = request.getPath();
+        LwM2mObjectEnabler objectEnabler = objectTree.getObjectEnabler(path.getObjectId());
+        return objectEnabler.observe(server, request);
     }
 
     public void destroy() {
