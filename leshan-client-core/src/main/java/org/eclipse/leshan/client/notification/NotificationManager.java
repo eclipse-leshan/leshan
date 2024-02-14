@@ -80,16 +80,17 @@ public class NotificationManager {
             NotificationSender sender) {
         // Get Attributes from ObjectTree
         NotificationAttributeTree attributes = getAttributes(server, request);
+        if (attributes != null && attributes.isEmpty())
+            attributes = strategy.selectNotificationsAttributes(request.getPath(), attributes);
 
         // If there is no attributes this is just classic observe so nothing to do.
-        if (attributes == null)
+        if (attributes == null || attributes.isEmpty())
             return;
 
         LOG.debug("Handle observe relation for {} / {}", server, request);
 
         // Store needed data for this observe relation.
-        attributes = strategy.selectNotificationsAttributes(request.getPath(), attributes);
-        updateNotificationData(server, request, attributes, node, sender);
+        updateNotificationData(true, server, request, attributes, node, sender);
     }
 
     protected NotificationAttributeTree getAttributes(LwM2mServer server, ObserveRequest request) {
@@ -159,7 +160,7 @@ public class NotificationManager {
                     }
                 }, pmin - timeSinceLastNotification, TimeUnit.SECONDS);
                 // schedule next task for pmin but do not send notification
-                store.addNotificationData(server, request, new NotificationData(notificationData, pminTask));
+                store.updateNotificationData(server, request, new NotificationData(notificationData, pminTask));
                 return;
             }
         }
@@ -186,7 +187,7 @@ public class NotificationManager {
     }
 
     // TODO an optimization could be to synchronize by observe relation (identify by server / request)
-    protected synchronized void updateNotificationData(LwM2mServer server, ObserveRequest request,
+    protected synchronized void updateNotificationData(boolean newRelation, LwM2mServer server, ObserveRequest request,
             NotificationAttributeTree attributes, LwM2mNode newValue, NotificationSender sender) {
         // Get Request Path
         LwM2mPath path = request.getPath();
@@ -216,8 +217,13 @@ public class NotificationManager {
         }
 
         // Create State for this observe relation
-        store.addNotificationData(server, request,
-                new NotificationData(attributes, lastSendingTime, lastValue, pmaxTask));
+        if (newRelation) {
+            store.addNotificationData(server, request,
+                    new NotificationData(attributes, lastSendingTime, lastValue, pmaxTask));
+        } else {
+            store.updateNotificationData(server, request,
+                    new NotificationData(attributes, lastSendingTime, lastValue, pmaxTask));
+        }
     }
 
     protected void sendNotification(LwM2mServer server, ObserveRequest request, ObserveResponse observeResponse,
@@ -233,7 +239,7 @@ public class NotificationManager {
                 // remove data as relation must be removed on failure
                 clear(server, request);
             } else {
-                updateNotificationData(server, request, attributes, observeResponse.getContent(), sender);
+                updateNotificationData(false, server, request, attributes, observeResponse.getContent(), sender);
             }
         }
     }

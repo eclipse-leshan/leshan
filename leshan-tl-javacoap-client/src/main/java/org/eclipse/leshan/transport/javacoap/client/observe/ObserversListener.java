@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 Sierra Wireless and others.
+ * Copyright (c) 2024 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -17,15 +17,9 @@ package org.eclipse.leshan.transport.javacoap.client.observe;
 
 import com.mbed.coap.packet.CoapRequest;
 
-public interface ObserversStore extends Iterable<CoapRequest> {
+public interface ObserversListener {
 
-    void add(CoapRequest observeRequest);
+    void observersAdded(CoapRequest request);
 
-    void remove(CoapRequest observeRequest);
-
-    boolean contains(CoapRequest observeRequest);
-
-    void addListener(ObserversListener listener);
-
-    void removeListener(ObserversListener listener);
+    void observersRemoved(CoapRequest request);
 }

@@ -63,6 +63,7 @@ import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.transport.javacoap.client.observe.LwM2mKeys;
+import org.eclipse.leshan.transport.javacoap.client.observe.ObserversListener;
 import org.eclipse.leshan.transport.javacoap.client.observe.ObserversManager;
 import org.eclipse.leshan.transport.javacoap.request.ResponseCodeUtil;
 import org.slf4j.Logger;
@@ -90,6 +91,37 @@ public class ObjectResource extends LwM2mClientCoapResource {
         this.toolbox = toolbox;
         this.notificationManager = notificationManager;
         this.observersManager = observersManager;
+
+        this.observersManager.addListener(new ObserversListener() {
+            @Override
+            public void observersRemoved(CoapRequest coapRequest) {
+                // Get object URI
+                String URI = coapRequest.options().getUriPath();
+                // we don't manage observation on root path
+                if (URI == null)
+                    return;
+
+                // Get Server identity
+                LwM2mServer extractIdentity = extractIdentity(coapRequest);
+
+                // handle content format for Read and Observe Request
+                ContentFormat requestedContentFormat = null;
+                if (coapRequest.options().getAccept() != null) {
+                    // If an request ask for a specific content format, use it (if we support it)
+                    requestedContentFormat = ContentFormat.fromCode(coapRequest.options().getAccept());
+                }
+
+                // Create Observe request
+                ObserveRequest observeRequest = new ObserveRequest(requestedContentFormat, URI, coapRequest);
+
+                // Remove notification data for this request
+                notificationManager.clear(extractIdentity, observeRequest);
+            }
+
+            @Override
+            public void observersAdded(CoapRequest request) {
+            }
+        });
     }
 
     @Override
@@ -158,9 +190,12 @@ public class ObjectResource extends LwM2mClientCoapResource {
                             toolbox.getEncoder().encode(response.getContent(), format, getPath(URI),
                                     toolbox.getModel()));
 
-                    // store observation relation
-                    notificationManager.initRelation(identity, observeRequest, response.getContent(),
-                            createNotificationSender(coapRequest, identity, observeRequest, requestedContentFormat));
+                    // store observation relation if this is not a active observe cancellation
+                    if (coapRequest.options().getObserve() != 1) {
+                        notificationManager.initRelation(identity, observeRequest, response.getContent(),
+                                createNotificationSender(coapRequest, identity, observeRequest,
+                                        requestedContentFormat));
+                    }
                     return coapResponse;
                 } else {
                     CompletableFuture<CoapResponse> errorMessage = errorMessage(response.getCode(),
