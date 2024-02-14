@@ -73,6 +73,14 @@ public class ObserversManager implements Filter.SimpleFilter<CoapRequest, CoapRe
         return observersStore.contains(req);
     }
 
+    public void addListener(ObserversListener listener) {
+        observersStore.addListener(listener);
+    }
+
+    public void removeListener(ObserversListener listener) {
+        observersStore.removeListener(listener);
+    }
+
     private CoapResponse subscribe(CoapRequest req, CoapResponse resp) {
         if (req.getMethod() != Method.GET && req.getMethod() != Method.FETCH) {
             return resp;

@@ -15,14 +15,15 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.lwm2m.attributes;
 
-import java.util.NavigableMap;
-import java.util.TreeMap;
+import java.util.Set;
+import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
 
 public class NotificationAttributeTree {
 
-    NavigableMap<LwM2mPath, LwM2mAttributeSet> internalTree = new TreeMap<>();
+    private final ConcurrentNavigableMap<LwM2mPath, LwM2mAttributeSet> internalTree = new ConcurrentSkipListMap<>();
 
     public void put(LwM2mPath path, LwM2mAttributeSet newValue) {
         internalTree.put(path, newValue);
@@ -30,11 +31,22 @@ public class NotificationAttributeTree {
 
     public void remove(LwM2mPath path) {
         internalTree.remove(path);
+    }
 
+    public void removeAllUnder(LwM2mPath parentPath) {
+        internalTree.subMap(parentPath, true, parentPath.toMaxDescendant(), true).clear();
+    }
+
+    public boolean isEmpty() {
+        return internalTree.isEmpty();
     }
 
     public LwM2mAttributeSet get(LwM2mPath path) {
         return internalTree.get(path);
+    }
+
+    public Set<LwM2mPath> getChildren(LwM2mPath parentPath) {
+        return internalTree.subMap(parentPath, false, parentPath.toMaxDescendant(), true).keySet();
     }
 
     /**

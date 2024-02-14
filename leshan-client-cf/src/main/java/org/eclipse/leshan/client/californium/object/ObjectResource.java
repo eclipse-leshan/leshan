@@ -27,7 +27,9 @@ import java.util.List;
 
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
+import org.eclipse.californium.core.coap.MessageObserverAdapter;
 import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.client.californium.LwM2mClientCoapResource;
@@ -152,20 +154,29 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
             if (exchange.getRequestOptions().hasObserve()) {
                 ObserveRequest observeRequest = new ObserveRequest(requestedContentFormat, URI, coapRequest);
 
-                // TODO handle active cancel observe, we must call : notificationManager.clear(server, observeRequest);
-                if (exchange.advanced().getRelation() == null || !exchange.advanced().getRelation().isEstablished()) {
+                boolean isObserveRelationEstablishement = exchange.advanced().getRelation() == null
+                        || !exchange.advanced().getRelation().isEstablished();
+                boolean isActiveObserveCancellation = coapRequest.isObserveCancel();
+                if (isObserveRelationEstablishement || isActiveObserveCancellation) {
                     // Handle observe request
                     ObserveResponse response = requestReceiver.requestReceived(server, observeRequest).getResponse();
                     if (response.getCode() == org.eclipse.leshan.core.ResponseCode.CONTENT) {
                         LwM2mPath path = getPath(URI);
                         LwM2mNode content = response.getContent();
                         ContentFormat format = getContentFormat(observeRequest, requestedContentFormat);
+
+                        // change notification manager state
+                        if (isActiveObserveCancellation) {
+                            notificationManager.clear(server, observeRequest);
+                        } else if (isObserveRelationEstablishement) {
+                            notificationManager.initRelation(server, observeRequest, content,
+                                    createNotificationSender(exchange, server, observeRequest, requestedContentFormat));
+                        }
+
+                        // send response
                         exchange.respond(ResponseCode.CONTENT,
                                 toolbox.getEncoder().encode(content, format, path, toolbox.getModel()),
                                 format.getCode());
-
-                        notificationManager.initRelation(server, observeRequest, content,
-                                createNotificationSender(exchange, server, observeRequest, requestedContentFormat));
                     } else {
                         exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());
                         return;
@@ -226,9 +237,17 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                             LwM2mPath path = observeRequest.getPath();
                             LwM2mNode content = response.getContent();
                             ContentFormat format = getContentFormat(observeRequest, requestedContentFormat);
-                            exchange.respond(ResponseCode.CONTENT,
-                                    toolbox.getEncoder().encode(content, format, path, toolbox.getModel()),
-                                    format.getCode());
+                            Response coapResponse = new Response(ResponseCode.CONTENT);
+                            coapResponse
+                                    .setPayload(toolbox.getEncoder().encode(content, format, path, toolbox.getModel()));
+                            coapResponse.getOptions().setContentFormat(format.getCode());
+                            coapResponse.addMessageObserver(new MessageObserverAdapter() {
+                                @Override
+                                public void onReject() {
+                                    notificationManager.clear(server, observeRequest);
+                                }
+                            });
+                            exchange.respond(coapResponse);
                             return true;
                         } else {
                             exchange.respond(toCoapResponseCode(response.getCode()), response.getErrorMessage());

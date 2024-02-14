@@ -99,7 +99,7 @@ public class LeshanTestClient extends LeshanClient {
 
     public NotificationDataStore getNotificationDataStore() {
         return notificationDataStore;
-    };
+    }
 
     public String getEndpointName() {
         return endpointName;

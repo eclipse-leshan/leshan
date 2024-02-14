@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
+import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.LwM2mId;
@@ -87,6 +88,45 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         this.id = id;
         this.objectModel = objectModel;
         this.transactionalListener = createTransactionListener();
+        this.transactionalListener.addListener(new ObjectsListenerAdapter() {
+
+            @Override
+            public void resourceChanged(LwM2mPath... paths) {
+                synchronized (BaseObjectEnabler.this) {
+                    for (LwM2mPath p : paths) {
+                        if (p.isResource()) {
+                            ResourceModel resourceModel = objectModel.resources.get(p.getResourceId());
+                            if (resourceModel.multiple) {
+                                // TODO ideally we should have a better event like 'resource instance removed'
+                                // Maybe we should change the current event model for a more advanced one...
+                                // Plus, ideally all next code should be done atomically...
+                                Set<LwM2mPath> resourceInstancePaths = assignedAttributes.getChildren(p);
+                                if (!resourceInstancePaths.isEmpty()) {
+                                    List<Integer> instanceResourceIds = getAvailableInstanceResourceIds(
+                                            p.getObjectInstanceId(), p.getResourceId());
+                                    // We verify that attribute in tree are attached to an existent resource instance
+                                    for (LwM2mPath resourceInstancePath : resourceInstancePaths) {
+                                        if (!instanceResourceIds
+                                                .contains(resourceInstancePath.getResourceInstanceId())) {
+                                            assignedAttributes.remove(resourceInstancePath);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void objectInstancesRemoved(LwM2mObjectEnabler object, int... instanceIds) {
+                synchronized (BaseObjectEnabler.this) {
+                    for (int instanceId : instanceIds) {
+                        assignedAttributes.removeAllUnder(new LwM2mPath(getId(), instanceId));
+                    }
+                }
+            }
+        });
     }
 
     protected TransactionalObjectListener createTransactionListener() {

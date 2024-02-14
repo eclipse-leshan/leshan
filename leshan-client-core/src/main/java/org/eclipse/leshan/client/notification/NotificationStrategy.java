@@ -51,9 +51,11 @@ public class NotificationStrategy {
             NotificationAttributeTree attributes) {
 
         LwM2mAttributeSet set = attributes.getWithInheritance(path);
+        if (set == null || set.isEmpty()) {
+            return null;
+        }
         NotificationAttributeTree result = new NotificationAttributeTree();
         result.put(path, set);
-
         return result;
     }
 

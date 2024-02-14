@@ -41,13 +41,27 @@ public class NotificationDataStore {
 
     public NotificationData addNotificationData(LwM2mServer server, ObserveRequest request, NotificationData data) {
         // cancel task of previous data
-        NotificationData previousData = store.put(toKey(server, request), data);
+        return store.put(toKey(server, request), data);
+    }
+
+    public NotificationData updateNotificationData(LwM2mServer server, ObserveRequest request, NotificationData data) {
+
+        NotificationData previousData = store.replace(toKey(server, request), data);
         if (previousData != null) {
+            // If updated, cancel task of previous data
             if (previousData.getPminFuture() != null) {
                 previousData.getPminFuture().cancel(false);
             }
             if (previousData.getPmaxFuture() != null) {
                 previousData.getPmaxFuture().cancel(false);
+            }
+        } else {
+            // If NOT updated, cancel task of given data
+            if (data.getPminFuture() != null) {
+                data.getPminFuture().cancel(false);
+            }
+            if (data.getPmaxFuture() != null) {
+                data.getPmaxFuture().cancel(false);
             }
         }
         return previousData;
