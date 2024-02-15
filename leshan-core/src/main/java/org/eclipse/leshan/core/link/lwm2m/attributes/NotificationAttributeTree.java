@@ -52,7 +52,9 @@ public class NotificationAttributeTree {
     /**
      * @return {@link LwM2mAttributeSet} attached to given level merged with value inherited from higher level.
      *
-     * @See https://www.openmobilealliance.org/release/LightweightM2M/V1_2_1-20221209-A/HTML-Version/OMA-TS-LightweightM2M_Core-V1_2_1-20221209-A.html#7-3-2-0-732-lessNOTIFICATIONgreater-Class-Attributes
+     * @see <a href=
+     *      "https://www.openmobilealliance.org/release/LightweightM2M/V1_2_1-20221209-A/HTML-Version/OMA-TS-LightweightM2M_Core-V1_2_1-20221209-A.html#7-3-2-0-732-lessNOTIFICATIONgreater-Class-Attributes">LWM2M-v1.2.1@core7.3.2.
+     *      NOTIFICATION Class Attributes</a>
      */
     public LwM2mAttributeSet getWithInheritance(LwM2mPath path) {
         // For Root Path no need to "flatten" hierarchy
