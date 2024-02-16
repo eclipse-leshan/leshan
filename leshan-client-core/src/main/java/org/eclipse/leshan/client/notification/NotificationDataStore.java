@@ -15,8 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.notification;
 
-import java.util.concurrent.ConcurrentNavigableMap;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.NavigableMap;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.ScheduledFuture;
 
 import org.eclipse.leshan.client.servers.LwM2mServer;
@@ -33,54 +34,70 @@ import org.eclipse.leshan.core.util.Validate;
  */
 public class NotificationDataStore {
 
-    private final ConcurrentNavigableMap<NotificationDataKey, NotificationData> store = new ConcurrentSkipListMap<>();
+    private final NavigableMap<NotificationDataKey, NotificationData> store = new TreeMap<>();
 
     public NotificationData getNotificationData(LwM2mServer server, ObserveRequest request) {
         return store.get(toKey(server, request));
     }
 
-    public NotificationData addNotificationData(LwM2mServer server, ObserveRequest request, NotificationData data) {
-        // cancel task of previous data
-        return store.put(toKey(server, request), data);
-    }
-
-    public NotificationData updateNotificationData(LwM2mServer server, ObserveRequest request, NotificationData data) {
-
-        NotificationData previousData = store.replace(toKey(server, request), data);
+    public synchronized NotificationData addNotificationData(LwM2mServer server, ObserveRequest request,
+            NotificationData data) {
+        NotificationData previousData = store.put(toKey(server, request), data);
         if (previousData != null) {
-            // If updated, cancel task of previous data
-            if (previousData.getPminFuture() != null) {
-                previousData.getPminFuture().cancel(false);
-            }
-            if (previousData.getPmaxFuture() != null) {
-                previousData.getPmaxFuture().cancel(false);
-            }
-        } else {
-            // If NOT updated, cancel task of given data
-            if (data.getPminFuture() != null) {
-                data.getPminFuture().cancel(false);
-            }
-            if (data.getPmaxFuture() != null) {
-                data.getPmaxFuture().cancel(false);
-            }
+            // cancel task of previous data
+            cancelTasks(previousData);
         }
         return previousData;
     }
 
-    public void removeNotificationData(LwM2mServer server, ObserveRequest request) {
-        store.remove(toKey(server, request));
+    public synchronized NotificationData updateNotificationData(LwM2mServer server, ObserveRequest request,
+            NotificationData data) {
+
+        NotificationData previousData = store.replace(toKey(server, request), data);
+        if (previousData != null) {
+            // If updated, cancel task of previous data
+            cancelTasks(previousData);
+        } else {
+            // If NOT updated, cancel task of given data
+            cancelTasks(data);
+        }
+        return previousData;
     }
 
-    public void clearAllNotificationDataFor(LwM2mServer server) {
-        store.subMap(floorKeyFor(server), ceilKeyFor(server)).clear();
+    public synchronized void removeNotificationData(LwM2mServer server, ObserveRequest request) {
+        NotificationData removed = store.remove(toKey(server, request));
+        if (removed != null) {
+            cancelTasks(removed);
+        }
     }
 
-    public void clearAllNotificationData() {
+    public synchronized void clearAllNotificationDataFor(LwM2mServer server) {
+        SortedMap<NotificationDataKey, NotificationData> toRemove = store.subMap(floorKeyFor(server),
+                ceilKeyFor(server));
+        for (NotificationData toRemoveData : toRemove.values()) {
+            cancelTasks(toRemoveData);
+        }
+        toRemove.clear();
+    }
+
+    public synchronized void clearAllNotificationData() {
+        for (NotificationData toRemoveData : store.values()) {
+            cancelTasks(toRemoveData);
+        }
         store.clear();
     }
 
-    public boolean isEmpty() {
+    public synchronized boolean isEmpty() {
         return store.isEmpty();
+    }
+
+    private void cancelTasks(NotificationData data) {
+        if (data.getPminFuture() != null) {
+            data.getPminFuture().cancel(false);
+        }
+        if (data.getPmaxFuture() != null) {
+            data.getPmaxFuture().cancel(false);
+        }
     }
 
     private NotificationDataKey floorKeyFor(LwM2mServer server) {
