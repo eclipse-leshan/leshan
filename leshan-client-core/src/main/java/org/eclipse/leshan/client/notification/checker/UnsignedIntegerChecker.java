@@ -21,8 +21,13 @@ import java.math.RoundingMode;
 
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
+import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.util.datatype.ULong;
 
+/**
+ * A {@link CriteriaBasedOnValueChecker} for {@link LwM2mResource} of {@link Type#UNSIGNED_INTEGER}
+ */
 public class UnsignedIntegerChecker implements CriteriaBasedOnValueChecker {
 
     @Override

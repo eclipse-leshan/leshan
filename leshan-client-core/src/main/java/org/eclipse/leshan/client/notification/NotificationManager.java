@@ -26,7 +26,6 @@ import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.resource.NotificationSender;
-import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.link.lwm2m.attributes.NotificationAttributeTree;
 import org.eclipse.leshan.core.node.LwM2mChildNode;
@@ -38,17 +37,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is responsible to modify default notification behavior based on write attributes.
+ * This class is responsible to modify default observe behavior based on write attributes.
+ * <p>
+ * It does not support Observe-Composite.
  */
 public class NotificationManager {
-
     private final Logger LOG = LoggerFactory.getLogger(NotificationManager.class);
 
     private final DownlinkRequestReceiver receiver;
     private final NotificationDataStore store;
     private final LwM2mObjectTree objectTree;
     private final NotificationStrategy strategy = new NotificationStrategy();
-    // TODO should be configurable and should be destroyed when needed.
+    // TODO write attributes : should be configurable and should be destroyed when needed.
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
     public NotificationManager(LwM2mObjectTree objectTree, DownlinkRequestReceiver requestReceiver) {
@@ -60,26 +60,15 @@ public class NotificationManager {
         this.receiver = requestReceiver;
         this.objectTree = objectTree;
         this.store = store;
-
-        // Housekeeping
-        objectTree.addListener(new ObjectsListenerAdapter() {
-            @Override
-            public void objectInstancesRemoved(LwM2mObjectEnabler object, int... instanceIds) {
-                // TODO cleaning remove data
-            }
-
-            @Override
-            public void objectRemoved(LwM2mObjectEnabler object) {
-                // TODO cleaning remove data
-            }
-        });
     }
 
-    // TODO an optimization could be to synchronize by observe relation (identify by server / request)
     public synchronized void initRelation(LwM2mServer server, ObserveRequest request, LwM2mNode node,
             NotificationSender sender) {
-        // Get Attributes from ObjectTree
-        NotificationAttributeTree attributes = getAttributes(server, request);
+        // Get Attributes for this (server, request)
+        LwM2mObjectEnabler objectEnabler = objectTree.getObjectEnabler(request.getPath().getObjectId());
+        if (objectEnabler == null)
+            return; // no object enabler : nothing to observe
+        NotificationAttributeTree attributes = objectEnabler.getAttributesFor(server);
         if (attributes != null && attributes.isEmpty())
             attributes = strategy.selectNotificationsAttributes(request.getPath(), attributes);
 
@@ -93,18 +82,6 @@ public class NotificationManager {
         updateNotificationData(true, server, request, attributes, node, sender);
     }
 
-    protected NotificationAttributeTree getAttributes(LwM2mServer server, ObserveRequest request) {
-
-        LwM2mObjectEnabler objectEnabler = objectTree.getObjectEnabler(request.getPath().getObjectId());
-        if (objectEnabler == null)
-            return null;
-        else {
-            return objectEnabler.getAttributesFor(server);
-        }
-
-    }
-
-    // TODO an optimization could be to synchronize by observe relation (identify by server / request)
     public synchronized void notificationTriggered(LwM2mServer server, ObserveRequest request,
             NotificationSender sender) {
         LOG.trace("Notification triggered for observe relation of {} / {}", server, request);
@@ -134,10 +111,10 @@ public class NotificationManager {
                     return;
                 }
             }
-            // TODO handle error ?
+            // else if there is an error send notification now.
         }
 
-        // TODO use case where PMIN == PMAX
+        // TODO write attributes : use case where PMIN == PMAX
         // If PMIN is used check if we need to delay this notification.
         if (notificationData.usePmin()) {
             LOG.trace("handle pmin for observe relation of {} / {}", server, request);
@@ -168,25 +145,21 @@ public class NotificationManager {
         sendNotification(server, request, candidateNotificationToSend, attributes, sender);
     }
 
-    // TODO an optimization could be to synchronize by observe relation (identify by server / request)
     public synchronized void clear(LwM2mServer server, ObserveRequest request) {
         // remove all data about observe relation for given server / request.
         store.removeNotificationData(server, request);
     }
 
-    // TODO an optimization could be to synchronize by observe relation (identify by server / request)
     public synchronized void clear(LwM2mServer server) {
         // remove all data about observe relation for given server.
         store.clearAllNotificationDataFor(server);
     }
 
-    // TODO an optimization could be to synchronize by observe relation (identify by server / request)
     public synchronized void clear() {
         // remove all data about observe relation.
         store.clearAllNotificationData();
     }
 
-    // TODO an optimization could be to synchronize by observe relation (identify by server / request)
     protected synchronized void updateNotificationData(boolean newRelation, LwM2mServer server, ObserveRequest request,
             NotificationAttributeTree attributes, LwM2mNode newValue, NotificationSender sender) {
         // Get Request Path
@@ -245,7 +218,7 @@ public class NotificationManager {
     }
 
     protected ObserveResponse createResponse(LwM2mServer server, ObserveRequest request) {
-        // TODO maybe we can remove "receiver" dependencie and directly use ObjectTree ?
+        // TODO write attributes : maybe we can remove "receiver" dependencie and directly use ObjectTree ?
         return receiver.requestReceived(server, request).getResponse();
     }
 

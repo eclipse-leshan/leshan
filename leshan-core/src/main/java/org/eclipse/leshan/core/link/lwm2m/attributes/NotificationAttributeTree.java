@@ -21,18 +21,28 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
 
+/**
+ * A kind of tree structure which stores {@link LwM2mAttributeSet} by {@link LwM2mPath}.
+ */
 public class NotificationAttributeTree {
 
     private final ConcurrentNavigableMap<LwM2mPath, LwM2mAttributeSet> internalTree = new ConcurrentSkipListMap<>();
 
     public void put(LwM2mPath path, LwM2mAttributeSet newValue) {
-        internalTree.put(path, newValue);
+        if (newValue.isEmpty()) {
+            internalTree.remove(path);
+        } else {
+            internalTree.put(path, newValue);
+        }
     }
 
     public void remove(LwM2mPath path) {
         internalTree.remove(path);
     }
 
+    /**
+     * Remove all attribute for the given {@link LwM2mPath} and all its children.
+     */
     public void removeAllUnder(LwM2mPath parentPath) {
         internalTree.subMap(parentPath, true, parentPath.toMaxDescendant(), true).clear();
     }
@@ -45,6 +55,10 @@ public class NotificationAttributeTree {
         return internalTree.get(path);
     }
 
+    /**
+     * @return all children {@link LwM2mPath} of given parent {@link LwM2mPath} which have attached
+     *         {@link LwM2mAttributeSet}
+     */
     public Set<LwM2mPath> getChildren(LwM2mPath parentPath) {
         return internalTree.subMap(parentPath, false, parentPath.toMaxDescendant(), true).keySet();
     }

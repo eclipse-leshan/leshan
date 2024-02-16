@@ -93,6 +93,8 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             @Override
             public void resourceChanged(LwM2mPath... paths) {
                 synchronized (BaseObjectEnabler.this) {
+                    // Assigned attributes housekeeping : if resource instance is removed we removed attached
+                    // attributes.
                     for (LwM2mPath p : paths) {
                         if (p.isResource()) {
                             ResourceModel resourceModel = objectModel.resources.get(p.getResourceId());
@@ -121,6 +123,8 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
             @Override
             public void objectInstancesRemoved(LwM2mObjectEnabler object, int... instanceIds) {
                 synchronized (BaseObjectEnabler.this) {
+                    // Assigned attributes housekeeping : if object instance is removed we removed attached
+                    // attributes.
                     for (int instanceId : instanceIds) {
                         assignedAttributes.removeAllUnder(new LwM2mPath(getId(), instanceId));
                     }
@@ -437,12 +441,13 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         // apply new attribute values
         LwM2mAttributeSet currentAttributes = assignedAttributes.get(request.getPath());
         LwM2mAttributeSet newValue;
-        if (currentAttributes != null)
+        if (currentAttributes != null) {
             newValue = currentAttributes.apply(request.getAttributes());
-        else
+        } else {
             newValue = request.getAttributes();
+        }
 
-        // TODO validate new value based on model.
+        // TODO write attributes : validate new value based on model.
         if (newValue.isEmpty()) {
             assignedAttributes.remove(request.getPath());
         } else {
