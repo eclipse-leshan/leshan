@@ -33,10 +33,11 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 
-// TODO The way write attribute should be handle is not clear in LWM2M specification (-_-!) ... which is not an ideal situation ...
+// TODO write attributes : create an interface
+// The way write attribute should be handle is not clear in LWM2M specification (-_-!) ... which is not an ideal situation ...
 // See : https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/478
 // So we create a dedicated class about how this attributes should be handled.
-// The idea to then create a Interface + Default implement and let users implements their own strategy depending of their understanding or needs.
+// The idea will be to create a Interface + Default implement and let users implements their own strategy depending of their understanding or needs.
 public class NotificationStrategy {
 
     protected Map<Type, CriteriaBasedOnValueChecker> checkers = new HashMap<>();

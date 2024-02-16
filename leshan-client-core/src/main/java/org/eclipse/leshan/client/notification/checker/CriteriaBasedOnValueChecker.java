@@ -15,9 +15,20 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.notification.checker;
 
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 
+/**
+ * A {@link CriteriaBasedOnValueChecker} MUST evaluate new value based on Notification {@link LwM2mAttribute} and
+ * previous value sent to determine if new notification should be sent.
+ */
 public interface CriteriaBasedOnValueChecker {
+    /**
+     * @param attributes {@link LwM2mAttributeSet} attached to the node.
+     * @param lastSentValue value sent in previous notification.
+     * @param newValue value for which it should be decided if a notification should be sent.
+     * @return <code>true</code> if new notification should be sent.
+     */
     boolean shouldTriggerNotificationBasedOnValueChange(LwM2mAttributeSet attributes, Object lastSentValue,
             Object newValue);
 }

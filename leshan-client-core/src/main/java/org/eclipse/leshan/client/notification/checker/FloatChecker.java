@@ -17,7 +17,12 @@ package org.eclipse.leshan.client.notification.checker;
 
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
+import org.eclipse.leshan.core.model.ResourceModel.Type;
+import org.eclipse.leshan.core.node.LwM2mResource;
 
+/**
+ * A {@link CriteriaBasedOnValueChecker} for {@link LwM2mResource} of {@link Type#FLOAT}
+ */
 public class FloatChecker implements CriteriaBasedOnValueChecker {
 
     @Override
