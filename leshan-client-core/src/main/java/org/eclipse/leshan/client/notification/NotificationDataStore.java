@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.notification;
 
+import java.util.Iterator;
 import java.util.NavigableMap;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -68,6 +69,16 @@ public class NotificationDataStore {
         NotificationData removed = store.remove(toKey(server, request));
         if (removed != null) {
             cancelTasks(removed);
+        }
+    }
+
+    public synchronized void clearAllNotificationDataUnder(LwM2mPath parentPath) {
+        Iterator<NotificationDataKey> it = store.keySet().iterator();
+        while (it.hasNext()) {
+            NotificationDataKey key = it.next();
+            if (key.getPath().startWith(parentPath)) {
+                it.remove();
+            }
         }
     }
 

@@ -34,6 +34,7 @@ import org.eclipse.leshan.client.endpoint.LwM2mClientEndpoint;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
+import org.eclipse.leshan.client.notification.NotificationDataStore;
 import org.eclipse.leshan.client.notification.NotificationManager;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverAdapter;
@@ -57,6 +58,7 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
+import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -128,7 +130,19 @@ public class LeshanClient implements LwM2mClient {
 
     protected NotificationManager createNotificationManager(LwM2mObjectTree objectTree,
             DownlinkRequestReceiver requestReceiver) {
-        return new NotificationManager(objectTree, requestReceiver);
+        final NotificationManager notificationManager = new NotificationManager(objectTree, requestReceiver,
+                createNotificationStore());
+        this.addObserver(new LwM2mClientObserverAdapter() {
+            @Override
+            public void onBootstrapStarted(LwM2mServer bsserver, BootstrapRequest request) {
+                notificationManager.clear();
+            }
+        });
+        return notificationManager;
+    }
+
+    protected NotificationDataStore createNotificationStore() {
+        return new NotificationDataStore();
     }
 
     protected LwM2mRootEnabler createRootEnabler(LwM2mObjectTree tree) {
