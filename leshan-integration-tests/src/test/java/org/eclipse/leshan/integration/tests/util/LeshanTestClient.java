@@ -42,11 +42,8 @@ import org.eclipse.leshan.client.endpoint.LwM2mClientEndpoint;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
 import org.eclipse.leshan.client.notification.NotificationDataStore;
-import org.eclipse.leshan.client.notification.NotificationManager;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
-import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
-import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.send.DataSender;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
@@ -91,10 +88,9 @@ public class LeshanTestClient extends LeshanClient {
     }
 
     @Override
-    protected NotificationManager createNotificationManager(LwM2mObjectTree objectTree,
-            DownlinkRequestReceiver requestReceiver) {
-        notificationDataStore = new NotificationDataStore();
-        return new NotificationManager(objectTree, requestReceiver, notificationDataStore);
+    protected NotificationDataStore createNotificationStore() {
+        notificationDataStore = super.createNotificationStore();
+        return notificationDataStore;
     }
 
     public NotificationDataStore getNotificationDataStore() {
@@ -207,6 +203,11 @@ public class LeshanTestClient extends LeshanClient {
         // ...
     }
 
+    public void waitForBootstrapStarted() {
+        // TODO Auto-generated method stub
+
+    }
+
     public void waitForBootstrapSuccess(LeshanBootstrapServer server, long timeout, TimeUnit unit) {
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onBootstrapStarted(assertArg( //
                 s -> assertThat(server.getEndpoints()) //
@@ -258,4 +259,5 @@ public class LeshanTestClient extends LeshanClient {
         }
         return false;
     }
+
 }

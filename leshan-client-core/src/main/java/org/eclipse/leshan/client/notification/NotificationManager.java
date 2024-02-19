@@ -26,6 +26,7 @@ import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.resource.NotificationSender;
+import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.link.lwm2m.attributes.NotificationAttributeTree;
 import org.eclipse.leshan.core.node.LwM2mChildNode;
@@ -60,6 +61,18 @@ public class NotificationManager {
         this.receiver = requestReceiver;
         this.objectTree = objectTree;
         this.store = store;
+
+        this.objectTree.addListener(new ObjectsListenerAdapter() {
+            @Override
+            public void objectRemoved(LwM2mObjectEnabler object) {
+                // I guess ideally this SHOULD NOT be needed because
+                // If an observed resource under this object is removed then a 4.04 notification should be sent
+                // immediately.
+                // but underlying library doesn't really implement this, e.g :
+                // https://github.com/eclipse-californium/californium/issues/2223
+                store.clearAllNotificationDataUnder(new LwM2mPath(object.getId()));
+            }
+        });
     }
 
     public synchronized void initRelation(LwM2mServer server, ObserveRequest request, LwM2mNode node,
