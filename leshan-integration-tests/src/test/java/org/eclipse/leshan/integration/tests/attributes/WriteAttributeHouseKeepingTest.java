@@ -257,7 +257,7 @@ public class WriteAttributeHouseKeepingTest {
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws InterruptedException {
 
-        write_attribute_then_observe_then_passive_cancel_then_check_no_more_notification_data(
+        write_attribute_then_observe_then_active_cancel_then_check_no_more_notification_data(
                 new LwM2mPath(TEST_OBJECT));
     }
 
@@ -266,7 +266,7 @@ public class WriteAttributeHouseKeepingTest {
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws InterruptedException {
 
-        write_attribute_then_observe_then_passive_cancel_then_check_no_more_notification_data(
+        write_attribute_then_observe_then_active_cancel_then_check_no_more_notification_data(
                 new LwM2mPath(TEST_OBJECT, 0));
     }
 
@@ -275,16 +275,16 @@ public class WriteAttributeHouseKeepingTest {
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws InterruptedException {
 
-        write_attribute_then_observe_then_passive_cancel_then_check_no_more_notification_data(
+        write_attribute_then_observe_then_active_cancel_then_check_no_more_notification_data(
                 new LwM2mPath(TEST_OBJECT, 0, MULTIPLE_INTEGER_VALUE));
     }
 
     @TestAllTransportLayer
-    public void write_attribute_then_observe_resource_active_then_passive_cancel_then_check_no_more_notification_data(
+    public void write_attribute_then_observe_resource_instance_then_active_cancel_then_check_no_more_notification_data(
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws InterruptedException {
 
-        write_attribute_then_observe_then_passive_cancel_then_check_no_more_notification_data(
+        write_attribute_then_observe_then_active_cancel_then_check_no_more_notification_data(
                 new LwM2mPath(TEST_OBJECT, 0, MULTIPLE_INTEGER_VALUE, 0));
     }
 
@@ -316,4 +316,67 @@ public class WriteAttributeHouseKeepingTest {
         // then assert the is no more notification data
         assertThat(client).hasNoNotificationData();
     }
+
+    @TestAllTransportLayer
+    public void write_attribute_then_observe_object_then_remove_object_then_check_no_more_notification_data(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws InterruptedException {
+
+        write_attribute_then_observe_then_remove_object_then_check_no_more_notification_data(
+                new LwM2mPath(TEST_OBJECT));
+    }
+
+    @TestAllTransportLayer
+    public void write_attribute_then_observe_object_instance_then_remove_object_then_check_no_more_notification_data(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws InterruptedException {
+
+        write_attribute_then_observe_then_remove_object_then_check_no_more_notification_data(
+                new LwM2mPath(TEST_OBJECT, 0));
+    }
+
+    @TestAllTransportLayer
+    public void write_attribute_then_observe_resource_then_remove_object_then_check_no_more_notification_data(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws InterruptedException {
+
+        write_attribute_then_observe_then_remove_object_then_check_no_more_notification_data(
+                new LwM2mPath(TEST_OBJECT, 0, MULTIPLE_INTEGER_VALUE));
+    }
+
+    @TestAllTransportLayer
+    public void write_attribute_then_observe_resource_instance_then_remove_object_then_check_no_more_notification_data(
+            Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws InterruptedException {
+
+        write_attribute_then_observe_then_remove_object_then_check_no_more_notification_data(
+                new LwM2mPath(TEST_OBJECT, 0, MULTIPLE_INTEGER_VALUE, 0));
+    }
+
+    public void write_attribute_then_observe_then_remove_object_then_check_no_more_notification_data(
+            LwM2mPath targetedPath) throws InterruptedException {
+
+        // Add Attribute pmin=1seconds to targeted node
+        WriteAttributesResponse writeAttributeResponse = server.send(currentRegistration, new WriteAttributesRequest(
+                targetedPath, new LwM2mAttributeSet(LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 2l))));
+        assertThat(writeAttributeResponse).isSuccess();
+
+        // Check there is no notification data
+        assertThat(client).hasNoNotificationData();
+
+        // Observe targeted node
+        ObserveResponse response = server.send(currentRegistration, new ObserveRequest(targetedPath));
+        assertThat(response).isSuccess();
+
+        // Check that we have new NotificationData
+        Thread.sleep(100); // wait to be sure client handle observation : TODO We should do better.
+        assertThat(client).hasNotificationData();
+
+        // Disable object
+        client.getObjectTree().removeObjectEnabler(targetedPath.getObjectId());
+
+        // then assert the is no more notification data
+        assertThat(client).hasNoNotificationData();
+    }
+
 }
