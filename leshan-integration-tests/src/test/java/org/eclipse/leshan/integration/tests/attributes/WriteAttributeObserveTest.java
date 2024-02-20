@@ -17,6 +17,7 @@
 package org.eclipse.leshan.integration.tests.attributes;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.eclipse.leshan.core.ResponseCode.INTERNAL_SERVER_ERROR;
 import static org.eclipse.leshan.core.util.TestLwM2mId.FLOAT_VALUE;
 import static org.eclipse.leshan.core.util.TestLwM2mId.INTEGER_VALUE;
 import static org.eclipse.leshan.core.util.TestLwM2mId.MULTIPLE_INTEGER_VALUE;
@@ -31,13 +32,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import org.eclipse.leshan.core.ResponseCode;
-import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
+import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -45,6 +46,7 @@ import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
+import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
@@ -182,16 +184,26 @@ public class WriteAttributeObserveTest {
                 (int) (TimeUnit.MILLISECONDS.convert(pmax, TimeUnit.SECONDS) * 0.3), TimeUnit.MILLISECONDS);
         assertThat(response.getContent()).isEqualTo(LwM2mSingleResource.newIntegerResource(INTEGER_VALUE, 1024l));
         assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
-
     }
 
     @TestAllTransportLayer
     public void test_pmin_and_pmax(Protocol givenProtocol, String givenClientEndpointProvider,
-                                   String givenServerEndpointProvider) throws InterruptedException {
-
+            String givenServerEndpointProvider) throws InterruptedException {
         Long pmin = 1l; // seconds
-        Long pmax = 10l; // seconds
+        Long pmax = 2l; // seconds
+        test_pmin_and_pmax(givenServerEndpointProvider, pmin, pmax);
+    }
 
+    @TestAllTransportLayer
+    public void test_pmin_equals_pmax(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InterruptedException {
+        Long pmin = 1l; // seconds
+        Long pmax = 1l; // seconds
+        test_pmin_and_pmax(givenServerEndpointProvider, pmin, pmax);
+    }
+
+    private void test_pmin_and_pmax(String givenServerEndpointProvider, long pmin, long pmax)
+            throws InvalidRequestException, InterruptedException {
         // Setting attribute
         WriteAttributesResponse writeAttributeResponse = server.send(currentRegistration,
                 new WriteAttributesRequest(TEST_OBJECT, 0, INTEGER_VALUE,
@@ -207,20 +219,25 @@ public class WriteAttributeObserveTest {
         assertThat(observation.getPath()).isEqualTo(new LwM2mPath(TEST_OBJECT, 0, INTEGER_VALUE));
         server.waitForNewObservation(observation);
 
-        // Trigger new notification (changing value using Write Request)
+        // Trigger new notification
         LwM2mResponse writeResponse = server.send(currentRegistration,
-                new WriteRequest(TEST_OBJECT, 0, INTEGER_VALUE, 100l));
+                new WriteRequest(TEST_OBJECT, 0, INTEGER_VALUE, 30));
         assertThat(writeResponse).isSuccess();
 
-        // Verify Behavior
+        // Verify
         server.ensureNoNotification(observation, (int) (TimeUnit.MILLISECONDS.convert(pmin, TimeUnit.SECONDS) * 0.8),
                 TimeUnit.MILLISECONDS);
-
         ObserveResponse response = server.waitForNotificationOf(observation,
                 (int) (TimeUnit.MILLISECONDS.convert(pmin, TimeUnit.SECONDS) * 0.3), TimeUnit.MILLISECONDS);
+        assertThat(response.getContent()).isEqualTo(LwM2mSingleResource.newIntegerResource(INTEGER_VALUE, 30));
+        assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
-        // Verify response
-        assertThat(response.getContent()).isEqualTo(LwM2mSingleResource.newIntegerResource(INTEGER_VALUE, 100));
+        // Wait pmax seconds more and check again
+        server.ensureNoNotification(observation, (int) (TimeUnit.MILLISECONDS.convert(pmax, TimeUnit.SECONDS) * 0.8),
+                TimeUnit.MILLISECONDS);
+        response = server.waitForNotificationOf(observation,
+                (int) (TimeUnit.MILLISECONDS.convert(pmax, TimeUnit.SECONDS) * 0.3), TimeUnit.MILLISECONDS);
+        assertThat(response.getContent()).isEqualTo(LwM2mSingleResource.newIntegerResource(INTEGER_VALUE, 30));
         assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
     }
 
@@ -317,49 +334,6 @@ public class WriteAttributeObserveTest {
     }
 
     @TestAllTransportLayer
-    public void test_lt_and_gt(Protocol givenProtocol, String givenClientEndpointProvider,
-                               String givenServerEndpointProvider) throws InterruptedException {
-
-        Double lt = 500d;
-        Double gt = 2000d;
-
-        // Setting attribute
-        WriteAttributesResponse writeAttributeResponse = server.send(currentRegistration,
-                new WriteAttributesRequest(TEST_OBJECT, 0, INTEGER_VALUE,
-                        new LwM2mAttributeSet(LwM2mAttributes.create(LwM2mAttributes.LESSER_THAN, lt),
-                                LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN, gt))));
-        assertThat(writeAttributeResponse).isSuccess();
-
-        // Setting observe relation
-        ObserveResponse observeResponse = server.send(currentRegistration,
-                new ObserveRequest(TEST_OBJECT, 0, INTEGER_VALUE));
-        assertThat(observeResponse).isSuccess();
-
-        SingleObservation observation = observeResponse.getObservation();
-        assertThat(observation.getPath()).isEqualTo(new LwM2mPath(TEST_OBJECT, 0, INTEGER_VALUE));
-
-        server.waitForNewObservation(observation);
-
-        // Changing value using WriteRequest (between lt and gt)
-        LwM2mResponse writeResponse = server.send(currentRegistration,
-                new WriteRequest(TEST_OBJECT, 0, INTEGER_VALUE, 1200l));
-        assertThat(writeResponse).isSuccess();
-
-        // Verify Behavior
-        server.ensureNoNotification(observation, 500, TimeUnit.MILLISECONDS);
-
-        // Changing value which crosses the lt limit
-        writeResponse = server.send(currentRegistration, new WriteRequest(TEST_OBJECT, 0, INTEGER_VALUE, 400));
-        assertThat(writeResponse).isSuccess();
-
-        // Verify Behavior
-        ObserveResponse response = server.waitForNotificationOf(observation);
-        assertThat(response.getContent()).isEqualTo(LwM2mSingleResource.newIntegerResource(INTEGER_VALUE, 400));
-        assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
-        server.ensureNoNotification(observation, 500, TimeUnit.MILLISECONDS);
-    }
-
-    @TestAllTransportLayer
     public void test_st_with_positive_gap_on_integer_resource(Protocol givenProtocol,
             String givenClientEndpointProvider, String givenServerEndpointProvider) throws InterruptedException {
 
@@ -375,7 +349,7 @@ public class WriteAttributeObserveTest {
     }
 
     @TestAllTransportLayer
-    public void test_with_positive_gap_on_float_resource(Protocol givenProtocol, String givenClientEndpointProvider,
+    public void test_st_with_positive_gap_on_float_resource(Protocol givenProtocol, String givenClientEndpointProvider,
             String givenServerEndpointProvider) throws InterruptedException {
 
         test_first_change_didnt_trigger_then_second_did(givenServerEndpointProvider, //
@@ -390,7 +364,7 @@ public class WriteAttributeObserveTest {
     }
 
     @TestAllTransportLayer
-    public void test_with_positive_gap_on_unsigned_integer_resource(Protocol givenProtocol,
+    public void test_st_with_positive_gap_on_unsigned_integer_resource(Protocol givenProtocol,
             String givenClientEndpointProvider, String givenServerEndpointProvider) throws InterruptedException {
 
         test_first_change_didnt_trigger_then_second_did(givenServerEndpointProvider, //
@@ -422,7 +396,7 @@ public class WriteAttributeObserveTest {
     }
 
     @TestAllTransportLayer
-    public void test_with_negative_gap_on_float_resource(Protocol givenProtocol, String givenClientEndpointProvider,
+    public void test_st_with_negative_gap_on_float_resource(Protocol givenProtocol, String givenClientEndpointProvider,
             String givenServerEndpointProvider) throws InterruptedException {
 
         test_first_change_didnt_trigger_then_second_did(givenServerEndpointProvider, //
@@ -437,7 +411,7 @@ public class WriteAttributeObserveTest {
     }
 
     @TestAllTransportLayer
-    public void test_with_negative_gap_on_unsigned_integer_resource(Protocol givenProtocol,
+    public void test_st_with_negative_gap_on_unsigned_integer_resource(Protocol givenProtocol,
             String givenClientEndpointProvider, String givenServerEndpointProvider) throws InterruptedException {
 
         test_first_change_didnt_trigger_then_second_did(givenServerEndpointProvider, //
@@ -451,214 +425,6 @@ public class WriteAttributeObserveTest {
                 // Second change value which is big enough
                 LwM2mSingleResource.newUnsignedIntegerResource(UNSIGNED_INTEGER_VALUE,
                         ULong.valueOf("9223372036854775758")));
-    }
-
-    @Ignore
-    @TestAllTransportLayer
-    public void test_epmin(Protocol givenProtocol, String givenClientEndpointProvider,
-                           String givenServerEndpointProvider) throws InterruptedException {
-
-        Long epmin = 5l; // seconds
-
-        // Setting attribute
-        WriteAttributesResponse writeAttributeResponse = server.send(currentRegistration,
-                new WriteAttributesRequest(TEST_OBJECT, 0, INTEGER_VALUE, new LwM2mAttributeSet( //
-                        LwM2mAttributes.create(LwM2mAttributes.EVALUATE_MAXIMUM_PERIOD, epmin) //
-                )));
-        assertThat(writeAttributeResponse).isSuccess();
-
-        // Setting observe relation
-        ObserveResponse observeResponse = server.send(currentRegistration,
-                new ObserveRequest(TEST_OBJECT, 0, INTEGER_VALUE));
-        assertThat(observeResponse).isSuccess();
-        SingleObservation observation = observeResponse.getObservation();
-        assertThat(observation.getPath()).isEqualTo(new LwM2mPath(TEST_OBJECT, 0, INTEGER_VALUE));
-        server.waitForNewObservation(observation);
-
-        // Verify Behavior
-        server.ensureNoNotification(observation, (int) (TimeUnit.MILLISECONDS.convert(epmin, TimeUnit.SECONDS)),
-                TimeUnit.MILLISECONDS);
-        ObserveResponse response = server.waitForNotificationOf(observation,
-                (int) (TimeUnit.MILLISECONDS.convert(epmin, TimeUnit.SECONDS) * 0.5), TimeUnit.MILLISECONDS);
-        assertThat(response.getContent()).isEqualTo(LwM2mSingleResource.newIntegerResource(INTEGER_VALUE, 1024l));
-        assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
-    }
-
-    @Ignore
-    @TestAllTransportLayer
-    public void test_epmax(Protocol givenProtocol, String givenClientEndpointProvider,
-                           String givenServerEndpointProvider) throws InterruptedException {
-
-        Long epmax = 10l; // seconds
-
-        // Setting attribute
-        WriteAttributesResponse writeAttributeResponse = server.send(currentRegistration,
-                new WriteAttributesRequest(TEST_OBJECT, 0, INTEGER_VALUE, new LwM2mAttributeSet( //
-                        LwM2mAttributes.create(LwM2mAttributes.EVALUATE_MAXIMUM_PERIOD, epmax) //
-                )));
-        assertThat(writeAttributeResponse).isSuccess();
-
-        // Setting observe relation
-        ObserveResponse observeResponse = server.send(currentRegistration,
-                new ObserveRequest(TEST_OBJECT, 0, INTEGER_VALUE));
-        assertThat(observeResponse).isSuccess();
-        SingleObservation observation = observeResponse.getObservation();
-        assertThat(observation.getPath()).isEqualTo(new LwM2mPath(TEST_OBJECT, 0, INTEGER_VALUE));
-        server.waitForNewObservation(observation);
-
-        // Verify Behavior
-        server.ensureNoNotification(observation, (int) (TimeUnit.MILLISECONDS.convert(epmax, TimeUnit.SECONDS)),
-                TimeUnit.MILLISECONDS);
-        ObserveResponse response = server.waitForNotificationOf(observation,
-                (int) (TimeUnit.MILLISECONDS.convert(epmax, TimeUnit.SECONDS) * 1.5), TimeUnit.MILLISECONDS);
-        assertThat(response.getContent()).isEqualTo(LwM2mSingleResource.newIntegerResource(INTEGER_VALUE, 1024l));
-        assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
-    }
-
-    @TestAllTransportLayer
-    public void test_several_attributes(Protocol givenProtocol, String givenClientEndpointProvider,
-                                        String givenServerEndpointProvider) throws InterruptedException {
-
-        Double lt = 500d;
-        Double gt = 2000d;
-        Long pmax = 10l;
-
-        // Setting attribute
-        WriteAttributesResponse writeAttributeResponse = server.send(currentRegistration,
-                new WriteAttributesRequest(TEST_OBJECT, 0, INTEGER_VALUE,
-                        new LwM2mAttributeSet(LwM2mAttributes.create(LwM2mAttributes.LESSER_THAN, lt),
-                                LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN, gt),
-                                LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, pmax))));
-        assertThat(writeAttributeResponse).isSuccess();
-
-        // Setting observe relation
-        ObserveResponse observeResponse = server.send(currentRegistration,
-                new ObserveRequest(TEST_OBJECT, 0, INTEGER_VALUE));
-        assertThat(observeResponse).isSuccess();
-
-        SingleObservation observation = observeResponse.getObservation();
-        assertThat(observation.getPath()).isEqualTo(new LwM2mPath(TEST_OBJECT, 0, INTEGER_VALUE));
-
-        server.waitForNewObservation(observation);
-
-        // Changing value using WriteRequest
-        LwM2mResponse writeResponse = server.send(currentRegistration,
-                new WriteRequest(TEST_OBJECT, 0, INTEGER_VALUE, 1200));
-        assertThat(writeResponse).isSuccess();
-
-        // Verify Behavior
-        server.ensureNoNotification(observation, 500, TimeUnit.MILLISECONDS);
-
-        // Changing value which crosses the lt limit
-        writeResponse = server.send(currentRegistration, new WriteRequest(TEST_OBJECT, 0, INTEGER_VALUE, 400));
-        assertThat(writeResponse).isSuccess();
-
-        // Verify Behavior
-        ObserveResponse response = server.waitForNotificationOf(observation,
-                (int) (TimeUnit.MILLISECONDS.convert(pmax, TimeUnit.SECONDS) * 0.3), TimeUnit.MILLISECONDS);
-        assertThat(response.getContent()).isEqualTo(LwM2mSingleResource.newIntegerResource(INTEGER_VALUE, 400));
-        assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
-        server.ensureNoNotification(observation, 500, TimeUnit.MILLISECONDS);
-    }
-
-    @TestAllTransportLayer
-    public void test_pmin_equals_pmax(Protocol givenProtocol, String givenClientEndpointProvider,
-                                      String givenServerEndpointProvider) throws InterruptedException {
-
-        Long pmin = 1l; // seconds
-        Long pmax = 1l; // seconds
-
-        // Setting attribute
-        WriteAttributesResponse writeAttributeResponse = server.send(currentRegistration,
-                new WriteAttributesRequest(TEST_OBJECT, 0, INTEGER_VALUE,
-                        new LwM2mAttributeSet(LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, pmin),
-                                LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, pmax))));
-
-        // Verify write attribute response
-        assertThat(writeAttributeResponse).isSuccess();
-
-        // Setting observe
-        ObserveResponse observeResponse = server.send(currentRegistration,
-                new ObserveRequest(TEST_OBJECT, 0, INTEGER_VALUE));
-        assertThat(observeResponse).isSuccess();
-
-        SingleObservation observation = observeResponse.getObservation();
-        assertThat(observation.getPath()).isEqualTo(new LwM2mPath(TEST_OBJECT, 0, INTEGER_VALUE));
-        server.waitForNewObservation(observation);
-
-        // Trigger new notification
-        LwM2mResponse writeResponse = server.send(currentRegistration,
-                new WriteRequest(TEST_OBJECT, 0, INTEGER_VALUE, 30));
-        assertThat(writeResponse).isSuccess();
-
-        // Verify
-        server.ensureNoNotification(observation, (int) (TimeUnit.MILLISECONDS.convert(pmin, TimeUnit.SECONDS) * 0.8),
-                TimeUnit.MILLISECONDS);
-        ObserveResponse response = server.waitForNotificationOf(observation,
-                (int) (TimeUnit.MILLISECONDS.convert(pmin, TimeUnit.SECONDS) * 0.3), TimeUnit.MILLISECONDS);
-        assertThat(response.getContent()).isEqualTo(LwM2mSingleResource.newIntegerResource(INTEGER_VALUE, 30));
-        assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
-    }
-
-    @TestAllTransportLayer
-    public void test_objectId_inheritance(Protocol givenProtocol, String givenClientEndpointProvider,
-                                          String givenServerEndpointProvider) throws InterruptedException {
-
-        Double lt = 500d;
-
-        // Set attribute on objectId
-        WriteAttributesResponse writeAttributeResponse = server.send(currentRegistration,
-                new WriteAttributesRequest(TEST_OBJECT, new LwM2mAttributeSet( //
-                        LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 150l) //
-                )));
-        assertThat(writeAttributeResponse).isSuccess();
-
-        // Set observe relation on TEST_OBJECT
-        ObserveResponse observeResponse = server.send(currentRegistration,
-                new ObserveRequest(TEST_OBJECT, 0, INTEGER_VALUE));
-        assertThat(observeResponse).isSuccess();
-        SingleObservation observation = observeResponse.getObservation();
-        assertThat(observation.getPath()).isEqualTo(new LwM2mPath(TEST_OBJECT, 0, INTEGER_VALUE));
-        server.waitForNewObservation(observation);
-
-        // Change value which doesn't cross the less_than limit (initial value 1024)
-        LwM2mResponse writeResponse = server.send(currentRegistration,
-                new WriteRequest(TEST_OBJECT, 0, INTEGER_VALUE, 800l));
-        assertThat(writeResponse).isSuccess();
-
-        // Verify Behavior
-        server.ensureNoNotification(observation, 500, TimeUnit.MILLISECONDS);
-    }
-
-
-    @TestAllTransportLayer
-    public void test_objectInstanceId_inheritance(Protocol givenProtocol, String givenClientEndpointProvider,
-                                                  String givenServerEndpointProvider) throws InterruptedException {
-
-        Long pmax = 5l;
-
-        // Set attribute
-        WriteAttributesResponse writeAttributeResponse = server.send(currentRegistration,
-                new WriteAttributesRequest(TEST_OBJECT, 0, new LwM2mAttributeSet( //
-                        LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, pmax) //
-                )));
-        assertThat(writeAttributeResponse).isSuccess();
-
-        // Set observe relation on TEST_OBJECT
-        ObserveResponse observeResponse = server.send(currentRegistration,
-                new ObserveRequest(TEST_OBJECT, 0, INTEGER_VALUE));
-        assertThat(observeResponse).isSuccess();
-        SingleObservation observation = observeResponse.getObservation();
-        assertThat(observation.getPath()).isEqualTo(new LwM2mPath(TEST_OBJECT, 0, INTEGER_VALUE));
-        server.waitForNewObservation(observation);
-
-        // Verify Behavior
-        server.ensureNoNotification(observation, (int) (TimeUnit.MILLISECONDS.convert(pmax, TimeUnit.SECONDS) * 0.8),
-                TimeUnit.MILLISECONDS);
-        ObserveResponse response = server.waitForNotificationOf(observation,
-                (int) (TimeUnit.MILLISECONDS.convert(pmax, TimeUnit.SECONDS) * 0.3), TimeUnit.MILLISECONDS);
-        assertThat(response.getContent()).isEqualTo(LwM2mSingleResource.newIntegerResource(INTEGER_VALUE, 1024l));
-        assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
     }
 
     protected void test_first_change_didnt_trigger_then_second_did(String givenServerEndpointProvider,
@@ -699,6 +465,243 @@ public class WriteAttributeObserveTest {
     }
 
     @TestAllTransportLayer
+    public void test_lt_pmax_attributes(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InterruptedException {
+
+        Double lt = 500d;
+        Long pmax = 1l;
+
+        // Setting attribute
+        WriteAttributesResponse writeAttributeResponse = server.send(currentRegistration,
+                new WriteAttributesRequest(TEST_OBJECT, 0, INTEGER_VALUE, new LwM2mAttributeSet( //
+                        LwM2mAttributes.create(LwM2mAttributes.LESSER_THAN, lt), //
+                        LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, pmax))));
+        assertThat(writeAttributeResponse).isSuccess();
+
+        // Setting observe relation
+        ObserveResponse observeResponse = server.send(currentRegistration,
+                new ObserveRequest(TEST_OBJECT, 0, INTEGER_VALUE));
+        assertThat(observeResponse).isSuccess();
+        SingleObservation observation = observeResponse.getObservation();
+        assertThat(observation.getPath()).isEqualTo(new LwM2mPath(TEST_OBJECT, 0, INTEGER_VALUE));
+        server.waitForNewObservation(observation);
+
+        // Change value which should NOT trigger notification (initial value is 1024)
+        LwM2mResponse writeResponse = server.send(currentRegistration,
+                new WriteRequest(TEST_OBJECT, 0, INTEGER_VALUE, 1200));
+        assertThat(writeResponse).isSuccess();
+
+        // Verify Behavior
+        server.ensureNoNotification(observation, 500, TimeUnit.MILLISECONDS);
+
+        // Changing value which crosses the lt limit
+        writeResponse = server.send(currentRegistration, new WriteRequest(TEST_OBJECT, 0, INTEGER_VALUE, 400));
+        assertThat(writeResponse).isSuccess();
+
+        // Verify Behavior
+        ObserveResponse response = server.waitForNotificationOf(observation,
+                (int) (TimeUnit.MILLISECONDS.convert(pmax, TimeUnit.SECONDS) * 0.3), TimeUnit.MILLISECONDS);
+        assertThat(response.getContent()).isEqualTo(LwM2mSingleResource.newIntegerResource(INTEGER_VALUE, 400));
+
+        // Wait for pmax and ensure new notification is raised
+        server.ensureNoNotification(observation, (int) (TimeUnit.MILLISECONDS.convert(pmax, TimeUnit.SECONDS) * 0.8),
+                TimeUnit.MILLISECONDS);
+        response = server.waitForNotificationOf(observation,
+                (int) (TimeUnit.MILLISECONDS.convert(pmax, TimeUnit.SECONDS) * 0.3), TimeUnit.MILLISECONDS);
+    }
+
+    @TestAllTransportLayer
+    public void test_lt_gt_st_attributes_on_integer_resource(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InvalidLwM2mPathException, InterruptedException {
+        test_lt_gt_st_attributes(givenServerEndpointProvider,
+                // target LWM2M node
+                new LwM2mPath(TEST_OBJECT, 0, INTEGER_VALUE),
+                // Initial resource value
+                LwM2mSingleResource.newIntegerResource(INTEGER_VALUE, 1024l),
+                // LT
+                1000d,
+                // GT
+                1201d,
+                // ST
+                100d,
+                // value which should not trigger anything
+                LwM2mSingleResource.newIntegerResource(INTEGER_VALUE, 1050l),
+                // value which should LT only
+                LwM2mSingleResource.newIntegerResource(INTEGER_VALUE, 990l),
+                // value which should ST only
+                LwM2mSingleResource.newIntegerResource(INTEGER_VALUE, 1100l),
+                // value which should GT only
+                LwM2mSingleResource.newIntegerResource(INTEGER_VALUE, 1210l));
+    }
+
+    @TestAllTransportLayer
+    public void test_lt_gt_st_attributes_on_float_resource(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InvalidLwM2mPathException, InterruptedException {
+        test_lt_gt_st_attributes(givenServerEndpointProvider,
+                // target LWM2M node
+                new LwM2mPath(TEST_OBJECT, 0, FLOAT_VALUE),
+                // Initial resource value
+                LwM2mSingleResource.newFloatResource(FLOAT_VALUE, 1024d),
+                // LT
+                1000d,
+                // GT
+                1201d,
+                // ST
+                100d,
+                // value which should not trigger anything
+                LwM2mSingleResource.newFloatResource(FLOAT_VALUE, 1050d),
+                // value which should LT only
+                LwM2mSingleResource.newFloatResource(FLOAT_VALUE, 990d),
+                // value which should ST only
+                LwM2mSingleResource.newFloatResource(FLOAT_VALUE, 1100d),
+                // value which should GT only
+                LwM2mSingleResource.newFloatResource(FLOAT_VALUE, 1210d));
+    }
+
+    @TestAllTransportLayer
+    public void test_lt_gt_st_attributes_on_unsigned_integer_resource(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws NumberFormatException, InvalidLwM2mPathException, InterruptedException {
+        test_lt_gt_st_attributes(givenServerEndpointProvider,
+                // target LWM2M node
+                new LwM2mPath(TEST_OBJECT, 0, UNSIGNED_INTEGER_VALUE),
+                // Initial resource value
+                LwM2mSingleResource.newUnsignedIntegerResource(UNSIGNED_INTEGER_VALUE, ULong.valueOf("1024")),
+                // LT
+                1000d,
+                // GT
+                1201d,
+                // ST
+                100d,
+                // value which should not trigger anything
+                LwM2mSingleResource.newUnsignedIntegerResource(UNSIGNED_INTEGER_VALUE, ULong.valueOf("1050")),
+                // value which should LT only
+                LwM2mSingleResource.newUnsignedIntegerResource(UNSIGNED_INTEGER_VALUE, ULong.valueOf("990")),
+                // value which should ST only
+                LwM2mSingleResource.newUnsignedIntegerResource(UNSIGNED_INTEGER_VALUE, ULong.valueOf("1100")),
+                // value which should GT only
+                LwM2mSingleResource.newUnsignedIntegerResource(UNSIGNED_INTEGER_VALUE, ULong.valueOf("1210")));
+    }
+
+    private void test_lt_gt_st_attributes(String givenServerEndpointProvider, LwM2mPath targetedResourcePath,
+            LwM2mResource initialValue, Double lt, Double gt, Double st, LwM2mResource noTriggerValue,
+            LwM2mResource triggerLtValue, LwM2mResource triggerStValue, LwM2mResource triggerGtValue)
+            throws InterruptedException {
+
+        // InitValue
+        LwM2mResponse writeResponse = server.send(currentRegistration,
+                new WriteRequest(Mode.REPLACE, ContentFormat.TLV, targetedResourcePath, initialValue));
+        assertThat(writeResponse).isSuccess();
+
+        // Setting attribute
+        WriteAttributesResponse writeAttributeResponse = server.send(currentRegistration,
+                new WriteAttributesRequest(targetedResourcePath, new LwM2mAttributeSet( //
+                        LwM2mAttributes.create(LwM2mAttributes.LESSER_THAN, lt), //
+                        LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN, gt), //
+                        LwM2mAttributes.create(LwM2mAttributes.STEP, st))));
+        assertThat(writeAttributeResponse).isSuccess();
+
+        // Setting observe relation
+        ObserveResponse observeResponse = server.send(currentRegistration, new ObserveRequest(targetedResourcePath));
+        assertThat(observeResponse).isSuccess();
+        SingleObservation observation = observeResponse.getObservation();
+        assertThat(observation.getPath()).isEqualTo(targetedResourcePath);
+        server.waitForNewObservation(observation);
+
+        // Change value which should NOT trigger notification (initial value is 1024)
+        writeResponse = server.send(currentRegistration,
+                new WriteRequest(Mode.REPLACE, ContentFormat.TLV, targetedResourcePath, noTriggerValue));
+        assertThat(writeResponse).isSuccess();
+
+        // Verify Behavior
+        server.ensureNoNotification(observation, 500, TimeUnit.MILLISECONDS);
+
+        // Changing value which crosses the lt limit but NOT fulfill step condition
+        writeResponse = server.send(currentRegistration,
+                new WriteRequest(Mode.REPLACE, ContentFormat.TLV, targetedResourcePath, triggerLtValue));
+        assertThat(writeResponse).isSuccess();
+        ObserveResponse response = server.waitForNotificationOf(observation, 100, TimeUnit.MILLISECONDS);
+        assertThat(response).isSuccess();
+
+        // Changing value which does NOT cross neither gt nor lt but fulfill step condition
+        writeResponse = server.send(currentRegistration,
+                new WriteRequest(Mode.REPLACE, ContentFormat.TLV, targetedResourcePath, triggerStValue));
+        assertThat(writeResponse).isSuccess();
+        response = server.waitForNotificationOf(observation, 100, TimeUnit.MILLISECONDS);
+        assertThat(response).isSuccess();
+
+        // Changing value which crosses the gt limit but NOT fulfill step condition
+        writeResponse = server.send(currentRegistration,
+                new WriteRequest(Mode.REPLACE, ContentFormat.TLV, targetedResourcePath, triggerGtValue));
+        assertThat(writeResponse).isSuccess();
+        response = server.waitForNotificationOf(observation, 100, TimeUnit.MILLISECONDS);
+        assertThat(response).isSuccess();
+
+    }
+
+    @TestAllTransportLayer
+    public void test_object_inheritance(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InterruptedException {
+
+        write_pmax_then_observe_then_wait_for_notification(givenServerEndpointProvider,
+                // Write pmax to this path
+                new LwM2mPath(TEST_OBJECT),
+                // Then observe this path and ensure that pmax behavior is inherited
+                new LwM2mPath(TEST_OBJECT, 0, MULTIPLE_INTEGER_VALUE, 0));
+    }
+
+    @TestAllTransportLayer
+    public void test_object_instance__inheritance(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InterruptedException {
+
+        write_pmax_then_observe_then_wait_for_notification(givenServerEndpointProvider,
+                // Write pmax to this path
+                new LwM2mPath(TEST_OBJECT, 0),
+                // Then observe this path and ensure that pmax behavior is inherited
+                new LwM2mPath(TEST_OBJECT, 0, MULTIPLE_INTEGER_VALUE, 0));
+    }
+
+    @TestAllTransportLayer
+    public void test_resource__inheritance(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InterruptedException {
+
+        write_pmax_then_observe_then_wait_for_notification(givenServerEndpointProvider,
+                // Write pmax to this path
+                new LwM2mPath(TEST_OBJECT, 0, MULTIPLE_INTEGER_VALUE),
+                // Then observe this path and ensure that pmax behavior is inherited
+                new LwM2mPath(TEST_OBJECT, 0, MULTIPLE_INTEGER_VALUE, 0));
+    }
+
+    private void write_pmax_then_observe_then_wait_for_notification(String givenServerEndpointProvider,
+            LwM2mPath pathToWriteAttribute, LwM2mPath pathToObserve) throws InterruptedException {
+
+        Long pmax = 1l; // seconds
+
+        // Set attribute
+        WriteAttributesResponse writeAttributeResponse = server.send(currentRegistration,
+                new WriteAttributesRequest(pathToWriteAttribute, new LwM2mAttributeSet( //
+                        LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, pmax) //
+                )));
+        assertThat(writeAttributeResponse).isSuccess();
+
+        // Set observe relation
+        ObserveResponse observeResponse = server.send(currentRegistration, new ObserveRequest(pathToObserve));
+        assertThat(observeResponse).isSuccess();
+        SingleObservation observation = observeResponse.getObservation();
+        assertThat(observation.getPath()).isEqualTo(pathToObserve);
+        server.waitForNewObservation(observation);
+
+        // Do nothing to trigger notification
+
+        // Verify Behavior
+        server.ensureNoNotification(observation, (int) (TimeUnit.MILLISECONDS.convert(pmax, TimeUnit.SECONDS) * 0.8),
+                TimeUnit.MILLISECONDS);
+        ObserveResponse response = server.waitForNotificationOf(observation,
+                (int) (TimeUnit.MILLISECONDS.convert(pmax, TimeUnit.SECONDS) * 0.3), TimeUnit.MILLISECONDS);
+        assertThat(response).isSuccess();
+    }
+
+    @TestAllTransportLayer
     public void test_invalid_inheritance_raise_exception(Protocol givenProtocol, String givenClientEndpointProvider,
             String givenServerEndpointProvider) throws InterruptedException {
 
@@ -719,7 +722,7 @@ public class WriteAttributeObserveTest {
         // Set observe relation
         ObserveResponse observeResponse = server.send(currentRegistration,
                 new ObserveRequest(new LwM2mPath(TEST_OBJECT, 0, MULTIPLE_INTEGER_VALUE, 0)));
-        assertThat(observeResponse).hasCode(ResponseCode.INTERNAL_SERVER_ERROR);
+        assertThat(observeResponse).hasCode(INTERNAL_SERVER_ERROR);
 
         assertThat(client).hasNoNotificationData();
     }
