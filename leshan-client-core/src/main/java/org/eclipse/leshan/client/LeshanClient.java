@@ -126,14 +126,14 @@ public class LeshanClient implements LwM2mClient {
                 engine);
         createRegistrationUpdateHandler(engine, endpointsManager, bootstrapHandler, objectTree, linkFormatHelper);
 
-        notificationManager = createNotificationManager(objectTree, requestReceiver);
+        notificationManager = createNotificationManager(objectTree, requestReceiver, sharedExecutor);
         endpointsProvider.init(objectTree, requestReceiver, notificationManager, toolbox);
     }
 
     protected NotificationManager createNotificationManager(LwM2mObjectTree objectTree,
-            DownlinkRequestReceiver requestReceiver) {
+            DownlinkRequestReceiver requestReceiver, ScheduledExecutorService sharedExecutor) {
         final NotificationManager notificationManager = new NotificationManager(objectTree, requestReceiver,
-                createNotificationStore(), createNotificationStrategy());
+                createNotificationStore(), createNotificationStrategy(), sharedExecutor);
         this.addObserver(new LwM2mClientObserverAdapter() {
             @Override
             public void onBootstrapStarted(LwM2mServer bsserver, BootstrapRequest request) {
