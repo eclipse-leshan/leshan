@@ -51,15 +51,15 @@ public class NotificationManager {
     private final NotificationDataStore store;
     private final LwM2mObjectTree objectTree;
     private final NotificationStrategy strategy;
-    // TODO write attributes : should be configurable and should be destroyed when needed.
-    private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService executor;
+    private final boolean executorAttached;
 
     public NotificationManager(LwM2mObjectTree objectTree, DownlinkRequestReceiver requestReceiver) {
-        this(objectTree, requestReceiver, new NotificationDataStore(), new DefaultNotificationStrategy());
+        this(objectTree, requestReceiver, new NotificationDataStore(), new DefaultNotificationStrategy(), null);
     }
 
     public NotificationManager(LwM2mObjectTree objectTree, DownlinkRequestReceiver requestReceiver,
-            NotificationDataStore store, NotificationStrategy strategy) {
+            NotificationDataStore store, NotificationStrategy strategy, ScheduledExecutorService executor) {
         Validate.notNull(objectTree);
         Validate.notNull(requestReceiver);
         Validate.notNull(store);
@@ -70,6 +70,13 @@ public class NotificationManager {
         this.store = store;
         this.strategy = strategy;
 
+        if (executor == null) {
+            this.executor = Executors.newSingleThreadScheduledExecutor();
+            this.executorAttached = true;
+        } else {
+            this.executor = executor;
+            this.executorAttached = false;
+        }
         this.objectTree.addListener(new ObjectsListenerAdapter() {
             @Override
             public void objectRemoved(LwM2mObjectEnabler object) {
@@ -244,6 +251,8 @@ public class NotificationManager {
     }
 
     public void destroy() {
-        executor.shutdownNow();
+        if (executorAttached) {
+            executor.shutdownNow();
+        }
     }
 }
