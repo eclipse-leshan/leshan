@@ -28,12 +28,14 @@ import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.resource.NotificationSender;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.servers.LwM2mServer;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.link.lwm2m.attributes.NotificationAttributeTree;
 import org.eclipse.leshan.core.node.LwM2mChildNode;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.response.ObserveResponse;
+import org.eclipse.leshan.core.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,19 +50,25 @@ public class NotificationManager {
     private final DownlinkRequestReceiver receiver;
     private final NotificationDataStore store;
     private final LwM2mObjectTree objectTree;
-    private final NotificationStrategy strategy = new NotificationStrategy();
+    private final NotificationStrategy strategy;
     // TODO write attributes : should be configurable and should be destroyed when needed.
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
     public NotificationManager(LwM2mObjectTree objectTree, DownlinkRequestReceiver requestReceiver) {
-        this(objectTree, requestReceiver, new NotificationDataStore());
+        this(objectTree, requestReceiver, new NotificationDataStore(), new DefaultNotificationStrategy());
     }
 
     public NotificationManager(LwM2mObjectTree objectTree, DownlinkRequestReceiver requestReceiver,
-            NotificationDataStore store) {
-        this.receiver = requestReceiver;
+            NotificationDataStore store, NotificationStrategy strategy) {
+        Validate.notNull(objectTree);
+        Validate.notNull(requestReceiver);
+        Validate.notNull(store);
+        Validate.notNull(strategy);
+
         this.objectTree = objectTree;
+        this.receiver = requestReceiver;
         this.store = store;
+        this.strategy = strategy;
 
         this.objectTree.addListener(new ObjectsListenerAdapter() {
             @Override
@@ -119,7 +127,7 @@ public class NotificationManager {
                 LwM2mChildNode newValue = candidateNotificationToSend.getContent();
 
                 // if criteria doesn't match do not raise any event.
-                if (!strategy.shouldTriggerNotificationBasedOnValueChange(request.getPath(), attributes,
+                if (!strategy.shouldTriggerNotificationBasedOnValueChange(attributes, request.getPath(),
                         notificationData.getLastSentValue(), newValue)) {
                     return;
                 }
@@ -140,7 +148,7 @@ public class NotificationManager {
             // calculate time since last notification
             Long timeSinceLastNotification = TimeUnit.SECONDS
                     .convert(System.nanoTime() - notificationData.getLastSendingTime(), TimeUnit.NANOSECONDS);
-            Long pmin = strategy.getPmin(request.getPath(), attributes);
+            Long pmin = strategy.getAttributeValue(attributes, request.getPath(), LwM2mAttributes.MINIMUM_PERIOD);
             if (timeSinceLastNotification < pmin) {
                 ScheduledFuture<Void> pminTask = executor.schedule(new Callable<Void>() {
                     @Override
@@ -180,26 +188,26 @@ public class NotificationManager {
 
         // Store last sending time if needed
         Long lastSendingTime = null;
-        if (strategy.hasPmin(attributes, path)) {
+        if (strategy.hasAttribute(attributes, path, LwM2mAttributes.MINIMUM_PERIOD)) {
             lastSendingTime = System.nanoTime();
         }
 
         // Store last value sent if needed;
         LwM2mNode lastValue = null;
-        if (strategy.hasCriteriaBasedOnValue(path, attributes)) {
+        if (strategy.hasCriteriaBasedOnValue(attributes, path)) {
             lastValue = newValue;
         }
 
         // Schedule notification for Max Period if needed
         ScheduledFuture<Void> pmaxTask = null;
-        if (strategy.hasPmax(path, attributes)) {
+        if (strategy.hasAttribute(attributes, path, LwM2mAttributes.MAXIMUM_PERIOD)) {
             pmaxTask = executor.schedule(new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
                     sendNotification(server, request, null, attributes, sender);
                     return null;
                 }
-            }, strategy.getPmax(path, attributes), TimeUnit.SECONDS);
+            }, strategy.getAttributeValue(attributes, path, LwM2mAttributes.MAXIMUM_PERIOD), TimeUnit.SECONDS);
         }
 
         // Create State for this observe relation

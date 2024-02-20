@@ -34,8 +34,10 @@ import org.eclipse.leshan.client.endpoint.LwM2mClientEndpoint;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
+import org.eclipse.leshan.client.notification.DefaultNotificationStrategy;
 import org.eclipse.leshan.client.notification.NotificationDataStore;
 import org.eclipse.leshan.client.notification.NotificationManager;
+import org.eclipse.leshan.client.notification.NotificationStrategy;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverAdapter;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverDispatcher;
@@ -131,7 +133,7 @@ public class LeshanClient implements LwM2mClient {
     protected NotificationManager createNotificationManager(LwM2mObjectTree objectTree,
             DownlinkRequestReceiver requestReceiver) {
         final NotificationManager notificationManager = new NotificationManager(objectTree, requestReceiver,
-                createNotificationStore());
+                createNotificationStore(), createNotificationStrategy());
         this.addObserver(new LwM2mClientObserverAdapter() {
             @Override
             public void onBootstrapStarted(LwM2mServer bsserver, BootstrapRequest request) {
@@ -143,6 +145,10 @@ public class LeshanClient implements LwM2mClient {
 
     protected NotificationDataStore createNotificationStore() {
         return new NotificationDataStore();
+    }
+
+    protected NotificationStrategy createNotificationStrategy() {
+        return new DefaultNotificationStrategy();
     }
 
     protected LwM2mRootEnabler createRootEnabler(LwM2mObjectTree tree) {
