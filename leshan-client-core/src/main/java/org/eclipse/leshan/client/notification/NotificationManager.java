@@ -97,7 +97,7 @@ public class NotificationManager {
         if (objectEnabler == null)
             return; // no object enabler : nothing to observe
         NotificationAttributeTree attributes = objectEnabler.getAttributesFor(server);
-        if (attributes != null && attributes.isEmpty())
+        if (attributes != null && !attributes.isEmpty())
             attributes = strategy.selectNotificationsAttributes(request.getPath(), attributes);
 
         // If there is no attributes this is just classic observe so nothing to do.
