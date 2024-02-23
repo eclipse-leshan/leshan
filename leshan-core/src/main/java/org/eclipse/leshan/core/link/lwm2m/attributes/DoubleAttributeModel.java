@@ -27,9 +27,9 @@ import org.eclipse.leshan.core.parser.StringParser;
  */
 public class DoubleAttributeModel extends LwM2mAttributeModel<Double> {
 
-    public DoubleAttributeModel(String coRELinkParam, Attachment attachment, Set<AssignationLevel> assignationLevels,
-            AccessMode accessMode, AttributeClass attributeClass) {
-        super(coRELinkParam, attachment, assignationLevels, accessMode, attributeClass);
+    public DoubleAttributeModel(String coRELinkParam, Set<Attachment> attachment, AccessMode accessMode,
+            AttributeClass attributeClass) {
+        super(coRELinkParam, attachment, accessMode, attributeClass);
     }
 
     @Override

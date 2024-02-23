@@ -30,16 +30,14 @@ import org.eclipse.leshan.core.node.LwM2mPath;
  */
 public abstract class LwM2mAttributeModel<T> extends AttributeModel<LwM2mAttribute<T>> {
 
-    private final Attachment attachment;
-    private final Set<AssignationLevel> assignationLevels;
+    private final Set<Attachment> attachment;
     private final AccessMode accessMode;
     private final AttributeClass attributeClass;
 
-    protected LwM2mAttributeModel(String coRELinkParam, Attachment attachment, Set<AssignationLevel> assignationLevels,
-            AccessMode accessMode, AttributeClass attributeClass) {
+    protected LwM2mAttributeModel(String coRELinkParam, Set<Attachment> attachment, AccessMode accessMode,
+            AttributeClass attributeClass) {
         super(coRELinkParam);
         this.attachment = attachment;
-        this.assignationLevels = assignationLevels;
         this.accessMode = accessMode;
         this.attributeClass = attributeClass;
     }
@@ -56,11 +54,7 @@ public abstract class LwM2mAttributeModel<T> extends AttributeModel<LwM2mAttribu
         return accessMode;
     }
 
-    public Set<AssignationLevel> getAssignationLevels() {
-        return assignationLevels;
-    }
-
-    public Attachment getAttachment() {
+    public Set<Attachment> getAttachment() {
         return attachment;
     }
 
@@ -92,10 +86,10 @@ public abstract class LwM2mAttributeModel<T> extends AttributeModel<LwM2mAttribu
     }
 
     /**
-     * return true if the attribute can be assigned to the given assignation level.
+     * return true if the attribute can be assigned to the given level.
      */
-    public boolean canBeAssignedTo(AssignationLevel assignation) {
-        return getAssignationLevels().contains(assignation);
+    public boolean canBeAttachedTo(Attachment attachement) {
+        return getAttachment().contains(attachement);
     }
 
     /**
@@ -104,9 +98,9 @@ public abstract class LwM2mAttributeModel<T> extends AttributeModel<LwM2mAttribu
      * @return null is the attribute can be applied to the LWM2M node identified by the given path.
      */
     public String getApplicabilityError(LwM2mPath path, LwM2mModel model) {
-        if (!canBeAssignedTo(AssignationLevel.fromPath(path))) {
-            return String.format("%s attribute is only applicable to %s, and so can not be assigned to %s", getName(),
-                    getAssignationLevels(), path);
+        if (!canBeAttachedTo(Attachment.fromPath(path))) {
+            return String.format("%s attribute is only applicable to %s, and so can not be attached to %s", getName(),
+                    getAttachment(), path);
         }
         return null;
     }

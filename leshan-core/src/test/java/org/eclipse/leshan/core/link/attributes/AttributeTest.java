@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.eclipse.leshan.core.LwM2m.Version;
-import org.eclipse.leshan.core.link.lwm2m.attributes.AssignationLevel;
+import org.eclipse.leshan.core.link.lwm2m.attributes.Attachment;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.junit.jupiter.api.Test;
@@ -33,7 +33,7 @@ public class AttributeTest {
                 new Version("1.0"));
         assertEquals("ver", verAttribute.getName());
         assertEquals(new Version("1.0"), verAttribute.getValue());
-        assertTrue(verAttribute.canBeAssignedTo(AssignationLevel.OBJECT));
+        assertTrue(verAttribute.canBeAttachedTo(Attachment.OBJECT));
         assertFalse(verAttribute.isWritable());
     }
 }

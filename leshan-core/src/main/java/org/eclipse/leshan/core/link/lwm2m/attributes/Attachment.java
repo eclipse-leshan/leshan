@@ -16,13 +16,35 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.lwm2m.attributes;
 
+import org.eclipse.leshan.core.node.LwM2mPath;
+
 /**
  * The attachment level of an LwM2m attribute.
  * <p>
- * This indicates the level (object, instance or resource) where an attribute can be applied. E.g. the 'pmin' attribute
- * can only be applied on the Resource level, but it can be assigned on all levels. 'pmin' attributes that are assigned
- * to the object or instance level are then inherited by all resources that don't have their own 'pmin' attribute.
+ * The Level (Object, Object Instance, Resource, Resource Instance) to which an Attribute is attached.
+ * <p>
+ * In LWM2M v1.1.1, there is some confusion between assignation level and attachement. This is attachement in a LWM2M
+ * v1.2.1 meaning.
+ *
+ * @see <a href="https://github.com/eclipse-leshan/leshan/issues/1588">Why we are using LWM2M v1.2.1 wording</a>
+ *
  */
 public enum Attachment {
-    ROOT, OBJECT, OBJECT_INSTANCE, RESOURCE,
+    ROOT, OBJECT, OBJECT_INSTANCE, RESOURCE, RESOURCE_INTANCE;
+
+    public static Attachment fromPath(LwM2mPath path) {
+        Attachment attachement = null;
+        if (path.isRoot()) {
+            attachement = Attachment.ROOT;
+        } else if (path.isObject()) {
+            attachement = Attachment.OBJECT;
+        } else if (path.isObjectInstance()) {
+            attachement = Attachment.OBJECT_INSTANCE;
+        } else if (path.isResource()) {
+            attachement = Attachment.RESOURCE;
+        } else if (path.isResourceInstance()) {
+            attachement = Attachment.RESOURCE_INTANCE;
+        }
+        return attachement;
+    }
 }

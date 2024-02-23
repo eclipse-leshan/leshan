@@ -126,16 +126,12 @@ public class LwM2mAttribute<T> implements Attribute {
         }
     }
 
-    public Attachment getAttachment() {
-        return model.getAttachment();
-    }
-
     public boolean isWritable() {
         return model.getAccessMode() == AccessMode.W || model.getAccessMode() == AccessMode.RW;
     }
 
-    public boolean canBeAssignedTo(AssignationLevel assignationLevel) {
-        return model.canBeAssignedTo(assignationLevel);
+    public boolean canBeAttachedTo(Attachment attachement) {
+        return model.canBeAttachedTo(attachement);
     }
 
     @Override

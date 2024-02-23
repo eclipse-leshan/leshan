@@ -24,9 +24,9 @@ import org.eclipse.leshan.core.parser.StringParser;
  */
 public class PositiveLongAttributeModel extends LwM2mAttributeModel<Long> {
 
-    public PositiveLongAttributeModel(String coRELinkParam, Attachment attachment,
-            Set<AssignationLevel> assignationLevels, AccessMode accessMode, AttributeClass attributeClass) {
-        super(coRELinkParam, attachment, assignationLevels, accessMode, attributeClass);
+    public PositiveLongAttributeModel(String coRELinkParam, Set<Attachment> attachment, AccessMode accessMode,
+            AttributeClass attributeClass) {
+        super(coRELinkParam, attachment, accessMode, attributeClass);
     }
 
     @Override

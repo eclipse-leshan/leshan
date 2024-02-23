@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.lwm2m.attributes;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -102,30 +101,14 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
     }
 
     // TODO not sure we still need this function
-    public void validate(AssignationLevel assignationLevel) {
+    public void validate(Attachment attachment) {
         // Can all attributes be assigned to this level?
         for (LwM2mAttribute<?> attr : getLwM2mAttributes()) {
-            if (!attr.canBeAssignedTo(assignationLevel)) {
-                throw new IllegalArgumentException(String.format("Attribute '%s' cannot be assigned to level %s",
-                        attr.getName(), assignationLevel.name()));
+            if (!attr.canBeAttachedTo(attachment)) {
+                throw new IllegalArgumentException(String.format("Attribute '%s' cannot be attached to level %s",
+                        attr.getName(), attachment.name()));
             }
         }
-    }
-
-    /**
-     * Returns a new AttributeSet, containing only the attributes that have a matching Attachment level.
-     *
-     * @param attachment the Attachment level to filter by
-     * @return a new {@link LwM2mAttributeSet} containing the filtered attributes
-     */
-    public LwM2mAttributeSet filter(Attachment attachment) {
-        List<LwM2mAttribute<?>> attrs = new ArrayList<>();
-        for (LwM2mAttribute<?> attr : getLwM2mAttributes()) {
-            if (attr.getAttachment() == attachment) {
-                attrs.add(attr);
-            }
-        }
-        return new LwM2mAttributeSet(attrs);
     }
 
     /**

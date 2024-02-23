@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.eclipse.leshan.core.LwM2m.Version;
-import org.eclipse.leshan.core.link.lwm2m.attributes.AssignationLevel;
+import org.eclipse.leshan.core.link.lwm2m.attributes.Attachment;
 import org.eclipse.leshan.core.link.lwm2m.attributes.DefaultLwM2mAttributeParser;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
@@ -139,7 +139,7 @@ public class AttributeSetTest {
                 LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, 60L));
         Collection<Attribute> attributes = sut.asCollection();
         assertEquals(2, attributes.size());
-        sut.validate(AssignationLevel.RESOURCE);
+        sut.validate(Attachment.RESOURCE);
     }
 
     @Test
@@ -151,7 +151,7 @@ public class AttributeSetTest {
                     LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, 60L));
 
             // OBJECT_VERSION cannot be assigned on resource level
-            sut.validate(AssignationLevel.RESOURCE);
+            sut.validate(Attachment.RESOURCE);
         });
     }
 }

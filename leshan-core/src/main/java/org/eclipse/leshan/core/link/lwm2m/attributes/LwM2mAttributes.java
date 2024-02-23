@@ -32,8 +32,7 @@ public final class LwM2mAttributes {
     // dim
     public static final LwM2mAttributeModel<Long> DIMENSION = new PositiveLongAttributeModel(//
             "dim", //
-            Attachment.RESOURCE, //
-            EnumSet.of(AssignationLevel.RESOURCE), //
+            EnumSet.of(Attachment.RESOURCE), //
             AccessMode.R, //
             AttributeClass.PROPERTIES) {
         @Override
@@ -63,8 +62,7 @@ public final class LwM2mAttributes {
     // ssid
     public static final LwM2mAttributeModel<Long> SHORT_SERVER_ID = new PositiveLongAttributeModel(//
             "ssid", //
-            Attachment.OBJECT_INSTANCE, //
-            EnumSet.of(AssignationLevel.OBJECT_INSTANCE), //
+            EnumSet.of(Attachment.OBJECT_INSTANCE), //
             AccessMode.R, //
             AttributeClass.PROPERTIES) {
         @Override
@@ -98,8 +96,7 @@ public final class LwM2mAttributes {
     // uri
     public static final LwM2mAttributeModel<String> SERVER_URI = new StringAttributeModel(//
             "uri", //
-            Attachment.OBJECT_INSTANCE, //
-            EnumSet.of(AssignationLevel.OBJECT_INSTANCE), //
+            EnumSet.of(Attachment.OBJECT_INSTANCE), //
             AccessMode.R, //
             AttributeClass.PROPERTIES) {
 
@@ -125,9 +122,7 @@ public final class LwM2mAttributes {
     // See : https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/563
     public static final LwM2mAttributeModel<Long> MINIMUM_PERIOD = new PositiveLongAttributeModel(//
             "pmin", //
-            Attachment.RESOURCE, //
-            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.OBJECT_INSTANCE, AssignationLevel.RESOURCE,
-                    AssignationLevel.RESOURCE_INTANCE), //
+            EnumSet.of(Attachment.OBJECT, Attachment.OBJECT_INSTANCE, Attachment.RESOURCE, Attachment.RESOURCE_INTANCE), //
             AccessMode.RW, //
             AttributeClass.NOTIFICATION) {
         @Override
@@ -154,9 +149,7 @@ public final class LwM2mAttributes {
     // See : https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/563
     public static final LwM2mAttributeModel<Long> MAXIMUM_PERIOD = new PositiveLongAttributeModel( //
             "pmax", //
-            Attachment.RESOURCE, //
-            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.OBJECT_INSTANCE, AssignationLevel.RESOURCE,
-                    AssignationLevel.RESOURCE_INTANCE), //
+            EnumSet.of(Attachment.OBJECT, Attachment.OBJECT_INSTANCE, Attachment.RESOURCE, Attachment.RESOURCE_INTANCE), //
             AccessMode.RW, //
             AttributeClass.NOTIFICATION) {
         @Override
@@ -183,8 +176,7 @@ public final class LwM2mAttributes {
     // See : https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/563
     public static final LwM2mAttributeModel<Double> GREATER_THAN = new DoubleAttributeModel(//
             "gt", //
-            Attachment.RESOURCE, //
-            EnumSet.of(AssignationLevel.RESOURCE, AssignationLevel.RESOURCE_INTANCE), //
+            EnumSet.of(Attachment.RESOURCE, Attachment.RESOURCE_INTANCE), //
             AccessMode.RW, //
             AttributeClass.NOTIFICATION) {
         @Override
@@ -216,8 +208,7 @@ public final class LwM2mAttributes {
     // See : https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/563
     public static final LwM2mAttributeModel<Double> LESSER_THAN = new DoubleAttributeModel( //
             "lt", //
-            Attachment.RESOURCE, //
-            EnumSet.of(AssignationLevel.RESOURCE, AssignationLevel.RESOURCE_INTANCE), //
+            EnumSet.of(Attachment.RESOURCE, Attachment.RESOURCE_INTANCE), //
             AccessMode.RW, //
             AttributeClass.NOTIFICATION) {
         @Override
@@ -247,8 +238,7 @@ public final class LwM2mAttributes {
     // st
     public static final LwM2mAttributeModel<Double> STEP = new PositiveDoubleAttributeModel(//
             "st", //
-            Attachment.RESOURCE, //
-            EnumSet.of(AssignationLevel.RESOURCE, AssignationLevel.RESOURCE_INTANCE), //
+            EnumSet.of(Attachment.RESOURCE, Attachment.RESOURCE_INTANCE), //
             AccessMode.RW, //
             AttributeClass.NOTIFICATION) {
         @Override
@@ -280,9 +270,7 @@ public final class LwM2mAttributes {
     // See : https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/563
     public static final LwM2mAttributeModel<Long> EVALUATE_MINIMUM_PERIOD = new PositiveLongAttributeModel(//
             "epmin", //
-            Attachment.RESOURCE, //
-            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.OBJECT_INSTANCE, AssignationLevel.RESOURCE,
-                    AssignationLevel.RESOURCE_INTANCE), //
+            EnumSet.of(Attachment.OBJECT, Attachment.OBJECT_INSTANCE, Attachment.RESOURCE, Attachment.RESOURCE_INTANCE), //
             AccessMode.RW, //
             AttributeClass.NOTIFICATION) {
         @Override
@@ -309,9 +297,7 @@ public final class LwM2mAttributes {
     // See : https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/563
     public static final LwM2mAttributeModel<Long> EVALUATE_MAXIMUM_PERIOD = new PositiveLongAttributeModel( //
             "epmax", //
-            Attachment.RESOURCE,
-            EnumSet.of(AssignationLevel.OBJECT, AssignationLevel.OBJECT_INSTANCE, AssignationLevel.RESOURCE,
-                    AssignationLevel.RESOURCE_INTANCE), //
+            EnumSet.of(Attachment.OBJECT, Attachment.OBJECT_INSTANCE, Attachment.RESOURCE, Attachment.RESOURCE_INTANCE), //
             AccessMode.RW, //
             AttributeClass.NOTIFICATION) {
         @Override

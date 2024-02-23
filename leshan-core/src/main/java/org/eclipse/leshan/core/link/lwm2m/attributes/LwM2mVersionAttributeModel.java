@@ -25,8 +25,7 @@ public class LwM2mVersionAttributeModel extends LwM2mAttributeModel<LwM2mVersion
 
     public LwM2mVersionAttributeModel() {
         super("lwm2m", //
-                Attachment.ROOT, //
-                EnumSet.of(AssignationLevel.ROOT), //
+                EnumSet.of(Attachment.ROOT), //
                 AccessMode.R, //
                 AttributeClass.PROPERTIES);
     }
