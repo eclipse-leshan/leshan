@@ -213,6 +213,10 @@ public class NotificationDataStore {
             return lastSendingTime != null;
         }
 
+        public boolean usePmax() {
+            return pmaxTask != null;
+        }
+
         public boolean hasCriteriaBasedOnValue() {
             return lastSentValue != null;
         }

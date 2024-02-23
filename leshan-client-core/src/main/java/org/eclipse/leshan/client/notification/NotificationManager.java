@@ -127,6 +127,19 @@ public class NotificationManager {
         NotificationAttributeTree attributes = notificationData.getAttributes();
         ObserveResponse candidateNotificationToSend = null;
 
+        // Handle if pmin = pmax, we don't need to check anything only send notification each pmin=pmax seconds
+        // AFAWK, this case is not clearly defined in LWM2M v1.1.1 or in its references but we can find hints in :
+        // https://datatracker.ietf.org/doc/html/draft-ietf-core-conditional-attributes-06#section-4
+        // referenced by LWM2M v1.2.1
+        if (notificationData.usePmax()) {
+            Long pmin = strategy.getAttributeValue(attributes, request.getPath(), LwM2mAttributes.MINIMUM_PERIOD);
+            Long pmax = strategy.getAttributeValue(attributes, request.getPath(), LwM2mAttributes.MAXIMUM_PERIOD);
+            if (pmax == pmin) {
+                // we only send notification when pmax timer is reached.
+                return;
+            }
+        }
+
         // if there is criteria based on value
         if (notificationData.hasCriteriaBasedOnValue()) {
             candidateNotificationToSend = createResponse(server, request);
@@ -142,7 +155,6 @@ public class NotificationManager {
             // else if there is an error send notification now.
         }
 
-        // TODO write attributes : use case where PMIN == PMAX
         // If PMIN is used check if we need to delay this notification.
         if (notificationData.usePmin()) {
             LOG.trace("handle pmin for observe relation of {} / {}", server, request);
