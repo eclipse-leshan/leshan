@@ -27,11 +27,12 @@ import java.util.List;
 
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
-import org.eclipse.californium.core.coap.MessageObserverAdapter;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.core.observe.ObserveRelation;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.californium.core.server.resources.ResourceObserverAdapter;
 import org.eclipse.leshan.client.californium.LwM2mClientCoapResource;
 import org.eclipse.leshan.client.californium.endpoint.ServerIdentityExtractor;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
@@ -102,6 +103,35 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
         this.notificationManager = notificationManager;
         this.toolbox = toolbox;
         setObservable(true);
+
+        this.addObserver(new ResourceObserverAdapter() {
+
+            @Override
+            public void removedObserveRelation(ObserveRelation relation) {
+                // Get object URI
+                Request request = relation.getExchange().getRequest();
+                String URI = request.getOptions().getUriPathString();
+                // we don't manage observation on root path
+                if (URI == null)
+                    return;
+
+                // Get Server identity
+                LwM2mServer extractIdentity = extractIdentity(relation.getExchange(), request);
+
+                // handle content format for Read and Observe Request
+                ContentFormat requestedContentFormat = null;
+                if (request.getOptions().hasAccept()) {
+                    // If an request ask for a specific content format, use it (if we support it)
+                    requestedContentFormat = ContentFormat.fromCode(request.getOptions().getAccept());
+                }
+
+                // Create Observe request
+                ObserveRequest observeRequest = new ObserveRequest(requestedContentFormat, URI, request);
+
+                // Remove notification data for this request
+                notificationManager.clear(extractIdentity, observeRequest);
+            }
+        });
     }
 
     @Override
@@ -155,8 +185,9 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
             if (exchange.getRequestOptions().hasObserve()) {
                 ObserveRequest observeRequest = new ObserveRequest(requestedContentFormat, URI, coapRequest);
 
-                boolean isObserveRelationEstablishement = exchange.advanced().getRelation() == null
-                        || !exchange.advanced().getRelation().isEstablished();
+                boolean isObserveRelationEstablishement = coapRequest.isObserve()
+                        && (exchange.advanced().getRelation() == null
+                                || !exchange.advanced().getRelation().isEstablished());
                 boolean isActiveObserveCancellation = coapRequest.isObserveCancel();
                 if (isObserveRelationEstablishement || isActiveObserveCancellation) {
                     // Handle observe request
@@ -167,9 +198,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                         ContentFormat format = getContentFormat(observeRequest, requestedContentFormat);
 
                         // change notification manager state
-                        if (isActiveObserveCancellation) {
-                            notificationManager.clear(server, observeRequest);
-                        } else if (isObserveRelationEstablishement) {
+                        if (isObserveRelationEstablishement) {
                             try {
                                 notificationManager.initRelation(server, observeRequest, content,
                                         createNotificationSender(exchange, server, observeRequest,
@@ -179,7 +208,6 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                                         toCoapResponseCode(org.eclipse.leshan.core.ResponseCode.INTERNAL_SERVER_ERROR),
                                         "Invalid Attributes state : " + e.getMessage());
                             }
-
                         }
 
                         // send response
@@ -250,12 +278,6 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                             coapResponse
                                     .setPayload(toolbox.getEncoder().encode(content, format, path, toolbox.getModel()));
                             coapResponse.getOptions().setContentFormat(format.getCode());
-                            coapResponse.addMessageObserver(new MessageObserverAdapter() {
-                                @Override
-                                public void onReject() {
-                                    notificationManager.clear(server, observeRequest);
-                                }
-                            });
                             exchange.respond(coapResponse);
                             return true;
                         } else {
