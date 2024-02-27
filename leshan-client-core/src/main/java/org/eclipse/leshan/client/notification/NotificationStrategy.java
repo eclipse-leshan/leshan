@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.notification;
 
+import org.eclipse.leshan.core.link.lwm2m.attributes.InvalidAttributesException;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeModel;
 import org.eclipse.leshan.core.link.lwm2m.attributes.NotificationAttributeTree;
 import org.eclipse.leshan.core.node.LwM2mChildNode;
@@ -39,8 +40,11 @@ public interface NotificationStrategy {
      * @param path The path of the LWM2M node to observe
      * @param attributes The whole {@link NotificationAttributeTree} currently attached to the object targeted by the
      *        given path.
+     *
+     * @throws InvalidAttributesException if current attributes configuration is inconsistent.
      */
-    NotificationAttributeTree selectNotificationsAttributes(LwM2mPath path, NotificationAttributeTree attributes);
+    NotificationAttributeTree selectNotificationsAttributes(LwM2mPath path, NotificationAttributeTree attributes)
+            throws InvalidAttributesException;
 
     /**
      * @param attributes The attributes returned by

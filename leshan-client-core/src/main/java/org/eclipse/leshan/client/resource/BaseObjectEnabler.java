@@ -35,6 +35,7 @@ import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
+import org.eclipse.leshan.core.link.lwm2m.attributes.InvalidAttributesException;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.link.lwm2m.attributes.NotificationAttributeTree;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -82,6 +83,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     private LwM2mClient lwm2mClient;
     private LinkFormatHelper linkFormatHelper;
+
     private final NotificationAttributeTree assignedAttributes = new NotificationAttributeTree();
 
     public BaseObjectEnabler(int id, ObjectModel objectModel) {
@@ -446,8 +448,12 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         } else {
             newValue = request.getAttributes();
         }
+        try {
+            newValue.validate(request.getPath(), getObjectModel());
+        } catch (InvalidAttributesException e) {
+            return WriteAttributesResponse.badRequest(e.getMessage());
+        }
 
-        // TODO write attributes : validate new value based on model.
         if (newValue.isEmpty()) {
             assignedAttributes.remove(request.getPath());
         } else {

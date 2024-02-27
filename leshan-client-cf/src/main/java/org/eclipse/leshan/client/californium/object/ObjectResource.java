@@ -43,6 +43,7 @@ import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
+import org.eclipse.leshan.core.link.lwm2m.attributes.InvalidAttributesException;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -169,8 +170,16 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
                         if (isActiveObserveCancellation) {
                             notificationManager.clear(server, observeRequest);
                         } else if (isObserveRelationEstablishement) {
-                            notificationManager.initRelation(server, observeRequest, content,
-                                    createNotificationSender(exchange, server, observeRequest, requestedContentFormat));
+                            try {
+                                notificationManager.initRelation(server, observeRequest, content,
+                                        createNotificationSender(exchange, server, observeRequest,
+                                                requestedContentFormat));
+                            } catch (InvalidAttributesException e) {
+                                exchange.respond(
+                                        toCoapResponseCode(org.eclipse.leshan.core.ResponseCode.INTERNAL_SERVER_ERROR),
+                                        "Invalid Attributes state : " + e.getMessage());
+                            }
+
                         }
 
                         // send response

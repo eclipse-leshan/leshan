@@ -22,6 +22,7 @@ import org.eclipse.leshan.client.notification.checker.CriteriaBasedOnValueChecke
 import org.eclipse.leshan.client.notification.checker.FloatChecker;
 import org.eclipse.leshan.client.notification.checker.IntegerChecker;
 import org.eclipse.leshan.client.notification.checker.UnsignedIntegerChecker;
+import org.eclipse.leshan.core.link.lwm2m.attributes.InvalidAttributesException;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeModel;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
@@ -58,13 +59,15 @@ public class DefaultNotificationStrategy implements NotificationStrategy {
     }
 
     @Override
-    public NotificationAttributeTree selectNotificationsAttributes(LwM2mPath path,
-            NotificationAttributeTree attributes) {
+    public NotificationAttributeTree selectNotificationsAttributes(LwM2mPath path, NotificationAttributeTree attributes)
+            throws InvalidAttributesException {
 
         LwM2mAttributeSet set = attributes.getWithInheritance(path);
         if (set == null || set.isEmpty()) {
             return null;
         }
+        set.validate(path, null);
+
         NotificationAttributeTree result = new NotificationAttributeTree();
         result.put(path, set);
         return result;

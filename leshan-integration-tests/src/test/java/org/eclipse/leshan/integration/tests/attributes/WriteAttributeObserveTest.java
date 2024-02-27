@@ -19,6 +19,7 @@ package org.eclipse.leshan.integration.tests.attributes;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.leshan.core.util.TestLwM2mId.FLOAT_VALUE;
 import static org.eclipse.leshan.core.util.TestLwM2mId.INTEGER_VALUE;
+import static org.eclipse.leshan.core.util.TestLwM2mId.MULTIPLE_INTEGER_VALUE;
 import static org.eclipse.leshan.core.util.TestLwM2mId.TEST_OBJECT;
 import static org.eclipse.leshan.core.util.TestLwM2mId.UNSIGNED_INTEGER_VALUE;
 import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
@@ -30,6 +31,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
@@ -403,6 +405,31 @@ public class WriteAttributeObserveTest {
         assertThat(response.getContent()).isEqualTo(valueWhichTriggerNotification);
         assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
         server.ensureNoNotification(observation, 500, TimeUnit.MILLISECONDS);
+    }
 
+    @TestAllTransportLayer
+    public void test_invalid_inheritance_raise_exception(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InterruptedException {
+
+        // Set attribute pmin at resource level > pmax at resource instance level
+        WriteAttributesResponse writeAttributeResponse = server.send(currentRegistration,
+                new WriteAttributesRequest(new LwM2mPath(TEST_OBJECT, 0, MULTIPLE_INTEGER_VALUE), new LwM2mAttributeSet( //
+                        LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 200l) //
+                )));
+        assertThat(writeAttributeResponse).isSuccess();
+
+        writeAttributeResponse = server.send(currentRegistration,
+                new WriteAttributesRequest(new LwM2mPath(TEST_OBJECT, 0, MULTIPLE_INTEGER_VALUE, 0),
+                        new LwM2mAttributeSet( //
+                                LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, 100l) //
+                        )));
+        assertThat(writeAttributeResponse).isSuccess();
+
+        // Set observe relation
+        ObserveResponse observeResponse = server.send(currentRegistration,
+                new ObserveRequest(new LwM2mPath(TEST_OBJECT, 0, MULTIPLE_INTEGER_VALUE, 0)));
+        assertThat(observeResponse).hasCode(ResponseCode.INTERNAL_SERVER_ERROR);
+
+        assertThat(client).hasNoNotificationData();
     }
 }
