@@ -23,11 +23,13 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.eclipse.leshan.core.LwM2m.Version;
-import org.eclipse.leshan.core.link.lwm2m.attributes.Attachment;
 import org.eclipse.leshan.core.link.lwm2m.attributes.DefaultLwM2mAttributeParser;
+import org.eclipse.leshan.core.link.lwm2m.attributes.InvalidAttributesException;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
+import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.junit.jupiter.api.Test;
 
 public class AttributeSetTest {
@@ -134,24 +136,24 @@ public class AttributeSetTest {
     }
 
     @Test
-    public void should_validate_assignation() {
+    public void should_validate_assignation() throws InvalidLwM2mPathException, InvalidAttributesException {
         LwM2mAttributeSet sut = new LwM2mAttributeSet(LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 5L),
                 LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, 60L));
         Collection<Attribute> attributes = sut.asCollection();
         assertEquals(2, attributes.size());
-        sut.validate(Attachment.RESOURCE);
+        sut.validate(new LwM2mPath("/3/0/9"));
     }
 
     @Test
     public void should_throw_on_invalid_assignation_level() {
-        assertThrowsExactly(IllegalArgumentException.class, () -> {
+        assertThrowsExactly(InvalidAttributesException.class, () -> {
             LwM2mAttributeSet sut = new LwM2mAttributeSet(
                     LwM2mAttributes.create(LwM2mAttributes.OBJECT_VERSION, new Version("1.1")),
                     LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 5L),
                     LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, 60L));
 
             // OBJECT_VERSION cannot be assigned on resource level
-            sut.validate(Attachment.RESOURCE);
+            sut.validate(new LwM2mPath("/3/0/9"));
         });
     }
 }

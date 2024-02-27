@@ -26,6 +26,7 @@ import org.eclipse.leshan.client.resource.NotificationSender;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
+import org.eclipse.leshan.core.link.lwm2m.attributes.InvalidAttributesException;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -192,9 +193,14 @@ public class ObjectResource extends LwM2mClientCoapResource {
 
                     // store observation relation if this is not a active observe cancellation
                     if (coapRequest.options().getObserve() != 1) {
-                        notificationManager.initRelation(identity, observeRequest, response.getContent(),
-                                createNotificationSender(coapRequest, identity, observeRequest,
-                                        requestedContentFormat));
+                        try {
+                            notificationManager.initRelation(identity, observeRequest, response.getContent(),
+                                    createNotificationSender(coapRequest, identity, observeRequest,
+                                            requestedContentFormat));
+                        } catch (InvalidAttributesException e) {
+                            return errorMessage(ResponseCode.INTERNAL_SERVER_ERROR,
+                                    "Invalid Attributes state : " + e.getMessage());
+                        }
                     }
                     return coapResponse;
                 } else {
@@ -243,6 +249,7 @@ public class ObjectResource extends LwM2mClientCoapResource {
                 }
             }
         }
+
     }
 
     protected ContentFormat getContentFormat(DownlinkRequest<?> request, ContentFormat requestedContentFormat) {

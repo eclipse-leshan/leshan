@@ -28,6 +28,7 @@ import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.resource.NotificationSender;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.servers.LwM2mServer;
+import org.eclipse.leshan.core.link.lwm2m.attributes.InvalidAttributesException;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.link.lwm2m.attributes.NotificationAttributeTree;
 import org.eclipse.leshan.core.node.LwM2mChildNode;
@@ -91,14 +92,15 @@ public class NotificationManager {
     }
 
     public synchronized void initRelation(LwM2mServer server, ObserveRequest request, LwM2mNode node,
-            NotificationSender sender) {
+            NotificationSender sender) throws InvalidAttributesException {
         // Get Attributes for this (server, request)
         LwM2mObjectEnabler objectEnabler = objectTree.getObjectEnabler(request.getPath().getObjectId());
         if (objectEnabler == null)
             return; // no object enabler : nothing to observe
         NotificationAttributeTree attributes = objectEnabler.getAttributesFor(server);
-        if (attributes != null && !attributes.isEmpty())
+        if (attributes != null && !attributes.isEmpty()) {
             attributes = strategy.selectNotificationsAttributes(request.getPath(), attributes);
+        }
 
         // If there is no attributes this is just classic observe so nothing to do.
         if (attributes == null || attributes.isEmpty())
