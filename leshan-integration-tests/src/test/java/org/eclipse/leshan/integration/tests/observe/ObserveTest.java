@@ -22,6 +22,8 @@ package org.eclipse.leshan.integration.tests.observe;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.leshan.core.ResponseCode.CHANGED;
 import static org.eclipse.leshan.core.ResponseCode.CONTENT;
+import static org.eclipse.leshan.core.ResponseCode.DELETED;
+import static org.eclipse.leshan.core.util.TestLwM2mId.TEST_OBJECT;
 import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
@@ -39,17 +41,20 @@ import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.CancelObservationRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.WriteRequest.Mode;
 import org.eclipse.leshan.core.response.CancelObservationResponse;
+import org.eclipse.leshan.core.response.DeleteResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
@@ -154,7 +159,7 @@ public class ObserveTest {
     public void can_observe_resource_instance(Protocol givenProtocol, String givenClientEndpointProvider,
             String givenServerEndpointProvider) throws InterruptedException {
         // multi instance string
-        String expectedPath = "/" + TestLwM2mId.TEST_OBJECT + "/0/" + TestLwM2mId.MULTIPLE_STRING_VALUE + "/0";
+        String expectedPath = "/" + TEST_OBJECT + "/0/" + TestLwM2mId.MULTIPLE_STRING_VALUE + "/0";
         ObserveResponse observeResponse = server.send(currentRegistration, new ObserveRequest(expectedPath));
         assertThat(observeResponse) //
                 .hasCode(CONTENT) //
@@ -188,7 +193,7 @@ public class ObserveTest {
         assumeFalse(givenServerEndpointProvider.equals("java-coap"));
 
         // multi instance string
-        String expectedPath = "/" + TestLwM2mId.TEST_OBJECT + "/0/" + TestLwM2mId.MULTIPLE_STRING_VALUE + "/0";
+        String expectedPath = "/" + TEST_OBJECT + "/0/" + TestLwM2mId.MULTIPLE_STRING_VALUE + "/0";
         ObserveResponse observeResponse = server.send(currentRegistration, new ObserveRequest(expectedPath));
         assertThat(observeResponse) //
                 .hasCode(CONTENT) //
@@ -204,7 +209,7 @@ public class ObserveTest {
 
         // Write empty resoures <=> delete all instances
         LwM2mResponse writeResponse = server.send(currentRegistration, new WriteRequest(Mode.REPLACE, ContentFormat.TLV,
-                TestLwM2mId.TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_STRING_VALUE, Collections.emptyMap(), Type.STRING));
+                TEST_OBJECT, 0, TestLwM2mId.MULTIPLE_STRING_VALUE, Collections.emptyMap(), Type.STRING));
         assertThat(writeResponse).hasCode(CHANGED);
 
         // verify result
@@ -218,7 +223,7 @@ public class ObserveTest {
     public void can_observe_resource_instance_then_passive_cancel(Protocol givenProtocol,
             String givenClientEndpointProvider, String givenServerEndpointProvider) throws InterruptedException {
         // multi instance string
-        String expectedPath = "/" + TestLwM2mId.TEST_OBJECT + "/0/" + TestLwM2mId.MULTIPLE_STRING_VALUE + "/0";
+        String expectedPath = "/" + TEST_OBJECT + "/0/" + TestLwM2mId.MULTIPLE_STRING_VALUE + "/0";
         ObserveResponse observeResponse = server.send(currentRegistration, new ObserveRequest(expectedPath));
         assertThat(observeResponse) //
                 .hasCode(CONTENT) //
@@ -262,7 +267,7 @@ public class ObserveTest {
             String givenClientEndpointProvider, String givenServerEndpointProvider) throws InterruptedException {
 
         // multi instance string
-        String expectedPath = "/" + TestLwM2mId.TEST_OBJECT + "/0/" + TestLwM2mId.MULTIPLE_STRING_VALUE + "/0";
+        String expectedPath = "/" + TEST_OBJECT + "/0/" + TestLwM2mId.MULTIPLE_STRING_VALUE + "/0";
         ObserveResponse observeResponse = server.send(currentRegistration, new ObserveRequest(expectedPath));
         assertThat(observeResponse) //
                 .hasCode(CONTENT) //
@@ -430,6 +435,40 @@ public class ObserveTest {
     }
 
     @TestAllTransportLayer
+    public void can_observe_instance_then_delete_it(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InterruptedException {
+
+        // skip java-coap client because of not fixed bug : https://github.com/open-coap/java-coap/issues/76
+        assumeFalse(givenClientEndpointProvider.equals("java-coap"));
+        assumeFalse(givenServerEndpointProvider.equals("java-coap"));
+
+        LwM2mPath observedPath = new LwM2mPath(TEST_OBJECT, 0);
+
+        // observe device timezone
+        ObserveResponse observeResponse = server.send(currentRegistration, new ObserveRequest(observedPath));
+        assertThat(observeResponse) //
+                .hasCode(CONTENT) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
+
+        // an observation response should have been sent
+        SingleObservation observation = observeResponse.getObservation();
+        assertThat(observation.getPath()).isEqualTo(observedPath);
+        assertThat(observation.getRegistrationId()).isEqualTo(currentRegistration.getId());
+        Set<Observation> observations = server.getObservationService().getObservations(currentRegistration);
+        assertThat(observations).containsExactly(observation);
+        server.waitForNewObservation(observation);
+
+        // Delete instance
+        DeleteResponse deleteResponse = server.send(currentRegistration, new DeleteRequest(observedPath));
+        assertThat(deleteResponse).hasCode(DELETED);
+
+        // verify result
+        ObserveResponse response = server.waitForNotificationThenCancelled(observation);
+        assertThat(response).hasCode(ResponseCode.NOT_FOUND);
+        assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
+    }
+
+    @TestAllTransportLayer
     public void can_observe_object(Protocol givenProtocol, String givenClientEndpointProvider,
             String givenServerEndpointProvider) throws InterruptedException {
 
@@ -460,4 +499,38 @@ public class ObserveTest {
         ReadResponse readResp = server.send(currentRegistration, new ReadRequest(3));
         assertThat(response.getContent()).isEqualTo(readResp.getContent());
     }
+
+    @TestAllTransportLayer
+    public void can_observe_then_delete_it(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider) throws InterruptedException {
+
+        // skip java-coap client because of not fixed bug : https://github.com/open-coap/java-coap/issues/76
+        assumeFalse(givenClientEndpointProvider.equals("java-coap"));
+        assumeFalse(givenServerEndpointProvider.equals("java-coap"));
+
+        LwM2mPath observedPath = new LwM2mPath(TEST_OBJECT);
+
+        // observe device timezone
+        ObserveResponse observeResponse = server.send(currentRegistration, new ObserveRequest(observedPath));
+        assertThat(observeResponse) //
+                .hasCode(CONTENT) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
+
+        // an observation response should have been sent
+        SingleObservation observation = observeResponse.getObservation();
+        assertThat(observation.getPath()).isEqualTo(observedPath);
+        assertThat(observation.getRegistrationId()).isEqualTo(currentRegistration.getId());
+        Set<Observation> observations = server.getObservationService().getObservations(currentRegistration);
+        assertThat(observations).containsExactly(observation);
+        server.waitForNewObservation(observation);
+
+        // disable object
+        client.getObjectTree().removeObjectEnabler(TEST_OBJECT);
+
+        // verify result
+        ObserveResponse response = server.waitForNotificationThenCancelled(observation);
+        assertThat(response).hasCode(ResponseCode.NOT_FOUND);
+        assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
+    }
+
 }

@@ -23,6 +23,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
+import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
@@ -50,6 +51,17 @@ public class LwM2mCoapResource extends CoapResource {
     public LwM2mCoapResource(String name, IdentityHandlerProvider identityHandlerProvider) {
         super(name);
         this.identityHandlerProvider = identityHandlerProvider;
+    }
+
+    @Override
+    public synchronized boolean delete(Resource child) {
+        boolean deleted = super.delete(child);
+        if (deleted) {
+            if (child instanceof CoapResource) {
+                ((CoapResource) child).clearAndNotifyObserveRelations(null, ResponseCode.NOT_FOUND);
+            }
+        }
+        return deleted;
     }
 
     @Override

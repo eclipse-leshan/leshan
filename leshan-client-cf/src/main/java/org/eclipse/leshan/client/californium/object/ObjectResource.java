@@ -456,6 +456,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
 
     @Override
     public void objectInstancesRemoved(LwM2mObjectEnabler object, int... instanceIds) {
+        changed(new InstanceRemovedFilter(object.getId(), instanceIds));
     }
 
     protected LwM2mPath getPath(String URI) throws InvalidRequestException {
