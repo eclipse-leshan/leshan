@@ -30,17 +30,35 @@ public class IntegerChecker implements CriteriaBasedOnValueChecker {
             Object newValue) {
         Long lastSentLong = (Long) lastSentValue;
         Long newLong = (Long) newValue;
+        boolean hasNumericalAttributes = false;
 
         if (attributes.contains(LwM2mAttributes.STEP)) {
-            return Math.abs(lastSentLong - newLong) >= attributes.get(LwM2mAttributes.STEP).getValue();
-        } else if (attributes.contains(LwM2mAttributes.LESSER_THAN)) {
-            long lessThan = (long) Math.ceil(attributes.get(LwM2mAttributes.LESSER_THAN).getValue());
-            return lastSentLong >= lessThan && newLong < lessThan;
-        } else if (attributes.contains(LwM2mAttributes.GREATER_THAN)) {
-            long greaterThan = (long) Math.floor(attributes.get(LwM2mAttributes.GREATER_THAN).getValue());
-            return lastSentLong <= greaterThan && newLong > greaterThan;
+            hasNumericalAttributes = true;
+
+            if (Math.abs(lastSentLong - newLong) >= attributes.get(LwM2mAttributes.STEP).getValue()) {
+                return true;
+            }
         }
-        return true;
+
+        if (attributes.contains(LwM2mAttributes.LESSER_THAN)) {
+            hasNumericalAttributes = true;
+
+            long lessThan = (long) Math.ceil(attributes.get(LwM2mAttributes.LESSER_THAN).getValue());
+            if (lastSentLong >= lessThan && newLong < lessThan) {
+                return true;
+            }
+        }
+
+        if (attributes.contains(LwM2mAttributes.GREATER_THAN)) {
+            hasNumericalAttributes = true;
+
+            long greaterThan = (long) Math.floor(attributes.get(LwM2mAttributes.GREATER_THAN).getValue());
+            if (lastSentLong <= greaterThan && newLong > greaterThan) {
+                return true;
+            }
+        }
+        // if we have numerical attribute we can send notification else if one condition matches we already return true;
+        return !hasNumericalAttributes;
     }
 
 }

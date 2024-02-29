@@ -30,16 +30,35 @@ public class FloatChecker implements CriteriaBasedOnValueChecker {
             Object newValue) {
         Double lastSentDouble = (Double) lastSentValue;
         Double newDouble = (Double) newValue;
+        boolean hasNumericalAttributes = false;
 
         if (attributes.contains(LwM2mAttributes.STEP)) {
-            return Math.abs(lastSentDouble - newDouble) >= attributes.get(LwM2mAttributes.STEP).getValue();
-        } else if (attributes.contains(LwM2mAttributes.LESSER_THAN)) {
-            Double lessThan = attributes.get(LwM2mAttributes.LESSER_THAN).getValue();
-            return lastSentDouble >= lessThan && newDouble < lessThan;
-        } else if (attributes.contains(LwM2mAttributes.GREATER_THAN)) {
-            Double greaterThan = attributes.get(LwM2mAttributes.GREATER_THAN).getValue();
-            return lastSentDouble <= greaterThan && newDouble > greaterThan;
+            hasNumericalAttributes = true;
+
+            if (Math.abs(lastSentDouble - newDouble) >= attributes.get(LwM2mAttributes.STEP).getValue()) {
+                return true;
+            }
         }
-        return true;
+
+        if (attributes.contains(LwM2mAttributes.LESSER_THAN)) {
+            hasNumericalAttributes = true;
+
+            Double lessThan = attributes.get(LwM2mAttributes.LESSER_THAN).getValue();
+            if (lastSentDouble >= lessThan && newDouble < lessThan) {
+                return true;
+            }
+        }
+
+        if (attributes.contains(LwM2mAttributes.GREATER_THAN)) {
+            hasNumericalAttributes = true;
+
+            Double greaterThan = attributes.get(LwM2mAttributes.GREATER_THAN).getValue();
+            if (lastSentDouble <= greaterThan && newDouble > greaterThan) {
+                return true;
+            }
+        }
+
+        // if we have numerical attribute we can send notification else if one condition matches we already return true;
+        return !hasNumericalAttributes;
     }
 }

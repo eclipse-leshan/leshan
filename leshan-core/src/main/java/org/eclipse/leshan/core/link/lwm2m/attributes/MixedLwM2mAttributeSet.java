@@ -99,8 +99,8 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
         LwM2mAttribute<Long> pmax = this.getLwM2mAttribute(LwM2mAttributes.MAXIMUM_PERIOD);
         if ((pmin != null) && (pmax != null) //
                 && pmin.hasValue() && pmax.hasValue() //
-                && pmin.getValue() > pmax.getValue()) {
-            throw new InvalidAttributesException("Cannot write attributes where '%s' > '%s'", pmin.getName(),
+                && !(pmin.getValue() <= pmax.getValue())) {
+            throw new InvalidAttributesException("Attributes doesn't fulfill '%s'<= '%s' condition", pmin.getName(),
                     pmax.getName());
         }
 
@@ -110,8 +110,8 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
         LwM2mAttribute<Long> epmax = this.getLwM2mAttribute(LwM2mAttributes.EVALUATE_MAXIMUM_PERIOD);
         if ((epmin != null) && (epmax != null) //
                 && epmin.hasValue() && epmax.hasValue() //
-                && epmin.getValue() > epmax.getValue()) {
-            throw new InvalidAttributesException("Cannot write attributes where '%s' > '%s'", epmin.getName(),
+                && !(epmin.getValue() <= epmax.getValue())) {
+            throw new InvalidAttributesException("Attributes doesn't fulfill '%s'<= '%s' condition", epmin.getName(),
                     epmax.getName());
         }
 
@@ -122,7 +122,7 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
         if ((lt != null) && (gt != null) //
                 && lt.hasValue() && gt.hasValue() //
                 && !(lt.getValue() < gt.getValue())) {
-            throw new InvalidAttributesException("Cannot write attributes where '%s' >= '%s'", lt.getName(),
+            throw new InvalidAttributesException("Attributes doesn't fulfill '%s'< '%s' condition", lt.getName(),
                     gt.getName());
         }
 
@@ -132,8 +132,8 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
         if ((lt != null) && (gt != null) && (st != null) ///
                 && lt.hasValue() && gt.hasValue() && st.hasValue() //
                 && !(lt.getValue() + 2 * st.getValue() < gt.getValue())) {
-            throw new InvalidAttributesException("Cannot write attributes where '%s' >= '%s'", lt.getName(),
-                    gt.getName());
+            throw new InvalidAttributesException(
+                    "Attributes doesn't fulfill  (\"lt\" value + 2*\"st\" values) <\"gt\") condition");
         }
     }
 

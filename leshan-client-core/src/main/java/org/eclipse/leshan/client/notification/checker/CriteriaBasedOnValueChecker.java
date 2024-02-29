@@ -21,6 +21,9 @@ import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 /**
  * A {@link CriteriaBasedOnValueChecker} MUST evaluate new value based on Notification {@link LwM2mAttribute} and
  * previous value sent to determine if new notification should be sent.
+ *
+ * @see <a href="https://datatracker.ietf.org/doc/html/draft-ietf-core-dynlink-07#section-4.7">Attribute Interactions
+ *      </a>
  */
 public interface CriteriaBasedOnValueChecker {
     /**

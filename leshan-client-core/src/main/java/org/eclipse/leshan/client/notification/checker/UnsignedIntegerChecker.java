@@ -35,23 +35,42 @@ public class UnsignedIntegerChecker implements CriteriaBasedOnValueChecker {
             Object newValue) {
         BigInteger lastSentULong = ((ULong) lastSentValue).toBigInteger();
         BigInteger newULong = ((ULong) newValue).toBigInteger();
+        boolean hasNumericalAttributes = false;
 
         if (attributes.contains(LwM2mAttributes.STEP)) {
+            hasNumericalAttributes = true;
+
             // Handle Step
             BigInteger step = new BigDecimal(attributes.get(LwM2mAttributes.STEP).getValue())
                     .setScale(0, RoundingMode.CEILING).toBigIntegerExact();
-            return lastSentULong.subtract(newULong).abs().subtract(step).signum() >= 0;
-        } else if (attributes.contains(LwM2mAttributes.LESSER_THAN)) {
+            if (lastSentULong.subtract(newULong).abs().subtract(step).signum() >= 0) {
+                return true;
+            }
+        }
+
+        if (attributes.contains(LwM2mAttributes.LESSER_THAN)) {
+            hasNumericalAttributes = true;
+
             // Handle LESSER_THAN
             BigDecimal lessThan = new BigDecimal(attributes.get(LwM2mAttributes.LESSER_THAN).getValue());
             BigInteger lessThanRounded = lessThan.setScale(0, RoundingMode.CEILING).toBigIntegerExact();
-            return lastSentULong.compareTo(lessThanRounded) >= 0 && newULong.compareTo(lessThanRounded) < 0;
-        } else if (attributes.contains(LwM2mAttributes.GREATER_THAN)) {
+            if (lastSentULong.compareTo(lessThanRounded) >= 0 && newULong.compareTo(lessThanRounded) < 0) {
+                return true;
+            }
+        }
+
+        if (attributes.contains(LwM2mAttributes.GREATER_THAN)) {
+            hasNumericalAttributes = true;
+
             // Handle LESSER_THAN
             BigDecimal lessThan = new BigDecimal(attributes.get(LwM2mAttributes.GREATER_THAN).getValue());
             BigInteger lessThanRounded = lessThan.setScale(0, RoundingMode.FLOOR).toBigIntegerExact();
-            return lastSentULong.compareTo(lessThanRounded) <= 0 && newULong.compareTo(lessThanRounded) > 0;
+            if (lastSentULong.compareTo(lessThanRounded) <= 0 && newULong.compareTo(lessThanRounded) > 0) {
+                return true;
+            }
         }
-        return true;
+
+        // if we have numerical attribute we can send notification else if one condition matches we already return true;
+        return !hasNumericalAttributes;
     }
 }
