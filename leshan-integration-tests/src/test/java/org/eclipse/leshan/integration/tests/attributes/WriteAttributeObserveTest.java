@@ -123,7 +123,7 @@ public class WriteAttributeObserveTest {
     public void test_pmin(Protocol givenProtocol, String givenClientEndpointProvider,
             String givenServerEndpointProvider) throws InterruptedException {
 
-        Long pmin = 1l; // seconds
+        long pmin = 1l; // seconds
 
         // Set attribute
         WriteAttributesResponse writeAttributeResponse = server.send(currentRegistration,
@@ -146,10 +146,7 @@ public class WriteAttributeObserveTest {
         assertThat(writeResponse).isSuccess();
 
         // Verify Behavior
-        server.ensureNoNotification(observation, (int) (TimeUnit.MILLISECONDS.convert(pmin, TimeUnit.SECONDS) * 0.8),
-                TimeUnit.MILLISECONDS);
-        ObserveResponse response = server.waitForNotificationOf(observation,
-                (int) (TimeUnit.MILLISECONDS.convert(pmin, TimeUnit.SECONDS) * 0.3), TimeUnit.MILLISECONDS);
+        ObserveResponse response = server.waitForNotificationExactlyIn(observation, (int) pmin, TimeUnit.SECONDS, 0.2);
         assertThat(response.getContent()).isEqualTo(LwM2mSingleResource.newIntegerResource(INTEGER_VALUE, 50l));
         assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
     }
@@ -158,7 +155,7 @@ public class WriteAttributeObserveTest {
     public void test_pmax(Protocol givenProtocol, String givenClientEndpointProvider,
             String givenServerEndpointProvider) throws InterruptedException {
 
-        Long pmax = 1l; // seconds
+        long pmax = 1l; // seconds
 
         // Set attribute
         WriteAttributesResponse writeAttributeResponse = server.send(currentRegistration,
@@ -178,10 +175,7 @@ public class WriteAttributeObserveTest {
         // Do nothing to trigger notification
 
         // Verify Behavior
-        server.ensureNoNotification(observation, (int) (TimeUnit.MILLISECONDS.convert(pmax, TimeUnit.SECONDS) * 0.8),
-                TimeUnit.MILLISECONDS);
-        ObserveResponse response = server.waitForNotificationOf(observation,
-                (int) (TimeUnit.MILLISECONDS.convert(pmax, TimeUnit.SECONDS) * 0.3), TimeUnit.MILLISECONDS);
+        ObserveResponse response = server.waitForNotificationExactlyIn(observation, (int) pmax, TimeUnit.SECONDS, 0.2);
         assertThat(response.getContent()).isEqualTo(LwM2mSingleResource.newIntegerResource(INTEGER_VALUE, 1024l));
         assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
     }
@@ -225,18 +219,12 @@ public class WriteAttributeObserveTest {
         assertThat(writeResponse).isSuccess();
 
         // Verify
-        server.ensureNoNotification(observation, (int) (TimeUnit.MILLISECONDS.convert(pmin, TimeUnit.SECONDS) * 0.8),
-                TimeUnit.MILLISECONDS);
-        ObserveResponse response = server.waitForNotificationOf(observation,
-                (int) (TimeUnit.MILLISECONDS.convert(pmin, TimeUnit.SECONDS) * 0.3), TimeUnit.MILLISECONDS);
+        ObserveResponse response = server.waitForNotificationExactlyIn(observation, (int) pmin, TimeUnit.SECONDS, 0.2);
         assertThat(response.getContent()).isEqualTo(LwM2mSingleResource.newIntegerResource(INTEGER_VALUE, 30));
         assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
         // Wait pmax seconds more and check again
-        server.ensureNoNotification(observation, (int) (TimeUnit.MILLISECONDS.convert(pmax, TimeUnit.SECONDS) * 0.8),
-                TimeUnit.MILLISECONDS);
-        response = server.waitForNotificationOf(observation,
-                (int) (TimeUnit.MILLISECONDS.convert(pmax, TimeUnit.SECONDS) * 0.3), TimeUnit.MILLISECONDS);
+        response = server.waitForNotificationExactlyIn(observation, (int) pmax, TimeUnit.SECONDS, 0.2);
         assertThat(response.getContent()).isEqualTo(LwM2mSingleResource.newIntegerResource(INTEGER_VALUE, 30));
         assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
     }
@@ -450,7 +438,7 @@ public class WriteAttributeObserveTest {
         assertThat(writeResponse).isSuccess();
 
         // Verify Behavior
-        server.ensureNoNotification(observation, 500, TimeUnit.MILLISECONDS);
+        server.ensureNoNotification(observation, 200, TimeUnit.MILLISECONDS);
 
         // Change value which should trigger notification
         writeResponse = server.send(currentRegistration,
@@ -458,10 +446,10 @@ public class WriteAttributeObserveTest {
         assertThat(writeResponse).isSuccess();
 
         // Verify Behavior
-        ObserveResponse response = server.waitForNotificationOf(observation);
+        ObserveResponse response = server.waitForNotificationOf(observation, 100, TimeUnit.MILLISECONDS);
         assertThat(response.getContent()).isEqualTo(valueWhichTriggerNotification);
         assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
-        server.ensureNoNotification(observation, 500, TimeUnit.MILLISECONDS);
+        server.ensureNoNotification(observation, 100, TimeUnit.MILLISECONDS);
     }
 
     @TestAllTransportLayer
@@ -469,7 +457,7 @@ public class WriteAttributeObserveTest {
             String givenServerEndpointProvider) throws InterruptedException {
 
         Double lt = 500d;
-        Long pmax = 1l;
+        long pmax = 1l;
 
         // Setting attribute
         WriteAttributesResponse writeAttributeResponse = server.send(currentRegistration,
@@ -492,22 +480,19 @@ public class WriteAttributeObserveTest {
         assertThat(writeResponse).isSuccess();
 
         // Verify Behavior
-        server.ensureNoNotification(observation, 500, TimeUnit.MILLISECONDS);
+        server.ensureNoNotification(observation, 200, TimeUnit.MILLISECONDS);
 
         // Changing value which crosses the lt limit
         writeResponse = server.send(currentRegistration, new WriteRequest(TEST_OBJECT, 0, INTEGER_VALUE, 400));
         assertThat(writeResponse).isSuccess();
 
         // Verify Behavior
-        ObserveResponse response = server.waitForNotificationOf(observation,
-                (int) (TimeUnit.MILLISECONDS.convert(pmax, TimeUnit.SECONDS) * 0.3), TimeUnit.MILLISECONDS);
+        ObserveResponse response = server.waitForNotificationOf(observation, 100, TimeUnit.MILLISECONDS);
         assertThat(response.getContent()).isEqualTo(LwM2mSingleResource.newIntegerResource(INTEGER_VALUE, 400));
 
         // Wait for pmax and ensure new notification is raised
-        server.ensureNoNotification(observation, (int) (TimeUnit.MILLISECONDS.convert(pmax, TimeUnit.SECONDS) * 0.8),
-                TimeUnit.MILLISECONDS);
-        response = server.waitForNotificationOf(observation,
-                (int) (TimeUnit.MILLISECONDS.convert(pmax, TimeUnit.SECONDS) * 0.3), TimeUnit.MILLISECONDS);
+        response = server.waitForNotificationExactlyIn(observation, (int) pmax, TimeUnit.SECONDS, 0.2);
+
     }
 
     @TestAllTransportLayer
@@ -614,7 +599,7 @@ public class WriteAttributeObserveTest {
         assertThat(writeResponse).isSuccess();
 
         // Verify Behavior
-        server.ensureNoNotification(observation, 500, TimeUnit.MILLISECONDS);
+        server.ensureNoNotification(observation, 300, TimeUnit.MILLISECONDS);
 
         // Changing value which crosses the lt limit but NOT fulfill step condition
         writeResponse = server.send(currentRegistration,
@@ -675,7 +660,7 @@ public class WriteAttributeObserveTest {
     private void write_pmax_then_observe_then_wait_for_notification(String givenServerEndpointProvider,
             LwM2mPath pathToWriteAttribute, LwM2mPath pathToObserve) throws InterruptedException {
 
-        Long pmax = 1l; // seconds
+        long pmax = 1l; // seconds
 
         // Set attribute
         WriteAttributesResponse writeAttributeResponse = server.send(currentRegistration,
@@ -694,10 +679,7 @@ public class WriteAttributeObserveTest {
         // Do nothing to trigger notification
 
         // Verify Behavior
-        server.ensureNoNotification(observation, (int) (TimeUnit.MILLISECONDS.convert(pmax, TimeUnit.SECONDS) * 0.8),
-                TimeUnit.MILLISECONDS);
-        ObserveResponse response = server.waitForNotificationOf(observation,
-                (int) (TimeUnit.MILLISECONDS.convert(pmax, TimeUnit.SECONDS) * 0.3), TimeUnit.MILLISECONDS);
+        ObserveResponse response = server.waitForNotificationExactlyIn(observation, (int) pmax, TimeUnit.SECONDS, 0.2);
         assertThat(response).isSuccess();
     }
 
