@@ -80,6 +80,7 @@ Contributors:
   <modules>
     <!-- library-->
     <module>leshan-server-core</module>
+    <module>leshan-core</module>
     <module>leshan-server-demo</module>
     <module>leshan-bsserver-demo</module>
   </modules>

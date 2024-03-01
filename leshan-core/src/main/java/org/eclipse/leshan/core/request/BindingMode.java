@@ -37,7 +37,7 @@ public enum BindingMode {
     N,
 
     /** FAKE ONE */
-    FAKE,
+    F,
 
     /** Queue Mode : removed since LWM2M 1.1 */
     Q;
@@ -75,7 +75,7 @@ public enum BindingMode {
         case 'N':
             return N;
         case 'F':
-            return FAKE;
+            return F;
         case 'Q':
             return Q;
         default:
