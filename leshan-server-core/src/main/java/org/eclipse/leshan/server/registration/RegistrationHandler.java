@@ -19,7 +19,9 @@ package org.eclipse.leshan.server.registration;
 
 import java.net.URI;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
+import org.eclipse.leshan.core.CustomTaskContainer;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.DeregisterRequest;
@@ -137,6 +139,15 @@ public class RegistrationHandler {
 
         // Validate request
         LwM2mVersion lwM2mVersion = currentRegistration.getLwM2mVersion();
+        if (!CustomTaskContainer.getInstance().requestUpdateAnswer) {
+        	CustomTaskContainer.getInstance().requestUpdateAnswer = true;
+        	try {
+				TimeUnit.SECONDS.sleep(10);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        }
         updateRequest.validate(lwM2mVersion);
 
         // Extract data from object link

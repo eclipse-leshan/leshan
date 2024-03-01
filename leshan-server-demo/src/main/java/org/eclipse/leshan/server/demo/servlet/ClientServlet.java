@@ -53,6 +53,7 @@ import org.eclipse.leshan.core.request.CancelCompositeObservationRequest;
 import org.eclipse.leshan.core.request.CancelObservationRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
+import org.eclipse.leshan.core.request.CustomTaskRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.request.ExecuteRequest;
@@ -412,6 +413,25 @@ public class ClientServlet extends HttpServlet {
                     resp.getWriter().format("No registered client with id '%s'", clientEndpoint).flush();
                 }
             } catch (RuntimeException | InterruptedException e) {
+                handleException(e, resp);
+            }
+            return;
+        }
+
+        // /clients/endPoint/customTask : do LightWeight M2M discover request on a given client.
+        if (path.length >= 3 && "customTask".equals(path[path.length - 2])) {
+            try {
+                Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
+                if (registration != null) {
+                    String target = StringUtils.removeStart(req.getPathInfo(), "/" + clientEndpoint + "/customTask/");
+                    CustomTaskRequest.handleCustomTask(target);
+                    resp.setStatus(HttpServletResponse.SC_OK);
+                    resp.getWriter().format("I SEEEE '%s'", clientEndpoint).flush();
+                } else {
+                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    resp.getWriter().format("No registered client with id '%s'", clientEndpoint).flush();
+                }
+            } catch (RuntimeException e) {
                 handleException(e, resp);
             }
             return;
