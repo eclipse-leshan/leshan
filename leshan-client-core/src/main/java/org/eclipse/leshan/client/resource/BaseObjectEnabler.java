@@ -30,10 +30,14 @@ import java.util.Set;
 
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
+import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
+import org.eclipse.leshan.core.link.lwm2m.attributes.InvalidAttributesException;
+import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
+import org.eclipse.leshan.core.link.lwm2m.attributes.NotificationAttributeTree;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
@@ -80,10 +84,55 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     private LwM2mClient lwm2mClient;
     private LinkFormatHelper linkFormatHelper;
 
+    private final NotificationAttributeTree assignedAttributes = new NotificationAttributeTree();
+
     public BaseObjectEnabler(int id, ObjectModel objectModel) {
         this.id = id;
         this.objectModel = objectModel;
         this.transactionalListener = createTransactionListener();
+        this.transactionalListener.addListener(new ObjectsListenerAdapter() {
+
+            @Override
+            public void resourceChanged(LwM2mPath... paths) {
+                synchronized (BaseObjectEnabler.this) {
+                    // Assigned attributes housekeeping : if resource instance is removed we removed attached
+                    // attributes.
+                    for (LwM2mPath p : paths) {
+                        if (p.isResource()) {
+                            ResourceModel resourceModel = objectModel.resources.get(p.getResourceId());
+                            if (resourceModel.multiple) {
+                                // TODO ideally we should have a better event like 'resource instance removed'
+                                // Maybe we should change the current event model for a more advanced one...
+                                // Plus, ideally all next code should be done atomically...
+                                Set<LwM2mPath> resourceInstancePaths = assignedAttributes.getChildren(p);
+                                if (!resourceInstancePaths.isEmpty()) {
+                                    List<Integer> instanceResourceIds = getAvailableInstanceResourceIds(
+                                            p.getObjectInstanceId(), p.getResourceId());
+                                    // We verify that attribute in tree are attached to an existent resource instance
+                                    for (LwM2mPath resourceInstancePath : resourceInstancePaths) {
+                                        if (!instanceResourceIds
+                                                .contains(resourceInstancePath.getResourceInstanceId())) {
+                                            assignedAttributes.remove(resourceInstancePath);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void objectInstancesRemoved(LwM2mObjectEnabler object, int... instanceIds) {
+                synchronized (BaseObjectEnabler.this) {
+                    // Assigned attributes housekeeping : if object instance is removed we removed attached
+                    // attributes.
+                    for (int instanceId : instanceIds) {
+                        assignedAttributes.removeAllUnder(new LwM2mPath(getId(), instanceId));
+                    }
+                }
+            }
+        });
     }
 
     protected TransactionalObjectListener createTransactionListener() {
@@ -390,9 +439,28 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         if (server.isLwm2mBootstrapServer()) {
             return WriteAttributesResponse.methodNotAllowed();
         }
-        // TODO should be implemented here to be available for all object enabler
-        // This should be a not implemented error, but this is not defined in the spec.
-        return WriteAttributesResponse.internalServerError("not implemented");
+
+        // apply new attribute values
+        LwM2mAttributeSet currentAttributes = assignedAttributes.get(request.getPath());
+        LwM2mAttributeSet newValue;
+        if (currentAttributes != null) {
+            newValue = currentAttributes.apply(request.getAttributes());
+        } else {
+            newValue = request.getAttributes();
+        }
+        try {
+            newValue.validate(request.getPath(), getObjectModel());
+        } catch (InvalidAttributesException e) {
+            return WriteAttributesResponse.badRequest(e.getMessage());
+        }
+
+        if (newValue.isEmpty()) {
+            assignedAttributes.remove(request.getPath());
+        } else {
+            assignedAttributes.put(request.getPath(), newValue);
+        }
+
+        return WriteAttributesResponse.success();
     }
 
     @Override
@@ -562,5 +630,10 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     @Override
     public ContentFormat getDefaultEncodingFormat(DownlinkRequest<?> request) {
         return ContentFormat.DEFAULT;
+    }
+
+    @Override
+    public NotificationAttributeTree getAttributesFor(LwM2mServer server) {
+        return assignedAttributes;
     }
 }

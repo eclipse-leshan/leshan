@@ -34,6 +34,10 @@ import org.eclipse.leshan.client.endpoint.LwM2mClientEndpoint;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
+import org.eclipse.leshan.client.notification.DefaultNotificationStrategy;
+import org.eclipse.leshan.client.notification.NotificationDataStore;
+import org.eclipse.leshan.client.notification.NotificationManager;
+import org.eclipse.leshan.client.notification.NotificationStrategy;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverAdapter;
 import org.eclipse.leshan.client.observer.LwM2mClientObserverDispatcher;
@@ -56,6 +60,7 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
+import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -82,6 +87,7 @@ public class LeshanClient implements LwM2mClient {
     private final RegistrationEngine engine;
     private final LwM2mClientObserverDispatcher observers;
     private final DataSenderManager dataSenderManager;
+    private final NotificationManager notificationManager;
 
     public LeshanClient(String endpoint, List<? extends LwM2mObjectEnabler> objectEnablers,
             List<DataSender> dataSenders, List<Certificate> trustStore, RegistrationEngineFactory engineFactory,
@@ -120,7 +126,29 @@ public class LeshanClient implements LwM2mClient {
                 engine);
         createRegistrationUpdateHandler(engine, endpointsManager, bootstrapHandler, objectTree, linkFormatHelper);
 
-        endpointsProvider.init(objectTree, requestReceiver, toolbox);
+        notificationManager = createNotificationManager(objectTree, requestReceiver, sharedExecutor);
+        endpointsProvider.init(objectTree, requestReceiver, notificationManager, toolbox);
+    }
+
+    protected NotificationManager createNotificationManager(LwM2mObjectTree objectTree,
+            DownlinkRequestReceiver requestReceiver, ScheduledExecutorService sharedExecutor) {
+        final NotificationManager notificationManager = new NotificationManager(objectTree, requestReceiver,
+                createNotificationStore(), createNotificationStrategy(), sharedExecutor);
+        this.addObserver(new LwM2mClientObserverAdapter() {
+            @Override
+            public void onBootstrapStarted(LwM2mServer bsserver, BootstrapRequest request) {
+                notificationManager.clear();
+            }
+        });
+        return notificationManager;
+    }
+
+    protected NotificationDataStore createNotificationStore() {
+        return new NotificationDataStore();
+    }
+
+    protected NotificationStrategy createNotificationStrategy() {
+        return new DefaultNotificationStrategy();
     }
 
     protected LwM2mRootEnabler createRootEnabler(LwM2mObjectTree tree) {

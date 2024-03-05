@@ -19,6 +19,7 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.leshan.client.notification.NotificationManager;
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.servers.LwM2mServer;
@@ -26,7 +27,8 @@ import org.eclipse.leshan.client.servers.ServerInfo;
 
 public interface LwM2mClientEndpointsProvider {
 
-    void init(LwM2mObjectTree objectTree, DownlinkRequestReceiver requestReceiver, ClientEndpointToolbox toolbox);
+    void init(LwM2mObjectTree objectTree, DownlinkRequestReceiver requestReceiver,
+            NotificationManager notificationManager, ClientEndpointToolbox toolbox);
 
     LwM2mServer createEndpoint(ServerInfo serverInfo, boolean clientInitiatedOnly, List<Certificate> trustStore,
             ClientEndpointToolbox toolbox);

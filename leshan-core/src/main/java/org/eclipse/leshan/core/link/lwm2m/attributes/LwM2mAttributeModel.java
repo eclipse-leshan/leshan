@@ -18,7 +18,7 @@ package org.eclipse.leshan.core.link.lwm2m.attributes;
 import java.util.Set;
 
 import org.eclipse.leshan.core.link.attributes.AttributeModel;
-import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 
 /**
@@ -97,7 +97,7 @@ public abstract class LwM2mAttributeModel<T> extends AttributeModel<LwM2mAttribu
      * @param model the LWM2M model used, if this model is null checks which need model will be ignored.
      * @return null is the attribute can be applied to the LWM2M node identified by the given path.
      */
-    public String getApplicabilityError(LwM2mPath path, LwM2mModel model) {
+    public String getApplicabilityError(LwM2mPath path, ObjectModel model) {
         if (!canBeAttachedTo(Attachment.fromPath(path))) {
             return String.format("%s attribute is only applicable to %s, and so can not be attached to %s", getName(),
                     getAttachment(), path);

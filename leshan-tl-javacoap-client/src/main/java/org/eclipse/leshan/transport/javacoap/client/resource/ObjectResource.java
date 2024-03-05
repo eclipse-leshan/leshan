@@ -20,10 +20,13 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
+import org.eclipse.leshan.client.notification.NotificationManager;
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
+import org.eclipse.leshan.client.resource.NotificationSender;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
+import org.eclipse.leshan.core.link.lwm2m.attributes.InvalidAttributesException;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -60,7 +63,12 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.eclipse.leshan.transport.javacoap.client.observe.LwM2mKeys;
+import org.eclipse.leshan.transport.javacoap.client.observe.ObserversListener;
+import org.eclipse.leshan.transport.javacoap.client.observe.ObserversManager;
 import org.eclipse.leshan.transport.javacoap.request.ResponseCodeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
@@ -69,14 +77,52 @@ import com.mbed.coap.packet.Opaque;
 
 public class ObjectResource extends LwM2mClientCoapResource {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ObjectResource.class);
+
     protected DownlinkRequestReceiver requestReceiver;
     protected ClientEndpointToolbox toolbox;
+    protected NotificationManager notificationManager;
+    protected ObserversManager observersManager;
 
     public ObjectResource(DownlinkRequestReceiver requestReceiver, String uri, ClientEndpointToolbox toolbox,
-            ServerIdentityExtractor serverIdentityExtractor) {
+            ServerIdentityExtractor serverIdentityExtractor, NotificationManager notificationManager,
+            ObserversManager observersManager) {
         super(uri, serverIdentityExtractor);
         this.requestReceiver = requestReceiver;
         this.toolbox = toolbox;
+        this.notificationManager = notificationManager;
+        this.observersManager = observersManager;
+
+        this.observersManager.addListener(new ObserversListener() {
+            @Override
+            public void observersRemoved(CoapRequest coapRequest) {
+                // Get object URI
+                String URI = coapRequest.options().getUriPath();
+                // we don't manage observation on root path
+                if (URI == null)
+                    return;
+
+                // Get Server identity
+                LwM2mServer extractIdentity = extractIdentity(coapRequest);
+
+                // handle content format for Read and Observe Request
+                ContentFormat requestedContentFormat = null;
+                if (coapRequest.options().getAccept() != null) {
+                    // If an request ask for a specific content format, use it (if we support it)
+                    requestedContentFormat = ContentFormat.fromCode(coapRequest.options().getAccept());
+                }
+
+                // Create Observe request
+                ObserveRequest observeRequest = new ObserveRequest(requestedContentFormat, URI, coapRequest);
+
+                // Remove notification data for this request
+                notificationManager.clear(extractIdentity, observeRequest);
+            }
+
+            @Override
+            public void observersAdded(CoapRequest request) {
+            }
+        });
     }
 
     @Override
@@ -139,14 +185,36 @@ public class ObjectResource extends LwM2mClientCoapResource {
                 ObserveResponse response = requestReceiver.requestReceived(identity, observeRequest).getResponse();
                 if (response.getCode() == ResponseCode.CONTENT) {
                     ContentFormat format = getContentFormat(observeRequest, requestedContentFormat);
-                    return responseWithPayload( //
+                    CompletableFuture<CoapResponse> coapResponse = responseWithPayload( //
                             response.getCode(), //
                             format, //
                             toolbox.getEncoder().encode(response.getContent(), format, getPath(URI),
                                     toolbox.getModel()));
+
+                    // store observation relation if this is not a active observe cancellation
+                    if (coapRequest.options().getObserve() != 1) {
+                        try {
+                            notificationManager.initRelation(identity, observeRequest, response.getContent(),
+                                    createNotificationSender(coapRequest, identity, observeRequest,
+                                            requestedContentFormat));
+                        } catch (InvalidAttributesException e) {
+                            return errorMessage(ResponseCode.INTERNAL_SERVER_ERROR,
+                                    "Invalid Attributes state : " + e.getMessage());
+                        }
+                    }
+                    return coapResponse;
                 } else {
-                    return errorMessage(response.getCode(), response.getErrorMessage());
+                    CompletableFuture<CoapResponse> errorMessage = errorMessage(response.getCode(),
+                            response.getErrorMessage());
+                    notificationManager.clear(identity, observeRequest);
+                    return errorMessage;
                 }
+            } else if (coapRequest.getTransContext(LwM2mKeys.LESHAN_NOTIFICATION, false)) {
+                // Manage Notifications
+                ObserveRequest observeRequest = new ObserveRequest(requestedContentFormat, URI, coapRequest);
+                notificationManager.notificationTriggered(identity, observeRequest,
+                        createNotificationSender(coapRequest, identity, observeRequest, requestedContentFormat));
+                return null;
             } else {
                 if (identity.isLwm2mBootstrapServer()) {
                     // Manage Bootstrap Read Request
@@ -181,6 +249,7 @@ public class ObjectResource extends LwM2mClientCoapResource {
                 }
             }
         }
+
     }
 
     protected ContentFormat getContentFormat(DownlinkRequest<?> request, ContentFormat requestedContentFormat) {
@@ -424,5 +493,42 @@ public class ObjectResource extends LwM2mClientCoapResource {
                 return emptyResponse(response.getCode());
             }
         }
+    }
+
+    protected NotificationSender createNotificationSender(CoapRequest coapRequest, LwM2mServer server,
+            ObserveRequest observeRequest, ContentFormat requestedContentFormat) {
+        return new NotificationSender() {
+            @Override
+            public boolean sendNotification(ObserveResponse response) {
+                try {
+                    if (observersManager.contains(coapRequest))
+                        if (response.getCode() == ResponseCode.CONTENT) {
+                            ContentFormat format = getContentFormat(observeRequest, requestedContentFormat);
+                            CompletableFuture<CoapResponse> coapResponse = responseWithPayload( //
+                                    response.getCode(), //
+                                    format, //
+                                    toolbox.getEncoder().encode(response.getContent(), format,
+                                            getPath(coapRequest.options().getUriPath()), toolbox.getModel()));
+
+                            // store observation relation
+                            observersManager.sendObservation(coapRequest, coapResponse);
+                            return true;
+                        } else {
+                            CompletableFuture<CoapResponse> errorMessage = errorMessage(response.getCode(),
+                                    response.getErrorMessage());
+                            observersManager.sendObservation(coapRequest, errorMessage);
+                            return false;
+                        }
+                    else {
+                        return false;
+                    }
+                } catch (Exception e) {
+                    LOG.error("Exception while sending notification [{}] for [{}] to {}", response, observeRequest,
+                            server, e);
+                    errorMessage(ResponseCode.INTERNAL_SERVER_ERROR, "failure sending notification");
+                    return false;
+                }
+            }
+        };
     }
 }

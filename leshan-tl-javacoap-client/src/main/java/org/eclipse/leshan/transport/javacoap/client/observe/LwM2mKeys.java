@@ -25,4 +25,5 @@ public class LwM2mKeys {
 
     // Keys for Observe Request
     public static final Key<List<LwM2mPath>> LESHAN_OBSERVED_PATHS = new Key<>(null);
+    public static final Key<Boolean> LESHAN_NOTIFICATION = new Key<>(null);
 }

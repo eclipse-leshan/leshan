@@ -41,6 +41,7 @@ import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpoint;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpoint;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
+import org.eclipse.leshan.client.notification.NotificationDataStore;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.send.DataSender;
@@ -63,6 +64,7 @@ public class LeshanTestClient extends LeshanClient {
     private final String endpointName;
     private final InOrder inOrder;
     private final ReverseProxy proxy;
+    private NotificationDataStore notificationDataStore;
 
     public LeshanTestClient(String endpoint, List<? extends LwM2mObjectEnabler> objectEnablers,
             List<DataSender> dataSenders, List<Certificate> trustStore, RegistrationEngineFactory engineFactory,
@@ -83,6 +85,16 @@ public class LeshanTestClient extends LeshanClient {
         clientObserver = mock(LwM2mClientObserver.class);
         addObserver(clientObserver);
         inOrder = inOrder(clientObserver);
+    }
+
+    @Override
+    protected NotificationDataStore createNotificationStore() {
+        notificationDataStore = super.createNotificationStore();
+        return notificationDataStore;
+    }
+
+    public NotificationDataStore getNotificationDataStore() {
+        return notificationDataStore;
     }
 
     public String getEndpointName() {
@@ -191,6 +203,11 @@ public class LeshanTestClient extends LeshanClient {
         // ...
     }
 
+    public void waitForBootstrapStarted() {
+        // TODO Auto-generated method stub
+
+    }
+
     public void waitForBootstrapSuccess(LeshanBootstrapServer server, long timeout, TimeUnit unit) {
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onBootstrapStarted(assertArg( //
                 s -> assertThat(server.getEndpoints()) //
@@ -242,4 +259,5 @@ public class LeshanTestClient extends LeshanClient {
         }
         return false;
     }
+
 }

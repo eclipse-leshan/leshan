@@ -13,19 +13,13 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.transport.javacoap.client.observe;
+package org.eclipse.leshan.client.resource;
 
-import com.mbed.coap.packet.CoapRequest;
+import org.eclipse.leshan.core.response.ObserveResponse;
 
-public interface ObserversStore extends Iterable<CoapRequest> {
-
-    void add(CoapRequest observeRequest);
-
-    void remove(CoapRequest observeRequest);
-
-    boolean contains(CoapRequest observeRequest);
-
-    void addListener(ObserversListener listener);
-
-    void removeListener(ObserversListener listener);
+public interface NotificationSender {
+    /**
+     * Send notification, return false if there is no more observe relation.
+     */
+    boolean sendNotification(ObserveResponse response);
 }

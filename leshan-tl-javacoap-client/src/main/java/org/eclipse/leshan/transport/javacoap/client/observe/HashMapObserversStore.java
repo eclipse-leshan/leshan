@@ -17,8 +17,10 @@ package org.eclipse.leshan.transport.javacoap.client.observe;
 
 import java.net.InetSocketAddress;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.Opaque;
@@ -26,6 +28,7 @@ import com.mbed.coap.packet.Opaque;
 public class HashMapObserversStore implements ObserversStore {
 
     private final ConcurrentHashMap<Object, CoapRequest> store = new ConcurrentHashMap<>();
+    private final List<ObserversListener> listeners = new CopyOnWriteArrayList<>();
 
     @Override
     public Iterator<CoapRequest> iterator() {
@@ -34,12 +37,45 @@ public class HashMapObserversStore implements ObserversStore {
 
     @Override
     public void add(CoapRequest observeRequest) {
-        store.put(toKey(observeRequest), observeRequest);
+        CoapRequest previous = store.put(toKey(observeRequest), observeRequest);
+        if (previous != null)
+            fireObserversRemoved(previous);
+        fireObserversAdded(observeRequest);
     }
 
     @Override
     public void remove(CoapRequest observeRequest) {
-        store.remove(toKey(observeRequest));
+        CoapRequest previous = store.remove(toKey(observeRequest));
+        if (previous != null) {
+            fireObserversRemoved(previous);
+        }
+    }
+
+    @Override
+    public boolean contains(CoapRequest observeRequest) {
+        return store.containsKey(toKey(observeRequest));
+    }
+
+    @Override
+    public void addListener(ObserversListener listener) {
+        listeners.add(listener);
+    }
+
+    private void fireObserversAdded(CoapRequest observeRequest) {
+        for (ObserversListener listener : listeners) {
+            listener.observersAdded(observeRequest);
+        }
+    }
+
+    @Override
+    public void removeListener(ObserversListener listener) {
+        listeners.remove(listener);
+    }
+
+    private void fireObserversRemoved(CoapRequest observeRequest) {
+        for (ObserversListener listener : listeners) {
+            listener.observersRemoved(observeRequest);
+        }
     }
 
     protected Object toKey(CoapRequest observeRequest) {
@@ -71,6 +107,12 @@ public class HashMapObserversStore implements ObserversStore {
                 return false;
             ObserverKey other = (ObserverKey) obj;
             return Objects.equals(peerAddress, other.peerAddress) && Objects.equals(token, other.token);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("ObserverKey [token=%s, peerAddress=%s]", token != null ? token.toHex() : "null",
+                    peerAddress);
         }
     }
 }

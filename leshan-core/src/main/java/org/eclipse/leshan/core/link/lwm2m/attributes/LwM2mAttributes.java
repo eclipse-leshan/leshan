@@ -23,7 +23,7 @@ import java.util.Map;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.LwM2mId;
-import org.eclipse.leshan.core.model.LwM2mModel;
+import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 
@@ -44,14 +44,14 @@ public final class LwM2mAttributes {
         };
 
         @Override
-        public String getApplicabilityError(LwM2mPath path, LwM2mModel model) {
+        public String getApplicabilityError(LwM2mPath path, ObjectModel model) {
             String error = super.getApplicabilityError(path, model);
             if (error != null)
                 return error;
 
             if (model != null) {
                 // here the path should be a resource path one.
-                ResourceModel resourceModel = model.getResourceModel(path.getObjectId(), path.getResourceId());
+                ResourceModel resourceModel = model.resources.get(path.getResourceId());
                 if (resourceModel != null && !resourceModel.multiple) {
                     return "'Dimension' attribute is only applicable to multi-Instance resource";
                 }
@@ -74,7 +74,7 @@ public final class LwM2mAttributes {
         };
 
         @Override
-        public String getApplicabilityError(LwM2mPath path, LwM2mModel model) {
+        public String getApplicabilityError(LwM2mPath path, ObjectModel model) {
             String error = super.getApplicabilityError(path, model);
             if (error != null)
                 return error;
@@ -101,7 +101,7 @@ public final class LwM2mAttributes {
             AttributeClass.PROPERTIES) {
 
         @Override
-        public String getApplicabilityError(LwM2mPath path, LwM2mModel model) {
+        public String getApplicabilityError(LwM2mPath path, ObjectModel model) {
             String error = super.getApplicabilityError(path, model);
             if (error != null)
                 return error;
@@ -126,7 +126,7 @@ public final class LwM2mAttributes {
             AccessMode.RW, //
             AttributeClass.NOTIFICATION) {
         @Override
-        public String getApplicabilityError(LwM2mPath path, LwM2mModel model) {
+        public String getApplicabilityError(LwM2mPath path, ObjectModel model) {
             String error = super.getApplicabilityError(path, model);
             if (error != null)
                 return error;
@@ -135,7 +135,7 @@ public final class LwM2mAttributes {
                 Integer resourceId = path.getResourceId();
                 if (resourceId != null) {
                     // if assigned to at least resource level.
-                    ResourceModel resourceModel = model.getResourceModel(path.getObjectId(), path.getResourceId());
+                    ResourceModel resourceModel = model.resources.get(path.getResourceId());
                     if (resourceModel != null && !resourceModel.operations.isReadable()) {
                         return "'pmin' attribute  can not be applied to not readable resource";
                     }
@@ -153,7 +153,7 @@ public final class LwM2mAttributes {
             AccessMode.RW, //
             AttributeClass.NOTIFICATION) {
         @Override
-        public String getApplicabilityError(LwM2mPath path, LwM2mModel model) {
+        public String getApplicabilityError(LwM2mPath path, ObjectModel model) {
             String error = super.getApplicabilityError(path, model);
             if (error != null)
                 return error;
@@ -162,7 +162,7 @@ public final class LwM2mAttributes {
                 Integer resourceId = path.getResourceId();
                 if (resourceId != null) {
                     // if assigned to at least resource level.
-                    ResourceModel resourceModel = model.getResourceModel(path.getObjectId(), path.getResourceId());
+                    ResourceModel resourceModel = model.resources.get(path.getResourceId());
                     if (resourceModel != null && !resourceModel.operations.isReadable()) {
                         return "'pmax' attribute can not be applied to not readable resource";
                     }
@@ -180,7 +180,7 @@ public final class LwM2mAttributes {
             AccessMode.RW, //
             AttributeClass.NOTIFICATION) {
         @Override
-        public String getApplicabilityError(LwM2mPath path, LwM2mModel model) {
+        public String getApplicabilityError(LwM2mPath path, ObjectModel model) {
             String error = super.getApplicabilityError(path, model);
             if (error != null)
                 return error;
@@ -189,7 +189,7 @@ public final class LwM2mAttributes {
                 Integer resourceId = path.getResourceId();
                 if (resourceId != null) {
                     // if assigned to at least resource level.
-                    ResourceModel resourceModel = model.getResourceModel(path.getObjectId(), path.getResourceId());
+                    ResourceModel resourceModel = model.resources.get(path.getResourceId());
                     if (resourceModel != null) {
                         if (!resourceModel.operations.isReadable()) {
                             return "'gt' attribute is can not be applied to not readable resource";
@@ -212,7 +212,7 @@ public final class LwM2mAttributes {
             AccessMode.RW, //
             AttributeClass.NOTIFICATION) {
         @Override
-        public String getApplicabilityError(LwM2mPath path, LwM2mModel model) {
+        public String getApplicabilityError(LwM2mPath path, ObjectModel model) {
             String error = super.getApplicabilityError(path, model);
             if (error != null)
                 return error;
@@ -221,7 +221,7 @@ public final class LwM2mAttributes {
                 Integer resourceId = path.getResourceId();
                 if (resourceId != null) {
                     // if assigned to at least resource level.
-                    ResourceModel resourceModel = model.getResourceModel(path.getObjectId(), path.getResourceId());
+                    ResourceModel resourceModel = model.resources.get(path.getResourceId());
                     if (resourceModel != null) {
                         if (!resourceModel.operations.isReadable()) {
                             return "'lt' attribute is can not be applied to not readable resource";
@@ -242,7 +242,7 @@ public final class LwM2mAttributes {
             AccessMode.RW, //
             AttributeClass.NOTIFICATION) {
         @Override
-        public String getApplicabilityError(LwM2mPath path, LwM2mModel model) {
+        public String getApplicabilityError(LwM2mPath path, ObjectModel model) {
             String error = super.getApplicabilityError(path, model);
             if (error != null)
                 return error;
@@ -251,7 +251,7 @@ public final class LwM2mAttributes {
                 Integer resourceId = path.getResourceId();
                 if (resourceId != null) {
                     // if assigned to at least resource level.
-                    ResourceModel resourceModel = model.getResourceModel(path.getObjectId(), path.getResourceId());
+                    ResourceModel resourceModel = model.resources.get(path.getResourceId());
                     if (resourceModel != null) {
                         if (!resourceModel.operations.isReadable()) {
                             return "'st' attribute is can not be applied to not readable resource";
@@ -274,7 +274,7 @@ public final class LwM2mAttributes {
             AccessMode.RW, //
             AttributeClass.NOTIFICATION) {
         @Override
-        public String getApplicabilityError(LwM2mPath path, LwM2mModel model) {
+        public String getApplicabilityError(LwM2mPath path, ObjectModel model) {
             String error = super.getApplicabilityError(path, model);
             if (error != null)
                 return error;
@@ -283,7 +283,7 @@ public final class LwM2mAttributes {
                 Integer resourceId = path.getResourceId();
                 if (resourceId != null) {
                     // if assigned to at least resource level.
-                    ResourceModel resourceModel = model.getResourceModel(path.getObjectId(), path.getResourceId());
+                    ResourceModel resourceModel = model.resources.get(path.getResourceId());
                     if (resourceModel != null && !resourceModel.operations.isReadable()) {
                         return "'epmin' attribute is can not be applied to not readable resource";
                     }
@@ -301,7 +301,7 @@ public final class LwM2mAttributes {
             AccessMode.RW, //
             AttributeClass.NOTIFICATION) {
         @Override
-        public String getApplicabilityError(LwM2mPath path, LwM2mModel model) {
+        public String getApplicabilityError(LwM2mPath path, ObjectModel model) {
             String error = super.getApplicabilityError(path, model);
             if (error != null)
                 return error;
@@ -310,7 +310,7 @@ public final class LwM2mAttributes {
                 Integer resourceId = path.getResourceId();
                 if (resourceId != null) {
                     // if assigned to at least resource level.
-                    ResourceModel resourceModel = model.getResourceModel(path.getObjectId(), path.getResourceId());
+                    ResourceModel resourceModel = model.resources.get(path.getResourceId());
                     if (resourceModel != null && !resourceModel.operations.isReadable()) {
                         return "'epmax' attribute is can not be applied to not readable resource";
                     }

@@ -17,6 +17,7 @@ package org.eclipse.leshan.core.link.attributes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.eclipse.leshan.core.LwM2m.Version;
@@ -35,5 +36,51 @@ public class AttributeTest {
         assertEquals(new Version("1.0"), verAttribute.getValue());
         assertTrue(verAttribute.canBeAttachedTo(Attachment.OBJECT));
         assertFalse(verAttribute.isWritable());
+    }
+
+    @Test
+    public void should_throw_on_pmin_lesser_than_zero() {
+        // The minimum period MUST be greater than zero
+        // https://datatracker.ietf.org/doc/html/draft-ietf-core-dynlink-07#section-4.1
+
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, -1L);
+        });
+    }
+
+    @Test
+    public void should_throw_on_pmax_lesser_than_zero() {
+        // The maximum period MUST be greater than zero
+        // https://datatracker.ietf.org/doc/html/draft-ietf-core-dynlink-07#section-4.2
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            LwM2mAttributes.create(LwM2mAttributes.MAXIMUM_PERIOD, -1L);
+        });
+    }
+
+    @Test
+    public void should_throw_on_epmin_lesser_than_zero() {
+        // The Minimum Evaluation Period MUST be greater than zero
+        // https://datatracker.ietf.org/doc/html/draft-ietf-core-conditional-attributes-06#section-3.2.3
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            LwM2mAttributes.create(LwM2mAttributes.EVALUATE_MINIMUM_PERIOD, -1L);
+        });
+    }
+
+    @Test
+    public void should_throw_on_epmax_lesser_than_zero() {
+        // The Maximum Evaluation Period MUST be greater than zero
+        // https://datatracker.ietf.org/doc/html/draft-ietf-core-conditional-attributes-06#section-3.2.4
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            LwM2mAttributes.create(LwM2mAttributes.EVALUATE_MAXIMUM_PERIOD, -1L);
+        });
+    }
+
+    @Test
+    public void should_throw_on_step_lesser_than_zero() {
+        // The Maximum Evaluation Period MUST be greater than zero
+        // https://datatracker.ietf.org/doc/html/draft-ietf-core-conditional-attributes-06#section-3.2.4
+        assertThrowsExactly(IllegalArgumentException.class, () -> {
+            LwM2mAttributes.create(LwM2mAttributes.STEP, -1D);
+        });
     }
 }

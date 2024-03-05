@@ -316,6 +316,15 @@ public class LeshanTestServer extends LeshanServer {
         return c.getValue();
     }
 
+    public ObserveResponse waitForNotificationExactlyIn(SingleObservation observation, int timeout, TimeUnit unit,
+            double percentOfError) {
+        SingleObservation singleObservation = observation;
+        ensureNoNotification(singleObservation,
+                (int) (TimeUnit.MILLISECONDS.convert(timeout, unit) * (1d - percentOfError)), TimeUnit.MILLISECONDS);
+        return waitForNotificationOf(singleObservation,
+                (int) (TimeUnit.MILLISECONDS.convert(timeout, unit) * percentOfError * 2d), TimeUnit.MILLISECONDS);
+    }
+
     public ObserveResponse waitForNotificationThenCancelled(SingleObservation obs) {
         return waitForNotificationThenCancelled(obs, 1, TimeUnit.SECONDS);
     }

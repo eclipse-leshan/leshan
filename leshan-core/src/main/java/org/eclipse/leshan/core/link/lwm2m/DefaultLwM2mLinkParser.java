@@ -28,6 +28,7 @@ import org.eclipse.leshan.core.link.attributes.AttributeModel;
 import org.eclipse.leshan.core.link.attributes.Attributes;
 import org.eclipse.leshan.core.link.attributes.DefaultAttributeParser;
 import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
+import org.eclipse.leshan.core.link.lwm2m.attributes.InvalidAttributesException;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
@@ -103,7 +104,7 @@ public class DefaultLwM2mLinkParser implements LwM2mLinkParser {
 
                 // create link and replace it
                 lwm2mLinks[i] = new LwM2mLink(rootpath, new LwM2mPath(path), lwm2mAttrSet);
-            } catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException | InvalidAttributesException e) {
                 String strLink = new String(bytes, StandardCharsets.UTF_8);
                 throw new LinkParseException(e, "Unable to parse link %s in %s", links[i], strLink);
             }
@@ -150,7 +151,7 @@ public class DefaultLwM2mLinkParser implements LwM2mLinkParser {
 
                     // create link and replace it
                     links[i] = new MixedLwM2mLink(rootPath, lwm2mPath, attributes);
-                } catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException | InvalidAttributesException e) {
                     String strLink = new String(bytes, StandardCharsets.UTF_8);
                     throw new LinkParseException(e, "Unable to parse link %s in %s", links[i], strLink);
                 }
