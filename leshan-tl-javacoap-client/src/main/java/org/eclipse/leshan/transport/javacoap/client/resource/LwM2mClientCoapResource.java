@@ -20,6 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.transport.javacoap.identity.IdentityHandler;
 import org.eclipse.leshan.transport.javacoap.resource.LwM2mCoapResource;
 
 import com.mbed.coap.packet.CoapRequest;
@@ -32,8 +33,9 @@ public class LwM2mClientCoapResource extends LwM2mCoapResource {
 
     protected final ServerIdentityExtractor serverIdentityExtractor;
 
-    public LwM2mClientCoapResource(String uri, ServerIdentityExtractor identityExtractor) {
-        super(uri);
+    public LwM2mClientCoapResource(String uri, IdentityHandler identityHandler,
+            ServerIdentityExtractor identityExtractor) {
+        super(uri, identityHandler);
         this.serverIdentityExtractor = identityExtractor;
     }
 

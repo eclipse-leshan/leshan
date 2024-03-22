@@ -60,6 +60,7 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.eclipse.leshan.transport.javacoap.identity.IdentityHandler;
 import org.eclipse.leshan.transport.javacoap.request.ResponseCodeUtil;
 
 import com.mbed.coap.packet.CoapRequest;
@@ -73,8 +74,8 @@ public class ObjectResource extends LwM2mClientCoapResource {
     protected ClientEndpointToolbox toolbox;
 
     public ObjectResource(DownlinkRequestReceiver requestReceiver, String uri, ClientEndpointToolbox toolbox,
-            ServerIdentityExtractor serverIdentityExtractor) {
-        super(uri, serverIdentityExtractor);
+            IdentityHandler identityHandler, ServerIdentityExtractor serverIdentityExtractor) {
+        super(uri, identityHandler, serverIdentityExtractor);
         this.requestReceiver = requestReceiver;
         this.toolbox = toolbox;
     }

@@ -22,11 +22,18 @@ import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.transport.javacoap.identity.IdentityHandler;
 
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 
 public class ClientCoapMessageTranslator {
+
+    private final IdentityHandler identityHandler;
+
+    public ClientCoapMessageTranslator(IdentityHandler identityHandler) {
+        this.identityHandler = identityHandler;
+    }
 
     public CoapRequest createCoapRequest(LwM2mServer server, UplinkRequest<? extends LwM2mResponse> lwm2mRequest,
             ClientEndpointToolbox toolbox, LwM2mModel model) {
@@ -39,7 +46,7 @@ public class ClientCoapMessageTranslator {
 
         // create CoAP Request
         CoapRequestBuilder builder = new CoapRequestBuilder((IpPeer) lwm2mPeer, toolbox.getEncoder(), model,
-                toolbox.getLinkSerializer());
+                toolbox.getLinkSerializer(), identityHandler);
         lwm2mRequest.accept(builder);
         return builder.getRequest();
     }

@@ -30,6 +30,7 @@ import org.eclipse.leshan.server.endpoint.ServerEndpointToolbox;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.request.UplinkRequestReceiver;
 import org.eclipse.leshan.server.security.ServerSecurityInfo;
+import org.eclipse.leshan.transport.javacoap.identity.IdentityHandler;
 import org.eclipse.leshan.transport.javacoap.server.observation.CoapNotificationReceiver;
 import org.eclipse.leshan.transport.javacoap.server.observation.LwM2mObservationsStore;
 import org.eclipse.leshan.transport.javacoap.server.resource.RegistrationResource;
@@ -50,12 +51,14 @@ public abstract class AbstractJavaCoapServerEndpointsProvider implements LwM2mSe
     private final InetSocketAddress localAddress;
     private CoapServer coapServer;
     private JavaCoapServerEndpoint lwm2mEndpoint;
+    private final IdentityHandler identityHandler;
 
     public AbstractJavaCoapServerEndpointsProvider(Protocol protocol, String endpointDescription,
-            InetSocketAddress localAddress) {
+            InetSocketAddress localAddress, IdentityHandler identityHandler) {
         this.supportedProtocol = protocol;
         this.endpointDescription = endpointDescription;
         this.localAddress = localAddress;
+        this.identityHandler = identityHandler;
     }
 
     @Override
@@ -68,17 +71,18 @@ public abstract class AbstractJavaCoapServerEndpointsProvider implements LwM2mSe
 
         // Create Resources / Routes
         RegistrationResource registerResource = new RegistrationResource(requestReceiver, toolbox.getLinkParser(),
-                endpointUriProvider);
+                endpointUriProvider, identityHandler);
         Service<CoapRequest, CoapResponse> resources = RouterService.builder() //
                 .any("/rd/*", registerResource) //
                 .any("/rd", registerResource)//
                 .any("/dp",
                         new SendResource(requestReceiver, toolbox.getDecoder(), toolbox.getProfileProvider(),
-                                endpointUriProvider))//
+                                endpointUriProvider, identityHandler))//
                 .build();
 
         // Create CoAP Server
         coapServer = createCoapServer(localAddress, //
+                serverSecurityInfo, //
                 resources, //
                 new CoapNotificationReceiver(coapServer, notificationReceiver, server.getRegistrationStore(),
                         server.getModelProvider(), toolbox.getDecoder()), //
@@ -87,12 +91,12 @@ public abstract class AbstractJavaCoapServerEndpointsProvider implements LwM2mSe
         endpointUriProvider.setCoapServer(coapServer);
 
         lwm2mEndpoint = new JavaCoapServerEndpoint(supportedProtocol, endpointDescription, coapServer,
-                new ServerCoapMessageTranslator(), toolbox);
+                new ServerCoapMessageTranslator(identityHandler), toolbox);
     }
 
     protected abstract CoapServer createCoapServer(InetSocketAddress localAddress,
-            Service<CoapRequest, CoapResponse> resources, NotificationsReceiver notificationReceiver,
-            ObservationsStore observationsStore);
+            ServerSecurityInfo serverSecurityInfo, Service<CoapRequest, CoapResponse> resources,
+            NotificationsReceiver notificationReceiver, ObservationsStore observationsStore);
 
     @Override
     public List<LwM2mServerEndpoint> getEndpoints() {

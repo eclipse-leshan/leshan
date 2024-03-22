@@ -23,10 +23,13 @@ import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import com.mbed.coap.packet.CoapPacket;
 import com.mbed.coap.transport.CoapTcpListener;
 import com.mbed.coap.transport.CoapTcpTransport;
+import com.mbed.coap.transport.TransportContext;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -39,6 +42,7 @@ import io.netty.channel.ChannelPromise;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.ssl.SslContext;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 
@@ -49,9 +53,18 @@ public class NettyCoapTcpTransport implements CoapTcpTransport {
     private final ConcurrentMap<SocketAddress, Channel> activeChannels = new ConcurrentHashMap<>();
     private volatile CoapTcpListener listener;
     private CompletableFuture<CoapPacket> receivePromise = new CompletableFuture<>();
+    private final SslContext sslContext;
+    private final Function<Channel, TransportContext> contextResolver;
+    private final BiFunction<TransportContext, TransportContext, Boolean> contextMatcher;
 
-    public NettyCoapTcpTransport(InetSocketAddress localadddress) {
+    public NettyCoapTcpTransport(InetSocketAddress localadddress, //
+            Function<Channel, TransportContext> contextResolver, //
+            BiFunction<TransportContext, TransportContext, Boolean> contextMatcher, //
+            SslContext sslContext) {
         this.localAddress = localadddress;
+        this.sslContext = sslContext;
+        this.contextResolver = contextResolver;
+        this.contextMatcher = contextMatcher;
     }
 
     @Override
@@ -60,9 +73,12 @@ public class NettyCoapTcpTransport implements CoapTcpTransport {
         ServerBootstrap bootstrap = new ServerBootstrap();
         NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
         NioEventLoopGroup workerGroup = new NioEventLoopGroup(1);
-        bootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
-                .childHandler(new ChannelRegistry()).option(ChannelOption.SO_BACKLOG, 100)
-                .option(ChannelOption.AUTO_READ, true).childOption(ChannelOption.SO_KEEPALIVE, true);
+        bootstrap.group(bossGroup, workerGroup) //
+                .channel(NioServerSocketChannel.class) //
+                .childHandler(new ChannelRegistry()) //
+                .option(ChannelOption.SO_BACKLOG, 100) //
+                .option(ChannelOption.AUTO_READ, true) //
+                .childOption(ChannelOption.SO_KEEPALIVE, true);
 
         // start it
         mainChannel = bootstrap.bind(localAddress).syncUninterruptibly().channel();
@@ -81,10 +97,10 @@ public class NettyCoapTcpTransport implements CoapTcpTransport {
             // 4. Hand-off decoded messages to CoAP stack
             // 5. Close connections on errors.
 
-            // Remove TransportContextHandler because we don't need it for now.
-            // The idea of transportContext is to attach transport context to the channel so it can be used by other
-            // channel : Not sure we will really need it.
-            // ch.pipeline().addLast(new TransportContextHandler());
+            if (sslContext != null) {
+                ch.pipeline().addFirst(sslContext.newHandler(ch.alloc()));
+            }
+            ch.pipeline().addLast(new TransportContextHandler(contextResolver));
             ch.pipeline().addLast(new ChannelTracker());
             // Remove IdleStateHandler for now because, we could define expected behavoir
             // See : https://github.com/eclipse-leshan/leshan/wiki/CoAP-over-TCP#half-open-connection-at-server-side
@@ -92,7 +108,7 @@ public class NettyCoapTcpTransport implements CoapTcpTransport {
             ch.pipeline().addLast(new IdleStateHandler(0, 0, 0 /* disabled */));
             ch.pipeline().addLast(new CloseOnIdleHandler());
             ch.pipeline().addLast(new CoapTcpDecoder());
-            ch.pipeline().addLast(new CoapTcpEncoder());
+            ch.pipeline().addLast(new CoapTcpEncoder(contextMatcher));
             ch.pipeline().addLast(new DispatchHandler());
             ch.pipeline().addLast(new CloseOnErrorHandler());
         }

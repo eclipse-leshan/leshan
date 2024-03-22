@@ -48,6 +48,7 @@ import org.eclipse.leshan.transport.javacoap.client.resource.ObjectResource;
 import org.eclipse.leshan.transport.javacoap.client.resource.RootResource;
 import org.eclipse.leshan.transport.javacoap.client.resource.RouterService;
 import org.eclipse.leshan.transport.javacoap.client.resource.ServerIdentityExtractor;
+import org.eclipse.leshan.transport.javacoap.identity.IdentityHandler;
 
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
@@ -60,21 +61,26 @@ public abstract class AbstractJavaCoapClientEndpointsProvider implements LwM2mCl
 
     private final Protocol supportedProtocol;
     private final String endpointDescription;
-    private final ClientCoapMessageTranslator messagetranslator = new ClientCoapMessageTranslator();
+    private final ClientCoapMessageTranslator messagetranslator;
     private LwM2mObjectTree objectTree;
     private Service<CoapRequest, CoapResponse> router;
     private ClientEndpointToolbox toolbox;
+    private final IdentityHandler identityHandler;
 
     private JavaCoapClientEndpoint lwm2mEndpoint;
     private CoapServer coapServer;
+    private volatile ServerInfo currentServerInfo;
     private volatile LwM2mServer currentServer;
 
     protected State state = State.INITIAL;
     private ObserversManager observersManager;
 
-    public AbstractJavaCoapClientEndpointsProvider(Protocol protocol, String endpointDescription) {
+    public AbstractJavaCoapClientEndpointsProvider(Protocol protocol, String endpointDescription,
+            IdentityHandler identityHandler) {
         this.supportedProtocol = protocol;
         this.endpointDescription = endpointDescription;
+        this.identityHandler = identityHandler;
+        this.messagetranslator = new ClientCoapMessageTranslator(identityHandler);
     }
 
     @Override
@@ -89,7 +95,7 @@ public abstract class AbstractJavaCoapClientEndpointsProvider implements LwM2mCl
                 if (currentServer == null) {
                     return null;
                 }
-                if (currentServer.getTransportData().equals(foreignPeer)) {
+                if (supportedProtocol != Protocol.COAP || currentServer.getTransportData().equals(foreignPeer)) {
                     return currentServer;
                 }
                 return null;
@@ -126,9 +132,12 @@ public abstract class AbstractJavaCoapClientEndpointsProvider implements LwM2mCl
         // Create Resources / Routes
         RouterService.RouteBuilder routerBuilder = new RouterService.RouteBuilder();
         routerBuilder //
-                .any("/", observersManager.then(new RootResource(requestReceiver, toolbox, identityExtractor))) //
-                .any("/bs", new BootstrapResource(requestReceiver, identityExtractor)) //
-                .any("/*", observersManager.then(new ObjectResource(requestReceiver, "/", toolbox, identityExtractor)));
+                .any("/",
+                        observersManager
+                                .then(new RootResource(requestReceiver, toolbox, identityHandler, identityExtractor))) //
+                .any("/bs", new BootstrapResource(requestReceiver, identityHandler, identityExtractor)) //
+                .any("/*", observersManager
+                        .then(new ObjectResource(requestReceiver, "/", toolbox, identityHandler, identityExtractor)));
         router = routerBuilder.build();
 
         // Create notification handler
@@ -146,9 +155,9 @@ public abstract class AbstractJavaCoapClientEndpointsProvider implements LwM2mCl
         destroyEndpoints();
 
         // Create a new endpoints
-        LwM2mServer server = extractIdentity(serverInfo);
-        createLwM2mEndpoint(server);
-        currentServer = server;
+        currentServerInfo = serverInfo;
+        createLwM2mEndpoint(serverInfo);
+        currentServer = extractIdentity(serverInfo);
 
         // Start it if needed.
         if (state.isStarted()) {
@@ -161,7 +170,7 @@ public abstract class AbstractJavaCoapClientEndpointsProvider implements LwM2mCl
         return currentServer;
     }
 
-    public void createLwM2mEndpoint(LwM2mServer lwm2mServer) {
+    public void createLwM2mEndpoint(ServerInfo lwm2mServer) {
         // Create a new endpoints
         coapServer = createCoapServer(lwm2mServer, router);
         observersManager.init(coapServer);
@@ -169,7 +178,7 @@ public abstract class AbstractJavaCoapClientEndpointsProvider implements LwM2mCl
                 messagetranslator, toolbox, objectTree.getModel());
     }
 
-    protected abstract CoapServer createCoapServer(LwM2mServer lwm2mServer, Service<CoapRequest, CoapResponse> router);
+    protected abstract CoapServer createCoapServer(ServerInfo serverInfo, Service<CoapRequest, CoapResponse> router);
 
     @Override
     public synchronized Collection<LwM2mServer> createEndpoints(Collection<? extends ServerInfo> serverInfo,
@@ -212,7 +221,7 @@ public abstract class AbstractJavaCoapClientEndpointsProvider implements LwM2mCl
             }
             if (state.isStopped()) {
                 if (currentServer != null) {
-                    createLwM2mEndpoint(currentServer);
+                    createLwM2mEndpoint(currentServerInfo);
                 }
             }
             if (coapServer != null)

@@ -35,6 +35,7 @@ import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.request.UplinkRequestVisitor;
+import org.eclipse.leshan.transport.javacoap.identity.IdentityHandler;
 
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.Opaque;
@@ -51,13 +52,15 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
     protected final LwM2mEncoder encoder;
     protected final LwM2mModel model;
     protected final LinkSerializer linkSerializer;
+    protected final IdentityHandler identityHandler;
 
-    public CoapRequestBuilder(IpPeer server, LwM2mEncoder encoder, LwM2mModel model, LinkSerializer linkSerializer) {
+    public CoapRequestBuilder(IpPeer server, LwM2mEncoder encoder, LwM2mModel model, LinkSerializer linkSerializer,
+            IdentityHandler identityHandler) {
         this.server = server;
         this.encoder = encoder;
         this.model = model;
         this.linkSerializer = linkSerializer;
-
+        this.identityHandler = identityHandler;
     }
 
     @Override
@@ -173,7 +176,8 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
     }
 
     public CoapRequest getRequest() {
-        return coapRequestBuilder.address(getAddress()).build();
+        return coapRequestBuilder.address(getAddress()).context(identityHandler.createTransportContext(server, true))
+                .build();
     }
 
     protected InetSocketAddress getAddress() {

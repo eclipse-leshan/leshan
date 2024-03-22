@@ -32,6 +32,7 @@ import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.server.profile.ClientProfile;
 import org.eclipse.leshan.server.profile.ClientProfileProvider;
 import org.eclipse.leshan.server.request.UplinkRequestReceiver;
+import org.eclipse.leshan.transport.javacoap.identity.IdentityHandler;
 import org.eclipse.leshan.transport.javacoap.request.ResponseCodeUtil;
 import org.eclipse.leshan.transport.javacoap.resource.LwM2mCoapResource;
 import org.eclipse.leshan.transport.javacoap.server.endpoint.EndpointUriProvider;
@@ -56,8 +57,8 @@ public class SendResource extends LwM2mCoapResource {
     private final EndpointUriProvider endpointUriProvider;
 
     public SendResource(UplinkRequestReceiver receiver, LwM2mDecoder decoder, ClientProfileProvider profileProvider,
-            EndpointUriProvider endpointUriProvider) {
-        super(RESOURCE_URI);
+            EndpointUriProvider endpointUriProvider, IdentityHandler identityHandler) {
+        super(RESOURCE_URI, identityHandler);
         this.decoder = decoder;
         this.receiver = receiver;
         this.profileProvider = profileProvider;

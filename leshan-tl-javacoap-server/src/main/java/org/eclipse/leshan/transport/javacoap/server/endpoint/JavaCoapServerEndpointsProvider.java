@@ -18,6 +18,8 @@ package org.eclipse.leshan.transport.javacoap.server.endpoint;
 import java.net.InetSocketAddress;
 
 import org.eclipse.leshan.core.endpoint.Protocol;
+import org.eclipse.leshan.server.security.ServerSecurityInfo;
+import org.eclipse.leshan.transport.javacoap.identity.DefaultCoapIdentityHandler;
 
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
@@ -32,12 +34,14 @@ import com.mbed.coap.utils.Service;
 public class JavaCoapServerEndpointsProvider extends AbstractJavaCoapServerEndpointsProvider {
 
     public JavaCoapServerEndpointsProvider(InetSocketAddress localAddress) {
-        super(Protocol.COAP, "CoAP over UDP endpoint based on java-coap library", localAddress);
+        super(Protocol.COAP, "CoAP over UDP endpoint based on java-coap library", localAddress,
+                new DefaultCoapIdentityHandler());
     }
 
     @Override
-    protected CoapServer createCoapServer(InetSocketAddress localAddress, Service<CoapRequest, CoapResponse> resources,
-            NotificationsReceiver notificationReceiver, ObservationsStore observationsStore) {
+    protected CoapServer createCoapServer(InetSocketAddress localAddress, ServerSecurityInfo serverSecurityInfo,
+            Service<CoapRequest, CoapResponse> resources, NotificationsReceiver notificationReceiver,
+            ObservationsStore observationsStore) {
         return createCoapServer() //
                 .transport(new DatagramSocketTransport(localAddress)) //
                 .route(resources) //

@@ -15,8 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.transport.javacoap.client.endpoint;
 
-import org.eclipse.leshan.client.servers.LwM2mServer;
+import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.endpoint.Protocol;
+import org.eclipse.leshan.transport.javacoap.identity.DefaultCoapIdentityHandler;
 
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
@@ -28,11 +29,11 @@ import com.mbed.coap.utils.Service;
 public class JavaCoapClientEndpointsProvider extends AbstractJavaCoapClientEndpointsProvider {
 
     public JavaCoapClientEndpointsProvider() {
-        super(Protocol.COAP, "CoAP over UDP endpoint based on java-coap library");
+        super(Protocol.COAP, "CoAP over UDP endpoint based on java-coap library", new DefaultCoapIdentityHandler());
     }
 
     @Override
-    protected CoapServer createCoapServer(LwM2mServer server, Service<CoapRequest, CoapResponse> router) {
+    protected CoapServer createCoapServer(ServerInfo serverInfo, Service<CoapRequest, CoapResponse> router) {
         return CoapServer.builder().outboundFilter(TokenGeneratorFilter.RANDOM)
                 .transport(new DatagramSocketTransport(0)).route(router).build();
     }
