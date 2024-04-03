@@ -12,7 +12,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.core;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class CustomTaskContainer {
+    public static Map<String, Map<String, Boolean>> taskInfo = null;
     public boolean requestUpdateAnswer = true;
 
     private static CustomTaskContainer instance = null;
@@ -25,5 +29,17 @@ public class CustomTaskContainer {
             instance = new CustomTaskContainer();
         }
         return instance;
+    }
+
+    public static Map<String, Map<String, Boolean>> createInstance(String imei) {
+        if (taskInfo == null) {
+            Map<String, Boolean> insideInfo = new HashMap<>();
+            insideInfo.put("requestUpdateAnswer", true);
+            insideInfo.put("waitForSend", false);
+            insideInfo.put("sendReceived", false);
+            taskInfo = new HashMap<>();
+            taskInfo.put(imei, insideInfo);
+        }
+        return taskInfo;
     }
 }

@@ -140,13 +140,13 @@ public class RegistrationHandler {
         // Validate request
         LwM2mVersion lwM2mVersion = currentRegistration.getLwM2mVersion();
         if (!CustomTaskContainer.getInstance().requestUpdateAnswer) {
-        	CustomTaskContainer.getInstance().requestUpdateAnswer = true;
-        	try {
-				TimeUnit.SECONDS.sleep(10);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+            CustomTaskContainer.getInstance().requestUpdateAnswer = true;
+            try {
+                TimeUnit.SECONDS.sleep(10);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
         updateRequest.validate(lwM2mVersion);
 

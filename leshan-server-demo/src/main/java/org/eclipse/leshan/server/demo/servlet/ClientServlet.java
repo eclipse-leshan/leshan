@@ -424,7 +424,7 @@ public class ClientServlet extends HttpServlet {
                 Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
                 if (registration != null) {
                     String target = StringUtils.removeStart(req.getPathInfo(), "/" + clientEndpoint + "/customTask/");
-                    CustomTaskRequest.handleCustomTask(target);
+                    CustomTaskRequest.handleCustomTask(target, clientEndpoint);
                     resp.setStatus(HttpServletResponse.SC_OK);
                     resp.getWriter().format("I SEEEE '%s'", clientEndpoint).flush();
                 } else {

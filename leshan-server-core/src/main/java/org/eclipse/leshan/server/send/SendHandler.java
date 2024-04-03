@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.eclipse.leshan.core.CustomTaskContainer;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
@@ -152,6 +153,14 @@ public class SendHandler implements SendService {
                     return SendResponse.notFound(String.format("object instance %s not registered", instancePath));
                 }
             }
+        }
+        CustomTaskContainer.createInstance(registration.getEndpoint());
+        if (CustomTaskContainer.createInstance(registration.getEndpoint()).get(registration.getEndpoint())
+                .get("waitForSend")) {
+            CustomTaskContainer.createInstance(registration.getEndpoint()).get(registration.getEndpoint())
+                    .put("sendReceived", true);
+            CustomTaskContainer.createInstance(registration.getEndpoint()).get(registration.getEndpoint())
+                    .put("waitForSend", false);
         }
         return SendResponse.success();
     }
