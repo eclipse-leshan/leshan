@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.BootstrapConfigTestBuilder.givenBootstrapConfig;
+import static org.eclipse.leshan.integration.tests.util.BootstrapConfigTestBuilder.givenBootstrapConfig;
 import static org.eclipse.leshan.integration.tests.util.Credentials.OSCORE_AEAD_ALGORITHM;
 import static org.eclipse.leshan.integration.tests.util.Credentials.OSCORE_BOOTSTRAP_MASTER_SALT;
 import static org.eclipse.leshan.integration.tests.util.Credentials.OSCORE_BOOTSTRAP_MASTER_SECRET;

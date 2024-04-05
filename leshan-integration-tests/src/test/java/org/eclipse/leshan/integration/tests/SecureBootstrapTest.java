@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests;
 
-import static org.eclipse.leshan.integration.tests.BootstrapConfigTestBuilder.givenBootstrapConfig;
+import static org.eclipse.leshan.integration.tests.util.BootstrapConfigTestBuilder.givenBootstrapConfig;
 import static org.eclipse.leshan.integration.tests.util.Credentials.GOOD_PSK_ID;
 import static org.eclipse.leshan.integration.tests.util.Credentials.GOOD_PSK_KEY;
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientPrivateKey;
