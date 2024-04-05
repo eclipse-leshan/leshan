@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
-package org.eclipse.leshan.integration.tests;
+package org.eclipse.leshan.integration.tests.bootstrap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.leshan.integration.tests.util.BootstrapConfigTestBuilder.givenBootstrapConfig;
