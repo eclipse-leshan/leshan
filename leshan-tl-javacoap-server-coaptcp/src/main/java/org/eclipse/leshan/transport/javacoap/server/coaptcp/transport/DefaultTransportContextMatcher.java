@@ -17,6 +17,8 @@ package org.eclipse.leshan.transport.javacoap.server.coaptcp.transport;
 
 import java.util.function.BiFunction;
 
+import org.eclipse.leshan.transport.javacoap.identity.TlsTransportContextKeys;
+
 import com.mbed.coap.transport.TransportContext;
 import com.mbed.coap.transport.TransportContext.Key;
 
@@ -27,7 +29,10 @@ public class DefaultTransportContextMatcher implements BiFunction<TransportConte
     public DefaultTransportContextMatcher() {
         this(CoapTcpTransportResolver.REMOTE_ADDRESS, //
                 CoapTcpTransportResolver.CONNECTION_ID, //
-                CoapTcpTransportResolver.CONNECTION_START_TIMESTAMP);
+                CoapTcpTransportResolver.CONNECTION_START_TIMESTAMP, //
+                TlsTransportContextKeys.TLS_SESSION_ID, //
+                TlsTransportContextKeys.PRINCIPAL, //
+                TlsTransportContextKeys.CIPHER_SUITE);
     }
 
     public DefaultTransportContextMatcher(Key<?>... knownKeys) {
