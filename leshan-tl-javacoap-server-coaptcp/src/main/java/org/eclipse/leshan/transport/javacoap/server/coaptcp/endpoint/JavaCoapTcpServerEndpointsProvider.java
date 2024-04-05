@@ -50,7 +50,7 @@ public class JavaCoapTcpServerEndpointsProvider extends AbstractJavaCoapServerEn
             NotificationsReceiver notificationReceiver, ObservationsStore observationsStore) {
         return createCoapServer() //
                 .transport(new NettyCoapTcpTransport(localAddress, new CoapTcpTransportResolver(),
-                        new DefaultTransportContextMatcher())) //
+                        new DefaultTransportContextMatcher(), null)) //
                 .blockSize(BlockSize.S_1024_BERT) //
                 .maxIncomingBlockTransferSize(4000) //
                 .maxMessageSize(2100) //

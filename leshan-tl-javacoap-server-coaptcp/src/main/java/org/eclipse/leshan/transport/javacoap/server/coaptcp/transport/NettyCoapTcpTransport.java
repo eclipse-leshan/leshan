@@ -25,6 +25,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.mbed.coap.packet.CoapPacket;
 import com.mbed.coap.transport.CoapTcpListener;
@@ -42,23 +46,31 @@ import io.netty.channel.ChannelPromise;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 
 public class NettyCoapTcpTransport implements CoapTcpTransport {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NettyCoapTcpTransport.class);
 
     private final InetSocketAddress localAddress;
     private volatile Channel mainChannel;
     private final ConcurrentMap<SocketAddress, Channel> activeChannels = new ConcurrentHashMap<>();
     private volatile CoapTcpListener listener;
     private CompletableFuture<CoapPacket> receivePromise = new CompletableFuture<>();
+    private final SslContext sslContext;
     private final Function<Channel, TransportContext> contextResolver;
     private final BiFunction<TransportContext, TransportContext, Boolean> contextMatcher;
 
     public NettyCoapTcpTransport(InetSocketAddress localadddress, //
             Function<Channel, TransportContext> contextResolver, //
-            BiFunction<TransportContext, TransportContext, Boolean> contextMatcher) {
+            BiFunction<TransportContext, TransportContext, Boolean> contextMatcher, //
+            SslContext sslContext) {
         this.localAddress = localadddress;
+        this.sslContext = sslContext;
         this.contextResolver = contextResolver;
         this.contextMatcher = contextMatcher;
     }
@@ -92,7 +104,25 @@ public class NettyCoapTcpTransport implements CoapTcpTransport {
             // 3. Stream-to-message decoder
             // 4. Hand-off decoded messages to CoAP stack
             // 5. Close connections on errors.
+            if (sslContext != null) {
+                ch.pipeline().addFirst(sslContext.newHandler(ch.alloc()));
+                ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
+                    @Override
+                    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+                        // Trigger channel active on TLS handshake Complete
+                        if (evt instanceof SslHandshakeCompletionEvent) {
+                            if (((SslHandshakeCompletionEvent) evt).isSuccess()) {
+                                super.channelActive(ctx);
+                            }
+                        }
+                    }
 
+                    @Override
+                    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+                        // block default channel active event.
+                    }
+                });
+            }
             ch.pipeline().addLast(new TransportContextHandler(contextResolver));
             ch.pipeline().addLast(new ChannelTracker());
             // Remove IdleStateHandler for now because, we could define expected behavoir
@@ -107,31 +137,6 @@ public class NettyCoapTcpTransport implements CoapTcpTransport {
         }
     }
 
-//    public static class TransportContextHandler extends ChannelInboundHandlerAdapter {
-//
-//        public static final AttributeKey<TransportContext> TRANSPORT_CONTEXT_ATTR = AttributeKey
-//                .newInstance("transport");
-//
-//        @Override
-//        public void channelActive(ChannelHandlerContext ctx) throws Exception {
-//            // create context
-//            TransportContext tansportContext = createTransportContext();
-//            if (tansportContext == null) {
-//                throw new IllegalStateException("transport context must not be null");
-//            }
-//
-//            // add it to the channel
-//            TransportContext oldTansportContext = ctx.channel().attr(TRANSPORT_CONTEXT_ATTR)
-//                    .setIfAbsent(tansportContext);
-//            if (oldTansportContext != null) {
-//                throw new IllegalStateException(
-//                        String.format("Can not create new transport context %s as %s already exists.", tansportContext,
-//                                oldTansportContext));
-//            }
-//            super.channelActive(ctx);
-//        }
-//    }
-
     class ChannelTracker extends ChannelInboundHandlerAdapter {
 
         @Override
@@ -142,7 +147,13 @@ public class NettyCoapTcpTransport implements CoapTcpTransport {
 
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-            activeChannels.remove(ctx.channel().remoteAddress());
+            if (ctx.channel().remoteAddress() != null) {
+                activeChannels.remove(ctx.channel().remoteAddress());
+            } else {
+                // it seems that sometime remoteAddress is null, I don't know why ...
+                LOGGER.warn("Channel Remote Address is null");
+                activeChannels.values().remove(ctx.channel());
+            }
             super.channelInactive(ctx);
         }
     }
@@ -218,6 +229,20 @@ public class NettyCoapTcpTransport implements CoapTcpTransport {
         channel.writeAndFlush(packet, channelPromise);
 
         return toCompletableFuture(channelPromise).thenApply(__ -> true);
+    }
+
+    public void closeConnections(Predicate<Channel> filter) {
+        for (Channel channel : activeChannels.values()) {
+            if (filter.test(channel)) {
+                SslHandler sslHandler = channel.pipeline().get(SslHandler.class);
+
+                // Invalidate TLS session to not allow to resume
+                sslHandler.engine().getSession().invalidate();
+
+                // Close TLS connection
+                sslHandler.closeOutbound();
+            }
+        }
     }
 
     @Override
