@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.integration.tests;
+package org.eclipse.leshan.integration.tests.security;
 
 import static org.eclipse.leshan.integration.tests.util.Credentials.BAD_ENDPOINT;
 import static org.eclipse.leshan.integration.tests.util.Credentials.BAD_PSK_ID;

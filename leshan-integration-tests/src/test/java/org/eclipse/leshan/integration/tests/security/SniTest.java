@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.integration.tests;
+package org.eclipse.leshan.integration.tests.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.leshan.core.CertificateUsage.DOMAIN_ISSUER_CERTIFICATE;
