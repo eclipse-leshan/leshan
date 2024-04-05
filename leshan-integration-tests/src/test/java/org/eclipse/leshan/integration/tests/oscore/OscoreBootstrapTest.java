@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.integration.tests;
+package org.eclipse.leshan.integration.tests.oscore;
 
 import static org.eclipse.leshan.integration.tests.util.BootstrapConfigTestBuilder.givenBootstrapConfig;
 import static org.eclipse.leshan.integration.tests.util.Credentials.OSCORE_AEAD_ALGORITHM;
