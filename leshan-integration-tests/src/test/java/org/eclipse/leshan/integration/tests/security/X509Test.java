@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Sierra Wireless and others.
+ * Copyright (c) 2024 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -21,40 +21,25 @@ import static org.eclipse.leshan.core.CertificateUsage.DOMAIN_ISSUER_CERTIFICATE
 import static org.eclipse.leshan.core.CertificateUsage.SERVICE_CERTIFICATE_CONSTRAINT;
 import static org.eclipse.leshan.core.CertificateUsage.TRUST_ANCHOR_ASSERTION;
 import static org.eclipse.leshan.integration.tests.util.Credentials.BAD_ENDPOINT;
-import static org.eclipse.leshan.integration.tests.util.Credentials.BAD_PSK_ID;
-import static org.eclipse.leshan.integration.tests.util.Credentials.BAD_PSK_KEY;
-import static org.eclipse.leshan.integration.tests.util.Credentials.GOOD_PSK_ID;
-import static org.eclipse.leshan.integration.tests.util.Credentials.GOOD_PSK_KEY;
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientPrivateKey;
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientPrivateKeyFromCert;
-import static org.eclipse.leshan.integration.tests.util.Credentials.clientPublicKey;
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientTrustStore;
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientX509CertNotTrusted;
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientX509CertSignedByRoot;
 import static org.eclipse.leshan.integration.tests.util.Credentials.clientX509CertWithBadCN;
 import static org.eclipse.leshan.integration.tests.util.Credentials.rootCAX509Cert;
-import static org.eclipse.leshan.integration.tests.util.Credentials.serverPrivateKey;
 import static org.eclipse.leshan.integration.tests.util.Credentials.serverPrivateKeyFromCert;
-import static org.eclipse.leshan.integration.tests.util.Credentials.serverPublicKey;
 import static org.eclipse.leshan.integration.tests.util.Credentials.serverX509CertChainWithIntermediateCa;
 import static org.eclipse.leshan.integration.tests.util.Credentials.serverX509CertSelfSigned;
 import static org.eclipse.leshan.integration.tests.util.Credentials.serverX509CertSignedByRoot;
 import static org.eclipse.leshan.integration.tests.util.Credentials.trustedCertificatesByServer;
 import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
-import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertArg;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.verify;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
@@ -62,12 +47,7 @@ import java.util.stream.Stream;
 
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.request.ReadRequest;
-import org.eclipse.leshan.core.request.exception.TimeoutException;
-import org.eclipse.leshan.core.request.exception.TimeoutException.Type;
-import org.eclipse.leshan.core.request.exception.UnconnectedPeerException;
-import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.ReadResponse;
-import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.integration.tests.util.Credentials;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder;
@@ -85,13 +65,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 @ExtendWith(BeforeEachParameterizedResolver.class)
-public class SecurityTest {
-
-    private static final long SHORT_LIFETIME = 2; // seconds
+public class X509Test {
 
     /*---------------------------------/
-     *  Parameterized Tests
-     * -------------------------------*/
+    *  Parameterized Tests
+    * -------------------------------*/
     @ParameterizedTest(name = "{0} - Client using {1} - Server using {2}")
     @MethodSource("transports")
     @Retention(RetentionPolicy.RUNTIME)
@@ -134,480 +112,9 @@ public class SecurityTest {
      *  Tests
      * -------------------------------*/
     @TestAllTransportLayer
-    public void registered_device_with_psk_to_server_with_psk(Protocol givenProtocol,
-            String givenClientEndpointProvider, String givenServerEndpointProvider)
-            throws NonUniqueSecurityInfoException, InterruptedException {
-        // Create PSK server & start it
-        server = givenServer.build(); // default server support PSK
-        server.start();
-
-        // Create PSK Client
-        client = givenClient.connectingTo(server).usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY).build();
-
-        // Add client credentials to the server
-        server.getSecurityStore()
-                .add(SecurityInfo.newPreSharedKeyInfo(client.getEndpointName(), GOOD_PSK_ID, GOOD_PSK_KEY));
-
-        // Check client is not registered
-        assertThat(client).isNotRegisteredAt(server);
-
-        // Start it and wait for registration
-        client.start();
-        server.waitForNewRegistrationOf(client);
-
-        // Check client is well registered
-        assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
-
-        // check we can send request to client.
-        ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
-        assertThat(response.isSuccess()).isTrue();
-    }
-
-    @TestAllTransportLayer
-    public void register_update_deregister_reregister_device_with_psk_to_server_with_psk(Protocol givenProtocol,
-            String givenClientEndpointProvider, String givenServerEndpointProvider)
-            throws NonUniqueSecurityInfoException {
-        // Create PSK server & start it
-        server = givenServer.build(); // default server support PSK
-        server.start();
-
-        // Create PSK Client
-        client = givenClient.connectingTo(server) //
-                .usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY) //
-                .usingLifeTimeOf(SHORT_LIFETIME, TimeUnit.SECONDS).build();
-
-        // Add client credentials to the server
-        server.getSecurityStore()
-                .add(SecurityInfo.newPreSharedKeyInfo(client.getEndpointName(), GOOD_PSK_ID, GOOD_PSK_KEY));
-
-        // Check client is not registered
-        assertThat(client).isNotRegisteredAt(server);
-
-        // Start it.
-        client.start();
-
-        // Check for register
-        server.waitForNewRegistrationOf(client);
-        client.waitForRegistrationTo(server);
-        assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
-
-        // Check for update
-        client.waitForUpdateTo(server, SHORT_LIFETIME, TimeUnit.SECONDS);
-        server.waitForUpdateOf(registration);
-        assertThat(client).isRegisteredAt(server);
-
-        // Check de-registration
-        client.stop(true);
-        server.waitForDeregistrationOf(registration);
-        client.waitForDeregistrationTo(server);
-        assertThat(client).isNotRegisteredAt(server);
-
-        // check new registration
-        client.start();
-        server.waitForNewRegistrationOf(client);
-        client.waitForRegistrationTo(server);
-        assertThat(client).isRegisteredAt(server);
-    }
-
-    @TestAllTransportLayer
-    public void register_update_reregister_device_with_psk_to_server_with_psk(Protocol givenProtocol,
-            String givenClientEndpointProvider, String givenServerEndpointProvider)
-            throws NonUniqueSecurityInfoException {
-        // Create PSK server & start it
-        server = givenServer.build(); // default server support PSK
-        server.start();
-
-        // Create PSK Client
-        client = givenClient.connectingTo(server) //
-                .usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY) //
-                .usingLifeTimeOf(SHORT_LIFETIME, TimeUnit.SECONDS).build();
-
-        // Add client credentials to the server
-        server.getSecurityStore()
-                .add(SecurityInfo.newPreSharedKeyInfo(client.getEndpointName(), GOOD_PSK_ID, GOOD_PSK_KEY));
-
-        // Check client is not registered
-        assertThat(client).isNotRegisteredAt(server);
-
-        // Start it.
-        client.start();
-
-        // Check for register
-        server.waitForNewRegistrationOf(client);
-        client.waitForRegistrationTo(server);
-        assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
-
-        // Check for update
-        client.waitForUpdateTo(server, SHORT_LIFETIME, TimeUnit.SECONDS);
-        server.waitForUpdateOf(registration);
-        assertThat(client).isRegisteredAt(server);
-
-        // Check de-registration
-        client.stop(false);
-        assertThat(client).after(500, TimeUnit.MILLISECONDS).isRegisteredAt(server);
-
-        // check new registration
-        client.start();
-        server.waitForReRegistrationOf(registration);
-        client.waitForRegistrationTo(server);
-        assertThat(client).isRegisteredAt(server);
-    }
-
-    @TestAllTransportLayer
-    public void server_initiates_dtls_handshake(Protocol givenProtocol, String givenClientEndpointProvider,
-            String givenServerEndpointProvider) throws NonUniqueSecurityInfoException, InterruptedException {
-        // Create PSK server & start it
-        server = givenServer.build(); // default server support PSK
-        server.start();
-
-        // Create PSK Client
-        client = givenClient.connectingTo(server).usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY).build();
-
-        // Add client credentials to the server
-        server.getSecurityStore()
-                .add(SecurityInfo.newPreSharedKeyInfo(client.getEndpointName(), GOOD_PSK_ID, GOOD_PSK_KEY));
-
-        // Check client is not registered
-        assertThat(client).isNotRegisteredAt(server);
-
-        // Start it.
-        client.start();
-
-        // Check for register
-        server.waitForNewRegistrationOf(client);
-        client.waitForRegistrationTo(server);
-        assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
-
-        // Remove Client Security info
-        server.clearSecurityContextFor(givenProtocol);
-
-        // try to send request
-        ReadResponse readResponse = server.send(registration, new ReadRequest(3), 1000);
-        assertThat(readResponse.isSuccess()).isTrue();
-    }
-
-    @TestAllTransportLayer
-    public void server_initiates_dtls_handshake_timeout(Protocol givenProtocol, String givenClientEndpointProvider,
-            String givenServerEndpointProvider) throws NonUniqueSecurityInfoException, InterruptedException {
-        // Create PSK server & start it
-        server = givenServer.build(); // default server support PSK
-        server.start();
-
-        // Create PSK Client
-        client = givenClient.connectingTo(server).usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY).build();
-
-        // Add client credentials to the server
-        server.getSecurityStore()
-                .add(SecurityInfo.newPreSharedKeyInfo(client.getEndpointName(), GOOD_PSK_ID, GOOD_PSK_KEY));
-
-        // Check client is not registered
-        assertThat(client).isNotRegisteredAt(server);
-
-        // Start it.
-        client.start();
-
-        // Check for register
-        server.waitForNewRegistrationOf(client);
-        client.waitForRegistrationTo(server);
-        assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
-
-        // Remove Client Security info
-        server.clearSecurityContextFor(givenProtocol);
-
-        // stop client
-        client.stop(false);
-
-        // try to send request asynchronously, it should fail with security layer timeout
-        @SuppressWarnings("unchecked")
-        ResponseCallback<ReadResponse> responseCallback = mock(ResponseCallback.class);
-        ErrorCallback errorCallback = mock(ErrorCallback.class);
-        server.send(registration, new ReadRequest(3), 1000, responseCallback, errorCallback);
-
-        verify(errorCallback, timeout(1100).times(1)) //
-                .onError(assertArg(e -> {
-                    assertThat(e).isInstanceOfSatisfying(TimeoutException.class, timeout -> {
-                        assertThat(timeout.getType()).isEqualTo(Type.DTLS_HANDSHAKE_TIMEOUT);
-                    });
-                }));
-        verify(responseCallback, never()).onResponse(any());
-    }
-
-    @TestAllTransportLayer
-    public void server_does_not_initiate_dtls_handshake_with_queue_mode(Protocol givenProtocol,
-            String givenClientEndpointProvider, String givenServerEndpointProvider)
-            throws NonUniqueSecurityInfoException, InterruptedException {
-
-        // Create PSK server & start it
-        server = givenServer.build(); // default server support PSK
-        server.start();
-
-        // Create PSK Client
-        client = givenClient.connectingTo(server) //
-                .usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY) //
-                .usingQueueMode() //
-                .build();
-
-        // Add client credentials to the server
-        server.getSecurityStore()
-                .add(SecurityInfo.newPreSharedKeyInfo(client.getEndpointName(), GOOD_PSK_ID, GOOD_PSK_KEY));
-
-        // Check client is not registered
-        assertThat(client).isNotRegisteredAt(server);
-
-        // Start it.
-        client.start();
-
-        // Check for register
-        server.waitForNewRegistrationOf(client);
-        client.waitForRegistrationTo(server);
-        assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
-
-        // Remove Client Security info
-        server.clearSecurityContextFor(givenProtocol);
-
-        // try to send request
-        assertThrowsExactly(UnconnectedPeerException.class, () -> {
-            server.send(registration, new ReadRequest(3), 1000);
-        });
-        assertThat(client).isSleepingOn(server);
-    }
-
-    @TestAllTransportLayer
-    public void registered_device_with_bad_psk_identity_to_server_with_psk(Protocol givenProtocol,
-            String givenClientEndpointProvider, String givenServerEndpointProvider)
-            throws NonUniqueSecurityInfoException {
-        // Create PSK server & start it
-        server = givenServer.build(); // default server support PSK
-        server.start();
-
-        // Create PSK Client
-        client = givenClient.connectingTo(server).usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY).build();
-
-        // Add client credentials with BAD PSK ID to the server
-        server.getSecurityStore()
-                .add(SecurityInfo.newPreSharedKeyInfo(client.getEndpointName(), BAD_PSK_ID, GOOD_PSK_KEY));
-
-        // Check client is not registered
-        assertThat(client).isNotRegisteredAt(server);
-
-        // Start it.
-        client.start();
-
-        // Check client can not register
-        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
-    }
-
-    @TestAllTransportLayer
-    public void registered_device_with_bad_psk_key_to_server_with_psk(Protocol givenProtocol,
-            String givenClientEndpointProvider, String givenServerEndpointProvider)
-            throws NonUniqueSecurityInfoException {
-        // Create PSK server & start it
-        server = givenServer.build(); // default server support PSK
-        server.start();
-
-        // Create PSK Client
-        client = givenClient.connectingTo(server).usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY).build();
-
-        // Add client credentials with BAD PSK KEY to the server
-        server.getSecurityStore()
-                .add(SecurityInfo.newPreSharedKeyInfo(client.getEndpointName(), BAD_PSK_ID, BAD_PSK_KEY));
-
-        // Check client is not registered
-        assertThat(client).isNotRegisteredAt(server);
-
-        // Start it.
-        client.start();
-
-        // Check client can not register
-        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
-    }
-
-    @TestAllTransportLayer
-    public void registered_device_with_psk_and_bad_endpoint_to_server_with_psk(Protocol givenProtocol,
-            String givenClientEndpointProvider, String givenServerEndpointProvider)
-            throws NonUniqueSecurityInfoException {
-
-        // Create PSK server & start it
-        server = givenServer.build(); // default server support PSK
-        server.start();
-
-        // Create PSK Client
-        client = givenClient.connectingTo(server).usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY).build();
-
-        // Add client credentials for another endpoint to the server
-        server.getSecurityStore().add(SecurityInfo.newPreSharedKeyInfo(BAD_ENDPOINT, GOOD_PSK_ID, GOOD_PSK_KEY));
-
-        // Check client is not registered
-        assertThat(client).isNotRegisteredAt(server);
-
-        // Start it.
-        client.start();
-
-        // Check client can not register
-        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
-    }
-
-    @TestAllTransportLayer
-    public void registered_device_with_psk_identity_to_server_with_psk_then_remove_security_info(Protocol givenProtocol,
-            String givenClientEndpointProvider, String givenServerEndpointProvider)
-            throws NonUniqueSecurityInfoException, InterruptedException {
-        // Create PSK server & start it
-        server = givenServer.build(); // default server support PSK
-        server.start();
-
-        // Create PSK Client
-        client = givenClient.connectingTo(server).usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY).build();
-
-        // Add client credentials to the server
-        server.getSecurityStore()
-                .add(SecurityInfo.newPreSharedKeyInfo(client.getEndpointName(), GOOD_PSK_ID, GOOD_PSK_KEY));
-
-        // Check client is not registered
-        assertThat(client).isNotRegisteredAt(server);
-
-        // Start it.
-        client.start();
-        client.waitForRegistrationTo(server);
-
-        // Check client is well registered
-        assertThat(client).isRegisteredAt(server);
-
-        // remove compromised credentials
-        boolean credentialsCompromised = true;
-        server.getSecurityStore().remove(client.getEndpointName(), credentialsCompromised);
-
-        // try to update
-        client.triggerRegistrationUpdate();
-        client.waitForUpdateTimeoutTo(server);
-    }
-
-    @TestAllTransportLayer
-    public void registered_device_with_rpk_to_server_with_rpk(Protocol givenProtocol,
-            String givenClientEndpointProvider, String givenServerEndpointProvider)
-            throws NonUniqueSecurityInfoException, InterruptedException {
-        // Create RPK server & start it
-        server = givenServer.using(serverPublicKey, serverPrivateKey).build();
-        server.start();
-
-        // Create RPK Client
-        client = givenClient.connectingTo(server) //
-                .using(clientPublicKey, clientPrivateKey)//
-                .trusting(serverPublicKey).build();
-
-        // Add client credentials to the server
-        server.getSecurityStore().add(SecurityInfo.newRawPublicKeyInfo(client.getEndpointName(), clientPublicKey));
-
-        // Check client is not registered
-        assertThat(client).isNotRegisteredAt(server);
-
-        // Start it and wait for registration
-        client.start();
-        server.waitForNewRegistrationOf(client);
-
-        // Check client is well registered
-        assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
-
-        // check we can send request to client.
-        ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
-        assertThat(response.isSuccess()).isTrue();
-    }
-
-    @TestAllTransportLayer
-    public void registered_device_with_bad_rpk_to_server_with_rpk(Protocol givenProtocol,
-            String givenClientEndpointProvider, String givenServerEndpointProvider)
-            throws NonUniqueSecurityInfoException {
-        // Create RPK server & start it
-        server = givenServer.using(serverPublicKey, serverPrivateKey).build();
-        server.start();
-
-        // Create RPK Client
-        client = givenClient.connectingTo(server) //
-                .using(clientPublicKey, clientPrivateKey)//
-                .trusting(serverPublicKey).build();
-
-        // We use the server public key as bad client public key
-        PublicKey bad_client_public_key = serverPublicKey;
-        server.getSecurityStore()
-                .add(SecurityInfo.newRawPublicKeyInfo(client.getEndpointName(), bad_client_public_key));
-
-        // Check client is not registered
-        assertThat(client).isNotRegisteredAt(server);
-
-        // Start it and wait for registration
-        client.start();
-        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
-    }
-
-    @TestAllTransportLayer
-    public void registered_device_with_rpk_to_server_with_rpk_then_remove_security_info(Protocol givenProtocol,
-            String givenClientEndpointProvider, String givenServerEndpointProvider)
-            throws NonUniqueSecurityInfoException {
-        // Create RPK server & start it
-        server = givenServer.using(serverPublicKey, serverPrivateKey).build();
-        server.start();
-
-        // Create RPK Client
-        client = givenClient.connectingTo(server) //
-                .using(clientPublicKey, clientPrivateKey)//
-                .trusting(serverPublicKey).build();
-
-        // Add client credentials to the server
-        server.getSecurityStore().add(SecurityInfo.newRawPublicKeyInfo(client.getEndpointName(), clientPublicKey));
-
-        // Check client is not registered
-        assertThat(client).isNotRegisteredAt(server);
-
-        // Start it and wait for registration
-        client.start();
-        server.waitForNewRegistrationOf(client);
-
-        // Check client is well registered
-        assertThat(client).isRegisteredAt(server);
-
-        // remove compromised credentials
-        server.getSecurityStore().remove(client.getEndpointName(), true);
-
-        // try to update
-        client.triggerRegistrationUpdate();
-        client.waitForUpdateTimeoutTo(server);
-    }
-
-    @TestAllTransportLayer
-    public void registered_device_with_rpk_and_bad_endpoint_to_server_with_rpk(Protocol givenProtocol,
-            String givenClientEndpointProvider, String givenServerEndpointProvider)
-            throws NonUniqueSecurityInfoException {
-
-        // Create RPK server & start it
-        server = givenServer.using(serverPublicKey, serverPrivateKey).build();
-        server.start();
-
-        // Create RPK Client
-        client = givenClient.connectingTo(server) //
-                .using(clientPublicKey, clientPrivateKey)//
-                .trusting(serverPublicKey).build();
-
-        // We use the server public key as bad client public key
-        server.getSecurityStore().add(SecurityInfo.newRawPublicKeyInfo(BAD_ENDPOINT, clientPublicKey));
-
-        // Check client is not registered
-        assertThat(client).isNotRegisteredAt(server);
-
-        // Start it and wait for registration
-        client.start();
-        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
-    }
-
-    @TestAllTransportLayer
     public void registered_device_with_x509cert_to_server_with_x509cert_then_remove_security_info(
             Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider)
-            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+            throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
 
         // Create X509 server & start it
         server = givenServer //
@@ -638,8 +145,18 @@ public class SecurityTest {
         server.getSecurityStore().remove(client.getEndpointName(), true);
 
         // try to update
+        Thread.sleep(100);
+        if (givenProtocol.equals(Protocol.COAPS)) {
+            // For DTLS, Client doesn't know that connection is removed at server side.
+            // So request will first timeout.
+            client.triggerRegistrationUpdate();
+            client.waitForUpdateTimeoutTo(server);
+        }
+
+        // try to update
         client.triggerRegistrationUpdate();
-        client.waitForUpdateTimeoutTo(server);
+        client.waitForUpdateFailureTo(server, 2, TimeUnit.SECONDS);
+
     }
 
     @TestAllTransportLayer
@@ -1760,53 +1277,5 @@ public class SecurityTest {
 
         ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
         assertThat(response.isSuccess()).isTrue();
-    }
-
-    /* ---- */
-
-    @TestAllTransportLayer
-    public void registered_device_with_x509cert_to_server_with_rpk(Protocol givenProtocol,
-            String givenClientEndpointProvider, String givenServerEndpointProvider)
-            throws NonUniqueSecurityInfoException, CertificateEncodingException {
-        server = givenServer.using(serverX509CertSignedByRoot.getPublicKey(), serverPrivateKeyFromCert).build();
-        server.start();
-
-        client = givenClient.connectingTo(server) //
-                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
-                .trusting(serverX509CertSignedByRoot).build();
-
-        server.getSecurityStore().add(
-                SecurityInfo.newRawPublicKeyInfo(client.getEndpointName(), clientX509CertSignedByRoot.getPublicKey()));
-
-        assertThat(client).isNotRegisteredAt(server);
-        client.start();
-        assertThat(client).after(1, TimeUnit.SECONDS).isNotRegisteredAt(server);
-    }
-
-    @TestAllTransportLayer
-    public void registered_device_with_rpk_to_server_with_x509cert(Protocol givenProtocol,
-            String givenClientEndpointProvider, String givenServerEndpointProvider)
-            throws NonUniqueSecurityInfoException, InterruptedException {
-        server = givenServer //
-                .actingAsServerOnly()//
-                .using(serverX509CertSignedByRoot, serverPrivateKeyFromCert)//
-                .trusting(trustedCertificatesByServer).build();
-        server.start();
-
-        client = givenClient.connectingTo(server) //
-                .using(clientPublicKey, clientPrivateKey)//
-                .trusting(serverX509CertSignedByRoot.getPublicKey()).build();
-
-        server.getSecurityStore().add(SecurityInfo.newRawPublicKeyInfo(client.getEndpointName(), clientPublicKey));
-
-        assertThat(client).isNotRegisteredAt(server);
-        client.start();
-        server.waitForNewRegistrationOf(client);
-        assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
-
-        ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
-        assertThat(response.isSuccess()).isTrue();
-
     }
 }

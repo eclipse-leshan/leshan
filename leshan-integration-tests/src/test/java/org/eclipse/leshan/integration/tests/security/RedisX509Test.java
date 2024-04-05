@@ -23,7 +23,7 @@ import org.eclipse.leshan.server.redis.RedisSecurityStore;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.util.Pool;
 
-public class RedisSecurityTest extends SecurityTest {
+public class RedisX509Test extends X509Test {
 
     @Override
     protected LeshanTestServerBuilder givenServerUsing(Protocol givenProtocol) {
