@@ -13,12 +13,15 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.util;
+package org.eclipse.leshan.core.security.certificate.util;
 
 import java.net.InetAddress;
 import java.security.Principal;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -28,10 +31,142 @@ import java.util.regex.Pattern;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
- * X.509 Certificate Utilities for accessing certificate details.
+ * X.509 Certificate Utilities.
  */
 public class X509CertUtil {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CertPathUtil.class);
+
+    /**
+     * OID for server authentication in extended key.
+     */
+    private static final String SERVER_AUTHENTICATION = "1.3.6.1.5.5.7.3.1";
+
+    /**
+     * OID for client authentication in extended key.
+     */
+    private static final String CLIENT_AUTHENTICATION = "1.3.6.1.5.5.7.3.2";
+
+    /**
+     * Bit for digital signature in key usage.
+     */
+    private static final int KEY_USAGE_SIGNATURE = 0;
+
+    /**
+     * Bit for certificate signing in key usage.
+     */
+    private static final int KEY_USAGE_CERTIFICATE_SIGNING = 5;
+
+    /**
+     * Check, if certificate is intended to be used to verify a signature of an other certificate.
+     *
+     * @param cert certificate to check.
+     * @return {@code true}, if certificate is intended to be used to verify a signature of an other certificate,
+     *         {@code false}, otherwise.
+     */
+    public static boolean canBeUsedToVerifySignature(X509Certificate cert) {
+
+        if (cert.getBasicConstraints() < 0) {
+            LOGGER.debug("certificate: {}, not for CA!", cert.getSubjectX500Principal());
+            return false;
+        }
+        if ((cert.getKeyUsage() != null && !cert.getKeyUsage()[KEY_USAGE_CERTIFICATE_SIGNING])) {
+            LOGGER.debug("certificate: {}, not for certificate signing!", cert.getSubjectX500Principal());
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Check, if certificate is intended to be used for client or server authentication.
+     *
+     * @param cert certificate to check.
+     * @param client {@code true} for client authentication, {@code false} for server authentication.
+     * @return {@code true}, if certificate is intended to be used for client or server authentication, {@code false},
+     *         otherwise.
+     */
+    public static boolean canBeUsedForAuthentication(X509Certificate cert, boolean client) {
+
+        // KeyUsage is an optional extension which may be used to restrict
+        // the way the key can be used.
+        // https://tools.ietf.org/html/rfc5280#section-4.2.1.3
+        // If this extension is used, we check if digitalsignature usage is
+        // present.
+        // (For more details see:
+        // https://github.com/eclipse/californium/issues/748)
+        if ((cert.getKeyUsage() != null && !cert.getKeyUsage()[KEY_USAGE_SIGNATURE])) {
+            LOGGER.debug("certificate: {}, not for signing!", cert.getSubjectX500Principal());
+            return false;
+        }
+        try {
+            List<String> list = cert.getExtendedKeyUsage();
+            if (list != null && !list.isEmpty()) {
+                LOGGER.trace("certificate: {}", cert.getSubjectX500Principal());
+                final String authentication = client ? CLIENT_AUTHENTICATION : SERVER_AUTHENTICATION;
+                boolean foundUsage = false;
+                for (String extension : list) {
+                    LOGGER.trace("   extkeyusage {}", extension);
+                    if (authentication.equals(extension)) {
+                        foundUsage = true;
+                    }
+                }
+                if (!foundUsage) {
+                    LOGGER.debug("certificate: {}, not for {}!", cert.getSubjectX500Principal(),
+                            client ? "client" : "server");
+                    return false;
+                }
+            } else {
+                LOGGER.debug("certificate: {}, no extkeyusage!", cert.getSubjectX500Principal());
+            }
+        } catch (CertificateParsingException e) {
+            LOGGER.warn("x509 certificate:", e);
+        }
+        return true;
+    }
+
+    /**
+     * Creates a modifiable x509 certificates list from provided certificates list.
+     *
+     * @param certificates certificates list
+     * @return created modifiable x509 certificates list
+     * @throws NullPointerException if the certificate list is {@code null}.
+     * @throws IllegalArgumentException if a certificate is provided, which is no x509 certificate.
+     */
+    public static List<X509Certificate> toX509CertificatesList(List<? extends Certificate> certificates) {
+        if (certificates == null) {
+            throw new NullPointerException("Certificates list must not be null!");
+        }
+        List<X509Certificate> chain = new ArrayList<>(certificates.size());
+        for (Certificate cert : certificates) {
+            if (!(cert instanceof X509Certificate)) {
+                throw new IllegalArgumentException("Given certificate is not X.509!" + cert.getClass());
+            }
+            chain.add((X509Certificate) cert);
+        }
+        return chain;
+    }
+
+    /**
+     * Convert array of {@link Certificate} to array of {@link X509Certificate}
+     */
+    public static X509Certificate[] asX509Certificates(Certificate... certificates) throws CertificateException {
+        ArrayList<X509Certificate> x509Certificates = new ArrayList<>();
+
+        for (Certificate cert : certificates) {
+            if (!(cert instanceof X509Certificate)) {
+                throw new CertificateException(String.format(
+                        "%s certificate format is not supported, Only X.509 certificate is supported", cert.getType()));
+            }
+            x509Certificates.add((X509Certificate) cert);
+        }
+
+        return x509Certificates.toArray(new X509Certificate[0]);
+    }
+
     /**
      * <a href="https://tools.ietf.org/html/rfc3280#section-4.2.1.7">rfc3280#section-4.2.1.7</a> - GeneralName
      */

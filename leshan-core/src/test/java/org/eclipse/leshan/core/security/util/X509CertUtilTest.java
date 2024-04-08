@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.util;
+package org.eclipse.leshan.core.security.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -33,6 +33,7 @@ import java.security.cert.X509Certificate;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 import org.junit.jupiter.api.Test;
 
 public class X509CertUtilTest {

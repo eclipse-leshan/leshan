@@ -28,8 +28,8 @@ import java.security.spec.ECPoint;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.KeySpec;
 
+import org.eclipse.leshan.core.security.util.SecurityUtil;
 import org.eclipse.leshan.core.util.Hex;
-import org.eclipse.leshan.core.util.SecurityUtil;
 import org.eclipse.leshan.server.security.SecurityInfo;
 
 import com.fasterxml.jackson.core.JsonParseException;

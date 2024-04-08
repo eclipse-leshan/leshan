@@ -75,7 +75,7 @@ import org.eclipse.leshan.core.oscore.OscoreSetting;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
-import org.eclipse.leshan.core.util.SecurityUtil;
+import org.eclipse.leshan.core.security.util.SecurityUtil;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

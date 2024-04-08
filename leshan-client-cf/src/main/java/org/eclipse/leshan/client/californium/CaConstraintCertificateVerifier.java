@@ -26,6 +26,7 @@ import org.eclipse.californium.scandium.dtls.AlertMessage.AlertDescription;
 import org.eclipse.californium.scandium.dtls.AlertMessage.AlertLevel;
 import org.eclipse.californium.scandium.dtls.CertificateMessage;
 import org.eclipse.californium.scandium.dtls.HandshakeException;
+import org.eclipse.leshan.core.security.certificate.util.PKIValidator;
 import org.eclipse.leshan.core.util.Validate;
 
 /**
@@ -84,7 +85,7 @@ public class CaConstraintCertificateVerifier extends BaseCertificateVerifier {
         // - must do PKIX validation with trustStore
         CertPath certPath;
         try {
-            certPath = X509Util.applyPKIXValidation(messageChain, trustedCertificates);
+            certPath = PKIValidator.applyPKIXValidation(messageChain, trustedCertificates);
         } catch (GeneralSecurityException e) {
             AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE);
             throw new HandshakeException("Certificate chain could not be validated", alert, e);

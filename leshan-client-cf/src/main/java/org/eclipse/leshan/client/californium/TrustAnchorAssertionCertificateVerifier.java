@@ -25,6 +25,7 @@ import org.eclipse.californium.scandium.dtls.AlertMessage.AlertDescription;
 import org.eclipse.californium.scandium.dtls.AlertMessage.AlertLevel;
 import org.eclipse.californium.scandium.dtls.CertificateMessage;
 import org.eclipse.californium.scandium.dtls.HandshakeException;
+import org.eclipse.leshan.core.security.certificate.util.PKIValidator;
 import org.eclipse.leshan.core.util.Validate;
 
 /**
@@ -71,7 +72,7 @@ public class TrustAnchorAssertionCertificateVerifier extends BaseCertificateVeri
         // - must do PKIX validation with trustStore
         CertPath certPath;
         try {
-            certPath = X509Util.applyPKIXValidation(messageChain, trustAnchor);
+            certPath = PKIValidator.applyPKIXValidation(messageChain, trustAnchor);
         } catch (GeneralSecurityException e) {
             AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE);
             throw new HandshakeException("Certificate chain could not be validated : server cert chain is empty",

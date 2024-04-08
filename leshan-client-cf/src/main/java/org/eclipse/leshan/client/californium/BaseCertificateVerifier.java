@@ -36,7 +36,7 @@ import org.eclipse.californium.scandium.dtls.HandshakeException;
 import org.eclipse.californium.scandium.dtls.HandshakeResultHandler;
 import org.eclipse.californium.scandium.dtls.x509.NewAdvancedCertificateVerifier;
 import org.eclipse.californium.scandium.util.ServerNames;
-import org.eclipse.leshan.core.util.X509CertUtil;
+import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 
 public abstract class BaseCertificateVerifier implements NewAdvancedCertificateVerifier {
 

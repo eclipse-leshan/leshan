@@ -38,9 +38,9 @@ import java.security.spec.KeySpec;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.leshan.client.californium.X509Util;
 import org.eclipse.leshan.core.oscore.AeadAlgorithm;
 import org.eclipse.leshan.core.oscore.HkdfAlgorithm;
+import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 import org.eclipse.leshan.core.util.Hex;
 
 public class Credentials {
@@ -163,10 +163,10 @@ public class Credentials {
             virtualHostX509CertSignedByRoot = (X509Certificate) serverKeyStore
                     .getCertificate("virtualhost_signed_by_root");
             serverX509CertSelfSigned = (X509Certificate) serverKeyStore.getCertificate("server_self_signed");
-            serverX509CertChainWithIntermediateCa = X509Util.asX509Certificates( //
+            serverX509CertChainWithIntermediateCa = X509CertUtil.asX509Certificates( //
                     serverKeyStore.getCertificate("server_signed_by_intermediate_ca"), //
                     serverKeyStore.getCertificate("intermediateCA"));
-            virtualHostX509CertChainWithIntermediateCa = X509Util.asX509Certificates( //
+            virtualHostX509CertChainWithIntermediateCa = X509CertUtil.asX509Certificates( //
                     serverKeyStore.getCertificate("virutalhost_signed_by_intermediate_ca"), //
                     serverKeyStore.getCertificate("intermediateCA"));
             trustedCertificatesByServer[0] = rootCAX509Cert;

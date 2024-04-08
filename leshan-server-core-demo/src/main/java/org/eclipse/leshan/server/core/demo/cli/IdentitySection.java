@@ -28,7 +28,7 @@ import org.eclipse.leshan.core.demo.cli.MultiParameterException;
 import org.eclipse.leshan.core.demo.cli.converters.PrivateKeyConverter;
 import org.eclipse.leshan.core.demo.cli.converters.PublicKeyConverter;
 import org.eclipse.leshan.core.demo.cli.converters.TruststoreConverter;
-import org.eclipse.leshan.core.util.SecurityUtil;
+import org.eclipse.leshan.core.security.util.SecurityUtil;
 
 import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;

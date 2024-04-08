@@ -17,7 +17,7 @@ package org.eclipse.leshan.core.demo.cli.converters;
 
 import java.security.PublicKey;
 
-import org.eclipse.leshan.core.util.SecurityUtil;
+import org.eclipse.leshan.core.security.util.SecurityUtil;
 
 import picocli.CommandLine.ITypeConverter;
 
