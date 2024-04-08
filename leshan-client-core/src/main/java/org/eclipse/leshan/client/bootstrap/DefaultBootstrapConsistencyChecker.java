@@ -23,6 +23,7 @@ import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.oscore.InvalidOscoreSettingException;
 import org.eclipse.leshan.core.oscore.OscoreValidator;
+import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 
 /**
  * A default implementation of {@link BootstrapConsistencyChecker}
@@ -45,7 +46,7 @@ public class DefaultBootstrapConsistencyChecker extends BaseBootstrapConsistency
 
     private void checkCertificateIsValid(ServerInfo serverInfo, List<String> errors) {
         if (serverInfo.secureMode == SecurityMode.X509) {
-            if (!CertPathUtil.canBeUsedForAuthentication((X509Certificate) serverInfo.clientCertificate, true)) {
+            if (!X509CertUtil.canBeUsedForAuthentication((X509Certificate) serverInfo.clientCertificate, true)) {
                 errors.add(String.format("Client certificate for %s server can not be used for authenticate a client",
                         serverInfo.bootstrap ? "bootstrap" : serverInfo.serverId));
             }

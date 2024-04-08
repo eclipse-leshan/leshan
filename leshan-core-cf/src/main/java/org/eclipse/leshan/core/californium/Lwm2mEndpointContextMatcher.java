@@ -20,7 +20,7 @@ import java.security.Principal;
 import javax.security.auth.x500.X500Principal;
 
 import org.eclipse.californium.elements.PrincipalEndpointContextMatcher;
-import org.eclipse.leshan.core.util.X509CertUtil;
+import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 
 // TODO TL: to be move in californium.identity package
 

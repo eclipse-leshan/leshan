@@ -70,7 +70,7 @@ import org.eclipse.leshan.core.peer.RpkIdentity;
 import org.eclipse.leshan.core.peer.X509Identity;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.request.exception.TimeoutException.Type;
-import org.eclipse.leshan.core.util.X509CertUtil;
+import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.californium.ConnectionCleaner;
 import org.eclipse.leshan.server.californium.LwM2mPskStore;

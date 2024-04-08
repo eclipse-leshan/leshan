@@ -25,7 +25,7 @@ import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.auth.X509CertPath;
 import org.eclipse.californium.elements.util.Filter;
 import org.eclipse.californium.scandium.DTLSConnector;
-import org.eclipse.leshan.core.util.X509CertUtil;
+import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 import org.eclipse.leshan.server.security.SecurityInfo;
 
 /**

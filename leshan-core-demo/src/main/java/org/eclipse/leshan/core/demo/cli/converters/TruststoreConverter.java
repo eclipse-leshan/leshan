@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.californium.elements.util.SslContextUtil;
-import org.eclipse.leshan.core.util.SecurityUtil;
+import org.eclipse.leshan.core.security.util.SecurityUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
