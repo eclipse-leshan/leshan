@@ -61,12 +61,13 @@ public class ServiceCertificateConstraintCertificateVerifier extends BaseCertifi
     }
 
     @Override
-    public CertPath verifyCertificate(CertPath remotePeerCertChain, InetSocketAddress remotePeerAddress)
-            throws CertificateException {
+    public CertPath verifyCertificate(CertPath remotePeerCertChain, InetSocketAddress remotePeerAddress,
+            Role remotePeerRole) throws CertificateException {
 
         validateCertificateChainNotEmpty(remotePeerCertChain);
 
         X509Certificate receivedServerCertificate = validateReceivedCertificateIsSupported(remotePeerCertChain);
+        validateCertificateCanBeUsedForAuthentication(receivedServerCertificate, remotePeerRole);
 
         // - must do PKIX validation with trustStore
         CertPath certPath;

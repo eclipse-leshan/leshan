@@ -66,4 +66,18 @@ public abstract class BaseCertificateVerifier implements X509CertificateVerifier
         throw new CertificateException(
                 "Certificate chain could not be validated - server identity does not match certificate");
     }
+
+    protected void validateCertificateCanBeUsedForAuthentication(X509Certificate certificate,
+            Role certificateOwnerRole) {
+        switch (certificateOwnerRole) {
+        case CLIENT:
+            X509CertUtil.canBeUsedForAuthentication(certificate, true);
+            break;
+        case SERVER:
+            X509CertUtil.canBeUsedForAuthentication(certificate, false);
+            break;
+        default:
+            throw new IllegalStateException("Unsupported role " + certificateOwnerRole);
+        }
+    }
 }
