@@ -36,17 +36,24 @@ public class DefaultCertificateVerifier extends BaseCertificateVerifier {
     }
 
     @Override
-    public CertPath verifyCertificate(CertPath remotePeerCertChain, InetSocketAddress remotePeerAddress)
-            throws CertificateException {
+    public CertPath verifyCertificate(CertPath remotePeerCertChain, InetSocketAddress remotePeerAddress,
+            Role remotePeerRole) throws CertificateException {
 
         validateCertificateChainNotEmpty(remotePeerCertChain);
+        X509Certificate receivedServerCertificate = validateReceivedCertificateIsSupported(remotePeerCertChain);
+        validateCertificateCanBeUsedForAuthentication(receivedServerCertificate, remotePeerRole);
 
         // - must do PKIX validation with trustStore
+        CertPath certPath;
         try {
-            return PKIValidator.applyPKIXValidation(remotePeerCertChain,
+            certPath = PKIValidator.applyPKIXValidation(remotePeerCertChain,
                     trustedCertificates.toArray(new X509Certificate[trustedCertificates.size()]));
         } catch (GeneralSecurityException e) {
             throw new CertificateException("Certificate chain could not be validated");
         }
+
+        validateSubject(remotePeerAddress, receivedServerCertificate);
+
+        return certPath;
     }
 }

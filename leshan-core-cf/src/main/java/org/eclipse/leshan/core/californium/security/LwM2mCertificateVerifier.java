@@ -36,6 +36,7 @@ import org.eclipse.californium.scandium.dtls.HandshakeResultHandler;
 import org.eclipse.californium.scandium.dtls.x509.NewAdvancedCertificateVerifier;
 import org.eclipse.californium.scandium.util.ServerNames;
 import org.eclipse.leshan.core.security.certificate.verifier.X509CertificateVerifier;
+import org.eclipse.leshan.core.security.certificate.verifier.X509CertificateVerifier.Role;
 
 public class LwM2mCertificateVerifier implements NewAdvancedCertificateVerifier {
 
@@ -69,7 +70,8 @@ public class LwM2mCertificateVerifier implements NewAdvancedCertificateVerifier 
         try {
             // verifyDestination is currently not used.
             // The DTLS_VERIFY_SERVER_CERTIFICATES_SUBJECT is therefore set to transient.
-            certificateVerifier.verifyCertificate(message.getCertificateChain(), remotePeer);
+            certificateVerifier.verifyCertificate(message.getCertificateChain(), remotePeer,
+                    clientUsage ? Role.CLIENT : Role.SERVER);
             return new CertificateVerificationResult(cid, message.getCertificateChain(), null);
         } catch (CertificateException exception) {
             return new CertificateVerificationResult(cid, new HandshakeException("Unable to verify Certificate",

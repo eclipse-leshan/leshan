@@ -53,8 +53,8 @@ public class DomainIssuerCertificateVerifier extends BaseCertificateVerifier {
     }
 
     @Override
-    public CertPath verifyCertificate(CertPath remotePeerCertChain, InetSocketAddress remotePeerAddress)
-            throws CertificateException {
+    public CertPath verifyCertificate(CertPath remotePeerCertChain, InetSocketAddress remotePeerAddress,
+            Role remotePeerRole) throws CertificateException {
 
         validateCertificateChainNotEmpty(remotePeerCertChain);
 

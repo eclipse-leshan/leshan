@@ -21,6 +21,13 @@ import java.security.cert.CertificateException;
 
 public interface X509CertificateVerifier {
 
-    CertPath verifyCertificate(CertPath remotePeerCertChain, InetSocketAddress remotePeerAddress)
+    public enum Role {
+        // used for client certificate
+        CLIENT,
+        // used for server certificate
+        SERVER;
+    }
+
+    CertPath verifyCertificate(CertPath remotePeerCertChain, InetSocketAddress remotePeerAddress, Role remotePeerRole)
             throws CertificateException;
 }
