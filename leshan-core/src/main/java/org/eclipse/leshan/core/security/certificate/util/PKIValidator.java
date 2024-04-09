@@ -18,6 +18,7 @@ package org.eclipse.leshan.core.security.certificate.util;
 import java.security.GeneralSecurityException;
 import java.security.cert.CertPath;
 import java.security.cert.CertPathValidator;
+import java.security.cert.CertPathValidatorException;
 import java.security.cert.CertPathValidatorResult;
 import java.security.cert.PKIXCertPathValidatorResult;
 import java.security.cert.PKIXParameters;
@@ -48,7 +49,7 @@ public class PKIValidator {
         CertPath adaptedCertPath = CertPathUtil.truncateToFirstTrustedCert(certPath, trustedCertificates);
 
         if (adaptedCertPath.getCertificates().isEmpty())
-            throw new IllegalArgumentException(
+            throw new CertPathValidatorException(
                     "Invalid certificate path : certificate path is empty or end node certificate is directly trusted");
 
         // Create trustAnchor for PKIX algorithm

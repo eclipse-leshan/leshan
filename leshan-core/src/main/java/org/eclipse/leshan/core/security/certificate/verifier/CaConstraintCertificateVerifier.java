@@ -13,19 +13,15 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.californium;
+package org.eclipse.leshan.core.security.certificate.verifier;
 
 import java.net.InetSocketAddress;
 import java.security.GeneralSecurityException;
 import java.security.cert.CertPath;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-import org.eclipse.californium.scandium.dtls.AlertMessage;
-import org.eclipse.californium.scandium.dtls.AlertMessage.AlertDescription;
-import org.eclipse.californium.scandium.dtls.AlertMessage.AlertLevel;
-import org.eclipse.californium.scandium.dtls.CertificateMessage;
-import org.eclipse.californium.scandium.dtls.HandshakeException;
 import org.eclipse.leshan.core.security.certificate.util.PKIValidator;
 import org.eclipse.leshan.core.util.Validate;
 
@@ -74,47 +70,41 @@ public class CaConstraintCertificateVerifier extends BaseCertificateVerifier {
     }
 
     @Override
-    public CertPath verifyCertificate(boolean clientUsage, CertificateMessage message, InetSocketAddress peerSocket)
-            throws HandshakeException {
-        CertPath messageChain = message.getCertificateChain();
+    public CertPath verifyCertificate(CertPath remotePeerCertChain, InetSocketAddress remotePeerAddress)
+            throws CertificateException {
 
-        validateCertificateChainNotEmpty(messageChain);
-        X509Certificate receivedServerCertificate = validateReceivedCertificateIsSupported(messageChain);
-        validateNotDirectTrust(messageChain);
+        validateCertificateChainNotEmpty(remotePeerCertChain);
+        X509Certificate receivedServerCertificate = validateReceivedCertificateIsSupported(remotePeerCertChain);
+        validateNotDirectTrust(remotePeerCertChain);
 
         // - must do PKIX validation with trustStore
         CertPath certPath;
         try {
-            certPath = PKIValidator.applyPKIXValidation(messageChain, trustedCertificates);
+            certPath = PKIValidator.applyPKIXValidation(remotePeerCertChain, trustedCertificates);
         } catch (GeneralSecurityException e) {
-            AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE);
-            throw new HandshakeException("Certificate chain could not be validated", alert, e);
+            throw new CertificateException("Certificate chain could not be validated");
         }
 
         // - must check that given certificate is part of certPath
         if (!certPath.getCertificates().contains(caCertificate)) {
             // No match found -> throw exception about it
-            AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE);
-            throw new HandshakeException("Certificate chain could not be validated", alert);
+            throw new CertificateException("Certificate chain could not be validated");
         }
 
         // - validate server name
         if (expectedServerName != null) {
             validateSNI(expectedServerName, receivedServerCertificate);
         } else {
-            validateSubject(peerSocket, receivedServerCertificate);
+            validateSubject(remotePeerAddress, receivedServerCertificate);
         }
-
         return certPath;
     }
 
-    protected void validateNotDirectTrust(CertPath messageChain) throws HandshakeException {
+    protected void validateNotDirectTrust(CertPath messageChain) throws CertificateException {
         Certificate certificate = messageChain.getCertificates().get(0);
         if (certificate.equals(caCertificate)) {
-            AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE);
-            throw new HandshakeException(
-                    "Invalid certificate path : direct trust is not allowed with 'CA Constraint' usage. Use 'Service Certificate Constraint' instead.",
-                    alert);
+            throw new CertificateException(
+                    "Invalid certificate path : direct trust is not allowed with 'CA Constraint' usage. Use 'Service Certificate Constraint' instead.");
         }
     }
 }

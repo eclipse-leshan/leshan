@@ -13,18 +13,14 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.californium;
+package org.eclipse.leshan.core.security.certificate.verifier;
 
 import java.net.InetSocketAddress;
 import java.security.cert.CertPath;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-import org.eclipse.californium.scandium.dtls.AlertMessage;
-import org.eclipse.californium.scandium.dtls.AlertMessage.AlertDescription;
-import org.eclipse.californium.scandium.dtls.AlertMessage.AlertLevel;
-import org.eclipse.californium.scandium.dtls.CertificateMessage;
-import org.eclipse.californium.scandium.dtls.HandshakeException;
 import org.eclipse.leshan.core.util.Validate;
 
 /**
@@ -57,20 +53,18 @@ public class DomainIssuerCertificateVerifier extends BaseCertificateVerifier {
     }
 
     @Override
-    public CertPath verifyCertificate(boolean clientUsage, CertificateMessage message, InetSocketAddress peerSocket)
-            throws HandshakeException {
-        CertPath messageChain = message.getCertificateChain();
+    public CertPath verifyCertificate(CertPath remotePeerCertChain, InetSocketAddress remotePeerAddress)
+            throws CertificateException {
 
-        validateCertificateChainNotEmpty(messageChain);
+        validateCertificateChainNotEmpty(remotePeerCertChain);
 
-        X509Certificate receivedServerCertificate = validateReceivedCertificateIsSupported(messageChain);
+        X509Certificate receivedServerCertificate = validateReceivedCertificateIsSupported(remotePeerCertChain);
 
         // - target certificate must match what is provided certificate in server info
         if (!domainIssuerCertificate.equals(receivedServerCertificate)) {
-            AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE);
-            throw new HandshakeException("Certificate chain could not be validated", alert);
+            throw new CertificateException("Certificate chain could not be validated");
         }
 
-        return messageChain;
+        return remotePeerCertChain;
     }
 }
