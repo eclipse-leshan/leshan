@@ -55,21 +55,18 @@ import org.eclipse.californium.scandium.dtls.pskstore.AdvancedSinglePskStore;
 import org.eclipse.californium.scandium.dtls.x509.NewAdvancedCertificateVerifier;
 import org.eclipse.californium.scandium.dtls.x509.SingleCertificateProvider;
 import org.eclipse.californium.scandium.dtls.x509.StaticNewAdvancedCertificateVerifier;
-import org.eclipse.leshan.client.californium.CaConstraintCertificateVerifier;
 import org.eclipse.leshan.client.californium.CaliforniumConnectionController;
-import org.eclipse.leshan.client.californium.DomainIssuerCertificateVerifier;
-import org.eclipse.leshan.client.californium.ServiceCertificateConstraintCertificateVerifier;
-import org.eclipse.leshan.client.californium.TrustAnchorAssertionCertificateVerifier;
 import org.eclipse.leshan.client.californium.endpoint.coap.CoapClientEndpointFactory;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
+import org.eclipse.leshan.client.security.CertificateVerifierFactory;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServerInfo;
-import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.californium.DefaultExceptionTranslator;
 import org.eclipse.leshan.core.californium.ExceptionTranslator;
 import org.eclipse.leshan.core.californium.Lwm2mEndpointContextMatcher;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
+import org.eclipse.leshan.core.californium.security.LwM2mCertificateVerifier;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.peer.IpPeer;
@@ -80,6 +77,7 @@ import org.eclipse.leshan.core.peer.X509Identity;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.request.exception.TimeoutException.Type;
 import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
+import org.eclipse.leshan.core.security.certificate.verifier.X509CertificateVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,6 +86,7 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
     private static final Logger LOG = LoggerFactory.getLogger(CoapsClientEndpointFactory.class);
 
     protected final String loggingTagPrefix;
+    protected final CertificateVerifierFactory certificateVerifierFactory = new CertificateVerifierFactory();
 
     public CoapsClientEndpointFactory() {
         this("LWM2M Client");
@@ -184,59 +183,9 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
                 singleCertificateProvider.setVerifyKeyPair(false);
                 effectiveBuilder.setCertificateIdentityProvider(singleCertificateProvider);
 
-                // LWM2M v1.1.1 - 5.2.8.7. Certificate Usage Field
-                //
-                // 0: Certificate usage 0 ("CA constraint")
-                // - trustStore is client's configured trust store
-                // - must do PKIX validation with trustStore to build certPath
-                // - must check that given certificate is part of certPath
-                // - validate server name
-                //
-                // 1: Certificate usage 1 ("service certificate constraint")
-                // - trustStore is client's configured trust store
-                // - must do PKIX validation with trustStore
-                // - target certificate must match what is provided certificate in server info
-                // - validate server name
-                //
-                // 2: Certificate usage 2 ("trust anchor assertion")
-                // - trustStore is only the provided certificate in server info
-                // - must do PKIX validation with trustStore
-                // - validate server name
-                //
-                // 3: Certificate usage 3 ("domain-issued certificate") (default mode if missing)
-                // - no trustStore used in this mode
-                // - target certificate must match what is provided certificate in server info
-                // - validate server name
-
-                CertificateUsage certificateUsage = serverInfo.certificateUsage != null ? serverInfo.certificateUsage
-                        : CertificateUsage.DOMAIN_ISSUER_CERTIFICATE;
-
-                if (certificateUsage == CertificateUsage.CA_CONSTRAINT) {
-                    X509Certificate[] trustedCertificates = null;
-                    if (trustStore != null) {
-                        trustedCertificates = CertPathUtil.toX509CertificatesList(trustStore)
-                                .toArray(new X509Certificate[trustStore.size()]);
-                    }
-                    effectiveBuilder.setAdvancedCertificateVerifier(new CaConstraintCertificateVerifier(
-                            serverInfo.serverCertificate, trustedCertificates, serverInfo.sni));
-                } else if (certificateUsage == CertificateUsage.SERVICE_CERTIFICATE_CONSTRAINT) {
-                    X509Certificate[] trustedCertificates = null;
-
-                    // - trustStore is client's configured trust store
-                    if (trustStore != null) {
-                        trustedCertificates = CertPathUtil.toX509CertificatesList(trustStore)
-                                .toArray(new X509Certificate[trustStore.size()]);
-                    }
-
-                    effectiveBuilder.setAdvancedCertificateVerifier(new ServiceCertificateConstraintCertificateVerifier(
-                            serverInfo.serverCertificate, trustedCertificates, serverInfo.sni));
-                } else if (certificateUsage == CertificateUsage.TRUST_ANCHOR_ASSERTION) {
-                    effectiveBuilder.setAdvancedCertificateVerifier(new TrustAnchorAssertionCertificateVerifier(
-                            (X509Certificate) serverInfo.serverCertificate, serverInfo.sni));
-                } else if (certificateUsage == CertificateUsage.DOMAIN_ISSUER_CERTIFICATE) {
-                    effectiveBuilder.setAdvancedCertificateVerifier(
-                            new DomainIssuerCertificateVerifier(serverInfo.serverCertificate));
-                }
+                // set certificate verifier
+                X509CertificateVerifier certificateVerifier = certificateVerifierFactory.create(serverInfo, trustStore);
+                effectiveBuilder.setAdvancedCertificateVerifier(new LwM2mCertificateVerifier(certificateVerifier));
 
                 // TODO We set CN with '*' as we are not able to know the CN for some certificate usage and so this is
                 // not used anymore to identify a server with x509.

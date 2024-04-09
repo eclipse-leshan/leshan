@@ -13,18 +13,14 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.californium;
+package org.eclipse.leshan.core.security.certificate.verifier;
 
 import java.net.InetSocketAddress;
 import java.security.GeneralSecurityException;
 import java.security.cert.CertPath;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-import org.eclipse.californium.scandium.dtls.AlertMessage;
-import org.eclipse.californium.scandium.dtls.AlertMessage.AlertDescription;
-import org.eclipse.californium.scandium.dtls.AlertMessage.AlertLevel;
-import org.eclipse.californium.scandium.dtls.CertificateMessage;
-import org.eclipse.californium.scandium.dtls.HandshakeException;
 import org.eclipse.leshan.core.security.certificate.util.PKIValidator;
 import org.eclipse.leshan.core.util.Validate;
 
@@ -62,30 +58,26 @@ public class TrustAnchorAssertionCertificateVerifier extends BaseCertificateVeri
     }
 
     @Override
-    public CertPath verifyCertificate(boolean clientUsage, CertificateMessage message, InetSocketAddress peerSocket)
-            throws HandshakeException {
-        CertPath messageChain = message.getCertificateChain();
+    public CertPath verifyCertificate(CertPath remotePeerCertChain, InetSocketAddress remotePeerAddress)
+            throws CertificateException {
 
-        validateCertificateChainNotEmpty(messageChain);
-        X509Certificate receivedServerCertificate = validateReceivedCertificateIsSupported(messageChain);
+        validateCertificateChainNotEmpty(remotePeerCertChain);
+        X509Certificate receivedServerCertificate = validateReceivedCertificateIsSupported(remotePeerCertChain);
 
         // - must do PKIX validation with trustStore
         CertPath certPath;
         try {
-            certPath = PKIValidator.applyPKIXValidation(messageChain, trustAnchor);
+            certPath = PKIValidator.applyPKIXValidation(remotePeerCertChain, trustAnchor);
         } catch (GeneralSecurityException e) {
-            AlertMessage alert = new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE);
-            throw new HandshakeException("Certificate chain could not be validated : server cert chain is empty",
-                    alert);
+            throw new CertificateException("Certificate chain could not be validated : server cert chain is empty");
         }
 
         // - validate server name
         if (expectedServerName != null) {
             validateSNI(expectedServerName, receivedServerCertificate);
         } else {
-            validateSubject(peerSocket, receivedServerCertificate);
+            validateSubject(remotePeerAddress, receivedServerCertificate);
         }
-
         return certPath;
     }
 }
