@@ -63,6 +63,7 @@ import org.eclipse.leshan.server.redis.RedisSecurityStore;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.FileSecurityStore;
 import org.eclipse.leshan.transport.javacoap.server.coaptcp.endpoint.JavaCoapTcpServerEndpointsProvider;
+import org.eclipse.leshan.transport.javacoap.server.coaptcp.endpoint.JavaCoapsTcpServerEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.server.endpoint.JavaCoapServerEndpointsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -265,9 +266,16 @@ public class LeshanServerDemo {
         JavaCoapTcpServerEndpointsProvider javacoapTcpEndpointsProvider = new JavaCoapTcpServerEndpointsProvider(
                 coapTcpAddr);
 
+        // Create CoAP over TLS endpoint based on java-coap
+        int coapsTcpPort = cli.main.jTlsLocalPort;
+        InetSocketAddress coapsTcpAddr = cli.main.jTlsLocalAddress == null ? new InetSocketAddress(coapsTcpPort)
+                : new InetSocketAddress(cli.main.jTlsLocalAddress, coapTcpPort);
+        JavaCoapsTcpServerEndpointsProvider javacoapsTcpEndpointsProvider = new JavaCoapsTcpServerEndpointsProvider(
+                coapsTcpAddr);
+
         // Create LWM2M server
-        builder.setEndpointsProviders(endpointsBuilder.build(), javacoapEndpointsProvider,
-                javacoapTcpEndpointsProvider);
+        builder.setEndpointsProviders(endpointsBuilder.build(), javacoapEndpointsProvider, javacoapTcpEndpointsProvider,
+                javacoapsTcpEndpointsProvider);
         return builder.build();
     }
 

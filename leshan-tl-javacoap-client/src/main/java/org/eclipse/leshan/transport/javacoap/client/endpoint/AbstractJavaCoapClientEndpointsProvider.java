@@ -165,6 +165,11 @@ public abstract class AbstractJavaCoapClientEndpointsProvider implements LwM2mCl
     @Override
     public synchronized LwM2mServer createEndpoint(ServerInfo serverInfo, boolean clientInitiatedOnly,
             List<Certificate> trustStore, ClientEndpointToolbox toolbox) {
+
+        if (!this.supportedProtocol.getUriScheme().equals(serverInfo.getFullUri().getScheme())) {
+            return null;
+        }
+
         // As we support only 1 server destroy previous one first
         destroyEndpoints();
 

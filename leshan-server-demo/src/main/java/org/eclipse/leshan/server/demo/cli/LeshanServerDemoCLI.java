@@ -82,6 +82,19 @@ public class LeshanServerDemoCLI implements Runnable {
                 converter = PortConverter.class)
         public Integer jTcpLocalPort = 5683;
 
+        @Option(names = { "-tsh", "--java-coaps-tcp-host" },
+                description = { //
+                        "Set the local CoAP over TLS address of endpoint based on java-coap library.", //
+                        "Default: any local address." })
+        public String jTlsLocalAddress;
+
+        @Option(names = { "-tsp", "--java-coaps-tcp-port" },
+                description = { //
+                        "Set the local CoAP over TLS port of endpoint based on java-coap library.", //
+                        "Default: ${DEFAULT-VALUE}" },
+                converter = PortConverter.class)
+        public Integer jTlsLocalPort = 5684;
+
         @Option(names = { "-r", "--redis" },
                 description = { //
                         "Use redis to store registration and securityInfo.", //

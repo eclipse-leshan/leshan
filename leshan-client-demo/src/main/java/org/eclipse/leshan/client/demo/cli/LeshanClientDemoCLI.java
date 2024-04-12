@@ -18,8 +18,11 @@ package org.eclipse.leshan.client.demo.cli;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
@@ -31,6 +34,7 @@ import org.eclipse.leshan.core.demo.cli.converters.CIDConverter;
 import org.eclipse.leshan.core.demo.cli.converters.InetAddressConverter;
 import org.eclipse.leshan.core.demo.cli.converters.ResourcePathConverter;
 import org.eclipse.leshan.core.demo.cli.converters.StrictlyPositiveIntegerConverter;
+import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.util.StringUtils;
 
@@ -316,24 +320,33 @@ public class LeshanClientDemoCLI implements Runnable {
         // extract scheme
         int indexOf = main.url.indexOf("://");
         String scheme = main.url.substring(0, indexOf);
-        // we support only coap and coaps
-        if (!"coap".equals(scheme) && !"coaps".equals(scheme) && !"coap+tcp".equals(scheme)) {
-            throw new MultiParameterException(spec.commandLine(), String.format(
-                    "Invalid URL %s : unknown scheme '%s', we support only 'coap' or 'coaps' or 'coap+tcp' for now",
-                    main.url, scheme), "-u");
+        // check URI scheme is supported
+        List<String> supportedUnsecuredProtocol = Arrays.asList(Protocol.COAP, Protocol.COAP_TCP) //
+                .stream().map(Protocol::getUriScheme).collect(Collectors.toList());
+        List<String> supportedTlsBasedProtocol = Arrays.asList(Protocol.COAPS, Protocol.COAPS_TCP) //
+                .stream().map(Protocol::getUriScheme).collect(Collectors.toList());
+        List<String> allSupportedProtocol = Stream
+                .concat(supportedUnsecuredProtocol.stream(), supportedTlsBasedProtocol.stream())
+                .collect(Collectors.toList());
+
+        if (!allSupportedProtocol.contains(scheme)) {
+            throw new MultiParameterException(spec.commandLine(),
+                    String.format("Invalid URL %s : unknown scheme '%s', we support only %s for now", main.url, scheme,
+                            String.join(" or ", allSupportedProtocol)),
+                    "-u");
         }
         // check scheme matches configuration
         if (identity.hasIdentity()) {
-            if (!scheme.equals("coaps")) {
+            if (!supportedTlsBasedProtocol.contains(scheme)) {
                 throw new MultiParameterException(spec.commandLine(), String.format(
-                        "Invalid URL %s : '%s' scheme must be used without PSK, RPK or x509 option. Do you mean 'coaps' ? ",
-                        main.url, scheme), "-u");
+                        "Invalid URL %s : '%s' scheme must be used without PSK, RPK or x509 option. Do you mean %s ? ",
+                        main.url, scheme, String.join(" or ", supportedTlsBasedProtocol)), "-u");
             }
         } else {
-            if (!scheme.equals("coap") && !scheme.equals("coap+tcp")) {
+            if (!supportedUnsecuredProtocol.contains(scheme)) {
                 throw new MultiParameterException(spec.commandLine(), String.format(
-                        "Invalid URL %s : '%s' scheme must be used with PSK, RPK or x509 option. Do you mean 'coap' ? ",
-                        main.url, scheme), "-u");
+                        "Invalid URL %s : '%s' scheme must be used with PSK, RPK or x509 option. Do you mean %s ? ",
+                        main.url, scheme, String.join(" or ", supportedUnsecuredProtocol)), "-u");
             }
         }
     }

@@ -79,7 +79,8 @@ public class X509Test {
     static Stream<org.junit.jupiter.params.provider.Arguments> transports() {
         return Stream.of(//
                 // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider
-                arguments(Protocol.COAPS, "Californium", "Californium"));
+                arguments(Protocol.COAPS, "Californium", "Californium"),
+                arguments(Protocol.COAPS_TCP, "java-coap", "java-coap"));
     }
 
     /*---------------------------------/
@@ -145,7 +146,7 @@ public class X509Test {
         server.getSecurityStore().remove(client.getEndpointName(), true);
 
         // try to update
-        Thread.sleep(100);
+        Thread.sleep(200);
         if (givenProtocol.equals(Protocol.COAPS)) {
             // For DTLS, Client doesn't know that connection is removed at server side.
             // So request will first timeout.

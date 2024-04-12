@@ -82,6 +82,7 @@ import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
 import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpoint;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
 import org.eclipse.leshan.transport.javacoap.client.coaptcp.endpoint.JavaCoapTcpClientEndpointsProvider;
+import org.eclipse.leshan.transport.javacoap.client.coaptcp.endpoint.JavaCoapsTcpClientEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.client.endpoint.JavaCoapClientEndpointsProvider;
 
 public class LeshanTestClientBuilder extends LeshanClientBuilder {
@@ -301,6 +302,8 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
             return new JavaCoapClientEndpointsProvider();
         } else if (protocolToUse.equals(Protocol.COAP_TCP)) {
             return new JavaCoapTcpClientEndpointsProvider();
+        } else if (protocolToUse.equals(Protocol.COAPS_TCP)) {
+            return new JavaCoapsTcpClientEndpointsProvider();
         }
         throw new IllegalStateException(String.format("No Californium Protocol Provider for protocol %s", protocol));
     }
