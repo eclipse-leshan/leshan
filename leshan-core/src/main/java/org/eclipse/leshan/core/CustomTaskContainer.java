@@ -18,6 +18,7 @@ import java.util.Map;
 public class CustomTaskContainer {
     public static Map<String, Map<String, Boolean>> taskInfo = null;
     public boolean requestUpdateAnswer = true;
+    public boolean doubleRead = false;
 
     private static CustomTaskContainer instance = null;
 
@@ -37,6 +38,7 @@ public class CustomTaskContainer {
             insideInfo.put("requestUpdateAnswer", true);
             insideInfo.put("waitForSend", false);
             insideInfo.put("sendReceived", false);
+            insideInfo.put("doubleRead", false);
             taskInfo = new HashMap<>();
             taskInfo.put(imei, insideInfo);
         }

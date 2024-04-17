@@ -39,6 +39,9 @@ public class CustomTaskRequest {
         if (taskName.equals("CheckForSend")) {
             checkForSend(imei);
         }
+        if (taskName.equals("DoubleRead")) {
+            doubleRead(imei);
+        }
     }
 
     static void requestUpdateNoAnswer(String imei) {
@@ -64,5 +67,9 @@ public class CustomTaskRequest {
             CustomTaskContainer.createInstance(imei).get(imei).put("sendReceived", false);
             CustomTaskContainer.createInstance(imei).get(imei).put("waitForSend", false);
         }
+    }
+
+    static void doubleRead(String imei) {
+        CustomTaskContainer.createInstance(imei).get(imei).put("doubleRead", true);
     }
 }

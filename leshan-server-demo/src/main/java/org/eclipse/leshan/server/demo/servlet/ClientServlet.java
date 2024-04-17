@@ -179,7 +179,7 @@ public class ClientServlet extends HttpServlet {
                 resp.setStatus(HttpServletResponse.SC_OK);
             } else {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
+                resp.getWriter().format("No registered client with id '%s'", clientEndpoint).flush();
             }
             return;
         }
@@ -230,6 +230,39 @@ public class ClientServlet extends HttpServlet {
                 } else {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     resp.getWriter().format("No registered client with id '%s'", clientEndpoint).flush();
+                }
+            } catch (RuntimeException | InterruptedException e) {
+                handleException(e, resp);
+            }
+            return;
+        }
+
+        // /clients/endPoint/doubleRead/LWRequest : do custom LightWeight M2M read request on a given client.
+        if (path.length >= 2 && "doubleRead".equals(path[path.length - 4])) {
+            try {
+                Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
+                if (registration != null) {
+                    String target = StringUtils.removeStart(req.getPathInfo(), "/" + clientEndpoint + "/doubleRead/");
+                    CustomTaskRequest.handleCustomTask("DoubleRead", clientEndpoint);
+                    // get content format
+                    String contentFormatParam = req.getParameter(FORMAT_PARAM);
+                    ContentFormat contentFormat = contentFormatParam != null
+                            ? ContentFormat.fromName(contentFormatParam.toUpperCase())
+                            : null;
+
+                    // create & process request
+                    ReadRequest request = new ReadRequest(contentFormat, target);
+                    for (int i = 0; i < 10; i++) {
+                        server.send(registration, request, extractTimeout(req));
+                    }
+                    ReadResponse cResponse = server.send(registration, request, extractTimeout(req));
+                    processDeviceResponse(req, resp, cResponse);
+                    resp.setStatus(HttpServletResponse.SC_OK);
+                    // resp.getWriter().format("I SEEEE '%s'", clientEndpoint).flush();
+                } else {
+                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    resp.getWriter().format("Uh oh spaghetti, No registered client with id '%s'", clientEndpoint)
+                            .flush();
                 }
             } catch (RuntimeException | InterruptedException e) {
                 handleException(e, resp);
