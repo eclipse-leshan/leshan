@@ -59,6 +59,7 @@ import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.SecurityStore;
 import org.eclipse.leshan.server.security.ServerSecurityInfo;
 import org.eclipse.leshan.transport.javacoap.server.coaptcp.endpoint.JavaCoapTcpServerEndpointsProvider;
+import org.eclipse.leshan.transport.javacoap.server.coaptcp.endpoint.JavaCoapsTcpServerEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.server.endpoint.JavaCoapServerEndpointsProvider;
 
 public class LeshanTestServerBuilder extends LeshanServerBuilder {
@@ -251,6 +252,8 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
             return new JavaCoapServerEndpointsProvider(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         } else if (protocolToUse.equals(Protocol.COAP_TCP)) {
             return new JavaCoapTcpServerEndpointsProvider(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+        } else if (protocolToUse.equals(Protocol.COAPS_TCP)) {
+            return new JavaCoapsTcpServerEndpointsProvider(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         }
         throw new IllegalStateException(String.format("No Californium Protocol Provider for protocol %s", protocol));
     }
