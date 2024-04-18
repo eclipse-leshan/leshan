@@ -40,8 +40,9 @@ public class ObserveResponse extends ReadResponse {
 
     public ObserveResponse(ResponseCode code, LwM2mNode content, List<TimestampedLwM2mNode> timestampedValues,
             SingleObservation observation, String errorMessage, Object coapResponse) {
-        super(code, timestampedValues != null && !timestampedValues.isEmpty() ? timestampedValues.get(0).getNode()
-                : content, errorMessage, coapResponse);
+        super(code, content,
+                timestampedValues != null && !timestampedValues.isEmpty() ? timestampedValues.get(0) : null,
+                errorMessage, coapResponse);
 
         // CHANGED is out of spec but is supported for backward compatibility. (previous draft version)
         if (ResponseCode.CHANGED.equals(code)) {
@@ -53,7 +54,7 @@ public class ObserveResponse extends ReadResponse {
         this.timestampedValues = timestampedValues;
     }
 
-    public List<TimestampedLwM2mNode> getTimestampedLwM2mNode() {
+    public List<TimestampedLwM2mNode> getTimestampedLwM2mNodes() {
         return timestampedValues;
     }
 

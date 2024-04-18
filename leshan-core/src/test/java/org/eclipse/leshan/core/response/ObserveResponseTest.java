@@ -74,7 +74,7 @@ public class ObserveResponseTest {
 
         // then
         assertEquals(exampleResource, response.getContent());
-        assertNull(response.getTimestampedLwM2mNode());
+        assertNull(response.getTimestampedLwM2mNodes());
     }
 
     @TestAllResponseCode
@@ -91,6 +91,6 @@ public class ObserveResponseTest {
 
         // then
         assertEquals(timestampedValues.get(0).getNode(), response.getContent());
-        assertEquals(timestampedValues, response.getTimestampedLwM2mNode());
+        assertEquals(timestampedValues, response.getTimestampedLwM2mNodes());
     }
 }

@@ -25,6 +25,7 @@ import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.observation.CompositeObservation;
@@ -117,14 +118,33 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
 
     @Override
     public void visit(ReadRequest request) {
+        ContentFormat contentFormat = coapResponse.options().getContentFormat() != null
+                ? ContentFormat.fromCode(coapResponse.options().getContentFormat())
+                : request.getContentFormat();
+
+        List<TimestampedLwM2mNode> timestampedNodes = decoder
+                .decodeTimestampedData(coapResponse.getPayload().getBytes(), contentFormat, request.getPath(), model);
+        TimestampedLwM2mNode timestampedNode = timestampedNodes != null ? timestampedNodes.get(0) : null;
+
         if (coapResponse.getCode().getHttpCode() >= 400) {
             // handle error response:
-            lwM2mresponse = new ReadResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
-                    coapResponse.getPayloadString(), coapResponse);
+            if (timestampedNode != null && timestampedNode.isTimestamped()) {
+                lwM2mresponse = new ReadResponse(toLwM2mResponseCode(coapResponse.getCode()), null, timestampedNode,
+                        coapResponse.getPayloadString(), coapResponse);
+            } else {
+                lwM2mresponse = new ReadResponse(toLwM2mResponseCode(coapResponse.getCode()), null, null,
+                        coapResponse.getPayloadString(), coapResponse);
+            }
         } else if (isResponseCodeContent()) {
             // handle success response:
-            LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request, clientEndpoint);
-            lwM2mresponse = new ReadResponse(ResponseCode.CONTENT, content, null, coapResponse);
+
+            if (timestampedNode != null && timestampedNode.isTimestamped()) {
+                lwM2mresponse = new ReadResponse(ResponseCode.CONTENT, timestampedNode.getNode(), timestampedNode, null,
+                        coapResponse);
+            } else {
+                LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request, clientEndpoint);
+                lwM2mresponse = new ReadResponse(ResponseCode.CONTENT, content, null, null, coapResponse);
+            }
         } else {
             // handle unexpected response:
             handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);

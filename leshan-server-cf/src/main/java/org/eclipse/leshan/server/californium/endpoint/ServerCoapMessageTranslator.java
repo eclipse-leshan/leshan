@@ -26,6 +26,7 @@ import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.CodecException;
@@ -34,11 +35,13 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.response.AbstractLwM2mResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
+import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.californium.registration.RegisterResource;
 import org.eclipse.leshan.server.californium.request.CoapRequestBuilder;
@@ -67,10 +70,34 @@ public class ServerCoapMessageTranslator {
     public <T extends LwM2mResponse> T createLwM2mResponse(ClientProfile clientProfile, DownlinkRequest<T> lwm2mRequest,
             Request coapRequest, Response coapResponse, ServerEndpointToolbox toolbox) {
 
+        ContentFormat contentFormat = null;
+        if (coapResponse.getOptions().hasContentFormat()) {
+            contentFormat = ContentFormat.fromCode(coapResponse.getOptions().getContentFormat());
+        } else if (lwm2mRequest instanceof ReadRequest) {
+            contentFormat = ((ReadRequest) lwm2mRequest).getContentFormat();
+        }
+
+        List<TimestampedLwM2mNode> timestampedNodes = toolbox.getDecoder().decodeTimestampedData(
+                coapResponse.getPayload(), contentFormat, new LwM2mPath(1, 0, 1), clientProfile.getModel());
+        TimestampedLwM2mNode timestampedNode = timestampedNodes != null ? timestampedNodes.get(0) : null;
+
         LwM2mResponseBuilder<T> builder = new LwM2mResponseBuilder<T>(coapRequest, coapResponse,
                 clientProfile.getEndpoint(), clientProfile.getModel(), toolbox.getDecoder(), toolbox.getLinkParser());
         lwm2mRequest.accept(builder);
-        return builder.getResponse();
+
+        if (builder.getResponse() instanceof ReadResponse) {
+            if (timestampedNode != null && timestampedNode.isTimestamped()) {
+                ReadResponse readResponse = new ReadResponse(ResponseCode.CONTENT, timestampedNode.getNode(),
+                        timestampedNode, null, coapResponse);
+                return (T) readResponse;
+
+            } else {
+                return builder.getResponse();
+            }
+        } else {
+            return builder.getResponse();
+        }
+
     }
 
     public List<Resource> createResources(UplinkRequestReceiver receiver, ServerEndpointToolbox toolbox,
