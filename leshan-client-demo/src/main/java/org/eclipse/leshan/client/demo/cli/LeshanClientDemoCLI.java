@@ -323,7 +323,7 @@ public class LeshanClientDemoCLI implements Runnable {
         // check URI scheme is supported
         List<String> supportedUnsecuredProtocol = Arrays.asList(Protocol.COAP, Protocol.COAP_TCP) //
                 .stream().map(Protocol::getUriScheme).collect(Collectors.toList());
-        List<String> supportedTlsBasedProtocol = Arrays.asList(Protocol.COAPS) //
+        List<String> supportedTlsBasedProtocol = Arrays.asList(Protocol.COAPS, Protocol.COAPS_TCP) //
                 .stream().map(Protocol::getUriScheme).collect(Collectors.toList());
         List<String> allSupportedProtocol = Stream
                 .concat(supportedUnsecuredProtocol.stream(), supportedTlsBasedProtocol.stream())

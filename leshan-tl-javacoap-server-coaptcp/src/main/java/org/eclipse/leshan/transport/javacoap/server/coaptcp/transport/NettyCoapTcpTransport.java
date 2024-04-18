@@ -175,7 +175,10 @@ public class NettyCoapTcpTransport implements CoapTcpTransport {
 //            if (tansportContext == null)
 //                throw new IllegalStateException("transport context should not be null");
 
-            if (listener != null)
+            if (listener != null
+                    // Not clear what is the consequence but it seems that remote addresse can be null :
+                    // https://github.com/netty/netty/issues/8501
+                    && ctx.channel().remoteAddress() != null)
                 listener.onConnected((InetSocketAddress) ctx.channel().remoteAddress());
 
             super.channelActive(ctx);
@@ -187,7 +190,10 @@ public class NettyCoapTcpTransport implements CoapTcpTransport {
 //            if (tansportContext == null)
 //                throw new IllegalStateException("transport context should not be null");
 
-            if (listener != null)
+            if (listener != null
+                    // Not clear what is the consequence but it seems that remote addresse can be null :
+                    // https://github.com/netty/netty/issues/8501
+                    && ctx.channel().remoteAddress() != null)
                 listener.onDisconnected((InetSocketAddress) ctx.channel().remoteAddress());
 
             super.channelInactive(ctx);

@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.transport.javacoap.identity;
 
+import java.net.InetSocketAddress;
 import java.security.Principal;
 
 import javax.security.auth.x500.X500Principal;
@@ -24,25 +25,24 @@ import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.peer.X509Identity;
 import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 
-import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.transport.TransportContext;
 
 public class DefaultTlsIdentityHandler extends DefaultCoapIdentityHandler {
 
     @Override
-    protected LwM2mPeer getIdentity(CoapRequest receivedRequest) {
-        Principal principal = receivedRequest.getTransContext().get(TlsTransportContextKeys.PRINCIPAL);
+    protected LwM2mPeer getIdentity(InetSocketAddress address, TransportContext context) {
+        Principal principal = context.get(TlsTransportContextKeys.PRINCIPAL);
         if (principal != null) {
             if (principal instanceof X500Principal) {
                 // Extract common name
                 String x509CommonName = X509CertUtil.extractCN(principal.getName());
-                return new IpPeer(receivedRequest.getPeerAddress(), new X509Identity(x509CommonName));
+                return new IpPeer(address, new X509Identity(x509CommonName));
             }
             throw new IllegalStateException(
                     String.format("Unable to extract sender identity : unexpected type of Principal %s [%s]",
                             principal.getClass(), principal.toString()));
         } else {
-            return new IpPeer(receivedRequest.getPeerAddress());
+            return new IpPeer(address);
         }
     }
 
