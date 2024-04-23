@@ -149,15 +149,10 @@ public abstract class AbstractJavaCoapClientEndpointsProvider implements LwM2mCl
         // Create notification handler
         NotificationHandler notificationHandler = new NotificationHandler(
                 // use router but change Observe request in Read request and also flag request as notification
-                req -> {
-                    TransportContext extendedContext = req.getTransContext() //
-                            .with(LwM2mKeys.LESHAN_NOTIFICATION, true);
-
-                    CoapRequest newReq = new CoapRequest(req.getMethod(), req.getToken(), req.options(),
-                            req.getPayload(), req.getPeerAddress(), extendedContext);
-
-                    return router.apply(newReq.withOptions(coapOptionsBuilder -> coapOptionsBuilder.observe(null)));
-                } //
+                req -> router.apply(req.modify() //
+                        .addContext(LwM2mKeys.LESHAN_NOTIFICATION, true) //
+                        .options(coapOptionsBuilder -> coapOptionsBuilder.observe(null)) //
+                        .build()) //
                 , observersManager);
         objectTree.addListener(notificationHandler);
     }

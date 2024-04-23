@@ -229,8 +229,8 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
 
         // Add Observation to request context
         coapRequestBuilder //
-                .context(LwM2mKeys.LESHAN_OBSERVATION, observation) //
-                .context(LwM2mKeys.LESHAN_REGISTRATION, registration) //
+                .addContext(LwM2mKeys.LESHAN_OBSERVATION, observation) //
+                .addContext(LwM2mKeys.LESHAN_REGISTRATION, registration) //
                 .token(token);
     }
 
