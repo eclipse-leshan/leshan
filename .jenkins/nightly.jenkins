@@ -12,7 +12,7 @@ pipeline {
     jdk 'temurin-jdk11-latest'
   }
   options {
-    timeout (time: 30, unit: 'MINUTES')
+    timeout (time: 60, unit: 'MINUTES')
     buildDiscarder(logRotator(numToKeepStr: '3'))
     disableConcurrentBuilds()
     durabilityHint('PERFORMANCE_OPTIMIZED')
