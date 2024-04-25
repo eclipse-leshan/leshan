@@ -142,7 +142,7 @@ jobs:
 
     - name: Upload Build Status File for "Comment Pull Request" Workflow
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
        name: ${{env.build_status_filename}}
        path: ${{env.build_status_filename}}

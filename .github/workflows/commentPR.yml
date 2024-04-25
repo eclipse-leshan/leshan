@@ -29,32 +29,14 @@ jobs:
         jobstep: [nomerge,sortpom,formatter,build,sortimport,checkstyle,androidcheck,semvercheck,javadoc,unittests,integrationtests,buildstatus]
 
     steps:
-      # Waiting https://github.com/actions/download-artifact/issues/172
-      # We are using github script
-      # Inspired by : https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+      # Get Build Status produced by "Check Pull Request" (main.yml) workflow.
+      # See : https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
       - name: Download Build Status Archive
-        uses: actions/github-script@v6.3.3
+        uses: actions/download-artifact@v4
         with:
-          script: |
-            var artifacts = await github.rest.actions.listWorkflowRunArtifacts({
-               owner: context.repo.owner,
-               repo: context.repo.repo,
-               run_id: ${{github.event.workflow_run.id }},
-            });
-            var matchArtifact = artifacts.data.artifacts.filter((artifact) => {
-              return artifact.name == '${{env.build_status_filename}}'
-            })[0];
-            var download = await github.rest.actions.downloadArtifact({
-               owner: context.repo.owner,
-               repo: context.repo.repo,
-               artifact_id: matchArtifact.id,
-               archive_format: 'zip',
-            });
-            var fs = require('fs');
-            fs.writeFileSync('${{github.workspace}}/${{env.build_status_filename}}.zip', Buffer.from(download.data));
-            
-      - name: Unzip Build Status Archive
-        run: unzip ${{env.build_status_filename}}.zip
+          name: ${{env.build_status_filename}}
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
 
       - name: Read Build Status Properties File
         id: read_property
