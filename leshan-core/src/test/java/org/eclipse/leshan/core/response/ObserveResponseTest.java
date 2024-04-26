@@ -52,7 +52,7 @@ public class ObserveResponseTest {
     @TestAllResponseCode
     public void should_throw_invalid_response_exception_if_no_content(ResponseCode responseCode) {
         assertThrowsExactly(InvalidResponseException.class, () -> {
-            new ObserveResponse(responseCode, null, null, null, null);
+            new ObserveResponse(responseCode, null, null, null, null, null);
         });
     }
 
@@ -60,7 +60,7 @@ public class ObserveResponseTest {
     public void should_throw_invalid_response_exception_if_no_content_and_empty_timestamped_values(
             ResponseCode responseCode) {
         assertThrowsExactly(InvalidResponseException.class, () -> {
-            new ObserveResponse(responseCode, null, Collections.<TimestampedLwM2mNode> emptyList(), null, null);
+            new ObserveResponse(responseCode, null, null, Collections.<TimestampedLwM2mNode> emptyList(), null, null);
         });
     }
 
@@ -70,11 +70,11 @@ public class ObserveResponseTest {
         LwM2mSingleResource exampleResource = newResource(15, "example");
 
         // when
-        ObserveResponse response = new ObserveResponse(responseCode, exampleResource, null, null, null);
+        ObserveResponse response = new ObserveResponse(responseCode, exampleResource, null, null, null, null);
 
         // then
         assertEquals(exampleResource, response.getContent());
-        assertNull(response.getTimestampedLwM2mNode());
+        assertNull(response.getTimestampedLwM2mNodes());
     }
 
     @TestAllResponseCode
@@ -84,13 +84,11 @@ public class ObserveResponseTest {
                 new TimestampedLwM2mNode(Instant.ofEpochSecond(123), newResource(15, "example 1")),
                 new TimestampedLwM2mNode(Instant.ofEpochSecond(456), newResource(15, "example 2")));
 
-        LwM2mSingleResource content = responseCode == CHANGED ? newResource(15, "example 1") : null;
-
         // when
-        ObserveResponse response = new ObserveResponse(responseCode, content, timestampedValues, null, null);
+        ObserveResponse response = new ObserveResponse(responseCode, null, null, timestampedValues, null, null);
 
         // then
         assertEquals(timestampedValues.get(0).getNode(), response.getContent());
-        assertEquals(timestampedValues, response.getTimestampedLwM2mNode());
+        assertEquals(timestampedValues, response.getTimestampedLwM2mNodes());
     }
 }

@@ -1774,9 +1774,44 @@ public class LockstepEndpoint {
             return this;
         }
 
+        public ResponseProperty payload(final String payload, final int contentFormat) {
+            properties.add(new Property<Response>() {
+
+                @Override
+                public void set(Response response) {
+                    response.setPayload(payload);
+                    response.getOptions().setContentFormat(contentFormat);
+                }
+            });
+            return this;
+        }
+
         @Override
         public ResponseProperty payload(final String payload, final int from, final int to) {
             super.payload(payload, from, to);
+            return this;
+        }
+
+        public ResponseProperty payload(final byte[] payload) {
+            properties.add(new Property<Response>() {
+
+                @Override
+                public void set(Response response) {
+                    response.setPayload(payload);
+                }
+            });
+            return this;
+        }
+
+        public ResponseProperty payload(final byte[] payload, final int contentFormat) {
+            properties.add(new Property<Response>() {
+
+                @Override
+                public void set(Response response) {
+                    response.setPayload(payload);
+                    response.getOptions().setContentFormat(contentFormat);
+                }
+            });
             return this;
         }
 

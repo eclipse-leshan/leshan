@@ -35,6 +35,7 @@ import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.observation.CompositeObservation;
@@ -117,12 +118,13 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     public void visit(ReadRequest request) {
         if (coapResponse.isError()) {
             // handle error response:
-            lwM2mresponse = new ReadResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
+            lwM2mresponse = new ReadResponse(toLwM2mResponseCode(coapResponse.getCode()), null, null,
                     coapResponse.getPayloadString(), coapResponse);
         } else if (isResponseCodeContent()) {
-            // handle success response:
-            LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request, clientEndpoint);
-            lwM2mresponse = new ReadResponse(ResponseCode.CONTENT, content, null, coapResponse);
+            // handle success response
+            TimestampedLwM2mNode timestampedNode = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
+                    request, clientEndpoint);
+            lwM2mresponse = new ReadResponse(ResponseCode.CONTENT, null, timestampedNode, null, coapResponse);
         } else {
             // handle unexpected response:
             handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
@@ -242,13 +244,15 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     public void visit(ObserveRequest request) {
         if (coapResponse.isError()) {
             // handle error response:
-            lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null, null, null,
+            lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null, null, null, null,
                     coapResponse.getPayloadString(), coapResponse);
         } else if (isResponseCodeContent()
                 // This is for backward compatibility, when the spec say notification used CHANGED code
                 || isResponseCodeChanged()) {
+
             // handle success response:
-            LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request, clientEndpoint);
+            TimestampedLwM2mNode timestampedNode = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
+                    request, clientEndpoint);
             SingleObservation observation = null;
             if (coapResponse.getOptions().hasObserve()) {
 
@@ -269,8 +273,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 // observe request successful
                 observation = ObserveUtil.createLwM2mObservation(coapRequest);
             }
-            lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null, observation,
-                    null, coapResponse);
+            lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null, timestampedNode,
+                    null, observation, null, coapResponse);
         } else {
             // handle unexpected response:
             handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
@@ -282,14 +286,15 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         if (coapResponse.isError()) {
             // handle error response:
             lwM2mresponse = new CancelObservationResponse(toLwM2mResponseCode(coapResponse.getCode()), null, null, null,
-                    coapResponse.getPayloadString(), coapResponse);
+                    null, coapResponse.getPayloadString(), coapResponse);
         } else if (isResponseCodeContent()
                 // This is for backward compatibility, when the spec say notification used CHANGED code
                 || isResponseCodeChanged()) {
             // handle success response:
-            LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request, clientEndpoint);
-            lwM2mresponse = new CancelObservationResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null,
-                    null, null, coapResponse);
+            TimestampedLwM2mNode timestampedNode = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
+                    request, clientEndpoint);
+            lwM2mresponse = new CancelObservationResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
+                    timestampedNode, null, null, null, coapResponse);
         } else {
             // handle unexpected response:
             handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
@@ -470,50 +475,59 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
 
     private LwM2mNode decodeCoapResponse(LwM2mPath path, Response coapResponse, LwM2mRequest<?> request,
             String endpoint) {
-
-        // Get content format
-        ContentFormat contentFormat = null;
-        if (coapResponse.getOptions().hasContentFormat()) {
-            contentFormat = ContentFormat.fromCode(coapResponse.getOptions().getContentFormat());
-        }
-
-        // Decode payload
         try {
-            return decoder.decode(coapResponse.getPayload(), contentFormat, path, model);
+            return decoder.decode(coapResponse.getPayload(), getContentFormat(coapResponse), path, model);
         } catch (CodecException e) {
-            if (LOG.isDebugEnabled()) {
-                byte[] payload = coapResponse.getPayload() == null ? new byte[0] : coapResponse.getPayload();
-                LOG.debug(
-                        String.format("Unable to decode response payload of request [%s] from client [%s] [payload:%s]",
-                                request, endpoint, Hex.encodeHexString(payload)));
-            }
-            throw new InvalidResponseException(e, "Unable to decode response payload of request [%s] from client [%s]",
-                    request, endpoint);
+            handleCodecException(e, request, coapResponse, endpoint);
+            return null; // should not happen as handleCodecException raise exception
         }
     }
 
     private Map<LwM2mPath, LwM2mNode> decodeCompositeCoapResponse(List<LwM2mPath> paths, Response coapResponse,
             LwM2mRequest<?> request, String endpoint) {
+        try {
+            return decoder.decodeNodes(coapResponse.getPayload(), getContentFormat(coapResponse), paths, model);
+        } catch (CodecException e) {
+            handleCodecException(e, request, coapResponse, endpoint);
+            return null; // should not happen as handleCodecException raise exception
+        }
+    }
 
-        // Get content format
+    private TimestampedLwM2mNode decodeCoapTimestampedResponse(LwM2mPath path, Response coapResponse,
+            LwM2mRequest<?> request, String endpoint) {
+        List<TimestampedLwM2mNode> timestampedNodes = null;
+        try {
+            timestampedNodes = decoder.decodeTimestampedData(coapResponse.getPayload(), getContentFormat(coapResponse),
+                    path, model);
+            if (timestampedNodes.size() != 1) {
+                throw new InvalidResponseException(
+                        "Unable to decode response payload of request [%s] from client [%s] : should receive only 1 timestamped node but received %s",
+                        request, endpoint, timestampedNodes.size());
+            }
+            return timestampedNodes.get(0);
+        } catch (CodecException e) {
+            handleCodecException(e, request, coapResponse, endpoint);
+            return null; // should not happen as handleCodecException raise exception
+        }
+    }
+
+    private ContentFormat getContentFormat(Response coapResponse) {
         ContentFormat contentFormat = null;
         if (coapResponse.getOptions().hasContentFormat()) {
             contentFormat = ContentFormat.fromCode(coapResponse.getOptions().getContentFormat());
         }
+        return contentFormat;
+    }
 
-        // Decode payload
-        try {
-            return decoder.decodeNodes(coapResponse.getPayload(), contentFormat, paths, model);
-        } catch (CodecException e) {
-            if (LOG.isDebugEnabled()) {
-                byte[] payload = coapResponse.getPayload() == null ? new byte[0] : coapResponse.getPayload();
-                LOG.debug(
-                        String.format("Unable to decode response payload of request [%s] from client [%s] [payload:%s]",
-                                request, endpoint, Hex.encodeHexString(payload)));
-            }
-            throw new InvalidResponseException(e, "Unable to decode response payload of request [%s] from client [%s]",
-                    request, endpoint);
+    private void handleCodecException(CodecException e, LwM2mRequest<?> request, Response coapResponse,
+            String endpoint) {
+        if (LOG.isDebugEnabled()) {
+            byte[] payload = coapResponse.getPayload() == null ? new byte[0] : coapResponse.getPayload();
+            LOG.debug(String.format("Unable to decode response payload of request [%s] from client [%s] [payload:%s]",
+                    request, endpoint, Hex.encodeHexString(payload)));
         }
+        throw new InvalidResponseException(e, "Unable to decode response payload of request [%s] from client [%s]",
+                request, endpoint);
     }
 
     @SuppressWarnings("unchecked")
@@ -525,4 +539,5 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         throw new InvalidResponseException("Client [%s] returned unexpected response code [%s] for [%s]",
                 clientEndpoint, coapResponse.getCode(), request);
     }
+
 }

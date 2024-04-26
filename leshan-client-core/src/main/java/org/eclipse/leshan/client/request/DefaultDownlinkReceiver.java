@@ -316,7 +316,7 @@ public class DefaultDownlinkReceiver implements DownlinkRequestReceiver {
 
         @Override
         public void visit(ReadRequest request) {
-            response = new ReadResponse(code, null, errorMessage);
+            response = new ReadResponse(code, null, null, errorMessage);
         }
 
         @Override
@@ -351,13 +351,13 @@ public class DefaultDownlinkReceiver implements DownlinkRequestReceiver {
 
         @Override
         public void visit(ObserveRequest request) {
-            response = new ObserveResponse(code, null, null, null, errorMessage);
+            response = new ObserveResponse(code, null, null, null, null, errorMessage);
         }
 
         @Override
         public void visit(CancelObservationRequest request) {
             // TODO TL :we should check if this is really handle
-            response = new CancelObservationResponse(code, null, null, null, errorMessage);
+            response = new CancelObservationResponse(code, null, null, null, null, errorMessage);
         }
 
         @Override

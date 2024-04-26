@@ -25,6 +25,7 @@ import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.util.datatype.ULong;
 
@@ -32,22 +33,47 @@ public class ReadResponse extends AbstractLwM2mResponse {
 
     protected final LwM2mChildNode content;
 
-    public ReadResponse(ResponseCode code, LwM2mNode content, String errorMessage) {
-        this(code, content, errorMessage, null);
+    protected final TimestampedLwM2mNode timestampedValue;
+
+    public ReadResponse(ResponseCode code, LwM2mNode content, TimestampedLwM2mNode timestampedValue,
+            String errorMessage) {
+        this(code, content, timestampedValue, errorMessage, null);
     }
 
-    public ReadResponse(ResponseCode code, LwM2mNode content, String errorMessage, Object coapResponse) {
+    public ReadResponse(ResponseCode code, LwM2mNode content, TimestampedLwM2mNode timestampedValue,
+            String errorMessage, Object coapResponse) {
         super(code, errorMessage, coapResponse);
 
+        LwM2mNode responseContent;
+        if (timestampedValue != null) {
+            // handle if timestamped value is passed
+            if (content != null) {
+                throw new IllegalArgumentException("content OR timestampedValue should be passed but not both");
+            }
+
+            // store value
+            if (timestampedValue.isTimestamped()) {
+                this.timestampedValue = timestampedValue;
+            } else {
+                this.timestampedValue = null;
+            }
+            responseContent = timestampedValue.getNode();
+        } else {
+            // handle if content (not timestamped) value is passed
+            this.timestampedValue = null;
+            responseContent = content;
+        }
+
         if (ResponseCode.CONTENT.equals(code)) {
-            if (content == null)
+            if (responseContent == null)
                 throw new InvalidResponseException("Content is mandatory for successful response");
 
-            if (!(content instanceof LwM2mChildNode))
+            if (!(responseContent instanceof LwM2mChildNode))
                 throw new InvalidResponseException("Invalid Content : node should be a LwM2mChildNode not a %s",
-                        content.getClass().getSimpleName());
+                        responseContent.getClass().getSimpleName());
         }
-        this.content = (LwM2mChildNode) content;
+        this.content = (LwM2mChildNode) responseContent;
+
     }
 
     @Override
@@ -80,12 +106,25 @@ public class ReadResponse extends AbstractLwM2mResponse {
         return content;
     }
 
+    /**
+     * Get the {@link TimestampedLwM2mNode} value returned as response payload or <code>null</code> if the value is not
+     * timestamped, in that case you should use {@link #getContent()} instead.
+     *
+     * @return the value or <code>null</code> if the value is not timestamped OR if this is an error response.
+     */
+    public TimestampedLwM2mNode getTimestampedLwM2mNode() {
+        return timestampedValue;
+    }
+
     @Override
     public String toString() {
         if (errorMessage != null)
             return String.format("ReadResponse [code=%s, errormessage=%s]", code, errorMessage);
+        else if (timestampedValue != null)
+            return String.format("ReadResponse [code=%s, timestampedValues= %s]", code, timestampedValue);
         else
             return String.format("ReadResponse [code=%s, content=%s]", code, content);
+
     }
 
     // Syntactic sugar static constructors :
@@ -94,65 +133,76 @@ public class ReadResponse extends AbstractLwM2mResponse {
         return new ReadResponse(ResponseCode.CONTENT, content, null, null);
     }
 
+    public static ReadResponse success(TimestampedLwM2mNode timestampedValue) {
+        return new ReadResponse(ResponseCode.CONTENT, null, timestampedValue, null, null);
+    }
+
     public static ReadResponse success(int resourceId, String value) {
-        return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newStringResource(resourceId, value), null);
+        return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newStringResource(resourceId, value), null,
+                null);
     }
 
     public static ReadResponse success(int resourceId, Date value) {
-        return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newDateResource(resourceId, value), null);
+        return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newDateResource(resourceId, value), null,
+                null);
     }
 
     public static ReadResponse success(int resourceId, long value) {
-        return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newIntegerResource(resourceId, value), null);
+        return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newIntegerResource(resourceId, value), null,
+                null);
     }
 
     public static ReadResponse success(int resourceId, ULong value) {
         return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newUnsignedIntegerResource(resourceId, value),
-                null);
+                null, null);
     }
 
     public static ReadResponse success(int resourceId, ObjectLink value) {
         return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newObjectLinkResource(resourceId, value),
-                null);
+                null, null);
     }
 
     public static ReadResponse success(int resourceId, double value) {
-        return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newFloatResource(resourceId, value), null);
+        return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newFloatResource(resourceId, value), null,
+                null);
     }
 
     public static ReadResponse success(int resourceId, boolean value) {
-        return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newBooleanResource(resourceId, value), null);
+        return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newBooleanResource(resourceId, value), null,
+                null);
     }
 
     public static ReadResponse success(int resourceId, byte[] value) {
-        return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newBinaryResource(resourceId, value), null);
+        return new ReadResponse(ResponseCode.CONTENT, LwM2mSingleResource.newBinaryResource(resourceId, value), null,
+                null);
     }
 
     public static ReadResponse success(int resourceId, Map<Integer, ?> value, Type type) {
-        return new ReadResponse(ResponseCode.CONTENT, LwM2mMultipleResource.newResource(resourceId, value, type), null);
+        return new ReadResponse(ResponseCode.CONTENT, LwM2mMultipleResource.newResource(resourceId, value, type), null,
+                null);
     }
 
     public static ReadResponse notFound() {
-        return new ReadResponse(ResponseCode.NOT_FOUND, null, null);
+        return new ReadResponse(ResponseCode.NOT_FOUND, null, null, null);
     }
 
     public static ReadResponse unauthorized() {
-        return new ReadResponse(ResponseCode.UNAUTHORIZED, null, null);
+        return new ReadResponse(ResponseCode.UNAUTHORIZED, null, null, null);
     }
 
     public static ReadResponse methodNotAllowed() {
-        return new ReadResponse(ResponseCode.METHOD_NOT_ALLOWED, null, null);
+        return new ReadResponse(ResponseCode.METHOD_NOT_ALLOWED, null, null, null);
     }
 
     public static ReadResponse notAcceptable() {
-        return new ReadResponse(ResponseCode.NOT_ACCEPTABLE, null, null);
+        return new ReadResponse(ResponseCode.NOT_ACCEPTABLE, null, null, null);
     }
 
     public static ReadResponse badRequest(String errorMessage) {
-        return new ReadResponse(ResponseCode.BAD_REQUEST, null, errorMessage);
+        return new ReadResponse(ResponseCode.BAD_REQUEST, null, null, errorMessage);
     }
 
     public static ReadResponse internalServerError(String errorMessage) {
-        return new ReadResponse(ResponseCode.INTERNAL_SERVER_ERROR, null, errorMessage);
+        return new ReadResponse(ResponseCode.INTERNAL_SERVER_ERROR, null, null, errorMessage);
     }
 }

@@ -109,4 +109,8 @@ public class LockStepLwM2mClient extends LockstepEndpoint {
     public String getEndpointName() {
         return endpointName;
     }
+
+    public LwM2mModel getLwM2mModel() {
+        return model;
+    }
 }

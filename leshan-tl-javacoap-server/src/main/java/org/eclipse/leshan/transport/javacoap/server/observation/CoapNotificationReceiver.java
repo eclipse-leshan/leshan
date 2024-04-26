@@ -155,10 +155,11 @@ public class CoapNotificationReceiver implements NotificationsReceiver {
 
             // create lwm2m response
             if (timestampedNodes.size() == 1 && !timestampedNodes.get(0).isTimestamped()) {
-                return new ObserveResponse(responseCode, timestampedNodes.get(0).getNode(), null, singleObservation,
-                        null, coapResponse);
+                return new ObserveResponse(responseCode, timestampedNodes.get(0).getNode(), null, null,
+                        singleObservation, null, coapResponse);
             } else {
-                return new ObserveResponse(responseCode, null, timestampedNodes, singleObservation, null, coapResponse);
+                return new ObserveResponse(responseCode, null, null, timestampedNodes, singleObservation, null,
+                        coapResponse);
             }
         } else if (observation instanceof CompositeObservation) {
             CompositeObservation compositeObservation = (CompositeObservation) observation;

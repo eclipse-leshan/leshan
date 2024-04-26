@@ -153,7 +153,7 @@ public class ObserveTimeStampTest {
         ObserveResponse response = server.waitForNotificationOf(observation);
         assertThat(response).hasContentFormat(contentFormat, givenServerEndpointProvider);
         assertThat(response.getContent()).isEqualTo(mostRecentNode.getNode());
-        assertThat(response.getTimestampedLwM2mNode()).isEqualTo(timestampedNodes);
+        assertThat(response.getTimestampedLwM2mNodes()).isEqualTo(timestampedNodes);
     }
 
     @TestAllCases
@@ -194,7 +194,7 @@ public class ObserveTimeStampTest {
         ObserveResponse response = server.waitForNotificationOf(observation);
         assertThat(response).hasContentFormat(contentFormat, givenServerEndpointProvider);
         assertThat(response.getContent()).isEqualTo(mostRecentNode.getNode());
-        assertThat(response.getTimestampedLwM2mNode()).isEqualTo(timestampedNodes);
+        assertThat(response.getTimestampedLwM2mNodes()).isEqualTo(timestampedNodes);
     }
 
     @TestAllCases
@@ -235,6 +235,6 @@ public class ObserveTimeStampTest {
         ObserveResponse response = server.waitForNotificationOf(observation);
         assertThat(response).hasContentFormat(contentFormat, givenServerEndpointProvider);
         assertThat(response.getContent()).isEqualTo(mostRecentNode.getNode());
-        assertThat(response.getTimestampedLwM2mNode()).isEqualTo(timestampedNodes);
+        assertThat(response.getTimestampedLwM2mNodes()).isEqualTo(timestampedNodes);
     }
 }
