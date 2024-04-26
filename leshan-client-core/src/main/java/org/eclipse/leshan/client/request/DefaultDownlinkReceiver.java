@@ -316,7 +316,7 @@ public class DefaultDownlinkReceiver implements DownlinkRequestReceiver {
 
         @Override
         public void visit(ReadRequest request) {
-            response = new ReadResponse(code, null, errorMessage);
+            response = new ReadResponse(code, null, null, errorMessage);
         }
 
         @Override
