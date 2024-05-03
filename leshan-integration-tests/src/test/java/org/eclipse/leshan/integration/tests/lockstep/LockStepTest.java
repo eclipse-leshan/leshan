@@ -36,6 +36,7 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -57,7 +58,7 @@ import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
-import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.observation.Observation;
@@ -449,12 +450,11 @@ public class LockStepTest {
 
         // create timestamped data
         LwM2mEncoder encoder = new DefaultLwM2mEncoder();
-        TimestampedLwM2mNodes.Builder builder = new TimestampedLwM2mNodes.Builder();
         Instant t1 = Instant.now();
-        builder.put(t1, new LwM2mPath("/1/0/1"), LwM2mSingleResource.newIntegerResource(1, 3600));
-        TimestampedLwM2mNodes timestampedNodes = builder.build();
-        byte[] payload = encoder.encodeTimestampedNodes(timestampedNodes, ContentFormat.SENML_JSON,
-                client.getLwM2mModel());
+        LwM2mSingleResource resource = LwM2mSingleResource.newIntegerResource(1, 3600);
+        TimestampedLwM2mNode timestampedNode = new TimestampedLwM2mNode(t1, resource);
+        byte[] payload = encoder.encodeTimestampedData(Arrays.asList(timestampedNode), ContentFormat.SENML_JSON,
+                new LwM2mPath("/1/0/1"), client.getLwM2mModel());
 
         // send read request
         Future<ReadResponse> future = Executors.newSingleThreadExecutor().submit(() -> {
