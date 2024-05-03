@@ -540,6 +540,12 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         List<TimestampedLwM2mNode> timestampedNodes = null;
         try {
             timestampedNodes = decoder.decodeTimestampedData(coapResponse.getPayload(), contentFormat, path, model);
+            if (timestampedNodes.size() != 1) {
+                throw new InvalidResponseException(
+                        "Unable to decode response payload of request [%s] from client [%s] : should receive only 1 timestamped not but received %s",
+                        request, endpoint, timestampedNodes.size());
+            }
+            return timestampedNodes.get(0);
         } catch (CodecException e) {
             if (LOG.isDebugEnabled()) {
                 byte[] payload = coapResponse.getPayload() == null ? new byte[0] : coapResponse.getPayload();
@@ -550,7 +556,5 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             throw new InvalidResponseException(e, "Unable to decode response payload of request [%s] from client [%s]",
                     request, endpoint);
         }
-
-        return timestampedNodes != null ? timestampedNodes.get(0) : null;
     }
 }
