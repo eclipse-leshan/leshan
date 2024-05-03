@@ -472,50 +472,59 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
 
     private LwM2mNode decodeCoapResponse(LwM2mPath path, Response coapResponse, LwM2mRequest<?> request,
             String endpoint) {
-
-        // Get content format
-        ContentFormat contentFormat = null;
-        if (coapResponse.getOptions().hasContentFormat()) {
-            contentFormat = ContentFormat.fromCode(coapResponse.getOptions().getContentFormat());
-        }
-
-        // Decode payload
         try {
-            return decoder.decode(coapResponse.getPayload(), contentFormat, path, model);
+            return decoder.decode(coapResponse.getPayload(), getContentFormat(coapResponse), path, model);
         } catch (CodecException e) {
-            if (LOG.isDebugEnabled()) {
-                byte[] payload = coapResponse.getPayload() == null ? new byte[0] : coapResponse.getPayload();
-                LOG.debug(
-                        String.format("Unable to decode response payload of request [%s] from client [%s] [payload:%s]",
-                                request, endpoint, Hex.encodeHexString(payload)));
-            }
-            throw new InvalidResponseException(e, "Unable to decode response payload of request [%s] from client [%s]",
-                    request, endpoint);
+            handleCodecException(e, request, coapResponse, endpoint);
+            return null; // should not happen as handleCodecException raise exception
         }
     }
 
     private Map<LwM2mPath, LwM2mNode> decodeCompositeCoapResponse(List<LwM2mPath> paths, Response coapResponse,
             LwM2mRequest<?> request, String endpoint) {
+        try {
+            return decoder.decodeNodes(coapResponse.getPayload(), getContentFormat(coapResponse), paths, model);
+        } catch (CodecException e) {
+            handleCodecException(e, request, coapResponse, endpoint);
+            return null; // should not happen as handleCodecException raise exception
+        }
+    }
 
-        // Get content format
+    private TimestampedLwM2mNode decodeCoapTimestampedResponse(LwM2mPath path, Response coapResponse,
+            LwM2mRequest<?> request, String endpoint) {
+        List<TimestampedLwM2mNode> timestampedNodes = null;
+        try {
+            timestampedNodes = decoder.decodeTimestampedData(coapResponse.getPayload(), getContentFormat(coapResponse),
+                    path, model);
+            if (timestampedNodes.size() != 1) {
+                throw new InvalidResponseException(
+                        "Unable to decode response payload of request [%s] from client [%s] : should receive only 1 timestamped node but received %s",
+                        request, endpoint, timestampedNodes.size());
+            }
+            return timestampedNodes.get(0);
+        } catch (CodecException e) {
+            handleCodecException(e, request, coapResponse, endpoint);
+            return null; // should not happen as handleCodecException raise exception
+        }
+    }
+
+    private ContentFormat getContentFormat(Response coapResponse) {
         ContentFormat contentFormat = null;
         if (coapResponse.getOptions().hasContentFormat()) {
             contentFormat = ContentFormat.fromCode(coapResponse.getOptions().getContentFormat());
         }
+        return contentFormat;
+    }
 
-        // Decode payload
-        try {
-            return decoder.decodeNodes(coapResponse.getPayload(), contentFormat, paths, model);
-        } catch (CodecException e) {
-            if (LOG.isDebugEnabled()) {
-                byte[] payload = coapResponse.getPayload() == null ? new byte[0] : coapResponse.getPayload();
-                LOG.debug(
-                        String.format("Unable to decode response payload of request [%s] from client [%s] [payload:%s]",
-                                request, endpoint, Hex.encodeHexString(payload)));
-            }
-            throw new InvalidResponseException(e, "Unable to decode response payload of request [%s] from client [%s]",
-                    request, endpoint);
+    private void handleCodecException(CodecException e, LwM2mRequest<?> request, Response coapResponse,
+            String endpoint) {
+        if (LOG.isDebugEnabled()) {
+            byte[] payload = coapResponse.getPayload() == null ? new byte[0] : coapResponse.getPayload();
+            LOG.debug(String.format("Unable to decode response payload of request [%s] from client [%s] [payload:%s]",
+                    request, endpoint, Hex.encodeHexString(payload)));
         }
+        throw new InvalidResponseException(e, "Unable to decode response payload of request [%s] from client [%s]",
+                request, endpoint);
     }
 
     @SuppressWarnings("unchecked")
@@ -528,33 +537,4 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 clientEndpoint, coapResponse.getCode(), request);
     }
 
-    private TimestampedLwM2mNode decodeCoapTimestampedResponse(LwM2mPath path, Response coapResponse,
-            LwM2mRequest<?> request, String endpoint) {
-        // Get content format
-        ContentFormat contentFormat = null;
-        if (coapResponse.getOptions().hasContentFormat()) {
-            contentFormat = ContentFormat.fromCode(coapResponse.getOptions().getContentFormat());
-        }
-
-        // Decode payload
-        List<TimestampedLwM2mNode> timestampedNodes = null;
-        try {
-            timestampedNodes = decoder.decodeTimestampedData(coapResponse.getPayload(), contentFormat, path, model);
-            if (timestampedNodes.size() != 1) {
-                throw new InvalidResponseException(
-                        "Unable to decode response payload of request [%s] from client [%s] : should receive only 1 timestamped not but received %s",
-                        request, endpoint, timestampedNodes.size());
-            }
-            return timestampedNodes.get(0);
-        } catch (CodecException e) {
-            if (LOG.isDebugEnabled()) {
-                byte[] payload = coapResponse.getPayload() == null ? new byte[0] : coapResponse.getPayload();
-                LOG.debug(
-                        String.format("Unable to decode response payload of request [%s] from client [%s] [payload:%s]",
-                                request, endpoint, Hex.encodeHexString(payload)));
-            }
-            throw new InvalidResponseException(e, "Unable to decode response payload of request [%s] from client [%s]",
-                    request, endpoint);
-        }
-    }
 }
