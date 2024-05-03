@@ -425,7 +425,7 @@ public class LockStepTest {
             // with java-coap it failed transparently at response reception.
             // TODO I don't know if this is the right behavior.
             client.expectRequest().storeMID("R").storeToken("T").go();
-            client.sendResponse(Type.ACK, ResponseCode.CONTENT, ContentFormat.TEXT).payload("aaa").observe(2)
+            client.sendResponse(Type.ACK, ResponseCode.CONTENT).payload("aaa", ContentFormat.TEXT_CODE).observe(2)
                     .loadMID("R").loadToken("T").go();
         }
 
@@ -464,8 +464,8 @@ public class LockStepTest {
 
         // wait for request and send response
         client.expectRequest().storeToken("TKN").storeMID("MID").go();
-        client.sendResponse(Type.ACK, ResponseCode.CONTENT, ContentFormat.SENML_JSON).loadMID("MID").loadToken("TKN")
-                .payload(payload).go();
+        client.sendResponse(Type.ACK, ResponseCode.CONTENT).loadMID("MID").loadToken("TKN")
+                .payload(payload, ContentFormat.SENML_JSON_CODE).go();
 
         // check response received at server side
         ReadResponse response = future.get(3, TimeUnit.SECONDS);

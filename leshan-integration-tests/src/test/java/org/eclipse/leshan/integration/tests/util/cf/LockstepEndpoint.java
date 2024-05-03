@@ -51,7 +51,6 @@ import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.EmptyMessage;
 import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.core.coap.Option;
-import org.eclipse.californium.core.coap.OptionSet;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.coap.Token;
@@ -67,7 +66,6 @@ import org.eclipse.californium.elements.RawData;
 import org.eclipse.californium.elements.RawDataChannel;
 import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.elements.config.Configuration;
-import org.eclipse.leshan.core.request.ContentFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -257,7 +255,7 @@ public class LockstepEndpoint {
         return new EmptyMessageExpectation(type, mid);
     }
 
-    public RequestProperty sendRequest(Type type, Code code, Token token, ContentFormat contentFormat, int mid) {
+    public RequestProperty sendRequest(Type type, Code code, Token token, int mid) {
         if (type == null) {
             throw new NullPointerException();
         }
@@ -267,26 +265,20 @@ public class LockstepEndpoint {
         if (token == null) {
             throw new NullPointerException();
         }
-        if (contentFormat == null) {
-            throw new NullPointerException();
-        }
         if (mid < 0 || mid > Message.MAX_MID) {
             throw new RuntimeException();
         }
-        return new RequestProperty(type, code, token, contentFormat, mid);
+        return new RequestProperty(type, code, token, mid);
     }
 
-    public ResponseProperty sendResponse(Type type, ResponseCode code, ContentFormat contentFormat) {
+    public ResponseProperty sendResponse(Type type, ResponseCode code) {
         if (type == null) {
             throw new NullPointerException();
         }
         if (code == null) {
             throw new NullPointerException();
         }
-        if (contentFormat == null) {
-            throw new NullPointerException();
-        }
-        return new ResponseProperty(type, code, contentFormat);
+        return new ResponseProperty(type, code);
     }
 
     public EmptyMessageProperty sendEmpty(Type type) {
@@ -1436,19 +1428,16 @@ public class LockstepEndpoint {
         private final List<Property<Message>> properties = new LinkedList<LockstepEndpoint.Property<Message>>();
 
         private final Type type;
-        private final ContentFormat contentFormat;
         private Token token;
         private int mid;
 
-        public MessageProperty(Type type, ContentFormat contentFormat) {
+        public MessageProperty(Type type) {
             this.type = type;
-            this.contentFormat = contentFormat;
         }
 
-        public MessageProperty(Type type, Token token, ContentFormat contentFormat, int mid) {
+        public MessageProperty(Type type, Token token, int mid) {
             this.type = type;
             this.token = token;
-            this.contentFormat = contentFormat;
             this.mid = mid;
         }
 
@@ -1456,7 +1445,6 @@ public class LockstepEndpoint {
             message.setType(type);
             message.setToken(token);
             message.setMID(mid);
-            message.setOptions(new OptionSet().setContentFormat(contentFormat.getCode()));
             for (Property<Message> property : properties) {
                 property.set(message);
             }
@@ -1577,11 +1565,11 @@ public class LockstepEndpoint {
     public class EmptyMessageProperty extends MessageProperty {
 
         public EmptyMessageProperty(Type type, int mid) {
-            super(type, Token.EMPTY, null, mid);
+            super(type, Token.EMPTY, mid);
         }
 
         public EmptyMessageProperty(Type type, String midVar) {
-            super(type, null);
+            super(type);
             super.loadMID(midVar);
         }
 
@@ -1603,8 +1591,8 @@ public class LockstepEndpoint {
 
         private final Code code;
 
-        public RequestProperty(Type type, Code code, Token token, ContentFormat contentFormat, int mid) {
-            super(type, token, contentFormat, mid);
+        public RequestProperty(Type type, Code code, Token token, int mid) {
+            super(type, token, mid);
             this.code = code;
         }
 
@@ -1710,8 +1698,8 @@ public class LockstepEndpoint {
 
         private final ResponseCode code;
 
-        public ResponseProperty(Type type, ResponseCode code, ContentFormat contentFormat) {
-            super(type, contentFormat);
+        public ResponseProperty(Type type, ResponseCode code) {
+            super(type);
             this.code = code;
         }
 
@@ -1786,6 +1774,18 @@ public class LockstepEndpoint {
             return this;
         }
 
+        public ResponseProperty payload(final String payload, final int contentFormat) {
+            properties.add(new Property<Response>() {
+
+                @Override
+                public void set(Response response) {
+                    response.setPayload(payload);
+                    response.getOptions().setContentFormat(contentFormat);
+                }
+            });
+            return this;
+        }
+
         @Override
         public ResponseProperty payload(final String payload, final int from, final int to) {
             super.payload(payload, from, to);
@@ -1798,6 +1798,18 @@ public class LockstepEndpoint {
                 @Override
                 public void set(Response response) {
                     response.setPayload(payload);
+                }
+            });
+            return this;
+        }
+
+        public ResponseProperty payload(final byte[] payload, final int contentFormat) {
+            properties.add(new Property<Response>() {
+
+                @Override
+                public void set(Response response) {
+                    response.setPayload(payload);
+                    response.getOptions().setContentFormat(contentFormat);
                 }
             });
             return this;
