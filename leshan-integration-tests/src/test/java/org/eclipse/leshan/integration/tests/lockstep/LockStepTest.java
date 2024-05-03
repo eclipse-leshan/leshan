@@ -459,7 +459,7 @@ public class LockStepTest {
         // send read request
         Future<ReadResponse> future = Executors.newSingleThreadExecutor().submit(() -> {
             // send a request with 3 seconds timeout
-            return server.send(registration, new ReadRequest(ContentFormat.SENML_JSON, 1), 3000);
+            return server.send(registration, new ReadRequest(ContentFormat.SENML_JSON, 1, 0, 1), 3000);
         });
 
         // wait for request and send response
@@ -469,7 +469,6 @@ public class LockStepTest {
 
         // check response received at server side
         ReadResponse response = future.get(3, TimeUnit.SECONDS);
-        assertThat(response.getTimestampedLwM2mNode()).isNotNull();
+        assertThat(response.getTimestampedLwM2mNode()).isEqualTo(timestampedNode);
     }
-
 }
