@@ -438,8 +438,7 @@ public class LockStepTest {
     @TestAllTransportLayer
     public void read_timestamped(String givenServerEndpointProvider) throws Exception {
 
-        // -------------------------------------------REGISTER
-        // CLIENT----------------------------------------------------
+        // register client
         LockStepLwM2mClient client = new LockStepLwM2mClient(server.getEndpoint(Protocol.COAP).getURI());
         Token token = client
                 .sendLwM2mRequest(new RegisterRequest(client.getEndpointName(), 60l, "1.1", EnumSet.of(BindingMode.U),
@@ -447,9 +446,8 @@ public class LockStepTest {
         client.expectResponse().token(token).go();
         server.waitForNewRegistrationOf(client.getEndpointName());
         Registration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
-        // --------------------------------------------------------------------------------------------------------------
 
-        // ----------------------------------------------TIMESTAMP-------------------------------------------------------
+        // create timestamped data
         LwM2mEncoder encoder = new DefaultLwM2mEncoder();
         TimestampedLwM2mNodes.Builder builder = new TimestampedLwM2mNodes.Builder();
         Instant t1 = Instant.now();
@@ -457,19 +455,19 @@ public class LockStepTest {
         TimestampedLwM2mNodes timestampedNodes = builder.build();
         byte[] payload = encoder.encodeTimestampedNodes(timestampedNodes, ContentFormat.SENML_JSON,
                 client.getLwM2mModel());
-        // --------------------------------------------------------------------------------------------------------------
 
-        // Send read REQUEST
+        // send read request
         Future<ReadResponse> future = Executors.newSingleThreadExecutor().submit(() -> {
             // send a request with 3 seconds timeout
             return server.send(registration, new ReadRequest(ContentFormat.SENML_JSON, 1), 3000);
         });
 
+        // wait for request and send response
         client.expectRequest().storeToken("TKN").storeMID("MID").go();
-
         client.sendResponse(Type.ACK, ResponseCode.CONTENT, ContentFormat.SENML_JSON).loadMID("MID").loadToken("TKN")
                 .payload(payload).go();
 
+        // check response received at server side
         ReadResponse response = future.get(3, TimeUnit.SECONDS);
         assertThat(response.getTimestampedLwM2mNode()).isNotNull();
     }
