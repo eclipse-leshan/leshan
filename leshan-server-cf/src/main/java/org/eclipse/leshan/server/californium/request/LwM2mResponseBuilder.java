@@ -537,9 +537,13 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
     }
 
     private TimestampedLwM2mNode decodePayload(ReadRequest request) {
+        // Get content format
         ContentFormat contentFormat = null;
-        if (request.getContentFormat() != null)
-            contentFormat = request.getContentFormat();
+        if (coapResponse.getOptions().hasContentFormat()) {
+            contentFormat = ContentFormat.fromCode(coapResponse.getOptions().getContentFormat());
+        }
+
+        // Decode payload
         List<TimestampedLwM2mNode> timestampedNodes = null;
         try {
             timestampedNodes = decoder.decodeTimestampedData(coapResponse.getPayload(), contentFormat,
