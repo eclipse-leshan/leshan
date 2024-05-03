@@ -44,18 +44,36 @@ public class ReadResponse extends AbstractLwM2mResponse {
             String errorMessage, Object coapResponse) {
         super(code, errorMessage, coapResponse);
 
-        content = timestampedValue != null ? timestampedValue.getNode() : content;
+        LwM2mNode responseContent;
+        if (timestampedValue != null) {
+            // handle if timestamped value is passed
+            if (content != null) {
+                throw new IllegalArgumentException("content OR timestampedValue should be passed but not both");
+            }
+
+            // store value
+            if (timestampedValue.isTimestamped()) {
+                this.timestampedValue = timestampedValue;
+            } else {
+                this.timestampedValue = null;
+            }
+            responseContent = timestampedValue.getNode();
+        } else {
+            // handle if content (not timestamped) value is passed
+            this.timestampedValue = null;
+            responseContent = content;
+        }
 
         if (ResponseCode.CONTENT.equals(code)) {
-            if (content == null)
+            if (responseContent == null)
                 throw new InvalidResponseException("Content is mandatory for successful response");
 
-            if (!(content instanceof LwM2mChildNode))
+            if (!(responseContent instanceof LwM2mChildNode))
                 throw new InvalidResponseException("Invalid Content : node should be a LwM2mChildNode not a %s",
-                        content.getClass().getSimpleName());
+                        responseContent.getClass().getSimpleName());
         }
-        this.content = (LwM2mChildNode) content;
-        this.timestampedValue = timestampedValue;
+        this.content = (LwM2mChildNode) responseContent;
+
     }
 
     public TimestampedLwM2mNode getTimestampedLwM2mNode() {

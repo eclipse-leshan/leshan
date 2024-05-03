@@ -46,7 +46,7 @@ public class ObserveResponse extends ReadResponse {
 
         // CHANGED is out of spec but is supported for backward compatibility. (previous draft version)
         if (ResponseCode.CHANGED.equals(code)) {
-            if (content == null)
+            if (getContent() == null)
                 throw new InvalidResponseException("Content is mandatory for successful response");
         }
 

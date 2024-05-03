@@ -84,10 +84,8 @@ public class ObserveResponseTest {
                 new TimestampedLwM2mNode(Instant.ofEpochSecond(123), newResource(15, "example 1")),
                 new TimestampedLwM2mNode(Instant.ofEpochSecond(456), newResource(15, "example 2")));
 
-        LwM2mSingleResource content = responseCode == CHANGED ? newResource(15, "example 1") : null;
-
         // when
-        ObserveResponse response = new ObserveResponse(responseCode, content, timestampedValues, null, null);
+        ObserveResponse response = new ObserveResponse(responseCode, null, timestampedValues, null, null);
 
         // then
         assertEquals(timestampedValues.get(0).getNode(), response.getContent());
