@@ -51,6 +51,7 @@ import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.EmptyMessage;
 import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.core.coap.Option;
+import org.eclipse.californium.core.coap.OptionSet;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.coap.Token;
@@ -1455,6 +1456,7 @@ public class LockstepEndpoint {
             message.setType(type);
             message.setToken(token);
             message.setMID(mid);
+            message.setOptions(new OptionSet().setContentFormat(contentFormat.getCode()));
             for (Property<Message> property : properties) {
                 property.set(message);
             }
