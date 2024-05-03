@@ -96,8 +96,11 @@ public class ReadResponse extends AbstractLwM2mResponse {
     public String toString() {
         if (errorMessage != null)
             return String.format("ReadResponse [code=%s, errormessage=%s]", code, errorMessage);
+        else if (timestampedValue != null)
+            return String.format("ReadResponse [code=%s, timestampedValues= %s]", code, timestampedValue);
         else
             return String.format("ReadResponse [code=%s, content=%s]", code, content);
+
     }
 
     // Syntactic sugar static constructors :
