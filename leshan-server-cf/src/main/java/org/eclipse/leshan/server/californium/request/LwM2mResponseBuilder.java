@@ -120,20 +120,11 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             // handle error response:
             lwM2mresponse = new ReadResponse(toLwM2mResponseCode(coapResponse.getCode()), null, null,
                     coapResponse.getPayloadString(), coapResponse);
-
         } else if (isResponseCodeContent()) {
+            // handle success response
             TimestampedLwM2mNode timestampedNode = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
                     request, clientEndpoint);
-            // handle success response with timestamped node
-            if (timestampedNode != null && timestampedNode.isTimestamped()) {
-                lwM2mresponse = new ReadResponse(ResponseCode.CONTENT, timestampedNode.getNode(), timestampedNode, null,
-                        coapResponse);
-            }
-            // handle success response
-            else {
-                LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request, clientEndpoint);
-                lwM2mresponse = new ReadResponse(ResponseCode.CONTENT, content, null, null, coapResponse);
-            }
+            lwM2mresponse = new ReadResponse(ResponseCode.CONTENT, null, timestampedNode, null, coapResponse);
         } else {
             // handle unexpected response:
             handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
