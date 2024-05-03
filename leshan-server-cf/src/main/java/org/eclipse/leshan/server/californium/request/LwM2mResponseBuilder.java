@@ -122,7 +122,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     coapResponse.getPayloadString(), coapResponse);
 
         } else if (isResponseCodeContent()) {
-            TimestampedLwM2mNode timestampedNode = decodePayload(request);
+            TimestampedLwM2mNode timestampedNode = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
+                    request, clientEndpoint);
             // handle success response with timestamped node
             if (timestampedNode != null && timestampedNode.isTimestamped()) {
                 lwM2mresponse = new ReadResponse(ResponseCode.CONTENT, timestampedNode.getNode(), timestampedNode, null,
@@ -536,7 +537,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 clientEndpoint, coapResponse.getCode(), request);
     }
 
-    private TimestampedLwM2mNode decodePayload(ReadRequest request) {
+    private TimestampedLwM2mNode decodeCoapTimestampedResponse(LwM2mPath path, Response coapResponse,
+            LwM2mRequest<?> request, String endpoint) {
         // Get content format
         ContentFormat contentFormat = null;
         if (coapResponse.getOptions().hasContentFormat()) {
@@ -546,10 +548,16 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         // Decode payload
         List<TimestampedLwM2mNode> timestampedNodes = null;
         try {
-            timestampedNodes = decoder.decodeTimestampedData(coapResponse.getPayload(), contentFormat,
-                    request.getPath(), model);
+            timestampedNodes = decoder.decodeTimestampedData(coapResponse.getPayload(), contentFormat, path, model);
         } catch (CodecException e) {
-            LOG.debug(String.format("Unable to decode response payload of request [%s]", request));
+            if (LOG.isDebugEnabled()) {
+                byte[] payload = coapResponse.getPayload() == null ? new byte[0] : coapResponse.getPayload();
+                LOG.debug(
+                        String.format("Unable to decode response payload of request [%s] from client [%s] [payload:%s]",
+                                request, endpoint, Hex.encodeHexString(payload)));
+            }
+            throw new InvalidResponseException(e, "Unable to decode response payload of request [%s] from client [%s]",
+                    request, endpoint);
         }
 
         return timestampedNodes != null ? timestampedNodes.get(0) : null;
