@@ -250,7 +250,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         // TODO implement observe
         if (coapResponse.getCode().getHttpCode() >= 400) {
             // handle error response:
-            lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null, null, null,
+            lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null, null, null, null,
                     coapResponse.getPayloadString(), coapResponse);
         } else if (isResponseCodeContent()
                 // This is for backward compatibility, when the spec say notification used CHANGED code
@@ -260,8 +260,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
             List<TimestampedLwM2mNode> timestampedNodes = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
                     request, clientEndpoint);
             if (timestampedNodes.get(0).isTimestamped()) {
-                lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null, timestampedNodes,
-                        null, null, coapResponse);
+                lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null, null,
+                        timestampedNodes, null, null, coapResponse);
             } else {
 
                 LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request, clientEndpoint);
@@ -271,7 +271,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     Observation observation = coapRequest.getTransContext().get(LwM2mKeys.LESHAN_OBSERVATION);
                     if (observation instanceof SingleObservation) {
                         lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null,
-                                (SingleObservation) observation, null, coapResponse);
+                                null, (SingleObservation) observation, null, coapResponse);
                     } else {
                         throw new IllegalStateException(String.format(
                                 "A Single Observation is expected in coapRequest transport Context, but was %s",
@@ -280,7 +280,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 } else {
                     // Observe relation NOTestablished
                     lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null,
-                            null, null, coapResponse);
+                            null, null, null, coapResponse);
                 }
             }
         } else {
@@ -294,14 +294,14 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         if (coapResponse.getCode().getHttpCode() >= 400) {
             // handle error response:
             lwM2mresponse = new CancelObservationResponse(toLwM2mResponseCode(coapResponse.getCode()), null, null, null,
-                    coapResponse.getPayloadString(), coapResponse);
+                    null, coapResponse.getPayloadString(), coapResponse);
         } else if (isResponseCodeContent()
                 // This is for backward compatibility, when the spec say notification used CHANGED code
                 || isResponseCodeChanged()) {
             // handle success response:
             LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request, clientEndpoint);
             lwM2mresponse = new CancelObservationResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null,
-                    null, null, coapResponse);
+                    null, null, null, coapResponse);
         } else {
             // handle unexpected response:
             handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);

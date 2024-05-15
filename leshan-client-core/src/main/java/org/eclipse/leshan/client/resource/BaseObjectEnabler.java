@@ -565,7 +565,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     protected ObserveResponse doObserve(LwM2mServer server, ObserveRequest request) {
         ReadResponse readResponse = this.read(server, new ReadRequest(request.getPath().toString()));
-        return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null,
+        return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null, null,
                 readResponse.getErrorMessage());
     }
 

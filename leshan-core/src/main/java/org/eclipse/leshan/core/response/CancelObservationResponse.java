@@ -24,14 +24,15 @@ import org.eclipse.leshan.core.observation.SingleObservation;
 
 public class CancelObservationResponse extends ObserveResponse {
 
-    public CancelObservationResponse(ResponseCode code, LwM2mNode content, List<TimestampedLwM2mNode> timestampedValues,
-            SingleObservation observation, String errorMessage) {
-        super(code, content, timestampedValues, observation, errorMessage);
+    public CancelObservationResponse(ResponseCode code, LwM2mNode content, TimestampedLwM2mNode timestampedContent,
+            List<TimestampedLwM2mNode> timestampedValues, SingleObservation observation, String errorMessage) {
+        super(code, content, timestampedContent, timestampedValues, observation, errorMessage);
     }
 
-    public CancelObservationResponse(ResponseCode code, LwM2mNode content, List<TimestampedLwM2mNode> timestampedValues,
-            SingleObservation observation, String errorMessage, Object coapResponse) {
-        super(code, content, timestampedValues, observation, errorMessage, coapResponse);
+    public CancelObservationResponse(ResponseCode code, LwM2mNode content, TimestampedLwM2mNode timestampedContent,
+            List<TimestampedLwM2mNode> timestampedValues, SingleObservation observation, String errorMessage,
+            Object coapResponse) {
+        super(code, content, timestampedContent, timestampedValues, observation, errorMessage, coapResponse);
     }
 
     @Override
@@ -50,34 +51,38 @@ public class CancelObservationResponse extends ObserveResponse {
     // Syntactic sugar static constructors :
 
     public static CancelObservationResponse success(LwM2mNode content) {
-        return new CancelObservationResponse(ResponseCode.CONTENT, content, null, null, null);
+        return new CancelObservationResponse(ResponseCode.CONTENT, content, null, null, null, null);
+    }
+
+    public static CancelObservationResponse success(TimestampedLwM2mNode content) {
+        return new CancelObservationResponse(ResponseCode.CONTENT, null, content, null, null, null);
     }
 
     public static CancelObservationResponse success(List<TimestampedLwM2mNode> timestampedValues) {
-        return new CancelObservationResponse(ResponseCode.CONTENT, null, timestampedValues, null, null);
+        return new CancelObservationResponse(ResponseCode.CONTENT, null, null, timestampedValues, null, null);
     }
 
     public static CancelObservationResponse badRequest(String errorMessage) {
-        return new CancelObservationResponse(ResponseCode.BAD_REQUEST, null, null, null, errorMessage);
+        return new CancelObservationResponse(ResponseCode.BAD_REQUEST, null, null, null, null, errorMessage);
     }
 
     public static CancelObservationResponse notFound() {
-        return new CancelObservationResponse(ResponseCode.NOT_FOUND, null, null, null, null);
+        return new CancelObservationResponse(ResponseCode.NOT_FOUND, null, null, null, null, null);
     }
 
     public static CancelObservationResponse unauthorized() {
-        return new CancelObservationResponse(ResponseCode.UNAUTHORIZED, null, null, null, null);
+        return new CancelObservationResponse(ResponseCode.UNAUTHORIZED, null, null, null, null, null);
     }
 
     public static CancelObservationResponse methodNotAllowed() {
-        return new CancelObservationResponse(ResponseCode.METHOD_NOT_ALLOWED, null, null, null, null);
+        return new CancelObservationResponse(ResponseCode.METHOD_NOT_ALLOWED, null, null, null, null, null);
     }
 
     public static CancelObservationResponse notAcceptable() {
-        return new CancelObservationResponse(ResponseCode.NOT_ACCEPTABLE, null, null, null, null);
+        return new CancelObservationResponse(ResponseCode.NOT_ACCEPTABLE, null, null, null, null, null);
     }
 
     public static CancelObservationResponse internalServerError(String errorMessage) {
-        return new CancelObservationResponse(ResponseCode.INTERNAL_SERVER_ERROR, null, null, null, errorMessage);
+        return new CancelObservationResponse(ResponseCode.INTERNAL_SERVER_ERROR, null, null, null, null, errorMessage);
     }
 }

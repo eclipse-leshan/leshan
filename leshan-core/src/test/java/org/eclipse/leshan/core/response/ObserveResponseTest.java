@@ -52,7 +52,7 @@ public class ObserveResponseTest {
     @TestAllResponseCode
     public void should_throw_invalid_response_exception_if_no_content(ResponseCode responseCode) {
         assertThrowsExactly(InvalidResponseException.class, () -> {
-            new ObserveResponse(responseCode, null, null, null, null);
+            new ObserveResponse(responseCode, null, null, null, null, null);
         });
     }
 
@@ -60,7 +60,7 @@ public class ObserveResponseTest {
     public void should_throw_invalid_response_exception_if_no_content_and_empty_timestamped_values(
             ResponseCode responseCode) {
         assertThrowsExactly(InvalidResponseException.class, () -> {
-            new ObserveResponse(responseCode, null, Collections.<TimestampedLwM2mNode> emptyList(), null, null);
+            new ObserveResponse(responseCode, null, null, Collections.<TimestampedLwM2mNode> emptyList(), null, null);
         });
     }
 
@@ -70,7 +70,7 @@ public class ObserveResponseTest {
         LwM2mSingleResource exampleResource = newResource(15, "example");
 
         // when
-        ObserveResponse response = new ObserveResponse(responseCode, exampleResource, null, null, null);
+        ObserveResponse response = new ObserveResponse(responseCode, exampleResource, null, null, null, null);
 
         // then
         assertEquals(exampleResource, response.getContent());
@@ -85,7 +85,7 @@ public class ObserveResponseTest {
                 new TimestampedLwM2mNode(Instant.ofEpochSecond(456), newResource(15, "example 2")));
 
         // when
-        ObserveResponse response = new ObserveResponse(responseCode, null, timestampedValues, null, null);
+        ObserveResponse response = new ObserveResponse(responseCode, null, null, timestampedValues, null, null);
 
         // then
         assertEquals(timestampedValues.get(0).getNode(), response.getContent());

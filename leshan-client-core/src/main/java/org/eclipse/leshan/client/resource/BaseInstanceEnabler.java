@@ -246,7 +246,7 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     public ObserveResponse observe(LwM2mServer server) {
         // Perform a read by default
         ReadResponse readResponse = this.read(server);
-        return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null,
+        return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null, null,
                 readResponse.getErrorMessage());
     }
 
@@ -254,7 +254,7 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     public ObserveResponse observe(LwM2mServer server, int resourceid) {
         // Perform a read by default
         ReadResponse readResponse = this.read(server, resourceid);
-        return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null,
+        return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null, null,
                 readResponse.getErrorMessage());
     }
 
@@ -262,7 +262,7 @@ public class BaseInstanceEnabler implements LwM2mInstanceEnabler {
     public ObserveResponse observe(LwM2mServer server, int resourceid, int resourceInstanceId) {
         // Perform a read by default
         ReadResponse readResponse = this.read(server, resourceid, resourceInstanceId);
-        return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null,
+        return new ObserveResponse(readResponse.getCode(), readResponse.getContent(), null, null, null,
                 readResponse.getErrorMessage());
     }
 

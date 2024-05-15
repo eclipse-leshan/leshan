@@ -98,7 +98,7 @@ public class ServerCoapMessageTranslator {
                 SingleObservation singleObservation = (SingleObservation) observation;
 
                 if (responseCode.isError()) {
-                    return new ObserveResponse(responseCode, null, null, null, coapResponse.getPayloadString(),
+                    return new ObserveResponse(responseCode, null, null, null, null, coapResponse.getPayloadString(),
                             coapResponse);
                 } else {
                     List<TimestampedLwM2mNode> timestampedNodes = toolbox.getDecoder().decodeTimestampedData(
@@ -106,10 +106,10 @@ public class ServerCoapMessageTranslator {
 
                     // create lwm2m response
                     if (timestampedNodes.size() == 1 && !timestampedNodes.get(0).isTimestamped()) {
-                        return new ObserveResponse(responseCode, timestampedNodes.get(0).getNode(), null,
+                        return new ObserveResponse(responseCode, timestampedNodes.get(0).getNode(), null, null,
                                 singleObservation, null, coapResponse);
                     } else {
-                        return new ObserveResponse(responseCode, null, timestampedNodes, singleObservation, null,
+                        return new ObserveResponse(responseCode, null, null, timestampedNodes, singleObservation, null,
                                 coapResponse);
                     }
                 }
