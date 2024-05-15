@@ -458,8 +458,8 @@ public class LockStepTest {
 
         // send read request
         Future<ReadResponse> future = Executors.newSingleThreadExecutor().submit(() -> {
-            // send a request with 3 seconds timeout
-            return server.send(registration, new ReadRequest(ContentFormat.SENML_JSON, 1, 0, 1), 3000);
+            // send a request with 2 seconds timeout
+            return server.send(registration, new ReadRequest(ContentFormat.SENML_JSON, 1, 0, 1), 2000);
         });
 
         // wait for request and send response
@@ -468,7 +468,43 @@ public class LockStepTest {
                 .payload(payload, ContentFormat.SENML_JSON_CODE).go();
 
         // check response received at server side
-        ReadResponse response = future.get(3, TimeUnit.SECONDS);
+        ReadResponse response = future.get(2, TimeUnit.SECONDS);
+        assertThat(response.getTimestampedLwM2mNode()).isEqualTo(timestampedNode);
+    }
+
+    @TestAllTransportLayer
+    public void observe_timestamped(String givenServerEndpointProvider) throws Exception {
+
+        // register client
+        LockStepLwM2mClient client = new LockStepLwM2mClient(server.getEndpoint(Protocol.COAP).getURI());
+        Token token = client
+                .sendLwM2mRequest(new RegisterRequest(client.getEndpointName(), 60l, "1.1", EnumSet.of(BindingMode.U),
+                        null, null, linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null));
+        client.expectResponse().token(token).go();
+        server.waitForNewRegistrationOf(client.getEndpointName());
+        Registration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
+
+        // create timestamped data
+        LwM2mEncoder encoder = new DefaultLwM2mEncoder();
+        Instant t1 = Instant.now();
+        LwM2mSingleResource resource = LwM2mSingleResource.newIntegerResource(1, 3600);
+        TimestampedLwM2mNode timestampedNode = new TimestampedLwM2mNode(t1, resource);
+        byte[] payload = encoder.encodeTimestampedData(Arrays.asList(timestampedNode), ContentFormat.SENML_JSON,
+                new LwM2mPath("/1/0/1"), client.getLwM2mModel());
+
+        // send observe request
+        Future<ObserveResponse> future = Executors.newSingleThreadExecutor().submit(() -> {
+            // send a request with 2 seconds timeout
+            return server.send(registration, new ObserveRequest(ContentFormat.SENML_JSON, 1, 0, 1), 2000);
+        });
+
+        // wait for request and send response
+        client.expectRequest().storeToken("TKN").storeMID("MID").go();
+        client.sendResponse(Type.ACK, ResponseCode.CONTENT).loadMID("MID").loadToken("TKN")
+                .payload(payload, ContentFormat.SENML_JSON_CODE).go();
+
+        // check response received at server side
+        ObserveResponse response = future.get(2, TimeUnit.SECONDS);
         assertThat(response.getTimestampedLwM2mNode()).isEqualTo(timestampedNode);
     }
 }

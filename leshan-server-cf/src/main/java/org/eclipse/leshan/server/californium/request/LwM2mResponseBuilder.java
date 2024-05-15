@@ -122,9 +122,9 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     coapResponse.getPayloadString(), coapResponse);
         } else if (isResponseCodeContent()) {
             // handle success response
-            TimestampedLwM2mNode timestampedNode = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
+            List<TimestampedLwM2mNode> timestampedNodes = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
                     request, clientEndpoint);
-            lwM2mresponse = new ReadResponse(ResponseCode.CONTENT, null, timestampedNode, null, coapResponse);
+            lwM2mresponse = new ReadResponse(ResponseCode.CONTENT, null, timestampedNodes.get(0), null, coapResponse);
         } else {
             // handle unexpected response:
             handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
@@ -249,30 +249,39 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         } else if (isResponseCodeContent()
                 // This is for backward compatibility, when the spec say notification used CHANGED code
                 || isResponseCodeChanged()) {
+
             // handle success response:
-            LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request, clientEndpoint);
-            SingleObservation observation = null;
-            if (coapResponse.getOptions().hasObserve()) {
+            List<TimestampedLwM2mNode> timestampedNodes = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
+                    request, clientEndpoint);
+            if (timestampedNodes.get(0).isTimestamped()) {
+                lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null, timestampedNodes,
+                        null, null, coapResponse);
+            } else {
 
-                /*
-                 * Note: When using OSCORE and Observe the first coapRequest sent to register an observation can have
-                 * its Token missing here. Is this because OSCORE re-creates the request before sending? When looking in
-                 * Wireshark all messages have a Token as they should. The lines below fixes this by taking the Token
-                 * from the response that came to the request (since the request actually has a Token when going out the
-                 * response will have the same correct Token.
-                 *
-                 * TODO OSCORE : This should probably not be done here. should we fix this ? should we check if oscore
-                 * is used ?
-                 */
-                if (coapRequest.getTokenBytes() == null) {
-                    coapRequest.setToken(coapResponse.getTokenBytes());
+                LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request, clientEndpoint);
+                SingleObservation observation = null;
+                if (coapResponse.getOptions().hasObserve()) {
+
+                    /*
+                     * Note: When using OSCORE and Observe the first coapRequest sent to register an observation can
+                     * have its Token missing here. Is this because OSCORE re-creates the request before sending? When
+                     * looking in Wireshark all messages have a Token as they should. The lines below fixes this by
+                     * taking the Token from the response that came to the request (since the request actually has a
+                     * Token when going out the response will have the same correct Token.
+                     *
+                     * TODO OSCORE : This should probably not be done here. should we fix this ? should we check if
+                     * oscore is used ?
+                     */
+                    if (coapRequest.getTokenBytes() == null) {
+                        coapRequest.setToken(coapResponse.getTokenBytes());
+                    }
+
+                    // observe request successful
+                    observation = ObserveUtil.createLwM2mObservation(coapRequest);
                 }
-
-                // observe request successful
-                observation = ObserveUtil.createLwM2mObservation(coapRequest);
+                lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null,
+                        observation, null, coapResponse);
             }
-            lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null, observation,
-                    null, coapResponse);
         } else {
             // handle unexpected response:
             handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
@@ -490,7 +499,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         }
     }
 
-    private TimestampedLwM2mNode decodeCoapTimestampedResponse(LwM2mPath path, Response coapResponse,
+    private List<TimestampedLwM2mNode> decodeCoapTimestampedResponse(LwM2mPath path, Response coapResponse,
             LwM2mRequest<?> request, String endpoint) {
         List<TimestampedLwM2mNode> timestampedNodes = null;
         try {
@@ -501,7 +510,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                         "Unable to decode response payload of request [%s] from client [%s] : should receive only 1 timestamped node but received %s",
                         request, endpoint, timestampedNodes.size());
             }
-            return timestampedNodes.get(0);
+            return timestampedNodes;
         } catch (CodecException e) {
             handleCodecException(e, request, coapResponse, endpoint);
             return null; // should not happen as handleCodecException raise exception
