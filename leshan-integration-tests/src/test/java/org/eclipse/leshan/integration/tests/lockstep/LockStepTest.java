@@ -458,8 +458,8 @@ public class LockStepTest {
 
         // send read request
         Future<ReadResponse> future = Executors.newSingleThreadExecutor().submit(() -> {
-            // send a request with 2 seconds timeout
-            return server.send(registration, new ReadRequest(ContentFormat.SENML_JSON, 1, 0, 1), 2000);
+            // send a request with 1 seconds timeout
+            return server.send(registration, new ReadRequest(ContentFormat.SENML_JSON, 1, 0, 1), 1000);
         });
 
         // wait for request and send response
@@ -468,7 +468,7 @@ public class LockStepTest {
                 .payload(payload, ContentFormat.SENML_JSON_CODE).go();
 
         // check response received at server side
-        ReadResponse response = future.get(2, TimeUnit.SECONDS);
+        ReadResponse response = future.get(1, TimeUnit.SECONDS);
         assertThat(response.getTimestampedLwM2mNode()).isEqualTo(timestampedNode);
     }
 
@@ -494,8 +494,8 @@ public class LockStepTest {
 
         // send observe request
         Future<ObserveResponse> future = Executors.newSingleThreadExecutor().submit(() -> {
-            // send a request with 2 seconds timeout
-            return server.send(registration, new ObserveRequest(ContentFormat.SENML_JSON, 1, 0, 1), 2000);
+            // send a request with 1 seconds timeout
+            return server.send(registration, new ObserveRequest(ContentFormat.SENML_JSON, 1, 0, 1), 1000);
         });
 
         // wait for request and send response
@@ -504,7 +504,7 @@ public class LockStepTest {
                 .payload(payload, ContentFormat.SENML_JSON_CODE).go();
 
         // check response received at server side
-        ObserveResponse response = future.get(2, TimeUnit.SECONDS);
+        ObserveResponse response = future.get(1, TimeUnit.SECONDS);
         assertThat(response.getTimestampedLwM2mNode()).isEqualTo(timestampedNode);
     }
 }
