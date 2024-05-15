@@ -76,10 +76,6 @@ public class ReadResponse extends AbstractLwM2mResponse {
 
     }
 
-    public TimestampedLwM2mNode getTimestampedLwM2mNode() {
-        return timestampedValue;
-    }
-
     @Override
     public boolean isSuccess() {
         return getCode() == ResponseCode.CONTENT;
@@ -108,6 +104,16 @@ public class ReadResponse extends AbstractLwM2mResponse {
      */
     public LwM2mChildNode getContent() {
         return content;
+    }
+
+    /**
+     * Get the {@link TimestampedLwM2mNode} value returned as response payload or <code>null</code> if the value is not
+     * timestamped, in that case you should use {@link #getContent()} instead.
+     *
+     * @return the value or <code>null</code> if the value is not timestamped OR if this is an error response.
+     */
+    public TimestampedLwM2mNode getTimestampedLwM2mNode() {
+        return timestampedValue;
     }
 
     @Override
