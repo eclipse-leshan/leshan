@@ -508,5 +508,20 @@ public class LockStepTest {
         // check response received at server side
         ObserveResponse response = future.get(1, TimeUnit.SECONDS);
         assertThat(response.getTimestampedLwM2mNode()).isEqualTo(timestampedNode);
+
+        // send active cancel observe request
+        Future<CancelObservationResponse> cancelFuture = Executors.newSingleThreadExecutor().submit(() -> {
+            // send a request with 1 seconds timeout
+            return server.send(registration, new CancelObservationRequest(response.getObservation()), 1000);
+        });
+
+        // wait for request and send response
+        client.expectRequest().storeToken("TKN").storeMID("MID").go();
+        client.sendResponse(Type.ACK, ResponseCode.CONTENT).loadMID("MID").loadToken("TKN")
+                .payload(payload, ContentFormat.SENML_JSON_CODE).go();
+
+        // check response received at server side
+        ObserveResponse cancelResponse = cancelFuture.get(1, TimeUnit.SECONDS);
+        assertThat(cancelResponse.getTimestampedLwM2mNode()).isEqualTo(timestampedNode);
     }
 }
