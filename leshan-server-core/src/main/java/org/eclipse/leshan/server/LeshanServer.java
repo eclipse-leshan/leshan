@@ -69,6 +69,7 @@ import org.eclipse.leshan.server.request.DefaultDownlinkRequestSender;
 import org.eclipse.leshan.server.request.DefaultUplinkRequestReceiver;
 import org.eclipse.leshan.server.request.DownlinkRequestSender;
 import org.eclipse.leshan.server.request.LowerLayerConfig;
+import org.eclipse.leshan.server.request.UplinkRequestReceiver;
 import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityStore;
@@ -164,8 +165,7 @@ public class LeshanServer {
                 new DefaultClientProfileProvider(registrationStore, modelProvider));
         RegistrationHandler registrationHandler = new RegistrationHandler(registrationService, authorizer,
                 registrationIdProvider, registrationDataExtractor);
-        DefaultUplinkRequestReceiver requestReceiver = new DefaultUplinkRequestReceiver(registrationHandler,
-                sendService);
+        UplinkRequestReceiver requestReceiver = createRequestReceiver(registrationHandler, sendService);
         endpointsProvider.createEndpoints(requestReceiver, observationService, toolbox, serverSecurityInfo, this);
 
         // create request sender
@@ -199,6 +199,11 @@ public class LeshanServer {
 
     protected SendHandler createSendHandler(RegistrationStore registrationStore, boolean updateRegistrationOnSend) {
         return new SendHandler(registrationStore, updateRegistrationOnSend);
+    }
+
+    protected UplinkRequestReceiver createRequestReceiver(RegistrationHandler registrationHandler,
+            SendHandler sendService) {
+        return new DefaultUplinkRequestReceiver(registrationHandler, sendService);
     }
 
     protected DownlinkRequestSender createRequestSender(LwM2mServerEndpointsProvider endpointsProvider,

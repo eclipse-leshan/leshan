@@ -33,6 +33,7 @@ import org.eclipse.leshan.server.bootstrap.endpoint.CompositeBootstrapServerEndp
 import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpoint;
 import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpointsProvider;
 import org.eclipse.leshan.server.bootstrap.request.BootstrapDownlinkRequestSender;
+import org.eclipse.leshan.server.bootstrap.request.BootstrapUplinkRequestReceiver;
 import org.eclipse.leshan.server.bootstrap.request.DefaultBootstrapDownlinkRequestSender;
 import org.eclipse.leshan.server.bootstrap.request.DefaultBootstrapUplinkRequestReceiver;
 import org.eclipse.leshan.server.endpoint.CompositeServerEndpointsProvider;
@@ -81,9 +82,13 @@ public class LeshanBootstrapServer {
 
         // create endpoints
         BootstrapServerEndpointToolbox toolbox = new BootstrapServerEndpointToolbox(decoder, encoder, linkParser);
-        DefaultBootstrapUplinkRequestReceiver requestReceiver = new DefaultBootstrapUplinkRequestReceiver(
-                bsHandlerFactory.create(requestSender, bsSessionManager, dispatcher));
+        BootstrapHandler bootstrapHandler = bsHandlerFactory.create(requestSender, bsSessionManager, dispatcher);
+        BootstrapUplinkRequestReceiver requestReceiver = createRequestReceiver(bootstrapHandler);
         endpointsProvider.createEndpoints(requestReceiver, toolbox, serverSecurityInfo, this);
+    }
+
+    protected BootstrapUplinkRequestReceiver createRequestReceiver(BootstrapHandler bootstrapHandler) {
+        return new DefaultBootstrapUplinkRequestReceiver(bootstrapHandler);
     }
 
     protected BootstrapDownlinkRequestSender createRequestSender(
