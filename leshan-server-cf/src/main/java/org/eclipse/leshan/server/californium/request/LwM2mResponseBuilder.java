@@ -122,9 +122,9 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     coapResponse.getPayloadString(), coapResponse);
         } else if (isResponseCodeContent()) {
             // handle success response
-            List<TimestampedLwM2mNode> timestampedNodes = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
+            TimestampedLwM2mNode timestampedNodes = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
                     request, clientEndpoint);
-            lwM2mresponse = new ReadResponse(ResponseCode.CONTENT, null, timestampedNodes.get(0), null, coapResponse);
+            lwM2mresponse = new ReadResponse(ResponseCode.CONTENT, null, timestampedNodes, null, coapResponse);
         } else {
             // handle unexpected response:
             handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
@@ -251,7 +251,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 || isResponseCodeChanged()) {
 
             // handle success response:
-            List<TimestampedLwM2mNode> timestampedNodes = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
+            TimestampedLwM2mNode timestampedNodes = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
                     request, clientEndpoint);
             SingleObservation observation = null;
             if (coapResponse.getOptions().hasObserve()) {
@@ -273,8 +273,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 // observe request successful
                 observation = ObserveUtil.createLwM2mObservation(coapRequest);
             }
-            lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
-                    timestampedNodes.get(0), null, observation, null, coapResponse);
+            lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null, timestampedNodes,
+                    null, observation, null, coapResponse);
         } else {
             // handle unexpected response:
             handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
@@ -492,7 +492,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         }
     }
 
-    private List<TimestampedLwM2mNode> decodeCoapTimestampedResponse(LwM2mPath path, Response coapResponse,
+    private TimestampedLwM2mNode decodeCoapTimestampedResponse(LwM2mPath path, Response coapResponse,
             LwM2mRequest<?> request, String endpoint) {
         List<TimestampedLwM2mNode> timestampedNodes = null;
         try {
@@ -503,7 +503,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                         "Unable to decode response payload of request [%s] from client [%s] : should receive only 1 timestamped node but received %s",
                         request, endpoint, timestampedNodes.size());
             }
-            return timestampedNodes;
+            return timestampedNodes.get(0);
         } catch (CodecException e) {
             handleCodecException(e, request, coapResponse, endpoint);
             return null; // should not happen as handleCodecException raise exception

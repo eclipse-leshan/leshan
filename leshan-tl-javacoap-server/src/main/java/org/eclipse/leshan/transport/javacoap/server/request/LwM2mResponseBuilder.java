@@ -124,9 +124,9 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     coapResponse.getPayloadString(), coapResponse);
         } else if (isResponseCodeContent()) {
             // handle success response with timestamped node
-            List<TimestampedLwM2mNode> timestampedNodes = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
+            TimestampedLwM2mNode timestampedNodes = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
                     request, clientEndpoint);
-            lwM2mresponse = new ReadResponse(ResponseCode.CONTENT, null, timestampedNodes.get(0), null, coapResponse);
+            lwM2mresponse = new ReadResponse(ResponseCode.CONTENT, null, timestampedNodes, null, coapResponse);
         } else {
             // handle unexpected response:
             handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
@@ -256,7 +256,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 // This is for backward compatibility, when the spec say notification used CHANGED code
                 || isResponseCodeChanged()) {
             // handle success response:
-            List<TimestampedLwM2mNode> timestampedNodes = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
+            TimestampedLwM2mNode timestampedNodes = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
                     request, clientEndpoint);
 
             if (coapResponse.options().getObserve() != null) {
@@ -264,7 +264,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 Observation observation = coapRequest.getTransContext().get(LwM2mKeys.LESHAN_OBSERVATION);
                 if (observation instanceof SingleObservation) {
                     lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
-                            timestampedNodes.get(0), null, (SingleObservation) observation, null, coapResponse);
+                            timestampedNodes, null, (SingleObservation) observation, null, coapResponse);
                 } else {
                     throw new IllegalStateException(String.format(
                             "A Single Observation is expected in coapRequest transport Context, but was %s",
@@ -272,8 +272,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 }
             } else {
                 // Observe relation NOT established
-                lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
-                        timestampedNodes.get(0), null, null, null, coapResponse);
+                lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null, timestampedNodes,
+                        null, null, null, coapResponse);
             }
         } else {
             // handle unexpected response:
@@ -506,7 +506,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         }
     }
 
-    private List<TimestampedLwM2mNode> decodeCoapTimestampedResponse(LwM2mPath path, CoapResponse coapResponse,
+    private TimestampedLwM2mNode decodeCoapTimestampedResponse(LwM2mPath path, CoapResponse coapResponse,
             LwM2mRequest<?> request, String endpoint) {
         List<TimestampedLwM2mNode> timestampedNodes = null;
         try {
@@ -518,7 +518,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                         "Unable to decode response payload of request [%s] from client [%s] : should receive only 1 timestamped node but received %s",
                         request, endpoint, timestampedNodes.size());
             }
-            return timestampedNodes;
+            return timestampedNodes.get(0);
         } catch (CodecException e) {
             handleCodecException(e, request, coapResponse, endpoint);
             return null; // should not happen as handleCodecException raise exception
