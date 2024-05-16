@@ -122,9 +122,9 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                     coapResponse.getPayloadString(), coapResponse);
         } else if (isResponseCodeContent()) {
             // handle success response
-            TimestampedLwM2mNode timestampedNodes = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
+            TimestampedLwM2mNode timestampedNode = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
                     request, clientEndpoint);
-            lwM2mresponse = new ReadResponse(ResponseCode.CONTENT, null, timestampedNodes, null, coapResponse);
+            lwM2mresponse = new ReadResponse(ResponseCode.CONTENT, null, timestampedNode, null, coapResponse);
         } else {
             // handle unexpected response:
             handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
@@ -251,7 +251,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 || isResponseCodeChanged()) {
 
             // handle success response:
-            TimestampedLwM2mNode timestampedNodes = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
+            TimestampedLwM2mNode timestampedNode = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
                     request, clientEndpoint);
             SingleObservation observation = null;
             if (coapResponse.getOptions().hasObserve()) {
@@ -273,7 +273,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 // observe request successful
                 observation = ObserveUtil.createLwM2mObservation(coapRequest);
             }
-            lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null, timestampedNodes,
+            lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null, timestampedNode,
                     null, observation, null, coapResponse);
         } else {
             // handle unexpected response:
@@ -291,9 +291,10 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 // This is for backward compatibility, when the spec say notification used CHANGED code
                 || isResponseCodeChanged()) {
             // handle success response:
-            LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request, clientEndpoint);
-            lwM2mresponse = new CancelObservationResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null,
-                    null, null, null, coapResponse);
+            TimestampedLwM2mNode timestampedNode = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
+                    request, clientEndpoint);
+            lwM2mresponse = new CancelObservationResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
+                    timestampedNode, null, null, null, coapResponse);
         } else {
             // handle unexpected response:
             handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
