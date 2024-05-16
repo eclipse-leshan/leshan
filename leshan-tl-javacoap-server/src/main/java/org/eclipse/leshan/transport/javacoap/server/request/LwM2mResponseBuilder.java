@@ -256,32 +256,24 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
                 // This is for backward compatibility, when the spec say notification used CHANGED code
                 || isResponseCodeChanged()) {
             // handle success response:
-
             List<TimestampedLwM2mNode> timestampedNodes = decodeCoapTimestampedResponse(request.getPath(), coapResponse,
                     request, clientEndpoint);
-            if (timestampedNodes.get(0).isTimestamped()) {
-                lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null, null,
-                        timestampedNodes, null, null, coapResponse);
-            } else {
 
-                LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request, clientEndpoint);
-
-                if (coapResponse.options().getObserve() != null) {
-                    // Observe relation established
-                    Observation observation = coapRequest.getTransContext().get(LwM2mKeys.LESHAN_OBSERVATION);
-                    if (observation instanceof SingleObservation) {
-                        lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null,
-                                null, (SingleObservation) observation, null, coapResponse);
-                    } else {
-                        throw new IllegalStateException(String.format(
-                                "A Single Observation is expected in coapRequest transport Context, but was %s",
-                                observation == null ? "null" : observation.getClass().getSimpleName()));
-                    }
+            if (coapResponse.options().getObserve() != null) {
+                // Observe relation established
+                Observation observation = coapRequest.getTransContext().get(LwM2mKeys.LESHAN_OBSERVATION);
+                if (observation instanceof SingleObservation) {
+                    lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
+                            timestampedNodes.get(0), null, (SingleObservation) observation, null, coapResponse);
                 } else {
-                    // Observe relation NOTestablished
-                    lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null,
-                            null, null, null, coapResponse);
+                    throw new IllegalStateException(String.format(
+                            "A Single Observation is expected in coapRequest transport Context, but was %s",
+                            observation == null ? "null" : observation.getClass().getSimpleName()));
                 }
+            } else {
+                // Observe relation NOT established
+                lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
+                        timestampedNodes.get(0), null, null, null, coapResponse);
             }
         } else {
             // handle unexpected response:
