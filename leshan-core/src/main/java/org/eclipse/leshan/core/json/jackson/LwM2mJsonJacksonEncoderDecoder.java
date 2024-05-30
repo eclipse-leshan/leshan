@@ -25,6 +25,7 @@ import org.eclipse.leshan.core.json.LwM2mJsonEncoder;
 import org.eclipse.leshan.core.json.LwM2mJsonException;
 import org.eclipse.leshan.core.util.json.JsonException;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.cfg.JsonNodeFeature;
 
@@ -33,9 +34,22 @@ import com.fasterxml.jackson.databind.cfg.JsonNodeFeature;
  */
 public class LwM2mJsonJacksonEncoderDecoder implements LwM2mJsonDecoder, LwM2mJsonEncoder {
 
-    private static final JsonRootObjectSerDes serDes = new JsonRootObjectSerDes();
-    private static final ObjectMapper mapper = new ObjectMapper()
-            .configure(JsonNodeFeature.STRIP_TRAILING_BIGDECIMAL_ZEROES, false);
+    private final JsonRootObjectSerDes serDes;
+    private final ObjectMapper mapper;
+
+    public LwM2mJsonJacksonEncoderDecoder() {
+        this(new JsonRootObjectSerDes(), null);
+    }
+
+    public LwM2mJsonJacksonEncoderDecoder(JsonRootObjectSerDes serDes, ObjectMapper objectMapper) {
+        this.serDes = serDes;
+        this.mapper = objectMapper == null ? createDefaultObjectMapper() : objectMapper;
+    }
+
+    protected ObjectMapper createDefaultObjectMapper() {
+        return new ObjectMapper().configure(JsonNodeFeature.STRIP_TRAILING_BIGDECIMAL_ZEROES, false)
+                .configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true);
+    }
 
     @Override
     public String toJsonLwM2m(JsonRootObject jro) throws LwM2mJsonException {

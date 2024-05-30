@@ -32,6 +32,7 @@ import org.eclipse.leshan.senml.SenMLException;
 import org.eclipse.leshan.senml.SenMLPack;
 import org.eclipse.leshan.senml.SenMLRecord;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.cfg.JsonNodeFeature;
@@ -41,8 +42,7 @@ import com.fasterxml.jackson.databind.cfg.JsonNodeFeature;
  */
 public class SenMLJsonJacksonEncoderDecoder implements SenMLDecoder, SenMLEncoder {
     private final JacksonJsonSerDes<SenMLRecord> serDes;
-    private static final ObjectMapper mapper = new ObjectMapper()
-            .configure(JsonNodeFeature.STRIP_TRAILING_BIGDECIMAL_ZEROES, false);
+    private final ObjectMapper mapper;
 
     public SenMLJsonJacksonEncoderDecoder() {
         this(false);
@@ -68,7 +68,18 @@ public class SenMLJsonJacksonEncoderDecoder implements SenMLDecoder, SenMLEncode
     }
 
     public SenMLJsonJacksonEncoderDecoder(JacksonJsonSerDes<SenMLRecord> senMLJSONSerializerDeserializer) {
+        this(senMLJSONSerializerDeserializer, null);
+    }
+
+    public SenMLJsonJacksonEncoderDecoder(JacksonJsonSerDes<SenMLRecord> senMLJSONSerializerDeserializer,
+            ObjectMapper objectMapper) {
         this.serDes = senMLJSONSerializerDeserializer;
+        this.mapper = objectMapper == null ? createDefaultObjectMapper() : objectMapper;
+    }
+
+    protected ObjectMapper createDefaultObjectMapper() {
+        return new ObjectMapper().configure(JsonNodeFeature.STRIP_TRAILING_BIGDECIMAL_ZEROES, false)
+                .configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true);
     }
 
     @Override
