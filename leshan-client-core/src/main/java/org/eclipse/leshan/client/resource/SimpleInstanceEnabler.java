@@ -125,7 +125,7 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
             });
 
             newValue.getInstances().forEach((newInstanceId, newInstance) -> {
-                LwM2mResourceInstance previousInstance = newValue.getInstances().get(newInstanceId);
+                LwM2mResourceInstance previousInstance = previousValue.getInstances().get(newInstanceId);
                 if (previousInstance == null) {
                     // addition
                     changedResources.add(getResourceInstancePath(resourceid, newInstanceId));
