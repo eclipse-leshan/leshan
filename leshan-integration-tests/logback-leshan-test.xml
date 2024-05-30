@@ -31,5 +31,8 @@ Contributors:
 	<root level="ERROR">
 		<appender-ref ref="STDOUT" />
 	</root>
+
+    <!-- TODO this is temporary LOG config to avoid SocketClientTransport to flood but a better way should be to fix the code itself-->
+	<logger name="com.mbed.coap.transport.javassl.SocketClientTransport" level="OFF" />
 </configuration>
 
