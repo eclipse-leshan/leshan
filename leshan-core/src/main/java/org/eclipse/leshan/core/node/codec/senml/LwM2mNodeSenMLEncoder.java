@@ -136,7 +136,8 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
         SenMLPack pack = new SenMLPack();
         for (TimestampedLwM2mNode timestampedLwM2mNode : timestampedNodes) {
 
-            if (timestampedLwM2mNode.getTimestamp().getEpochSecond() < 268_435_456) {
+            if (timestampedLwM2mNode.isTimestamped()
+                    && timestampedLwM2mNode.getTimestamp().getEpochSecond() < 268_435_456) {
                 // The smallest absolute Time value that can be expressed (2**28) is 1978-07-04 21:24:16 UTC.
                 // see https://tools.ietf.org/html/rfc8428#section-4.5.3
                 throw new CodecException(
