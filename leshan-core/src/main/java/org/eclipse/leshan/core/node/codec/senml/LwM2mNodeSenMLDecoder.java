@@ -460,9 +460,9 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                     public int compare(BigDecimal o1, BigDecimal o2) {
                         // null at first place
                         if (o1 == null) {
-                            return o2 == null ? 0 : 1;
+                            return o2 == null ? 0 : -1;
                         } else if (o2 == null) {
-                            return -1;
+                            return 1;
                         } else {
                             return o2.compareTo(o1);
                         }

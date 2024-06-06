@@ -153,6 +153,7 @@ public class ObserveTimeStampTest {
         ObserveResponse response = server.waitForNotificationOf(observation);
         assertThat(response).hasContentFormat(contentFormat, givenServerEndpointProvider);
         assertThat(response.getContent()).isEqualTo(mostRecentNode.getNode());
+        assertThat(response.getTimestampedLwM2mNode()).isEqualTo(mostRecentNode);
         assertThat(response.getTimestampedLwM2mNodes()).isEqualTo(timestampedNodes);
     }
 
@@ -178,7 +179,56 @@ public class ObserveTimeStampTest {
                 new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Paris")));
         List<TimestampedLwM2mNode> timestampedNodes = new ArrayList<>();
         timestampedNodes.add(mostRecentNode);
-        timestampedNodes.add(new TimestampedLwM2mNode(mostRecentNode.getTimestamp().minusMillis(2),
+        timestampedNodes.add(new TimestampedLwM2mNode(Instant.ofEpochMilli(System.currentTimeMillis()).minusMillis(2),
+                new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Londres"))));
+        timestampedNodes.add(new TimestampedLwM2mNode(Instant.ofEpochMilli(System.currentTimeMillis()).minusMillis(4),
+                new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Londres"))));
+        byte[] payload = encoder.encodeTimestampedData(timestampedNodes, contentFormat, new LwM2mPath("/3/0"),
+                client.getObjectTree().getModel());
+
+        TestObserveUtil.sendNotification(
+                client.getClientConnector(client.getServerIdForRegistrationId(currentRegistration.getId())),
+                server.getEndpoint(Protocol.COAP).getURI(), payload,
+                observeResponse.getObservation().getId().getBytes(), 2, contentFormat);
+        // *** Hack End *** //
+
+        // verify result
+        server.waitForNewObservation(observation);
+        ObserveResponse response = server.waitForNotificationOf(observation);
+
+        assertThat(response).hasContentFormat(contentFormat, givenServerEndpointProvider);
+        assertThat(response.getContent()).isEqualTo(mostRecentNode.getNode());
+        assertThat(response.getTimestampedLwM2mNode()).isEqualTo(mostRecentNode);
+        assertThat(response.getTimestampedLwM2mNodes()).isEqualTo(timestampedNodes);
+
+    }
+
+    @TestAllCases
+    public void can_observe_timestamped_instance_with_null(ContentFormat contentFormat,
+            String givenServerEndpointProvider) throws InterruptedException {
+        // observe device timezone
+        ObserveResponse observeResponse = server.send(currentRegistration, new ObserveRequest(contentFormat, 3, 0));
+        assertThat(observeResponse) //
+                .hasCode(CONTENT) //
+                .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
+
+        // an observation response should have been sent
+        SingleObservation observation = observeResponse.getObservation();
+        assertThat(observation.getPath()).asString().isEqualTo("/3/0");
+        assertThat(observation.getRegistrationId()).isEqualTo(currentRegistration.getId());
+        Set<Observation> observations = server.getObservationService().getObservations(currentRegistration);
+        assertThat(observations).containsExactly(observation);
+
+        // *** HACK send time-stamped notification as Leshan client does not support it *** //
+        // create time-stamped nodes
+        TimestampedLwM2mNode mostRecentNode = new TimestampedLwM2mNode(null,
+                new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Paris")));
+        List<TimestampedLwM2mNode> timestampedNodes = new ArrayList<>();
+        timestampedNodes.add(mostRecentNode);
+        Instant anInstant = Instant.ofEpochMilli(System.currentTimeMillis());
+        timestampedNodes.add(new TimestampedLwM2mNode(anInstant,
+                new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Londres"))));
+        timestampedNodes.add(new TimestampedLwM2mNode(anInstant.minusMillis(4),
                 new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Londres"))));
         byte[] payload = encoder.encodeTimestampedData(timestampedNodes, contentFormat, new LwM2mPath("/3/0"),
                 client.getObjectTree().getModel());
@@ -194,6 +244,7 @@ public class ObserveTimeStampTest {
         ObserveResponse response = server.waitForNotificationOf(observation);
         assertThat(response).hasContentFormat(contentFormat, givenServerEndpointProvider);
         assertThat(response.getContent()).isEqualTo(mostRecentNode.getNode());
+        assertThat(response.getTimestampedLwM2mNode()).isEqualTo(mostRecentNode);
         assertThat(response.getTimestampedLwM2mNodes()).isEqualTo(timestampedNodes);
     }
 
@@ -235,6 +286,7 @@ public class ObserveTimeStampTest {
         ObserveResponse response = server.waitForNotificationOf(observation);
         assertThat(response).hasContentFormat(contentFormat, givenServerEndpointProvider);
         assertThat(response.getContent()).isEqualTo(mostRecentNode.getNode());
+        assertThat(response.getTimestampedLwM2mNode()).isEqualTo(mostRecentNode);
         assertThat(response.getTimestampedLwM2mNodes()).isEqualTo(timestampedNodes);
     }
 }

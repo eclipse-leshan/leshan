@@ -85,13 +85,20 @@ public class ObserveResponse extends ReadResponse {
      */
     @Override
     public TimestampedLwM2mNode getTimestampedLwM2mNode() {
-        return super.getTimestampedLwM2mNode();
+        if (timestampedValues != null && !timestampedValues.isEmpty()) {
+            return timestampedValues.get(0);
+        } else {
+            return super.getTimestampedLwM2mNode();
+        }
     }
 
     /**
      * A list of {@link LwM2mNode} representing different state of this resources at different instant. This method
      * returns value only on notification when client are using "Notification Storing When Disabled or Offline" and
      * content format support it.
+     * <p>
+     * The list is sorted by descending time-stamp order (most recent one at first place). If null time-stamp (meaning
+     * no time information) exists it always at first place as we consider it as "now".
      *
      * @return a list of {@link TimestampedLwM2mNode} OR <code>null</code> if this is a error response or "Notification
      *         Storing When Disabled or Offline" is not used.

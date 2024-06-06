@@ -233,7 +233,9 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
     /**
      * Group all JsonArrayEntry by time-stamp
      *
-     * @return a map (relativeTimestamp => collection of JsonArrayEntry)
+     * @return a sorted map (relativeTimestamp => collection of JsonArrayEntry) order by descending time-stamp (most
+     *         recent one at first place). If null time-stamp (meaning no time information) exists it always at first
+     *         place.
      */
     private SortedMap<BigDecimal, Collection<JsonArrayEntry>> groupJsonEntryByTimestamp(JsonRootObject jsonObject) {
         SortedMap<BigDecimal, Collection<JsonArrayEntry>> result = new TreeMap<>(new Comparator<BigDecimal>() {
@@ -243,9 +245,9 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
                 // - supports null (time null means 0 if there is a base time)
                 // - reverses natural order (most recent value in first)
                 if (o1 == null) {
-                    return o2 == null ? 0 : 1;
+                    return o2 == null ? 0 : -1;
                 } else if (o2 == null) {
-                    return -1;
+                    return 1;
                 } else {
                     return o2.compareTo(o1);
                 }
