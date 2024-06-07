@@ -104,9 +104,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                     throw new CodecException("Invalid path [%s] for resource, it should start by %s",
                             resolvedRecord.getPath(), path);
                 }
-                if (resolvedRecord.getTimeStamp() != null) {
-                    throw new CodecException("Unable to decode node[path:%s] : value should not be timestamped", path);
-                }
+                validateNoTimestampedRecord(resolvedRecord);
                 resolvedRecords.add(resolvedRecord);
             }
 
@@ -141,6 +139,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                         // Meaning that a given path could have no corresponding value.
                         nodes.put(path, null);
                     } else {
+                        validateNoTimestampedRecord(records);
                         LwM2mNode node = parseRecords(recordsByPath.get(path), path, model,
                                 DefaultLwM2mDecoder.nodeClassFromPath(path));
                         nodes.put(path, node);
@@ -153,6 +152,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                 for (SenMLRecord record : pack.getRecords()) {
                     LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(record);
                     LwM2mPath path = resolvedRecord.getPath();
+                    validateNoTimestampedRecord(resolvedRecord);
                     LwM2mNode node = parseRecords(Arrays.asList(resolvedRecord), path, model,
                             DefaultLwM2mDecoder.nodeClassFromPath(path));
                     nodes.put(path, node);
@@ -162,6 +162,19 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
         } catch (SenMLException e) {
             String hexValue = content != null ? Hex.encodeHexString(content) : "";
             throw new CodecException(e, "Unable to decode nodes[path:%s] : %s", paths, hexValue, e);
+        }
+    }
+
+    protected void validateNoTimestampedRecord(Collection<LwM2mResolvedSenMLRecord> resolvedRecords) {
+        for (LwM2mResolvedSenMLRecord resolvedRecord : resolvedRecords) {
+            validateNoTimestampedRecord(resolvedRecord);
+        }
+    }
+
+    protected void validateNoTimestampedRecord(LwM2mResolvedSenMLRecord resolvedRecord) {
+        if (resolvedRecord.getTimeStamp() != null) {
+            throw new CodecException("Unable to decode node[path:%s] : value should not be timestamped",
+                    resolvedRecord.getPath());
         }
     }
 

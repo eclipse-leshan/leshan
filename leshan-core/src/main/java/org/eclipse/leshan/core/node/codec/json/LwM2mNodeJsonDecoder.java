@@ -92,6 +92,9 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
             if (timestampedNodes.size() == 0) {
                 return null;
             } else {
+                TimestampedLwM2mNode timestampedNode = timestampedNodes.get(0);
+                validateNoTimestampedValue(timestampedNode, path);
+
                 // return the most recent value
                 return (T) timestampedNodes.get(0).getNode();
             }
@@ -109,6 +112,12 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
             return parseJSON(json, path, model, nodeClass);
         } catch (LwM2mJsonException | InvalidLwM2mPathException e) {
             throw new CodecException(e, "Unable to deserialize json [path:%s]", path);
+        }
+    }
+
+    protected void validateNoTimestampedValue(TimestampedLwM2mNode timestampedNode, LwM2mPath path) {
+        if (timestampedNode.getTimestamp() != null) {
+            throw new CodecException("Unable to decode node[path:%s] : value should not be timestamped", path);
         }
     }
 
