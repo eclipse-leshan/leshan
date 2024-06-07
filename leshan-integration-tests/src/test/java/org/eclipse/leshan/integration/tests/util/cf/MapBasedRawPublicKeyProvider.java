@@ -76,7 +76,7 @@ public class MapBasedRawPublicKeyProvider implements CertificateProvider {
             for (ServerName serverName : serverNames) {
                 KeyPair keyPair = keyPairs.get(serverName.getNameAsString());
                 if (keyPair != null) {
-                    return new CertificateIdentityResult(cid, keyPair.getPrivate(), keyPair.getPublic(), null);
+                    return new CertificateIdentityResult(cid, keyPair.getPrivate(), keyPair.getPublic());
                 }
             }
         }

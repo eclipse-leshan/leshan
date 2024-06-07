@@ -76,7 +76,7 @@ public class MapBasedCertificateProvider implements CertificateProvider {
                 CertPair certPair = certPairs.get(serverName.getNameAsString());
                 if (certPair != null) {
                     return new CertificateIdentityResult(cid, certPair.getPrivateKey(),
-                            Arrays.asList(certPair.getCertChain()), null);
+                            Arrays.asList(certPair.getCertChain()));
                 }
             }
         }
