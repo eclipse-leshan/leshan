@@ -57,12 +57,16 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.tlv.Tlv;
 import org.eclipse.leshan.core.tlv.Tlv.TlvType;
 import org.eclipse.leshan.core.tlv.TlvEncoder;
+import org.eclipse.leshan.core.util.ContentFormatArgumentConverter;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.core.util.TestObjectLoader;
 import org.eclipse.leshan.core.util.datatype.ULong;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.converter.ConvertWith;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Unit tests for {@link LwM2mDecoder}
@@ -964,6 +968,40 @@ public class LwM2mNodeDecoderTest {
 
         assertEquals("+02:00", instance.getResource(14).getValue());
         assertEquals("U", instance.getResource(16).getValue());
+    }
+
+    @ParameterizedTest()
+    @ValueSource(strings = { "SENML_JSON", "SENML_CBOR", "TLV" })
+    public void decode_null_object(@ConvertWith(ContentFormatArgumentConverter.class) ContentFormat contentFormat) {
+        LwM2mObject object = decoder.decode(new byte[0], contentFormat, new LwM2mPath("/1"), model, LwM2mObject.class);
+
+        assertNotNull(object);
+        assertEquals(1, object.getId());
+        assertTrue(object.getInstances().isEmpty());
+    }
+
+    @ParameterizedTest()
+    @ValueSource(strings = { "SENML_JSON", "SENML_CBOR", "TLV" })
+    public void decode_null_object_instance(
+            @ConvertWith(ContentFormatArgumentConverter.class) ContentFormat contentFormat) {
+        LwM2mObjectInstance instance = decoder.decode(new byte[0], contentFormat, new LwM2mPath("/3/0"), model,
+                LwM2mObjectInstance.class);
+
+        assertNotNull(instance);
+        assertEquals(0, instance.getId());
+        assertTrue(instance.getResources().isEmpty());
+    }
+
+    @ParameterizedTest()
+    @ValueSource(strings = { "SENML_JSON", "SENML_CBOR", "TLV" })
+    public void decode_null_multi_resource(
+            @ConvertWith(ContentFormatArgumentConverter.class) ContentFormat contentFormat) {
+        LwM2mResource resource = decoder.decode(new byte[0], contentFormat, new LwM2mPath("/3/0/7"), model,
+                LwM2mResource.class);
+
+        assertNotNull(resource);
+        assertEquals(7, resource.getId());
+        assertTrue(resource.getInstances().isEmpty());
     }
 
     @Test

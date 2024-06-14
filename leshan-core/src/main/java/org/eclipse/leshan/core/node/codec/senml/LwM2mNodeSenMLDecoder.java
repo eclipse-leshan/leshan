@@ -296,8 +296,13 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
             Map<Integer, Collection<LwM2mResolvedSenMLRecord>> recordsByInstanceId = groupRecordsByInstanceId(records);
 
             // validate we have resources for only 1 instance
-            if (recordsByInstanceId.size() != 1)
+            if (recordsByInstanceId.size() > 1)
                 throw new CodecException("One instance expected in the payload [path:%s]", path);
+
+            // handle empty object instance
+            if (recordsByInstanceId.size() == 0) {
+                return new LwM2mObjectInstance(path.getObjectInstanceId(), Collections.emptyList());
+            }
 
             // Extract resources
             Entry<Integer, Collection<LwM2mResolvedSenMLRecord>> instanceEntry = recordsByInstanceId.entrySet()
