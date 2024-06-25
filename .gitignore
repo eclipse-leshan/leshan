@@ -41,3 +41,4 @@ bin/
 **/*.pem
 **/*.srl
 !**/src/**/*.der
+!**/certificates/*.pem
