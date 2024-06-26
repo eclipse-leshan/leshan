@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690.
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.request;
+package org.eclipse.leshan.transport.californium.server.request;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -28,8 +28,6 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
-import org.eclipse.leshan.core.californium.identity.DefaultCoapIdentityHandler;
-import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
@@ -61,6 +59,8 @@ import org.eclipse.leshan.server.registration.DefaultRegistrationDataExtractor;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.Registration.Builder;
 import org.eclipse.leshan.server.registration.RegistrationDataExtractor.RegistrationData;
+import org.eclipse.leshan.transport.californium.identity.DefaultCoapIdentityHandler;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 

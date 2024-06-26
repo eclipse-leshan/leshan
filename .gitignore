@@ -1,5 +1,5 @@
 # Leshan config files #
-leshan-core/ddffiles
+leshan-lwm2m-core/ddffiles
 **/Californium.properties
 **/Californium3.properties
 **/Californium3.bsserver.properties

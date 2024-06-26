@@ -15,7 +15,7 @@
  *     Bosch Software Innovations - added Redis URL support with authentication
  *     Firis SA - added mDNS services registering
  *******************************************************************************/
-package org.eclipse.leshan.server.demo;
+package org.eclipse.leshan.demo.server;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -37,31 +37,31 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.leshan.core.californium.PrincipalMdcConnectionListener;
-import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
-import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.demo.LwM2mDemoConstant;
+import org.eclipse.leshan.demo.cli.ShortErrorMessageHandler;
+import org.eclipse.leshan.demo.server.cli.LeshanServerDemoCLI;
+import org.eclipse.leshan.demo.server.servlet.ClientServlet;
+import org.eclipse.leshan.demo.server.servlet.EventServlet;
+import org.eclipse.leshan.demo.server.servlet.ObjectSpecServlet;
+import org.eclipse.leshan.demo.server.servlet.ServerServlet;
+import org.eclipse.leshan.demo.servers.json.servlet.SecurityServlet;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.LeshanServerBuilder;
-import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointsProvider;
-import org.eclipse.leshan.server.californium.endpoint.coap.CoapOscoreServerEndpointFactory;
-import org.eclipse.leshan.server.californium.endpoint.coap.CoapServerProtocolProvider;
-import org.eclipse.leshan.server.californium.endpoint.coaps.CoapsServerProtocolProvider;
-import org.eclipse.leshan.server.core.demo.json.servlet.SecurityServlet;
-import org.eclipse.leshan.server.demo.cli.LeshanServerDemoCLI;
-import org.eclipse.leshan.server.demo.servlet.ClientServlet;
-import org.eclipse.leshan.server.demo.servlet.EventServlet;
-import org.eclipse.leshan.server.demo.servlet.ObjectSpecServlet;
-import org.eclipse.leshan.server.demo.servlet.ServerServlet;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.VersionedModelProvider;
 import org.eclipse.leshan.server.redis.RedisRegistrationStore;
 import org.eclipse.leshan.server.redis.RedisSecurityStore;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.FileSecurityStore;
+import org.eclipse.leshan.transport.californium.PrincipalMdcConnectionListener;
+import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServerEndpointsProvider;
+import org.eclipse.leshan.transport.californium.server.endpoint.coap.CoapOscoreServerEndpointFactory;
+import org.eclipse.leshan.transport.californium.server.endpoint.coap.CoapServerProtocolProvider;
+import org.eclipse.leshan.transport.californium.server.endpoint.coaps.CoapsServerProtocolProvider;
 import org.eclipse.leshan.transport.javacoap.server.coaptcp.endpoint.JavaCoapTcpServerEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.server.coaptcp.endpoint.JavaCoapsTcpServerEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.server.endpoint.JavaCoapServerEndpointsProvider;

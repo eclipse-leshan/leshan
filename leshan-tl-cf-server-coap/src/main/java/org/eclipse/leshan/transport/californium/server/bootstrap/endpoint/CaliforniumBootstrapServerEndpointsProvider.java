@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.bootstrap.endpoint;
+package org.eclipse.leshan.transport.californium.server.bootstrap.endpoint;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -33,9 +33,6 @@ import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
-import org.eclipse.leshan.core.californium.ExceptionTranslator;
-import org.eclipse.leshan.core.californium.identity.IdentityHandler;
-import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
@@ -44,10 +41,13 @@ import org.eclipse.leshan.server.bootstrap.endpoint.BootstrapServerEndpointToolb
 import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpoint;
 import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpointsProvider;
 import org.eclipse.leshan.server.bootstrap.request.BootstrapUplinkRequestReceiver;
-import org.eclipse.leshan.server.californium.RootResource;
-import org.eclipse.leshan.server.californium.bootstrap.endpoint.coap.CoapBootstrapServerProtocolProvider;
-import org.eclipse.leshan.server.californium.endpoint.ServerProtocolProvider;
 import org.eclipse.leshan.server.security.ServerSecurityInfo;
+import org.eclipse.leshan.transport.californium.ExceptionTranslator;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandlerProvider;
+import org.eclipse.leshan.transport.californium.server.RootResource;
+import org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.coap.CoapBootstrapServerProtocolProvider;
+import org.eclipse.leshan.transport.californium.server.endpoint.ServerProtocolProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

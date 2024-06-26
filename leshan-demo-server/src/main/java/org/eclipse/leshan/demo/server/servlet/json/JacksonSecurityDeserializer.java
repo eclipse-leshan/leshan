@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Orange - keep one JSON dependency
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.servlet.json;
+package org.eclipse.leshan.demo.server.servlet.json;
 
 import java.io.IOException;
 import java.math.BigInteger;

@@ -14,7 +14,7 @@
  *    Achim Kraus (Bosch Software Innovations GmbH) - Initial creation
  ******************************************************************************/
 
-package org.eclipse.leshan.client.californium.object;
+package org.eclipse.leshan.transport.californium.client.object;
 
 import org.eclipse.californium.core.observe.ObserveRelation;
 import org.eclipse.californium.core.observe.ObserveRelationFilter;

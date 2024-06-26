@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.endpoint;
+package org.eclipse.leshan.transport.californium.server.endpoint;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -36,10 +36,6 @@ import org.eclipse.californium.core.observe.NotificationListener;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
-import org.eclipse.leshan.core.californium.ExceptionTranslator;
-import org.eclipse.leshan.core.californium.ObserveUtil;
-import org.eclipse.leshan.core.californium.identity.IdentityHandler;
-import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.observation.CompositeObservation;
@@ -52,8 +48,6 @@ import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.eclipse.leshan.server.LeshanServer;
-import org.eclipse.leshan.server.californium.RootResource;
-import org.eclipse.leshan.server.californium.endpoint.coap.CoapServerProtocolProvider;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
 import org.eclipse.leshan.server.endpoint.ServerEndpointToolbox;
@@ -61,6 +55,12 @@ import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.profile.ClientProfile;
 import org.eclipse.leshan.server.request.UplinkRequestReceiver;
 import org.eclipse.leshan.server.security.ServerSecurityInfo;
+import org.eclipse.leshan.transport.californium.ExceptionTranslator;
+import org.eclipse.leshan.transport.californium.ObserveUtil;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandlerProvider;
+import org.eclipse.leshan.transport.californium.server.RootResource;
+import org.eclipse.leshan.transport.californium.server.endpoint.coap.CoapServerProtocolProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

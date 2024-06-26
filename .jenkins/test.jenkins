@@ -67,9 +67,9 @@ pipeline {
         '''
         
         // Copy artifacts
-        sh ''' cp leshan-server-demo/target/leshan-server-demo-*-jar-with-dependencies.jar leshan-server-demo.jar
-               cp leshan-bsserver-demo/target/leshan-bsserver-demo-*-jar-with-dependencies.jar leshan-bsserver-demo.jar
-               cp leshan-client-demo/target/leshan-client-demo-*-jar-with-dependencies.jar leshan-client-demo.jar
+        sh ''' cp leshan-demo-server/target/leshan-demo-server-*-jar-with-dependencies.jar leshan-demo-server.jar
+               cp leshan-demo-bsserver/target/leshan-demo-bsserver-*-jar-with-dependencies.jar leshan-demo-bsserver.jar
+               cp leshan-demo-client/target/leshan-demo-client-*-jar-with-dependencies.jar leshan-demo-client.jar
         '''
       }
     }

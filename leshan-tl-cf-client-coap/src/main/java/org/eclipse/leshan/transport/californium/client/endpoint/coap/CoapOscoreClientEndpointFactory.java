@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.californium.endpoint.coap;
+package org.eclipse.leshan.transport.californium.client.endpoint.coap;
 
 import java.net.InetSocketAddress;
 import java.security.Principal;
@@ -29,19 +29,19 @@ import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.oscore.OSCoreCoapStackFactory;
 import org.eclipse.californium.oscore.OSCoreEndpointContextInfo;
-import org.eclipse.leshan.client.californium.CaliforniumConnectionController;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServerInfo;
-import org.eclipse.leshan.core.californium.identity.IdentityHandler;
-import org.eclipse.leshan.core.californium.oscore.cf.InMemoryOscoreContextDB;
-import org.eclipse.leshan.core.californium.oscore.cf.OscoreParameters;
-import org.eclipse.leshan.core.californium.oscore.cf.StaticOscoreStore;
 import org.eclipse.leshan.core.oscore.InvalidOscoreSettingException;
 import org.eclipse.leshan.core.oscore.OscoreValidator;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.core.util.Hex;
+import org.eclipse.leshan.transport.californium.client.CaliforniumConnectionController;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
+import org.eclipse.leshan.transport.californium.oscore.cf.InMemoryOscoreContextDB;
+import org.eclipse.leshan.transport.californium.oscore.cf.OscoreParameters;
+import org.eclipse.leshan.transport.californium.oscore.cf.StaticOscoreStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

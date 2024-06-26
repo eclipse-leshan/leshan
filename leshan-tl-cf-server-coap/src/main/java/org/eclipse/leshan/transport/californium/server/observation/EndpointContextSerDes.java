@@ -14,7 +14,7 @@
  *    Achim Kraus (Bosch Software Innovations GmbH) - initial implementation.
  *    Orange - keep one JSON dependency
  ******************************************************************************/
-package org.eclipse.leshan.server.californium.observation;
+package org.eclipse.leshan.transport.californium.server.observation;
 
 import java.net.InetSocketAddress;
 import java.security.KeyFactory;

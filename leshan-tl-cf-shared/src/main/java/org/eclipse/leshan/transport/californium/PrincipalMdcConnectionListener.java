@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.californium;
+package org.eclipse.leshan.transport.californium;
 
 import java.security.Principal;
 

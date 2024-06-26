@@ -22,8 +22,8 @@ const CompositeObjectView = () => import("../views/CompositeObjectView.vue");
 const ObjectView = () => import("../views/ObjectView.vue");
 
 const Security = () => import("../views/Security.vue");
-const Server = () => import("@leshan-server-core-demo/views/Server.vue");
-const About = () => import("@leshan-server-core-demo/views/About.vue");
+const Server = () => import("@leshan-demo-servers-shared/views/Server.vue");
+const About = () => import("@leshan-demo-servers-shared/views/About.vue");
 
 Vue.use(VueRouter);
 

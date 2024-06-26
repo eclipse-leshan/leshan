@@ -13,15 +13,13 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.send;
+package org.eclipse.leshan.transport.californium.server.send;
 
-import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
+import static org.eclipse.leshan.transport.californium.ResponseCodeUtil.toCoapResponseCode;
 
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.CoapExchange;
-import org.eclipse.leshan.core.californium.LwM2mCoapResource;
-import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
@@ -34,6 +32,8 @@ import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.server.profile.ClientProfile;
 import org.eclipse.leshan.server.profile.ClientProfileProvider;
 import org.eclipse.leshan.server.request.UplinkRequestReceiver;
+import org.eclipse.leshan.transport.californium.LwM2mCoapResource;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandlerProvider;
 
 /**
  * A CoAP Resource used to handle "Send" request sent by LWM2M devices.

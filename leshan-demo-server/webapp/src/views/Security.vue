@@ -67,7 +67,7 @@
       <div v-if="item.tls">
         <div
           v-if="item.tls.mode == 'psk'"
-          style="word-break:break-all;"
+          style="word-break: break-all"
           class="pa-1"
         >
           <strong>Identity:</strong>
@@ -78,7 +78,7 @@
         </div>
         <div
           v-if="item.tls.mode == 'rpk'"
-          style="word-break:break-all;"
+          style="word-break: break-all"
           class="pa-1"
         >
           <strong>Public Key:</strong>
@@ -86,7 +86,7 @@
         </div>
         <div
           v-if="item.tls.mode == 'x509'"
-          style="word-break:break-all;"
+          style="word-break: break-all"
           class="pa-1"
         >
           <strong>X509 certificate with CN equals :</strong>
@@ -121,8 +121,8 @@
   </v-data-table>
 </template>
 <script>
-import SecurityInfoDialog from "@leshan-server-core-demo/components/security/SecurityInfoDialog.vue";
-import SecurityInfoChip from "@leshan-server-core-demo/components/security/SecurityInfoChip.vue";
+import SecurityInfoDialog from "@leshan-demo-servers-shared/components/security/SecurityInfoDialog.vue";
+import SecurityInfoChip from "@leshan-demo-servers-shared/components/security/SecurityInfoChip.vue";
 
 export default {
   components: { SecurityInfoDialog, SecurityInfoChip },

@@ -51,7 +51,7 @@
 </template>
 <script>
 import securityInput from "./SecurityInput.vue";
-import OscoreInput from "@leshan-server-core-demo/components/security/OscoreInput.vue";
+import OscoreInput from "@leshan-demo-servers-shared/components/security/OscoreInput.vue";
 
 export default {
   components: { securityInput, OscoreInput },

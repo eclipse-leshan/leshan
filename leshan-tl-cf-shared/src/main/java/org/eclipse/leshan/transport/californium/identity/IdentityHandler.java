@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.californium.identity;
+package org.eclipse.leshan.transport.californium.identity;
 
 import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.elements.EndpointContext;

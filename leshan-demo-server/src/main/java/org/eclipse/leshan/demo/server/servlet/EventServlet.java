@@ -15,7 +15,7 @@
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
  *     Orange - keep one JSON dependency
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.servlet;
+package org.eclipse.leshan.demo.server.servlet;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,16 +40,15 @@ import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
+import org.eclipse.leshan.demo.server.servlet.json.JacksonLinkSerializer;
+import org.eclipse.leshan.demo.server.servlet.json.JacksonLwM2mNodeSerializer;
+import org.eclipse.leshan.demo.server.servlet.json.JacksonRegistrationSerializer;
+import org.eclipse.leshan.demo.server.servlet.json.JacksonRegistrationUpdateSerializer;
+import org.eclipse.leshan.demo.server.servlet.json.JacksonVersionSerializer;
+import org.eclipse.leshan.demo.server.servlet.log.CoapMessage;
+import org.eclipse.leshan.demo.server.servlet.log.CoapMessageListener;
+import org.eclipse.leshan.demo.server.servlet.log.CoapMessageTracer;
 import org.eclipse.leshan.server.LeshanServer;
-import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpoint;
-import org.eclipse.leshan.server.demo.servlet.json.JacksonLinkSerializer;
-import org.eclipse.leshan.server.demo.servlet.json.JacksonLwM2mNodeSerializer;
-import org.eclipse.leshan.server.demo.servlet.json.JacksonRegistrationSerializer;
-import org.eclipse.leshan.server.demo.servlet.json.JacksonRegistrationUpdateSerializer;
-import org.eclipse.leshan.server.demo.servlet.json.JacksonVersionSerializer;
-import org.eclipse.leshan.server.demo.servlet.log.CoapMessage;
-import org.eclipse.leshan.server.demo.servlet.log.CoapMessageListener;
-import org.eclipse.leshan.server.demo.servlet.log.CoapMessageTracer;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
 import org.eclipse.leshan.server.observation.ObservationListener;
 import org.eclipse.leshan.server.queue.PresenceListener;
@@ -57,6 +56,7 @@ import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationListener;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
 import org.eclipse.leshan.server.send.SendListener;
+import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServerEndpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -37,7 +37,6 @@ import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.leshan.client.LeshanClient;
 import org.eclipse.leshan.client.bootstrap.BootstrapConsistencyChecker;
-import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpoint;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpoint;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
@@ -54,6 +53,7 @@ import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
+import org.eclipse.leshan.transport.californium.client.endpoint.CaliforniumClientEndpoint;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 

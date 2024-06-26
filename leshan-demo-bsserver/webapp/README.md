@@ -1,4 +1,4 @@
 # webapp
 
-The **leshan-bsserver-demo** webapp is based on [Vue.js](https://vuejs.org/).  
-For more details you should refer to **leshan-server-demo** [README](https://github.com/eclipse/leshan/tree/master/leshan-server-demo/webapp/README.md). 
+The **leshan-demo-bsserver** webapp is based on [Vue.js](https://vuejs.org/).  
+For more details you should refer to **leshan-demo-server** [README](https://github.com/eclipse/leshan/tree/master/leshan-demo-server/webapp/README.md). 

@@ -13,9 +13,9 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.endpoint;
+package org.eclipse.leshan.transport.californium.server.endpoint;
 
-import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toLwM2mResponseCode;
+import static org.eclipse.leshan.transport.californium.ResponseCodeUtil.toLwM2mResponseCode;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,8 +24,6 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.core.ResponseCode;
-import org.eclipse.leshan.core.californium.identity.IdentityHandler;
-import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.CodecException;
@@ -40,13 +38,15 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.util.Hex;
-import org.eclipse.leshan.server.californium.registration.RegisterResource;
-import org.eclipse.leshan.server.californium.request.CoapRequestBuilder;
-import org.eclipse.leshan.server.californium.request.LwM2mResponseBuilder;
-import org.eclipse.leshan.server.californium.send.SendResource;
 import org.eclipse.leshan.server.endpoint.ServerEndpointToolbox;
 import org.eclipse.leshan.server.profile.ClientProfile;
 import org.eclipse.leshan.server.request.UplinkRequestReceiver;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandlerProvider;
+import org.eclipse.leshan.transport.californium.server.registration.RegisterResource;
+import org.eclipse.leshan.transport.californium.server.request.CoapRequestBuilder;
+import org.eclipse.leshan.transport.californium.server.request.LwM2mResponseBuilder;
+import org.eclipse.leshan.transport.californium.server.send.SendResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -30,37 +30,37 @@ Contributors:
   <dependencies>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-core</artifactId>
+      <artifactId>leshan-lwm2m-core</artifactId>
       <version>${project.version}</version>
       <type>test-jar</type>
     </dependency>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-server-cf</artifactId>
+      <artifactId>leshan-tl-cf-server-coap</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-tl-javacoap-server</artifactId>
+      <artifactId>leshan-tl-jc-server-coap</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-tl-javacoap-server-coaptcp</artifactId>
+      <artifactId>leshan-tl-jc-server-coaptcp</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-server-redis</artifactId>
+      <artifactId>leshan-lwm2m-server-redis</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-client-cf</artifactId>
+      <artifactId>leshan-tl-cf-client-coap</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-tl-javacoap-client</artifactId>
+      <artifactId>leshan-tl-jc-client-coap</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-tl-javacoap-client-coaptcp</artifactId>
+      <artifactId>leshan-tl-jc-client-coaptcp</artifactId>
     </dependency>
 
     <!-- test dependencies -->

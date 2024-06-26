@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.observation;
+package org.eclipse.leshan.transport.californium.server.observation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

@@ -13,9 +13,9 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.demo.cli;
+package org.eclipse.leshan.demo.cli;
 
-import org.eclipse.leshan.core.demo.LeshanProperties;
+import org.eclipse.leshan.demo.LeshanProperties;
 
 import picocli.CommandLine.IVersionProvider;
 

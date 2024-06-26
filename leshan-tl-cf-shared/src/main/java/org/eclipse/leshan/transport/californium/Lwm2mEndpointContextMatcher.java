@@ -13,7 +13,7 @@
  * Contributors:
  *    Bosch Software Innovations GmbH - initial implementation
  ******************************************************************************/
-package org.eclipse.leshan.core.californium;
+package org.eclipse.leshan.transport.californium;
 
 import java.security.Principal;
 

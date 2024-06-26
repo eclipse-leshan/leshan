@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.californium.endpoint.coaps;
+package org.eclipse.leshan.transport.californium.client.endpoint.coaps;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -55,18 +55,11 @@ import org.eclipse.californium.scandium.dtls.pskstore.AdvancedSinglePskStore;
 import org.eclipse.californium.scandium.dtls.x509.NewAdvancedCertificateVerifier;
 import org.eclipse.californium.scandium.dtls.x509.SingleCertificateProvider;
 import org.eclipse.californium.scandium.dtls.x509.StaticNewAdvancedCertificateVerifier;
-import org.eclipse.leshan.client.californium.CaliforniumConnectionController;
-import org.eclipse.leshan.client.californium.endpoint.coap.CoapClientEndpointFactory;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.security.CertificateVerifierFactory;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.SecurityMode;
-import org.eclipse.leshan.core.californium.DefaultExceptionTranslator;
-import org.eclipse.leshan.core.californium.ExceptionTranslator;
-import org.eclipse.leshan.core.californium.Lwm2mEndpointContextMatcher;
-import org.eclipse.leshan.core.californium.identity.IdentityHandler;
-import org.eclipse.leshan.core.californium.security.LwM2mCertificateVerifier;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.peer.IpPeer;
@@ -78,6 +71,13 @@ import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.request.exception.TimeoutException.Type;
 import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 import org.eclipse.leshan.core.security.certificate.verifier.X509CertificateVerifier;
+import org.eclipse.leshan.transport.californium.DefaultExceptionTranslator;
+import org.eclipse.leshan.transport.californium.ExceptionTranslator;
+import org.eclipse.leshan.transport.californium.Lwm2mEndpointContextMatcher;
+import org.eclipse.leshan.transport.californium.client.CaliforniumConnectionController;
+import org.eclipse.leshan.transport.californium.client.endpoint.coap.CoapClientEndpointFactory;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
+import org.eclipse.leshan.transport.californium.security.LwM2mCertificateVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

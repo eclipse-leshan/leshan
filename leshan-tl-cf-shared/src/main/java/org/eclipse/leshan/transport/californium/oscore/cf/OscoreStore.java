@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.californium.oscore.cf;
+package org.eclipse.leshan.transport.californium.oscore.cf;
 
 /**
  * A store holding OSCORE pre-established inputs which will be used to derive security context.

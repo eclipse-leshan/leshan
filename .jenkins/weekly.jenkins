@@ -44,8 +44,8 @@ pipeline {
         // Ideally we would like to use a specific integrated tools like : https://github.com/CycloneDX/cyclonedx-node-yarn
         // But project is not really active and is searching for contributor : https://github.com/CycloneDX/cyclonedx-node-yarn/issues/12
         // OR maybe we should move from Yarn To NPM : https://github.com/eclipse-leshan/leshan/issues/1550#issuecomment-1878802371
-        sh ''' trivy fs leshan-server-demo/webapp --format cyclonedx --output leshan-server-demo/target/bom-frontend.json  --include-dev-deps '''
-        sh ''' trivy fs leshan-bsserver-demo/webapp --format cyclonedx --output leshan-bsserver-demo/target/bom-frontend.json  --include-dev-deps '''
+        sh ''' trivy fs leshan-demo-server/webapp --format cyclonedx --output leshan-demo-server/target/bom-frontend.json  --include-dev-deps '''
+        sh ''' trivy fs leshan-demo-bsserver/webapp --format cyclonedx --output leshan-demo-bsserver/target/bom-frontend.json  --include-dev-deps '''
         
         // check for vulnerabilities
         // "find" to search file

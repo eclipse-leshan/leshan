@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.californium.endpoint;
+package org.eclipse.leshan.transport.californium.client.endpoint;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -36,7 +36,6 @@ import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
-import org.eclipse.leshan.client.californium.endpoint.coap.CoapClientProtocolProvider;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpoint;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
@@ -46,8 +45,6 @@ import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.SecurityMode;
-import org.eclipse.leshan.core.californium.identity.IdentityHandler;
-import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.OscoreIdentity;
@@ -55,6 +52,9 @@ import org.eclipse.leshan.core.peer.PskIdentity;
 import org.eclipse.leshan.core.peer.RpkIdentity;
 import org.eclipse.leshan.core.peer.X509Identity;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
+import org.eclipse.leshan.transport.californium.client.endpoint.coap.CoapClientProtocolProvider;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandlerProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -12,9 +12,9 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.core.demo.cli.converters;
+package org.eclipse.leshan.demo.servers.cli.converters;
 
-import org.eclipse.leshan.core.demo.cli.converters.CIDConverter;
+import org.eclipse.leshan.demo.cli.converters.CIDConverter;
 
 public class ServerCIDConverter extends CIDConverter {
     public ServerCIDConverter() {

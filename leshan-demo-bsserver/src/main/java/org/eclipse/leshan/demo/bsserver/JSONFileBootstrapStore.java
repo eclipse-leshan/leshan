@@ -15,7 +15,7 @@
  *     Achim Kraus (Bosch Software Innovations GmbH) - add json as storage format
  *     Orange - keep one JSON dependency
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap.demo;
+package org.eclipse.leshan.demo.bsserver;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,13 +29,13 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.eclipse.leshan.core.util.Validate;
+import org.eclipse.leshan.demo.bsserver.json.ByteArraySerializer;
+import org.eclipse.leshan.demo.bsserver.json.EnumSetDeserializer;
+import org.eclipse.leshan.demo.bsserver.json.EnumSetSerializer;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.EditableBootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.InMemoryBootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.InvalidConfigurationException;
-import org.eclipse.leshan.server.bootstrap.demo.json.ByteArraySerializer;
-import org.eclipse.leshan.server.bootstrap.demo.json.EnumSetDeserializer;
-import org.eclipse.leshan.server.bootstrap.demo.json.EnumSetSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -30,8 +30,6 @@ import org.eclipse.californium.elements.RawData;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
-import org.eclipse.leshan.client.californium.request.CoapRequestBuilder;
-import org.eclipse.leshan.core.californium.identity.DefaultCoapIdentityHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.DefaultLinkSerializer;
 import org.eclipse.leshan.core.link.LinkSerializer;
@@ -45,6 +43,8 @@ import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.integration.tests.util.cf.LockstepEndpoint;
+import org.eclipse.leshan.transport.californium.client.request.CoapRequestBuilder;
+import org.eclipse.leshan.transport.californium.identity.DefaultCoapIdentityHandler;
 
 public class LockStepLwM2mClient extends LockstepEndpoint {
 

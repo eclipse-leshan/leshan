@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.californium.identity;
+package org.eclipse.leshan.transport.californium.identity;
 
 import java.net.InetSocketAddress;
 import java.security.Principal;

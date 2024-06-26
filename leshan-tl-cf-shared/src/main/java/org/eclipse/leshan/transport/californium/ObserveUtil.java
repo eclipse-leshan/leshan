@@ -15,7 +15,7 @@
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
  *     Michał Wadowski (Orange) - Add Cancel Composite-Observation feature.
  *******************************************************************************/
-package org.eclipse.leshan.core.californium;
+package org.eclipse.leshan.transport.californium;
 
 import java.util.ArrayList;
 import java.util.Collections;

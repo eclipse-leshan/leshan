@@ -13,9 +13,9 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.core.demo.cli;
+package org.eclipse.leshan.demo.servers.cli;
 
-import org.eclipse.leshan.server.core.demo.cli.converters.ServerCIDConverter;
+import org.eclipse.leshan.demo.servers.cli.converters.ServerCIDConverter;
 
 import picocli.CommandLine.Option;
 

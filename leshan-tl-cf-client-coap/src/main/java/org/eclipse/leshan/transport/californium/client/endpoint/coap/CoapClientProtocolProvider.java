@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.californium.endpoint.coap;
+package org.eclipse.leshan.transport.californium.client.endpoint.coap;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,9 +24,9 @@ import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
 import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
-import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpointFactory;
-import org.eclipse.leshan.client.californium.endpoint.ClientProtocolProvider;
 import org.eclipse.leshan.core.endpoint.Protocol;
+import org.eclipse.leshan.transport.californium.client.endpoint.CaliforniumClientEndpointFactory;
+import org.eclipse.leshan.transport.californium.client.endpoint.ClientProtocolProvider;
 
 public class CoapClientProtocolProvider implements ClientProtocolProvider {
 

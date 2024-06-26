@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.californium.endpoint;
+package org.eclipse.leshan.transport.californium.client.endpoint;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,12 +23,6 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.Resource;
-import org.eclipse.leshan.client.californium.ObserveCompositeRelationFilter;
-import org.eclipse.leshan.client.californium.RootResource;
-import org.eclipse.leshan.client.californium.bootstrap.BootstrapResource;
-import org.eclipse.leshan.client.californium.object.ObjectResource;
-import org.eclipse.leshan.client.californium.request.CoapRequestBuilder;
-import org.eclipse.leshan.client.californium.request.LwM2mResponseBuilder;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.notification.NotificationManager;
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
@@ -37,14 +31,20 @@ import org.eclipse.leshan.client.resource.LwM2mObjectTree;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.servers.LwM2mServer;
-import org.eclipse.leshan.core.californium.identity.IdentityHandler;
-import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.transport.californium.client.ObserveCompositeRelationFilter;
+import org.eclipse.leshan.transport.californium.client.RootResource;
+import org.eclipse.leshan.transport.californium.client.bootstrap.BootstrapResource;
+import org.eclipse.leshan.transport.californium.client.object.ObjectResource;
+import org.eclipse.leshan.transport.californium.client.request.CoapRequestBuilder;
+import org.eclipse.leshan.transport.californium.client.request.LwM2mResponseBuilder;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandlerProvider;
 
 public class ClientCoapMessageTranslator {
 

@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.demo.cli;
+package org.eclipse.leshan.demo.client.cli;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -24,11 +24,11 @@ import java.util.List;
 
 import org.eclipse.californium.elements.util.Bytes;
 import org.eclipse.leshan.core.CertificateUsage;
-import org.eclipse.leshan.core.demo.cli.converters.HexadecimalConverter;
-import org.eclipse.leshan.core.demo.cli.converters.PrivateKeyConverter;
-import org.eclipse.leshan.core.demo.cli.converters.PublicKeyConverter;
-import org.eclipse.leshan.core.demo.cli.converters.TruststoreConverter;
-import org.eclipse.leshan.core.demo.cli.converters.X509CertificateConverter;
+import org.eclipse.leshan.demo.cli.converters.HexadecimalConverter;
+import org.eclipse.leshan.demo.cli.converters.PrivateKeyConverter;
+import org.eclipse.leshan.demo.cli.converters.PublicKeyConverter;
+import org.eclipse.leshan.demo.cli.converters.TruststoreConverter;
+import org.eclipse.leshan.demo.cli.converters.X509CertificateConverter;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.ITypeConverter;

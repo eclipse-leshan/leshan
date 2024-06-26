@@ -13,7 +13,7 @@
  * Contributors:
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
  *******************************************************************************/
-package org.eclipse.leshan.client.californium;
+package org.eclipse.leshan.transport.californium.client;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,8 +22,8 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.observe.ObserveRelation;
 import org.eclipse.californium.core.observe.ObserveRelationFilter;
-import org.eclipse.leshan.core.californium.ObserveUtil;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.transport.californium.ObserveUtil;
 
 /**
  * An {@link ObserveRelationFilter} which select {@link ObserveRelation} based on one of resource URIs.

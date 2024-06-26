@@ -88,28 +88,37 @@ Contributors:
                     <matcher>java-package</matcher>
                     <match>/org\.eclipse\.californium(\..*)?/</match>
                   </item>
-                </exclude>
-                <exclude>
                   <item>
                     <!-- HACK : we exclide slf4j because of revapi bug. 
-                         See : https://github.com/revapi/revapi/issues/186
+                         See : https://github.com/revapi/revapi/issues/276
                          This should be removed once it will be fixed in revapi. -->
                     <matcher>java-package</matcher>
                     <match>/org\.slf4j(\..*)?/</match>
                   </item>
                   <item>
-                    <!-- HACK : we exclude com.mbed because of revapi bug. 
-                         See : https://github.com/revapi/revapi/issues/186
-                         This should be removed once it will be fixed in revapi. -->
+                    <!-- TODO we should double check all this exclude API check -->
                     <matcher>java-package</matcher>
                     <match>/com\.mbed\.coap(\..*)?/</match>
                   </item>
                   <item>
-                    <!-- HACK : we exclude com.mbed because of revapi bug. 
-                         See : https://github.com/revapi/revapi/issues/186
-                         This should be removed once it will be fixed in revapi. -->
                     <matcher>java-package</matcher>
                     <match>/io\.netty(\..*)?/</match>
+                  </item>
+                  <item>
+                    <matcher>java-package</matcher>
+                    <match>/com\.upokecenter(\..*)?/</match>
+                  </item>
+                  <item>
+                    <matcher>java-package</matcher>
+                    <match>/com\.fasterxml\.jackson(\..*)?/</match>
+                  </item>
+                  <item>
+                    <matcher>java-package</matcher>
+                    <match>/redis\.clients\.jedis(\..*)?/</match>
+                  </item>
+                  <item>
+                    <matcher>java-package</matcher>
+                    <match>/org\.eclipse\.californium(\..*)?/</match>
                   </item>
                 </exclude>
               </elements>

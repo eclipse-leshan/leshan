@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.endpoint.coap;
+package org.eclipse.leshan.transport.californium.server.endpoint.coap;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -33,18 +33,18 @@ import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
 import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
-import org.eclipse.leshan.core.californium.DefaultExceptionTranslator;
-import org.eclipse.leshan.core.californium.ExceptionTranslator;
-import org.eclipse.leshan.core.californium.identity.DefaultCoapIdentityHandler;
-import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.server.LeshanServer;
-import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointFactory;
-import org.eclipse.leshan.server.californium.observation.LwM2mObservationStore;
-import org.eclipse.leshan.server.californium.observation.ObservationSerDes;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.security.ServerSecurityInfo;
+import org.eclipse.leshan.transport.californium.DefaultExceptionTranslator;
+import org.eclipse.leshan.transport.californium.ExceptionTranslator;
+import org.eclipse.leshan.transport.californium.identity.DefaultCoapIdentityHandler;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
+import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServerEndpointFactory;
+import org.eclipse.leshan.transport.californium.server.observation.LwM2mObservationStore;
+import org.eclipse.leshan.transport.californium.server.observation.ObservationSerDes;
 
 public class CoapServerEndpointFactory implements CaliforniumServerEndpointFactory {
 

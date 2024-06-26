@@ -19,9 +19,9 @@
  *     Michał Wadowski (Orange)                      - Add Observe-Composite feature.
  *     Michał Wadowski (Orange)                      - Improved compliance with rfc6690.
  *******************************************************************************/
-package org.eclipse.leshan.client.californium.object;
+package org.eclipse.leshan.transport.californium.client.object;
 
-import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
+import static org.eclipse.leshan.transport.californium.ResponseCodeUtil.toCoapResponseCode;
 
 import java.util.List;
 
@@ -33,8 +33,6 @@ import org.eclipse.californium.core.observe.ObserveRelation;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.core.server.resources.ResourceObserverAdapter;
-import org.eclipse.leshan.client.californium.LwM2mClientCoapResource;
-import org.eclipse.leshan.client.californium.endpoint.ServerIdentityExtractor;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.notification.NotificationManager;
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
@@ -42,7 +40,6 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.NotificationSender;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.servers.LwM2mServer;
-import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.eclipse.leshan.core.link.lwm2m.attributes.InvalidAttributesException;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
@@ -81,6 +78,9 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.eclipse.leshan.transport.californium.client.LwM2mClientCoapResource;
+import org.eclipse.leshan.transport.californium.client.endpoint.ServerIdentityExtractor;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandlerProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

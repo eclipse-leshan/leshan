@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.observation;
+package org.eclipse.leshan.transport.californium.server.observation;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -23,10 +23,10 @@ import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.observe.Observation;
 import org.eclipse.californium.core.observe.ObservationStore;
 import org.eclipse.californium.elements.EndpointContext;
-import org.eclipse.leshan.core.californium.ObserveUtil;
 import org.eclipse.leshan.core.observation.ObservationIdentifier;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.registration.RegistrationStore;
+import org.eclipse.leshan.transport.californium.ObserveUtil;
 
 public class LwM2mObservationStore implements ObservationStore {
 

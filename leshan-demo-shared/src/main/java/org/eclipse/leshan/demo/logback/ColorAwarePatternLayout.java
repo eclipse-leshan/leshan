@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.demo.logback;
+package org.eclipse.leshan.demo.logback;
 
 import ch.qos.logback.classic.PatternLayout;
 import picocli.CommandLine.Help.Ansi;

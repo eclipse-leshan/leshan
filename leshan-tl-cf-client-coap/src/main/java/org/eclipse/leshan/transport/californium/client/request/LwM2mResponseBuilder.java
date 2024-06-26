@@ -13,9 +13,9 @@
  * Contributors:
  *     Zebra Technologies - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.californium.request;
+package org.eclipse.leshan.transport.californium.client.request;
 
-import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toLwM2mResponseCode;
+import static org.eclipse.leshan.transport.californium.ResponseCodeUtil.toLwM2mResponseCode;
 
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.request.BootstrapRequest;

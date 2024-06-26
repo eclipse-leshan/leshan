@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.demo;
+package org.eclipse.leshan.demo;
 
 import java.io.IOException;
 import java.io.InputStream;

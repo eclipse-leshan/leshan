@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.californium.endpoint;
+package org.eclipse.leshan.transport.californium.client.endpoint;
 
 import java.net.InetAddress;
 import java.security.cert.Certificate;
@@ -21,12 +21,12 @@ import java.util.List;
 
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.elements.config.Configuration;
-import org.eclipse.leshan.client.californium.CaliforniumConnectionController;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.servers.ServerInfo;
-import org.eclipse.leshan.core.californium.ExceptionTranslator;
-import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.endpoint.Protocol;
+import org.eclipse.leshan.transport.californium.ExceptionTranslator;
+import org.eclipse.leshan.transport.californium.client.CaliforniumConnectionController;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
 
 public interface CaliforniumClientEndpointFactory {
 

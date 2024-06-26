@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.endpoint;
+package org.eclipse.leshan.transport.californium.server.endpoint;
 
 import java.net.URI;
 import java.util.SortedMap;
@@ -28,10 +28,6 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.network.CoapEndpoint;
-import org.eclipse.leshan.core.californium.AsyncRequestObserver;
-import org.eclipse.leshan.core.californium.ExceptionTranslator;
-import org.eclipse.leshan.core.californium.SyncRequestObserver;
-import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.DownlinkRequest;
@@ -46,6 +42,10 @@ import org.eclipse.leshan.server.endpoint.ServerEndpointToolbox;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.profile.ClientProfile;
 import org.eclipse.leshan.server.request.LowerLayerConfig;
+import org.eclipse.leshan.transport.californium.AsyncRequestObserver;
+import org.eclipse.leshan.transport.californium.ExceptionTranslator;
+import org.eclipse.leshan.transport.californium.SyncRequestObserver;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
 
 public class CaliforniumServerEndpoint implements LwM2mServerEndpoint {
 

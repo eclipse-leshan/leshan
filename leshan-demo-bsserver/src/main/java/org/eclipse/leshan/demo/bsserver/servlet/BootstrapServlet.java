@@ -15,7 +15,7 @@
  *     Orange - keep one JSON dependency
  *******************************************************************************/
 
-package org.eclipse.leshan.server.bootstrap.demo.servlet;
+package org.eclipse.leshan.demo.bsserver.servlet;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,12 +28,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.leshan.demo.bsserver.json.ByteArraySerializer;
+import org.eclipse.leshan.demo.bsserver.json.EnumSetDeserializer;
+import org.eclipse.leshan.demo.bsserver.json.EnumSetSerializer;
 import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
 import org.eclipse.leshan.server.bootstrap.EditableBootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.InvalidConfigurationException;
-import org.eclipse.leshan.server.bootstrap.demo.json.ByteArraySerializer;
-import org.eclipse.leshan.server.bootstrap.demo.json.EnumSetDeserializer;
-import org.eclipse.leshan.server.bootstrap.demo.json.EnumSetSerializer;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParseException;

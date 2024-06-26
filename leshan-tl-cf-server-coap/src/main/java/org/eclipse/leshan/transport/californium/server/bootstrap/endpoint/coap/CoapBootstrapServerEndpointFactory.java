@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.bootstrap.endpoint.coap;
+package org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.coap;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -31,15 +31,15 @@ import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
 import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
-import org.eclipse.leshan.core.californium.DefaultExceptionTranslator;
-import org.eclipse.leshan.core.californium.ExceptionTranslator;
-import org.eclipse.leshan.core.californium.identity.DefaultCoapIdentityHandler;
-import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
-import org.eclipse.leshan.server.californium.bootstrap.endpoint.CaliforniumBootstrapServerEndpointFactory;
 import org.eclipse.leshan.server.security.ServerSecurityInfo;
+import org.eclipse.leshan.transport.californium.DefaultExceptionTranslator;
+import org.eclipse.leshan.transport.californium.ExceptionTranslator;
+import org.eclipse.leshan.transport.californium.identity.DefaultCoapIdentityHandler;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
+import org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.CaliforniumBootstrapServerEndpointFactory;
 
 public class CoapBootstrapServerEndpointFactory implements CaliforniumBootstrapServerEndpointFactory {
 

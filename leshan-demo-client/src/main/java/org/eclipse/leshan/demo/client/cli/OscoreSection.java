@@ -13,19 +13,19 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.demo.cli;
+package org.eclipse.leshan.demo.client.cli;
 
 import java.util.Arrays;
 
 import org.eclipse.californium.elements.util.Bytes;
-import org.eclipse.leshan.core.demo.cli.MultiParameterException;
-import org.eclipse.leshan.core.demo.cli.converters.HexadecimalConverter;
 import org.eclipse.leshan.core.oscore.AeadAlgorithm;
 import org.eclipse.leshan.core.oscore.HkdfAlgorithm;
 import org.eclipse.leshan.core.oscore.InvalidOscoreSettingException;
 import org.eclipse.leshan.core.oscore.OscoreSetting;
 import org.eclipse.leshan.core.oscore.OscoreValidator;
 import org.eclipse.leshan.core.util.StringUtils;
+import org.eclipse.leshan.demo.cli.MultiParameterException;
+import org.eclipse.leshan.demo.cli.converters.HexadecimalConverter;
 
 import picocli.CommandLine;
 import picocli.CommandLine.ITypeConverter;

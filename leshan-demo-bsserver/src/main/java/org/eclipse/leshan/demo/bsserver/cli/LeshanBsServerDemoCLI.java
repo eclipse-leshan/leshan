@@ -13,14 +13,14 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap.demo.cli;
+package org.eclipse.leshan.demo.bsserver.cli;
 
-import org.eclipse.leshan.core.demo.cli.StandardHelpOptions;
-import org.eclipse.leshan.core.demo.cli.VersionProvider;
-import org.eclipse.leshan.server.bootstrap.demo.JSONFileBootstrapStore;
-import org.eclipse.leshan.server.core.demo.cli.DtlsSection;
-import org.eclipse.leshan.server.core.demo.cli.GeneralSection;
-import org.eclipse.leshan.server.core.demo.cli.IdentitySection;
+import org.eclipse.leshan.demo.bsserver.JSONFileBootstrapStore;
+import org.eclipse.leshan.demo.cli.StandardHelpOptions;
+import org.eclipse.leshan.demo.cli.VersionProvider;
+import org.eclipse.leshan.demo.servers.cli.DtlsSection;
+import org.eclipse.leshan.demo.servers.cli.GeneralSection;
+import org.eclipse.leshan.demo.servers.cli.IdentitySection;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -32,7 +32,7 @@ import picocli.CommandLine.Spec;
 /**
  * This is the class defining the Command Line Interface of Leshan Server Demo.
  */
-@Command(name = "leshan-bsserver-demo",
+@Command(name = "leshan-demo-bsserver",
          sortOptions = false,
          description = "%n"//
                  + "@|italic " //

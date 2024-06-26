@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Orange - keep one JSON dependency
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.model;
+package org.eclipse.leshan.demo.server.model;
 
 import java.util.ArrayList;
 import java.util.List;

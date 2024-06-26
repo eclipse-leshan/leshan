@@ -18,13 +18,12 @@
  *     Michał Wadowski (Orange)                      - Add Observe-Composite feature.
  *     Michał Wadowski (Orange)                      - Add Cancel Composite-Observation feature.
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.bootstrap.request;
+package org.eclipse.leshan.transport.californium.server.bootstrap.request;
 
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.util.Bytes;
-import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
@@ -51,6 +50,7 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteCompositeRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
 
 /**
  * This class is able to create CoAP request from LWM2M {@link DownlinkRequest}.

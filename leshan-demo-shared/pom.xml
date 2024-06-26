@@ -25,14 +25,14 @@ Contributors:
     <version>2.0.0-SNAPSHOT</version>
     <relativePath>../build-config/demo-build-config/pom.xml</relativePath>
   </parent>
-  <artifactId>leshan-core-demo</artifactId>
-  <name>leshan - core demo</name>
+  <artifactId>leshan-demo-shared</artifactId>
+  <name>leshan - demo - shared</name>
   <description>Shared classes between server, bsserver and client demo</description>
 
   <dependencies>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-core</artifactId>
+      <artifactId>leshan-lwm2m-core</artifactId>
     </dependency>
     <dependency>
       <groupId>info.picocli</groupId>

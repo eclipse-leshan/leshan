@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium;
+package org.eclipse.leshan.transport.californium.server;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -29,10 +29,10 @@ import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.LeshanServerBuilder;
-import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointsProvider;
-import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointsProvider.Builder;
 import org.eclipse.leshan.server.queue.PresenceServiceImpl;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServerEndpointsProvider;
+import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServerEndpointsProvider.Builder;
 import org.junit.jupiter.api.Test;
 
 public class LeshanServerTest {

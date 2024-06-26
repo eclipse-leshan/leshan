@@ -13,15 +13,15 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.bootstrap.endpoint.coap;
+package org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.coap;
 
 import java.util.List;
 
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
 import org.eclipse.leshan.core.endpoint.Protocol;
-import org.eclipse.leshan.server.californium.endpoint.AbstractEndpointFactoryBuilder;
-import org.eclipse.leshan.server.californium.endpoint.coap.CoapServerEndpointFactory;
+import org.eclipse.leshan.transport.californium.server.endpoint.AbstractEndpointFactoryBuilder;
+import org.eclipse.leshan.transport.californium.server.endpoint.coap.CoapServerEndpointFactory;
 
 public class CoapBootstrapServerEndpointFactoryBuilder extends
         AbstractEndpointFactoryBuilder<CoapBootstrapServerEndpointFactoryBuilder, CoapBootstrapServerEndpointFactory> {

@@ -15,7 +15,7 @@
  *     Achim Kraus (Bosch Software Innovations GmbH) - set exception in onSendError
  *     Simon Bernard                                 - use specific exception for onSendError
  *******************************************************************************/
-package org.eclipse.leshan.core.californium;
+package org.eclipse.leshan.transport.californium;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;

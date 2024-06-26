@@ -33,7 +33,7 @@
   </v-card>
 </template>
 <script>
-import SecurityInfoInput from "@leshan-server-core-demo/components/security/SecurityInfoInput.vue";
+import SecurityInfoInput from "@leshan-demo-servers-shared/components/security/SecurityInfoInput.vue";
 export default {
   components: { SecurityInfoInput },
   props: {

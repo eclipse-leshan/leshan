@@ -13,9 +13,9 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.californium.endpoint.coap;
+package org.eclipse.leshan.transport.californium.client.endpoint.coap;
 
-import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpointFactory;
+import org.eclipse.leshan.transport.californium.client.endpoint.CaliforniumClientEndpointFactory;
 
 public class CoapOscoreProtocolProvider extends CoapClientProtocolProvider {
 

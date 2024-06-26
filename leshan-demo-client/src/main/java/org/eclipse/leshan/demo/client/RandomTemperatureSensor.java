@@ -12,7 +12,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.demo;
+package org.eclipse.leshan.demo.client;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

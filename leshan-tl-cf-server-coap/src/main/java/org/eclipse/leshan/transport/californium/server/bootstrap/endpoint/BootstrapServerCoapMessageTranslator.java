@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.bootstrap.endpoint;
+package org.eclipse.leshan.transport.californium.server.bootstrap.endpoint;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,16 +21,16 @@ import java.util.List;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.Resource;
-import org.eclipse.leshan.core.californium.identity.IdentityHandler;
-import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 import org.eclipse.leshan.server.bootstrap.endpoint.BootstrapServerEndpointToolbox;
 import org.eclipse.leshan.server.bootstrap.request.BootstrapUplinkRequestReceiver;
-import org.eclipse.leshan.server.californium.bootstrap.BootstrapResource;
-import org.eclipse.leshan.server.californium.bootstrap.request.CoapRequestBuilder;
-import org.eclipse.leshan.server.californium.bootstrap.request.LwM2mResponseBuilder;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandlerProvider;
+import org.eclipse.leshan.transport.californium.server.bootstrap.BootstrapResource;
+import org.eclipse.leshan.transport.californium.server.bootstrap.request.CoapRequestBuilder;
+import org.eclipse.leshan.transport.californium.server.bootstrap.request.LwM2mResponseBuilder;
 
 public class BootstrapServerCoapMessageTranslator {
 

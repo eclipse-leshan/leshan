@@ -16,7 +16,7 @@
  *                                                     configuration filename
  *******************************************************************************/
 
-package org.eclipse.leshan.server.bootstrap.demo;
+package org.eclipse.leshan.demo.bsserver;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -31,28 +31,28 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.leshan.core.californium.PrincipalMdcConnectionListener;
-import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.demo.bsserver.cli.LeshanBsServerDemoCLI;
+import org.eclipse.leshan.demo.bsserver.servlet.BootstrapServlet;
+import org.eclipse.leshan.demo.bsserver.servlet.EventServlet;
+import org.eclipse.leshan.demo.bsserver.servlet.ServerServlet;
+import org.eclipse.leshan.demo.cli.ShortErrorMessageHandler;
+import org.eclipse.leshan.demo.servers.json.servlet.SecurityServlet;
 import org.eclipse.leshan.server.bootstrap.EditableBootstrapConfigStore;
 import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
 import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServerBuilder;
-import org.eclipse.leshan.server.bootstrap.demo.cli.LeshanBsServerDemoCLI;
-import org.eclipse.leshan.server.bootstrap.demo.servlet.BootstrapServlet;
-import org.eclipse.leshan.server.bootstrap.demo.servlet.EventServlet;
-import org.eclipse.leshan.server.bootstrap.demo.servlet.ServerServlet;
-import org.eclipse.leshan.server.californium.bootstrap.endpoint.CaliforniumBootstrapServerEndpointsProvider;
-import org.eclipse.leshan.server.californium.bootstrap.endpoint.coap.CoapBootstrapServerProtocolProvider;
-import org.eclipse.leshan.server.californium.bootstrap.endpoint.coap.CoapOscoreBootstrapServerEndpointFactory;
-import org.eclipse.leshan.server.californium.bootstrap.endpoint.coaps.CoapsBootstrapServerProtocolProvider;
-import org.eclipse.leshan.server.core.demo.json.servlet.SecurityServlet;
 import org.eclipse.leshan.server.model.VersionedBootstrapModelProvider;
 import org.eclipse.leshan.server.security.BootstrapSecurityStoreAdapter;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.FileSecurityStore;
+import org.eclipse.leshan.transport.californium.PrincipalMdcConnectionListener;
+import org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.CaliforniumBootstrapServerEndpointsProvider;
+import org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.coap.CoapBootstrapServerProtocolProvider;
+import org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.coap.CoapOscoreBootstrapServerEndpointFactory;
+import org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.coaps.CoapsBootstrapServerProtocolProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

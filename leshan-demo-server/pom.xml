@@ -24,8 +24,8 @@ Contributors:
     <version>2.0.0-SNAPSHOT</version>
     <relativePath>../build-config/demo-build-config/pom.xml</relativePath>
   </parent>
-  <artifactId>leshan-server-demo</artifactId>
-  <name>leshan - server demo</name>
+  <artifactId>leshan-demo-server</artifactId>
+  <name>leshan - demo - server</name>
   <description>A LWM2M demonstration server running an embedded Jetty server</description>
 
   <dependencies>
@@ -35,27 +35,27 @@ Contributors:
     </dependency>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-server-cf</artifactId>
+      <artifactId>leshan-tl-cf-server-coap</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-core-demo</artifactId>
+      <artifactId>leshan-demo-shared</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-server-core-demo</artifactId>
+      <artifactId>leshan-demo-servers-shared</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-server-redis</artifactId>
+      <artifactId>leshan-lwm2m-server-redis</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-tl-javacoap-server</artifactId>
+      <artifactId>leshan-tl-jc-server-coap</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-tl-javacoap-server-coaptcp</artifactId>
+      <artifactId>leshan-tl-jc-server-coaptcp</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.californium</groupId>
@@ -93,7 +93,7 @@ Contributors:
         <configuration>
           <archive>
             <manifest>
-              <mainClass>org.eclipse.leshan.server.demo.LeshanServerDemo</mainClass>
+              <mainClass>org.eclipse.leshan.demo.server.LeshanServerDemo</mainClass>
             </manifest>
           </archive>
           <descriptors>

@@ -39,13 +39,6 @@ import org.eclipse.leshan.integration.tests.util.cf.CertPair;
 import org.eclipse.leshan.integration.tests.util.cf.MapBasedCertificateProvider;
 import org.eclipse.leshan.integration.tests.util.cf.MapBasedRawPublicKeyProvider;
 import org.eclipse.leshan.server.LeshanServerBuilder;
-import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointFactory;
-import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointsProvider;
-import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointsProvider.Builder;
-import org.eclipse.leshan.server.californium.endpoint.ServerProtocolProvider;
-import org.eclipse.leshan.server.californium.endpoint.coap.CoapOscoreServerEndpointFactory;
-import org.eclipse.leshan.server.californium.endpoint.coap.CoapServerProtocolProvider;
-import org.eclipse.leshan.server.californium.endpoint.coaps.CoapsServerProtocolProvider;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.VersionedModelProvider;
@@ -58,6 +51,12 @@ import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.SecurityStore;
 import org.eclipse.leshan.server.security.ServerSecurityInfo;
+import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServerEndpointFactory;
+import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServerEndpointsProvider;
+import org.eclipse.leshan.transport.californium.server.endpoint.ServerProtocolProvider;
+import org.eclipse.leshan.transport.californium.server.endpoint.coap.CoapOscoreServerEndpointFactory;
+import org.eclipse.leshan.transport.californium.server.endpoint.coap.CoapServerProtocolProvider;
+import org.eclipse.leshan.transport.californium.server.endpoint.coaps.CoapsServerProtocolProvider;
 import org.eclipse.leshan.transport.javacoap.server.coaptcp.endpoint.JavaCoapTcpServerEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.server.coaptcp.endpoint.JavaCoapsTcpServerEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.server.endpoint.JavaCoapServerEndpointsProvider;
@@ -98,7 +97,7 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
 
         // create endpoint provider.
         if (endpointsProvider == null) {
-            Builder builder;
+            CaliforniumServerEndpointsProvider.Builder builder;
             switch (endpointProviderName) {
             case "Californium":
                 builder = new CaliforniumServerEndpointsProvider.Builder(getCaliforniumProtocolProvider(protocolToUse));

@@ -13,7 +13,7 @@
  * Contributors:
  *     Simon Convent - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.servlet.json;
+package org.eclipse.leshan.demo.server.servlet.json;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;

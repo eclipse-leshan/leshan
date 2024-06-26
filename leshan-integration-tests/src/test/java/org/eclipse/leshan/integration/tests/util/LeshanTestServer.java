@@ -45,7 +45,6 @@ import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.LeshanServer;
-import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpoint;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
@@ -62,6 +61,7 @@ import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.SecurityStore;
 import org.eclipse.leshan.server.security.ServerSecurityInfo;
 import org.eclipse.leshan.server.send.SendListener;
+import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServerEndpoint;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 

@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Orange - keep one JSON dependency
  *******************************************************************************/
-package org.eclipse.leshan.server.core.demo.json;
+package org.eclipse.leshan.demo.servers.json;
 
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-///!\ This class is a COPY of org.eclipse.leshan.server.bootstrap.demo.json.X509CertificateSerDes /!\
+///!\ This class is a COPY of org.eclipse.leshan.demo.bsserver.json.X509CertificateSerDes /!\
 // TODO create a leshan-demo project ?
 public class X509CertificateSerDes extends JacksonJsonSerDes<X509Certificate> {
 

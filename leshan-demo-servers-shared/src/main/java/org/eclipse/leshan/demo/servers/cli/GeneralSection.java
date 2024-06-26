@@ -12,12 +12,12 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.core.demo.cli;
+package org.eclipse.leshan.demo.servers.cli;
 
 import java.io.File;
 
 import org.eclipse.leshan.core.LwM2m;
-import org.eclipse.leshan.core.demo.cli.converters.PortConverter;
+import org.eclipse.leshan.demo.cli.converters.PortConverter;
 
 import picocli.CommandLine.Option;
 

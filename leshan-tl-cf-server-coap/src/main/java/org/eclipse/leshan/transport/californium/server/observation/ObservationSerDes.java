@@ -16,7 +16,7 @@
  *                                                     endpoint context
  *     Orange - keep one JSON dependency
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.observation;
+package org.eclipse.leshan.transport.californium.server.observation;
 
 import java.util.HashMap;
 import java.util.Iterator;

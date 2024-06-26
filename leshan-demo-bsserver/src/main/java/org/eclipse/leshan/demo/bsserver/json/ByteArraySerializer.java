@@ -13,7 +13,7 @@
  * Contributors:
  *     Orange - keep one JSON dependency
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap.demo.json;
+package org.eclipse.leshan.demo.bsserver.json;
 
 import java.io.IOException;
 

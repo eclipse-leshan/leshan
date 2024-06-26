@@ -24,22 +24,22 @@ Contributors:
     <version>2.0.0-SNAPSHOT</version>
     <relativePath>../build-config/demo-build-config/pom.xml</relativePath>
   </parent>
-  <artifactId>leshan-bsserver-demo</artifactId>
-  <name>leshan - bootstrap server demo</name>
+  <artifactId>leshan-demo-bsserver</artifactId>
+  <name>leshan - demo - bsserver</name>
   <description>A LWM2M bootstrap demonstration server running an embedded Jetty server</description>
 
   <dependencies>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-server-cf</artifactId>
+      <artifactId>leshan-tl-cf-server-coap</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-core-demo</artifactId>
+      <artifactId>leshan-demo-shared</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-server-core-demo</artifactId>
+      <artifactId>leshan-demo-servers-shared</artifactId>
     </dependency>
 
     <!-- runtime dependencies -->
@@ -69,7 +69,7 @@ Contributors:
         <configuration>
           <archive>
             <manifest>
-              <mainClass>org.eclipse.leshan.server.bootstrap.demo.LeshanBootstrapServerDemo</mainClass>
+              <mainClass>org.eclipse.leshan.demo.bsserver.LeshanBootstrapServerDemo</mainClass>
             </manifest>
           </archive>
           <descriptors>

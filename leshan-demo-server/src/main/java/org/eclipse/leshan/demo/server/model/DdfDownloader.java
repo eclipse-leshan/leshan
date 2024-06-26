@@ -13,7 +13,7 @@
  * Contributors:
  *     Ville Skyttä - initial implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.model;
+package org.eclipse.leshan.demo.server.model;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

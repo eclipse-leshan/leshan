@@ -50,9 +50,6 @@ import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.ConnectionId;
 import org.eclipse.californium.scandium.dtls.PskPublicInformation;
 import org.eclipse.californium.scandium.dtls.pskstore.AdvancedPskStore;
-import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpointFactory;
-import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpointsProvider;
-import org.eclipse.leshan.client.californium.endpoint.coaps.CoapsClientProtocolProvider;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -69,6 +66,10 @@ import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.security.InMemorySecurityStore;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.transport.californium.client.endpoint.CaliforniumClientEndpointFactory;
+import org.eclipse.leshan.transport.californium.client.endpoint.CaliforniumClientEndpointsProvider;
+import org.eclipse.leshan.transport.californium.client.endpoint.coaps.CoapsClientEndpointFactory;
+import org.eclipse.leshan.transport.californium.client.endpoint.coaps.CoapsClientProtocolProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -119,7 +120,7 @@ public class ServerOnlySecurityTest {
         CoapsClientProtocolProvider coapsProtocolProvider = new CoapsClientProtocolProvider() {
             @Override
             public CaliforniumClientEndpointFactory createDefaultEndpointFactory() {
-                return new org.eclipse.leshan.client.californium.endpoint.coaps.CoapsClientEndpointFactory() {
+                return new CoapsClientEndpointFactory() {
 
                     @Override
                     protected Builder createEffectiveDtlsConnectorConfigBuilder(InetSocketAddress addr,

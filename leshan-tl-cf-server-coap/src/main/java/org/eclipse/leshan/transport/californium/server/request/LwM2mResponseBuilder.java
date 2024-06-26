@@ -17,9 +17,9 @@
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690.
  *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.request;
+package org.eclipse.leshan.transport.californium.server.request;
 
-import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toLwM2mResponseCode;
+import static org.eclipse.leshan.transport.californium.ResponseCodeUtil.toLwM2mResponseCode;
 
 import java.util.List;
 import java.util.Map;
@@ -28,7 +28,6 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.ResponseCode;
-import org.eclipse.leshan.core.californium.ObserveUtil;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
@@ -82,6 +81,7 @@ import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteCompositeResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.core.util.Hex;
+import org.eclipse.leshan.transport.californium.ObserveUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

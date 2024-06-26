@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.request;
+package org.eclipse.leshan.transport.californium.server.request;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.network.stack.ReliabilityLayerParameters;

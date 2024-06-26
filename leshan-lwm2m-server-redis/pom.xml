@@ -25,7 +25,7 @@ Contributors:
     <version>2.0.0-SNAPSHOT</version>
     <relativePath>../build-config/lib-build-config/pom.xml</relativePath>
   </parent>
-  <artifactId>leshan-server-redis</artifactId>
+  <artifactId>leshan-lwm2m-server-redis</artifactId>
   <packaging>bundle</packaging>
   <name>leshan - server redis</name>
   <description>Redis implementation for different stores of Leshan Server</description>
@@ -33,7 +33,7 @@ Contributors:
   <dependencies>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-server-core</artifactId>
+      <artifactId>leshan-lwm2m-server</artifactId>
     </dependency>
     <dependency>
       <groupId>redis.clients</groupId>

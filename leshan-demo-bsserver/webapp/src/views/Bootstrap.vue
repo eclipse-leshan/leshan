@@ -134,13 +134,16 @@
 </template>
 <script>
 import { configsFromRestToUI, configFromUIToRest } from "../js/bsconfigutil.js";
-import { fromHex, fromAscii } from "@leshan-server-core-demo/js/byteutils.js";
-import SecurityInfoChip from "@leshan-server-core-demo/components/security/SecurityInfoChip.vue";
+import {
+  fromHex,
+  fromAscii,
+} from "@leshan-demo-servers-shared/js/byteutils.js";
+import SecurityInfoChip from "@leshan-demo-servers-shared/components/security/SecurityInfoChip.vue";
 import ClientConfigDialog from "../components/wizard/ClientConfigDialog.vue";
 import {
   getModeIcon,
   getOscoreIcon,
-} from "@leshan-server-core-demo/js/securityutils.js";
+} from "@leshan-demo-servers-shared/js/securityutils.js";
 
 export default {
   components: { ClientConfigDialog, SecurityInfoChip },

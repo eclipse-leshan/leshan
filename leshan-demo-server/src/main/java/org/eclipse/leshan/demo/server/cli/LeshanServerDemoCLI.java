@@ -13,16 +13,16 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.cli;
+package org.eclipse.leshan.demo.server.cli;
 
 import java.net.URI;
 
-import org.eclipse.leshan.core.demo.cli.StandardHelpOptions;
-import org.eclipse.leshan.core.demo.cli.VersionProvider;
-import org.eclipse.leshan.core.demo.cli.converters.PortConverter;
-import org.eclipse.leshan.server.core.demo.cli.DtlsSection;
-import org.eclipse.leshan.server.core.demo.cli.GeneralSection;
-import org.eclipse.leshan.server.core.demo.cli.IdentitySection;
+import org.eclipse.leshan.demo.cli.StandardHelpOptions;
+import org.eclipse.leshan.demo.cli.VersionProvider;
+import org.eclipse.leshan.demo.cli.converters.PortConverter;
+import org.eclipse.leshan.demo.servers.cli.DtlsSection;
+import org.eclipse.leshan.demo.servers.cli.GeneralSection;
+import org.eclipse.leshan.demo.servers.cli.IdentitySection;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -36,7 +36,7 @@ import redis.clients.jedis.JedisPool;
 /**
  * This is the class defining the Command Line Interface of Leshan Server Demo.
  */
-@Command(name = "leshan-server-demo",
+@Command(name = "leshan-demo-server",
          sortOptions = false,
          description = "%n"//
                  + "@|italic " //

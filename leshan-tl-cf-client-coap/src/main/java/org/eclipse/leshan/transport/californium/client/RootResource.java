@@ -16,9 +16,9 @@
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690.
  *******************************************************************************/
-package org.eclipse.leshan.client.californium;
+package org.eclipse.leshan.transport.californium.client;
 
-import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
+import static org.eclipse.leshan.transport.californium.ResponseCodeUtil.toCoapResponseCode;
 
 import java.util.HashMap;
 import java.util.List;
@@ -30,12 +30,9 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.CoapExchange;
-import org.eclipse.leshan.client.californium.endpoint.ServerIdentityExtractor;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.servers.LwM2mServer;
-import org.eclipse.leshan.core.californium.ObserveUtil;
-import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
@@ -50,6 +47,9 @@ import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ReadCompositeResponse;
 import org.eclipse.leshan.core.response.WriteCompositeResponse;
 import org.eclipse.leshan.core.util.StringUtils;
+import org.eclipse.leshan.transport.californium.ObserveUtil;
+import org.eclipse.leshan.transport.californium.client.endpoint.ServerIdentityExtractor;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandlerProvider;
 
 /**
  * A root {@link CoapResource} resource in charge of handling Bootstrap Delete requests targeting the "/" URI.

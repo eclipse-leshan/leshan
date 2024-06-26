@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.endpoint.coaps;
+package org.eclipse.leshan.transport.californium.server.endpoint.coaps;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -57,10 +57,6 @@ import org.eclipse.californium.scandium.dtls.DtlsHandshakeTimeoutException;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.californium.scandium.dtls.x509.SingleCertificateProvider;
 import org.eclipse.californium.scandium.dtls.x509.StaticNewAdvancedCertificateVerifier;
-import org.eclipse.leshan.core.californium.DefaultExceptionTranslator;
-import org.eclipse.leshan.core.californium.ExceptionTranslator;
-import org.eclipse.leshan.core.californium.Lwm2mEndpointContextMatcher;
-import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.peer.IpPeer;
@@ -72,17 +68,21 @@ import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.request.exception.TimeoutException.Type;
 import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 import org.eclipse.leshan.server.LeshanServer;
-import org.eclipse.leshan.server.californium.ConnectionCleaner;
-import org.eclipse.leshan.server.californium.LwM2mPskStore;
-import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointFactory;
-import org.eclipse.leshan.server.californium.observation.LwM2mObservationStore;
-import org.eclipse.leshan.server.californium.observation.ObservationSerDes;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.SecurityInfo;
 import org.eclipse.leshan.server.security.SecurityStore;
 import org.eclipse.leshan.server.security.SecurityStoreListener;
 import org.eclipse.leshan.server.security.ServerSecurityInfo;
+import org.eclipse.leshan.transport.californium.DefaultExceptionTranslator;
+import org.eclipse.leshan.transport.californium.ExceptionTranslator;
+import org.eclipse.leshan.transport.californium.Lwm2mEndpointContextMatcher;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
+import org.eclipse.leshan.transport.californium.server.ConnectionCleaner;
+import org.eclipse.leshan.transport.californium.server.LwM2mPskStore;
+import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServerEndpointFactory;
+import org.eclipse.leshan.transport.californium.server.observation.LwM2mObservationStore;
+import org.eclipse.leshan.transport.californium.server.observation.ObservationSerDes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

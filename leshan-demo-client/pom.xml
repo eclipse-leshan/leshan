@@ -24,26 +24,26 @@ Contributors:
     <version>2.0.0-SNAPSHOT</version>
     <relativePath>../build-config/demo-build-config/pom.xml</relativePath>
   </parent>
-  <artifactId>leshan-client-demo</artifactId>
-  <name>leshan - client demo</name>
+  <artifactId>leshan-demo-client</artifactId>
+  <name>leshan - demo - client</name>
   <description>A demonstration client built upon the Leshan client.</description>
 
   <dependencies>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-client-cf</artifactId>
+      <artifactId>leshan-tl-cf-client-coap</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-tl-javacoap-client</artifactId>
+      <artifactId>leshan-tl-jc-client-coap</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-tl-javacoap-client-coaptcp</artifactId>
+      <artifactId>leshan-tl-jc-client-coaptcp</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-core-demo</artifactId>
+      <artifactId>leshan-demo-shared</artifactId>
     </dependency>
   </dependencies>
 
@@ -54,7 +54,7 @@ Contributors:
         <configuration>
           <archive>
             <manifest>
-              <mainClass>org.eclipse.leshan.client.demo.LeshanClientDemo</mainClass>
+              <mainClass>org.eclipse.leshan.demo.client.LeshanClientDemo</mainClass>
             </manifest>
           </archive>
           <descriptors>

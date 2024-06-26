@@ -26,7 +26,7 @@ Contributors:
     <version>2.0.0-SNAPSHOT</version>
     <relativePath>../build-config/lib-build-config/pom.xml</relativePath>
   </parent>
-  <artifactId>leshan-core</artifactId>
+  <artifactId>leshan-lwm2m-core</artifactId>
   <packaging>bundle</packaging>
   <name>leshan - core</name>
   <description>Core classes for implementing Lightweight M2M</description>

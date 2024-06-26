@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Orange - keep one JSON dependency
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap.demo.servlet;
+package org.eclipse.leshan.demo.bsserver.servlet;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -27,10 +27,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.leshan.demo.servers.json.PublicKeySerDes;
+import org.eclipse.leshan.demo.servers.json.X509CertificateSerDes;
 import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
 import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpoint;
-import org.eclipse.leshan.server.core.demo.json.PublicKeySerDes;
-import org.eclipse.leshan.server.core.demo.json.X509CertificateSerDes;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;

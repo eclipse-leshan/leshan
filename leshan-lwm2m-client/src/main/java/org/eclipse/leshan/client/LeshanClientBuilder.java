@@ -273,7 +273,7 @@ public class LeshanClientBuilder {
      * {@link LwM2mClientEndpointsProvider} implementation.
      * <p>
      * Leshan project provides {@code coap} and {@code coaps} support based on Californium/Scandium in
-     * <strong>leshan-client-cf</strong>.
+     * <strong>leshan-tl-cf-client-coap</strong>.
      */
     public LeshanClientBuilder setEndpointsProviders(LwM2mClientEndpointsProvider... endpointsProvider) {
         return setEndpointsProviders(Arrays.asList(endpointsProvider));

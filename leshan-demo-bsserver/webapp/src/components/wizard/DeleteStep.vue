@@ -18,9 +18,9 @@
         existing configuration on the <strong>LWM2M client</strong>.
       </p>
       <p>
-        By default, objects <code>/0</code>, <code>/1</code> and <code>/21</code> are deleted,
-        then you will be able to define LWM2M Server and LWM2M Bootstrap Server
-        to add.
+        By default, objects <code>/0</code>, <code>/1</code> and
+        <code>/21</code> are deleted, then you will be able to define LWM2M
+        Server and LWM2M Bootstrap Server to add.
       </p>
       <p>
         Note that Security <code>/0</code> Object Instance storing LWM2M
@@ -58,7 +58,7 @@
   </v-card>
 </template>
 <script>
-import PathsInput from "@leshan-server-core-demo/components/path/PathsInput.vue";
+import PathsInput from "@leshan-demo-servers-shared/components/path/PathsInput.vue";
 
 export default {
   components: { PathsInput },

@@ -15,9 +15,9 @@ Contributors:
     Sierra Wireless - initial API and implementation
  -->
 <configuration>
-	<appender name="TERMINAL" class="org.eclipse.leshan.core.demo.cli.interactive.TerminalAppender">
+	<appender name="TERMINAL" class="org.eclipse.leshan.demo.cli.interactive.TerminalAppender">
 		<encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-			<layout class="org.eclipse.leshan.core.demo.logback.ColorAwarePatternLayout">
+			<layout class="org.eclipse.leshan.demo.logback.ColorAwarePatternLayout">
 				<pattern>%gray(%d) %gray(%-20logger{0}) [%highlight(%p)] %m %yellow(%X) %n</pattern>
 			</layout>
 		</encoder>
@@ -28,7 +28,7 @@ Contributors:
 	</root>
 	
 	<logger name="org.eclipse.leshan" level="INFO"/>
-	<logger name="org.eclipse.leshan.core.californium.LwM2mCoapResource" level="DEBUG"/>
+	<logger name="org.eclipse.leshan.transport.californium.LwM2mCoapResource" level="DEBUG"/>
 	<logger name="org.eclipse.leshan.server.security.SecurityCheck" level="DEBUG"/>
 	<logger name="org.eclipse.leshan.core.model.LwM2mModelRepository" level="TRACE"/>
 </configuration>

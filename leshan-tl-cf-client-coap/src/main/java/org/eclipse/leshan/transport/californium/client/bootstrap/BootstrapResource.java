@@ -14,9 +14,9 @@
  *     Sierra Wireless - initial API and implementation
  *     Achim Kraus (Bosch Software Innovations GmbH) - use ServerIdentity
  *******************************************************************************/
-package org.eclipse.leshan.client.californium.bootstrap;
+package org.eclipse.leshan.transport.californium.client.bootstrap;
 
-import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
+import static org.eclipse.leshan.transport.californium.ResponseCodeUtil.toCoapResponseCode;
 
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.MessageObserverAdapter;
@@ -24,14 +24,14 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
-import org.eclipse.leshan.client.californium.LwM2mClientCoapResource;
-import org.eclipse.leshan.client.californium.endpoint.ServerIdentityExtractor;
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.servers.LwM2mServer;
-import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.response.BootstrapFinishResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
+import org.eclipse.leshan.transport.californium.client.LwM2mClientCoapResource;
+import org.eclipse.leshan.transport.californium.client.endpoint.ServerIdentityExtractor;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandlerProvider;
 
 /**
  * A CoAP {@link Resource} in charge of handling the Bootstrap Finish indication from the bootstrap server.

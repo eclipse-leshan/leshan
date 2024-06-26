@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap.demo.servlet;
+package org.eclipse.leshan.demo.bsserver.servlet;
 
 import java.io.IOException;
 import java.util.Collections;

@@ -10,8 +10,8 @@ The project also provides a client, a server and a bootstrap server demonstratio
 
 | LWM2M Version <br> Targeted | Leshan  <br> Version | Minimal <br> Java Version | Development <br> State |  Build Status	|  Standalone <br> Demos |
 | - | - | - | - | - | - |
-| [v1.0.x](https://github.com/eclipse/leshan/wiki/Lightweight-M2M-Specification#lightweight-m2m-v10x) | [v1.x](https://github.com/eclipse/leshan/tree/1.x) <br/> [Supported features](https://github.com/eclipse/leshan/wiki/LWM2M-Supported-features) | Java 7 | stable released | [jenkins-1.x](https://ci.eclipse.org/leshan/job/leshan-ci/job/1.x/) | [server-demo](https://ci.eclipse.org/leshan/job/leshan-ci/job/1.x/lastSuccessfulBuild/artifact/leshan-server-demo.jar)<br/> [client-demo](https://ci.eclipse.org/leshan/job/leshan-ci/job/1.x/lastSuccessfulBuild/artifact/leshan-client-demo.jar) <br/> [bsserver-demo](https://ci.eclipse.org/leshan/job/leshan-ci/job/1.x/lastSuccessfulBuild/artifact/leshan-bsserver-demo.jar) |
-| [**v1.1.x**](https://github.com/eclipse/leshan/wiki/Lightweight-M2M-Specification#lightweight-m2m-v11x)| [**v2.x** (master)](https://github.com/eclipse/leshan/tree/master) <br/> [Supported features](https://github.com/eclipse/leshan/wiki/LWM2M-1.1-supported-features) | Java 8 | **in development**  |[jenkins-master](https://ci.eclipse.org/leshan/job/leshan-ci/job/master/)     | [server-demo](https://ci.eclipse.org/leshan/job/leshan-ci/job/master/lastSuccessfulBuild/artifact/leshan-server-demo.jar)<br/> [client-demo](https://ci.eclipse.org/leshan/job/leshan-ci/job/master/lastSuccessfulBuild/artifact/leshan-client-demo.jar) <br/> [bsserver-demo](https://ci.eclipse.org/leshan/job/leshan-ci/job/master/lastSuccessfulBuild/artifact/leshan-bsserver-demo.jar)  |
+| [v1.0.x](https://github.com/eclipse/leshan/wiki/Lightweight-M2M-Specification#lightweight-m2m-v10x) | [v1.x](https://github.com/eclipse/leshan/tree/1.x) <br/> [Supported features](https://github.com/eclipse/leshan/wiki/LWM2M-Supported-features) | Java 7 | stable released | [jenkins-1.x](https://ci.eclipse.org/leshan/job/leshan-ci/job/1.x/) | [server-demo](https://ci.eclipse.org/leshan/job/leshan-ci/job/1.x/lastSuccessfulBuild/artifact/leshan-demo-server.jar)<br/> [client-demo](https://ci.eclipse.org/leshan/job/leshan-ci/job/1.x/lastSuccessfulBuild/artifact/leshan-demo-client.jar) <br/> [bsserver-demo](https://ci.eclipse.org/leshan/job/leshan-ci/job/1.x/lastSuccessfulBuild/artifact/leshan-demo-bsserver.jar) |
+| [**v1.1.x**](https://github.com/eclipse/leshan/wiki/Lightweight-M2M-Specification#lightweight-m2m-v11x)| [**v2.x** (master)](https://github.com/eclipse/leshan/tree/master) <br/> [Supported features](https://github.com/eclipse/leshan/wiki/LWM2M-1.1-supported-features) | Java 8 | **in development**  |[jenkins-master](https://ci.eclipse.org/leshan/job/leshan-ci/job/master/)     | [server-demo](https://ci.eclipse.org/leshan/job/leshan-ci/job/master/lastSuccessfulBuild/artifact/leshan-demo-server.jar)<br/> [client-demo](https://ci.eclipse.org/leshan/job/leshan-ci/job/master/lastSuccessfulBuild/artifact/leshan-demo-client.jar) <br/> [bsserver-demo](https://ci.eclipse.org/leshan/job/leshan-ci/job/master/lastSuccessfulBuild/artifact/leshan-demo-bsserver.jar)  |
 
 
 Release (stable and milestones) are available on [maven central](https://search.maven.org/search?q=org.eclipse.leshan).  
@@ -51,18 +51,18 @@ Test Leshan Demos locally
 -----------------------
 Get and run the last binary of our demo **server** :
 ```
-wget https://ci.eclipse.org/leshan/job/leshan-ci/job/master/lastSuccessfulBuild/artifact/leshan-server-demo.jar
-java -jar ./leshan-server-demo.jar
+wget https://ci.eclipse.org/leshan/job/leshan-ci/job/master/lastSuccessfulBuild/artifact/leshan-demo-server.jar
+java -jar ./leshan-demo-server.jar
 ```
 Get and run the last binary of our demo **client** :
 ```
-wget https://ci.eclipse.org/leshan/job/leshan-ci/job/master/lastSuccessfulBuild/artifact/leshan-client-demo.jar
-java -jar ./leshan-client-demo.jar
+wget https://ci.eclipse.org/leshan/job/leshan-ci/job/master/lastSuccessfulBuild/artifact/leshan-demo-client.jar
+java -jar ./leshan-demo-client.jar
 ```
 Get and run the last binary of our **bootstrap** demo server :
 ```
-wget https://ci.eclipse.org/leshan/job/leshan-ci/job/master/lastSuccessfulBuild/artifact/leshan-bsserver-demo.jar
-java -jar ./leshan-bsserver-demo.jar
+wget https://ci.eclipse.org/leshan/job/leshan-ci/job/master/lastSuccessfulBuild/artifact/leshan-demo-bsserver.jar
+java -jar ./leshan-demo-bsserver.jar
 ```
 :information_source: : _All the demos have a `--help` option._
 
@@ -88,7 +88,7 @@ mvn clean install
 
 Run demo **server**:
 ```
-java -jar leshan-server-demo/target/leshan-server-demo-*-SNAPSHOT-jar-with-dependencies.jar 
+java -jar leshan-demo-server/target/leshan-demo-server-*-SNAPSHOT-jar-with-dependencies.jar 
 ```
 
 Connect on Leshan demo UI: http://localhost:8080  
@@ -96,13 +96,13 @@ Leshan server Demo provides a very simple UI to get the list of connected client
 
 Now you can register a LWM2M client by running our **client** demo:
 ```
-java -jar leshan-client-demo/target/leshan-client-demo-*-SNAPSHOT-jar-with-dependencies.jar 
+java -jar leshan-demo-client/target/leshan-demo-client-*-SNAPSHOT-jar-with-dependencies.jar 
 ```
 or trying the [Eclipse Wakaama](http://eclipse.org/wakaama) test client.
 
 You can also try our **bootstrap** demo server:
 ```
-java -jar leshan-bsserver-demo/target/leshan-bsserver-demo-*-SNAPSHOT-jar-with-dependencies.jar 
+java -jar leshan-demo-bsserver/target/leshan-demo-bsserver-*-SNAPSHOT-jar-with-dependencies.jar 
 ```
 
 Let's start to code !

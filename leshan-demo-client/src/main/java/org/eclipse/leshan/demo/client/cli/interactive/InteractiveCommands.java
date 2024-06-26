@@ -12,20 +12,12 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.demo.cli.interactive;
+package org.eclipse.leshan.demo.client.cli.interactive;
 
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.client.LeshanClient;
-import org.eclipse.leshan.client.demo.MyLocation;
-import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.CollectCommand;
-import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.CreateCommand;
-import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.DeleteCommand;
-import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.ListCommand;
-import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.MoveCommand;
-import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.SendCommand;
-import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands.UpdateCommand;
 import org.eclipse.leshan.client.resource.LwM2mInstanceEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
@@ -37,11 +29,6 @@ import org.eclipse.leshan.client.send.SendService;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.LwM2mId;
-import org.eclipse.leshan.core.demo.cli.converters.ContentFormatConverter;
-import org.eclipse.leshan.core.demo.cli.converters.LwM2mPathConverter;
-import org.eclipse.leshan.core.demo.cli.converters.StringLwM2mPathConverter;
-import org.eclipse.leshan.core.demo.cli.converters.VersionConverter;
-import org.eclipse.leshan.core.demo.cli.interactive.JLineInteractiveCommands;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
@@ -51,6 +38,19 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.response.SendResponse;
+import org.eclipse.leshan.demo.cli.converters.ContentFormatConverter;
+import org.eclipse.leshan.demo.cli.converters.LwM2mPathConverter;
+import org.eclipse.leshan.demo.cli.converters.StringLwM2mPathConverter;
+import org.eclipse.leshan.demo.cli.converters.VersionConverter;
+import org.eclipse.leshan.demo.cli.interactive.JLineInteractiveCommands;
+import org.eclipse.leshan.demo.client.MyLocation;
+import org.eclipse.leshan.demo.client.cli.interactive.InteractiveCommands.CollectCommand;
+import org.eclipse.leshan.demo.client.cli.interactive.InteractiveCommands.CreateCommand;
+import org.eclipse.leshan.demo.client.cli.interactive.InteractiveCommands.DeleteCommand;
+import org.eclipse.leshan.demo.client.cli.interactive.InteractiveCommands.ListCommand;
+import org.eclipse.leshan.demo.client.cli.interactive.InteractiveCommands.MoveCommand;
+import org.eclipse.leshan.demo.client.cli.interactive.InteractiveCommands.SendCommand;
+import org.eclipse.leshan.demo.client.cli.interactive.InteractiveCommands.UpdateCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

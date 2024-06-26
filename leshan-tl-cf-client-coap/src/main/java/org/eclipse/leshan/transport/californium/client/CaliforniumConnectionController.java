@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.californium;
+package org.eclipse.leshan.transport.californium.client;
 
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.leshan.client.servers.LwM2mServer;

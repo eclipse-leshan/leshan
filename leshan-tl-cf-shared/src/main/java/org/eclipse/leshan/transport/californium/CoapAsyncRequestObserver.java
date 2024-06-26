@@ -16,7 +16,7 @@
  *                                                     to error callback.
  *     Simon Bernard                                 - use specific exception for onSendError
  *******************************************************************************/
-package org.eclipse.leshan.core.californium;
+package org.eclipse.leshan.transport.californium;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;

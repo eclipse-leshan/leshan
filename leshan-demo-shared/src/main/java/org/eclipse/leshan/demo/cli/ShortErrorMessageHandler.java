@@ -12,7 +12,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.demo.cli;
+package org.eclipse.leshan.demo.cli;
 
 import java.io.PrintWriter;
 

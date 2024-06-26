@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.model;
+package org.eclipse.leshan.demo.server.model;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,7 +24,7 @@ import java.util.TreeMap;
 import org.eclipse.leshan.core.model.DDFFileParser;
 import org.eclipse.leshan.core.model.InvalidDDFFileException;
 import org.eclipse.leshan.core.model.ObjectModel;
-import org.eclipse.leshan.server.demo.LeshanServerDemo;
+import org.eclipse.leshan.demo.server.LeshanServerDemo;
 
 /**
  * An helper to generate {@code private final static String[] modelPaths} in {@link LeshanServerDemo} and

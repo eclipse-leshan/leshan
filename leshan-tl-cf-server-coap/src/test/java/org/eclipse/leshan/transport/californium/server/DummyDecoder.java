@@ -13,7 +13,7 @@
  * Contributors:
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
  *******************************************************************************/
-package org.eclipse.leshan.server.californium;
+package org.eclipse.leshan.transport.californium.server;
 
 import java.util.Collections;
 import java.util.List;

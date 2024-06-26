@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.demo;
+package org.eclipse.leshan.demo.client;
 
 import static org.eclipse.leshan.client.object.Security.noSec;
 import static org.eclipse.leshan.client.object.Security.noSecBootstrap;
@@ -43,14 +43,6 @@ import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.client.LeshanClient;
 import org.eclipse.leshan.client.LeshanClientBuilder;
-import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpointFactory;
-import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpointsProvider;
-import org.eclipse.leshan.client.californium.endpoint.ClientProtocolProvider;
-import org.eclipse.leshan.client.californium.endpoint.coap.CoapOscoreProtocolProvider;
-import org.eclipse.leshan.client.californium.endpoint.coaps.CoapsClientEndpointFactory;
-import org.eclipse.leshan.client.californium.endpoint.coaps.CoapsClientProtocolProvider;
-import org.eclipse.leshan.client.demo.cli.LeshanClientDemoCLI;
-import org.eclipse.leshan.client.demo.cli.interactive.InteractiveCommands;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.LwM2mTestObject;
@@ -61,10 +53,6 @@ import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.send.ManualDataSender;
 import org.eclipse.leshan.client.servers.LwM2mServer;
-import org.eclipse.leshan.core.californium.PrincipalMdcConnectionListener;
-import org.eclipse.leshan.core.demo.LwM2mDemoConstant;
-import org.eclipse.leshan.core.demo.cli.ShortErrorMessageHandler;
-import org.eclipse.leshan.core.demo.cli.interactive.InteractiveCLI;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
 import org.eclipse.leshan.core.model.ObjectLoader;
@@ -77,6 +65,18 @@ import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.response.BootstrapWriteResponse;
+import org.eclipse.leshan.demo.LwM2mDemoConstant;
+import org.eclipse.leshan.demo.cli.ShortErrorMessageHandler;
+import org.eclipse.leshan.demo.cli.interactive.InteractiveCLI;
+import org.eclipse.leshan.demo.client.cli.LeshanClientDemoCLI;
+import org.eclipse.leshan.demo.client.cli.interactive.InteractiveCommands;
+import org.eclipse.leshan.transport.californium.PrincipalMdcConnectionListener;
+import org.eclipse.leshan.transport.californium.client.endpoint.CaliforniumClientEndpointFactory;
+import org.eclipse.leshan.transport.californium.client.endpoint.CaliforniumClientEndpointsProvider;
+import org.eclipse.leshan.transport.californium.client.endpoint.ClientProtocolProvider;
+import org.eclipse.leshan.transport.californium.client.endpoint.coap.CoapOscoreProtocolProvider;
+import org.eclipse.leshan.transport.californium.client.endpoint.coaps.CoapsClientEndpointFactory;
+import org.eclipse.leshan.transport.californium.client.endpoint.coaps.CoapsClientProtocolProvider;
 import org.eclipse.leshan.transport.javacoap.client.coaptcp.endpoint.JavaCoapTcpClientEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.client.coaptcp.endpoint.JavaCoapsTcpClientEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.client.endpoint.JavaCoapClientEndpointsProvider;

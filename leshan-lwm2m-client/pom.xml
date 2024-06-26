@@ -25,15 +25,15 @@ Contributors:
     <version>2.0.0-SNAPSHOT</version>
     <relativePath>../build-config/lib-build-config/pom.xml</relativePath>
   </parent>
-  <artifactId>leshan-client-core</artifactId>
+  <artifactId>leshan-lwm2m-client</artifactId>
   <packaging>bundle</packaging>
-  <name>leshan - client core</name>
-  <description>A LWM2M client implementation which abstracts transport layer. A transport implementation like "leshan-client-cf" is needed.</description>
+  <name>leshan - client</name>
+  <description>A LWM2M client implementation which abstracts transport layer. A transport implementation like "leshan-tl-cf-client-coap" is needed.</description>
 
   <dependencies>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-core</artifactId>
+      <artifactId>leshan-lwm2m-core</artifactId>
     </dependency>
 
     <!-- test dependencies -->

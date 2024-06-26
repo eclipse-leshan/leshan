@@ -1,6 +1,6 @@
 # webapp
 
-The **leshan-server-demo** webapp is based on [Vue 2](https://v2.vuejs.org/).  
+The **leshan-demo-server** webapp is based on [Vue 2](https://v2.vuejs.org/).  
 To be able to enjoy the "single file component" feature we need to use a modern module build system for JavaScript.  
 Here we are using [Yarn](https://yarnpkg.com/) and [Vite](https://vitejs.dev/) tooling. 
 

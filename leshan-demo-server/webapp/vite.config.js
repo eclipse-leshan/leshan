@@ -50,7 +50,7 @@ export default defineConfig({
     port: 8088,
     proxy: {
       "/api": {
-        // 8080 is the default port for leshan-server-demo if you change it in development phase you need to change this value too.
+        // 8080 is the default port for leshan-demo-server if you change it in development phase you need to change this value too.
         target: "http://localhost:8080",
         ws: true,
         changeOrigin: true,
@@ -62,9 +62,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "@leshan-server-core-demo": path.join(
+      "@leshan-demo-servers-shared": path.join(
         __dirname,
-        "../../leshan-server-core-demo/webapp/src"
+        "../../leshan-demo-servers-shared/webapp/src"
       ),
     },
     extensions: [".js", ".vue"],

@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.core.demo.cli.converters;
+package org.eclipse.leshan.demo.cli.converters;
 
 import org.eclipse.californium.elements.util.Bytes;
 import org.eclipse.leshan.core.util.Hex;

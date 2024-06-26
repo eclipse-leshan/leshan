@@ -23,19 +23,19 @@ Contributors:
     <version>2.0.0-SNAPSHOT</version>
     <relativePath>../build-config/lib-build-config/pom.xml</relativePath>
   </parent>
-  <artifactId>leshan-tl-javacoap-client</artifactId>
+  <artifactId>leshan-tl-jc-client-coap</artifactId>
   <packaging>bundle</packaging>
-  <name>leshan - client java-coap</name>
-  <description>A transport implementation for leshan client based on Java CoAP</description>
+  <name>leshan - transport - java-coap - client - coap</name>
+  <description>A transport implementation for leshan client based on java-coap for CoAP protocol</description>
 
   <dependencies>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-client-core</artifactId>
+      <artifactId>leshan-lwm2m-client</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-tl-javacoap-core</artifactId>
+      <artifactId>leshan-tl-jc-shared</artifactId>
     </dependency>
   </dependencies>
 

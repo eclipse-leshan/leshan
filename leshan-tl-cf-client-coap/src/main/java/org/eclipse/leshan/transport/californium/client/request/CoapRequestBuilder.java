@@ -14,7 +14,7 @@
  *     Zebra Technologies - initial API and implementation
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
-package org.eclipse.leshan.client.californium.request;
+package org.eclipse.leshan.transport.californium.client.request;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -23,7 +23,6 @@ import java.util.Map.Entry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.util.Bytes;
-import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -38,6 +37,7 @@ import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.request.UplinkRequestVisitor;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
 
 /**
  * This class is able to create CoAP request from LWM2M {@link UplinkRequest}.

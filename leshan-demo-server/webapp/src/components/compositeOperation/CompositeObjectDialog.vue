@@ -71,15 +71,13 @@
         >
           {{ editMode ? "Save" : "Add" }}
         </v-btn>
-        <v-btn text @click="show = false">
-          Cancel
-        </v-btn>
+        <v-btn text @click="show = false"> Cancel </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 <script>
-import PathsInput from "@leshan-server-core-demo/components/path/PathsInput.vue";
+import PathsInput from "@leshan-demo-servers-shared/components/path/PathsInput.vue";
 
 export default {
   components: { PathsInput },

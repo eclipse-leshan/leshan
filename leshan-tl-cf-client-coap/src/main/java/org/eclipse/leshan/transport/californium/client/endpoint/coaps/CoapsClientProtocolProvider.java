@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.californium.endpoint.coaps;
+package org.eclipse.leshan.transport.californium.client.endpoint.coaps;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,9 +25,9 @@ import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsPr
 import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.californium.scandium.config.DtlsConfig;
-import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpointFactory;
-import org.eclipse.leshan.client.californium.endpoint.ClientProtocolProvider;
 import org.eclipse.leshan.core.endpoint.Protocol;
+import org.eclipse.leshan.transport.californium.client.endpoint.CaliforniumClientEndpointFactory;
+import org.eclipse.leshan.transport.californium.client.endpoint.ClientProtocolProvider;
 
 public class CoapsClientProtocolProvider implements ClientProtocolProvider {
 
@@ -47,7 +47,7 @@ public class CoapsClientProtocolProvider implements ClientProtocolProvider {
         // currently not supported by leshan's CertificateVerifier
         configuration.setTransient(DtlsConfig.DTLS_VERIFY_SERVER_CERTIFICATES_SUBJECT);
         // Set it to null to allow automatic mode
-        // See org.eclipse.leshan.client.californium.endpoint.CoapsEndpointFactory
+        // See org.eclipse.leshan.transport.californium.client.endpoint.CoapsEndpointFactory
         configuration.set(DtlsConfig.DTLS_ROLE, null);
     }
 

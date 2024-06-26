@@ -14,9 +14,9 @@
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.registration;
+package org.eclipse.leshan.transport.californium.server.registration;
 
-import static org.eclipse.leshan.core.californium.ResponseCodeUtil.toCoapResponseCode;
+import static org.eclipse.leshan.transport.californium.ResponseCodeUtil.toCoapResponseCode;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -28,8 +28,6 @@ import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
-import org.eclipse.leshan.core.californium.LwM2mCoapResource;
-import org.eclipse.leshan.core.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.LinkParser;
@@ -44,6 +42,8 @@ import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.core.response.UpdateResponse;
 import org.eclipse.leshan.server.registration.RegistrationService;
 import org.eclipse.leshan.server.request.UplinkRequestReceiver;
+import org.eclipse.leshan.transport.californium.LwM2mCoapResource;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandlerProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -14,7 +14,7 @@
  *     Michał Wadowski (Orange) - Add Observe-Composite feature.
  *     Michał Wadowski (Orange) - Add Cancel Composite-Observation feature.
  *******************************************************************************/
-package org.eclipse.leshan.server.californium.observation;
+package org.eclipse.leshan.transport.californium.server.observation;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,13 +28,13 @@ import java.util.Map;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Token;
-import org.eclipse.leshan.core.californium.ObserveUtil;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
+import org.eclipse.leshan.transport.californium.ObserveUtil;
 import org.junit.jupiter.api.Test;
 
 public class ObserveUtilTest {

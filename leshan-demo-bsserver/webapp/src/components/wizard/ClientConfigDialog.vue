@@ -121,7 +121,10 @@
   </v-dialog>
 </template>
 <script>
-import { toHex, base64ToBytes } from "@leshan-server-core-demo/js/byteutils.js";
+import {
+  toHex,
+  base64ToBytes,
+} from "@leshan-demo-servers-shared/js/byteutils.js";
 import EndpointStep from "./EndpointStep.vue";
 import SecurityStep from "./SecurityStep.vue";
 import DeleteStep from "./DeleteStep.vue";

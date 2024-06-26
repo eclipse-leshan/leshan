@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Orange - keep one JSON dependency
  *******************************************************************************/
-package org.eclipse.leshan.server.core.demo.json.servlet;
+package org.eclipse.leshan.demo.servers.json.servlet;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -29,10 +29,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.leshan.server.core.demo.json.JacksonSecurityDeserializer;
-import org.eclipse.leshan.server.core.demo.json.JacksonSecuritySerializer;
-import org.eclipse.leshan.server.core.demo.json.PublicKeySerDes;
-import org.eclipse.leshan.server.core.demo.json.X509CertificateSerDes;
+import org.eclipse.leshan.demo.servers.json.JacksonSecurityDeserializer;
+import org.eclipse.leshan.demo.servers.json.JacksonSecuritySerializer;
+import org.eclipse.leshan.demo.servers.json.PublicKeySerDes;
+import org.eclipse.leshan.demo.servers.json.X509CertificateSerDes;
 import org.eclipse.leshan.server.security.EditableSecurityStore;
 import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.server.security.SecurityInfo;

@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.demo.cli;
+package org.eclipse.leshan.demo.client.cli;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -27,16 +27,16 @@ import java.util.stream.Stream;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.leshan.core.CertificateUsage;
-import org.eclipse.leshan.core.demo.cli.MultiParameterException;
-import org.eclipse.leshan.core.demo.cli.StandardHelpOptions;
-import org.eclipse.leshan.core.demo.cli.VersionProvider;
-import org.eclipse.leshan.core.demo.cli.converters.CIDConverter;
-import org.eclipse.leshan.core.demo.cli.converters.InetAddressConverter;
-import org.eclipse.leshan.core.demo.cli.converters.ResourcePathConverter;
-import org.eclipse.leshan.core.demo.cli.converters.StrictlyPositiveIntegerConverter;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.util.StringUtils;
+import org.eclipse.leshan.demo.cli.MultiParameterException;
+import org.eclipse.leshan.demo.cli.StandardHelpOptions;
+import org.eclipse.leshan.demo.cli.VersionProvider;
+import org.eclipse.leshan.demo.cli.converters.CIDConverter;
+import org.eclipse.leshan.demo.cli.converters.InetAddressConverter;
+import org.eclipse.leshan.demo.cli.converters.ResourcePathConverter;
+import org.eclipse.leshan.demo.cli.converters.StrictlyPositiveIntegerConverter;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -49,7 +49,7 @@ import picocli.CommandLine.Spec;
 /**
  * This is the class defining the Command Line Interface of Leshan Client Demo.
  */
-@Command(name = "leshan-client-demo",
+@Command(name = "leshan-demo-client",
          sortOptions = false,
          description = "%n"//
                  + "@|italic " //

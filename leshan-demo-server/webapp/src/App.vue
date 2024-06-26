@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import LeshanNavBar from "@leshan-server-core-demo/components/LeshanNavBar.vue";
+import LeshanNavBar from "@leshan-demo-servers-shared/components/LeshanNavBar.vue";
 
 export default {
   components: {

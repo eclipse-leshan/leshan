@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Orange - keep one JSON dependency
  *******************************************************************************/
-package org.eclipse.leshan.server.demo.servlet;
+package org.eclipse.leshan.demo.server.servlet;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -83,12 +83,12 @@ import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
 import org.eclipse.leshan.core.response.WriteCompositeResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.eclipse.leshan.demo.server.servlet.json.JacksonLinkSerializer;
+import org.eclipse.leshan.demo.server.servlet.json.JacksonLwM2mNodeDeserializer;
+import org.eclipse.leshan.demo.server.servlet.json.JacksonLwM2mNodeSerializer;
+import org.eclipse.leshan.demo.server.servlet.json.JacksonRegistrationSerializer;
+import org.eclipse.leshan.demo.server.servlet.json.JacksonResponseSerializer;
 import org.eclipse.leshan.server.LeshanServer;
-import org.eclipse.leshan.server.demo.servlet.json.JacksonLinkSerializer;
-import org.eclipse.leshan.server.demo.servlet.json.JacksonLwM2mNodeDeserializer;
-import org.eclipse.leshan.server.demo.servlet.json.JacksonLwM2mNodeSerializer;
-import org.eclipse.leshan.server.demo.servlet.json.JacksonRegistrationSerializer;
-import org.eclipse.leshan.server.demo.servlet.json.JacksonResponseSerializer;
 import org.eclipse.leshan.server.registration.Registration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

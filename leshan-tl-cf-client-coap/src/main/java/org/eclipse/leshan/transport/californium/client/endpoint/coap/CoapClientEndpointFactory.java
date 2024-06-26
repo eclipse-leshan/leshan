@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.californium.endpoint.coap;
+package org.eclipse.leshan.transport.californium.client.endpoint.coap;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -27,17 +27,17 @@ import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.UDPConnector;
 import org.eclipse.californium.elements.config.Configuration;
-import org.eclipse.leshan.client.californium.CaliforniumConnectionController;
-import org.eclipse.leshan.client.californium.endpoint.CaliforniumClientEndpointFactory;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServerInfo;
-import org.eclipse.leshan.core.californium.DefaultExceptionTranslator;
-import org.eclipse.leshan.core.californium.ExceptionTranslator;
-import org.eclipse.leshan.core.californium.identity.DefaultCoapIdentityHandler;
-import org.eclipse.leshan.core.californium.identity.IdentityHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
+import org.eclipse.leshan.transport.californium.DefaultExceptionTranslator;
+import org.eclipse.leshan.transport.californium.ExceptionTranslator;
+import org.eclipse.leshan.transport.californium.client.CaliforniumConnectionController;
+import org.eclipse.leshan.transport.californium.client.endpoint.CaliforniumClientEndpointFactory;
+import org.eclipse.leshan.transport.californium.identity.DefaultCoapIdentityHandler;
+import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
 
 public class CoapClientEndpointFactory implements CaliforniumClientEndpointFactory {
 

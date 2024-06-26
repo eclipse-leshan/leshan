@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.leshan.core.californium.security;
+package org.eclipse.leshan.transport.californium.security;
 
 import java.net.InetSocketAddress;
 import java.security.cert.CertificateException;
