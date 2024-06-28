@@ -15,7 +15,7 @@
  *     Achim Kraus (Bosch Software Innovations GmbH) - use CoapEndpointBuilder
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap;
+package org.eclipse.leshan.bsserver;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -24,6 +24,13 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.eclipse.leshan.bsserver.endpoint.DefaultCompositeBootstrapServerEndpointsProvider;
+import org.eclipse.leshan.bsserver.endpoint.LwM2mBootstrapServerEndpointsProvider;
+import org.eclipse.leshan.bsserver.model.LwM2mBootstrapModelProvider;
+import org.eclipse.leshan.bsserver.model.StandardBootstrapModelProvider;
+import org.eclipse.leshan.bsserver.request.BootstrapDownlinkRequestSender;
+import org.eclipse.leshan.bsserver.security.BootstrapAuthorizer;
+import org.eclipse.leshan.bsserver.security.BootstrapSecurityStore;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -31,15 +38,8 @@ import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
-import org.eclipse.leshan.server.bootstrap.endpoint.DefaultCompositeBootstrapServerEndpointsProvider;
-import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpointsProvider;
-import org.eclipse.leshan.server.bootstrap.request.BootstrapDownlinkRequestSender;
-import org.eclipse.leshan.server.model.LwM2mBootstrapModelProvider;
-import org.eclipse.leshan.server.model.StandardBootstrapModelProvider;
-import org.eclipse.leshan.server.security.BootstrapAuthorizer;
-import org.eclipse.leshan.server.security.BootstrapSecurityStore;
-import org.eclipse.leshan.server.security.SecurityChecker;
-import org.eclipse.leshan.server.security.ServerSecurityInfo;
+import org.eclipse.leshan.servers.security.SecurityChecker;
+import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap;
+package org.eclipse.leshan.bsserver;
 
 /**
  * Exception raised when {@link BootstrapConfig} is invalid.

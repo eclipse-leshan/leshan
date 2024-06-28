@@ -55,7 +55,7 @@ import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.request.LowerLayerConfig;
 import org.eclipse.leshan.server.request.UplinkRequestReceiver;
-import org.eclipse.leshan.server.security.ServerSecurityInfo;
+import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.coap;
+package org.eclipse.leshan.transport.californium.bsserver.endpoint.coap;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -28,16 +28,16 @@ import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.oscore.OSCoreCoapStackFactory;
 import org.eclipse.californium.oscore.OSCoreCtxDB;
 import org.eclipse.californium.oscore.OSCoreEndpointContextInfo;
+import org.eclipse.leshan.bsserver.LeshanBootstrapServer;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.core.util.Hex;
-import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
+import org.eclipse.leshan.transport.californium.bsserver.BootstrapOscoreContextCleaner;
+import org.eclipse.leshan.transport.californium.bsserver.LwM2mBootstrapOscoreStore;
+import org.eclipse.leshan.transport.californium.bsserver.OscoreBootstrapListener;
 import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
 import org.eclipse.leshan.transport.californium.oscore.cf.InMemoryOscoreContextDB;
-import org.eclipse.leshan.transport.californium.server.bootstrap.BootstrapOscoreContextCleaner;
-import org.eclipse.leshan.transport.californium.server.bootstrap.LwM2mBootstrapOscoreStore;
-import org.eclipse.leshan.transport.californium.server.bootstrap.OscoreBootstrapListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

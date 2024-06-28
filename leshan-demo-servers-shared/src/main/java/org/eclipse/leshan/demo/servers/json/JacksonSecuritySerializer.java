@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.security.PublicKey;
 
 import org.eclipse.leshan.core.util.Hex;
-import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.servers.security.SecurityInfo;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;

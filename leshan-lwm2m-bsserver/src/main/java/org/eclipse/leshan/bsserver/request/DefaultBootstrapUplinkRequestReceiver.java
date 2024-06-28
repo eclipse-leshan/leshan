@@ -13,10 +13,11 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap.request;
+package org.eclipse.leshan.bsserver.request;
 
 import java.net.URI;
 
+import org.eclipse.leshan.bsserver.BootstrapHandler;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DeregisterRequest;
@@ -27,7 +28,6 @@ import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.request.UplinkRequestVisitor;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
-import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
 
 public class DefaultBootstrapUplinkRequestReceiver implements BootstrapUplinkRequestReceiver {
 

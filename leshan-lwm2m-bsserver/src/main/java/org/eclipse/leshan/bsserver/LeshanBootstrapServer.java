@@ -14,12 +14,21 @@
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap;
+package org.eclipse.leshan.bsserver;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.leshan.bsserver.endpoint.BootstrapServerEndpointToolbox;
+import org.eclipse.leshan.bsserver.endpoint.CompositeBootstrapServerEndpointsProvider;
+import org.eclipse.leshan.bsserver.endpoint.LwM2mBootstrapServerEndpoint;
+import org.eclipse.leshan.bsserver.endpoint.LwM2mBootstrapServerEndpointsProvider;
+import org.eclipse.leshan.bsserver.request.BootstrapDownlinkRequestSender;
+import org.eclipse.leshan.bsserver.request.BootstrapUplinkRequestReceiver;
+import org.eclipse.leshan.bsserver.request.DefaultBootstrapDownlinkRequestSender;
+import org.eclipse.leshan.bsserver.request.DefaultBootstrapUplinkRequestReceiver;
+import org.eclipse.leshan.bsserver.security.BootstrapSecurityStore;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
@@ -28,17 +37,7 @@ import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.util.Validate;
-import org.eclipse.leshan.server.bootstrap.endpoint.BootstrapServerEndpointToolbox;
-import org.eclipse.leshan.server.bootstrap.endpoint.CompositeBootstrapServerEndpointsProvider;
-import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpoint;
-import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpointsProvider;
-import org.eclipse.leshan.server.bootstrap.request.BootstrapDownlinkRequestSender;
-import org.eclipse.leshan.server.bootstrap.request.BootstrapUplinkRequestReceiver;
-import org.eclipse.leshan.server.bootstrap.request.DefaultBootstrapDownlinkRequestSender;
-import org.eclipse.leshan.server.bootstrap.request.DefaultBootstrapUplinkRequestReceiver;
-import org.eclipse.leshan.server.endpoint.CompositeServerEndpointsProvider;
-import org.eclipse.leshan.server.security.BootstrapSecurityStore;
-import org.eclipse.leshan.server.security.ServerSecurityInfo;
+import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -155,7 +154,7 @@ public class LeshanBootstrapServer {
     }
 
     public Collection<LwM2mBootstrapServerEndpointsProvider> getEndpointsProvider() {
-        if (endpointsProvider instanceof CompositeServerEndpointsProvider) {
+        if (endpointsProvider instanceof CompositeBootstrapServerEndpointsProvider) {
             return ((CompositeBootstrapServerEndpointsProvider) endpointsProvider).getProviders();
         }
         return Collections.singleton(endpointsProvider);

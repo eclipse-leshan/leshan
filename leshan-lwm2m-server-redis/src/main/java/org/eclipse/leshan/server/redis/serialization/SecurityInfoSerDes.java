@@ -32,7 +32,7 @@ import java.security.spec.KeySpec;
 import java.util.Arrays;
 
 import org.eclipse.leshan.core.util.Hex;
-import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.servers.security.SecurityInfo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;

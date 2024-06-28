@@ -13,15 +13,15 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.transport.californium.server.bootstrap.endpoint;
+package org.eclipse.leshan.transport.californium.bsserver.endpoint;
 
 import java.net.URI;
 
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.leshan.bsserver.LeshanBootstrapServer;
 import org.eclipse.leshan.core.endpoint.Protocol;
-import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
-import org.eclipse.leshan.server.security.ServerSecurityInfo;
+import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.eclipse.leshan.transport.californium.ExceptionTranslator;
 import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
 

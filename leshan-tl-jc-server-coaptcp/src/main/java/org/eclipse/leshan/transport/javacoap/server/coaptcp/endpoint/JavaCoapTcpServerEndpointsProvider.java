@@ -18,8 +18,8 @@ package org.eclipse.leshan.transport.javacoap.server.coaptcp.endpoint;
 import java.net.InetSocketAddress;
 
 import org.eclipse.leshan.core.endpoint.Protocol;
-import org.eclipse.leshan.server.security.SecurityStore;
-import org.eclipse.leshan.server.security.ServerSecurityInfo;
+import org.eclipse.leshan.servers.security.SecurityStore;
+import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.eclipse.leshan.transport.javacoap.identity.DefaultCoapIdentityHandler;
 import org.eclipse.leshan.transport.javacoap.server.coaptcp.transport.CoapTcpTransportResolver;
 import org.eclipse.leshan.transport.javacoap.server.coaptcp.transport.DefaultTransportContextMatcher;

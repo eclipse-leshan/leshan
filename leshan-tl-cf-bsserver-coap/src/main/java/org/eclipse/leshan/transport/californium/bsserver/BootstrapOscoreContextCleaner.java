@@ -13,15 +13,15 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.transport.californium.server.bootstrap;
+package org.eclipse.leshan.transport.californium.bsserver;
 
 import org.eclipse.californium.oscore.OSCoreCtx;
 import org.eclipse.californium.oscore.OSCoreCtxDB;
+import org.eclipse.leshan.bsserver.BootstrapFailureCause;
+import org.eclipse.leshan.bsserver.BootstrapSession;
+import org.eclipse.leshan.bsserver.BootstrapSessionAdapter;
 import org.eclipse.leshan.core.peer.LwM2mIdentity;
 import org.eclipse.leshan.core.peer.OscoreIdentity;
-import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
-import org.eclipse.leshan.server.bootstrap.BootstrapSession;
-import org.eclipse.leshan.server.bootstrap.BootstrapSessionAdapter;
 
 /**
  * This class is responsible to remove {@link OSCoreCtx} from {@link OSCoreCtxDB} on some events.

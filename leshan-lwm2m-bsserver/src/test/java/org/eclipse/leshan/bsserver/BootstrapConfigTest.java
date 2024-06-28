@@ -14,7 +14,7 @@
  *     Bartosz Stolarczyk
  *     Orange Polska S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap;
+package org.eclipse.leshan.bsserver;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;

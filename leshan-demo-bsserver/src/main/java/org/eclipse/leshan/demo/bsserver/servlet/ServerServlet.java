@@ -27,10 +27,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.leshan.bsserver.LeshanBootstrapServer;
+import org.eclipse.leshan.bsserver.endpoint.LwM2mBootstrapServerEndpoint;
 import org.eclipse.leshan.demo.servers.json.PublicKeySerDes;
 import org.eclipse.leshan.demo.servers.json.X509CertificateSerDes;
-import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
-import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpoint;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;

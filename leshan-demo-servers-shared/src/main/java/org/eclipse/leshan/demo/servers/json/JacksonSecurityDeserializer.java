@@ -23,7 +23,7 @@ import java.security.PublicKey;
 import org.eclipse.leshan.core.oscore.OscoreSetting;
 import org.eclipse.leshan.core.security.util.SecurityUtil;
 import org.eclipse.leshan.core.util.Hex;
-import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.servers.security.SecurityInfo;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;

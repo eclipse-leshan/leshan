@@ -40,7 +40,7 @@ import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.LeshanServerBuilder;
-import org.eclipse.leshan.server.security.InMemorySecurityStore;
+import org.eclipse.leshan.servers.security.InMemorySecurityStore;
 import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServerEndpointsProvider;
 import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServerEndpointsProvider.Builder;
 import org.eclipse.leshan.transport.californium.server.endpoint.coap.CoapServerProtocolProvider;

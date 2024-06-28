@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Rikard Höglund (RISE) - additions to support OSCORE
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap;
+package org.eclipse.leshan.bsserver;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -26,6 +26,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.leshan.bsserver.BootstrapConfig.OscoreObject;
+import org.eclipse.leshan.bsserver.BootstrapConfig.ServerSecurity;
 import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.oscore.InvalidOscoreSettingException;
@@ -33,8 +35,6 @@ import org.eclipse.leshan.core.oscore.OscoreSetting;
 import org.eclipse.leshan.core.oscore.OscoreValidator;
 import org.eclipse.leshan.core.security.util.SecurityUtil;
 import org.eclipse.leshan.core.util.StringUtils;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfig.OscoreObject;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 
 /**
  * Check a BootstrapConfig is correct. This is a complex process, we need to check if the different objects are in

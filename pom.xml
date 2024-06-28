@@ -81,11 +81,14 @@ Contributors:
     <!-- library-->
     <module>leshan-lwm2m-core</module>
     <module>leshan-lwm2m-client</module>
+    <module>leshan-lwm2m-servers-shared</module>
+    <module>leshan-lwm2m-bsserver</module>
     <module>leshan-lwm2m-server</module>
     <module>leshan-lwm2m-server-redis</module>
 
     <!-- transport layer based on californiuù -->
     <module>leshan-tl-cf-shared</module>
+    <module>leshan-tl-cf-bsserver-coap</module>
     <module>leshan-tl-cf-client-coap</module>
     <module>leshan-tl-cf-server-coap</module>
 
@@ -157,6 +160,16 @@ Contributors:
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-lwm2m-servers-shared</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-lwm2m-bsserver</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
         <artifactId>leshan-lwm2m-server</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -170,6 +183,11 @@ Contributors:
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>leshan-tl-cf-shared</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-tl-cf-bsserver-coap</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

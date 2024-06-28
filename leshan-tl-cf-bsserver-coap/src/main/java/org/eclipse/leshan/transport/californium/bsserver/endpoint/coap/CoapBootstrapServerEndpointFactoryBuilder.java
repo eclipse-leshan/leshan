@@ -13,33 +13,32 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.coap;
+package org.eclipse.leshan.transport.californium.bsserver.endpoint.coap;
 
 import java.util.List;
 
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
 import org.eclipse.leshan.core.endpoint.Protocol;
-import org.eclipse.leshan.transport.californium.server.endpoint.AbstractEndpointFactoryBuilder;
-import org.eclipse.leshan.transport.californium.server.endpoint.coap.CoapServerEndpointFactory;
+import org.eclipse.leshan.transport.californium.bsserver.endpoint.AbstractEndpointFactoryBuilder;
 
 public class CoapBootstrapServerEndpointFactoryBuilder extends
         AbstractEndpointFactoryBuilder<CoapBootstrapServerEndpointFactoryBuilder, CoapBootstrapServerEndpointFactory> {
 
     @Override
     protected Protocol getSupportedProtocol() {
-        return CoapServerEndpointFactory.getSupportedProtocol();
+        return CoapBootstrapServerEndpointFactory.getSupportedProtocol();
     }
 
     @Override
     public void applyDefaultValue(Configuration configuration) {
-        CoapServerEndpointFactory.applyDefaultValue(configuration);
+        CoapBootstrapServerEndpointFactory.applyDefaultValue(configuration);
 
     }
 
     @Override
     public List<ModuleDefinitionsProvider> getModuleDefinitionsProviders() {
-        return CoapServerEndpointFactory.getModuleDefinitionsProviders();
+        return CoapBootstrapServerEndpointFactory.getModuleDefinitionsProviders();
     }
 
     @Override

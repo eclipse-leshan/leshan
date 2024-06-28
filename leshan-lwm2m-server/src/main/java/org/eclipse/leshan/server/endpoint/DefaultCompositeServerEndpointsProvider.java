@@ -26,7 +26,7 @@ import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.request.UplinkRequestReceiver;
-import org.eclipse.leshan.server.security.ServerSecurityInfo;
+import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 
 /**
  * Default implementation of {@link CompositeServerEndpointsProvider}.

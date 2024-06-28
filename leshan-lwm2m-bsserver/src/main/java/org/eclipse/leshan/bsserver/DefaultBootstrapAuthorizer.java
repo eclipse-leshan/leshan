@@ -13,17 +13,17 @@
  * Contributors:
  *     Orange - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap;
+package org.eclipse.leshan.bsserver;
 
 import java.util.Iterator;
 
+import org.eclipse.leshan.bsserver.security.BootstrapAuthorizer;
+import org.eclipse.leshan.bsserver.security.BootstrapSecurityStore;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BootstrapRequest;
-import org.eclipse.leshan.server.security.Authorization;
-import org.eclipse.leshan.server.security.BootstrapAuthorizer;
-import org.eclipse.leshan.server.security.BootstrapSecurityStore;
-import org.eclipse.leshan.server.security.SecurityChecker;
-import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.servers.security.Authorization;
+import org.eclipse.leshan.servers.security.SecurityChecker;
+import org.eclipse.leshan.servers.security.SecurityInfo;
 
 public class DefaultBootstrapAuthorizer implements BootstrapAuthorizer {
 

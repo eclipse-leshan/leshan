@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap.endpoint;
+package org.eclipse.leshan.bsserver.endpoint;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -22,10 +22,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.leshan.bsserver.LeshanBootstrapServer;
+import org.eclipse.leshan.bsserver.request.BootstrapUplinkRequestReceiver;
 import org.eclipse.leshan.core.util.Validate;
-import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
-import org.eclipse.leshan.server.bootstrap.request.BootstrapUplinkRequestReceiver;
-import org.eclipse.leshan.server.security.ServerSecurityInfo;
+import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 
 /**
  * Default implementation of {@link CompositeBootstrapServerEndpointsProvider}.

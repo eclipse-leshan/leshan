@@ -14,8 +14,9 @@
  *     Sierra Wireless - initial API and implementation
  *     Bosch Software Innovations GmbH - extension of ticket based asynchronous call.
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap.request;
+package org.eclipse.leshan.bsserver.request;
 
+import org.eclipse.leshan.bsserver.BootstrapSession;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.DownlinkRequest;
@@ -29,7 +30,6 @@ import org.eclipse.leshan.core.request.exception.UnconnectedPeerException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
-import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 
 /**
  * A {@link BootstrapDownlinkRequestSender} is responsible to send LWM2M {@link BootstrapDownlinkRequest} for a given

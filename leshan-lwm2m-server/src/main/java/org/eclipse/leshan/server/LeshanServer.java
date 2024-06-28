@@ -71,11 +71,11 @@ import org.eclipse.leshan.server.request.DownlinkRequestSender;
 import org.eclipse.leshan.server.request.LowerLayerConfig;
 import org.eclipse.leshan.server.request.UplinkRequestReceiver;
 import org.eclipse.leshan.server.security.Authorizer;
-import org.eclipse.leshan.server.security.SecurityInfo;
-import org.eclipse.leshan.server.security.SecurityStore;
-import org.eclipse.leshan.server.security.ServerSecurityInfo;
 import org.eclipse.leshan.server.send.SendHandler;
 import org.eclipse.leshan.server.send.SendService;
+import org.eclipse.leshan.servers.security.SecurityInfo;
+import org.eclipse.leshan.servers.security.SecurityStore;
+import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

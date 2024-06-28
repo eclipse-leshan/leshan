@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.transport.californium.server.bootstrap;
+package org.eclipse.leshan.transport.californium.bsserver;
 
 import java.net.InetSocketAddress;
 
@@ -25,8 +25,8 @@ import org.eclipse.californium.scandium.dtls.PskSecretResult;
 import org.eclipse.californium.scandium.dtls.pskstore.AdvancedPskStore;
 import org.eclipse.californium.scandium.util.SecretUtil;
 import org.eclipse.californium.scandium.util.ServerNames;
-import org.eclipse.leshan.server.security.BootstrapSecurityStore;
-import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.bsserver.security.BootstrapSecurityStore;
+import org.eclipse.leshan.servers.security.SecurityInfo;
 
 /**
  * PSK Store to feed a Bootstrap server.

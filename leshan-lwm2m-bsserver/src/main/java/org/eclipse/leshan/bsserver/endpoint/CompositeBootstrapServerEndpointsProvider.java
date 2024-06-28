@@ -13,11 +13,9 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap.endpoint;
+package org.eclipse.leshan.bsserver.endpoint;
 
 import java.util.Collection;
-
-import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
 
 /**
  * A {@link LwM2mBootstrapServerEndpointsProvider} composed of several internal
@@ -30,7 +28,7 @@ import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
 public interface CompositeBootstrapServerEndpointsProvider extends LwM2mBootstrapServerEndpointsProvider {
 
     /**
-     * @return all internal {@link LwM2mServerEndpointsProvider}.
+     * @return all internal {@link LwM2mBootstrapServerEndpointsProvider}.
      */
     Collection<LwM2mBootstrapServerEndpointsProvider> getProviders();
 }

@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap.request;
+package org.eclipse.leshan.bsserver.request;
 
 import java.net.URI;
 

@@ -28,12 +28,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.leshan.bsserver.BootstrapConfig;
+import org.eclipse.leshan.bsserver.EditableBootstrapConfigStore;
+import org.eclipse.leshan.bsserver.InvalidConfigurationException;
 import org.eclipse.leshan.demo.bsserver.json.ByteArraySerializer;
 import org.eclipse.leshan.demo.bsserver.json.EnumSetDeserializer;
 import org.eclipse.leshan.demo.bsserver.json.EnumSetSerializer;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
-import org.eclipse.leshan.server.bootstrap.EditableBootstrapConfigStore;
-import org.eclipse.leshan.server.bootstrap.InvalidConfigurationException;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParseException;

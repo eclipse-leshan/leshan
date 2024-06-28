@@ -25,6 +25,10 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.eclipse.jetty.servlets.EventSource;
 import org.eclipse.jetty.servlets.EventSourceServlet;
+import org.eclipse.leshan.bsserver.BootstrapFailureCause;
+import org.eclipse.leshan.bsserver.BootstrapSession;
+import org.eclipse.leshan.bsserver.BootstrapSessionListener;
+import org.eclipse.leshan.bsserver.LeshanBootstrapServer;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
@@ -34,10 +38,6 @@ import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
-import org.eclipse.leshan.server.bootstrap.BootstrapSession;
-import org.eclipse.leshan.server.bootstrap.BootstrapSessionListener;
-import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

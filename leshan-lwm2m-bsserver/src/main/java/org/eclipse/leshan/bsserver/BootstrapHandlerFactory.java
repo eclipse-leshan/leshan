@@ -13,9 +13,9 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap;
+package org.eclipse.leshan.bsserver;
 
-import org.eclipse.leshan.server.bootstrap.request.BootstrapDownlinkRequestSender;
+import org.eclipse.leshan.bsserver.request.BootstrapDownlinkRequestSender;
 
 /**
  * Creates {@link BootstrapHandler}.

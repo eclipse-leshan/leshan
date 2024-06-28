@@ -13,18 +13,20 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap;
+package org.eclipse.leshan.bsserver;
 
-import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.CANCELLED;
-import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.FINISH_FAILED;
-import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.INTERNAL_SERVER_ERROR;
-import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.NO_BOOTSTRAP_CONFIG;
-import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.REQUEST_FAILED;
-import static org.eclipse.leshan.server.bootstrap.BootstrapFailureCause.UNAUTHORIZED;
+import static org.eclipse.leshan.bsserver.BootstrapFailureCause.CANCELLED;
+import static org.eclipse.leshan.bsserver.BootstrapFailureCause.FINISH_FAILED;
+import static org.eclipse.leshan.bsserver.BootstrapFailureCause.INTERNAL_SERVER_ERROR;
+import static org.eclipse.leshan.bsserver.BootstrapFailureCause.NO_BOOTSTRAP_CONFIG;
+import static org.eclipse.leshan.bsserver.BootstrapFailureCause.REQUEST_FAILED;
+import static org.eclipse.leshan.bsserver.BootstrapFailureCause.UNAUTHORIZED;
 
 import java.net.URI;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.eclipse.leshan.bsserver.BootstrapSessionManager.BootstrapPolicy;
+import org.eclipse.leshan.bsserver.request.BootstrapDownlinkRequestSender;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
@@ -35,8 +37,6 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.core.util.Validate;
-import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager.BootstrapPolicy;
-import org.eclipse.leshan.server.bootstrap.request.BootstrapDownlinkRequestSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

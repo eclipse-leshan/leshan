@@ -13,11 +13,12 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.security;
+package org.eclipse.leshan.bsserver.security;
 
 import java.util.Iterator;
 
 import org.eclipse.leshan.core.peer.OscoreIdentity;
+import org.eclipse.leshan.servers.security.SecurityInfo;
 
 /**
  * A store containing data needed to authenticate clients.

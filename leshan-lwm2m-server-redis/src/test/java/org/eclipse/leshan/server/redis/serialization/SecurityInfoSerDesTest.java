@@ -27,7 +27,7 @@ import java.security.spec.ECPublicKeySpec;
 import java.security.spec.KeySpec;
 
 import org.eclipse.leshan.core.util.Hex;
-import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.servers.security.SecurityInfo;
 import org.junit.jupiter.api.Test;
 
 public class SecurityInfoSerDesTest {

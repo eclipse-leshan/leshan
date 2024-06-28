@@ -14,14 +14,14 @@
  *     Sierra Wireless - initial API and implementation
  *     Rikard Höglund (RISE) - additions to support OSCORE
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap;
+package org.eclipse.leshan.bsserver;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.eclipse.leshan.bsserver.BootstrapConfig.ServerSecurity;
 import org.eclipse.leshan.core.SecurityMode;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 
 /**
  * Simple bootstrap store implementation storing bootstrap configuration information in memory.

@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.transport.californium.server.bootstrap.endpoint;
+package org.eclipse.leshan.transport.californium.bsserver.endpoint;
 
 import java.net.URI;
 import java.util.List;

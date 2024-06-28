@@ -18,6 +18,10 @@ package org.eclipse.leshan.server.security;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.servers.security.Authorization;
+import org.eclipse.leshan.servers.security.SecurityChecker;
+import org.eclipse.leshan.servers.security.SecurityInfo;
+import org.eclipse.leshan.servers.security.SecurityStore;
 
 /**
  * A default {@link Authorizer} implementation

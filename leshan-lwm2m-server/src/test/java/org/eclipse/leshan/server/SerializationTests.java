@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Map;
 
-import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.servers.security.SecurityInfo;
 import org.junit.jupiter.api.Test;
 
 public class SerializationTests {

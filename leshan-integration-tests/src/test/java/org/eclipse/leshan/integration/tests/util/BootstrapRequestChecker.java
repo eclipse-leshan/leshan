@@ -15,12 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.util;
 
+import org.eclipse.leshan.bsserver.BootstrapSession;
+import org.eclipse.leshan.bsserver.BootstrapSessionAdapter;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.server.bootstrap.BootstrapSession;
-import org.eclipse.leshan.server.bootstrap.BootstrapSessionAdapter;
 
 public class BootstrapRequestChecker extends BootstrapSessionAdapter {
 
@@ -28,7 +28,7 @@ public class BootstrapRequestChecker extends BootstrapSessionAdapter {
         boolean validate(BootstrapDownlinkRequest<? extends LwM2mResponse> request);
     }
 
-    private RequestValidator validator;
+    private final RequestValidator validator;
     private boolean valid = true;
 
     public BootstrapRequestChecker(RequestValidator validator) {

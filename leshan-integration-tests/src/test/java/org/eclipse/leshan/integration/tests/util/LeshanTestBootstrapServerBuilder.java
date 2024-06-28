@@ -27,6 +27,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.config.DtlsConfig;
+import org.eclipse.leshan.bsserver.BootstrapHandlerFactory;
+import org.eclipse.leshan.bsserver.BootstrapSessionManager;
+import org.eclipse.leshan.bsserver.InMemoryBootstrapConfigStore;
+import org.eclipse.leshan.bsserver.LeshanBootstrapServerBuilder;
+import org.eclipse.leshan.bsserver.endpoint.LwM2mBootstrapServerEndpointsProvider;
+import org.eclipse.leshan.bsserver.security.BootstrapSecurityStore;
+import org.eclipse.leshan.bsserver.security.BootstrapSecurityStoreAdapter;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
@@ -36,21 +43,14 @@ import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.integration.tests.util.cf.CertPair;
 import org.eclipse.leshan.integration.tests.util.cf.MapBasedCertificateProvider;
-import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
-import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
-import org.eclipse.leshan.server.bootstrap.InMemoryBootstrapConfigStore;
-import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServerBuilder;
-import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpointsProvider;
-import org.eclipse.leshan.server.security.BootstrapSecurityStore;
-import org.eclipse.leshan.server.security.BootstrapSecurityStoreAdapter;
-import org.eclipse.leshan.server.security.EditableSecurityStore;
-import org.eclipse.leshan.server.security.ServerSecurityInfo;
-import org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.BootstrapServerProtocolProvider;
-import org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.CaliforniumBootstrapServerEndpointFactory;
-import org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.CaliforniumBootstrapServerEndpointsProvider;
-import org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.coap.CoapBootstrapServerProtocolProvider;
-import org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.coap.CoapOscoreBootstrapServerEndpointFactory;
-import org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.coaps.CoapsBootstrapServerProtocolProvider;
+import org.eclipse.leshan.servers.security.EditableSecurityStore;
+import org.eclipse.leshan.servers.security.ServerSecurityInfo;
+import org.eclipse.leshan.transport.californium.bsserver.endpoint.BootstrapServerProtocolProvider;
+import org.eclipse.leshan.transport.californium.bsserver.endpoint.CaliforniumBootstrapServerEndpointFactory;
+import org.eclipse.leshan.transport.californium.bsserver.endpoint.CaliforniumBootstrapServerEndpointsProvider;
+import org.eclipse.leshan.transport.californium.bsserver.endpoint.coap.CoapBootstrapServerProtocolProvider;
+import org.eclipse.leshan.transport.californium.bsserver.endpoint.coap.CoapOscoreBootstrapServerEndpointFactory;
+import org.eclipse.leshan.transport.californium.bsserver.endpoint.coaps.CoapsBootstrapServerProtocolProvider;
 
 public class LeshanTestBootstrapServerBuilder extends LeshanBootstrapServerBuilder {
 

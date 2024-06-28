@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.coap;
+package org.eclipse.leshan.transport.californium.bsserver.endpoint.coap;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -24,8 +24,8 @@ import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
-import org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.BootstrapServerProtocolProvider;
-import org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.CaliforniumBootstrapServerEndpointFactory;
+import org.eclipse.leshan.transport.californium.bsserver.endpoint.BootstrapServerProtocolProvider;
+import org.eclipse.leshan.transport.californium.bsserver.endpoint.CaliforniumBootstrapServerEndpointFactory;
 
 public class CoapBootstrapServerProtocolProvider implements BootstrapServerProtocolProvider {
 

@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
-package org.eclipse.leshan.server.security;
+package org.eclipse.leshan.servers.security;
 
 import java.io.Serializable;
 import java.security.PublicKey;

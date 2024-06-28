@@ -32,6 +32,8 @@ import static org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder.
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
 
 import org.eclipse.californium.oscore.OSException;
+import org.eclipse.leshan.bsserver.BootstrapConfig;
+import org.eclipse.leshan.bsserver.InvalidConfigurationException;
 import org.eclipse.leshan.client.object.Oscore;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.endpoint.Protocol;
@@ -42,11 +44,9 @@ import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
-import org.eclipse.leshan.server.bootstrap.InvalidConfigurationException;
-import org.eclipse.leshan.server.security.InMemorySecurityStore;
-import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
-import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.servers.security.InMemorySecurityStore;
+import org.eclipse.leshan.servers.security.NonUniqueSecurityInfoException;
+import org.eclipse.leshan.servers.security.SecurityInfo;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

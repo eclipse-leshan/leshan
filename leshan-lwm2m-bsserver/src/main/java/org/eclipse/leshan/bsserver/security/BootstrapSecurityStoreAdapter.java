@@ -13,12 +13,14 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.security;
+package org.eclipse.leshan.bsserver.security;
 
 import java.util.Arrays;
 import java.util.Iterator;
 
 import org.eclipse.leshan.core.peer.OscoreIdentity;
+import org.eclipse.leshan.servers.security.SecurityInfo;
+import org.eclipse.leshan.servers.security.SecurityStore;
 
 public class BootstrapSecurityStoreAdapter implements BootstrapSecurityStore {
 

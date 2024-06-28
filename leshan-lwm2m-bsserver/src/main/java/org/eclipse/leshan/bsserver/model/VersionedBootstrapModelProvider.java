@@ -13,25 +13,25 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.model;
+package org.eclipse.leshan.bsserver.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.leshan.bsserver.BootstrapSession;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
-import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 
 /**
  * A {@link LwM2mBootstrapModelProvider} which supports object versioning.
  */
 public class VersionedBootstrapModelProvider implements LwM2mBootstrapModelProvider {
 
-    private LwM2mModelRepository repository;
+    private final LwM2mModelRepository repository;
 
     public VersionedBootstrapModelProvider(Collection<ObjectModel> objectModels) {
         this.repository = new LwM2mModelRepository(objectModels);

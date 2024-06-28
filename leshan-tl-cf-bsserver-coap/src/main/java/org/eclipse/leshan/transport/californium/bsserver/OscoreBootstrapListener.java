@@ -12,17 +12,17 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.transport.californium.server.bootstrap;
+package org.eclipse.leshan.transport.californium.bsserver;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.eclipse.leshan.bsserver.BootstrapFailureCause;
+import org.eclipse.leshan.bsserver.BootstrapSession;
+import org.eclipse.leshan.bsserver.BootstrapSessionAdapter;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
-import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
-import org.eclipse.leshan.server.bootstrap.BootstrapSession;
-import org.eclipse.leshan.server.bootstrap.BootstrapSessionAdapter;
 
 // TODO OSCORE temporary code to be able to implement get by uri in LwM2mBootstrapOscoreStore
 // but this should be removed when https://github.com/eclipse/leshan/pull/1212#discussion_r831056432 will be implemented

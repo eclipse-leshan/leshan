@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Rikard Höglund (RISE) - additions to support OSCORE
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap;
+package org.eclipse.leshan.bsserver;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,6 +24,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import org.eclipse.leshan.bsserver.BootstrapConfig.ACLConfig;
+import org.eclipse.leshan.bsserver.BootstrapConfig.OscoreObject;
+import org.eclipse.leshan.bsserver.BootstrapConfig.ServerConfig;
+import org.eclipse.leshan.bsserver.BootstrapConfig.ServerSecurity;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -39,10 +43,6 @@ import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.util.datatype.ULong;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ACLConfig;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfig.OscoreObject;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 
 public class BootstrapUtil {
     public static LwM2mObjectInstance toSecurityInstance(int instanceId, ServerSecurity securityConfig) {

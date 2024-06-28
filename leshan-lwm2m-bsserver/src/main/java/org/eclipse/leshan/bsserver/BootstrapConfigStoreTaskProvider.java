@@ -14,7 +14,7 @@
  *     Sierra Wireless - initial API and implementation
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap;
+package org.eclipse.leshan.bsserver;
 
 import java.util.ArrayList;
 import java.util.HashMap;

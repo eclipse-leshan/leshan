@@ -34,6 +34,7 @@ import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.ass
 import java.security.cert.CertificateEncodingException;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.leshan.bsserver.InvalidConfigurationException;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.integration.tests.util.Credentials;
@@ -43,10 +44,9 @@ import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
-import org.eclipse.leshan.server.bootstrap.InvalidConfigurationException;
-import org.eclipse.leshan.server.security.InMemorySecurityStore;
-import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
-import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.servers.security.InMemorySecurityStore;
+import org.eclipse.leshan.servers.security.NonUniqueSecurityInfoException;
+import org.eclipse.leshan.servers.security.SecurityInfo;
 import org.eclipse.leshan.transport.californium.client.endpoint.CaliforniumClientEndpointsProvider;
 import org.eclipse.leshan.transport.californium.client.endpoint.coap.CoapClientProtocolProvider;
 import org.eclipse.leshan.transport.californium.client.endpoint.coaps.CoapsClientProtocolProvider;

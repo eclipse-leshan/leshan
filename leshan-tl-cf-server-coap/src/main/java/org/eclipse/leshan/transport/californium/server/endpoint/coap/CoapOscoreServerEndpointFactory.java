@@ -33,7 +33,7 @@ import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
-import org.eclipse.leshan.server.security.EditableSecurityStore;
+import org.eclipse.leshan.servers.security.EditableSecurityStore;
 import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
 import org.eclipse.leshan.transport.californium.oscore.cf.InMemoryOscoreContextDB;
 import org.eclipse.leshan.transport.californium.server.LwM2mOscoreStore;

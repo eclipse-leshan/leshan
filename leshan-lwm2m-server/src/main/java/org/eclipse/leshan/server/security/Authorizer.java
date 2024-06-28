@@ -19,6 +19,7 @@ import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.servers.security.Authorization;
 
 /**
  * This class is responsible to authorize up-link request from LWM2M client.

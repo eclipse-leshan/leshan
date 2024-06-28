@@ -21,7 +21,7 @@ import java.util.List;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.request.UplinkRequestReceiver;
-import org.eclipse.leshan.server.security.ServerSecurityInfo;
+import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 
 public interface LwM2mServerEndpointsProvider {
 

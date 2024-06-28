@@ -33,9 +33,9 @@ import org.eclipse.leshan.demo.servers.json.JacksonSecurityDeserializer;
 import org.eclipse.leshan.demo.servers.json.JacksonSecuritySerializer;
 import org.eclipse.leshan.demo.servers.json.PublicKeySerDes;
 import org.eclipse.leshan.demo.servers.json.X509CertificateSerDes;
-import org.eclipse.leshan.server.security.EditableSecurityStore;
-import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
-import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.servers.security.EditableSecurityStore;
+import org.eclipse.leshan.servers.security.NonUniqueSecurityInfoException;
+import org.eclipse.leshan.servers.security.SecurityInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

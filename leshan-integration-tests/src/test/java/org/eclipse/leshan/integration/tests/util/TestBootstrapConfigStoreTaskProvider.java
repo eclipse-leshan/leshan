@@ -19,11 +19,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.eclipse.leshan.bsserver.BootstrapConfigStore;
+import org.eclipse.leshan.bsserver.BootstrapConfigStoreTaskProvider;
+import org.eclipse.leshan.bsserver.BootstrapSession;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfigStoreTaskProvider;
-import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 
 /**
  * A custom BootstrapConfigStoreTaskProvider which allow to start bootstrap session with a custom

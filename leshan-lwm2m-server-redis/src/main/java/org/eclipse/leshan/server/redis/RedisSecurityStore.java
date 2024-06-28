@@ -22,11 +22,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.server.redis.serialization.SecurityInfoSerDes;
-import org.eclipse.leshan.server.security.EditableSecurityStore;
-import org.eclipse.leshan.server.security.NonUniqueSecurityInfoException;
-import org.eclipse.leshan.server.security.SecurityInfo;
-import org.eclipse.leshan.server.security.SecurityStore;
-import org.eclipse.leshan.server.security.SecurityStoreListener;
+import org.eclipse.leshan.servers.security.EditableSecurityStore;
+import org.eclipse.leshan.servers.security.NonUniqueSecurityInfoException;
+import org.eclipse.leshan.servers.security.SecurityInfo;
+import org.eclipse.leshan.servers.security.SecurityStore;
+import org.eclipse.leshan.servers.security.SecurityStoreListener;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.params.ScanParams;

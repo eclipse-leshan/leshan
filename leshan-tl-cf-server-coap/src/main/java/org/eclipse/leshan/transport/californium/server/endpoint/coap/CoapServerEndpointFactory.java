@@ -37,7 +37,7 @@ import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
-import org.eclipse.leshan.server.security.ServerSecurityInfo;
+import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.eclipse.leshan.transport.californium.DefaultExceptionTranslator;
 import org.eclipse.leshan.transport.californium.ExceptionTranslator;
 import org.eclipse.leshan.transport.californium.identity.DefaultCoapIdentityHandler;

@@ -24,9 +24,9 @@ import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationListener;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
-import org.eclipse.leshan.server.security.EditableSecurityStore;
-import org.eclipse.leshan.server.security.SecurityInfo;
-import org.eclipse.leshan.server.security.SecurityStoreListener;
+import org.eclipse.leshan.servers.security.EditableSecurityStore;
+import org.eclipse.leshan.servers.security.SecurityInfo;
+import org.eclipse.leshan.servers.security.SecurityStoreListener;
 
 /**
  * This class is responsible to remove {@link OSCoreCtx} from {@link OSCoreCtxDB} on some events.

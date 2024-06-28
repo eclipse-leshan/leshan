@@ -15,15 +15,15 @@
  *     Achim Kraus (Bosch Software Innovations GmbH) - use Identity as destination
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap.request;
+package org.eclipse.leshan.bsserver.request;
 
+import org.eclipse.leshan.bsserver.BootstrapSession;
+import org.eclipse.leshan.bsserver.endpoint.LwM2mBootstrapServerEndpoint;
+import org.eclipse.leshan.bsserver.endpoint.LwM2mBootstrapServerEndpointsProvider;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
-import org.eclipse.leshan.server.bootstrap.BootstrapSession;
-import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpoint;
-import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpointsProvider;
 
 /**
  * The default implementation of {@link BootstrapDownlinkRequestSender}.

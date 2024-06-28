@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.transport.californium.server.bootstrap;
+package org.eclipse.leshan.transport.californium.bsserver;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -37,20 +37,20 @@ import java.util.Iterator;
 
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
+import org.eclipse.leshan.bsserver.BootstrapConfig;
+import org.eclipse.leshan.bsserver.BootstrapConfigStore;
+import org.eclipse.leshan.bsserver.BootstrapSession;
+import org.eclipse.leshan.bsserver.LeshanBootstrapServer;
+import org.eclipse.leshan.bsserver.LeshanBootstrapServerBuilder;
+import org.eclipse.leshan.bsserver.security.BootstrapSecurityStore;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.core.util.Hex;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
-import org.eclipse.leshan.server.bootstrap.BootstrapSession;
-import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
-import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServerBuilder;
-import org.eclipse.leshan.server.security.BootstrapSecurityStore;
-import org.eclipse.leshan.server.security.SecurityInfo;
-import org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.CaliforniumBootstrapServerEndpointsProvider;
-import org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.CaliforniumBootstrapServerEndpointsProvider.Builder;
-import org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.coap.CoapBootstrapServerProtocolProvider;
-import org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.coaps.CoapsBootstrapServerProtocolProvider;
+import org.eclipse.leshan.servers.security.SecurityInfo;
+import org.eclipse.leshan.transport.californium.bsserver.endpoint.CaliforniumBootstrapServerEndpointsProvider;
+import org.eclipse.leshan.transport.californium.bsserver.endpoint.CaliforniumBootstrapServerEndpointsProvider.Builder;
+import org.eclipse.leshan.transport.californium.bsserver.endpoint.coap.CoapBootstrapServerProtocolProvider;
+import org.eclipse.leshan.transport.californium.bsserver.endpoint.coaps.CoapsBootstrapServerProtocolProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

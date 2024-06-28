@@ -54,7 +54,7 @@ import org.eclipse.leshan.server.endpoint.ServerEndpointToolbox;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.profile.ClientProfile;
 import org.eclipse.leshan.server.request.UplinkRequestReceiver;
-import org.eclipse.leshan.server.security.ServerSecurityInfo;
+import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.eclipse.leshan.transport.californium.ExceptionTranslator;
 import org.eclipse.leshan.transport.californium.ObserveUtil;
 import org.eclipse.leshan.transport.californium.identity.IdentityHandler;

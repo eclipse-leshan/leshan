@@ -13,25 +13,25 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap;
+package org.eclipse.leshan.bsserver;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.leshan.bsserver.BootstrapTaskProvider.Tasks;
+import org.eclipse.leshan.bsserver.model.LwM2mBootstrapModelProvider;
+import org.eclipse.leshan.bsserver.model.StandardBootstrapModelProvider;
+import org.eclipse.leshan.bsserver.security.BootstrapAuthorizer;
+import org.eclipse.leshan.bsserver.security.BootstrapSecurityStore;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.util.Validate;
-import org.eclipse.leshan.server.bootstrap.BootstrapTaskProvider.Tasks;
-import org.eclipse.leshan.server.model.LwM2mBootstrapModelProvider;
-import org.eclipse.leshan.server.model.StandardBootstrapModelProvider;
-import org.eclipse.leshan.server.security.Authorization;
-import org.eclipse.leshan.server.security.BootstrapAuthorizer;
-import org.eclipse.leshan.server.security.BootstrapSecurityStore;
-import org.eclipse.leshan.server.security.SecurityChecker;
+import org.eclipse.leshan.servers.security.Authorization;
+import org.eclipse.leshan.servers.security.SecurityChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

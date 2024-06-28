@@ -28,14 +28,14 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.eclipse.leshan.bsserver.BootstrapConfig;
+import org.eclipse.leshan.bsserver.EditableBootstrapConfigStore;
+import org.eclipse.leshan.bsserver.InMemoryBootstrapConfigStore;
+import org.eclipse.leshan.bsserver.InvalidConfigurationException;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.demo.bsserver.json.ByteArraySerializer;
 import org.eclipse.leshan.demo.bsserver.json.EnumSetDeserializer;
 import org.eclipse.leshan.demo.bsserver.json.EnumSetSerializer;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
-import org.eclipse.leshan.server.bootstrap.EditableBootstrapConfigStore;
-import org.eclipse.leshan.server.bootstrap.InMemoryBootstrapConfigStore;
-import org.eclipse.leshan.server.bootstrap.InvalidConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

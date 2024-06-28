@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.transport.californium.server;
+package org.eclipse.leshan.transport.californium.bsserver;
 
 import java.security.Principal;
 import java.security.PublicKey;
@@ -26,7 +26,7 @@ import org.eclipse.californium.elements.auth.X509CertPath;
 import org.eclipse.californium.elements.util.Filter;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
-import org.eclipse.leshan.server.security.SecurityInfo;
+import org.eclipse.leshan.servers.security.SecurityInfo;
 
 /**
  * This class is responsible to remove DTLS connection for a given SecurityInfo.

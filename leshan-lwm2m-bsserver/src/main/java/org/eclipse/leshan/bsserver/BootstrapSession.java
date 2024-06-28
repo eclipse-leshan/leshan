@@ -13,16 +13,16 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.bootstrap;
+package org.eclipse.leshan.bsserver;
 
 import java.net.URI;
 import java.util.Map;
 
+import org.eclipse.leshan.bsserver.security.BootstrapAuthorizer;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.server.security.BootstrapAuthorizer;
 
 /**
  * Represent a single Bootstrapping session.

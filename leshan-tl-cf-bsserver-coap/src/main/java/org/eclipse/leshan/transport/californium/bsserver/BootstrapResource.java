@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.transport.californium.server.bootstrap;
+package org.eclipse.leshan.transport.californium.bsserver;
 
 import static org.eclipse.leshan.transport.californium.ResponseCodeUtil.toCoapResponseCode;
 
@@ -24,12 +24,12 @@ import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.CoapExchange;
+import org.eclipse.leshan.bsserver.request.BootstrapUplinkRequestReceiver;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.response.BootstrapResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
-import org.eclipse.leshan.server.bootstrap.request.BootstrapUplinkRequestReceiver;
 import org.eclipse.leshan.transport.californium.LwM2mCoapResource;
 import org.eclipse.leshan.transport.californium.identity.IdentityHandlerProvider;
 import org.slf4j.Logger;

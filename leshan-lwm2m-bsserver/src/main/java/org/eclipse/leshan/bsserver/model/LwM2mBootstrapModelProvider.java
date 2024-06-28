@@ -13,14 +13,14 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.model;
+package org.eclipse.leshan.bsserver.model;
 
 import java.util.Map;
 
+import org.eclipse.leshan.bsserver.BootstrapSession;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
-import org.eclipse.leshan.server.bootstrap.BootstrapSession;
 
 /**
  * A <code>LwM2mBootstrapModelProvider</code> implementation is in charge of returning the description of the LWM2M

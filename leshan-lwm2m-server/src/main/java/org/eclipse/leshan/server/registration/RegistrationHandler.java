@@ -30,8 +30,8 @@ import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.core.response.UpdateResponse;
 import org.eclipse.leshan.server.registration.RegistrationDataExtractor.RegistrationData;
-import org.eclipse.leshan.server.security.Authorization;
 import org.eclipse.leshan.server.security.Authorizer;
+import org.eclipse.leshan.servers.security.Authorization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

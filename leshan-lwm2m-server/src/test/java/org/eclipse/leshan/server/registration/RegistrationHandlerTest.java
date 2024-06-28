@@ -33,8 +33,8 @@ import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.UplinkRequest;
-import org.eclipse.leshan.server.security.Authorization;
 import org.eclipse.leshan.server.security.Authorizer;
+import org.eclipse.leshan.servers.security.Authorization;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

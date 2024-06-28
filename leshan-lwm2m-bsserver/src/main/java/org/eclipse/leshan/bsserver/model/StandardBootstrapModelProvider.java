@@ -13,14 +13,14 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.model;
+package org.eclipse.leshan.bsserver.model;
 
 import org.eclipse.leshan.core.model.ObjectLoader;
 
 /**
  * A versioned model provider which uses the default model embedded in Leshan.
  *
- * @see VersionedModelProvider
+ * @see VersionedBootstrapModelProvider
  */
 public class StandardBootstrapModelProvider extends VersionedBootstrapModelProvider {
 

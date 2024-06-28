@@ -17,7 +17,7 @@
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690.
  *     Rikard Höglund (RISE SICS) - Additions to support OSCORE
  *******************************************************************************/
-package org.eclipse.leshan.transport.californium.server.bootstrap.request;
+package org.eclipse.leshan.transport.californium.bsserver.request;
 
 import static org.eclipse.leshan.transport.californium.ResponseCodeUtil.toLwM2mResponseCode;
 

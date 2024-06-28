@@ -21,15 +21,15 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.util.List;
 
+import org.eclipse.leshan.bsserver.BootstrapConfig;
+import org.eclipse.leshan.bsserver.BootstrapConfig.ACLConfig;
+import org.eclipse.leshan.bsserver.BootstrapConfig.OscoreObject;
+import org.eclipse.leshan.bsserver.BootstrapConfig.ServerConfig;
+import org.eclipse.leshan.bsserver.BootstrapConfig.ServerSecurity;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ACLConfig;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfig.OscoreObject;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerConfig;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfig.ServerSecurity;
 
 public class BootstrapConfigTestBuilder {
 

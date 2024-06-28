@@ -13,18 +13,16 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.security;
+package org.eclipse.leshan.servers.security;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.leshan.server.registration.Registration;
-
 /**
- * {@link Authorization} provided by {@link Authorizer}.
+ * {@link Authorization} provided by authorizer.
  * <p>
- * Some Application Data get be attached and will be used to create the {@link Registration}
+ * Some Application Data get be attached and will be used to create the Registration or BootstrapSession.
  */
 public class Authorization {
 

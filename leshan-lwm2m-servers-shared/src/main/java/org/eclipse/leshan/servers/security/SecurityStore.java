@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.server.security;
+package org.eclipse.leshan.servers.security;
 
 import org.eclipse.leshan.core.peer.OscoreIdentity;
 

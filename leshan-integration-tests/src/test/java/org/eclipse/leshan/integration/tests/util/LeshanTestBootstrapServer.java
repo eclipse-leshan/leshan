@@ -24,22 +24,22 @@ import static org.mockito.Mockito.verify;
 
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.leshan.bsserver.BootstrapFailureCause;
+import org.eclipse.leshan.bsserver.BootstrapHandlerFactory;
+import org.eclipse.leshan.bsserver.BootstrapSession;
+import org.eclipse.leshan.bsserver.BootstrapSessionListener;
+import org.eclipse.leshan.bsserver.BootstrapSessionManager;
+import org.eclipse.leshan.bsserver.EditableBootstrapConfigStore;
+import org.eclipse.leshan.bsserver.LeshanBootstrapServer;
+import org.eclipse.leshan.bsserver.endpoint.LwM2mBootstrapServerEndpointsProvider;
+import org.eclipse.leshan.bsserver.security.BootstrapSecurityStore;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.server.bootstrap.BootstrapFailureCause;
-import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
-import org.eclipse.leshan.server.bootstrap.BootstrapSession;
-import org.eclipse.leshan.server.bootstrap.BootstrapSessionListener;
-import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
-import org.eclipse.leshan.server.bootstrap.EditableBootstrapConfigStore;
-import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
-import org.eclipse.leshan.server.bootstrap.endpoint.LwM2mBootstrapServerEndpointsProvider;
-import org.eclipse.leshan.server.security.BootstrapSecurityStore;
-import org.eclipse.leshan.server.security.EditableSecurityStore;
-import org.eclipse.leshan.server.security.ServerSecurityInfo;
+import org.eclipse.leshan.servers.security.EditableSecurityStore;
+import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.mockito.ArgumentCaptor;
 
 public class LeshanTestBootstrapServer extends LeshanBootstrapServer {

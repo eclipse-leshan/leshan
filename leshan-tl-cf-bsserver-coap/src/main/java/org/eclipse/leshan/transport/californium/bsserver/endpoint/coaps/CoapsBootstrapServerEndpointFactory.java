@@ -13,7 +13,7 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.coaps;
+package org.eclipse.leshan.transport.californium.bsserver.endpoint.coaps;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -55,6 +55,7 @@ import org.eclipse.californium.scandium.dtls.DtlsHandshakeTimeoutException;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.californium.scandium.dtls.x509.SingleCertificateProvider;
 import org.eclipse.californium.scandium.dtls.x509.StaticNewAdvancedCertificateVerifier;
+import org.eclipse.leshan.bsserver.LeshanBootstrapServer;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.peer.IpPeer;
@@ -65,14 +66,13 @@ import org.eclipse.leshan.core.peer.X509Identity;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.request.exception.TimeoutException.Type;
 import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
-import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
-import org.eclipse.leshan.server.security.ServerSecurityInfo;
+import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.eclipse.leshan.transport.californium.DefaultExceptionTranslator;
 import org.eclipse.leshan.transport.californium.ExceptionTranslator;
 import org.eclipse.leshan.transport.californium.Lwm2mEndpointContextMatcher;
+import org.eclipse.leshan.transport.californium.bsserver.LwM2mBootstrapPskStore;
+import org.eclipse.leshan.transport.californium.bsserver.endpoint.CaliforniumBootstrapServerEndpointFactory;
 import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
-import org.eclipse.leshan.transport.californium.server.bootstrap.LwM2mBootstrapPskStore;
-import org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.CaliforniumBootstrapServerEndpointFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

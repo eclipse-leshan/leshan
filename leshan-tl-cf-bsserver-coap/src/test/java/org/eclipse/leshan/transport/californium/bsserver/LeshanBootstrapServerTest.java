@@ -13,30 +13,30 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.transport.californium.server.bootstrap;
+package org.eclipse.leshan.transport.californium.bsserver;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
 
+import org.eclipse.leshan.bsserver.BootstrapConfig;
+import org.eclipse.leshan.bsserver.BootstrapConfigStore;
+import org.eclipse.leshan.bsserver.BootstrapHandler;
+import org.eclipse.leshan.bsserver.BootstrapHandlerFactory;
+import org.eclipse.leshan.bsserver.BootstrapSession;
+import org.eclipse.leshan.bsserver.BootstrapSessionListener;
+import org.eclipse.leshan.bsserver.BootstrapSessionManager;
+import org.eclipse.leshan.bsserver.DefaultBootstrapHandler;
+import org.eclipse.leshan.bsserver.LeshanBootstrapServer;
+import org.eclipse.leshan.bsserver.LeshanBootstrapServerBuilder;
+import org.eclipse.leshan.bsserver.request.BootstrapDownlinkRequestSender;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.response.BootstrapResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfig;
-import org.eclipse.leshan.server.bootstrap.BootstrapConfigStore;
-import org.eclipse.leshan.server.bootstrap.BootstrapHandler;
-import org.eclipse.leshan.server.bootstrap.BootstrapHandlerFactory;
-import org.eclipse.leshan.server.bootstrap.BootstrapSession;
-import org.eclipse.leshan.server.bootstrap.BootstrapSessionListener;
-import org.eclipse.leshan.server.bootstrap.BootstrapSessionManager;
-import org.eclipse.leshan.server.bootstrap.DefaultBootstrapHandler;
-import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServer;
-import org.eclipse.leshan.server.bootstrap.LeshanBootstrapServerBuilder;
-import org.eclipse.leshan.server.bootstrap.request.BootstrapDownlinkRequestSender;
-import org.eclipse.leshan.transport.californium.server.bootstrap.endpoint.CaliforniumBootstrapServerEndpointsProvider;
+import org.eclipse.leshan.transport.californium.bsserver.endpoint.CaliforniumBootstrapServerEndpointsProvider;
 import org.junit.jupiter.api.Test;
 
 public class LeshanBootstrapServerTest {
