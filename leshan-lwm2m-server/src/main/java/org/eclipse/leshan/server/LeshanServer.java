@@ -30,6 +30,7 @@ import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.request.DownlinkDeviceManagementRequest;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.request.exception.ClientSleepingException;
@@ -69,7 +70,7 @@ import org.eclipse.leshan.server.request.DefaultDownlinkRequestSender;
 import org.eclipse.leshan.server.request.DefaultUplinkRequestReceiver;
 import org.eclipse.leshan.server.request.DownlinkRequestSender;
 import org.eclipse.leshan.server.request.LowerLayerConfig;
-import org.eclipse.leshan.server.request.UplinkRequestReceiver;
+import org.eclipse.leshan.server.request.UplinkDeviceManagementRequestReceiver;
 import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.server.send.SendHandler;
 import org.eclipse.leshan.server.send.SendService;
@@ -165,7 +166,7 @@ public class LeshanServer {
                 new DefaultClientProfileProvider(registrationStore, modelProvider));
         RegistrationHandler registrationHandler = new RegistrationHandler(registrationService, authorizer,
                 registrationIdProvider, registrationDataExtractor);
-        UplinkRequestReceiver requestReceiver = createRequestReceiver(registrationHandler, sendService);
+        UplinkDeviceManagementRequestReceiver requestReceiver = createRequestReceiver(registrationHandler, sendService);
         endpointsProvider.createEndpoints(requestReceiver, observationService, toolbox, serverSecurityInfo, this);
 
         // create request sender
@@ -201,7 +202,7 @@ public class LeshanServer {
         return new SendHandler(registrationStore, updateRegistrationOnSend);
     }
 
-    protected UplinkRequestReceiver createRequestReceiver(RegistrationHandler registrationHandler,
+    protected UplinkDeviceManagementRequestReceiver createRequestReceiver(RegistrationHandler registrationHandler,
             SendHandler sendService) {
         return new DefaultUplinkRequestReceiver(registrationHandler, sendService);
     }
@@ -424,7 +425,7 @@ public class LeshanServer {
      * @throws InvalidResponseException if the response received is malformed.
      * @throws ClientSleepingException if client is currently sleeping.
      */
-    public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request)
+    public <T extends LwM2mResponse> T send(Registration destination, DownlinkDeviceManagementRequest<T> request)
             throws InterruptedException {
         return send(destination, request, DEFAULT_TIMEOUT);
     }
@@ -450,8 +451,8 @@ public class LeshanServer {
      * @throws InvalidResponseException if the response received is malformed.
      * @throws ClientSleepingException if client is currently sleeping.
      */
-    public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request, long timeoutInMs)
-            throws InterruptedException {
+    public <T extends LwM2mResponse> T send(Registration destination, DownlinkDeviceManagementRequest<T> request,
+            long timeoutInMs) throws InterruptedException {
         return send(destination, request, null, timeoutInMs);
     }
 
@@ -477,7 +478,7 @@ public class LeshanServer {
      * @throws InvalidResponseException if the response received is malformed.
      * @throws ClientSleepingException if client is currently sleeping.
      */
-    public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request,
+    public <T extends LwM2mResponse> T send(Registration destination, DownlinkDeviceManagementRequest<T> request,
             LowerLayerConfig lowerLayerConfig, long timeoutInMs) throws InterruptedException {
         return requestSender.send(destination, request, lowerLayerConfig, timeoutInMs);
     }
@@ -510,7 +511,7 @@ public class LeshanServer {
      *        This callback MUST NOT be null.
      * @throws CodecException if request payload can not be encoded.
      */
-    public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
+    public <T extends LwM2mResponse> void send(Registration destination, DownlinkDeviceManagementRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         send(destination, request, DEFAULT_TIMEOUT, responseCallback, errorCallback);
     }
@@ -542,8 +543,8 @@ public class LeshanServer {
      *        This callback MUST NOT be null.
      * @throws CodecException if request payload can not be encoded.
      */
-    public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request, long timeoutInMs,
-            ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
+    public <T extends LwM2mResponse> void send(Registration destination, DownlinkDeviceManagementRequest<T> request,
+            long timeoutInMs, ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         send(destination, request, null, timeoutInMs, responseCallback, errorCallback);
     }
 
@@ -577,7 +578,7 @@ public class LeshanServer {
      *
      * @since 1.2
      */
-    public <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
+    public <T extends LwM2mResponse> void send(Registration destination, DownlinkDeviceManagementRequest<T> request,
             LowerLayerConfig lowerLayerConfig, long timeoutInMs, ResponseCallback<T> responseCallback,
             ErrorCallback errorCallback) {
         requestSender.send(destination, request, lowerLayerConfig, timeoutInMs, responseCallback, errorCallback);

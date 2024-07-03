@@ -18,7 +18,7 @@ package org.eclipse.leshan.bsserver.request;
 
 import org.eclipse.leshan.bsserver.BootstrapSession;
 import org.eclipse.leshan.core.node.codec.CodecException;
-import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
+import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.exception.ClientSleepingException;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
@@ -32,7 +32,7 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 
 /**
- * A {@link BootstrapDownlinkRequestSender} is responsible to send LWM2M {@link BootstrapDownlinkRequest} for a given
+ * A {@link BootstrapDownlinkRequestSender} is responsible to send LWM2M {@link DownlinkBootstrapRequest} for a given
  * {@link BootstrapSession}.
  */
 public interface BootstrapDownlinkRequestSender {
@@ -60,7 +60,7 @@ public interface BootstrapDownlinkRequestSender {
      * @throws UnconnectedPeerException if client is not connected (no dtls connection available).
      * @throws ClientSleepingException if client is currently sleeping.
      */
-    <T extends LwM2mResponse> T send(BootstrapSession destination, BootstrapDownlinkRequest<T> request,
+    <T extends LwM2mResponse> T send(BootstrapSession destination, DownlinkBootstrapRequest<T> request,
             long timeoutInMs) throws InterruptedException;
 
     /**
@@ -90,7 +90,7 @@ public interface BootstrapDownlinkRequestSender {
      *        This callback MUST NOT be null.
      * @throws CodecException if request payload can not be encoded.
      */
-    <T extends LwM2mResponse> void send(BootstrapSession destination, BootstrapDownlinkRequest<T> request,
+    <T extends LwM2mResponse> void send(BootstrapSession destination, DownlinkBootstrapRequest<T> request,
             long timeoutInMs, ResponseCallback<T> responseCallback, ErrorCallback errorCallback);
 
     /**

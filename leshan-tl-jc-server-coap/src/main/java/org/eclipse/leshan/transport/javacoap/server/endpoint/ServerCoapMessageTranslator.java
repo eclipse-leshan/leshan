@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.transport.javacoap.server.endpoint;
 
-import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.leshan.core.request.DownlinkDeviceManagementRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.endpoint.ServerEndpointToolbox;
 import org.eclipse.leshan.server.profile.ClientProfile;
@@ -35,7 +35,7 @@ public class ServerCoapMessageTranslator {
     }
 
     public CoapRequest createCoapRequest(ClientProfile clientProfile,
-            DownlinkRequest<? extends LwM2mResponse> lwm2mRequest, ServerEndpointToolbox toolbox) {
+            DownlinkDeviceManagementRequest<? extends LwM2mResponse> lwm2mRequest, ServerEndpointToolbox toolbox) {
 
         CoapRequestBuilder builder = new CoapRequestBuilder(clientProfile.getRegistration(),
                 clientProfile.getTransportData(), clientProfile.getRootPath(), clientProfile.getModel(),
@@ -44,8 +44,9 @@ public class ServerCoapMessageTranslator {
         return builder.getRequest();
     }
 
-    public <T extends LwM2mResponse> T createLwM2mResponse(ClientProfile clientProfile, DownlinkRequest<T> lwm2mRequest,
-            CoapResponse coapResponse, CoapRequest coapRequest, ServerEndpointToolbox toolbox) {
+    public <T extends LwM2mResponse> T createLwM2mResponse(ClientProfile clientProfile,
+            DownlinkDeviceManagementRequest<T> lwm2mRequest, CoapResponse coapResponse, CoapRequest coapRequest,
+            ServerEndpointToolbox toolbox) {
 
         LwM2mResponseBuilder<T> builder = new LwM2mResponseBuilder<T>(coapResponse, coapRequest,
                 clientProfile.getEndpoint(), clientProfile.getModel(), toolbox.getDecoder(), toolbox.getLinkParser());

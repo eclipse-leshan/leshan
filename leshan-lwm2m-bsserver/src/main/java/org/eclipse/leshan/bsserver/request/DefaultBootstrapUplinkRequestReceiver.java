@@ -20,12 +20,9 @@ import java.net.URI;
 import org.eclipse.leshan.bsserver.BootstrapHandler;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BootstrapRequest;
-import org.eclipse.leshan.core.request.DeregisterRequest;
-import org.eclipse.leshan.core.request.RegisterRequest;
-import org.eclipse.leshan.core.request.SendRequest;
-import org.eclipse.leshan.core.request.UpdateRequest;
+import org.eclipse.leshan.core.request.UplinkBootstrapRequest;
+import org.eclipse.leshan.core.request.UplinkBootstrapRequestVisitor;
 import org.eclipse.leshan.core.request.UplinkRequest;
-import org.eclipse.leshan.core.request.UplinkRequestVisitor;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
 
@@ -43,15 +40,15 @@ public class DefaultBootstrapUplinkRequestReceiver implements BootstrapUplinkReq
     }
 
     @Override
-    public <T extends LwM2mResponse> SendableResponse<T> requestReceived(LwM2mPeer sender, UplinkRequest<T> request,
-            URI serverEndpointUri) {
+    public <T extends LwM2mResponse> SendableResponse<T> requestReceived(LwM2mPeer sender,
+            UplinkBootstrapRequest<T> request, URI serverEndpointUri) {
 
         RequestHandler<T> requestHandler = new RequestHandler<T>(sender, serverEndpointUri);
         request.accept(requestHandler);
         return requestHandler.getResponse();
     }
 
-    public class RequestHandler<T extends LwM2mResponse> implements UplinkRequestVisitor {
+    public class RequestHandler<T extends LwM2mResponse> implements UplinkBootstrapRequestVisitor {
 
         private final LwM2mPeer sender;
         private final URI serverEndpointUri;
@@ -63,25 +60,8 @@ public class DefaultBootstrapUplinkRequestReceiver implements BootstrapUplinkReq
         }
 
         @Override
-        public void visit(RegisterRequest request) {
-        }
-
-        @Override
-        public void visit(UpdateRequest request) {
-
-        }
-
-        @Override
-        public void visit(DeregisterRequest request) {
-        }
-
-        @Override
         public void visit(BootstrapRequest request) {
             response = bootstapHandler.bootstrap(sender, request, serverEndpointUri);
-        }
-
-        @Override
-        public void visit(SendRequest request) {
         }
 
         @SuppressWarnings("unchecked")

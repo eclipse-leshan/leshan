@@ -20,7 +20,7 @@ import java.util.List;
 
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
-import org.eclipse.leshan.server.request.UplinkRequestReceiver;
+import org.eclipse.leshan.server.request.UplinkDeviceManagementRequestReceiver;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 
 public interface LwM2mServerEndpointsProvider {
@@ -29,8 +29,9 @@ public interface LwM2mServerEndpointsProvider {
 
     LwM2mServerEndpoint getEndpoint(URI uri);
 
-    void createEndpoints(UplinkRequestReceiver requestReceiver, LwM2mNotificationReceiver observationService,
-            ServerEndpointToolbox toolbox, ServerSecurityInfo serverSecurityInfo, LeshanServer server);
+    void createEndpoints(UplinkDeviceManagementRequestReceiver requestReceiver,
+            LwM2mNotificationReceiver observationService, ServerEndpointToolbox toolbox,
+            ServerSecurityInfo serverSecurityInfo, LeshanServer server);
 
     void start();
 

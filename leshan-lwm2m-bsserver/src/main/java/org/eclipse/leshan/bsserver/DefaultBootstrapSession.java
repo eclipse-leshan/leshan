@@ -23,9 +23,9 @@ import java.util.Map;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
-import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.util.RandomStringUtils;
 import org.eclipse.leshan.core.util.Validate;
@@ -46,7 +46,7 @@ public class DefaultBootstrapSession implements BootstrapSession {
     private final BootstrapRequest request;
 
     private volatile LwM2mModel model;
-    private volatile List<BootstrapDownlinkRequest<? extends LwM2mResponse>> requests;
+    private volatile List<DownlinkBootstrapRequest<? extends LwM2mResponse>> requests;
     private volatile List<LwM2mResponse> responses;
     private volatile boolean moreTasks = false;
     private volatile boolean cancelled = false;
@@ -161,11 +161,11 @@ public class DefaultBootstrapSession implements BootstrapSession {
         return request;
     }
 
-    public List<BootstrapDownlinkRequest<? extends LwM2mResponse>> getRequests() {
+    public List<DownlinkBootstrapRequest<? extends LwM2mResponse>> getRequests() {
         return requests;
     }
 
-    public void setRequests(List<BootstrapDownlinkRequest<? extends LwM2mResponse>> requests) {
+    public void setRequests(List<DownlinkBootstrapRequest<? extends LwM2mResponse>> requests) {
         this.requests = requests;
     }
 

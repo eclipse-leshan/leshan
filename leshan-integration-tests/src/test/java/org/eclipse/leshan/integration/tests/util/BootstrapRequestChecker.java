@@ -17,15 +17,15 @@ package org.eclipse.leshan.integration.tests.util;
 
 import org.eclipse.leshan.bsserver.BootstrapSession;
 import org.eclipse.leshan.bsserver.BootstrapSessionAdapter;
-import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
 public class BootstrapRequestChecker extends BootstrapSessionAdapter {
 
     public interface RequestValidator {
-        boolean validate(BootstrapDownlinkRequest<? extends LwM2mResponse> request);
+        boolean validate(DownlinkBootstrapRequest<? extends LwM2mResponse> request);
     }
 
     private final RequestValidator validator;
@@ -40,7 +40,7 @@ public class BootstrapRequestChecker extends BootstrapSessionAdapter {
     }
 
     @Override
-    public void sendRequest(BootstrapSession session, BootstrapDownlinkRequest<? extends LwM2mResponse> request) {
+    public void sendRequest(BootstrapSession session, DownlinkBootstrapRequest<? extends LwM2mResponse> request) {
         if (!validator.validate(request)) {
             valid = false;
         }
@@ -50,7 +50,7 @@ public class BootstrapRequestChecker extends BootstrapSessionAdapter {
     public static BootstrapRequestChecker contentFormatChecker(final ContentFormat expectedFormat) {
         return new BootstrapRequestChecker(new RequestValidator() {
             @Override
-            public boolean validate(BootstrapDownlinkRequest<? extends LwM2mResponse> request) {
+            public boolean validate(DownlinkBootstrapRequest<? extends LwM2mResponse> request) {
                 if (request instanceof BootstrapWriteRequest) {
                     return ((BootstrapWriteRequest) request).getContentFormat() == expectedFormat;
                 }

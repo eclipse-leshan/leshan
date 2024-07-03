@@ -18,14 +18,5 @@ package org.eclipse.leshan.core.request;
 /**
  * A visitor to visit an Uplink Lightweight M2M request.
  */
-public interface UplinkRequestVisitor {
-    void visit(RegisterRequest request);
-
-    void visit(UpdateRequest request);
-
-    void visit(DeregisterRequest request);
-
-    void visit(BootstrapRequest request);
-
-    void visit(SendRequest sendRequest);
+public interface UplinkRequestVisitor extends UplinkDeviceManagementRequestVisitor, UplinkBootstrapRequestVisitor {
 }

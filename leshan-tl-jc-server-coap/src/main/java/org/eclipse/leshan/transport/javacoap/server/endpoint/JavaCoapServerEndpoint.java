@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.leshan.core.request.DownlinkDeviceManagementRequest;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.core.request.exception.TimeoutException.Type;
@@ -95,7 +95,7 @@ public class JavaCoapServerEndpoint implements LwM2mServerEndpoint {
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(ClientProfile destination, DownlinkRequest<T> request,
+    public <T extends LwM2mResponse> T send(ClientProfile destination, DownlinkDeviceManagementRequest<T> request,
             LowerLayerConfig lowerLayerConfig, long timeoutInMs) throws InterruptedException {
 
         // Send LWM2M Request
@@ -121,7 +121,7 @@ public class JavaCoapServerEndpoint implements LwM2mServerEndpoint {
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(ClientProfile destination, DownlinkRequest<T> request,
+    public <T extends LwM2mResponse> void send(ClientProfile destination, DownlinkDeviceManagementRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback, LowerLayerConfig lowerLayerConfig,
             long timeoutInMs) {
 
@@ -156,7 +156,7 @@ public class JavaCoapServerEndpoint implements LwM2mServerEndpoint {
     }
 
     protected <T extends LwM2mResponse> CompletableFuture<T> sendLwM2mRequest(ClientProfile destination,
-            DownlinkRequest<T> lwm2mRequest, LowerLayerConfig lowerLayerConfig) {
+            DownlinkDeviceManagementRequest<T> lwm2mRequest, LowerLayerConfig lowerLayerConfig) {
 
         CompletableFuture<T> lwm2mResponseFuture;
         // Create Coap Request to send from LWM2M Request

@@ -29,7 +29,7 @@ import org.eclipse.leshan.core.response.BootstrapWriteResponse;
  * A LWM2M request for writing object instances during the bootstrap phase.
  */
 public class BootstrapWriteRequest extends AbstractSimpleDownlinkRequest<BootstrapWriteResponse>
-        implements BootstrapDownlinkRequest<BootstrapWriteResponse> {
+        implements DownlinkBootstrapRequest<BootstrapWriteResponse> {
 
     private final LwM2mChildNode node;
     private final ContentFormat contentFormat;
@@ -116,9 +116,13 @@ public class BootstrapWriteRequest extends AbstractSimpleDownlinkRequest<Bootstr
     }
 
     @Override
+    public void accept(DownlinkBootstrapRequestVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
     public String toString() {
         return String.format("BootstrapWriteRequest [path=%s, node=%s, contentFormat=%s]", getPath(), node,
                 contentFormat);
     }
-
 }

@@ -27,7 +27,8 @@ import org.eclipse.leshan.core.response.CancelObservationResponse;
  * {@code ObservationService#cancelObservation()}
  * </p>
  */
-public class CancelObservationRequest extends AbstractSimpleDownlinkRequest<CancelObservationResponse> {
+public class CancelObservationRequest extends AbstractSimpleDownlinkRequest<CancelObservationResponse>
+        implements DownlinkDeviceManagementRequest<CancelObservationResponse> {
 
     private final SingleObservation observation;
 
@@ -51,6 +52,11 @@ public class CancelObservationRequest extends AbstractSimpleDownlinkRequest<Canc
 
     @Override
     public void accept(DownlinkRequestVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    public void accept(DownlinkDeviceManagementRequestVisitor visitor) {
         visitor.visit(this);
     }
 

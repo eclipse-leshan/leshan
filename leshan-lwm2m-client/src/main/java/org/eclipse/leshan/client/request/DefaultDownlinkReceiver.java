@@ -36,7 +36,6 @@ import org.eclipse.leshan.core.request.DiscoverRequest;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.DownlinkRequestVisitor;
 import org.eclipse.leshan.core.request.ExecuteRequest;
-import org.eclipse.leshan.core.request.LwM2mRequest;
 import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
@@ -100,7 +99,7 @@ public class DefaultDownlinkReceiver implements DownlinkRequestReceiver {
 
     @Override
     public void onError(LwM2mServer server, Exception e,
-            Class<? extends LwM2mRequest<? extends LwM2mResponse>> requestType) {
+            Class<? extends DownlinkRequest<? extends LwM2mResponse>> requestType) {
     }
 
     public class RequestHandler<T extends LwM2mResponse> implements DownlinkRequestVisitor {

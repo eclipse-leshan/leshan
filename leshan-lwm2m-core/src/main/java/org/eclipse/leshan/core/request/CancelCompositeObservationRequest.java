@@ -30,7 +30,8 @@ import org.eclipse.leshan.core.response.CancelCompositeObservationResponse;
  * </p>
  */
 public class CancelCompositeObservationRequest extends AbstractLwM2mRequest<CancelCompositeObservationResponse>
-        implements CompositeDownlinkRequest<CancelCompositeObservationResponse> {
+        implements CompositeDownlinkRequest<CancelCompositeObservationResponse>,
+        DownlinkDeviceManagementRequest<CancelCompositeObservationResponse> {
 
     private final CompositeObservation observation;
 
@@ -44,6 +45,11 @@ public class CancelCompositeObservationRequest extends AbstractLwM2mRequest<Canc
 
     @Override
     public void accept(DownlinkRequestVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    public void accept(DownlinkDeviceManagementRequestVisitor visitor) {
         visitor.visit(this);
     }
 

@@ -28,7 +28,7 @@ import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
 import org.eclipse.leshan.server.endpoint.ServerEndpointToolbox;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
-import org.eclipse.leshan.server.request.UplinkRequestReceiver;
+import org.eclipse.leshan.server.request.UplinkDeviceManagementRequestReceiver;
 import org.eclipse.leshan.servers.security.SecurityStore;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.eclipse.leshan.transport.javacoap.identity.IdentityHandler;
@@ -63,7 +63,7 @@ public abstract class AbstractJavaCoapServerEndpointsProvider implements LwM2mSe
     }
 
     @Override
-    public void createEndpoints(UplinkRequestReceiver requestReceiver,
+    public void createEndpoints(UplinkDeviceManagementRequestReceiver requestReceiver,
             final LwM2mNotificationReceiver notificationReceiver, final ServerEndpointToolbox toolbox,
             ServerSecurityInfo serverSecurityInfo, LeshanServer server) {
 

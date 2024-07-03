@@ -31,7 +31,8 @@ import org.eclipse.leshan.core.response.UpdateResponse;
  * A Lightweight M2M request for updating the LWM2M Client properties required by the LWM2M Server to contact the LWM2M
  * Client.
  */
-public class UpdateRequest extends AbstractLwM2mRequest<UpdateResponse> implements UplinkRequest<UpdateResponse> {
+public class UpdateRequest extends AbstractLwM2mRequest<UpdateResponse>
+        implements UplinkDeviceManagementRequest<UpdateResponse> {
 
     private final Long lifeTimeInSec;
     private final String smsNumber;
@@ -120,6 +121,11 @@ public class UpdateRequest extends AbstractLwM2mRequest<UpdateResponse> implemen
 
     @Override
     public void accept(UplinkRequestVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    public void accept(UplinkDeviceManagementRequestVisitor visitor) {
         visitor.visit(this);
     }
 

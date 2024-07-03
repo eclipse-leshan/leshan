@@ -39,18 +39,13 @@ import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.SingleObservation;
-import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
-import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
-import org.eclipse.leshan.core.request.BootstrapFinishRequest;
-import org.eclipse.leshan.core.request.BootstrapReadRequest;
-import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.CancelCompositeObservationRequest;
 import org.eclipse.leshan.core.request.CancelObservationRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
-import org.eclipse.leshan.core.request.DownlinkRequestVisitor;
+import org.eclipse.leshan.core.request.DownlinkDeviceManagementRequestVisitor;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.LwM2mRequest;
 import org.eclipse.leshan.core.request.ObserveCompositeRequest;
@@ -61,11 +56,6 @@ import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteCompositeRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
-import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
-import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
-import org.eclipse.leshan.core.response.BootstrapFinishResponse;
-import org.eclipse.leshan.core.response.BootstrapReadResponse;
-import org.eclipse.leshan.core.response.BootstrapWriteResponse;
 import org.eclipse.leshan.core.response.CancelCompositeObservationResponse;
 import org.eclipse.leshan.core.response.CancelObservationResponse;
 import org.eclipse.leshan.core.response.CreateResponse;
@@ -92,7 +82,7 @@ import org.slf4j.LoggerFactory;
  *
  * @param <T> the type of the response to build.
  */
-public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRequestVisitor {
+public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkDeviceManagementRequestVisitor {
 
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mResponseBuilder.class);
 
@@ -376,111 +366,12 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkRe
         }
     }
 
-    @Override
-    public void visit(BootstrapDiscoverRequest request) {
-        if (coapResponse.isError()) {
-            // handle error response:
-            lwM2mresponse = new BootstrapDiscoverResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
-                    coapResponse.getPayloadString(), coapResponse);
-        } else if (isResponseCodeContent()) {
-            // handle success response:
-            LwM2mLink[] links;
-            if (MediaTypeRegistry.APPLICATION_LINK_FORMAT != coapResponse.getOptions().getContentFormat()) {
-                throw new InvalidResponseException("Client [%s] returned unexpected content format [%s] for [%s]",
-                        clientEndpoint, coapResponse.getOptions().getContentFormat(), request);
-            } else {
-                try {
-                    links = linkParser.parseLwM2mLinkFromCoreLinkFormat(coapResponse.getPayload(), null);
-                } catch (LinkParseException e) {
-                    throw new InvalidResponseException(e,
-                            "Unable to decode response payload of request [%s] from client [%s]", request,
-                            clientEndpoint);
-                }
-            }
-            lwM2mresponse = new BootstrapDiscoverResponse(ResponseCode.CONTENT, links, null, coapResponse);
-        } else {
-            // handle unexpected response:
-            handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
-        }
-    }
-
-    @Override
-    public void visit(BootstrapWriteRequest request) {
-        if (coapResponse.isError()) {
-            // handle error response:
-            lwM2mresponse = new BootstrapWriteResponse(toLwM2mResponseCode(coapResponse.getCode()),
-                    coapResponse.getPayloadString(), coapResponse);
-        } else if (isResponseCodeChanged()) {
-            // handle success response:
-            lwM2mresponse = new BootstrapWriteResponse(ResponseCode.CHANGED, null, coapResponse);
-        } else {
-            // handle unexpected response:
-            handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
-        }
-    }
-
-    @Override
-    public void visit(BootstrapReadRequest request) {
-        if (coapResponse.isError()) {
-            // handle error response:
-            lwM2mresponse = new BootstrapReadResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
-                    coapResponse.getPayloadString(), coapResponse);
-        } else if (isResponseCodeContent()) {
-            // handle success response:
-            LwM2mNode content = decodeCoapResponse(request.getPath(), coapResponse, request, clientEndpoint);
-            lwM2mresponse = new BootstrapReadResponse(ResponseCode.CONTENT, content, null, coapResponse);
-        } else {
-            // handle unexpected response:
-            handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
-        }
-    }
-
-    @Override
-    public void visit(BootstrapDeleteRequest request) {
-        if (coapResponse.isError()) {
-            // handle error response:
-            lwM2mresponse = new BootstrapDeleteResponse(toLwM2mResponseCode(coapResponse.getCode()),
-                    coapResponse.getPayloadString(), coapResponse);
-        } else if (coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.DELETED) {
-            // handle success response:
-            lwM2mresponse = new BootstrapDeleteResponse(ResponseCode.DELETED, null, coapResponse);
-        } else {
-            // handle unexpected response:
-            handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
-        }
-    }
-
-    @Override
-    public void visit(BootstrapFinishRequest request) {
-        if (coapResponse.isError()) {
-            // handle error response:
-            lwM2mresponse = new BootstrapFinishResponse(toLwM2mResponseCode(coapResponse.getCode()),
-                    coapResponse.getPayloadString(), coapResponse);
-        } else if (isResponseCodeChanged()) {
-            // handle success response:
-            lwM2mresponse = new BootstrapFinishResponse(ResponseCode.CHANGED, null, coapResponse);
-        } else {
-            // handle unexpected response:
-            handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
-        }
-    }
-
     private boolean isResponseCodeContent() {
         return coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CONTENT;
     }
 
     private boolean isResponseCodeChanged() {
         return coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CHANGED;
-    }
-
-    private LwM2mNode decodeCoapResponse(LwM2mPath path, Response coapResponse, LwM2mRequest<?> request,
-            String endpoint) {
-        try {
-            return decoder.decode(coapResponse.getPayload(), getContentFormat(coapResponse), path, model);
-        } catch (CodecException e) {
-            handleCodecException(e, request, coapResponse, endpoint);
-            return null; // should not happen as handleCodecException raise exception
-        }
     }
 
     private Map<LwM2mPath, LwM2mNode> decodeCompositeCoapResponse(List<LwM2mPath> paths, Response coapResponse,

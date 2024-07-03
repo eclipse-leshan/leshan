@@ -33,9 +33,9 @@ import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
-import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
+import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
 import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.slf4j.Logger;
@@ -149,31 +149,32 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void sendRequest(BootstrapSession session, BootstrapDownlinkRequest<? extends LwM2mResponse> request) {
+        public void sendRequest(BootstrapSession session, DownlinkBootstrapRequest<? extends LwM2mResponse> request) {
             try {
                 if (request instanceof BootstrapDiscoverRequest) {
                     String endpointName = session.getEndpoint();
                     StringBuilder b = new StringBuilder();
                     b.append("Send DISCOVER request on ");
-                    b.append(request.getPath().toString());
+                    b.append(((BootstrapDiscoverRequest) request).getPath().toString());
                     sendEvent(EVENT_BOOTSTRAP_SESSION, objectMapper.writeValueAsString(
                             new BootstrapEvent("send discover", endpointName, b.toString())), endpointName);
                 } else if (request instanceof BootstrapDeleteRequest) {
                     String endpointName = session.getEndpoint();
                     StringBuilder b = new StringBuilder();
                     b.append("Send DELETE request on ");
-                    b.append(request.getPath().toString());
+                    b.append(((BootstrapDeleteRequest) request).getPath().toString());
                     sendEvent(EVENT_BOOTSTRAP_SESSION, objectMapper.writeValueAsString(
                             new BootstrapEvent("send delete", endpointName, b.toString())), endpointName);
                 } else if (request instanceof BootstrapWriteRequest) {
                     String endpointName = session.getEndpoint();
                     StringBuilder b = new StringBuilder();
                     b.append("Send WRITE request on ");
-                    b.append(request.getPath().toString());
+                    b.append(((BootstrapWriteRequest) request).getPath().toString());
                     b.append(" using ");
                     b.append(((BootstrapWriteRequest) request).getContentFormat());
                     b.append('\n');
-                    ((BootstrapWriteRequest) request).getNode().appendPrettyNode(b, request.getPath());
+                    ((BootstrapWriteRequest) request).getNode().appendPrettyNode(b,
+                            ((BootstrapWriteRequest) request).getPath());
                     sendEvent(EVENT_BOOTSTRAP_SESSION, objectMapper.writeValueAsString(
                             new BootstrapEvent("send write", endpointName, b.toString())), endpointName);
                 } else {
@@ -192,7 +193,7 @@ public class EventServlet extends EventSourceServlet {
 
         @Override
         public void onResponseSuccess(BootstrapSession session,
-                BootstrapDownlinkRequest<? extends LwM2mResponse> request, LwM2mResponse response) {
+                DownlinkBootstrapRequest<? extends LwM2mResponse> request, LwM2mResponse response) {
             try {
                 if (request instanceof BootstrapDiscoverResponse) {
                     String endpointName = session.getEndpoint();
@@ -220,7 +221,7 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void onResponseError(BootstrapSession session, BootstrapDownlinkRequest<? extends LwM2mResponse> request,
+        public void onResponseError(BootstrapSession session, DownlinkBootstrapRequest<? extends LwM2mResponse> request,
                 LwM2mResponse response) {
             try {
                 String endpointName = session.getEndpoint();
@@ -242,7 +243,7 @@ public class EventServlet extends EventSourceServlet {
 
         @Override
         public void onRequestFailure(BootstrapSession session,
-                BootstrapDownlinkRequest<? extends LwM2mResponse> request, Throwable cause) {
+                DownlinkBootstrapRequest<? extends LwM2mResponse> request, Throwable cause) {
             try {
                 String endpointName = session.getEndpoint();
                 StringBuilder b = new StringBuilder();

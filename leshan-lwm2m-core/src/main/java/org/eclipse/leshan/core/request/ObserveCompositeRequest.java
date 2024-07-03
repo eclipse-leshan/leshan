@@ -31,8 +31,8 @@ import org.eclipse.leshan.core.util.Validate;
  * A Lightweight M2M request for observing changes of multiple Resources, Resources within an Object Instance or for all
  * the Object Instances of an Object within the LWM2M Client.
  */
-public class ObserveCompositeRequest extends AbstractLwM2mRequest<ObserveCompositeResponse>
-        implements CompositeDownlinkRequest<ObserveCompositeResponse> {
+public class ObserveCompositeRequest extends AbstractLwM2mRequest<ObserveCompositeResponse> implements
+        CompositeDownlinkRequest<ObserveCompositeResponse>, DownlinkDeviceManagementRequest<ObserveCompositeResponse> {
 
     private final ContentFormat requestContentFormat;
     private final ContentFormat responseContentFormat;
@@ -105,6 +105,11 @@ public class ObserveCompositeRequest extends AbstractLwM2mRequest<ObserveComposi
 
     @Override
     public void accept(DownlinkRequestVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    public void accept(DownlinkDeviceManagementRequestVisitor visitor) {
         visitor.visit(this);
     }
 

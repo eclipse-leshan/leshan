@@ -38,9 +38,9 @@ import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
-import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.util.datatype.ULong;
 
@@ -210,13 +210,13 @@ public class BootstrapUtil {
         return new BootstrapWriteRequest(path, securityInstance, contentFormat);
     }
 
-    public static List<BootstrapDownlinkRequest<? extends LwM2mResponse>> toRequests(BootstrapConfig bootstrapConfig) {
+    public static List<DownlinkBootstrapRequest<? extends LwM2mResponse>> toRequests(BootstrapConfig bootstrapConfig) {
         return toRequests(bootstrapConfig, ContentFormat.TLV);
     }
 
-    public static List<BootstrapDownlinkRequest<? extends LwM2mResponse>> toRequests(BootstrapConfig bootstrapConfig,
+    public static List<DownlinkBootstrapRequest<? extends LwM2mResponse>> toRequests(BootstrapConfig bootstrapConfig,
             ContentFormat contentFormat) {
-        List<BootstrapDownlinkRequest<? extends LwM2mResponse>> requests = new ArrayList<>();
+        List<DownlinkBootstrapRequest<? extends LwM2mResponse>> requests = new ArrayList<>();
         // handle delete
         for (String path : bootstrapConfig.toDelete) {
             requests.add(new BootstrapDeleteRequest(path));
@@ -240,9 +240,9 @@ public class BootstrapUtil {
         return (requests);
     }
 
-    public static List<BootstrapDownlinkRequest<? extends LwM2mResponse>> toRequests(BootstrapConfig bootstrapConfig,
+    public static List<DownlinkBootstrapRequest<? extends LwM2mResponse>> toRequests(BootstrapConfig bootstrapConfig,
             ContentFormat contentFormat, int bootstrapServerID) {
-        List<BootstrapDownlinkRequest<? extends LwM2mResponse>> requests = new ArrayList<>();
+        List<DownlinkBootstrapRequest<? extends LwM2mResponse>> requests = new ArrayList<>();
         // handle delete
         for (String path : bootstrapConfig.toDelete) {
             requests.add(new BootstrapDeleteRequest(path));

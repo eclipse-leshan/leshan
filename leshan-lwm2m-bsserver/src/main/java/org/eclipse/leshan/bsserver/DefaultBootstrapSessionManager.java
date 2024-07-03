@@ -25,9 +25,10 @@ import org.eclipse.leshan.bsserver.model.StandardBootstrapModelProvider;
 import org.eclipse.leshan.bsserver.security.BootstrapAuthorizer;
 import org.eclipse.leshan.bsserver.security.BootstrapSecurityStore;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
-import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
+import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
+import org.eclipse.leshan.core.request.SimpleDownlinkRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.servers.security.Authorization;
@@ -109,13 +110,13 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
     }
 
     @Override
-    public BootstrapDownlinkRequest<? extends LwM2mResponse> getFirstRequest(BootstrapSession bsSession) {
+    public DownlinkBootstrapRequest<? extends LwM2mResponse> getFirstRequest(BootstrapSession bsSession) {
         return nextRequest(bsSession);
     }
 
-    protected BootstrapDownlinkRequest<? extends LwM2mResponse> nextRequest(BootstrapSession bsSession) {
+    protected DownlinkBootstrapRequest<? extends LwM2mResponse> nextRequest(BootstrapSession bsSession) {
         DefaultBootstrapSession session = (DefaultBootstrapSession) bsSession;
-        List<BootstrapDownlinkRequest<? extends LwM2mResponse>> requestsToSend = session.getRequests();
+        List<DownlinkBootstrapRequest<? extends LwM2mResponse>> requestsToSend = session.getRequests();
 
         if (!requestsToSend.isEmpty()) {
             // get next requests
@@ -138,10 +139,11 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
 
     @Override
     public BootstrapPolicy onResponseSuccess(BootstrapSession bsSession,
-            BootstrapDownlinkRequest<? extends LwM2mResponse> request, LwM2mResponse response) {
+            DownlinkBootstrapRequest<? extends LwM2mResponse> request, LwM2mResponse response) {
         if (LOG.isTraceEnabled())
             LOG.trace("{} {} receives success response for {} : {}", request.getClass().getSimpleName(),
-                    request.getPath(), bsSession, request);
+                    request instanceof SimpleDownlinkRequest ? ((SimpleDownlinkRequest<?>) request).getPath() : "",
+                    bsSession, request);
 
         if (!(request instanceof BootstrapFinishRequest)) {
             // store response
@@ -157,10 +159,11 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
 
     @Override
     public BootstrapPolicy onResponseError(BootstrapSession bsSession,
-            BootstrapDownlinkRequest<? extends LwM2mResponse> request, LwM2mResponse response) {
+            DownlinkBootstrapRequest<? extends LwM2mResponse> request, LwM2mResponse response) {
         if (LOG.isTraceEnabled())
             LOG.trace("{} {} receives error response {} for {} : {}", request.getClass().getSimpleName(),
-                    request.getPath(), response, bsSession, request);
+                    request instanceof SimpleDownlinkRequest ? ((SimpleDownlinkRequest<?>) request).getPath() : "",
+                    response, bsSession, request);
 
         if (!(request instanceof BootstrapFinishRequest)) {
             // store response
@@ -177,9 +180,10 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
 
     @Override
     public BootstrapPolicy onRequestFailure(BootstrapSession bsSession,
-            BootstrapDownlinkRequest<? extends LwM2mResponse> request, Throwable cause) {
+            DownlinkBootstrapRequest<? extends LwM2mResponse> request, Throwable cause) {
         if (LOG.isTraceEnabled())
-            LOG.trace("{} {} failed because of {} for {} : {}", request.getClass().getSimpleName(), request.getPath(),
+            LOG.trace("{} {} failed because of {} for {} : {}", request.getClass().getSimpleName(),
+                    request instanceof SimpleDownlinkRequest ? ((SimpleDownlinkRequest<?>) request).getPath() : "",
                     cause, bsSession, request);
 
         return BootstrapPolicy.failed();

@@ -28,9 +28,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.leshan.bsserver.BootstrapSessionManager.BootstrapPolicy;
 import org.eclipse.leshan.bsserver.request.BootstrapDownlinkRequestSender;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
-import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
+import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
 import org.eclipse.leshan.core.response.BootstrapResponse;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -154,7 +154,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void sendRequest(final BootstrapSession session,
-            final BootstrapDownlinkRequest<? extends LwM2mResponse> requestToSend) {
+            final DownlinkBootstrapRequest<? extends LwM2mResponse> requestToSend) {
 
         listener.sendRequest(session, requestToSend);
         send(session, requestToSend, new SafeResponseCallback(session) {
@@ -184,7 +184,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
     }
 
     protected void afterRequest(BootstrapSession session, BootstrapPolicy policy,
-            BootstrapDownlinkRequest<? extends LwM2mResponse> requestSent) {
+            DownlinkBootstrapRequest<? extends LwM2mResponse> requestSent) {
         if (session.isCancelled()) {
             stopSession(session, CANCELLED);
             return;
@@ -204,7 +204,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         }
     }
 
-    protected <T extends LwM2mResponse> void send(BootstrapSession session, BootstrapDownlinkRequest<T> request,
+    protected <T extends LwM2mResponse> void send(BootstrapSession session, DownlinkBootstrapRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         synchronized (session) {
             if (!session.isCancelled()) {

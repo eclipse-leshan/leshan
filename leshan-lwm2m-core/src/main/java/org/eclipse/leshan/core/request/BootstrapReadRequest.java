@@ -27,7 +27,7 @@ import org.eclipse.leshan.core.response.BootstrapReadResponse;
  * to setup a proper configuration in a LwM2M Client.
  */
 public class BootstrapReadRequest extends AbstractSimpleDownlinkRequest<BootstrapReadResponse>
-        implements BootstrapDownlinkRequest<BootstrapReadResponse> {
+        implements DownlinkBootstrapRequest<BootstrapReadResponse> {
 
     private final ContentFormat format;
 
@@ -138,7 +138,11 @@ public class BootstrapReadRequest extends AbstractSimpleDownlinkRequest<Bootstra
     @Override
     public void accept(DownlinkRequestVisitor visitor) {
         visitor.visit(this);
+    }
 
+    @Override
+    public void accept(DownlinkBootstrapRequestVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

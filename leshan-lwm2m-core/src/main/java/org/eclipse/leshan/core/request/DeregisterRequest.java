@@ -22,7 +22,7 @@ import org.eclipse.leshan.core.response.DeregisterResponse;
  * A Lightweight M2M request for removing the registration information from the LWM2M Server.
  */
 public class DeregisterRequest extends AbstractLwM2mRequest<DeregisterResponse>
-        implements UplinkRequest<DeregisterResponse> {
+        implements UplinkDeviceManagementRequest<DeregisterResponse> {
 
     private String registrationId = null;
 
@@ -58,6 +58,11 @@ public class DeregisterRequest extends AbstractLwM2mRequest<DeregisterResponse>
 
     @Override
     public void accept(UplinkRequestVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    public void accept(UplinkDeviceManagementRequestVisitor visitor) {
         visitor.visit(this);
     }
 

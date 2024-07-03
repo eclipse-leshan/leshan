@@ -29,8 +29,8 @@ import org.eclipse.leshan.core.util.Validate;
  * The "Read-Composite" operation can be used by the LwM2M Server to selectively read any combination of Objects, Object
  * Instance(s), Resources, and/or Resource Instances of different or same Objects in a single request.
  */
-public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResponse>
-        implements CompositeDownlinkRequest<ReadCompositeResponse> {
+public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResponse> implements
+        CompositeDownlinkRequest<ReadCompositeResponse>, DownlinkDeviceManagementRequest<ReadCompositeResponse> {
 
     private final List<LwM2mPath> paths;
     private final ContentFormat requestContentFormat;
@@ -102,6 +102,11 @@ public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResp
 
     @Override
     public void accept(DownlinkRequestVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    public void accept(DownlinkDeviceManagementRequestVisitor visitor) {
         visitor.visit(this);
     }
 

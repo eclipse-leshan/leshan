@@ -23,7 +23,8 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
 
-public class WriteAttributesRequest extends AbstractSimpleDownlinkRequest<WriteAttributesResponse> {
+public class WriteAttributesRequest extends AbstractSimpleDownlinkRequest<WriteAttributesResponse>
+        implements DownlinkDeviceManagementRequest<WriteAttributesResponse> {
 
     private final LwM2mAttributeSet attributes;
 
@@ -91,6 +92,11 @@ public class WriteAttributesRequest extends AbstractSimpleDownlinkRequest<WriteA
 
     @Override
     public void accept(DownlinkRequestVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    public void accept(DownlinkDeviceManagementRequestVisitor visitor) {
         visitor.visit(this);
     }
 

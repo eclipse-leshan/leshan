@@ -31,7 +31,7 @@ import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.leshan.core.request.DownlinkDeviceManagementRequest;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.response.AbstractLwM2mResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -40,7 +40,7 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.endpoint.ServerEndpointToolbox;
 import org.eclipse.leshan.server.profile.ClientProfile;
-import org.eclipse.leshan.server.request.UplinkRequestReceiver;
+import org.eclipse.leshan.server.request.UplinkDeviceManagementRequestReceiver;
 import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
 import org.eclipse.leshan.transport.californium.identity.IdentityHandlerProvider;
 import org.eclipse.leshan.transport.californium.server.registration.RegisterResource;
@@ -54,8 +54,9 @@ public class ServerCoapMessageTranslator {
 
     private final Logger LOG = LoggerFactory.getLogger(ServerCoapMessageTranslator.class);
 
-    public Request createCoapRequest(ClientProfile clientProfile, DownlinkRequest<? extends LwM2mResponse> lwm2mRequest,
-            ServerEndpointToolbox toolbox, IdentityHandler identityHandler) {
+    public Request createCoapRequest(ClientProfile clientProfile,
+            DownlinkDeviceManagementRequest<? extends LwM2mResponse> lwm2mRequest, ServerEndpointToolbox toolbox,
+            IdentityHandler identityHandler) {
         CoapRequestBuilder builder = new CoapRequestBuilder(clientProfile.getTransportData(),
                 clientProfile.getRootPath(), clientProfile.getRegistrationId(), clientProfile.getEndpoint(),
                 clientProfile.getModel(), toolbox.getEncoder(), clientProfile.canInitiateConnection(), null,
@@ -64,8 +65,9 @@ public class ServerCoapMessageTranslator {
         return builder.getRequest();
     }
 
-    public <T extends LwM2mResponse> T createLwM2mResponse(ClientProfile clientProfile, DownlinkRequest<T> lwm2mRequest,
-            Request coapRequest, Response coapResponse, ServerEndpointToolbox toolbox) {
+    public <T extends LwM2mResponse> T createLwM2mResponse(ClientProfile clientProfile,
+            DownlinkDeviceManagementRequest<T> lwm2mRequest, Request coapRequest, Response coapResponse,
+            ServerEndpointToolbox toolbox) {
 
         LwM2mResponseBuilder<T> builder = new LwM2mResponseBuilder<T>(coapRequest, coapResponse,
                 clientProfile.getEndpoint(), clientProfile.getModel(), toolbox.getDecoder(), toolbox.getLinkParser());
@@ -73,7 +75,7 @@ public class ServerCoapMessageTranslator {
         return builder.getResponse();
     }
 
-    public List<Resource> createResources(UplinkRequestReceiver receiver, ServerEndpointToolbox toolbox,
+    public List<Resource> createResources(UplinkDeviceManagementRequestReceiver receiver, ServerEndpointToolbox toolbox,
             IdentityHandlerProvider identityHandlerProvider) {
         return Arrays.asList( //
                 (Resource) new RegisterResource(receiver, toolbox.getLinkParser(), identityHandlerProvider), //

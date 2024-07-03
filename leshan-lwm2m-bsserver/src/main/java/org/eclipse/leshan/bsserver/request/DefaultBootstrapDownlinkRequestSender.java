@@ -20,7 +20,7 @@ package org.eclipse.leshan.bsserver.request;
 import org.eclipse.leshan.bsserver.BootstrapSession;
 import org.eclipse.leshan.bsserver.endpoint.LwM2mBootstrapServerEndpoint;
 import org.eclipse.leshan.bsserver.endpoint.LwM2mBootstrapServerEndpointsProvider;
-import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
+import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -40,7 +40,7 @@ public class DefaultBootstrapDownlinkRequestSender implements BootstrapDownlinkR
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(BootstrapSession destination, BootstrapDownlinkRequest<T> request,
+    public <T extends LwM2mResponse> T send(BootstrapSession destination, DownlinkBootstrapRequest<T> request,
             long timeoutInMs) throws InterruptedException {
 
         // find endpoint to use
@@ -52,7 +52,7 @@ public class DefaultBootstrapDownlinkRequestSender implements BootstrapDownlinkR
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(final BootstrapSession destination, BootstrapDownlinkRequest<T> request,
+    public <T extends LwM2mResponse> void send(final BootstrapSession destination, DownlinkBootstrapRequest<T> request,
             long timeoutInMs, final ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
 
         // find endpoint to use

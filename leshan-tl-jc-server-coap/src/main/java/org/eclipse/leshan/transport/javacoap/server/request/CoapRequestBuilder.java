@@ -30,19 +30,14 @@ import org.eclipse.leshan.core.observation.ObservationIdentifier;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
-import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
-import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
-import org.eclipse.leshan.core.request.BootstrapFinishRequest;
-import org.eclipse.leshan.core.request.BootstrapReadRequest;
-import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.CancelCompositeObservationRequest;
 import org.eclipse.leshan.core.request.CancelObservationRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
+import org.eclipse.leshan.core.request.DownlinkDeviceManagementRequestVisitor;
 import org.eclipse.leshan.core.request.DownlinkRequest;
-import org.eclipse.leshan.core.request.DownlinkRequestVisitor;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
@@ -67,7 +62,7 @@ import com.mbed.coap.transport.TransportContext;
  * <p>
  * Call <code>CoapRequestBuilder#visit(lwm2mRequest)</code>, then get the result using {@link #getRequest()}
  */
-public class CoapRequestBuilder implements DownlinkRequestVisitor {
+public class CoapRequestBuilder implements DownlinkDeviceManagementRequestVisitor {
 
     private CoapRequest.Builder coapRequestBuilder;
 
@@ -257,43 +252,45 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
 
     }
 
-    @Override
-    public void visit(BootstrapWriteRequest request) {
-        coapRequestBuilder = CoapRequest.put(getURI(request.getPath()));
-        addDefaultContext(coapRequestBuilder);
+// TODO should be moved in leshan-tl-jc-bserver-coap when it will be created
 
-        ContentFormat format = request.getContentFormat();
-        coapRequestBuilder //
-                .contentFormat((short) format.getCode()) //
-                .payload(Opaque.of(encoder.encode(request.getNode(), format, request.getPath(), model)));
-    }
-
-    @Override
-    public void visit(BootstrapReadRequest request) {
-        coapRequestBuilder = CoapRequest.get(getURI(request.getPath()));
-        addDefaultContext(coapRequestBuilder);
-        if (request.getContentFormat() != null)
-            coapRequestBuilder.accept((short) request.getContentFormat().getCode());
-    }
-
-    @Override
-    public void visit(BootstrapDiscoverRequest request) {
-        coapRequestBuilder = CoapRequest.get(getURI(request.getPath())) //
-                .accept(MediaTypes.CT_APPLICATION_LINK__FORMAT);
-        addDefaultContext(coapRequestBuilder);
-    }
-
-    @Override
-    public void visit(BootstrapDeleteRequest request) {
-        coapRequestBuilder = CoapRequest.delete(getURI(request.getPath()));
-        addDefaultContext(coapRequestBuilder);
-    }
-
-    @Override
-    public void visit(BootstrapFinishRequest request) {
-        coapRequestBuilder = CoapRequest.post("bs");
-        addDefaultContext(coapRequestBuilder);
-    }
+//    @Override
+//    public void visit(BootstrapWriteRequest request) {
+//        coapRequestBuilder = CoapRequest.put(getURI(request.getPath()));
+//        addDefaultContext(coapRequestBuilder);
+//
+//        ContentFormat format = request.getContentFormat();
+//        coapRequestBuilder //
+//                .contentFormat((short) format.getCode()) //
+//                .payload(Opaque.of(encoder.encode(request.getNode(), format, request.getPath(), model)));
+//    }
+//
+//    @Override
+//    public void visit(BootstrapReadRequest request) {
+//        coapRequestBuilder = CoapRequest.get(getURI(request.getPath()));
+//        addDefaultContext(coapRequestBuilder);
+//        if (request.getContentFormat() != null)
+//            coapRequestBuilder.accept((short) request.getContentFormat().getCode());
+//    }
+//
+//    @Override
+//    public void visit(BootstrapDiscoverRequest request) {
+//        coapRequestBuilder = CoapRequest.get(getURI(request.getPath())) //
+//                .accept(MediaTypes.CT_APPLICATION_LINK__FORMAT);
+//        addDefaultContext(coapRequestBuilder);
+//    }
+//
+//    @Override
+//    public void visit(BootstrapDeleteRequest request) {
+//        coapRequestBuilder = CoapRequest.delete(getURI(request.getPath()));
+//        addDefaultContext(coapRequestBuilder);
+//    }
+//
+//    @Override
+//    public void visit(BootstrapFinishRequest request) {
+//        coapRequestBuilder = CoapRequest.post("bs");
+//        addDefaultContext(coapRequestBuilder);
+//    }
 
     protected InetSocketAddress getAddress() {
         if (destination instanceof IpPeer) {

@@ -32,19 +32,14 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.peer.OscoreIdentity;
-import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
-import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
-import org.eclipse.leshan.core.request.BootstrapFinishRequest;
-import org.eclipse.leshan.core.request.BootstrapReadRequest;
-import org.eclipse.leshan.core.request.BootstrapWriteRequest;
 import org.eclipse.leshan.core.request.CancelCompositeObservationRequest;
 import org.eclipse.leshan.core.request.CancelObservationRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
+import org.eclipse.leshan.core.request.DownlinkDeviceManagementRequestVisitor;
 import org.eclipse.leshan.core.request.DownlinkRequest;
-import org.eclipse.leshan.core.request.DownlinkRequestVisitor;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
@@ -63,7 +58,7 @@ import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
  * <p>
  * Call <code>CoapRequestBuilder#visit(lwm2mRequest)</code>, then get the result using {@link #getRequest()}
  */
-public class CoapRequestBuilder implements DownlinkRequestVisitor {
+public class CoapRequestBuilder implements DownlinkDeviceManagementRequestVisitor {
 
     private Request coapRequest;
 
@@ -257,65 +252,6 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         coapRequest.setPayload(encoder.encodeNodes(request.getNodes(), request.getContentFormat(), model));
         setURI(coapRequest, LwM2mPath.ROOTPATH);
         setSecurityContext(coapRequest);
-        applyLowerLayerConfig(coapRequest);
-    }
-
-    @Override
-    public void visit(BootstrapWriteRequest request) {
-        coapRequest = Request.newPut();
-        coapRequest.setConfirmable(true);
-        ContentFormat format = request.getContentFormat();
-        coapRequest.getOptions().setContentFormat(format.getCode());
-        coapRequest.setPayload(encoder.encode(request.getNode(), format, request.getPath(), model));
-        setURI(coapRequest, request.getPath());
-        setSecurityContext(coapRequest);
-        applyLowerLayerConfig(coapRequest);
-    }
-
-    @Override
-    public void visit(BootstrapReadRequest request) {
-        coapRequest = Request.newGet();
-        if (request.getContentFormat() != null)
-            coapRequest.getOptions().setAccept(request.getContentFormat().getCode());
-        setURI(coapRequest, request.getPath());
-        setSecurityContext(coapRequest);
-        applyLowerLayerConfig(coapRequest);
-    }
-
-    @Override
-    public void visit(BootstrapDiscoverRequest request) {
-        coapRequest = Request.newGet();
-        setURI(coapRequest, request.getPath());
-        setSecurityContext(coapRequest);
-        coapRequest.getOptions().setAccept(MediaTypeRegistry.APPLICATION_LINK_FORMAT);
-        applyLowerLayerConfig(coapRequest);
-    }
-
-    @Override
-    public void visit(BootstrapDeleteRequest request) {
-        coapRequest = Request.newDelete();
-        coapRequest.setConfirmable(true);
-        setSecurityContext(coapRequest);
-        setURI(coapRequest, request.getPath());
-        applyLowerLayerConfig(coapRequest);
-    }
-
-    @Override
-    public void visit(BootstrapFinishRequest request) {
-        coapRequest = Request.newPost();
-        coapRequest.setConfirmable(true);
-        setSecurityContext(coapRequest);
-
-        // root path
-        if (rootPath != null) {
-            for (String rootPathPart : rootPath.split("/")) {
-                if (!StringUtils.isEmpty(rootPathPart)) {
-                    coapRequest.getOptions().addUriPath(rootPathPart);
-                }
-            }
-        }
-
-        coapRequest.getOptions().addUriPath("bs");
         applyLowerLayerConfig(coapRequest);
     }
 

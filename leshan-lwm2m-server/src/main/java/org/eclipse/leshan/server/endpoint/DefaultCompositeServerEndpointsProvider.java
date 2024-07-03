@@ -25,7 +25,7 @@ import java.util.List;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
-import org.eclipse.leshan.server.request.UplinkRequestReceiver;
+import org.eclipse.leshan.server.request.UplinkDeviceManagementRequestReceiver;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 
 /**
@@ -67,8 +67,9 @@ public class DefaultCompositeServerEndpointsProvider implements CompositeServerE
     }
 
     @Override
-    public void createEndpoints(UplinkRequestReceiver requestReceiver, LwM2mNotificationReceiver observationService,
-            ServerEndpointToolbox toolbox, ServerSecurityInfo serverSecurityInfo, LeshanServer server) {
+    public void createEndpoints(UplinkDeviceManagementRequestReceiver requestReceiver,
+            LwM2mNotificationReceiver observationService, ServerEndpointToolbox toolbox,
+            ServerSecurityInfo serverSecurityInfo, LeshanServer server) {
         for (LwM2mServerEndpointsProvider provider : providers) {
             provider.createEndpoints(requestReceiver, observationService, toolbox, serverSecurityInfo, server);
         }

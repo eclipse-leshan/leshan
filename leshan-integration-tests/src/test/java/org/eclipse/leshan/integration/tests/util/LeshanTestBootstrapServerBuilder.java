@@ -40,7 +40,7 @@ import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
-import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
+import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
 import org.eclipse.leshan.integration.tests.util.cf.CertPair;
 import org.eclipse.leshan.integration.tests.util.cf.MapBasedCertificateProvider;
 import org.eclipse.leshan.servers.security.EditableSecurityStore;
@@ -126,7 +126,7 @@ public class LeshanTestBootstrapServerBuilder extends LeshanBootstrapServerBuild
         return this;
     }
 
-    public LeshanTestBootstrapServerBuilder startingSessionWith(BootstrapDownlinkRequest<?> request) {
+    public LeshanTestBootstrapServerBuilder startingSessionWith(DownlinkBootstrapRequest<?> request) {
         TestBootstrapConfigStoreTaskProvider taskProvider = new TestBootstrapConfigStoreTaskProvider(configStore);
         taskProvider.startBootstrapSessionWith(request);
         setTaskProvider(taskProvider);

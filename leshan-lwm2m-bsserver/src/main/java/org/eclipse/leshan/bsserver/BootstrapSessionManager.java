@@ -18,8 +18,8 @@ package org.eclipse.leshan.bsserver;
 import java.net.URI;
 
 import org.eclipse.leshan.core.peer.LwM2mPeer;
-import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
+import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.util.Validate;
 
@@ -42,9 +42,9 @@ public interface BootstrapSessionManager {
     public class BootstrapPolicy {
 
         private final boolean failed;
-        private final BootstrapDownlinkRequest<? extends LwM2mResponse> nextRequest;
+        private final DownlinkBootstrapRequest<? extends LwM2mResponse> nextRequest;
 
-        protected BootstrapPolicy(boolean stop, BootstrapDownlinkRequest<? extends LwM2mResponse> nextRequest) {
+        protected BootstrapPolicy(boolean stop, DownlinkBootstrapRequest<? extends LwM2mResponse> nextRequest) {
             this.failed = stop;
             this.nextRequest = nextRequest;
         }
@@ -70,11 +70,11 @@ public interface BootstrapSessionManager {
             return failed;
         }
 
-        public BootstrapDownlinkRequest<? extends LwM2mResponse> nextRequest() {
+        public DownlinkBootstrapRequest<? extends LwM2mResponse> nextRequest() {
             return nextRequest;
         }
 
-        public static BootstrapPolicy continueWith(BootstrapDownlinkRequest<? extends LwM2mResponse> nextRequest) {
+        public static BootstrapPolicy continueWith(DownlinkBootstrapRequest<? extends LwM2mResponse> nextRequest) {
             Validate.notNull(nextRequest);
             return new BootstrapPolicy(false, nextRequest);
         }
@@ -119,7 +119,7 @@ public interface BootstrapSessionManager {
      * @param bsSession the bootstrap session concerned.
      * @return the first request to send.
      */
-    public BootstrapDownlinkRequest<? extends LwM2mResponse> getFirstRequest(BootstrapSession bsSession);
+    public DownlinkBootstrapRequest<? extends LwM2mResponse> getFirstRequest(BootstrapSession bsSession);
 
     /**
      * Called when we receive a successful response to a request.
@@ -130,7 +130,7 @@ public interface BootstrapSessionManager {
      * @return a {@link BootstrapPolicy} given the way to continue the bootstrap session.
      */
     public BootstrapPolicy onResponseSuccess(BootstrapSession bsSession,
-            BootstrapDownlinkRequest<? extends LwM2mResponse> request, LwM2mResponse response);
+            DownlinkBootstrapRequest<? extends LwM2mResponse> request, LwM2mResponse response);
 
     /**
      * Called when we receive a error response to a request.
@@ -142,7 +142,7 @@ public interface BootstrapSessionManager {
      * @return a {@link BootstrapPolicy} given the way to continue the bootstrap session.
      */
     public BootstrapPolicy onResponseError(BootstrapSession bsSession,
-            BootstrapDownlinkRequest<? extends LwM2mResponse> request, LwM2mResponse response);
+            DownlinkBootstrapRequest<? extends LwM2mResponse> request, LwM2mResponse response);
 
     /**
      * Called when a request failed to be sent.
@@ -154,7 +154,7 @@ public interface BootstrapSessionManager {
      * @return a {@link BootstrapPolicy} given the way to continue the bootstrap session.
      */
     public BootstrapPolicy onRequestFailure(BootstrapSession bsSession,
-            BootstrapDownlinkRequest<? extends LwM2mResponse> request, Throwable cause);
+            DownlinkBootstrapRequest<? extends LwM2mResponse> request, Throwable cause);
 
     /**
      * Performs any housekeeping related to the successful ending of a Bootstrapping session.

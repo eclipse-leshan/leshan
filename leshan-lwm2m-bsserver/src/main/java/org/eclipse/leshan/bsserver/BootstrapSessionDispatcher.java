@@ -19,8 +19,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.leshan.core.peer.LwM2mPeer;
-import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
+import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
 public class BootstrapSessionDispatcher implements BootstrapSessionListener {
@@ -64,14 +64,14 @@ public class BootstrapSessionDispatcher implements BootstrapSessionListener {
     }
 
     @Override
-    public void sendRequest(BootstrapSession session, BootstrapDownlinkRequest<? extends LwM2mResponse> request) {
+    public void sendRequest(BootstrapSession session, DownlinkBootstrapRequest<? extends LwM2mResponse> request) {
         for (BootstrapSessionListener listener : listeners) {
             listener.sendRequest(session, request);
         }
     }
 
     @Override
-    public void onResponseSuccess(BootstrapSession session, BootstrapDownlinkRequest<? extends LwM2mResponse> request,
+    public void onResponseSuccess(BootstrapSession session, DownlinkBootstrapRequest<? extends LwM2mResponse> request,
             LwM2mResponse response) {
         for (BootstrapSessionListener listener : listeners) {
             listener.onResponseSuccess(session, request, response);
@@ -79,7 +79,7 @@ public class BootstrapSessionDispatcher implements BootstrapSessionListener {
     }
 
     @Override
-    public void onResponseError(BootstrapSession session, BootstrapDownlinkRequest<? extends LwM2mResponse> request,
+    public void onResponseError(BootstrapSession session, DownlinkBootstrapRequest<? extends LwM2mResponse> request,
             LwM2mResponse response) {
         for (BootstrapSessionListener listener : listeners) {
             listener.onResponseError(session, request, response);
@@ -87,7 +87,7 @@ public class BootstrapSessionDispatcher implements BootstrapSessionListener {
     }
 
     @Override
-    public void onRequestFailure(BootstrapSession session, BootstrapDownlinkRequest<? extends LwM2mResponse> request,
+    public void onRequestFailure(BootstrapSession session, DownlinkBootstrapRequest<? extends LwM2mResponse> request,
             Throwable cause) {
         for (BootstrapSessionListener listener : listeners) {
             listener.onRequestFailure(session, request, cause);

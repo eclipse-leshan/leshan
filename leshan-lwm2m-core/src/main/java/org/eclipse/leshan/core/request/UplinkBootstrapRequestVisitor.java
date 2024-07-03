@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 Sierra Wireless and others.
+ * Copyright (c) 2013-2015 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -13,17 +13,13 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.client.request;
+package org.eclipse.leshan.core.request;
 
-import org.eclipse.leshan.client.servers.LwM2mServer;
-import org.eclipse.leshan.core.request.DownlinkRequest;
-import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.core.response.SendableResponse;
+/**
+ * A visitor to visit an Uplink Bootstrap Lightweight M2M request.
+ */
+public interface UplinkBootstrapRequestVisitor {
 
-public interface DownlinkRequestReceiver {
+    void visit(BootstrapRequest request);
 
-    <T extends LwM2mResponse> SendableResponse<T> requestReceived(LwM2mServer server, DownlinkRequest<T> request);
-
-    void onError(LwM2mServer server, Exception e,
-            Class<? extends DownlinkRequest<? extends LwM2mResponse>> requestType);
 }

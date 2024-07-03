@@ -53,7 +53,7 @@ import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
 import org.eclipse.leshan.server.endpoint.ServerEndpointToolbox;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.profile.ClientProfile;
-import org.eclipse.leshan.server.request.UplinkRequestReceiver;
+import org.eclipse.leshan.server.request.UplinkDeviceManagementRequestReceiver;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.eclipse.leshan.transport.californium.ExceptionTranslator;
 import org.eclipse.leshan.transport.californium.ObserveUtil;
@@ -108,8 +108,9 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
     }
 
     @Override
-    public void createEndpoints(UplinkRequestReceiver requestReceiver, LwM2mNotificationReceiver notificatonReceiver,
-            ServerEndpointToolbox toolbox, ServerSecurityInfo serverSecurityInfo, LeshanServer server) {
+    public void createEndpoints(UplinkDeviceManagementRequestReceiver requestReceiver,
+            LwM2mNotificationReceiver notificatonReceiver, ServerEndpointToolbox toolbox,
+            ServerSecurityInfo serverSecurityInfo, LeshanServer server) {
         // create server;
         coapServer = new CoapServer(serverConfig) {
             @Override

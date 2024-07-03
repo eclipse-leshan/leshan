@@ -22,7 +22,8 @@ import org.eclipse.leshan.core.response.DiscoverResponse;
 /**
  * A Lightweight M2M request for discovering LWM2M Attributes attached to an Object, Object Instances, and Resources.
  */
-public class DiscoverRequest extends AbstractSimpleDownlinkRequest<DiscoverResponse> {
+public class DiscoverRequest extends AbstractSimpleDownlinkRequest<DiscoverResponse>
+        implements DownlinkDeviceManagementRequest<DiscoverResponse> {
 
     /**
      * Creates a request for discovering the resources implemented by a client for a particular object type.
@@ -87,6 +88,11 @@ public class DiscoverRequest extends AbstractSimpleDownlinkRequest<DiscoverRespo
 
     @Override
     public void accept(DownlinkRequestVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    public void accept(DownlinkDeviceManagementRequestVisitor visitor) {
         visitor.visit(this);
     }
 

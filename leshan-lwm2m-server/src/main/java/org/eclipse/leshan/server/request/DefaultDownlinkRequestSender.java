@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.codec.CodecException;
+import org.eclipse.leshan.core.request.DownlinkDeviceManagementRequest;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
@@ -82,7 +83,7 @@ public class DefaultDownlinkRequestSender implements DownlinkRequestSender {
      * @throws UnconnectedPeerException if client is not connected (no dtls connection available).
      */
     @Override
-    public <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request,
+    public <T extends LwM2mResponse> T send(Registration destination, DownlinkDeviceManagementRequest<T> request,
             LowerLayerConfig lowerLayerConfig, long timeoutInMs) throws InterruptedException {
 
         // find endpoint to use
@@ -125,9 +126,9 @@ public class DefaultDownlinkRequestSender implements DownlinkRequestSender {
      * @throws CodecException if request payload can not be encoded.
      */
     @Override
-    public <T extends LwM2mResponse> void send(final Registration destination, DownlinkRequest<T> request,
-            LowerLayerConfig lowerLayerConfig, long timeoutInMs, final ResponseCallback<T> responseCallback,
-            ErrorCallback errorCallback) {
+    public <T extends LwM2mResponse> void send(final Registration destination,
+            DownlinkDeviceManagementRequest<T> request, LowerLayerConfig lowerLayerConfig, long timeoutInMs,
+            final ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
 
         // find endpoint to use
         LwM2mServerEndpoint endpoint = getEndpoint(destination);

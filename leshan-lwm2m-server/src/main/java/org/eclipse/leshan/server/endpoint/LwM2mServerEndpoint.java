@@ -19,7 +19,7 @@ import java.net.URI;
 
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.leshan.core.request.DownlinkDeviceManagementRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -34,10 +34,10 @@ public interface LwM2mServerEndpoint {
 
     String getDescription();
 
-    <T extends LwM2mResponse> T send(ClientProfile destination, DownlinkRequest<T> request,
+    <T extends LwM2mResponse> T send(ClientProfile destination, DownlinkDeviceManagementRequest<T> request,
             LowerLayerConfig lowerLayerConfig, long timeoutInMs) throws InterruptedException;
 
-    <T extends LwM2mResponse> void send(ClientProfile destination, DownlinkRequest<T> request,
+    <T extends LwM2mResponse> void send(ClientProfile destination, DownlinkDeviceManagementRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback, LowerLayerConfig lowerLayerConfig,
             long timeoutInMs);
 

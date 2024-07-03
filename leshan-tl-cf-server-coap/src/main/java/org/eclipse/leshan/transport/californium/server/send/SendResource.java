@@ -31,7 +31,7 @@ import org.eclipse.leshan.core.response.SendResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.server.profile.ClientProfile;
 import org.eclipse.leshan.server.profile.ClientProfileProvider;
-import org.eclipse.leshan.server.request.UplinkRequestReceiver;
+import org.eclipse.leshan.server.request.UplinkDeviceManagementRequestReceiver;
 import org.eclipse.leshan.transport.californium.LwM2mCoapResource;
 import org.eclipse.leshan.transport.californium.identity.IdentityHandlerProvider;
 
@@ -42,11 +42,11 @@ import org.eclipse.leshan.transport.californium.identity.IdentityHandlerProvider
  */
 public class SendResource extends LwM2mCoapResource {
     private final LwM2mDecoder decoder;
-    private final UplinkRequestReceiver receiver;
+    private final UplinkDeviceManagementRequestReceiver receiver;
     private final ClientProfileProvider profileProvider;
 
-    public SendResource(UplinkRequestReceiver receiver, LwM2mDecoder decoder, ClientProfileProvider profileProvider,
-            IdentityHandlerProvider identityHandlerProvider) {
+    public SendResource(UplinkDeviceManagementRequestReceiver receiver, LwM2mDecoder decoder,
+            ClientProfileProvider profileProvider, IdentityHandlerProvider identityHandlerProvider) {
         super("dp", identityHandlerProvider);
         this.decoder = decoder;
         this.receiver = receiver;

@@ -19,7 +19,7 @@ import java.net.URI;
 
 import org.eclipse.leshan.bsserver.BootstrapSession;
 import org.eclipse.leshan.core.endpoint.Protocol;
-import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
+import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -32,10 +32,10 @@ public interface LwM2mBootstrapServerEndpoint {
 
     String getDescription();
 
-    <T extends LwM2mResponse> T send(BootstrapSession destination, BootstrapDownlinkRequest<T> request,
+    <T extends LwM2mResponse> T send(BootstrapSession destination, DownlinkBootstrapRequest<T> request,
             long timeoutInMs) throws InterruptedException;
 
-    <T extends LwM2mResponse> void send(BootstrapSession destination, BootstrapDownlinkRequest<T> request,
+    <T extends LwM2mResponse> void send(BootstrapSession destination, DownlinkBootstrapRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback, long timeoutInMs);
 
     void cancelRequests(String sessionID);

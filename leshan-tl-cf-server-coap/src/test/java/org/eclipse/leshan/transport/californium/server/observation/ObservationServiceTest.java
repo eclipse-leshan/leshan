@@ -39,7 +39,7 @@ import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.leshan.core.request.DownlinkDeviceManagementRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -54,7 +54,7 @@ import org.eclipse.leshan.server.registration.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.request.LowerLayerConfig;
-import org.eclipse.leshan.server.request.UplinkRequestReceiver;
+import org.eclipse.leshan.server.request.UplinkDeviceManagementRequestReceiver;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -197,14 +197,15 @@ public class ObservationServiceTest {
     private class DummyEndpointsProvider implements LwM2mServerEndpointsProvider {
         private final LwM2mServerEndpoint dummyEndpoint = new LwM2mServerEndpoint() {
             @Override
-            public <T extends LwM2mResponse> void send(ClientProfile destination, DownlinkRequest<T> request,
-                    ResponseCallback<T> responseCallback, ErrorCallback errorCallback,
-                    LowerLayerConfig lowerLayerConfig, long timeoutInMs) {
+            public <T extends LwM2mResponse> void send(ClientProfile destination,
+                    DownlinkDeviceManagementRequest<T> request, ResponseCallback<T> responseCallback,
+                    ErrorCallback errorCallback, LowerLayerConfig lowerLayerConfig, long timeoutInMs) {
             }
 
             @Override
-            public <T extends LwM2mResponse> T send(ClientProfile destination, DownlinkRequest<T> request,
-                    LowerLayerConfig lowerLayerConfig, long timeoutInMs) throws InterruptedException {
+            public <T extends LwM2mResponse> T send(ClientProfile destination,
+                    DownlinkDeviceManagementRequest<T> request, LowerLayerConfig lowerLayerConfig, long timeoutInMs)
+                    throws InterruptedException {
                 return null;
             }
 
@@ -244,8 +245,9 @@ public class ObservationServiceTest {
         }
 
         @Override
-        public void createEndpoints(UplinkRequestReceiver requestReceiver, LwM2mNotificationReceiver observationService,
-                ServerEndpointToolbox toolbox, ServerSecurityInfo serverSecurityInfo, LeshanServer server) {
+        public void createEndpoints(UplinkDeviceManagementRequestReceiver requestReceiver,
+                LwM2mNotificationReceiver observationService, ServerEndpointToolbox toolbox,
+                ServerSecurityInfo serverSecurityInfo, LeshanServer server) {
         }
 
         @Override

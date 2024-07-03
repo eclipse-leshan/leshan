@@ -24,7 +24,7 @@ import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.bsserver.BootstrapSession;
 import org.eclipse.leshan.bsserver.endpoint.BootstrapServerEndpointToolbox;
 import org.eclipse.leshan.bsserver.request.BootstrapUplinkRequestReceiver;
-import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
+import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.transport.californium.bsserver.BootstrapResource;
 import org.eclipse.leshan.transport.californium.bsserver.request.CoapRequestBuilder;
@@ -35,7 +35,7 @@ import org.eclipse.leshan.transport.californium.identity.IdentityHandlerProvider
 public class BootstrapServerCoapMessageTranslator {
 
     public Request createCoapRequest(BootstrapSession destination,
-            BootstrapDownlinkRequest<? extends LwM2mResponse> lwm2mRequest, BootstrapServerEndpointToolbox toolbox,
+            DownlinkBootstrapRequest<? extends LwM2mResponse> lwm2mRequest, BootstrapServerEndpointToolbox toolbox,
             IdentityHandler identityHandler) {
         CoapRequestBuilder builder = new CoapRequestBuilder(destination.getClientTransportData(),
                 destination.getModel(), toolbox.getEncoder(), identityHandler);
@@ -44,7 +44,7 @@ public class BootstrapServerCoapMessageTranslator {
     }
 
     public <T extends LwM2mResponse> T createLwM2mResponse(BootstrapSession destination,
-            BootstrapDownlinkRequest<T> lwm2mRequest, Response coapResponse, BootstrapServerEndpointToolbox toolbox) {
+            DownlinkBootstrapRequest<T> lwm2mRequest, Response coapResponse, BootstrapServerEndpointToolbox toolbox) {
         LwM2mResponseBuilder<T> builder = new LwM2mResponseBuilder<T>(coapResponse, destination.getEndpoint(),
                 destination.getModel(), toolbox.getDecoder(), toolbox.getLinkParser());
         lwm2mRequest.accept(builder);

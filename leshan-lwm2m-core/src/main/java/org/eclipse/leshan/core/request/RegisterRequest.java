@@ -32,7 +32,8 @@ import org.eclipse.leshan.core.response.RegisterResponse;
  * A Lightweight M2M request for sending the LWM2M Client properties required by the LWM2M Server to contact the LWM2M
  * Client.
  */
-public class RegisterRequest extends AbstractLwM2mRequest<RegisterResponse> implements UplinkRequest<RegisterResponse> {
+public class RegisterRequest extends AbstractLwM2mRequest<RegisterResponse>
+        implements UplinkDeviceManagementRequest<RegisterResponse> {
 
     private final String endpointName;
     private final Long lifetime;
@@ -159,6 +160,11 @@ public class RegisterRequest extends AbstractLwM2mRequest<RegisterResponse> impl
 
     @Override
     public void accept(UplinkRequestVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    public void accept(UplinkDeviceManagementRequestVisitor visitor) {
         visitor.visit(this);
     }
 

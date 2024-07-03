@@ -32,7 +32,7 @@ import org.eclipse.leshan.bsserver.endpoint.BootstrapServerEndpointToolbox;
 import org.eclipse.leshan.bsserver.endpoint.LwM2mBootstrapServerEndpoint;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
-import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
+import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -91,7 +91,7 @@ public class CaliforniumBootstrapServerEndpoint implements LwM2mBootstrapServerE
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(BootstrapSession destination, BootstrapDownlinkRequest<T> lwm2mRequest,
+    public <T extends LwM2mResponse> T send(BootstrapSession destination, DownlinkBootstrapRequest<T> lwm2mRequest,
             long timeoutInMs) throws InterruptedException {
         // Create the CoAP request from LwM2m request
         final Request coapRequest = translator.createCoapRequest(destination, lwm2mRequest, toolbox, identityHandler);
@@ -118,7 +118,7 @@ public class CaliforniumBootstrapServerEndpoint implements LwM2mBootstrapServerE
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(BootstrapSession destination, BootstrapDownlinkRequest<T> lwm2mRequest,
+    public <T extends LwM2mResponse> void send(BootstrapSession destination, DownlinkBootstrapRequest<T> lwm2mRequest,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback, long timeoutInMs) {
         Validate.notNull(responseCallback);
         Validate.notNull(errorCallback);

@@ -36,7 +36,8 @@ import org.eclipse.leshan.core.util.Validate;
  * The "Send" operation can be used by the LwM2M Client to report values for Resources and Resource Instances of LwM2M
  * Object Instance(s) to the LwM2M Server.
  */
-public class SendRequest extends AbstractLwM2mRequest<SendResponse> implements UplinkRequest<SendResponse> {
+public class SendRequest extends AbstractLwM2mRequest<SendResponse>
+        implements UplinkDeviceManagementRequest<SendResponse> {
 
     private final ContentFormat format;
     private final TimestampedLwM2mNodes timestampedNodes;
@@ -100,6 +101,11 @@ public class SendRequest extends AbstractLwM2mRequest<SendResponse> implements U
 
     @Override
     public void accept(UplinkRequestVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    public void accept(UplinkDeviceManagementRequestVisitor visitor) {
         visitor.visit(this);
     }
 

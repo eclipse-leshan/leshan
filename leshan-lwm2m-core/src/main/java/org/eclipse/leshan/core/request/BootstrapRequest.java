@@ -30,7 +30,7 @@ import org.eclipse.leshan.core.response.BootstrapResponse;
  *      Bootstrap-Request Operation</a>
  */
 public class BootstrapRequest extends AbstractLwM2mRequest<BootstrapResponse>
-        implements UplinkRequest<BootstrapResponse> {
+        implements UplinkBootstrapRequest<BootstrapResponse> {
 
     private final String endpointName;
     private final Map<String, String> additionalAttributes;
@@ -92,6 +92,11 @@ public class BootstrapRequest extends AbstractLwM2mRequest<BootstrapResponse>
      */
     public ContentFormat getPreferredContentFormat() {
         return preferredContentFormat;
+    }
+
+    @Override
+    public void accept(UplinkBootstrapRequestVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

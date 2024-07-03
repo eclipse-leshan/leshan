@@ -25,7 +25,8 @@ import org.eclipse.leshan.core.response.ReadResponse;
  * The request can be used to retrieve the value(s) of one or all attributes of one particular or all instances of a
  * particular object type.
  */
-public class ReadRequest extends AbstractSimpleDownlinkRequest<ReadResponse> {
+public class ReadRequest extends AbstractSimpleDownlinkRequest<ReadResponse>
+        implements DownlinkDeviceManagementRequest<ReadResponse> {
 
     private final ContentFormat format;
 
@@ -185,7 +186,11 @@ public class ReadRequest extends AbstractSimpleDownlinkRequest<ReadResponse> {
     @Override
     public void accept(DownlinkRequestVisitor visitor) {
         visitor.visit(this);
+    }
 
+    @Override
+    public void accept(DownlinkDeviceManagementRequestVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

@@ -36,7 +36,7 @@ import org.eclipse.leshan.bsserver.security.BootstrapSecurityStore;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
-import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
+import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.servers.security.EditableSecurityStore;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
@@ -108,7 +108,7 @@ public class LeshanTestBootstrapServer extends LeshanBootstrapServer {
         return waitForSuccessfullBootstrap(0, TimeUnit.SECONDS);
     }
 
-    public LwM2mResponse getFirstResponseFor(BootstrapSession session, BootstrapDownlinkRequest<?> request) {
+    public LwM2mResponse getFirstResponseFor(BootstrapSession session, DownlinkBootstrapRequest<?> request) {
         final ArgumentCaptor<LwM2mResponse> c = ArgumentCaptor.forClass(LwM2mResponse.class);
         verify(bootstrapSession, times(1)).onResponseSuccess(eq(session), eq(request), c.capture());
         return c.getValue();

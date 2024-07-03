@@ -28,7 +28,8 @@ import org.eclipse.leshan.core.response.ObserveResponse;
  * A Lightweight M2M request for observing changes of a specific Resource, Resources within an Object Instance or for
  * all the Object Instances of an Object within the LWM2M Client.
  */
-public class ObserveRequest extends AbstractSimpleDownlinkRequest<ObserveResponse> {
+public class ObserveRequest extends AbstractSimpleDownlinkRequest<ObserveResponse>
+        implements DownlinkDeviceManagementRequest<ObserveResponse> {
 
     private final ContentFormat format;
 
@@ -206,6 +207,11 @@ public class ObserveRequest extends AbstractSimpleDownlinkRequest<ObserveRespons
 
     @Override
     public void accept(DownlinkRequestVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    public void accept(DownlinkDeviceManagementRequestVisitor visitor) {
         visitor.visit(this);
     }
 

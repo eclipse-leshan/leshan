@@ -18,20 +18,19 @@ package org.eclipse.leshan.server.request;
 import java.net.URI;
 
 import org.eclipse.leshan.core.peer.LwM2mPeer;
-import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
-import org.eclipse.leshan.core.request.UplinkRequest;
-import org.eclipse.leshan.core.request.UplinkRequestVisitor;
+import org.eclipse.leshan.core.request.UplinkDeviceManagementRequest;
+import org.eclipse.leshan.core.request.UplinkDeviceManagementRequestVisitor;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.server.profile.ClientProfile;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.send.SendHandler;
 
-public class DefaultUplinkRequestReceiver implements UplinkRequestReceiver {
+public class DefaultUplinkRequestReceiver implements UplinkDeviceManagementRequestReceiver {
 
     private final RegistrationHandler registrationHandler;
     private final SendHandler sendHandler;
@@ -43,7 +42,8 @@ public class DefaultUplinkRequestReceiver implements UplinkRequestReceiver {
 
     @Override
     public void onError(LwM2mPeer sender, ClientProfile senderProfile, Exception exception,
-            Class<? extends UplinkRequest<? extends LwM2mResponse>> requestType, URI serverEndpointUri) {
+            Class<? extends UplinkDeviceManagementRequest<? extends LwM2mResponse>> requestType,
+            URI serverEndpointUri) {
         if (requestType.equals(SendRequest.class)) {
             sendHandler.onError(senderProfile.getRegistration(),
                     exception.getMessage() != null ? exception.getMessage() : null, exception);
@@ -52,14 +52,14 @@ public class DefaultUplinkRequestReceiver implements UplinkRequestReceiver {
 
     @Override
     public <T extends LwM2mResponse> SendableResponse<T> requestReceived(LwM2mPeer sender, ClientProfile senderProfile,
-            UplinkRequest<T> request, URI serverEndpointUri) {
+            UplinkDeviceManagementRequest<T> request, URI serverEndpointUri) {
 
         RequestHandler<T> requestHandler = new RequestHandler<T>(sender, senderProfile, serverEndpointUri);
         request.accept(requestHandler);
         return requestHandler.getResponse();
     }
 
-    public class RequestHandler<T extends LwM2mResponse> implements UplinkRequestVisitor {
+    public class RequestHandler<T extends LwM2mResponse> implements UplinkDeviceManagementRequestVisitor {
 
         private final LwM2mPeer sender;
         private final ClientProfile senderProfile;
@@ -86,11 +86,6 @@ public class DefaultUplinkRequestReceiver implements UplinkRequestReceiver {
         @Override
         public void visit(DeregisterRequest request) {
             response = registrationHandler.deregister(sender, request);
-        }
-
-        @Override
-        public void visit(BootstrapRequest request) {
-            // Not implemented.
         }
 
         @Override

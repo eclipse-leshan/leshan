@@ -17,6 +17,7 @@
 package org.eclipse.leshan.server.request;
 
 import org.eclipse.leshan.core.node.codec.CodecException;
+import org.eclipse.leshan.core.request.DownlinkDeviceManagementRequest;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.exception.ClientSleepingException;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
@@ -60,7 +61,7 @@ public interface DownlinkRequestSender {
      * @throws UnconnectedPeerException if client is not connected (no dtls connection available).
      * @throws ClientSleepingException if client is currently sleeping.
      */
-    <T extends LwM2mResponse> T send(Registration destination, DownlinkRequest<T> request,
+    <T extends LwM2mResponse> T send(Registration destination, DownlinkDeviceManagementRequest<T> request,
             LowerLayerConfig lowerLayerConfig, long timeoutInMs) throws InterruptedException;
 
     /**
@@ -91,7 +92,7 @@ public interface DownlinkRequestSender {
      *        This callback MUST NOT be null.
      * @throws CodecException if request payload can not be encoded.
      */
-    <T extends LwM2mResponse> void send(Registration destination, DownlinkRequest<T> request,
+    <T extends LwM2mResponse> void send(Registration destination, DownlinkDeviceManagementRequest<T> request,
             LowerLayerConfig lowerLayerConfig, long timeoutInMs, ResponseCallback<T> responseCallback,
             ErrorCallback errorCallback);
 

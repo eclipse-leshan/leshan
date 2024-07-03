@@ -34,22 +34,9 @@ import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.BootstrapReadRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
-import org.eclipse.leshan.core.request.CancelCompositeObservationRequest;
-import org.eclipse.leshan.core.request.CancelObservationRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.request.CreateRequest;
-import org.eclipse.leshan.core.request.DeleteRequest;
-import org.eclipse.leshan.core.request.DiscoverRequest;
+import org.eclipse.leshan.core.request.DownlinkBootstrapRequestVisitor;
 import org.eclipse.leshan.core.request.DownlinkRequest;
-import org.eclipse.leshan.core.request.DownlinkRequestVisitor;
-import org.eclipse.leshan.core.request.ExecuteRequest;
-import org.eclipse.leshan.core.request.ObserveCompositeRequest;
-import org.eclipse.leshan.core.request.ObserveRequest;
-import org.eclipse.leshan.core.request.ReadCompositeRequest;
-import org.eclipse.leshan.core.request.ReadRequest;
-import org.eclipse.leshan.core.request.WriteAttributesRequest;
-import org.eclipse.leshan.core.request.WriteCompositeRequest;
-import org.eclipse.leshan.core.request.WriteRequest;
 import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
 
 /**
@@ -57,7 +44,7 @@ import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
  * <p>
  * Call <code>CoapRequestBuilder#visit(lwm2mRequest)</code>, then get the result using {@link #getRequest()}
  */
-public class CoapRequestBuilder implements DownlinkRequestVisitor {
+public class CoapRequestBuilder implements DownlinkBootstrapRequestVisitor {
 
     private Request coapRequest;
 
@@ -73,58 +60,6 @@ public class CoapRequestBuilder implements DownlinkRequestVisitor {
         this.model = model;
         this.encoder = encoder;
         this.identityHandler = identityHandler;
-    }
-
-    @Override
-    public void visit(ReadRequest request) {
-    }
-
-    @Override
-    public void visit(DiscoverRequest request) {
-    }
-
-    @Override
-    public void visit(WriteRequest request) {
-    }
-
-    @Override
-    public void visit(WriteAttributesRequest request) {
-    }
-
-    @Override
-    public void visit(ExecuteRequest request) {
-    }
-
-    @Override
-    public void visit(CreateRequest request) {
-    }
-
-    @Override
-    public void visit(DeleteRequest request) {
-    }
-
-    @Override
-    public void visit(ObserveRequest request) {
-    }
-
-    @Override
-    public void visit(CancelObservationRequest request) {
-    }
-
-    @Override
-    public void visit(ReadCompositeRequest request) {
-    }
-
-    @Override
-    public void visit(ObserveCompositeRequest request) {
-    }
-
-    @Override
-    public void visit(CancelCompositeObservationRequest request) {
-    }
-
-    @Override
-    public void visit(WriteCompositeRequest request) {
     }
 
     @Override

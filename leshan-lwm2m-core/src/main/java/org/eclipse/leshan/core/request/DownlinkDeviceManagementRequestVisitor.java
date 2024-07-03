@@ -20,6 +20,30 @@ package org.eclipse.leshan.core.request;
 /**
  * A visitor to visit a Downlink Lightweight M2M request.
  */
-public interface DownlinkRequestVisitor
-        extends DownlinkDeviceManagementRequestVisitor, DownlinkBootstrapRequestVisitor {
+public interface DownlinkDeviceManagementRequestVisitor {
+    void visit(ReadRequest request);
+
+    void visit(DiscoverRequest request);
+
+    void visit(WriteRequest request);
+
+    void visit(WriteAttributesRequest request);
+
+    void visit(ExecuteRequest request);
+
+    void visit(CreateRequest request);
+
+    void visit(DeleteRequest request);
+
+    void visit(ObserveRequest request);
+
+    void visit(CancelObservationRequest request);
+
+    void visit(ReadCompositeRequest request);
+
+    void visit(ObserveCompositeRequest request);
+
+    void visit(CancelCompositeObservationRequest request);
+
+    void visit(WriteCompositeRequest writeCompositeRequest);
 }

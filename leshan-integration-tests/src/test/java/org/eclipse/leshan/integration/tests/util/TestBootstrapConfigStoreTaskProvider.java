@@ -22,17 +22,17 @@ import java.util.List;
 import org.eclipse.leshan.bsserver.BootstrapConfigStore;
 import org.eclipse.leshan.bsserver.BootstrapConfigStoreTaskProvider;
 import org.eclipse.leshan.bsserver.BootstrapSession;
-import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
+import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
 /**
  * A custom BootstrapConfigStoreTaskProvider which allow to start bootstrap session with a custom
- * {@link BootstrapDownlinkRequest}
+ * {@link DownlinkBootstrapRequest}
  *
  */
 public class TestBootstrapConfigStoreTaskProvider extends BootstrapConfigStoreTaskProvider {
 
-    private BootstrapDownlinkRequest<?> firstCustomRequest;
+    private DownlinkBootstrapRequest<?> firstCustomRequest;
 
     public TestBootstrapConfigStoreTaskProvider(BootstrapConfigStore configStore) {
         super(configStore);
@@ -55,7 +55,7 @@ public class TestBootstrapConfigStoreTaskProvider extends BootstrapConfigStoreTa
         }
     }
 
-    public void startBootstrapSessionWith(BootstrapDownlinkRequest<?> request) {
+    public void startBootstrapSessionWith(DownlinkBootstrapRequest<?> request) {
         this.firstCustomRequest = request;
     }
 };

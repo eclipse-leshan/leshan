@@ -41,7 +41,7 @@ import org.eclipse.leshan.core.response.RegisterResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.core.response.UpdateResponse;
 import org.eclipse.leshan.server.registration.RegistrationService;
-import org.eclipse.leshan.server.request.UplinkRequestReceiver;
+import org.eclipse.leshan.server.request.UplinkDeviceManagementRequestReceiver;
 import org.eclipse.leshan.transport.californium.LwM2mCoapResource;
 import org.eclipse.leshan.transport.californium.identity.IdentityHandlerProvider;
 import org.slf4j.Logger;
@@ -72,10 +72,10 @@ public class RegisterResource extends LwM2mCoapResource {
 
     public static final String RESOURCE_NAME = "rd";
 
-    private final UplinkRequestReceiver receiver;
+    private final UplinkDeviceManagementRequestReceiver receiver;
     private final LinkParser linkParser;
 
-    public RegisterResource(UplinkRequestReceiver receiver, LinkParser linkParser,
+    public RegisterResource(UplinkDeviceManagementRequestReceiver receiver, LinkParser linkParser,
             IdentityHandlerProvider identityHandlerProvider) {
         super(RESOURCE_NAME, identityHandlerProvider);
 

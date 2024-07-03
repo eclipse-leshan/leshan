@@ -16,8 +16,8 @@
 package org.eclipse.leshan.bsserver;
 
 import org.eclipse.leshan.core.peer.LwM2mPeer;
-import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
+import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
 public interface BootstrapSessionListener {
@@ -45,7 +45,7 @@ public interface BootstrapSessionListener {
     /**
      * Called when a request is sent
      */
-    void sendRequest(BootstrapSession session, BootstrapDownlinkRequest<? extends LwM2mResponse> request);
+    void sendRequest(BootstrapSession session, DownlinkBootstrapRequest<? extends LwM2mResponse> request);
 
     /**
      * Called when we receive a successful response to a request.
@@ -54,7 +54,7 @@ public interface BootstrapSessionListener {
      * @param request The request for which we get a successful response.
      * @param response The response received.
      */
-    void onResponseSuccess(BootstrapSession session, BootstrapDownlinkRequest<? extends LwM2mResponse> request,
+    void onResponseSuccess(BootstrapSession session, DownlinkBootstrapRequest<? extends LwM2mResponse> request,
             LwM2mResponse response);
 
     /**
@@ -65,7 +65,7 @@ public interface BootstrapSessionListener {
      * @param response The response received.
      *
      */
-    public void onResponseError(BootstrapSession session, BootstrapDownlinkRequest<? extends LwM2mResponse> request,
+    public void onResponseError(BootstrapSession session, DownlinkBootstrapRequest<? extends LwM2mResponse> request,
             LwM2mResponse response);
 
     /**
@@ -76,7 +76,7 @@ public interface BootstrapSessionListener {
      * @param cause The cause of the failure. Can be null.
      *
      */
-    public void onRequestFailure(BootstrapSession session, BootstrapDownlinkRequest<? extends LwM2mResponse> request,
+    public void onRequestFailure(BootstrapSession session, DownlinkBootstrapRequest<? extends LwM2mResponse> request,
             Throwable cause);
 
     /**

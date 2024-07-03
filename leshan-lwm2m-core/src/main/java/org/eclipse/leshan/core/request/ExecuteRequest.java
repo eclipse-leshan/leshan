@@ -24,7 +24,8 @@ import org.eclipse.leshan.core.response.ExecuteResponse;
 /**
  * A Lightweight M2M request for initiate some action, it can only be performed on individual Resources.
  */
-public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteResponse> {
+public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteResponse>
+        implements DownlinkDeviceManagementRequest<ExecuteResponse> {
 
     private final Arguments arguments;
 
@@ -151,6 +152,11 @@ public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteRespons
 
     @Override
     public void accept(DownlinkRequestVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    public void accept(DownlinkDeviceManagementRequestVisitor visitor) {
         visitor.visit(this);
     }
 

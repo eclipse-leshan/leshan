@@ -30,7 +30,7 @@ import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.leshan.core.request.DownlinkDeviceManagementRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
@@ -98,7 +98,7 @@ public class CaliforniumServerEndpoint implements LwM2mServerEndpoint {
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(ClientProfile destination, DownlinkRequest<T> lwm2mRequest,
+    public <T extends LwM2mResponse> T send(ClientProfile destination, DownlinkDeviceManagementRequest<T> lwm2mRequest,
             LowerLayerConfig lowerLayerConfig, long timeoutInMs) throws InterruptedException {
         // Create the CoAP request from LwM2m request
         final Request coapRequest = translator.createCoapRequest(destination, lwm2mRequest, toolbox, identityHandler);
@@ -144,9 +144,9 @@ public class CaliforniumServerEndpoint implements LwM2mServerEndpoint {
     }
 
     @Override
-    public <T extends LwM2mResponse> void send(ClientProfile destination, DownlinkRequest<T> lwm2mRequest,
-            ResponseCallback<T> responseCallback, ErrorCallback errorCallback, LowerLayerConfig lowerLayerConfig,
-            long timeoutInMs) {
+    public <T extends LwM2mResponse> void send(ClientProfile destination,
+            DownlinkDeviceManagementRequest<T> lwm2mRequest, ResponseCallback<T> responseCallback,
+            ErrorCallback errorCallback, LowerLayerConfig lowerLayerConfig, long timeoutInMs) {
         Validate.notNull(responseCallback);
         Validate.notNull(errorCallback);
 

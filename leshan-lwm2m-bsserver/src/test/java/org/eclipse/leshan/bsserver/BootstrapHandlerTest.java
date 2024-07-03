@@ -34,10 +34,10 @@ import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.peer.PskIdentity;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
-import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapFinishRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
+import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.response.BootstrapDeleteResponse;
 import org.eclipse.leshan.core.response.BootstrapFinishResponse;
@@ -174,7 +174,7 @@ public class BootstrapHandlerTest {
         }
 
         @Override
-        public <T extends LwM2mResponse> T send(BootstrapSession session, BootstrapDownlinkRequest<T> request,
+        public <T extends LwM2mResponse> T send(BootstrapSession session, DownlinkBootstrapRequest<T> request,
                 long timeout) throws InterruptedException {
             // Not Implemented
             return null;
@@ -186,7 +186,7 @@ public class BootstrapHandlerTest {
 
         @SuppressWarnings("unchecked")
         @Override
-        public <T extends LwM2mResponse> void send(BootstrapSession session, BootstrapDownlinkRequest<T> request,
+        public <T extends LwM2mResponse> void send(BootstrapSession session, DownlinkBootstrapRequest<T> request,
                 long timeout, ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
             // no response, no callback call
             if (mode == Mode.NO_RESPONSE) {

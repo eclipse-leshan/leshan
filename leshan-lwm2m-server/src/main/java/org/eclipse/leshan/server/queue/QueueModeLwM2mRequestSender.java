@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue;
 
-import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.leshan.core.request.DownlinkDeviceManagementRequest;
 import org.eclipse.leshan.core.request.exception.ClientSleepingException;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.request.exception.UnconnectedPeerException;
@@ -52,7 +52,7 @@ public class QueueModeLwM2mRequestSender implements DownlinkRequestSender {
      * {@inheritDoc}
      */
     @Override
-    public <T extends LwM2mResponse> T send(final Registration destination, DownlinkRequest<T> request,
+    public <T extends LwM2mResponse> T send(final Registration destination, DownlinkDeviceManagementRequest<T> request,
             LowerLayerConfig lowerLayerConfig, long timeout) throws InterruptedException {
 
         // If the client does not use Q-Mode, just send
@@ -92,9 +92,9 @@ public class QueueModeLwM2mRequestSender implements DownlinkRequestSender {
      * {@inheritDoc}
      */
     @Override
-    public <T extends LwM2mResponse> void send(final Registration destination, DownlinkRequest<T> request,
-            LowerLayerConfig lowerLayerConfig, long timeout, final ResponseCallback<T> responseCallback,
-            final ErrorCallback errorCallback) {
+    public <T extends LwM2mResponse> void send(final Registration destination,
+            DownlinkDeviceManagementRequest<T> request, LowerLayerConfig lowerLayerConfig, long timeout,
+            final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
 
         // If the client does not use Q-Mode, just send
         if (!destination.usesQueueMode()) {

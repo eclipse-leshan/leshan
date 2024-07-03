@@ -15,14 +15,13 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.response.BootstrapFinishResponse;
 
 /**
  * Request sent when bootstrap session is finished
  */
 public class BootstrapFinishRequest extends AbstractLwM2mRequest<BootstrapFinishResponse>
-        implements BootstrapDownlinkRequest<BootstrapFinishResponse> {
+        implements DownlinkBootstrapRequest<BootstrapFinishResponse> {
 
     public BootstrapFinishRequest() {
         this(null);
@@ -33,13 +32,12 @@ public class BootstrapFinishRequest extends AbstractLwM2mRequest<BootstrapFinish
     }
 
     @Override
-    public LwM2mPath getPath() {
-        // not targeting a node.
-        return null;
+    public void accept(DownlinkRequestVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override
-    public void accept(DownlinkRequestVisitor visitor) {
+    public void accept(DownlinkBootstrapRequestVisitor visitor) {
         visitor.visit(this);
     }
 

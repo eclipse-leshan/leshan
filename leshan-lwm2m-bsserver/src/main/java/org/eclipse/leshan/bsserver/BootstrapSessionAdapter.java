@@ -16,8 +16,8 @@
 package org.eclipse.leshan.bsserver;
 
 import org.eclipse.leshan.core.peer.LwM2mPeer;
-import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapRequest;
+import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
 public class BootstrapSessionAdapter implements BootstrapSessionListener {
@@ -39,21 +39,21 @@ public class BootstrapSessionAdapter implements BootstrapSessionListener {
     }
 
     @Override
-    public void sendRequest(BootstrapSession session, BootstrapDownlinkRequest<? extends LwM2mResponse> request) {
+    public void sendRequest(BootstrapSession session, DownlinkBootstrapRequest<? extends LwM2mResponse> request) {
     }
 
     @Override
-    public void onResponseSuccess(BootstrapSession session, BootstrapDownlinkRequest<? extends LwM2mResponse> request,
+    public void onResponseSuccess(BootstrapSession session, DownlinkBootstrapRequest<? extends LwM2mResponse> request,
             LwM2mResponse response) {
     }
 
     @Override
-    public void onResponseError(BootstrapSession session, BootstrapDownlinkRequest<? extends LwM2mResponse> request,
+    public void onResponseError(BootstrapSession session, DownlinkBootstrapRequest<? extends LwM2mResponse> request,
             LwM2mResponse response) {
     }
 
     @Override
-    public void onRequestFailure(BootstrapSession session, BootstrapDownlinkRequest<? extends LwM2mResponse> request,
+    public void onRequestFailure(BootstrapSession session, DownlinkBootstrapRequest<? extends LwM2mResponse> request,
             Throwable cause) {
     }
 

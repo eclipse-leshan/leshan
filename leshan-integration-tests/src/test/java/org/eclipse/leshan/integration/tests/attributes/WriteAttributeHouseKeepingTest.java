@@ -40,7 +40,7 @@ import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.CancelObservationRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.DeleteRequest;
-import org.eclipse.leshan.core.request.DownlinkRequest;
+import org.eclipse.leshan.core.request.DownlinkDeviceManagementRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
@@ -164,7 +164,8 @@ public class WriteAttributeHouseKeepingTest {
     }
 
     private void write_attribute_on_tree_then_remove_node_then_check_attributes_are_removed(List<LwM2mPath> pathToCheck,
-            LwM2mAttributeSet attributeSet, DownlinkRequest<?> deleteRequest) throws InterruptedException {
+            LwM2mAttributeSet attributeSet, DownlinkDeviceManagementRequest<?> deleteRequest)
+            throws InterruptedException {
 
         // For each of this path, be sure there is no attributes
         LwM2mServer lwServer = client.getServerIdForRegistrationId(currentRegistration.getId());

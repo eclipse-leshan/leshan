@@ -20,8 +20,8 @@ import java.util.Map;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
-import org.eclipse.leshan.core.request.BootstrapDownlinkRequest;
 import org.eclipse.leshan.core.request.BootstrapWriteRequest;
+import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
 /**
@@ -47,7 +47,7 @@ public interface BootstrapTaskProvider {
         /**
          * the list of request to send
          */
-        public List<BootstrapDownlinkRequest<? extends LwM2mResponse>> requestsToSend;
+        public List<DownlinkBootstrapRequest<? extends LwM2mResponse>> requestsToSend;
 
         /**
          * Object (with version) supported by the client. {@link LwM2mModel} needed to encode/decode payload of request

@@ -38,7 +38,8 @@ import org.eclipse.leshan.core.util.datatype.ULong;
  * The request to change the value of a Resource, an array of Resources Instances or multiple Resources from an Object
  * Instance.
  */
-public class WriteRequest extends AbstractSimpleDownlinkRequest<WriteResponse> {
+public class WriteRequest extends AbstractSimpleDownlinkRequest<WriteResponse>
+        implements DownlinkDeviceManagementRequest<WriteResponse> {
 
     /**
      * Define the behavior of a write request.
@@ -511,6 +512,11 @@ public class WriteRequest extends AbstractSimpleDownlinkRequest<WriteResponse> {
 
     @Override
     public void accept(DownlinkRequestVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    public void accept(DownlinkDeviceManagementRequestVisitor visitor) {
         visitor.visit(this);
     }
 

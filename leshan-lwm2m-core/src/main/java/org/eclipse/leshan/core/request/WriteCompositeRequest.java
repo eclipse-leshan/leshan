@@ -41,8 +41,8 @@ import org.eclipse.leshan.core.util.datatype.ULong;
  * <p>
  * The "Write-Composite" operation is atomic and cannot have partial success.
  */
-public class WriteCompositeRequest extends AbstractLwM2mRequest<WriteCompositeResponse>
-        implements CompositeDownlinkRequest<WriteCompositeResponse> {
+public class WriteCompositeRequest extends AbstractLwM2mRequest<WriteCompositeResponse> implements
+        CompositeDownlinkRequest<WriteCompositeResponse>, DownlinkDeviceManagementRequest<WriteCompositeResponse> {
 
     private final ContentFormat contentFormat;
     private final Map<LwM2mPath, LwM2mNode> nodes;
@@ -122,6 +122,11 @@ public class WriteCompositeRequest extends AbstractLwM2mRequest<WriteCompositeRe
 
     @Override
     public void accept(DownlinkRequestVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    public void accept(DownlinkDeviceManagementRequestVisitor visitor) {
         visitor.visit(this);
     }
 

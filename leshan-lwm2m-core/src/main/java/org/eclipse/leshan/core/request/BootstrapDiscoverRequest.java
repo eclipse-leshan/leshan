@@ -26,7 +26,7 @@ import org.eclipse.leshan.core.response.BootstrapDiscoverResponse;
  * @since 1.1
  */
 public class BootstrapDiscoverRequest extends AbstractSimpleDownlinkRequest<BootstrapDiscoverResponse>
-        implements BootstrapDownlinkRequest<BootstrapDiscoverResponse> {
+        implements DownlinkBootstrapRequest<BootstrapDiscoverResponse> {
 
     /**
      * Creates a request for discovering all objects and instances supported by the client.
@@ -80,6 +80,11 @@ public class BootstrapDiscoverRequest extends AbstractSimpleDownlinkRequest<Boot
 
     @Override
     public void accept(DownlinkRequestVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    public void accept(DownlinkBootstrapRequestVisitor visitor) {
         visitor.visit(this);
     }
 }

@@ -29,7 +29,8 @@ import org.eclipse.leshan.core.response.CreateResponse;
 /**
  * A Lightweight M2M request for creating Object Instance(s) within the LWM2M Client.
  */
-public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse> {
+public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
+        implements DownlinkDeviceManagementRequest<CreateResponse> {
 
     private final List<LwM2mResource> resources;
     private final List<LwM2mObjectInstance> instances;
@@ -282,6 +283,11 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
 
     @Override
     public void accept(DownlinkRequestVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    public void accept(DownlinkDeviceManagementRequestVisitor visitor) {
         visitor.visit(this);
     }
 
