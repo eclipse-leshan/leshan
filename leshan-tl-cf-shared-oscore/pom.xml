@@ -25,10 +25,10 @@ Contributors:
     <version>2.0.0-SNAPSHOT</version>
     <relativePath>../build-config/lib-build-config/pom.xml</relativePath>
   </parent>
-  <artifactId>leshan-tl-cf-shared</artifactId>
+  <artifactId>leshan-tl-cf-shared-oscore</artifactId>
   <packaging>bundle</packaging>
-  <name>leshan - transport - californium - shared</name>
-  <description>Shared classes used for transport based on Californium</description>
+  <name>leshan - transport - californium - shared oscore</name>
+  <description>Shared classes used for transport based on Californium about experimental OSCORE support</description>
 
   <dependencies>
     <dependency>
@@ -41,7 +41,8 @@ Contributors:
     </dependency>
     <dependency>
       <groupId>org.eclipse.californium</groupId>
-      <artifactId>scandium</artifactId>
+      <artifactId>cf-oscore</artifactId>
+      <version>${californium.version}</version>
     </dependency>
 
     <!-- test dependencies -->

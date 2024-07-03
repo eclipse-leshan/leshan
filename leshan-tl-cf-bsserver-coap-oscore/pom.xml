@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-Copyright (c) 2013-2016 Sierra Wireless and others.
+Copyright (c) 2013-2015 Sierra Wireless and others.
 
 All rights reserved. This program and the accompanying materials
 are made available under the terms of the Eclipse Public License v2.0
@@ -14,7 +14,7 @@ and the Eclipse Distribution License is available at
 
 Contributors:
     Sierra Wireless - initial API and implementation
-    Rikard Höglund (RISE SICS) - Additions to support OSCORE
+    Bosch Software Innovations GmbH - OSGi support
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -25,15 +25,19 @@ Contributors:
     <version>2.0.0-SNAPSHOT</version>
     <relativePath>../build-config/lib-build-config/pom.xml</relativePath>
   </parent>
-  <artifactId>leshan-tl-cf-shared</artifactId>
+  <artifactId>leshan-tl-cf-bsserver-coap-oscore</artifactId>
   <packaging>bundle</packaging>
-  <name>leshan - transport - californium - shared</name>
-  <description>Shared classes used for transport based on Californium</description>
+  <name>leshan - transport - californium - bsserver - coap oscore</name>
+  <description>A transport implementation for leshan bootstrap server based on Californium for CoAP protocol supporting OSCORE</description>
 
   <dependencies>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
-      <artifactId>leshan-lwm2m-core</artifactId>
+      <artifactId>leshan-tl-cf-shared</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.leshan</groupId>
+      <artifactId>leshan-lwm2m-bsserver</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.californium</groupId>
@@ -50,5 +54,23 @@ Contributors:
       <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <!-- We need to launch each tests in its own JVM to be able to check number 
+                         of active threads in LeshanBootstrapServerTest and LeshanServerTest -->
+          <reuseForks>false</reuseForks>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
