@@ -86,11 +86,16 @@ Contributors:
     <module>leshan-lwm2m-server</module>
     <module>leshan-lwm2m-server-redis</module>
 
-    <!-- transport layer based on californiuù -->
+    <!-- transport layer based on californium -->
     <module>leshan-tl-cf-shared</module>
     <module>leshan-tl-cf-bsserver-coap</module>
     <module>leshan-tl-cf-client-coap</module>
     <module>leshan-tl-cf-server-coap</module>
+    <!-- transport layer based on californium oscore -->
+    <module>leshan-tl-cf-shared-oscore</module>
+    <module>leshan-tl-cf-bsserver-coap-oscore</module>
+    <module>leshan-tl-cf-client-coap-oscore</module>
+    <module>leshan-tl-cf-server-coap-oscore</module>
 
     <!-- transport layer based on java-coap -->
     <module>leshan-tl-jc-shared</module>
@@ -198,6 +203,27 @@ Contributors:
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>leshan-tl-cf-client-coap</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <!-- transport layer based on Californium OSCORE-->
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-tl-cf-shared-oscore</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-tl-cf-bsserver-coap-oscore</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-tl-cf-server-coap-oscore</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-tl-cf-client-coap-oscore</artifactId>
         <version>${project.version}</version>
       </dependency>
 
