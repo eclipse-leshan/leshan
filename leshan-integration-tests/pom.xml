@@ -24,7 +24,7 @@ Contributors:
     <relativePath>../build-config/pom.xml</relativePath>
   </parent>
   <artifactId>leshan-integration-tests</artifactId>
-  <name>leshan - integration tests</name>
+  <name>leshan-integration tests</name>
   <description>The client/server integrations tests for leshan</description>
 
   <dependencies>

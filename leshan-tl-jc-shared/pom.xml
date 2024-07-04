@@ -26,7 +26,7 @@ Contributors:
   </parent>
   <artifactId>leshan-tl-jc-shared</artifactId>
   <packaging>bundle</packaging>
-  <name>leshan - transport - java-coap - shared</name>
+  <name>leshan-transport-javacoap-shared</name>
   <description>Shared classes used for transport based on java-coap</description>
 
   <dependencies>

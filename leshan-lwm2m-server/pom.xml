@@ -27,7 +27,7 @@ Contributors:
   </parent>
   <artifactId>leshan-lwm2m-server</artifactId>
   <packaging>bundle</packaging>
-  <name>leshan - server</name>
+  <name>leshan-server</name>
   <description>A LWM2M server implementation which abstracts transport layer. A transport implementation like "leshan-tl-cf-server-coap" is needed.</description>
 
   <dependencies>

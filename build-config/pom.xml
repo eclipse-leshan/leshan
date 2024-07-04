@@ -26,7 +26,7 @@ Contributors:
   <artifactId>leshan-build-config</artifactId>
   <packaging>pom</packaging>
 
-  <name>leshan - shared build config</name>
+  <name>leshan-shared build config</name>
   <description>Shared Maven configuration for all Leshan modules</description>
 
   <properties>

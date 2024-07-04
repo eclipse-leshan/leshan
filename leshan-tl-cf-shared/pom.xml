@@ -27,7 +27,7 @@ Contributors:
   </parent>
   <artifactId>leshan-tl-cf-shared</artifactId>
   <packaging>bundle</packaging>
-  <name>leshan - transport - californium - shared</name>
+  <name>leshan-transport-californium-shared</name>
   <description>Shared classes used for transport based on Californium</description>
 
   <dependencies>

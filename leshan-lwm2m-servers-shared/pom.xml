@@ -27,7 +27,7 @@ Contributors:
   </parent>
   <artifactId>leshan-lwm2m-servers-shared</artifactId>
   <packaging>bundle</packaging>
-  <name>leshan - servers - shared</name>
+  <name>leshan-servers-shared</name>
   <description>Shared classes between server and bsserver.</description>
 
   <dependencies>

@@ -27,7 +27,7 @@ Contributors:
   </parent>
   <artifactId>leshan-lwm2m-bsserver</artifactId>
   <packaging>bundle</packaging>
-  <name>leshan - bsserver</name>
+  <name>leshan-bsserver</name>
   <description>A LWM2M bootstrap server implementation which abstracts transport layer. A transport implementation like "leshan-tl-cf-bsserver-coap" is needed.</description>
 
   <dependencies>

@@ -26,7 +26,7 @@ Contributors:
     <relativePath>../build-config/demo-build-config/pom.xml</relativePath>
   </parent>
   <artifactId>leshan-demo-servers-shared</artifactId>
-  <name>leshan - demo - servers shared</name>
+  <name>leshan-demo-servers shared</name>
   <description>Shared classes between server and bsserver demo</description>
 
   <dependencies>

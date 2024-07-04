@@ -25,7 +25,7 @@ Contributors:
     <relativePath>../build-config/demo-build-config/pom.xml</relativePath>
   </parent>
   <artifactId>leshan-demo-bsserver</artifactId>
-  <name>leshan - demo - bsserver</name>
+  <name>leshan-demo-bsserver</name>
   <description>A LWM2M bootstrap demonstration server running an embedded Jetty server</description>
 
   <dependencies>

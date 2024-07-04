@@ -27,7 +27,7 @@ Contributors:
   </parent>
   <artifactId>leshan-tl-cf-client-coap</artifactId>
   <packaging>bundle</packaging>
-  <name>leshan - transport - californium - client - coap</name>
+  <name>leshan-transport-californium-client-coap</name>
   <description>A transport implementation for leshan client based on Californium for CoAP protocol</description>
 
   <dependencies>
