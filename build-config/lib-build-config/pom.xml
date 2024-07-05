@@ -69,60 +69,44 @@ Contributors:
                 <item>
                   <regex>true</regex>
                   <code>java.class.externalClassExposedInAPI</code>
-                  <newArchive>org\.eclipse\.leshan:leshan.*:.*</newArchive>
-                  <justification>Leshan sub-modules
-                                        implement the Leshan API which
-                                        makes them expose
-                                        Leshan-specific classes usually.</justification>
+                  <newArchive>.*</newArchive>
+                  <justification>We do not consider exoposing external class as an issue. Most of our code allow customization which lead to expose underlaying API.</justification>
+                </item>
+                <item>
+                  <regex>true</regex>
+                  <code>java.class.nonPublicPartOfAPI</code>
+                  <new>class com.fasterxml.jackson.databind.type.TypeParser.MyTokenizer</new>
+                  <justification>It sounds to be a bug in jackson API : https://github.com/FasterXML/jackson-databind/issues/4613</justification>
+                </item>
+                <item>
+                  <regex>true</regex>
+                  <code>java.class.nonPublicPartOfAPI</code>
+                  <new>class org.eclipse.californium.scandium.dtls.DTLSFlight.EpochMessage</new>
+                  <justification>It sounds to be a bug in californium API : https://github.com/eclipse-californium/californium/issues/2259</justification>
+                </item>
+                <item>
+                  <regex>true</regex>
+                  <code>java.class.nonPublicPartOfAPI</code>
+                  <new>class com.mbed.coap.packet.RawOption</new>
+                  <justification>It sounds to be a bug in javacoap API : https://github.com/open-coap/java-coap/issues/86</justification>
                 </item>
               </differences>
             </revapi.differences>
-            <revapi.filter>
+            <!--revapi.filter>
               <elements>
                 <exclude>
                   <item>
-                    <!-- Californium is exclude from 
-                                            API check as it does not have clear definition of its API and do not really 
-                                            respect Semantic versioning: https://github.com/eclipse/californium/issues/1159 
-                                            https://github.com/eclipse/californium/issues/1166 -->
-                    <matcher>java-package</matcher>
-                    <match>/org\.eclipse\.californium(\..*)?/</match>
-                  </item>
-                  <item>
-                    <!-- HACK : we exclide slf4j because of revapi bug. 
-                         See : https://github.com/revapi/revapi/issues/276
-                         This should be removed once it will be fixed in revapi. -->
-                    <matcher>java-package</matcher>
-                    <match>/org\.slf4j(\..*)?/</match>
-                  </item>
-                  <item>
-                    <!-- TODO we should double check all this exclude API check -->
-                    <matcher>java-package</matcher>
-                    <match>/com\.mbed\.coap(\..*)?/</match>
-                  </item>
-                  <item>
-                    <matcher>java-package</matcher>
-                    <match>/io\.netty(\..*)?/</match>
-                  </item>
-                  <item>
-                    <matcher>java-package</matcher>
-                    <match>/com\.upokecenter(\..*)?/</match>
-                  </item>
-                  <item>
-                    <matcher>java-package</matcher>
-                    <match>/com\.fasterxml\.jackson(\..*)?/</match>
-                  </item>
-                  <item>
-                    <matcher>java-package</matcher>
-                    <match>/redis\.clients\.jedis(\..*)?/</match>
-                  </item>
-                  <item>
+                    <Californium is exclude from 
+                         API check as it does not have clear definition of its API and do not really 
+                         respect Semantic versioning : 
+                         - https://github.com/eclipse/californium/issues/1159 
+                         - https://github.com/eclipse/californium/issues/1166>
                     <matcher>java-package</matcher>
                     <match>/org\.eclipse\.californium(\..*)?/</match>
                   </item>
                 </exclude>
               </elements>
-            </revapi.filter>
+            </revapi.filter-->
           </analysisConfiguration>
         </configuration>
         <executions>
