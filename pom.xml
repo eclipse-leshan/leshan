@@ -133,7 +133,7 @@ Contributors:
 
     <!-- we use properties for version when there are used more than once -->
     <!-- dependencies version -->
-    <californium.version>3.12.0</californium.version>
+    <californium.version>3.12.1-SNAPSHOT</californium.version>
     <logback.version>1.3.12</logback.version>
     <javacoap.version>6.21.0</javacoap.version>
     <netty.version>4.1.109.Final</netty.version>
@@ -420,6 +420,20 @@ Contributors:
       </dependency>
     </dependencies>
   </dependencyManagement>
+
+  <repositories>
+    <repository>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <id>eclipse-repo</id>
+      <name>Eclipse Repository</name>
+      <url>https://repo.eclipse.org/content/repositories/californium/</url>
+    </repository>
+  </repositories>
 
   <!-- Bill Of Materials -->
   <!--
