@@ -113,8 +113,15 @@ public class TlvEncoder {
      * Encodes a date value.
      */
     public static byte[] encodeDate(Date value) {
-        ByteBuffer tBuf = ByteBuffer.allocate(4);
-        tBuf.putInt((int) (value.getTime() / 1000L));
+        ByteBuffer tBuf;
+        long lValue = value.getTime() / 1000L;
+        if (lValue <= Integer.MAX_VALUE) {
+            tBuf = ByteBuffer.allocate(4);
+            tBuf.putInt((int) lValue);
+        } else {
+            tBuf = ByteBuffer.allocate(8);
+            tBuf.putLong(lValue);
+        }
         return tBuf.array();
     }
 

@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.ByteBuffer;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.eclipse.leshan.core.tlv.Tlv.TlvType;
@@ -58,14 +59,37 @@ public class TlvEncoderTest {
     }
 
     @Test
-    public void encode_date() {
-        long timestamp = System.currentTimeMillis();
+    public void encode_date_4_bytes() throws TlvException {
+        Calendar cal = Calendar.getInstance();
+        cal.set(2024, 1, 1, 0, 0, 0);
+        cal.set(Calendar.MILLISECOND, 534);
+        long timestamp = cal.getTimeInMillis();
         byte[] encoded = TlvEncoder.encodeDate(new Date(timestamp));
 
         // check value
         ByteBuffer bb = ByteBuffer.wrap(encoded);
         assertEquals((int) (timestamp / 1000), bb.getInt());
         assertEquals(0, bb.remaining());
+        cal.set(Calendar.MILLISECOND, 0);
+        Date date = TlvDecoder.decodeDate(encoded);
+        assertEquals(cal.getTimeInMillis(), date.getTime());
+    }
+
+    @Test
+    public void encode_date_8_bytes() throws TlvException {
+        Calendar cal = Calendar.getInstance();
+        cal.set(2700, 1, 1, 0, 0, 0);
+        cal.set(Calendar.MILLISECOND, 523);
+        long timestamp = cal.getTimeInMillis();
+        byte[] encoded = TlvEncoder.encodeDate(new Date(timestamp));
+
+        // check value
+        ByteBuffer bb = ByteBuffer.wrap(encoded);
+        assertEquals(timestamp / 1000, bb.getLong());
+        assertEquals(0, bb.remaining());
+        cal.set(Calendar.MILLISECOND, 0);
+        Date date = TlvDecoder.decodeDate(encoded);
+        assertEquals(cal.getTimeInMillis(), date.getTime());
     }
 
     @Test
