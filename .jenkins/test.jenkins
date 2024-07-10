@@ -74,4 +74,9 @@ pipeline {
       }
     }
   }
+  post {
+    always {
+      archiveArtifacts artifacts: 'leshan-demo-server.jar,leshan-demo-bsserver.jar,leshan-demo-client.jar'
+    }
+  }
 }
