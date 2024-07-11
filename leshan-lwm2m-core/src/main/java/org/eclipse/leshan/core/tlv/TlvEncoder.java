@@ -115,7 +115,13 @@ public class TlvEncoder {
     public static byte[] encodeDate(Date value) {
         ByteBuffer tBuf;
         long lValue = value.getTime() / 1000L;
-        if (lValue <= Integer.MAX_VALUE) {
+        if (lValue <= Byte.MAX_VALUE && lValue >= Byte.MIN_VALUE) {
+            tBuf = ByteBuffer.allocate(1);
+            tBuf.put((byte) lValue);
+        } else if (lValue <= Short.MAX_VALUE && lValue >= Short.MIN_VALUE) {
+            tBuf = ByteBuffer.allocate(2);
+            tBuf.putShort((short) lValue);
+        } else if (lValue <= Integer.MAX_VALUE && lValue >= Integer.MIN_VALUE) {
             tBuf = ByteBuffer.allocate(4);
             tBuf.putInt((int) lValue);
         } else {

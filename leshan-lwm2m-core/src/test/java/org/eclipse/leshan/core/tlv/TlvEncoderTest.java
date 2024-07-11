@@ -19,8 +19,10 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.ByteBuffer;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.eclipse.leshan.core.tlv.Tlv.TlvType;
 import org.junit.jupiter.api.Test;
@@ -58,38 +60,71 @@ public class TlvEncoderTest {
         assertEquals(0, bb.remaining());
     }
 
-    @Test
-    public void encode_date_4_bytes() throws TlvException {
-        Calendar cal = Calendar.getInstance();
-        cal.set(2024, 1, 1, 0, 0, 0);
-        cal.set(Calendar.MILLISECOND, 534);
-        long timestamp = cal.getTimeInMillis();
-        byte[] encoded = TlvEncoder.encodeDate(new Date(timestamp));
+    private void shouldEncodeDateAsNumberOfBytes(long utcTimeInSeconds, int expectedNumberOfBytes) throws TlvException {
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone(ZoneId.of("UTC")));
+        cal.setTimeInMillis(utcTimeInSeconds * 1000);
 
-        // check value
+        // encode
+        byte[] encoded = TlvEncoder.encodeDate(cal.getTime());
+
+        // check byte array value
         ByteBuffer bb = ByteBuffer.wrap(encoded);
-        assertEquals((int) (timestamp / 1000), bb.getInt());
-        assertEquals(0, bb.remaining());
-        cal.set(Calendar.MILLISECOND, 0);
+        if (expectedNumberOfBytes == 1) {
+            assertEquals((byte) (cal.getTimeInMillis() / 1000), bb.get());
+            assertEquals(0, bb.remaining());
+        } else if (expectedNumberOfBytes == 2) {
+            assertEquals((short) (cal.getTimeInMillis() / 1000), bb.getShort());
+            assertEquals(0, bb.remaining());
+        } else if (expectedNumberOfBytes == 4) {
+            assertEquals((int) (cal.getTimeInMillis() / 1000), bb.getInt());
+            assertEquals(0, bb.remaining());
+        } else {
+            assertEquals(cal.getTimeInMillis() / 1000, bb.getLong());
+            assertEquals(0, bb.remaining());
+        }
+
+        // confirm decoded value
         Date date = TlvDecoder.decodeDate(encoded);
         assertEquals(cal.getTimeInMillis(), date.getTime());
     }
 
     @Test
-    public void encode_date_8_bytes() throws TlvException {
-        Calendar cal = Calendar.getInstance();
-        cal.set(2700, 1, 1, 0, 0, 0);
-        cal.set(Calendar.MILLISECOND, 523);
-        long timestamp = cal.getTimeInMillis();
-        byte[] encoded = TlvEncoder.encodeDate(new Date(timestamp));
+    public void encode_date_byte() throws TlvException {
+        shouldEncodeDateAsNumberOfBytes(Byte.MAX_VALUE, 1);
+        shouldEncodeDateAsNumberOfBytes(Byte.MIN_VALUE, 1);
+        shouldEncodeDateAsNumberOfBytes(0, 1);
+        shouldEncodeDateAsNumberOfBytes(100, 1);
+        shouldEncodeDateAsNumberOfBytes(-100, 1);
+    }
 
-        // check value
-        ByteBuffer bb = ByteBuffer.wrap(encoded);
-        assertEquals(timestamp / 1000, bb.getLong());
-        assertEquals(0, bb.remaining());
-        cal.set(Calendar.MILLISECOND, 0);
-        Date date = TlvDecoder.decodeDate(encoded);
-        assertEquals(cal.getTimeInMillis(), date.getTime());
+    @Test
+    public void encode_date_short() throws TlvException {
+        shouldEncodeDateAsNumberOfBytes(Byte.MAX_VALUE + 1, 2);
+        shouldEncodeDateAsNumberOfBytes(Byte.MIN_VALUE - 1, 2);
+        shouldEncodeDateAsNumberOfBytes(Short.MAX_VALUE, 2);
+        shouldEncodeDateAsNumberOfBytes(Short.MIN_VALUE, 2);
+        shouldEncodeDateAsNumberOfBytes(32000, 2);
+        shouldEncodeDateAsNumberOfBytes(-32000, 2);
+    }
+
+    @Test
+    public void encode_date_int() throws TlvException {
+        shouldEncodeDateAsNumberOfBytes(Short.MAX_VALUE + 1, 4);
+        shouldEncodeDateAsNumberOfBytes(Short.MIN_VALUE - 1, 4);
+        shouldEncodeDateAsNumberOfBytes(Integer.MAX_VALUE, 4);
+        shouldEncodeDateAsNumberOfBytes(Integer.MIN_VALUE, 4);
+        shouldEncodeDateAsNumberOfBytes(Integer.MAX_VALUE - 100, 4);
+        shouldEncodeDateAsNumberOfBytes(Integer.MIN_VALUE + 100, 4);
+    }
+
+    @Test
+    public void encode_date_long() throws TlvException {
+        shouldEncodeDateAsNumberOfBytes((long) Integer.MAX_VALUE + 1, 8);
+        shouldEncodeDateAsNumberOfBytes((long) Integer.MIN_VALUE - 1, 8);
+        shouldEncodeDateAsNumberOfBytes(Long.MAX_VALUE / 1000, 8);
+        shouldEncodeDateAsNumberOfBytes(Long.MIN_VALUE / 1000, 8);
+        shouldEncodeDateAsNumberOfBytes(Long.MAX_VALUE / 1000 - 100, 8);
+        shouldEncodeDateAsNumberOfBytes(Long.MIN_VALUE / 1000 + 100, 8);
     }
 
     @Test
