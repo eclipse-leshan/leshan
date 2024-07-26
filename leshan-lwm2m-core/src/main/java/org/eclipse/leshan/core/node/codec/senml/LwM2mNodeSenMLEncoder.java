@@ -68,7 +68,8 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
     }
 
     @Override
-    public byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter) {
+    public byte[] encode(LwM2mNode node, String rootPath, LwM2mPath path, LwM2mModel model,
+            LwM2mValueConverter converter) {
         Validate.notNull(node);
         Validate.notNull(path);
         Validate.notNull(model);
@@ -76,6 +77,7 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
         InternalEncoder internalEncoder = new InternalEncoder();
         internalEncoder.objectId = path.getObjectId();
         internalEncoder.model = model;
+        internalEncoder.rootPath = rootPath;
         internalEncoder.requestPath = path;
         internalEncoder.converter = converter;
         node.accept(internalEncoder);
@@ -91,8 +93,8 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
     }
 
     @Override
-    public byte[] encodeNodes(Map<LwM2mPath, LwM2mNode> nodes, LwM2mModel model, LwM2mValueConverter converter)
-            throws CodecException {
+    public byte[] encodeNodes(String rootPath, Map<LwM2mPath, LwM2mNode> nodes, LwM2mModel model,
+            LwM2mValueConverter converter) throws CodecException {
         // validate arguments
         Validate.notEmpty(nodes);
 
@@ -103,6 +105,7 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
             InternalEncoder internalEncoder = new InternalEncoder();
             internalEncoder.objectId = path.getObjectId();
             internalEncoder.model = model;
+            internalEncoder.rootPath = rootPath;
             internalEncoder.requestPath = path;
             internalEncoder.converter = converter;
             internalEncoder.records = new ArrayList<>();
@@ -127,8 +130,8 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
     }
 
     @Override
-    public byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, LwM2mPath path, LwM2mModel model,
-            LwM2mValueConverter converter) throws CodecException {
+    public byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, String rootPath, LwM2mPath path,
+            LwM2mModel model, LwM2mValueConverter converter) throws CodecException {
         Validate.notNull(timestampedNodes);
         Validate.notNull(path);
         Validate.notNull(model);
@@ -148,6 +151,7 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
             InternalEncoder internalEncoder = new InternalEncoder();
             internalEncoder.objectId = path.getObjectId();
             internalEncoder.model = model;
+            internalEncoder.rootPath = rootPath;
             internalEncoder.requestPath = path;
             internalEncoder.converter = converter;
             internalEncoder.records = new ArrayList<>();
@@ -165,7 +169,7 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
     }
 
     @Override
-    public byte[] encodeTimestampedNodes(TimestampedLwM2mNodes timestampedNodes, LwM2mModel model,
+    public byte[] encodeTimestampedNodes(String rootPath, TimestampedLwM2mNodes timestampedNodes, LwM2mModel model,
             LwM2mValueConverter converter) throws CodecException {
         Validate.notEmpty(timestampedNodes.getTimestamps());
 
@@ -177,6 +181,7 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
                 InternalEncoder internalEncoder = new InternalEncoder();
                 internalEncoder.objectId = path.getObjectId();
                 internalEncoder.model = model;
+                internalEncoder.rootPath = rootPath;
                 internalEncoder.requestPath = path;
                 internalEncoder.converter = converter;
                 internalEncoder.records = new ArrayList<>();
@@ -206,6 +211,7 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
         private LwM2mModel model;
         private LwM2mPath requestPath;
         private LwM2mValueConverter converter;
+        private String rootPath;
 
         // visitor output
         private ArrayList<SenMLRecord> records = new ArrayList<>();
@@ -332,7 +338,7 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
 
             // Set basename only for first record
             if (records.isEmpty()) {
-                record.setBaseName(bn);
+                record.setBaseName(rootPath != null ? rootPath + bn : bn);
             }
             record.setName(n);
 

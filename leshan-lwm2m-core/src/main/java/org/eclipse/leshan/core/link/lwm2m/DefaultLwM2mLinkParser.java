@@ -35,13 +35,15 @@ import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.link.lwm2m.attributes.MixedLwM2mAttributeSet;
 import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPathParser;
 
 /**
  * A Default Link Parser which is able to create more LWM2M flavored link.
  */
 public class DefaultLwM2mLinkParser implements LwM2mLinkParser {
 
-    private final LinkParser parser;
+    private final LinkParser linkParser;
+    private final PrefixedLwM2mPathParser prefixedPathParser;
 
     public DefaultLwM2mLinkParser() {
         // Define all supported Attributes
@@ -50,21 +52,26 @@ public class DefaultLwM2mLinkParser implements LwM2mLinkParser {
         suppportedAttributes.addAll(LwM2mAttributes.ALL);
 
         // Create default link Parser
-        this.parser = new DefaultLinkParser(new DefaultAttributeParser(suppportedAttributes));
+        this.linkParser = new DefaultLinkParser(new DefaultAttributeParser(suppportedAttributes));
+        this.prefixedPathParser = new PrefixedLwM2mPathParser();
     }
 
     public DefaultLwM2mLinkParser(Collection<? extends AttributeModel<?>> suppportedAttributes) {
-        // Create default link Parser
-        this.parser = new DefaultLinkParser(new DefaultAttributeParser(suppportedAttributes));
+        this(new DefaultLinkParser(new DefaultAttributeParser(suppportedAttributes)));
     }
 
     public DefaultLwM2mLinkParser(LinkParser internalLinkParser) {
-        this.parser = internalLinkParser;
+        this(internalLinkParser, new PrefixedLwM2mPathParser());
+    }
+
+    public DefaultLwM2mLinkParser(LinkParser internalLinkParser, PrefixedLwM2mPathParser prefixedParser) {
+        this.linkParser = internalLinkParser;
+        this.prefixedPathParser = prefixedParser;
     }
 
     @Override
     public LwM2mLink[] parseLwM2mLinkFromCoreLinkFormat(byte[] bytes, String rootpath) throws LinkParseException {
-        Link[] links = parser.parseCoreLinkFormat(bytes);
+        Link[] links = linkParser.parseCoreLinkFormat(bytes);
         LwM2mLink[] lwm2mLinks = new LwM2mLink[links.length];
 
         // define default lwm2m root path
@@ -114,7 +121,7 @@ public class DefaultLwM2mLinkParser implements LwM2mLinkParser {
 
     @Override
     public Link[] parseCoreLinkFormat(byte[] bytes) throws LinkParseException {
-        Link[] links = parser.parseCoreLinkFormat(bytes);
+        Link[] links = linkParser.parseCoreLinkFormat(bytes);
 
         // search root resource
         String rootPath = "/";
@@ -122,6 +129,14 @@ public class DefaultLwM2mLinkParser implements LwM2mLinkParser {
             ResourceTypeAttribute rt = link.getAttributes().get(Attributes.RT);
             if (rt != null && rt.getValue().contains("oma.lwm2m")) {
                 rootPath = link.getUriReference();
+                try {
+                    if (!rootPath.equals("/")) {
+                        prefixedPathParser.parsePrefix(rootPath);
+                    }
+                } catch (InvalidLwM2mPathException e) {
+                    String strLink = new String(bytes, StandardCharsets.UTF_8);
+                    throw new LinkParseException(e, "Unable to parse link %s in %s ", link, strLink);
+                }
                 break;
             }
         }

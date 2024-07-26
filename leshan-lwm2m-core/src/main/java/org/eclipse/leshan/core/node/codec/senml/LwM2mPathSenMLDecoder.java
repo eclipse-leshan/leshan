@@ -39,7 +39,7 @@ public class LwM2mPathSenMLDecoder implements PathDecoder {
     }
 
     @Override
-    public List<LwM2mPath> decode(byte[] content) throws CodecException {
+    public List<LwM2mPath> decode(byte[] content, String rootPath) throws CodecException {
         // Decode SenML Pack
         SenMLPack pack;
         try {
@@ -55,6 +55,7 @@ public class LwM2mPathSenMLDecoder implements PathDecoder {
             LwM2mResolvedSenMLRecord resolvedRecord;
             try {
                 resolvedRecord = resolver.resolve(record);
+                validateRootPath(resolvedRecord, rootPath);
                 if (record.getType() != null) {
                     throw new CodecException("Invalid record for path encoding : record should not have value %s",
                             record);
@@ -70,5 +71,12 @@ public class LwM2mPathSenMLDecoder implements PathDecoder {
             }
         }
         return res;
+    }
+
+    protected void validateRootPath(LwM2mResolvedSenMLRecord resolvedRecord, String rootPath) {
+        if (!resolvedRecord.getPrefixedPath().useRootPath(rootPath)) {
+            throw new CodecException("Invalid path [%s], it start by the root path [%s]", resolvedRecord.getName(),
+                    rootPath);
+        }
     }
 }

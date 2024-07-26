@@ -27,8 +27,9 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 public interface PathEncoder {
 
     /**
+     * @param rootPath to use by LWM2M client (also known as alternate path)
      * @param paths The list of {@link LwM2mPath} to encode
      * @return the encoded path as a byte array.
      */
-    byte[] encode(List<LwM2mPath> paths);
+    byte[] encode(String rootPath, List<LwM2mPath> paths);
 }

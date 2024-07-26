@@ -31,6 +31,7 @@ public interface NodeDecoder {
      * Deserializes a binary content into a {@link LwM2mNode} of the expected type.
      *
      * @param content the content
+     * @param rootPath the expected rootPath also known as alternatePath of LWM2M client.
      * @param path the path of the node to build
      * @param model the collection of supported object models
      * @param nodeClass the class of the {@link LwM2mNode} to decode
@@ -38,6 +39,6 @@ public interface NodeDecoder {
      *
      * @throws CodecException if there payload is malformed.
      */
-    <T extends LwM2mNode> T decode(byte[] content, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
-            throws CodecException;
+    <T extends LwM2mNode> T decode(byte[] content, String rootPath, LwM2mPath path, LwM2mModel model,
+            Class<T> nodeClass) throws CodecException;
 }

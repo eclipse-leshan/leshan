@@ -19,7 +19,10 @@ package org.eclipse.leshan.core.node.codec;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -30,6 +33,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
@@ -50,6 +54,8 @@ import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.senml.cbor.upokecenter.SenMLCborUpokecenterEncoderDecoder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Unit tests for {@link LwM2mEncoder}
@@ -58,6 +64,21 @@ public class LwM2mNodeEncoderTest {
 
     private static LwM2mModel model;
     private static LwM2mEncoder encoder;
+
+    @ParameterizedTest(name = "using [{0}] as rootPath")
+    @MethodSource("rootPaths")
+    @Retention(RetentionPolicy.RUNTIME)
+    private @interface TestAllRootPaths {
+    }
+
+    static Stream<org.junit.jupiter.params.provider.Arguments> rootPaths() {
+        return Stream.of(//
+                arguments((String) null), //
+                arguments("/"), //
+                arguments("/lwm2m"), //
+                arguments("/lwm2m/"), //
+                arguments("/lwm2m/rootpath"));
+    }
 
     @BeforeAll
     public static void loadModel() {
@@ -72,41 +93,40 @@ public class LwM2mNodeEncoderTest {
                 new LwM2mValueChecker());
     }
 
-    @Test
-    public void text_encode_single_resource_float() {
+    @TestAllRootPaths
+    public void text_encode_single_resource_float(String rootPath) {
 
-        byte[] encoded = encoder.encode(LwM2mSingleResource.newFloatResource(15, 56.4D), ContentFormat.TEXT,
+        byte[] encoded = encoder.encode(LwM2mSingleResource.newFloatResource(15, 56.4D), ContentFormat.TEXT, rootPath,
                 new LwM2mPath("/323/0/15"), model);
 
         assertEquals("56.4", new String(encoded, StandardCharsets.UTF_8));
     }
 
-    @Test
-    public void text_encode_single_resource_date() {
+    public void text_encode_single_resource_date(String rootPath) {
 
         byte[] encoded = encoder.encode(LwM2mSingleResource.newDateResource(13, new Date(1367491215000L)),
-                ContentFormat.TEXT, new LwM2mPath("/3/0/13"), model);
+                ContentFormat.TEXT, rootPath, new LwM2mPath("/3/0/13"), model);
 
         assertEquals("1367491215", new String(encoded, StandardCharsets.UTF_8));
     }
 
-    @Test
-    public void text_encode_multiple_instances() {
+    @TestAllRootPaths
+    public void text_encode_multiple_instances(String rootPath) {
         Map<Integer, Long> values = new HashMap<>();
         values.put(0, 1L);
         values.put(1, 5L);
 
         assertThrowsExactly(CodecException.class, () -> {
-            encoder.encode(LwM2mMultipleResource.newIntegerResource(6, values), ContentFormat.TEXT,
+            encoder.encode(LwM2mMultipleResource.newIntegerResource(6, values), ContentFormat.TEXT, rootPath,
                     new LwM2mPath("/3/0/6"), model);
         });
     }
 
-    @Test
-    public void text_encode_opaque_as_base64_string() {
+    @TestAllRootPaths
+    public void text_encode_opaque_as_base64_string(String rootPath) {
         byte[] opaqueValue = new byte[] { 0x1, 0x2, 0x3, 0x4, 0x5 };
         byte[] encoded = encoder.encode(LwM2mSingleResource.newBinaryResource(0, opaqueValue), ContentFormat.TEXT,
-                new LwM2mPath("/5/0/0"), model);
+                rootPath, new LwM2mPath("/5/0/0"), model);
 
         assertEquals("AQIDBAU=", new String(encoded, StandardCharsets.UTF_8));
     }
@@ -160,45 +180,45 @@ public class LwM2mNodeEncoderTest {
         return resources;
     }
 
-    @Test
-    public void tlv_encode_device_object_instance_as_resources_array() {
+    @TestAllRootPaths
+    public void tlv_encode_device_object_instance_as_resources_array(String rootPath) {
         LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, getDeviceResources());
-        byte[] encoded = encoder.encode(oInstance, ContentFormat.TLV, new LwM2mPath("/3/0"), model);
+        byte[] encoded = encoder.encode(oInstance, ContentFormat.TLV, rootPath, new LwM2mPath("/3/0"), model);
 
         assertArrayEquals(ENCODED_DEVICE_WITHOUT_INSTANCE, encoded);
     }
 
-    @Test
-    public void tlv_encode_device_object_instance_as_resources_array__undefined_instance_id() {
+    @TestAllRootPaths
+    public void tlv_encode_device_object_instance_as_resources_array__undefined_instance_id(String rootPath) {
         LwM2mObjectInstance oInstance = new LwM2mObjectInstance(getDeviceResources());
-        byte[] encoded = encoder.encode(oInstance, ContentFormat.TLV, new LwM2mPath("/3"), model);
+        byte[] encoded = encoder.encode(oInstance, ContentFormat.TLV, rootPath, new LwM2mPath("/3"), model);
 
         assertArrayEquals(ENCODED_DEVICE_WITHOUT_INSTANCE, encoded);
     }
 
-    @Test
-    public void tlv_encode_device_object_instance_as_instance() {
+    @TestAllRootPaths
+    public void tlv_encode_device_object_instance_as_instance(String rootPath) {
         LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, getDeviceResources());
-        byte[] encoded = encoder.encode(oInstance, ContentFormat.TLV, new LwM2mPath("/3"), model);
+        byte[] encoded = encoder.encode(oInstance, ContentFormat.TLV, rootPath, new LwM2mPath("/3"), model);
 
         assertArrayEquals(ENCODED_DEVICE_WITH_INSTANCE, encoded);
     }
 
-    @Test
-    public void tlv_encode_device_object() {
+    @TestAllRootPaths
+    public void tlv_encode_device_object(String rootPath) {
 
         LwM2mObject object = new LwM2mObject(3, new LwM2mObjectInstance(0, getDeviceResources()));
-        byte[] encoded = encoder.encode(object, ContentFormat.TLV, new LwM2mPath("/3"), model);
+        byte[] encoded = encoder.encode(object, ContentFormat.TLV, rootPath, new LwM2mPath("/3"), model);
 
         // encoded as an array of resource TLVs
         assertArrayEquals(ENCODED_DEVICE_WITH_INSTANCE, encoded);
     }
 
-    @Test
-    public void json_encode_device_object_instance() {
+    @TestAllRootPaths
+    public void json_encode_device_object_instance(String rootPath) {
 
         LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, getDeviceResources());
-        byte[] encoded = encoder.encode(oInstance, ContentFormat.JSON, new LwM2mPath("/3/0"), model);
+        byte[] encoded = encoder.encode(oInstance, ContentFormat.JSON, rootPath, new LwM2mPath("/3/0"), model);
 
         StringBuilder b = new StringBuilder();
         b.append("{\"bn\":\"/3/0/\",\"e\":[");
@@ -223,14 +243,15 @@ public class LwM2mNodeEncoderTest {
         assertEquals(expected, new String(encoded));
     }
 
-    @Test
-    public void json_encode_timestamped_resources() throws CodecException {
+    @TestAllRootPaths
+    public void json_encode_timestamped_resources(String rootPath) throws CodecException {
         List<TimestampedLwM2mNode> data = new ArrayList<>();
         data.add(new TimestampedLwM2mNode(Instant.ofEpochSecond(500), LwM2mSingleResource.newFloatResource(1, 22.9)));
         data.add(new TimestampedLwM2mNode(Instant.ofEpochSecond(510), LwM2mSingleResource.newFloatResource(1, 22.4)));
         data.add(new TimestampedLwM2mNode(Instant.ofEpochSecond(520), LwM2mSingleResource.newFloatResource(1, 24.1)));
 
-        byte[] encoded = encoder.encodeTimestampedData(data, ContentFormat.JSON, new LwM2mPath(1024, 0, 1), model);
+        byte[] encoded = encoder.encodeTimestampedData(data, ContentFormat.JSON, rootPath, new LwM2mPath(1024, 0, 1),
+                model);
 
         StringBuilder b = new StringBuilder();
         b.append("{\"bn\":\"/1024/0/1\",\"e\":[");
@@ -242,14 +263,15 @@ public class LwM2mNodeEncoderTest {
         assertEquals(expected, new String(encoded));
     }
 
-    @Test
-    public void json_timestamped_resource_instances() throws CodecException {
+    @TestAllRootPaths
+    public void json_timestamped_resource_instances(String rootPath) throws CodecException {
         List<TimestampedLwM2mNode> data = new ArrayList<>();
         data.add(new TimestampedLwM2mNode(Instant.ofEpochSecond(500), LwM2mResourceInstance.newFloatInstance(0, 22.9)));
         data.add(new TimestampedLwM2mNode(Instant.ofEpochSecond(510), LwM2mResourceInstance.newFloatInstance(0, 22.4)));
         data.add(new TimestampedLwM2mNode(Instant.ofEpochSecond(520), LwM2mResourceInstance.newFloatInstance(0, 24.1)));
 
-        byte[] encoded = encoder.encodeTimestampedData(data, ContentFormat.JSON, new LwM2mPath(1024, 0, 1, 0), model);
+        byte[] encoded = encoder.encodeTimestampedData(data, ContentFormat.JSON, rootPath, new LwM2mPath(1024, 0, 1, 0),
+                model);
 
         StringBuilder b = new StringBuilder();
         b.append("{\"bn\":\"/1024/0/1/0\",\"e\":[");
@@ -261,8 +283,8 @@ public class LwM2mNodeEncoderTest {
         assertEquals(expected, new String(encoded));
     }
 
-    @Test
-    public void json_encode_timestamped_instances() throws CodecException {
+    @TestAllRootPaths
+    public void json_encode_timestamped_instances(String rootPath) throws CodecException {
         List<TimestampedLwM2mNode> data = new ArrayList<>();
 
         LwM2mObjectInstance instanceAt110 = new LwM2mObjectInstance(0, LwM2mSingleResource.newFloatResource(1, 22.9));
@@ -274,7 +296,8 @@ public class LwM2mNodeEncoderTest {
         data.add(new TimestampedLwM2mNode(Instant.ofEpochSecond(120), instanceAt120));
         data.add(new TimestampedLwM2mNode(Instant.ofEpochSecond(130), instanceAt130));
 
-        byte[] encoded = encoder.encodeTimestampedData(data, ContentFormat.JSON, new LwM2mPath(1024, 0), model);
+        byte[] encoded = encoder.encodeTimestampedData(data, ContentFormat.JSON, rootPath, new LwM2mPath(1024, 0),
+                model);
 
         StringBuilder b = new StringBuilder();
         b.append("{\"bn\":\"/1024/0/\",\"e\":[");
@@ -287,8 +310,8 @@ public class LwM2mNodeEncoderTest {
         assertEquals(expected, new String(encoded));
     }
 
-    @Test
-    public void json_encode_timestamped_Object() throws CodecException {
+    @TestAllRootPaths
+    public void json_encode_timestamped_Object(String rootPath) throws CodecException {
         List<TimestampedLwM2mNode> data = new ArrayList<>();
 
         LwM2mObject objectAt210 = new LwM2mObject(1204,
@@ -306,7 +329,7 @@ public class LwM2mNodeEncoderTest {
         data.add(new TimestampedLwM2mNode(Instant.ofEpochSecond(220), objectAt220));
         data.add(new TimestampedLwM2mNode(Instant.ofEpochSecond(230), objetAt230));
 
-        byte[] encoded = encoder.encodeTimestampedData(data, ContentFormat.JSON, new LwM2mPath(1024), model);
+        byte[] encoded = encoder.encodeTimestampedData(data, ContentFormat.JSON, rootPath, new LwM2mPath(1024), model);
 
         StringBuilder b = new StringBuilder();
         b.append("{\"bn\":\"/1024/\",\"e\":[");
@@ -320,13 +343,13 @@ public class LwM2mNodeEncoderTest {
         assertEquals(expected, new String(encoded));
     }
 
-    @Test
-    public void senml_json_encode_device_object_instance() {
+    @TestAllRootPaths
+    public void senml_json_encode_device_object_instance(String rootPath) {
         LwM2mObjectInstance oInstance = new LwM2mObjectInstance(0, getDeviceResources());
-        byte[] encoded = encoder.encode(oInstance, ContentFormat.SENML_JSON, new LwM2mPath("/3/0"), model);
+        byte[] encoded = encoder.encode(oInstance, ContentFormat.SENML_JSON, rootPath, new LwM2mPath("/3/0"), model);
 
         StringBuilder b = new StringBuilder();
-        b.append("[{\"bn\":\"/3/0/\",\"n\":\"0\",\"vs\":\"Open Mobile Alliance\"},");
+        b.append("[{\"bn\":\"%%ROOTPATH%%/3/0/\",\"n\":\"0\",\"vs\":\"Open Mobile Alliance\"},");
         b.append("{\"n\":\"1\",\"vs\":\"Lightweight M2M Client\"},");
         b.append("{\"n\":\"2\",\"vs\":\"345000123\"},");
         b.append("{\"n\":\"3\",\"vs\":\"1.0\"},");
@@ -344,32 +367,35 @@ public class LwM2mNodeEncoderTest {
         b.append("{\"n\":\"16\",\"vs\":\"U\"}]");
 
         String expected = b.toString();
-        assertEquals(expected, new String(encoded));
+        String expectedWithRootPath = addRooPath(expected, rootPath);
+        assertEquals(expectedWithRootPath, new String(encoded));
     }
 
-    @Test
-    public void senml_json_encode_single_resource() {
+    @TestAllRootPaths
+    public void senml_json_encode_single_resource(String rootPath) {
         LwM2mResource oResource = LwM2mSingleResource.newStringResource(0, "Open Mobile Alliance");
-        byte[] encoded = encoder.encode(oResource, ContentFormat.SENML_JSON, new LwM2mPath("/3/0/0"), model);
+        byte[] encoded = encoder.encode(oResource, ContentFormat.SENML_JSON, rootPath, new LwM2mPath("/3/0/0"), model);
 
-        String expected = "[{\"bn\":\"/3/0/0\",\"vs\":\"Open Mobile Alliance\"}]";
-        assertEquals(expected, new String(encoded));
+        String expected = "[{\"bn\":\"%%ROOTPATH%%/3/0/0\",\"vs\":\"Open Mobile Alliance\"}]";
+        String expectedWithRootPath = addRooPath(expected, rootPath);
+        assertEquals(expectedWithRootPath, new String(encoded));
     }
 
-    @Test
-    public void senml_json_encode_multiple_resource() {
+    @TestAllRootPaths
+    public void senml_json_encode_multiple_resource(String rootPath) {
         Map<Integer, Long> values = new HashMap<>();
         values.put(0, 3800L);
         values.put(1, 5000L);
         LwM2mResource oResource = LwM2mMultipleResource.newIntegerResource(7, values);
-        byte[] encoded = encoder.encode(oResource, ContentFormat.SENML_JSON, new LwM2mPath("/3/0/7"), model);
+        byte[] encoded = encoder.encode(oResource, ContentFormat.SENML_JSON, rootPath, new LwM2mPath("/3/0/7"), model);
 
-        String expected = "[{\"bn\":\"/3/0/7/\",\"n\":\"0\",\"v\":3800},{\"n\":\"1\",\"v\":5000}]";
-        assertEquals(expected, new String(encoded));
+        String expected = "[{\"bn\":\"%%ROOTPATH%%/3/0/7/\",\"n\":\"0\",\"v\":3800},{\"n\":\"1\",\"v\":5000}]";
+        String expectedWithRootPath = addRooPath(expected, rootPath);
+        assertEquals(expectedWithRootPath, new String(encoded));
     }
 
-    @Test
-    public void senml_encode_timestamped_resources() throws CodecException {
+    @TestAllRootPaths
+    public void senml_encode_timestamped_resources(String rootPath) throws CodecException {
         List<TimestampedLwM2mNode> data = new ArrayList<>();
         data.add(new TimestampedLwM2mNode(Instant.ofEpochSecond(268_500_000),
                 LwM2mSingleResource.newFloatResource(1, 22.9)));
@@ -378,20 +404,21 @@ public class LwM2mNodeEncoderTest {
         data.add(new TimestampedLwM2mNode(Instant.ofEpochSecond(268_500_020),
                 LwM2mSingleResource.newFloatResource(1, 24.1)));
 
-        byte[] encoded = encoder.encodeTimestampedData(data, ContentFormat.SENML_JSON, new LwM2mPath(1024, 0, 1),
-                model);
+        byte[] encoded = encoder.encodeTimestampedData(data, ContentFormat.SENML_JSON, rootPath,
+                new LwM2mPath(1024, 0, 1), model);
 
         StringBuilder b = new StringBuilder();
-        b.append("[{\"bn\":\"/1024/0/1\",\"bt\":268500000,\"v\":22.9},");
-        b.append("{\"bn\":\"/1024/0/1\",\"bt\":268500010,\"v\":22.4},");
-        b.append("{\"bn\":\"/1024/0/1\",\"bt\":268500020,\"v\":24.1}]");
+        b.append("[{\"bn\":\"%%ROOTPATH%%/1024/0/1\",\"bt\":268500000,\"v\":22.9},");
+        b.append("{\"bn\":\"%%ROOTPATH%%/1024/0/1\",\"bt\":268500010,\"v\":22.4},");
+        b.append("{\"bn\":\"%%ROOTPATH%%/1024/0/1\",\"bt\":268500020,\"v\":24.1}]");
 
         String expected = b.toString();
-        assertEquals(expected, new String(encoded));
+        String expectedWithRootPath = addRooPath(expected, rootPath);
+        assertEquals(expectedWithRootPath, new String(encoded));
     }
 
-    @Test
-    public void senml_json_encode_timestamped_nodes() throws CodecException {
+    @TestAllRootPaths
+    public void senml_json_encode_timestamped_nodes(String rootPath) throws CodecException {
         Instant timestamp = Instant.ofEpochSecond(500_000_000);
         TimestampedLwM2mNodes timestampedLwM2mNodes = TimestampedLwM2mNodes.builder()
                 .put(timestamp.plusSeconds(1), new LwM2mPath(0, 0, 0),
@@ -401,19 +428,22 @@ public class LwM2mNodeEncoderTest {
                                 LwM2mSingleResource.newIntegerResource(2, 123))))
                 .build();
 
-        byte[] encoded = encoder.encodeTimestampedNodes(timestampedLwM2mNodes, ContentFormat.SENML_JSON, model);
+        byte[] encoded = encoder.encodeTimestampedNodes(timestampedLwM2mNodes, ContentFormat.SENML_JSON, rootPath,
+                model);
 
         String expectedString = new StringBuilder()
-                .append("[{\"bn\":\"/0/0/0\",\"bt\":500000001,\"vs\":\"TestString\"},") //
-                .append("{\"bn\":\"/0/1/\",\"bt\":500000002,\"n\":\"1\",\"vb\":true},") //
+                .append("[{\"bn\":\"%%ROOTPATH%%/0/0/0\",\"bt\":500000001,\"vs\":\"TestString\"},") //
+                .append("{\"bn\":\"%%ROOTPATH%%/0/1/\",\"bt\":500000002,\"n\":\"1\",\"vb\":true},") //
                 .append("{\"n\":\"2\",\"v\":123}]") //
                 .toString();
 
-        assertEquals(expectedString, new String(encoded));
+        String expectedWithRootPath = addRooPath(expectedString, rootPath);
+        assertEquals(expectedWithRootPath, new String(encoded));
     }
 
     @Test
     public void senml_cbor_encode_timestamped_nodes() throws CodecException {
+        // TODO we should test root path too but not so easy
         Instant timestamp = Instant.ofEpochSecond(500_000_000);
         TimestampedLwM2mNodes timestampedLwM2mNodes = TimestampedLwM2mNodes.builder()
                 .put(timestamp.plusSeconds(4), new LwM2mPath(0, 0, 0),
@@ -422,15 +452,15 @@ public class LwM2mNodeEncoderTest {
                 .put(timestamp.plusSeconds(6), new LwM2mPath(0, 0, 2), LwM2mSingleResource.newIntegerResource(2, 456))
                 .build();
 
-        byte[] encoded = encoder.encodeTimestampedNodes(timestampedLwM2mNodes, ContentFormat.SENML_CBOR, model);
+        byte[] encoded = encoder.encodeTimestampedNodes(timestampedLwM2mNodes, ContentFormat.SENML_CBOR, null, model);
 
         String expectedString = "83a321662f302f302f3022c482001a1dcd6504036c53616d706c65537472696e67a321662f302f302f3122c482001a1dcd650504f4a321662f302f302f3222c482001a1dcd6506021901c8";
 
         assertEquals(expectedString, Hex.encodeHexString(encoded));
     }
 
-    @Test
-    public void senml_json_encode_resources() {
+    @TestAllRootPaths
+    public void senml_json_encode_resources(String rootPath) {
         // Nodes to encode
         Map<LwM2mPath, LwM2mNode> nodes = new LinkedHashMap<>();
         nodes.put(new LwM2mPath("3/0/0"), LwM2mSingleResource.newStringResource(0, "Open Mobile Alliance"));
@@ -438,20 +468,21 @@ public class LwM2mNodeEncoderTest {
         nodes.put(new LwM2mPath("1/0/1"), LwM2mSingleResource.newIntegerResource(1, 86400));
 
         // Encode
-        byte[] encoded = encoder.encodeNodes(nodes, ContentFormat.SENML_JSON, model);
+        byte[] encoded = encoder.encodeNodes(nodes, ContentFormat.SENML_JSON, rootPath, model);
 
         // Expected value
         StringBuilder b = new StringBuilder();
-        b.append("[{\"bn\":\"/3/0/0\",\"vs\":\"Open Mobile Alliance\"},");
-        b.append("{\"bn\":\"/3/0/9\",\"v\":95},");
-        b.append("{\"bn\":\"/1/0/1\",\"v\":86400}]");
-        String expected = b.toString();
+        b.append("[{\"bn\":\"%%ROOTPATH%%/3/0/0\",\"vs\":\"Open Mobile Alliance\"},");
+        b.append("{\"bn\":\"%%ROOTPATH%%/3/0/9\",\"v\":95},");
+        b.append("{\"bn\":\"%%ROOTPATH%%/1/0/1\",\"v\":86400}]");
 
-        assertEquals(expected, new String(encoded));
+        String expected = b.toString();
+        String expectedWithRootPath = addRooPath(expected, rootPath);
+        assertEquals(expectedWithRootPath, new String(encoded));
     }
 
-    @Test
-    public void senml_json_encode_mixed_resource_and_instance() {
+    @TestAllRootPaths
+    public void senml_json_encode_mixed_resource_and_instance(String rootPath) {
         // Nodes to encode
         Map<LwM2mPath, LwM2mNode> nodes = new LinkedHashMap<>();
         nodes.put(new LwM2mPath("4/0/0"), LwM2mSingleResource.newIntegerResource(0, 45));
@@ -461,22 +492,23 @@ public class LwM2mNodeEncoderTest {
                 LwM2mSingleResource.newFloatResource(1, 2.351149)));
 
         // Encode
-        byte[] encoded = encoder.encodeNodes(nodes, ContentFormat.SENML_JSON, model);
+        byte[] encoded = encoder.encodeNodes(nodes, ContentFormat.SENML_JSON, rootPath, model);
 
         // Expected value
         StringBuilder b = new StringBuilder();
-        b.append("[{\"bn\":\"/4/0/0\",\"v\":45},");
-        b.append("{\"bn\":\"/4/0/1\",\"v\":30},");
-        b.append("{\"bn\":\"/4/0/2\",\"v\":100},");
-        b.append("{\"bn\":\"/6/0/\",\"n\":\"0\",\"v\":43.918998},");
+        b.append("[{\"bn\":\"%%ROOTPATH%%/4/0/0\",\"v\":45},");
+        b.append("{\"bn\":\"%%ROOTPATH%%/4/0/1\",\"v\":30},");
+        b.append("{\"bn\":\"%%ROOTPATH%%/4/0/2\",\"v\":100},");
+        b.append("{\"bn\":\"%%ROOTPATH%%/6/0/\",\"n\":\"0\",\"v\":43.918998},");
         b.append("{\"n\":\"1\",\"v\":2.351149}]");
-        String expected = b.toString();
 
-        assertEquals(expected, new String(encoded));
+        String expected = b.toString();
+        String expectedWithRootPath = addRooPath(expected, rootPath);
+        assertEquals(expectedWithRootPath, new String(encoded));
     }
 
-    @Test
-    public void senml_json_encode_path_using_name() {
+    @TestAllRootPaths
+    public void senml_json_encode_path_using_name(String rootPath) {
         // Prepare data to encode
         List<LwM2mPath> paths = Arrays.asList( //
                 new LwM2mPath("4/0/0"), //
@@ -484,33 +516,55 @@ public class LwM2mNodeEncoderTest {
                 new LwM2mPath("4/0/2"));
 
         // Decode
-        byte[] res = encoder.encodePaths(paths, ContentFormat.SENML_JSON);
+        byte[] res = encoder.encodePaths(paths, ContentFormat.SENML_JSON, rootPath);
 
         // Expected result
         StringBuilder b = new StringBuilder();
-        b.append("[{\"n\":\"/4/0/0\"},");
-        b.append("{\"n\":\"/4/0/1\"},");
-        b.append("{\"n\":\"/4/0/2\"}]");
-        assertEquals(b.toString(), new String(res));
+        b.append("[{\"n\":\"%%ROOTPATH%%/4/0/0\"},");
+        b.append("{\"n\":\"%%ROOTPATH%%/4/0/1\"},");
+        b.append("{\"n\":\"%%ROOTPATH%%/4/0/2\"}]");
+
+        String expectedWithRootPath = addRooPath(b.toString(), rootPath);
+        assertEquals(expectedWithRootPath, new String(res));
     }
 
-    @Test
-    public void senml_json_encode_opaque_resource() {
+    @TestAllRootPaths
+    public void senml_json_encode_opaque_resource(String rootPath) {
         byte[] bytes = Hex.decodeHex("ABCDEF".toCharArray());
         LwM2mResource oResource = LwM2mSingleResource.newBinaryResource(3, bytes);
-        byte[] json = encoder.encode(oResource, ContentFormat.SENML_JSON, new LwM2mPath("/0/0/3"), model);
+        byte[] json = encoder.encode(oResource, ContentFormat.SENML_JSON, rootPath, new LwM2mPath("/0/0/3"), model);
 
-        String expected = "[{\"bn\":\"/0/0/3\",\"vd\":\"q83v\"}]"; // q83v is base64 of ABCDE
-        assertEquals(expected, new String(json));
+        String expected = "[{\"bn\":\"%%ROOTPATH%%/0/0/3\",\"vd\":\"q83v\"}]"; // q83v is base64 of ABCDE
+        String expectedWithRootPath = addRooPath(expected, rootPath);
+        assertEquals(expectedWithRootPath, new String(json));
     }
 
     @Test
     public void senml_cbor_encode_opaque_resource() {
+        // TODO we should test root path too but not so easy
         byte[] bytes = Hex.decodeHex("ABCDEF".toCharArray());
         LwM2mResource oResource = LwM2mSingleResource.newBinaryResource(3, bytes);
-        byte[] cbor = encoder.encode(oResource, ContentFormat.SENML_CBOR, new LwM2mPath("/0/0/3"), model);
+        byte[] cbor = encoder.encode(oResource, ContentFormat.SENML_CBOR, null, new LwM2mPath("/0/0/3"), model);
         // value : [{-2: "/0/0/3", 8: h'ABCDEF'}]
         String expected = "81a221662f302f302f330843abcdef";
         assertEquals(expected, Hex.encodeHexString(cbor));
+    }
+
+    private final String ROOTPATH = "%%ROOTPATH%%";
+
+    private String addRooPath(String payload, String rootPath) {
+        return payload.replace(ROOTPATH, normalizedRootPath(rootPath));
+    }
+
+    protected String normalizedRootPath(String rootPath) {
+        if (rootPath == null)
+            return "";
+        if (rootPath.equals("/")) {
+            return "";
+        }
+        if (rootPath.endsWith("/")) {
+            return rootPath.substring(0, rootPath.length() - 1);
+        }
+        return rootPath;
     }
 }

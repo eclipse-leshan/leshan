@@ -28,7 +28,8 @@ public interface PathDecoder {
 
     /**
      * @param content The content to decode
+     * @param rootPath the expected rootPath also known as alternatePath of LWM2M client.
      * @return The list of {@link LwM2mPath}
      */
-    List<LwM2mPath> decode(byte[] content);
+    List<LwM2mPath> decode(byte[] content, String rootPath);
 }

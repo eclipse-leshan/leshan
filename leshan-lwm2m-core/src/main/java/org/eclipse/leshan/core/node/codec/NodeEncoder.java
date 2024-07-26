@@ -31,6 +31,7 @@ public interface NodeEncoder {
      * Serializes a {@link LwM2mNode}.
      *
      * @param node the object/instance/resource to serialize
+     * @param rootPath to use by LWM2M client (also known as alternate path)
      * @param path the path of the node to serialize
      * @param model the collection of supported object models
      * @param converter a data type converter.
@@ -38,6 +39,6 @@ public interface NodeEncoder {
      *
      * @throws CodecException if there payload is malformed.
      */
-    byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter)
+    byte[] encode(LwM2mNode node, String rootPath, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter)
             throws CodecException;
 }

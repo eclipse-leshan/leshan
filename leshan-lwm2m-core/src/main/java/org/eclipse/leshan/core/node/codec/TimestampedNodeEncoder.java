@@ -33,12 +33,13 @@ public interface TimestampedNodeEncoder extends NodeEncoder {
      * Serializes a list of time-stamped {@link LwM2mNode}.
      *
      * @param timestampedNodes the list of time-stamped object/instance/resource to serialize
+     * @param rootPath to use by LWM2M client (also known as alternate path)
      * @param path the path of the node to serialize
      * @param model the collection of supported object models
      * @param converter a data type converter.
      * @return the encoded node as a byte array
      * @throws CodecException if there payload is malformed.
      */
-    byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, LwM2mPath path, LwM2mModel model,
-            LwM2mValueConverter converter) throws CodecException;
+    byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, String rootPath, LwM2mPath path,
+            LwM2mModel model, LwM2mValueConverter converter) throws CodecException;
 }
