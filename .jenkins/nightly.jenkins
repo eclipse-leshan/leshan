@@ -26,8 +26,11 @@ pipeline {
         // Build 
         sh ''' mvn -B clean install javadoc:javadoc -DskipTests'''
         
-        // test with minimal supported version
-        sh '''mvn -B test -PuseToolchain  -Dskip.yarn'''
+        // test with minimal supported version (java7)
+        // we can not test on java7 any more because : 
+        // https://gitlab.eclipse.org/eclipsefdn/helpdesk/-/issues/4372
+        //sh '''mvn -B test -PuseToolchain  -Dskip.yarn'''
+        
         // test with all LTS version
         sh '''mvn -B test -PuseToolchain  -Dskip.yarn -Dtoolchain.version=1.8'''
         sh '''mvn -B test -PuseToolchain  -Dskip.yarn -Dtoolchain.version=11'''
