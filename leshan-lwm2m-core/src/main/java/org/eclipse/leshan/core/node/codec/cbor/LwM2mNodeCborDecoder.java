@@ -60,8 +60,8 @@ public class LwM2mNodeCborDecoder implements NodeDecoder {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends LwM2mNode> T decode(byte[] content, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
-            throws CodecException {
+    public <T extends LwM2mNode> T decode(byte[] content, String rootPath, LwM2mPath path, LwM2mModel model,
+            Class<T> nodeClass) throws CodecException {
 
         // Support only single value
         if (!path.isResource() && !path.isResourceInstance())

@@ -33,32 +33,32 @@ import org.eclipse.leshan.core.request.ContentFormat;
 
 public class DummyDecoder implements LwM2mDecoder {
     @Override
-    public LwM2mNode decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model)
+    public LwM2mNode decode(byte[] content, ContentFormat format, String rootPath, LwM2mPath path, LwM2mModel model)
             throws CodecException {
         return LwM2mSingleResource.newResource(15, "Example");
     }
 
     @Override
-    public <T extends LwM2mNode> T decode(byte[] content, ContentFormat format, LwM2mPath path, LwM2mModel model,
-            Class<T> nodeClass) throws CodecException {
+    public <T extends LwM2mNode> T decode(byte[] content, ContentFormat format, String rootPath, LwM2mPath path,
+            LwM2mModel model, Class<T> nodeClass) throws CodecException {
         return null;
     }
 
     @Override
-    public Map<LwM2mPath, LwM2mNode> decodeNodes(byte[] content, ContentFormat format, List<LwM2mPath> paths,
-            LwM2mModel model) throws CodecException {
+    public Map<LwM2mPath, LwM2mNode> decodeNodes(byte[] content, ContentFormat format, String rootPath,
+            List<LwM2mPath> paths, LwM2mModel model) throws CodecException {
         return null;
     }
 
     @Override
-    public List<TimestampedLwM2mNode> decodeTimestampedData(byte[] content, ContentFormat format, LwM2mPath path,
-            LwM2mModel model) throws CodecException {
-        return Collections.singletonList(new TimestampedLwM2mNode(null, decode(null, null, null, null)));
+    public List<TimestampedLwM2mNode> decodeTimestampedData(byte[] content, ContentFormat format, String rootPath,
+            LwM2mPath path, LwM2mModel model) throws CodecException {
+        return Collections.singletonList(new TimestampedLwM2mNode(null, decode(null, null, null, null, null)));
     }
 
     @Override
-    public TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, ContentFormat format, List<LwM2mPath> paths,
-            LwM2mModel model) throws CodecException {
+    public TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, ContentFormat format, String rootPath,
+            List<LwM2mPath> paths, LwM2mModel model) throws CodecException {
         Builder builder = new TimestampedLwM2mNodes.Builder(paths);
         for (LwM2mPath path : paths) {
             builder.put(path, null);
@@ -67,7 +67,7 @@ public class DummyDecoder implements LwM2mDecoder {
     }
 
     @Override
-    public List<LwM2mPath> decodePaths(byte[] content, ContentFormat format) throws CodecException {
+    public List<LwM2mPath> decodePaths(byte[] content, ContentFormat format, String rootPath) throws CodecException {
         return null;
     }
 

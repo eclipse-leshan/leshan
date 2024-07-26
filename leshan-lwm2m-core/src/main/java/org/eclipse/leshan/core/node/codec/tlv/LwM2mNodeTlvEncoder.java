@@ -65,8 +65,8 @@ public class LwM2mNodeTlvEncoder implements NodeEncoder {
     }
 
     @Override
-    public byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter)
-            throws CodecException {
+    public byte[] encode(LwM2mNode node, String rootPath, LwM2mPath path, LwM2mModel model,
+            LwM2mValueConverter converter) throws CodecException {
         Validate.notNull(node);
         Validate.notNull(path);
         Validate.notNull(model);

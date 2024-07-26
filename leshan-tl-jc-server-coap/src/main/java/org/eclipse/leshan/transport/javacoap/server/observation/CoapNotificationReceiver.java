@@ -150,8 +150,8 @@ public class CoapNotificationReceiver implements NotificationsReceiver {
 
             ContentFormat contentFormat = ContentFormat.fromCode(coapResponse.options().getContentFormat());
             List<TimestampedLwM2mNode> timestampedNodes = decoder.decodeTimestampedData(
-                    coapResponse.getPayload().getBytes(), contentFormat, singleObservation.getPath(),
-                    profile.getModel());
+                    coapResponse.getPayload().getBytes(), contentFormat, profile.getRootPath(),
+                    singleObservation.getPath(), profile.getModel());
 
             // create lwm2m response
             if (timestampedNodes.size() == 1 && !timestampedNodes.get(0).isTimestamped()) {
@@ -166,8 +166,8 @@ public class CoapNotificationReceiver implements NotificationsReceiver {
 
             ContentFormat contentFormat = ContentFormat.fromCode(coapResponse.options().getContentFormat());
             TimestampedLwM2mNodes timestampedNodes = decoder.decodeTimestampedNodes(
-                    coapResponse.getPayload().getBytes(), contentFormat, compositeObservation.getPaths(),
-                    profile.getModel());
+                    coapResponse.getPayload().getBytes(), contentFormat, profile.getRootPath(),
+                    compositeObservation.getPaths(), profile.getModel());
 
             if (timestampedNodes.getTimestamps().size() == 1
                     && timestampedNodes.getTimestamps().iterator().next() == null) {

@@ -70,7 +70,8 @@ public class ServerCoapMessageTranslator {
             ServerEndpointToolbox toolbox) {
 
         LwM2mResponseBuilder<T> builder = new LwM2mResponseBuilder<T>(coapRequest, coapResponse,
-                clientProfile.getEndpoint(), clientProfile.getModel(), toolbox.getDecoder(), toolbox.getLinkParser());
+                clientProfile.getEndpoint(), clientProfile.getRootPath(), clientProfile.getModel(),
+                toolbox.getDecoder(), toolbox.getLinkParser());
         lwm2mRequest.accept(builder);
         return builder.getResponse();
     }
@@ -104,7 +105,8 @@ public class ServerCoapMessageTranslator {
                             coapResponse);
                 } else {
                     List<TimestampedLwM2mNode> timestampedNodes = toolbox.getDecoder().decodeTimestampedData(
-                            coapResponse.getPayload(), contentFormat, singleObservation.getPath(), profile.getModel());
+                            coapResponse.getPayload(), contentFormat, profile.getRootPath(),
+                            singleObservation.getPath(), profile.getModel());
 
                     // create lwm2m response
                     if (timestampedNodes.size() == 1 && !timestampedNodes.get(0).isTimestamped()) {
@@ -124,8 +126,8 @@ public class ServerCoapMessageTranslator {
                             coapResponse.getPayloadString(), coapResponse);
                 } else {
                     TimestampedLwM2mNodes timestampedNodes = toolbox.getDecoder().decodeTimestampedNodes(
-                            coapResponse.getPayload(), contentFormat, compositeObservation.getPaths(),
-                            profile.getModel());
+                            coapResponse.getPayload(), contentFormat, profile.getRootPath(),
+                            compositeObservation.getPaths(), profile.getModel());
 
                     if (timestampedNodes.getTimestamps().size() == 1
                             && timestampedNodes.getTimestamps().iterator().next() == null) {

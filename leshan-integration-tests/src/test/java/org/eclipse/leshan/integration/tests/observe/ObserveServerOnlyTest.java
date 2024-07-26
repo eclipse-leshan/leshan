@@ -125,7 +125,7 @@ public class ObserveServerOnlyTest {
         assertThat(observations).containsExactly(observation);
 
         // *** HACK send a notification with unsupported content format *** //
-        byte[] payload = new LwM2mNodeJsonEncoder().encode(LwM2mSingleResource.newStringResource(15, "Paris"),
+        byte[] payload = new LwM2mNodeJsonEncoder().encode(LwM2mSingleResource.newStringResource(15, "Paris"), null,
                 new LwM2mPath("/3/0/15"), client.getObjectTree().getModel(), new LwM2mValueChecker());
 
         // 666 is not a supported content format.

@@ -346,7 +346,7 @@ public class LeshanClientDemo {
                 BootstrapWriteResponse response = null;
                 try {
                     // get resource from string resource value
-                    LwM2mSingleResource resource = textDecoder.decode(resourceValue.getBytes(), resourcePath,
+                    LwM2mSingleResource resource = textDecoder.decode(resourceValue.getBytes(), null, resourcePath,
                             repository.getLwM2mModel(), LwM2mSingleResource.class);
                     // try to write this resource
                     response = client.getObjectTree().getObjectEnabler(resourcePath.getObjectId()).write(

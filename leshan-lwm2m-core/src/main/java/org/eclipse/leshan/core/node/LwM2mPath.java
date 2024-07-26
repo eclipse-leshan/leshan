@@ -363,6 +363,14 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
+        appendTo(b);
+        return b.toString();
+    }
+
+    /**
+     * Append LwM2m Path to given {@link StringBuilder}
+     */
+    public void appendTo(StringBuilder b) {
         b.append("/");
         if (getObjectId() != null) {
             b.append(getObjectId());
@@ -376,7 +384,6 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
                 }
             }
         }
-        return b.toString();
     }
 
     @Override
@@ -417,9 +424,7 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
      * @param lwm2mRootpath the expected rootpath. <code>null</code> is considered as "/"
      * @return A valid {@link LwM2mPath} or null it does not start by lwm2mRootPath
      *
-     * @exception NumberFormatException if path contains not Numeric value
      * @exception InvalidLwM2mPathException if path is invalid (e.g. too big number in path)
-     * @exception IllegalArgumentException if path length is invalid
      */
     public static LwM2mPath parse(String fullpath, String lwm2mRootpath)
             throws NumberFormatException, InvalidLwM2mPathException, IllegalArgumentException {
@@ -441,7 +446,6 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
      * @return list of paths as {@link LwM2mPath}.
      *
      * @exception LwM2mNodeException if path is invalid (e.g. too big number in path)
-     * @exception IllegalArgumentException if path length is invalid or if path contains not Numeric value
      */
     public static List<LwM2mPath> getLwM2mPathList(List<String> paths) {
         List<LwM2mPath> res = new ArrayList<>(paths.size());

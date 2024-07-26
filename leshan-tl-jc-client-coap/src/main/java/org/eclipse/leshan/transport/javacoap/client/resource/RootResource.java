@@ -104,7 +104,7 @@ public class RootResource extends LwM2mClientCoapResource {
         }
         ContentFormat requestContentFormat = ContentFormat.fromCode(coapRequest.options().getContentFormat());
         List<LwM2mPath> paths = toolbox.getDecoder().decodePaths(coapRequest.getPayload().getBytes(),
-                requestContentFormat);
+                requestContentFormat, null);
 
         if (coapRequest.options().getObserve() != null) {
             // TODO ideally we would like to to attach paths to the coapRequest to avoid to decode it twice :/
@@ -118,7 +118,7 @@ public class RootResource extends LwM2mClientCoapResource {
                 return responseWithPayload( //
                         response.getCode(), //
                         responseContentFormat, //
-                        toolbox.getEncoder().encodeNodes(response.getContent(), responseContentFormat,
+                        toolbox.getEncoder().encodeNodes(response.getContent(), responseContentFormat, null,
                                 toolbox.getModel()));
             } else {
                 return errorMessage(response.getCode(), response.getErrorMessage());
@@ -133,7 +133,7 @@ public class RootResource extends LwM2mClientCoapResource {
                 return responseWithPayload( //
                         response.getCode(), //
                         responseContentFormat, //
-                        toolbox.getEncoder().encodeNodes(response.getContent(), responseContentFormat,
+                        toolbox.getEncoder().encodeNodes(response.getContent(), responseContentFormat, null,
                                 toolbox.getModel()));
             } else {
                 return errorMessage(response.getCode(), response.getErrorMessage());
@@ -157,7 +157,7 @@ public class RootResource extends LwM2mClientCoapResource {
         }
 
         Map<LwM2mPath, LwM2mNode> nodes = toolbox.getDecoder().decodeNodes(coapRequest.getPayload().getBytes(),
-                contentFormat, null, toolbox.getModel());
+                contentFormat, null, null, toolbox.getModel());
         WriteCompositeResponse response = requestReceiver
                 .requestReceived(identity, new WriteCompositeRequest(contentFormat, nodes, coapRequest)).getResponse();
         if (response.getCode().isError()) {

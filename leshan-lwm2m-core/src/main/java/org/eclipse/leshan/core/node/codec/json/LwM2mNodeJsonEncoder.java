@@ -75,8 +75,8 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
     }
 
     @Override
-    public byte[] encode(LwM2mNode node, LwM2mPath path, LwM2mModel model, LwM2mValueConverter converter)
-            throws CodecException {
+    public byte[] encode(LwM2mNode node, String rootPath, LwM2mPath path, LwM2mModel model,
+            LwM2mValueConverter converter) throws CodecException {
         Validate.notNull(node);
         Validate.notNull(path);
         Validate.notNull(model);
@@ -98,8 +98,8 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
     }
 
     @Override
-    public byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, LwM2mPath path, LwM2mModel model,
-            LwM2mValueConverter converter) {
+    public byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, String rootPath, LwM2mPath path,
+            LwM2mModel model, LwM2mValueConverter converter) {
         Validate.notNull(timestampedNodes);
         Validate.notNull(path);
         Validate.notNull(model);

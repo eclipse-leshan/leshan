@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021 Sierra Wireless and others.
+ * Copyright (c) 2024 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -31,19 +31,32 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
-public class LwM2mPathTest {
+public class PrefixedLwM2mPathTest {
 
-    public static List<String> ordererPaths = Arrays.asList( //
-            "/", //
-            "/1", //
-            "/1/1", //
-            "/1/1/1", //
-            "/1/1/1/1", //
-            "/2", //
-            "/2/1", //
-            "/2/1/1", //
-            "/2/1/1/1" //
+    private static List<String> prefixes = Arrays.asList( //
+            "/lwm2m", //
+            "/lwm2m/folder1", //
+            "/lwm2m/folder2" //
     );
+
+    private static List<String> createOrderedPaths() {
+        List<String> result = new ArrayList<>();
+
+        result.addAll(LwM2mPathTest.ordererPaths);
+        for (String prefix : prefixes) {
+            for (String path : LwM2mPathTest.ordererPaths) {
+                if (path.equals("/")) {
+                    result.add(prefix);
+                } else {
+                    result.add(prefix + path);
+                }
+
+            }
+        }
+        return result;
+    }
+
+    private static List<String> ordererPaths = createOrderedPaths();
 
     static Stream<org.junit.jupiter.params.provider.Arguments> equalsTestArguements() {
         return ordererPaths.stream().map(p -> arguments(p));
@@ -62,20 +75,24 @@ public class LwM2mPathTest {
     @ParameterizedTest(name = "[{0}] equals to [{0}]")
     @MethodSource("equalsTestArguements")
     public void test_equals(String path) {
-        assertTrue(new LwM2mPath(path).compareTo(new LwM2mPath(path)) == 0);
-        assertEquals(new LwM2mPath(path), new LwM2mPath(path));
+        PrefixedLwM2mPath parsedPath1 = new PrefixedLwM2mPathParser().parsePrefixedPath(path);
+        PrefixedLwM2mPath parsedPath2 = new PrefixedLwM2mPathParser().parsePrefixedPath(path);
+        assertTrue(parsedPath1.compareTo(parsedPath2) == 0);
+        assertEquals(parsedPath1, parsedPath2);
     }
 
     @ParameterizedTest(name = "[{0}] smaller than [{1}]")
     @MethodSource("smallerTestArguments")
     public void assertFirstSmaller(String path1, String path2) {
-        assertTrue(new LwM2mPath(path1).compareTo(new LwM2mPath(path2)) == -1);
-        assertTrue(new LwM2mPath(path2).compareTo(new LwM2mPath(path1)) == 1);
+        PrefixedLwM2mPath parsedPath1 = new PrefixedLwM2mPathParser().parsePrefixedPath(path1);
+        PrefixedLwM2mPath parsedPath2 = new PrefixedLwM2mPathParser().parsePrefixedPath(path2);
+        assertTrue(parsedPath1.compareTo(parsedPath2) == -1);
+        assertTrue(parsedPath2.compareTo(parsedPath1) == 1);
 
     }
 
     @Test
     public void assertEqualsHashcode() {
-        EqualsVerifier.forClass(LwM2mPath.class).withRedefinedSubclass(LwM2mIncompletePath.class).verify();
+        EqualsVerifier.forClass(PrefixedLwM2mPath.class).verify();
     }
 }

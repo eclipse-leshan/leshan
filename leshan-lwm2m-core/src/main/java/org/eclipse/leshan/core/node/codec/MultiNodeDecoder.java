@@ -38,6 +38,7 @@ public interface MultiNodeDecoder {
      * Expected type is guess from list of {@link LwM2mPath}.
      *
      * @param content the content
+     * @param rootPath the expected rootPath also known as alternatePath of LWM2M client.
      * @param paths the list of path of node to build. The list of path can be <code>null</code> meaning that we don't
      *        know which kind of {@link LwM2mNode} is encoded. In this case, let's assume this is a list of
      *        {@link LwM2mSingleResource} or {@link LwM2mResourceInstance}.
@@ -46,6 +47,6 @@ public interface MultiNodeDecoder {
      *         available for a given path
      * @throws CodecException if there payload is malformed.
      */
-    Map<LwM2mPath, LwM2mNode> decodeNodes(byte[] content, List<LwM2mPath> paths, LwM2mModel model)
+    Map<LwM2mPath, LwM2mNode> decodeNodes(byte[] content, String rootPath, List<LwM2mPath> paths, LwM2mModel model)
             throws CodecException;
 }

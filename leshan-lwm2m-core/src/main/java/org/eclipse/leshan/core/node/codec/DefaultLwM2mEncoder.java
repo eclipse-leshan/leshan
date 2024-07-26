@@ -134,7 +134,8 @@ public class DefaultLwM2mEncoder implements LwM2mEncoder {
     }
 
     @Override
-    public byte[] encode(LwM2mNode node, ContentFormat format, LwM2mPath path, LwM2mModel model) throws CodecException {
+    public byte[] encode(LwM2mNode node, ContentFormat format, String rootPath, LwM2mPath path, LwM2mModel model)
+            throws CodecException {
         Validate.notNull(node);
 
         if (format == null) {
@@ -146,13 +147,13 @@ public class DefaultLwM2mEncoder implements LwM2mEncoder {
             throw new CodecException("Content format %s is not supported [%s]", format, path);
         }
         LOG.trace("Encoding node {} for path {} and format {}", node, path, format);
-        byte[] encoded = encoder.encode(node, path, model, converter);
+        byte[] encoded = encoder.encode(node, normalizedRootPath(rootPath), path, model, converter);
         LOG.trace("Encoded node {}: {}", node, encoded);
         return encoded;
     }
 
     @Override
-    public byte[] encodeNodes(Map<LwM2mPath, LwM2mNode> nodes, ContentFormat format, LwM2mModel model)
+    public byte[] encodeNodes(Map<LwM2mPath, LwM2mNode> nodes, ContentFormat format, String rootPath, LwM2mModel model)
             throws CodecException {
         // Validate arguments
         Validate.notEmpty(nodes);
@@ -172,14 +173,15 @@ public class DefaultLwM2mEncoder implements LwM2mEncoder {
 
         // Encode nodes
         LOG.trace("Encoding nodes {} for path {} and format {}", nodes, paths, format);
-        byte[] encoded = ((MultiNodeEncoder) encoder).encodeNodes(nodes, model, converter);
+        byte[] encoded = ((MultiNodeEncoder) encoder).encodeNodes(normalizedRootPath(rootPath), nodes, model,
+                converter);
         LOG.trace("Encoded nodes {}: {}", nodes, encoded);
         return encoded;
     }
 
     @Override
     public byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, ContentFormat format,
-            LwM2mPath path, LwM2mModel model) throws CodecException {
+            String rootPath, LwM2mPath path, LwM2mModel model) throws CodecException {
         Validate.notEmpty(timestampedNodes);
         if (format == null) {
             throw new CodecException("Content format is mandatory. [%s]", path);
@@ -193,16 +195,16 @@ public class DefaultLwM2mEncoder implements LwM2mEncoder {
             throw new CodecException("Cannot encode timestampedNode with format %s. [%s]", format, path);
         }
         LOG.trace("Encoding time-stamped nodes for path {} and format {}", timestampedNodes, path, format);
-        byte[] encoded = ((TimestampedNodeEncoder) encoder).encodeTimestampedData(timestampedNodes, path, model,
-                converter);
+        byte[] encoded = ((TimestampedNodeEncoder) encoder).encodeTimestampedData(timestampedNodes,
+                normalizedRootPath(rootPath), path, model, converter);
         LOG.trace("Encoded node timestampedNode: {}", timestampedNodes, encoded);
         return encoded;
 
     }
 
     @Override
-    public byte[] encodeTimestampedNodes(TimestampedLwM2mNodes timestampedNodes, ContentFormat format, LwM2mModel model)
-            throws CodecException {
+    public byte[] encodeTimestampedNodes(TimestampedLwM2mNodes timestampedNodes, ContentFormat format, String rootPath,
+            LwM2mModel model) throws CodecException {
         Validate.notNull(timestampedNodes);
 
         if (format == null) {
@@ -215,9 +217,11 @@ public class DefaultLwM2mEncoder implements LwM2mEncoder {
         }
 
         if (encoder instanceof TimestampedMultiNodeEncoder) {
-            return ((TimestampedMultiNodeEncoder) encoder).encodeTimestampedNodes(timestampedNodes, model, converter);
+            return ((TimestampedMultiNodeEncoder) encoder).encodeTimestampedNodes(normalizedRootPath(rootPath),
+                    timestampedNodes, model, converter);
         } else if (encoder instanceof MultiNodeEncoder) {
-            return ((MultiNodeEncoder) encoder).encodeNodes(timestampedNodes.getMostRecentNodes(), model, converter);
+            return ((MultiNodeEncoder) encoder).encodeNodes(normalizedRootPath(rootPath),
+                    timestampedNodes.getMostRecentNodes(), model, converter);
         } else {
             throw new CodecException("Encoder does not support multiple nodes encoding for this content format: %s",
                     format);
@@ -225,7 +229,7 @@ public class DefaultLwM2mEncoder implements LwM2mEncoder {
     }
 
     @Override
-    public byte[] encodePaths(List<LwM2mPath> paths, ContentFormat format) throws CodecException {
+    public byte[] encodePaths(List<LwM2mPath> paths, ContentFormat format, String rootPath) throws CodecException {
         Validate.notEmpty(paths);
 
         if (format == null) {
@@ -237,7 +241,7 @@ public class DefaultLwM2mEncoder implements LwM2mEncoder {
             throw new CodecException("Content format %s is not supported for paths encoding[%s]", format, paths);
         }
         LOG.trace("Encoding paths {} with format {}", paths, format);
-        byte[] encoded = encoder.encode(paths);
+        byte[] encoded = encoder.encode(normalizedRootPath(rootPath), paths);
         LOG.trace("Encoded path {}: {}", paths, encoded);
         return encoded;
     }
@@ -250,5 +254,22 @@ public class DefaultLwM2mEncoder implements LwM2mEncoder {
     @Override
     public Set<ContentFormat> getSupportedContentFormat() {
         return nodeEncoders.keySet();
+    }
+
+    /**
+     * @return if rootPath is just "/", return <code>null</code>. Else return rootPath ensuring that it doesn't end by
+     *         "/"
+     */
+    // TODO maybe we should store rootPath like this in Registration ?
+    protected String normalizedRootPath(String rootPath) {
+        if (rootPath == null)
+            return null;
+        if (rootPath.equals("/")) {
+            return null;
+        }
+        if (rootPath.endsWith("/")) {
+            return rootPath.substring(0, rootPath.length() - 1);
+        }
+        return rootPath;
     }
 }

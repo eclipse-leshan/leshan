@@ -32,12 +32,13 @@ public interface TimestampedNodeDecoder extends NodeDecoder {
      * Deserializes a binary content into a list of time-stamped {@link LwM2mNode} ordering by time-stamp.
      *
      * @param content the content
+     * @param rootPath the expected rootPath also known as alternatePath of LWM2M client.
      * @param path the path of the node to build
      * @param model the collection of supported object models
      * @param nodeClass the class of the {@link LwM2mNode} to decode
      * @return the resulting list of time-stamped {@link LwM2mNode} ordering by time-stamp
      * @exception CodecException if there payload is malformed.
      */
-    List<TimestampedLwM2mNode> decodeTimestampedData(byte[] content, LwM2mPath path, LwM2mModel model,
+    List<TimestampedLwM2mNode> decodeTimestampedData(byte[] content, String rootPath, LwM2mPath path, LwM2mModel model,
             Class<? extends LwM2mNode> nodeClass) throws CodecException;
 }

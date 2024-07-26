@@ -29,8 +29,8 @@ public class LwM2mNodeOpaqueDecoder implements NodeDecoder {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends LwM2mNode> T decode(byte[] content, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
-            throws CodecException {
+    public <T extends LwM2mNode> T decode(byte[] content, String rootPath, LwM2mPath path, LwM2mModel model,
+            Class<T> nodeClass) throws CodecException {
         if (!path.isResource() && !path.isResourceInstance())
             throw new CodecException("Invalid path %s : OpaqueDecoder decodes resource OR resource instance only",
                     path);

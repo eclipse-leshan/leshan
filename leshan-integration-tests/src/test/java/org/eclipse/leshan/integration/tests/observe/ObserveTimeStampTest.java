@@ -139,7 +139,7 @@ public class ObserveTimeStampTest {
         timestampedNodes.add(mostRecentNode);
         timestampedNodes.add(new TimestampedLwM2mNode(mostRecentNode.getTimestamp().minusMillis(2),
                 LwM2mSingleResource.newStringResource(15, "Londres")));
-        byte[] payload = encoder.encodeTimestampedData(timestampedNodes, contentFormat, new LwM2mPath("/3/0/15"),
+        byte[] payload = encoder.encodeTimestampedData(timestampedNodes, contentFormat, null, new LwM2mPath("/3/0/15"),
                 client.getObjectTree().getModel());
 
         TestObserveUtil.sendNotification(
@@ -183,7 +183,7 @@ public class ObserveTimeStampTest {
                 new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Londres"))));
         timestampedNodes.add(new TimestampedLwM2mNode(Instant.ofEpochMilli(System.currentTimeMillis()).minusMillis(4),
                 new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Londres"))));
-        byte[] payload = encoder.encodeTimestampedData(timestampedNodes, contentFormat, new LwM2mPath("/3/0"),
+        byte[] payload = encoder.encodeTimestampedData(timestampedNodes, contentFormat, null, new LwM2mPath("/3/0"),
                 client.getObjectTree().getModel());
 
         TestObserveUtil.sendNotification(
@@ -230,7 +230,7 @@ public class ObserveTimeStampTest {
                 new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Londres"))));
         timestampedNodes.add(new TimestampedLwM2mNode(anInstant.minusMillis(4),
                 new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Londres"))));
-        byte[] payload = encoder.encodeTimestampedData(timestampedNodes, contentFormat, new LwM2mPath("/3/0"),
+        byte[] payload = encoder.encodeTimestampedData(timestampedNodes, contentFormat, null, new LwM2mPath("/3/0"),
                 client.getObjectTree().getModel());
 
         TestObserveUtil.sendNotification(
@@ -272,7 +272,7 @@ public class ObserveTimeStampTest {
         timestampedNodes.add(mostRecentNode);
         timestampedNodes.add(new TimestampedLwM2mNode(mostRecentNode.getTimestamp().minusMillis(2),
                 new LwM2mObject(3, new LwM2mObjectInstance(0, LwM2mSingleResource.newStringResource(15, "Londres")))));
-        byte[] payload = encoder.encodeTimestampedData(timestampedNodes, contentFormat, new LwM2mPath("/3"),
+        byte[] payload = encoder.encodeTimestampedData(timestampedNodes, contentFormat, null, new LwM2mPath("/3"),
                 client.getObjectTree().getModel());
 
         TestObserveUtil.sendNotification(

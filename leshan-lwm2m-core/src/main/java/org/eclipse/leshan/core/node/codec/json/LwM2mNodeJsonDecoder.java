@@ -83,8 +83,8 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends LwM2mNode> T decode(byte[] content, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
-            throws CodecException {
+    public <T extends LwM2mNode> T decode(byte[] content, String rootPath, LwM2mPath path, LwM2mModel model,
+            Class<T> nodeClass) throws CodecException {
         try {
             String jsonStrValue = content != null ? new String(content) : "";
             JsonRootObject json = decoder.fromJsonLwM2m(jsonStrValue);
@@ -104,8 +104,8 @@ public class LwM2mNodeJsonDecoder implements TimestampedNodeDecoder {
     }
 
     @Override
-    public List<TimestampedLwM2mNode> decodeTimestampedData(byte[] content, LwM2mPath path, LwM2mModel model,
-            Class<? extends LwM2mNode> nodeClass) throws CodecException {
+    public List<TimestampedLwM2mNode> decodeTimestampedData(byte[] content, String rootPath, LwM2mPath path,
+            LwM2mModel model, Class<? extends LwM2mNode> nodeClass) throws CodecException {
         try {
             String jsonStrValue = new String(content);
             JsonRootObject json = decoder.fromJsonLwM2m(jsonStrValue);

@@ -186,7 +186,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkBo
 
         // Decode payload
         try {
-            return decoder.decode(coapResponse.getPayload(), contentFormat, path, model);
+            return decoder.decode(coapResponse.getPayload(), contentFormat, null, path, model);
         } catch (CodecException e) {
             if (LOG.isDebugEnabled()) {
                 byte[] payload = coapResponse.getPayload() == null ? new byte[0] : coapResponse.getPayload();

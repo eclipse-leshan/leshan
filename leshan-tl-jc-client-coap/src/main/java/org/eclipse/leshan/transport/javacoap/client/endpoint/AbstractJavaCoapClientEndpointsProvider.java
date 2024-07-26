@@ -118,7 +118,7 @@ public abstract class AbstractJavaCoapClientEndpointsProvider implements LwM2mCl
                     ContentFormat requestContentFormat = ContentFormat
                             .fromCode(observeRequest.options().getContentFormat());
                     List<LwM2mPath> paths = toolbox.getDecoder().decodePaths(observeRequest.getPayload().getBytes(),
-                            requestContentFormat);
+                            requestContentFormat, null);
 
                     // optimization for LWM2M Composite Observe : to not decode LWM2M paths each time
                     TransportContext extendedContext = observeRequest.getTransContext() //

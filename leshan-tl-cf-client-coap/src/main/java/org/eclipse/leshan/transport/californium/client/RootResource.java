@@ -115,7 +115,7 @@ public class RootResource extends LwM2mClientCoapResource {
             return;
         }
         ContentFormat requestContentFormat = ContentFormat.fromCode(exchange.getRequestOptions().getContentFormat());
-        List<LwM2mPath> paths = toolbox.getDecoder().decodePaths(coapRequest.getPayload(), requestContentFormat);
+        List<LwM2mPath> paths = toolbox.getDecoder().decodePaths(coapRequest.getPayload(), requestContentFormat, null);
 
         if (exchange.getRequestOptions().hasObserve()) {
             // Manage Observe Composite request
@@ -130,7 +130,7 @@ public class RootResource extends LwM2mClientCoapResource {
                 return;
             } else {
                 exchange.respond(toCoapResponseCode(response.getCode()), toolbox.getEncoder()
-                        .encodeNodes(response.getContent(), responseContentFormat, toolbox.getModel()),
+                        .encodeNodes(response.getContent(), responseContentFormat, null, toolbox.getModel()),
                         responseContentFormat.getCode());
                 return;
             }
@@ -146,7 +146,7 @@ public class RootResource extends LwM2mClientCoapResource {
                 // TODO we could maybe face some race condition if an objectEnabler is removed from LwM2mObjectTree
                 // between rootEnabler.read() and rootEnabler.getModel()
                 exchange.respond(toCoapResponseCode(response.getCode()), toolbox.getEncoder()
-                        .encodeNodes(response.getContent(), responseContentFormat, toolbox.getModel()),
+                        .encodeNodes(response.getContent(), responseContentFormat, null, toolbox.getModel()),
                         responseContentFormat.getCode());
             }
             return;
@@ -164,7 +164,7 @@ public class RootResource extends LwM2mClientCoapResource {
 
     @Override
     public void handleIPATCH(CoapExchange exchange) {
-        // Manage Read Composite request
+        // Manage Write Composite request
         Request coapRequest = exchange.advanced().getRequest();
         LwM2mServer server = getServerOrRejectRequest(exchange, coapRequest);
         if (server == null)
@@ -178,7 +178,7 @@ public class RootResource extends LwM2mClientCoapResource {
         }
 
         Map<LwM2mPath, LwM2mNode> nodes = toolbox.getDecoder().decodeNodes(coapRequest.getPayload(), contentFormat,
-                null, toolbox.getModel());
+                null, null, toolbox.getModel());
 
         WriteCompositeResponse response = requestReceiver
                 .requestReceived(server, new WriteCompositeRequest(contentFormat, nodes, coapRequest)).getResponse();

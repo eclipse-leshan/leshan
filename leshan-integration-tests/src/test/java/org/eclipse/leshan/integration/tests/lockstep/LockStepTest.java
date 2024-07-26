@@ -463,7 +463,7 @@ public class LockStepTest {
         Instant t1 = Instant.now();
         LwM2mSingleResource resource = LwM2mSingleResource.newIntegerResource(1, 3600);
         TimestampedLwM2mNode timestampedNode = new TimestampedLwM2mNode(t1, resource);
-        byte[] payload = encoder.encodeTimestampedData(Arrays.asList(timestampedNode), ContentFormat.SENML_JSON,
+        byte[] payload = encoder.encodeTimestampedData(Arrays.asList(timestampedNode), ContentFormat.SENML_JSON, null,
                 new LwM2mPath("/1/0/1"), client.getLwM2mModel());
 
         // send read request
@@ -499,7 +499,7 @@ public class LockStepTest {
         Instant t1 = Instant.now();
         LwM2mSingleResource resource = LwM2mSingleResource.newIntegerResource(1, 3600);
         TimestampedLwM2mNode timestampedNode = new TimestampedLwM2mNode(t1, resource);
-        byte[] payload = encoder.encodeTimestampedData(Arrays.asList(timestampedNode), ContentFormat.SENML_JSON,
+        byte[] payload = encoder.encodeTimestampedData(Arrays.asList(timestampedNode), ContentFormat.SENML_JSON, null,
                 new LwM2mPath("/1/0/1"), client.getLwM2mModel());
 
         // send observe request
@@ -558,7 +558,7 @@ public class LockStepTest {
 
         LwM2mEncoder encoder = new DefaultLwM2mEncoder();
 
-        byte[] payload = encoder.encodeTimestampedNodes(timestampednodes, ContentFormat.SENML_JSON,
+        byte[] payload = encoder.encodeTimestampedNodes(timestampednodes, ContentFormat.SENML_JSON, null,
                 client.getLwM2mModel());
 
         // send read request
@@ -604,7 +604,7 @@ public class LockStepTest {
 
         LwM2mEncoder encoder = new DefaultLwM2mEncoder();
 
-        byte[] payload = encoder.encodeTimestampedNodes(timestampednodes, ContentFormat.SENML_JSON,
+        byte[] payload = encoder.encodeTimestampedNodes(timestampednodes, ContentFormat.SENML_JSON, null,
                 client.getLwM2mModel());
 
         // send read request

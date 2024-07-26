@@ -91,15 +91,17 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkDe
     private final Request coapRequest;
     private final Response coapResponse;
     private final String clientEndpoint;
+    private final String rootPath;
     private final LwM2mModel model;
     private final LwM2mDecoder decoder;
     private final LwM2mLinkParser linkParser;
 
-    public LwM2mResponseBuilder(Request coapRequest, Response coapResponse, String clientEndpoint, LwM2mModel model,
-            LwM2mDecoder decoder, LwM2mLinkParser linkParser) {
+    public LwM2mResponseBuilder(Request coapRequest, Response coapResponse, String clientEndpoint, String rootPath,
+            LwM2mModel model, LwM2mDecoder decoder, LwM2mLinkParser linkParser) {
         this.coapRequest = coapRequest;
         this.coapResponse = coapResponse;
         this.clientEndpoint = clientEndpoint;
+        this.rootPath = rootPath;
         this.model = model;
         this.decoder = decoder;
         this.linkParser = linkParser;
@@ -378,7 +380,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkDe
     private Map<LwM2mPath, LwM2mNode> decodeCompositeCoapResponse(List<LwM2mPath> paths, Response coapResponse,
             LwM2mRequest<?> request, String endpoint) {
         try {
-            return decoder.decodeNodes(coapResponse.getPayload(), getContentFormat(coapResponse), paths, model);
+            return decoder.decodeNodes(coapResponse.getPayload(), getContentFormat(coapResponse), rootPath, paths,
+                    model);
         } catch (CodecException e) {
             handleCodecException(e, request, coapResponse, endpoint);
             return null; // should not happen as handleCodecException raise exception
@@ -388,8 +391,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkDe
     private TimestampedLwM2mNodes decodeTimestampedCompositeCoapResponse(List<LwM2mPath> paths, Response coapResponse,
             LwM2mRequest<?> request, String endpoint) {
         try {
-            return decoder.decodeTimestampedNodes(coapResponse.getPayload(), getContentFormat(coapResponse), paths,
-                    model);
+            return decoder.decodeTimestampedNodes(coapResponse.getPayload(), getContentFormat(coapResponse), rootPath,
+                    paths, model);
         } catch (CodecException e) {
             handleCodecException(e, request, coapResponse, endpoint);
             return null; // should not happen as handleCodecException raise exception
@@ -401,7 +404,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkDe
         List<TimestampedLwM2mNode> timestampedNodes = null;
         try {
             timestampedNodes = decoder.decodeTimestampedData(coapResponse.getPayload(), getContentFormat(coapResponse),
-                    path, model);
+                    rootPath, path, model);
             if (timestampedNodes.size() != 1) {
                 throw new InvalidResponseException(
                         "Unable to decode response payload of request [%s] from client [%s] : should receive only 1 timestamped node but received %s",

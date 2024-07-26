@@ -68,7 +68,7 @@ public class CoapRequestBuilder implements DownlinkBootstrapRequestVisitor {
         coapRequest.setConfirmable(true);
         ContentFormat format = request.getContentFormat();
         coapRequest.getOptions().setContentFormat(format.getCode());
-        coapRequest.setPayload(encoder.encode(request.getNode(), format, request.getPath(), model));
+        coapRequest.setPayload(encoder.encode(request.getNode(), format, null, request.getPath(), model));
         setURI(coapRequest, request.getPath());
         setSecurityContext(coapRequest);
     }

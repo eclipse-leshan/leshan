@@ -261,7 +261,7 @@ public class ObserveCompositeTimeStampTest {
         server.waitForNewObservation(observation);
 
         // *** HACK send time-stamped notification as Leshan client does not support it *** //
-        byte[] payload = encoder.encodeTimestampedNodes(timestampednodes, contentFormat,
+        byte[] payload = encoder.encodeTimestampedNodes(timestampednodes, contentFormat, null,
                 client.getObjectTree().getModel());
 
         TestObserveUtil.sendNotification(
@@ -363,7 +363,7 @@ public class ObserveCompositeTimeStampTest {
         server.waitForNewObservation(observation);
 
         // *** HACK send time-stamped notification as Leshan client does not support it *** //
-        byte[] payload = encoder.encodeTimestampedNodes(timestampednodes, contentFormat,
+        byte[] payload = encoder.encodeTimestampedNodes(timestampednodes, contentFormat, null,
                 client.getObjectTree().getModel());
 
         TestObserveUtil.sendNotification(
