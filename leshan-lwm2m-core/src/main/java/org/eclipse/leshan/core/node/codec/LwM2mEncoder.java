@@ -42,12 +42,14 @@ public interface LwM2mEncoder {
      *
      * @param node the object/instance/resource to serialize
      * @param format the content format
+     * @param rootPath to use by LWM2M client (also known as alternate path)
      * @param path the path of the node to serialize
      * @param model the collection of supported object models
      * @return the encoded node as a byte array
      * @throws CodecException if encoding failed.
      */
-    byte[] encode(LwM2mNode node, ContentFormat format, LwM2mPath path, LwM2mModel model) throws CodecException;
+    byte[] encode(LwM2mNode node, ContentFormat format, String rootPath, LwM2mPath path, LwM2mModel model)
+            throws CodecException;
 
     /**
      * Serializes a list of {@link LwM2mNode} using the given content format.
@@ -55,24 +57,27 @@ public interface LwM2mEncoder {
      * @param nodes the Map from {@link LwM2mPath} to {@link LwM2mNode} to serialize. value can be <code>null</code> if
      *        no data was available for a given path
      * @param format the content format
+     * @param rootPath to use by LWM2M client (also known as alternate path)
      * @param model the collection of supported object models
      * @return the encoded nodes as a byte array
      * @throws CodecException if encoding failed.
      */
-    byte[] encodeNodes(Map<LwM2mPath, LwM2mNode> nodes, ContentFormat format, LwM2mModel model) throws CodecException;
+    byte[] encodeNodes(Map<LwM2mPath, LwM2mNode> nodes, ContentFormat format, String rootPath, LwM2mModel model)
+            throws CodecException;
 
     /**
      * Serializes a list of time-stamped {@link LwM2mNode} with the given content format.
      *
      * @param timestampedNodes the list of time-stamped object/instance/resource to serialize
      * @param format the content format
+     * @param rootPath to use by LWM2M client (also known as alternate path)
      * @param path the path of the node to serialize
      * @param model the collection of supported object models
      * @return the encoded node as a byte array
      * @throws CodecException if encoding failed.
      */
-    byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, ContentFormat format, LwM2mPath path,
-            LwM2mModel model) throws CodecException;
+    byte[] encodeTimestampedData(List<TimestampedLwM2mNode> timestampedNodes, ContentFormat format, String rootPath,
+            LwM2mPath path, LwM2mModel model) throws CodecException;
 
     /**
      * Serializes a multiple time-stamped nodes contained in {@link TimestampedLwM2mNodes} with the given content
@@ -80,11 +85,12 @@ public interface LwM2mEncoder {
      *
      * @param data the {@link TimestampedLwM2mNodes} to serialize
      * @param format the content format
+     * @param rootPath to use by LWM2M client (also known as alternate path)
      * @param model the collection of supported object models
      * @return the encoded node as a byte array
      * @throws CodecException if encoding failed.
      */
-    byte[] encodeTimestampedNodes(TimestampedLwM2mNodes data, ContentFormat format, LwM2mModel model)
+    byte[] encodeTimestampedNodes(TimestampedLwM2mNodes data, ContentFormat format, String rootPath, LwM2mModel model)
             throws CodecException;
 
     /**
@@ -92,11 +98,12 @@ public interface LwM2mEncoder {
      *
      * @param paths The list of {@link LwM2mPath} to encode
      * @param format the {@link ContentFormat} used to encode
+     * @param rootPath to use by LWM2M client (also known as alternate path)
      * @return the encoded path as byte array
      *
      * @throws CodecException if encoding failed.
      */
-    byte[] encodePaths(List<LwM2mPath> paths, ContentFormat format) throws CodecException;
+    byte[] encodePaths(List<LwM2mPath> paths, ContentFormat format, String rootPath) throws CodecException;
 
     /**
      * return true is the given {@link ContentFormat} is supported

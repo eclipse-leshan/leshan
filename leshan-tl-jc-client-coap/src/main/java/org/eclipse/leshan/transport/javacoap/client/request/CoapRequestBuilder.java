@@ -168,7 +168,7 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
     @Override
     public void visit(SendRequest request) {
         ContentFormat format = request.getFormat();
-        Opaque payload = Opaque.of(encoder.encodeTimestampedNodes(request.getTimestampedNodes(), format, model));
+        Opaque payload = Opaque.of(encoder.encodeTimestampedNodes(request.getTimestampedNodes(), format, null, model));
 
         coapRequestBuilder = CoapRequest.post("/dp") //
                 .payload(payload) //

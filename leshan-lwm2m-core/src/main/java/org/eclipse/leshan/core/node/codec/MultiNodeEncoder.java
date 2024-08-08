@@ -32,12 +32,14 @@ public interface MultiNodeEncoder {
     /**
      * Serializes a list of {@link LwM2mNode} using the given content format.
      *
+     * @param rootPath to use by LWM2M client (also known as alternate path)
      * @param nodes the Map from {@link LwM2mPath} to {@link LwM2mNode} to serialize. value can be <code>null</code> if
      *        no data was available for a given path
      * @param model the collection of supported object models
+     *
      * @return the encoded nodes as a byte array
      * @throws CodecException if there payload is malformed.
      */
-    byte[] encodeNodes(Map<LwM2mPath, LwM2mNode> nodes, LwM2mModel model, LwM2mValueConverter converter)
-            throws CodecException;
+    byte[] encodeNodes(String rootPath, Map<LwM2mPath, LwM2mNode> nodes, LwM2mModel model,
+            LwM2mValueConverter converter) throws CodecException;
 }

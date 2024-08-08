@@ -63,8 +63,8 @@ public class LwM2mNodeTextDecoder implements NodeDecoder {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends LwM2mNode> T decode(byte[] content, LwM2mPath path, LwM2mModel model, Class<T> nodeClass)
-            throws CodecException {
+    public <T extends LwM2mNode> T decode(byte[] content, String rootPath, LwM2mPath path, LwM2mModel model,
+            Class<T> nodeClass) throws CodecException {
         if (!path.isResource() && !path.isResourceInstance())
             throw new CodecException("Invalid path %s : TextDecoder decodes resource OR resource instance only", path);
 

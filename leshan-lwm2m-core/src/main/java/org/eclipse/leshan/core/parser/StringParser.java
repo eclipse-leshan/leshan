@@ -22,7 +22,7 @@ import org.eclipse.leshan.core.util.Validate;
  */
 public abstract class StringParser<T extends Throwable> {
 
-    private String strToParse;
+    private final String strToParse;
     private int cursor;
 
     public StringParser(String stringToParse) {
@@ -237,6 +237,26 @@ public abstract class StringParser<T extends Throwable> {
     }
 
     /**
+     * Cancel consumption of last char.
+     */
+    public void backtrackTo(int position) {
+        if (position < 0) {
+            throw new IllegalStateException("can not backtrack to negative position");
+        }
+        cursor = position;
+    }
+
+    /**
+     * Cancel consumption of last char.
+     */
+    public void backtrackLastChar() {
+        if (cursor == 0) {
+            throw new IllegalStateException("can not backtrack char, we already are at the start of the string");
+        }
+        cursor--;
+    }
+
+    /**
      * @return the index of the next char to consume.
      */
     public int getPosition() {
@@ -299,4 +319,5 @@ public abstract class StringParser<T extends Throwable> {
     }
 
     public abstract void raiseException(String message, Exception cause) throws T;
+
 }

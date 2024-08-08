@@ -62,7 +62,7 @@ public class LwM2mResponseBuilderTest {
         coapResponse.getOptions().setObserve(1);
 
         LwM2mResponseBuilder<ObserveResponse> responseBuilder = new LwM2mResponseBuilder<>(coapRequest, coapResponse,
-                null, null, decoder, linkParser);
+                null, null, null, decoder, linkParser);
         // when
         responseBuilder.visit(observeRequest);
 
@@ -93,7 +93,7 @@ public class LwM2mResponseBuilderTest {
         coapResponse.getOptions().setObserve(1);
 
         LwM2mResponseBuilder<ObserveCompositeResponse> responseBuilder = new LwM2mResponseBuilder<>(coapRequest,
-                coapResponse, null, null, decoder, linkParser);
+                coapResponse, null, null, null, decoder, linkParser);
         // when
         responseBuilder.visit(observeRequest);
 

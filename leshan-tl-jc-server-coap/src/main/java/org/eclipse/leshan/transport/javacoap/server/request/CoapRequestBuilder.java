@@ -111,7 +111,7 @@ public class CoapRequestBuilder implements DownlinkDeviceManagementRequestVisito
         ContentFormat format = request.getContentFormat();
         coapRequestBuilder //
                 .contentFormat((short) format.getCode()) //
-                .payload(Opaque.of(encoder.encode(request.getNode(), format, request.getPath(), model)));
+                .payload(Opaque.of(encoder.encode(request.getNode(), format, rootPath, request.getPath(), model)));
 
     }
 
@@ -145,7 +145,8 @@ public class CoapRequestBuilder implements DownlinkDeviceManagementRequestVisito
 
         coapRequestBuilder = CoapRequest.post(getURI(request.getPath())) //
                 .contentFormat((short) request.getContentFormat().getCode()) //
-                .payload(Opaque.of(encoder.encode(node, request.getContentFormat(), request.getPath(), model)));
+                .payload(Opaque
+                        .of(encoder.encode(node, request.getContentFormat(), rootPath, request.getPath(), model)));
         addDefaultContext(coapRequestBuilder);
     }
 
@@ -196,7 +197,8 @@ public class CoapRequestBuilder implements DownlinkDeviceManagementRequestVisito
     public void visit(ReadCompositeRequest request) {
         coapRequestBuilder = CoapRequest.fetch(getURI(LwM2mPath.ROOTPATH)) //
                 .contentFormat((short) request.getRequestContentFormat().getCode()) //
-                .payload(Opaque.of(encoder.encodePaths(request.getPaths(), request.getRequestContentFormat())));
+                .payload(Opaque
+                        .of(encoder.encodePaths(request.getPaths(), request.getRequestContentFormat(), rootPath)));
         addDefaultContext(coapRequestBuilder);
 
         if (request.getResponseContentFormat() != null) {
@@ -208,7 +210,8 @@ public class CoapRequestBuilder implements DownlinkDeviceManagementRequestVisito
     public void visit(ObserveCompositeRequest request) {
         coapRequestBuilder = CoapRequest.fetch(getURI(LwM2mPath.ROOTPATH)) //
                 .contentFormat((short) request.getRequestContentFormat().getCode()) //
-                .payload(Opaque.of(encoder.encodePaths(request.getPaths(), request.getRequestContentFormat()))) //
+                .payload(
+                        Opaque.of(encoder.encodePaths(request.getPaths(), request.getRequestContentFormat(), rootPath))) //
                 .observe();
         addDefaultContext(coapRequestBuilder);
 
@@ -234,7 +237,8 @@ public class CoapRequestBuilder implements DownlinkDeviceManagementRequestVisito
         coapRequestBuilder = CoapRequest.fetch(getURI(LwM2mPath.ROOTPATH)) //
                 .token(Opaque.of(request.getObservation().getId().getBytes())) //
                 .contentFormat((short) request.getRequestContentFormat().getCode()) //
-                .payload(Opaque.of(encoder.encodePaths(request.getPaths(), request.getRequestContentFormat()))) //
+                .payload(
+                        Opaque.of(encoder.encodePaths(request.getPaths(), request.getRequestContentFormat(), rootPath))) //
                 .deregisterObserve(); //
         addDefaultContext(coapRequestBuilder);
 
@@ -247,7 +251,8 @@ public class CoapRequestBuilder implements DownlinkDeviceManagementRequestVisito
     public void visit(WriteCompositeRequest request) {
         coapRequestBuilder = CoapRequest.iPatch(getURI(LwM2mPath.ROOTPATH)) //
                 .contentFormat((short) request.getContentFormat().getCode()) //
-                .payload(Opaque.of(encoder.encodeNodes(request.getNodes(), request.getContentFormat(), model)));
+                .payload(Opaque
+                        .of(encoder.encodeNodes(request.getNodes(), request.getContentFormat(), rootPath, model)));
         addDefaultContext(coapRequestBuilder);
 
     }

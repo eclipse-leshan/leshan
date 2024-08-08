@@ -57,10 +57,11 @@ public class LwM2mNodeDecoderEncoderTest {
         List<TimestampedLwM2mNode> timestampedData = Arrays.asList(new TimestampedLwM2mNode(t1, resource));
 
         // try to encode then to decode and compare result
-        byte[] encodedTimestampedData = encoder.encodeTimestampedData(timestampedData, format, resourcePath, model);
+        byte[] encodedTimestampedData = encoder.encodeTimestampedData(timestampedData, format, null, resourcePath,
+                model);
 
         List<TimestampedLwM2mNode> decodeTimestampedData = decoder.decodeTimestampedData(encodedTimestampedData, format,
-                resourcePath, model);
+                null, resourcePath, model);
 
         assertEquals(timestampedData, decodeTimestampedData);
     }

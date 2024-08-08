@@ -189,7 +189,7 @@ public class ObjectResource extends LwM2mClientCoapResource {
                     CompletableFuture<CoapResponse> coapResponse = responseWithPayload( //
                             response.getCode(), //
                             format, //
-                            toolbox.getEncoder().encode(response.getContent(), format, getPath(URI),
+                            toolbox.getEncoder().encode(response.getContent(), format, null, getPath(URI),
                                     toolbox.getModel()));
 
                     // store observation relation if this is not a active observe cancellation
@@ -228,7 +228,7 @@ public class ObjectResource extends LwM2mClientCoapResource {
                         return responseWithPayload( //
                                 response.getCode(), //
                                 format, //
-                                toolbox.getEncoder().encode(response.getContent(), format, getPath(URI),
+                                toolbox.getEncoder().encode(response.getContent(), format, null, getPath(URI),
                                         toolbox.getModel()));
                     } else {
                         return errorMessage(response.getCode(), response.getErrorMessage());
@@ -242,7 +242,7 @@ public class ObjectResource extends LwM2mClientCoapResource {
                         return responseWithPayload( //
                                 response.getCode(), //
                                 format, //
-                                toolbox.getEncoder().encode(response.getContent(), format, getPath(URI),
+                                toolbox.getEncoder().encode(response.getContent(), format, null, getPath(URI),
                                         toolbox.getModel()));
                     } else {
                         return errorMessage(response.getCode(), response.getErrorMessage());
@@ -320,7 +320,7 @@ public class ObjectResource extends LwM2mClientCoapResource {
             }
             LwM2mNode lwM2mNode;
             try {
-                lwM2mNode = toolbox.getDecoder().decode(coapRequest.getPayload().getBytes(), contentFormat, path,
+                lwM2mNode = toolbox.getDecoder().decode(coapRequest.getPayload().getBytes(), contentFormat, null, path,
                         toolbox.getModel());
                 if (identity.isLwm2mBootstrapServer()) {
                     BootstrapWriteResponse response = requestReceiver
@@ -394,7 +394,7 @@ public class ObjectResource extends LwM2mClientCoapResource {
         if (path.isResource()) {
             try {
                 LwM2mNode lwM2mNode = toolbox.getDecoder().decode(coapRequest.getPayload().getBytes(), contentFormat,
-                        path, toolbox.getModel());
+                        null, path, toolbox.getModel());
                 WriteResponse response = requestReceiver
                         .requestReceived(identity,
                                 new WriteRequest(Mode.UPDATE, contentFormat, URI, lwM2mNode, coapRequest))
@@ -412,7 +412,7 @@ public class ObjectResource extends LwM2mClientCoapResource {
         if (path.isObjectInstance()) {
             try {
                 LwM2mNode lwM2mNode = toolbox.getDecoder().decode(coapRequest.getPayload().getBytes(), contentFormat,
-                        path, toolbox.getModel());
+                        null, path, toolbox.getModel());
                 WriteResponse response = requestReceiver
                         .requestReceived(identity,
                                 new WriteRequest(Mode.UPDATE, contentFormat, URI, lwM2mNode, coapRequest))
@@ -431,7 +431,7 @@ public class ObjectResource extends LwM2mClientCoapResource {
         try {
             // decode the payload as an instance
             Opaque payload = coapRequest.getPayload();
-            LwM2mObject object = toolbox.getDecoder().decode(payload.getBytes(), contentFormat,
+            LwM2mObject object = toolbox.getDecoder().decode(payload.getBytes(), contentFormat, null,
                     new LwM2mPath(path.getObjectId()), toolbox.getModel(), LwM2mObject.class);
 
             CreateRequest createRequest;
@@ -508,7 +508,7 @@ public class ObjectResource extends LwM2mClientCoapResource {
                             CompletableFuture<CoapResponse> coapResponse = responseWithPayload( //
                                     response.getCode(), //
                                     format, //
-                                    toolbox.getEncoder().encode(response.getContent(), format,
+                                    toolbox.getEncoder().encode(response.getContent(), format, null,
                                             getPath(coapRequest.options().getUriPath()), toolbox.getModel()));
 
                             // store observation relation

@@ -18,6 +18,8 @@ package org.eclipse.leshan.core.node.codec.senml;
 import java.math.BigDecimal;
 
 import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPathParser;
 import org.eclipse.leshan.senml.SenMLException;
 import org.eclipse.leshan.senml.SenMLRecord;
 import org.eclipse.leshan.senml.SenMLResolver;
@@ -27,11 +29,22 @@ import org.eclipse.leshan.senml.SenMLResolver;
  */
 public class LwM2mSenMLResolver extends SenMLResolver<LwM2mResolvedSenMLRecord> {
 
+    private final PrefixedLwM2mPathParser pathParser;
+
+    public LwM2mSenMLResolver() {
+        this(new PrefixedLwM2mPathParser());
+    }
+
+    public LwM2mSenMLResolver(PrefixedLwM2mPathParser pathParser) {
+        this.pathParser = pathParser;
+    }
+
     @Override
     protected LwM2mResolvedSenMLRecord createResolvedRecord(SenMLRecord unresolvedRecord, String resolvedName,
             BigDecimal resolvedTimestamp) throws SenMLException {
         try {
-            return new LwM2mResolvedSenMLRecord(unresolvedRecord, resolvedName, resolvedTimestamp);
+            PrefixedLwM2mPath path = pathParser.parsePrefixedPath(resolvedName);
+            return new LwM2mResolvedSenMLRecord(unresolvedRecord, resolvedName, path, resolvedTimestamp);
         } catch (InvalidLwM2mPathException e) {
             throw new SenMLException(e, "Unable to resolve record, invalid path", resolvedName);
         }
