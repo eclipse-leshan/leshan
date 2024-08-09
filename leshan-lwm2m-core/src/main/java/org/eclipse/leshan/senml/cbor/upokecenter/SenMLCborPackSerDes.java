@@ -58,99 +58,194 @@ public class SenMLCborPackSerDes {
         try {
             SenMLPack senMLPack = new SenMLPack();
             for (CBORObject o : objects) {
-                SenMLRecord record = new SenMLRecord();
-
-                CBORObject bn = o.get(-2);
-                if (bn != null && bn.getType() == CBORType.TextString)
-                    record.setBaseName(bn.AsString());
-
-                CBORObject bt = o.get(-3);
-                if (bt != null && bt.isNumber())
-                    record.setBaseTime(new BigDecimal(bt.AsNumber().toString()));
-
-                CBORObject n = o.get(0);
-                if (n != null && n.getType() == CBORType.TextString)
-                    record.setName(n.AsString());
-
-                CBORObject t = o.get(6);
-                if (t != null && t.isNumber())
-                    record.setTime(new BigDecimal(t.AsNumber().toString()));
-
-                CBORObject v = o.get(2);
-                boolean hasValue = false;
-                if (v != null && v.isNumber()) {
-                    CBORNumber number = v.AsNumber();
-                    switch (number.getKind()) {
-                    case Integer:
-                    case EInteger:
-                        if (number.IsNegative()) {
-                            if (number.CanFitInInt64()) {
-                                record.setNumberValue(number.ToInt64Unchecked());
-                            } else {
-                                record.setNumberValue((BigInteger) v.ToObject(BigInteger.class));
-                            }
-                        } else {
-                            if (number.CanFitInInt64()) {
-                                record.setNumberValue(number.ToInt64Unchecked());
-                            } else if (number.ToEIntegerIfExact().GetSignedBitLengthAsInt64() == 64) {
-                                record.setNumberValue(ULong.valueOf(number.ToInt64Unchecked()));
-                            } else {
-                                record.setNumberValue((BigInteger) v.ToObject(BigInteger.class));
-                            }
-                        }
-                        break;
-                    case Double:
-                    case EFloat:
-                    case EDecimal:
-                        if (v.AsNumber().CanFitInDouble()) {
-                            record.setNumberValue(v.AsDoubleValue());
-                        } else {
-                            record.setNumberValue((BigDecimal) v.ToObject(BigDecimal.class));
-                        }
-                        break;
-                    default:
-                        throw new SenMLException(
-                                "Invalid SenML record : unexpected kind of number %s is not supported in %s",
-                                number.getKind(), o);
-                    }
-                    hasValue = true;
-                }
-
-                CBORObject vb = o.get(4);
-                if (vb != null && vb.getType() == CBORType.Boolean) {
-                    record.setBooleanValue(vb.AsBoolean());
-                    hasValue = true;
-                }
-
-                CBORObject vs = o.get(3);
-                if (vs != null && vs.getType() == CBORType.TextString) {
-                    record.setStringValue(vs.AsString());
-                    hasValue = true;
-                }
-
-                CBORObject vlo = o.get("vlo");
-                if (vlo != null && vlo.getType() == CBORType.TextString) {
-                    record.setObjectLinkValue(vlo.AsString());
-                    hasValue = true;
-                }
-
-                CBORObject vd = o.get(8);
-                if (vd != null && vd.getType() == CBORType.ByteString) {
-                    record.setOpaqueValue(vd.GetByteString());
-                    hasValue = true;
-                }
-
-                if (!allowNoValue && !hasValue)
-                    throw new SenMLException("Invalid SenML record : record must have a value (v,vb,vlo,vd,vs) : %s",
-                            o);
-
-                senMLPack.addRecord(record);
+                senMLPack.addRecord(deserializeRecord(o));
             }
             return senMLPack;
         } catch (IllegalArgumentException | IllegalStateException e) {
             throw new SenMLException(e, "Unable to serialize SenML in CBOR");
         }
 
+    }
+
+    protected SenMLRecord deserializeRecord(CBORObject o) throws SenMLException {
+        SenMLRecord record = new SenMLRecord();
+
+        deserializeBaseName(o, record);
+        deserializeBaseTime(o, record);
+        deserializeName(o, record);
+        deserializeTime(o, record);
+        boolean hasValue = deserializeValue(o, record);
+        hasValue |= deserializeBooleanValue(o, record);
+        hasValue |= deserializeStringValue(o, record);
+        hasValue |= deserializeObjectLinkValue(o, record);
+        hasValue |= deserializeOpaqueValue(o, record);
+
+        if (!allowNoValue && !hasValue) {
+            throw new SenMLException("Invalid SenML record: record must have a value (v, vb, vlo, vd, vs): %s", o);
+        }
+
+        return record;
+    }
+
+    protected void deserializeBaseName(CBORObject o, SenMLRecord record) throws SenMLException {
+        CBORObject bn = o.get(-2);
+        if (bn != null) {
+            record.setBaseName(deserializeString(bn, "bn"));
+        }
+    }
+
+    protected void deserializeBaseTime(CBORObject o, SenMLRecord record) throws SenMLException {
+        CBORObject bt = o.get(-3);
+        if (bt != null) {
+            record.setBaseTime(deserializeTime(bt, "bt"));
+        }
+    }
+
+    protected void deserializeName(CBORObject o, SenMLRecord record) throws SenMLException {
+        CBORObject n = o.get(0);
+        if (n != null) {
+            record.setName(deserializeString(n, "n"));
+        }
+    }
+
+    protected void deserializeTime(CBORObject o, SenMLRecord record) throws SenMLException {
+        CBORObject t = o.get(6);
+        if (t != null) {
+            record.setTime(deserializeTime(t, "t"));
+        }
+    }
+
+    protected boolean deserializeValue(CBORObject o, SenMLRecord record) throws SenMLException {
+        CBORObject v = o.get(2);
+        if (v != null) {
+            record.setNumberValue(deserializeNumber(v, "v"));
+            return true;
+        }
+        return false;
+
+    }
+
+    protected boolean deserializeBooleanValue(CBORObject o, SenMLRecord record) throws SenMLException {
+        CBORObject vb = o.get(4);
+        if (vb != null) {
+            if (!(vb.getType() == CBORType.Boolean)) {
+                throw new SenMLException(
+                        "Invalid SenML record : 'boolean' type was expected but was '%s' for 'vb' field",
+                        o.getType().toString());
+            }
+            record.setBooleanValue(vb.AsBoolean());
+            return true;
+        }
+        return false;
+    }
+
+    protected boolean deserializeStringValue(CBORObject o, SenMLRecord record) throws SenMLException {
+        CBORObject vs = o.get(3);
+        if (vs != null) {
+            record.setStringValue(deserializeString(vs, "vs"));
+            return true;
+        }
+        return false;
+    }
+
+    protected boolean deserializeObjectLinkValue(CBORObject o, SenMLRecord record) throws SenMLException {
+        CBORObject vlo = o.get("vlo");
+        if (vlo != null) {
+            record.setObjectLinkValue(deserializeString(vlo, "vlo"));
+            return true;
+        }
+        return false;
+    }
+
+    protected boolean deserializeOpaqueValue(CBORObject o, SenMLRecord record) throws SenMLException {
+        // The RFC says : https://datatracker.ietf.org/doc/html/rfc8428#section-6
+        //
+        // > Octets in the Data Value are encoded using
+        // > a byte string with a definite length (major type 2).
+        //
+        // So we should check this but there is no way to check this with current cbor library.
+        // https://github.com/peteroupc/CBOR-Java/issues/28
+        CBORObject vd = o.get(8);
+        if (vd != null) {
+            if (!(vd.getType() == CBORType.ByteString)) {
+                throw new SenMLException(
+                        "Invalid SenML record : 'byteString' type was expected but was '%s' for 'vd' field",
+                        o.getType().toString());
+            }
+            record.setOpaqueValue(vd.GetByteString());
+            return true;
+        }
+        return false;
+    }
+
+    protected String deserializeString(CBORObject o, String fieldname) throws SenMLException {
+        // The RFC says : https://datatracker.ietf.org/doc/html/rfc8428#section-6
+        //
+        // > Characters in the String Value are encoded using a text string
+        // > with a definite length (major type 3).
+        //
+        // So we should check this but there is no way to check this with current cbor library.
+        // https://github.com/peteroupc/CBOR-Java/issues/28
+        if (!(o.getType() == CBORType.TextString)) {
+            throw new SenMLException("Invalid SenML record : 'string' type was expected but was '%s' for '%s' field",
+                    o.getType().toString(), fieldname);
+        }
+        return o.AsString();
+    }
+
+    protected BigDecimal deserializeTime(CBORObject o, String fieldname) throws SenMLException {
+        // Time should be deserialized like Number
+        return NumberUtil.numberToBigDecimal(deserializeNumber(o, fieldname));
+    }
+
+    protected Number deserializeNumber(CBORObject o, String fieldname) throws SenMLException {
+        // The RFC says : https://datatracker.ietf.org/doc/html/rfc8428#section-6
+        //
+        // > For JSON Numbers, the CBOR representation can use integers,
+        // > floating-point numbers, or decimal fractions (CBOR Tag 4);
+        // > however, a representation SHOULD be chosen such that when the CBOR
+        // > value is converted to an IEEE double-precision, floating-point
+        // > value, it has exactly the same value as the original JSON Number
+        // > converted to that form.
+        //
+        // So we should check this but there is no way to check this with current cbor library.
+        // https://github.com/peteroupc/CBOR-Java/issues/28
+
+        if (!o.isNumber()) {
+            throw new SenMLException("Invalid SenML record : number was expected for '%s' field", fieldname);
+        }
+
+        CBORNumber number = o.AsNumber();
+        switch (number.getKind()) {
+        case Integer:
+        case EInteger:
+            if (number.IsNegative()) {
+                if (number.CanFitInInt64()) {
+                    return number.ToInt64Unchecked();
+                } else {
+                    return (BigInteger) o.ToObject(BigInteger.class);
+                }
+            } else {
+                if (number.CanFitInInt64()) {
+                    return number.ToInt64Unchecked();
+                } else if (number.ToEIntegerIfExact().GetSignedBitLengthAsInt64() == 64) {
+                    return ULong.valueOf(number.ToInt64Unchecked());
+                } else {
+                    return (BigInteger) o.ToObject(BigInteger.class);
+                }
+            }
+        case Double:
+        case EFloat:
+        case EDecimal:
+            if (number.CanFitInDouble()) {
+                return o.AsDoubleValue();
+            } else {
+                return (BigDecimal) o.ToObject(BigDecimal.class);
+            }
+        default:
+            throw new SenMLException("Invalid SenML record: unexpected kind of number %s is not supported in %s",
+                    number.getKind(), o);
+        }
     }
 
     public byte[] serializeToCbor(SenMLPack pack) throws SenMLException {
@@ -232,7 +327,7 @@ public class SenMLCborPackSerDes {
         }
     }
 
-    CBORObject newMap() {
+    protected CBORObject newMap() {
         return CBORObject.NewMap();
     }
 }

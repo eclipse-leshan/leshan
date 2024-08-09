@@ -48,17 +48,18 @@ public class SenMLCborUpokecenterEncoderDecoder implements SenMLDecoder, SenMLEn
      * @see <a href="https://github.com/peteroupc/CBOR-Java/issues/13">CBOR-Java#13 issue</a>
      */
     public SenMLCborUpokecenterEncoderDecoder(boolean keepingInsertionOrder, boolean allowNoValue) {
-        if (keepingInsertionOrder) {
-            serDes = new SenMLCborPackSerDes(allowNoValue) {
-                @Override
-                CBORObject newMap() {
-                    return CBORObject.NewOrderedMap();
-                }
-            };
+        this(/* if */ keepingInsertionOrder ? /* then */
+                new SenMLCborPackSerDes(allowNoValue) {
+                    @Override
+                    protected CBORObject newMap() {
+                        return CBORObject.NewOrderedMap();
+                    }
 
-        } else {
-            serDes = new SenMLCborPackSerDes(allowNoValue);
-        }
+                }/* else */ : new SenMLCborPackSerDes(allowNoValue));
+    }
+
+    public SenMLCborUpokecenterEncoderDecoder(SenMLCborPackSerDes senmlSerDes) {
+        serDes = senmlSerDes;
     }
 
     @Override
