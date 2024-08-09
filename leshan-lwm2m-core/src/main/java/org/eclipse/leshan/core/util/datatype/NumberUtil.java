@@ -207,4 +207,29 @@ public class NumberUtil {
         }
         return intValue;
     }
+
+    /**
+     * Convert the given number to BigDecimal
+     *
+     * @throws IllegalArgumentException if the number is not supported.
+     */
+    public static BigDecimal numberToBigDecimal(Number number) {
+        if (number == null)
+            return null;
+        if (number instanceof BigDecimal)
+            return (BigDecimal) number;
+        if (number instanceof BigInteger)
+            return new BigDecimal((BigInteger) number);
+        if (number instanceof Byte || number instanceof Short || number instanceof Integer || number instanceof Long) {
+            return BigDecimal.valueOf(number.longValue());
+        }
+        if (number instanceof ULong) {
+            return new BigDecimal(number.toString());
+        }
+        if (number instanceof Float || number instanceof Double) {
+            return BigDecimal.valueOf(number.doubleValue());
+        }
+        throw new IllegalArgumentException(String.format(
+                "Unable to convert in BigDecimal : %s is not a supported Number.", number.getClass().getSimpleName()));
+    }
 }
