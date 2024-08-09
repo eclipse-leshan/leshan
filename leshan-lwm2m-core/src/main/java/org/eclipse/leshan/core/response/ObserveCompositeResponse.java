@@ -37,7 +37,7 @@ public class ObserveCompositeResponse extends ReadCompositeResponse {
             TimestampedLwM2mNodes timestampedValues, CompositeObservation observation, String errorMessage,
             Object coapResponse) {
         super(code, timestampedValues != null && !timestampedValues.isEmpty() ? timestampedValues.getNodes() : content,
-                errorMessage, coapResponse);
+                null, errorMessage, coapResponse);
         this.observation = observation;
         this.timestampedValues = timestampedValues;
     }

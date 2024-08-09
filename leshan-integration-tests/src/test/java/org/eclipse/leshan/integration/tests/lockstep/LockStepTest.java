@@ -36,8 +36,11 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -59,6 +62,7 @@ import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.observation.Observation;
@@ -67,6 +71,7 @@ import org.eclipse.leshan.core.request.CancelObservationRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
+import org.eclipse.leshan.core.request.ReadCompositeRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
@@ -75,6 +80,7 @@ import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.CancelObservationResponse;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.ObserveResponse;
+import org.eclipse.leshan.core.response.ReadCompositeResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
@@ -524,4 +530,54 @@ public class LockStepTest {
         ObserveResponse cancelResponse = cancelFuture.get(1, TimeUnit.SECONDS);
         assertThat(cancelResponse.getTimestampedLwM2mNode()).isEqualTo(timestampedNode);
     }
+
+    @TestAllTransportLayer
+    public void read_composite_timestamped(String givenServerEndpointProvider) throws Exception {
+
+        // register client
+        LockStepLwM2mClient client = new LockStepLwM2mClient(server.getEndpoint(Protocol.COAP).getURI());
+        Token token = client
+                .sendLwM2mRequest(new RegisterRequest(client.getEndpointName(), 60l, "1.1", EnumSet.of(BindingMode.U),
+                        null, null, linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null));
+        client.expectResponse().token(token).go();
+        server.waitForNewRegistrationOf(client.getEndpointName());
+
+        Registration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
+
+        // create timestamped data
+
+        List<LwM2mPath> paths = new ArrayList<>();
+        paths.add(new LwM2mPath("/1/0/1"));
+        paths.add(new LwM2mPath("/3/0/15"));
+        // and expected Time-stamped nodes
+        TimestampedLwM2mNodes.Builder builder = new TimestampedLwM2mNodes.Builder();
+        Instant t1 = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+        builder.put(t1, paths.get(0), LwM2mSingleResource.newIntegerResource(1, 3600));
+        builder.put(t1, paths.get(1), LwM2mSingleResource.newStringResource(15, "Europe/Belgrade"));
+        TimestampedLwM2mNodes timestampednodes = builder.build();
+
+        // TEST
+        LwM2mEncoder encoder = new DefaultLwM2mEncoder();
+
+        byte[] payload = encoder.encodeTimestampedNodes(timestampednodes, ContentFormat.SENML_JSON,
+                client.getLwM2mModel());
+
+        // send read request
+        Future<ReadCompositeResponse> future = Executors.newSingleThreadExecutor().submit(() -> {
+            // send a request with 1 seconds timeout
+            return server.send(registration,
+                    new ReadCompositeRequest(ContentFormat.SENML_JSON, ContentFormat.SENML_JSON, "/1/0/1", "/3/0/15"),
+                    1000);
+        });
+
+        // wait for request and send response
+        client.expectRequest().storeToken("TKN").storeMID("MID").go();
+        client.sendResponse(Type.ACK, ResponseCode.CONTENT).loadMID("MID").loadToken("TKN")
+                .payload(payload, ContentFormat.SENML_JSON_CODE).go();
+
+        // check response received at server side
+        ReadCompositeResponse response = future.get(1, TimeUnit.SECONDS);
+        assertThat(response.getTimestampedLwM2mNodes()).isEqualTo(timestampednodes);
+    }
+
 }
