@@ -273,7 +273,7 @@ public class ObserveCompositeTimeStampTest {
         // verify result
         ObserveCompositeResponse response = server.waitForNotificationOf(observation);
         assertThat(response).hasContentFormat(contentFormat, givenServerEndpointProvider);
-        assertThat(response.getContent()).containsExactlyEntriesOf(timestampednodes.getNodes());
+        assertThat(response.getContent()).containsExactlyEntriesOf(timestampednodes.getMostRecentNodes());
         assertThat(response.getTimestampedLwM2mNodes()).isEqualTo(timestampednodes);
     }
 

@@ -55,12 +55,29 @@ public class TimestampedLwM2mNodes {
      * Get all collected nodes as {@link LwM2mPath}-{@link LwM2mNode} map ignoring timestamp information. In case of the
      * same path conflict the most recent one is taken. Null timestamp is considered as most recent one.
      */
-    public Map<LwM2mPath, LwM2mNode> getNodes() {
+    public Map<LwM2mPath, LwM2mNode> getFlattenNodes() {
         Map<LwM2mPath, LwM2mNode> result = new HashMap<>();
         for (Map.Entry<Instant, Map<LwM2mPath, LwM2mNode>> entry : timestampedPathNodesMap.entrySet()) {
             result.putAll(entry.getValue());
         }
         return Collections.unmodifiableMap(result);
+    }
+
+    /**
+     * Get all collected nodes as {@link LwM2mPath}-{@link LwM2mNode} map from the most recent timestamp. Null is
+     * considered as most recent one.
+     */
+    public Map<LwM2mPath, LwM2mNode> getMostRecentNodes() {
+        return timestampedPathNodesMap.values().iterator().next();
+    }
+
+    /**
+     * Get the most recent timestamp and return a {@link TimestampedLwM2mNodes} containing value for this timestamp.
+     * Null is considered as most recent one.
+     */
+    public TimestampedLwM2mNodes getMostRecentTimestampedNodes() {
+        Entry<Instant, Map<LwM2mPath, LwM2mNode>> entry = timestampedPathNodesMap.entrySet().iterator().next();
+        return new TimestampedLwM2mNodes(Collections.singletonMap(entry.getKey(), entry.getValue()));
     }
 
     /**

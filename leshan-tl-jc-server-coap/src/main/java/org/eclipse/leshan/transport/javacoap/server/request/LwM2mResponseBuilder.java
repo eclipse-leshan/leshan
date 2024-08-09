@@ -26,6 +26,7 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.observation.CompositeObservation;
@@ -295,13 +296,13 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkDe
     public void visit(ReadCompositeRequest request) {
         if (coapResponse.getCode().getHttpCode() >= 400) {
             // handle error response:
-            lwM2mresponse = new ReadCompositeResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
+            lwM2mresponse = new ReadCompositeResponse(toLwM2mResponseCode(coapResponse.getCode()), null, null,
                     coapResponse.getPayloadString(), coapResponse);
         } else if (isResponseCodeContent()) {
             // handle success response:
-            Map<LwM2mPath, LwM2mNode> content = decodeCompositeCoapResponse(request.getPaths(), coapResponse, request,
-                    clientEndpoint);
-            lwM2mresponse = new ReadCompositeResponse(ResponseCode.CONTENT, content, null, coapResponse);
+            TimestampedLwM2mNodes timestampedNodes = decodeTimestampedCompositeCoapResponse(request.getPaths(),
+                    coapResponse, request, clientEndpoint);
+            lwM2mresponse = new ReadCompositeResponse(ResponseCode.CONTENT, null, timestampedNodes, null, coapResponse);
         } else {
             // handle unexpected response:
             handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
@@ -313,19 +314,19 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkDe
         if (coapResponse.getCode().getHttpCode() >= 400) {
             // handle error response:
             lwM2mresponse = new ObserveCompositeResponse(toLwM2mResponseCode(coapResponse.getCode()), null, null, null,
-                    coapResponse.getPayloadString(), coapResponse);
+                    null, coapResponse.getPayloadString(), coapResponse);
 
         } else if (isResponseCodeContent()) {
             // handle success response:
-            Map<LwM2mPath, LwM2mNode> content = decodeCompositeCoapResponse(request.getPaths(), coapResponse, request,
-                    clientEndpoint);
+            TimestampedLwM2mNodes timestampedNodes = decodeTimestampedCompositeCoapResponse(request.getPaths(),
+                    coapResponse, request, clientEndpoint);
 
             if (coapResponse.options().getObserve() != null) {
                 // Observe relation established
                 Observation observation = coapRequest.getTransContext().get(LwM2mKeys.LESHAN_OBSERVATION);
                 if (observation instanceof CompositeObservation) {
-                    lwM2mresponse = new ObserveCompositeResponse(toLwM2mResponseCode(coapResponse.getCode()), content,
-                            null, (CompositeObservation) observation, null, coapResponse);
+                    lwM2mresponse = new ObserveCompositeResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
+                            timestampedNodes, null, (CompositeObservation) observation, null, coapResponse);
                 } else {
                     throw new IllegalStateException(String.format(
                             "A Composite Observation is expected in coapRequest transport Context, but was %s",
@@ -333,8 +334,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkDe
                 }
             } else {
                 // Observe relation NOTestablished
-                lwM2mresponse = new ObserveCompositeResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null,
-                        null, null, coapResponse);
+                lwM2mresponse = new ObserveCompositeResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
+                        timestampedNodes, null, null, null, coapResponse);
             }
         } else {
             // handle unexpected response:
@@ -493,6 +494,17 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkDe
         try {
             return decoder.decodeNodes(coapResponse.getPayload().getBytes(), getContentFormat(coapResponse), paths,
                     model);
+        } catch (CodecException e) {
+            handleCodecException(e, request, coapResponse, endpoint);
+            return null; // should not happen as handleCodecException raise exception
+        }
+    }
+
+    private TimestampedLwM2mNodes decodeTimestampedCompositeCoapResponse(List<LwM2mPath> paths,
+            CoapResponse coapResponse, LwM2mRequest<?> request, String endpoint) {
+        try {
+            return decoder.decodeTimestampedNodes(coapResponse.getPayload().getBytes(), getContentFormat(coapResponse),
+                    paths, model);
         } catch (CodecException e) {
             handleCodecException(e, request, coapResponse, endpoint);
             return null; // should not happen as handleCodecException raise exception

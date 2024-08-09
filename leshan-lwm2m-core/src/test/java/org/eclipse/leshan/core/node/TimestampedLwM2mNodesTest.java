@@ -81,7 +81,7 @@ public class TimestampedLwM2mNodesTest {
         TimestampedLwM2mNodes tsNodes = getExampleTimestampedLwM2mNodes();
 
         // when
-        Map<LwM2mPath, LwM2mNode> tsNodesMap = tsNodes.getNodes();
+        Map<LwM2mPath, LwM2mNode> tsNodesMap = tsNodes.getFlattenNodes();
 
         // then
         assertNotNull(tsNodesMap);
@@ -95,7 +95,7 @@ public class TimestampedLwM2mNodesTest {
         TimestampedLwM2mNodes tsNodes = getSamePathTimestampedLwM2mNodes();
 
         // when
-        Map<LwM2mPath, LwM2mNode> tsNodesMap = tsNodes.getNodes();
+        Map<LwM2mPath, LwM2mNode> tsNodesMap = tsNodes.getFlattenNodes();
 
         // then
         assertNotNull(tsNodesMap);
@@ -139,7 +139,7 @@ public class TimestampedLwM2mNodesTest {
         TimestampedLwM2mNodes tsNodes = TimestampedLwM2mNodes.builder().build();
 
         // when
-        Map<LwM2mPath, LwM2mNode> tsNodesMap = tsNodes.getNodes();
+        Map<LwM2mPath, LwM2mNode> tsNodesMap = tsNodes.getFlattenNodes();
 
         // then
         assertNotNull(tsNodesMap);

@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -72,37 +73,41 @@ public class SendRequest extends AbstractLwM2mRequest<SendResponse>
             throw new InvalidRequestException("Content format MUST be SenML_CBOR or SenML_JSON but was " + format);
         }
         // Validate Nodes
-        validateNodes(timestampedNodes.getNodes());
+        validateNodes(timestampedNodes);
 
         this.format = format;
     }
 
-    private void validateNodes(Map<LwM2mPath, LwM2mNode> nodes) {
-        if (nodes == null || nodes.size() == 0) {
+    private void validateNodes(TimestampedLwM2mNodes timestampedNodes) {
+        if (timestampedNodes == null || timestampedNodes.isEmpty() || timestampedNodes.getFlattenNodes().isEmpty()) {
             throw new InvalidRequestException(
                     "SendRequest MUST NOT have empty payload (at least 1 node should be present)");
         }
-        for (Entry<LwM2mPath, LwM2mNode> entry : nodes.entrySet()) {
-            LwM2mPath path = entry.getKey();
-            LwM2mNode node = entry.getValue();
-            if (path == null) {
-                throw new InvalidRequestException("Invalid key for entry (null, %s) : path MUST NOT be null", node);
-            }
-            if (node == null) {
-                throw new InvalidRequestException("Invalid value for entry (%s, null) :  node MUST NOT be null ", path);
-            }
 
-            if (path.isObject() && node instanceof LwM2mObject)
-                return;
-            if (path.isObjectInstance() && node instanceof LwM2mObjectInstance)
-                return;
-            if (path.isResource() && node instanceof LwM2mSingleResource)
-                return;
-            if (path.isResourceInstance() && node instanceof LwM2mResourceInstance)
-                return;
+        for (Instant t : timestampedNodes.getTimestamps()) {
+            for (Entry<LwM2mPath, LwM2mNode> entry : timestampedNodes.getNodesAt(t).entrySet()) {
+                LwM2mPath path = entry.getKey();
+                LwM2mNode node = entry.getValue();
+                if (path == null) {
+                    throw new InvalidRequestException("Invalid key for entry (null, %s) : path MUST NOT be null", node);
+                }
+                if (node == null) {
+                    throw new InvalidRequestException("Invalid value for entry (%s, null) :  node MUST NOT be null ",
+                            path);
+                }
 
-            throw new InvalidRequestException("Invalid value : path (%s) should not refer to a %s value", path,
-                    node.getClass().getSimpleName());
+                if (path.isObject() && node instanceof LwM2mObject)
+                    return;
+                if (path.isObjectInstance() && node instanceof LwM2mObjectInstance)
+                    return;
+                if (path.isResource() && node instanceof LwM2mSingleResource)
+                    return;
+                if (path.isResourceInstance() && node instanceof LwM2mResourceInstance)
+                    return;
+
+                throw new InvalidRequestException("Invalid value : path (%s) should not refer to a %s value", path,
+                        node.getClass().getSimpleName());
+            }
         }
     }
 

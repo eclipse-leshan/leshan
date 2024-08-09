@@ -26,6 +26,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
+import org.eclipse.leshan.core.node.TimestampedLwM2mNodes.Builder;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -58,7 +59,11 @@ public class DummyDecoder implements LwM2mDecoder {
     @Override
     public TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, ContentFormat format, List<LwM2mPath> paths,
             LwM2mModel model) throws CodecException {
-        return null;
+        Builder builder = new TimestampedLwM2mNodes.Builder(paths);
+        for (LwM2mPath path : paths) {
+            builder.put(path, null);
+        }
+        return builder.build();
     }
 
     @Override

@@ -120,8 +120,8 @@ public class ServerCoapMessageTranslator {
                 CompositeObservation compositeObservation = (CompositeObservation) observation;
 
                 if (responseCode.isError()) {
-                    return new ObserveCompositeResponse(responseCode, null, null, null, coapResponse.getPayloadString(),
-                            coapResponse);
+                    return new ObserveCompositeResponse(responseCode, null, null, null, null,
+                            coapResponse.getPayloadString(), coapResponse);
                 } else {
                     TimestampedLwM2mNodes timestampedNodes = toolbox.getDecoder().decodeTimestampedNodes(
                             coapResponse.getPayload(), contentFormat, compositeObservation.getPaths(),
@@ -130,11 +130,11 @@ public class ServerCoapMessageTranslator {
                     if (timestampedNodes.getTimestamps().size() == 1
                             && timestampedNodes.getTimestamps().iterator().next() == null) {
 
-                        return new ObserveCompositeResponse(responseCode, timestampedNodes.getNodes(), null,
-                                compositeObservation, null, coapResponse);
+                        return new ObserveCompositeResponse(responseCode, timestampedNodes.getMostRecentNodes(), null,
+                                null, compositeObservation, null, coapResponse);
                     } else {
-                        return new ObserveCompositeResponse(responseCode, null, timestampedNodes, compositeObservation,
-                                null, coapResponse);
+                        return new ObserveCompositeResponse(responseCode, null, null, timestampedNodes,
+                                compositeObservation, null, coapResponse);
                     }
                 }
             }

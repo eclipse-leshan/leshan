@@ -68,7 +68,7 @@ public class ManualDataSenderTest {
 
         // ensure that sent values equals collected ones.
         TimestampedLwM2mNodes lastValuesSent = fakeDataSenderManager.getLastValuesSent();
-        assertEquals(currentValues, lastValuesSent.getNodes());
+        assertEquals(currentValues, lastValuesSent.getMostRecentNodes());
 
         // re send to ensure data was flushed (we do not resent same data)
         Map<LwM2mPath, LwM2mNode> newValue = fakeDataSenderManager.changeCurrentValues(givenServer, givenPaths);
@@ -77,7 +77,7 @@ public class ManualDataSenderTest {
         lastValuesSent = fakeDataSenderManager.getLastValuesSent();
 
         assertEquals(1, lastValuesSent.getTimestamps().size());
-        assertEquals(newValue, lastValuesSent.getNodes());
+        assertEquals(newValue, lastValuesSent.getMostRecentNodes());
     }
 
     @Test
@@ -126,7 +126,7 @@ public class ManualDataSenderTest {
 
         // ensure that sent values equals collected ones.
         TimestampedLwM2mNodes lastValuesSent = fakeDataSenderManager.getLastValuesSent();
-        assertEquals(currentValues, lastValuesSent.getNodes());
+        assertEquals(currentValues, lastValuesSent.getMostRecentNodes());
     }
 
     @Test
@@ -146,7 +146,7 @@ public class ManualDataSenderTest {
 
         // ensure that sent values equals collected ones.
         TimestampedLwM2mNodes lastValuesSent = fakeDataSenderManager.getLastValuesSent();
-        assertEquals(currentValues, lastValuesSent.getNodes());
+        assertEquals(currentValues, lastValuesSent.getMostRecentNodes());
     }
 
     @Test
@@ -163,13 +163,13 @@ public class ManualDataSenderTest {
 
         // ensure that sent values equals collected ones.
         TimestampedLwM2mNodes lastValuesSent = fakeDataSenderManager.getLastValuesSent();
-        assertEquals(currentValues, lastValuesSent.getNodes());
+        assertEquals(currentValues, lastValuesSent.getMostRecentNodes());
 
         // re send to ensure data was not flushed
         manualDataSender.sendCollectedData(givenServer, ContentFormat.SENML_CBOR, 0, false);
 
         lastValuesSent = fakeDataSenderManager.getLastValuesSent();
-        assertEquals(currentValues, lastValuesSent.getNodes());
+        assertEquals(currentValues, lastValuesSent.getMostRecentNodes());
     }
 
     static class FakeDataSenderManager extends DataSenderManager {

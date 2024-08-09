@@ -1156,7 +1156,7 @@ public class LwM2mNodeDecoderTest {
                 .getNodesAt(baseInstant.plusMillis(101)).get(new LwM2mPath("/6/0/0"));
 
         // then
-        assertEquals(2, timestampedLwM2mNodes.getNodes().size());
+        assertEquals(2, timestampedLwM2mNodes.getFlattenNodes().size());
         assertEquals(2, timestampedLwM2mNodes.getTimestamps().size());
 
         assertEquals(5700, resource3303.getId());
