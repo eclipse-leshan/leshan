@@ -156,7 +156,7 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
                         Observation observation = server.getRegistrationStore().getObservation(regid,
                                 new ObservationIdentifier(coapResponse.getToken().getBytes()));
                         if (observation == null) {
-                            LOG.error("Unexpected error: Unable to find observation with token {} for registration {}",
+                            LOG.warn("Unexpected error: Unable to find observation with token {} for registration {}",
                                     coapResponse.getToken(), regid);
                             return;
                         }
