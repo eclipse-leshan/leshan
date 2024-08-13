@@ -27,7 +27,6 @@ import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.SendResponse;
-import org.eclipse.leshan.core.util.Validate;
 
 /**
  * The "Send" operation is used by the LwM2M Client to send data to the LwM2M Server without explicit request by that
@@ -42,6 +41,14 @@ public class SendRequest extends AbstractLwM2mRequest<SendResponse>
     private final ContentFormat format;
     private final TimestampedLwM2mNodes timestampedNodes;
 
+    private static final TimestampedLwM2mNodes mapToTimestampedNodes(Map<LwM2mPath, LwM2mNode> nodes) {
+        try {
+            return TimestampedLwM2mNodes.builder().addNodes(nodes).build();
+        } catch (Exception e) {
+            throw new InvalidRequestException(e, "Invalid nodes");
+        }
+    }
+
     /**
      * @param format {@link ContentFormat} used to encode data. It MUST be {@link ContentFormat#SENML_CBOR} or
      *        {@link ContentFormat#SENML_JSON}
@@ -53,7 +60,7 @@ public class SendRequest extends AbstractLwM2mRequest<SendResponse>
     }
 
     public SendRequest(ContentFormat format, Map<LwM2mPath, LwM2mNode> nodes, Object coapRequest) {
-        this(format, TimestampedLwM2mNodes.builder().addNodes(nodes).build(), coapRequest);
+        this(format, mapToTimestampedNodes(nodes), coapRequest);
     }
 
     public SendRequest(ContentFormat format, TimestampedLwM2mNodes timestampedNodes, Object coapRequest) {
@@ -70,12 +77,19 @@ public class SendRequest extends AbstractLwM2mRequest<SendResponse>
     }
 
     private void validateNodes(Map<LwM2mPath, LwM2mNode> nodes) {
-        Validate.notEmpty(nodes);
+        if (nodes == null || nodes.size() == 0) {
+            throw new InvalidRequestException(
+                    "SendRequest MUST NOT have empty payload (at least 1 node should be present)");
+        }
         for (Entry<LwM2mPath, LwM2mNode> entry : nodes.entrySet()) {
             LwM2mPath path = entry.getKey();
             LwM2mNode node = entry.getValue();
-            Validate.notNull(path);
-            Validate.notNull(node);
+            if (path == null) {
+                throw new InvalidRequestException("Invalid key for entry (null, %s) : path MUST NOT be null", node);
+            }
+            if (node == null) {
+                throw new InvalidRequestException("Invalid value for entry (%s, null) :  node MUST NOT be null ", path);
+            }
 
             if (path.isObject() && node instanceof LwM2mObject)
                 return;
