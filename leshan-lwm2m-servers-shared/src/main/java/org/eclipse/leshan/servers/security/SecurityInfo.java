@@ -19,6 +19,7 @@ package org.eclipse.leshan.servers.security;
 import java.io.Serializable;
 import java.security.PublicKey;
 import java.util.Arrays;
+import java.util.Objects;
 
 import org.eclipse.leshan.core.oscore.InvalidOscoreSettingException;
 import org.eclipse.leshan.core.oscore.OscoreSetting;
@@ -197,56 +198,6 @@ public class SecurityInfo implements Serializable {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((endpoint == null) ? 0 : endpoint.hashCode());
-        result = prime * result + ((pskIdentity == null) ? 0 : pskIdentity.hashCode());
-        result = prime * result + Arrays.hashCode(preSharedKey);
-        result = prime * result + ((rawPublicKey == null) ? 0 : rawPublicKey.hashCode());
-        result = prime * result + (useX509Cert ? 1231 : 1237);
-        result = prime * result + ((oscoreSetting == null) ? 0 : oscoreSetting.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        SecurityInfo other = (SecurityInfo) obj;
-        if (endpoint == null) {
-            if (other.endpoint != null)
-                return false;
-        } else if (!endpoint.equals(other.endpoint))
-            return false;
-        if (pskIdentity == null) {
-            if (other.pskIdentity != null)
-                return false;
-        } else if (!pskIdentity.equals(other.pskIdentity))
-            return false;
-        if (!Arrays.equals(preSharedKey, other.preSharedKey))
-            return false;
-        if (rawPublicKey == null) {
-            if (other.rawPublicKey != null)
-                return false;
-        } else if (!rawPublicKey.equals(other.rawPublicKey))
-            return false;
-        if (useX509Cert != other.useX509Cert)
-            return false;
-        if (oscoreSetting == null) {
-            if (other.oscoreSetting != null)
-                return false;
-        } else if (!oscoreSetting.equals(other.oscoreSetting))
-            return false;
-
-        return true;
-    }
-
-    @Override
     public String toString() {
         // TODO make a better toString()
         // Note : preSharedKey is explicitly excluded from display for security purposes
@@ -256,4 +207,16 @@ public class SecurityInfo implements Serializable {
                 useOSCORE() ? new OscoreIdentity(getOscoreSetting().getRecipientId()) : "");
     }
 
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SecurityInfo)) return false;
+        SecurityInfo that = (SecurityInfo) o;
+        return useX509Cert == that.useX509Cert && Objects.equals(endpoint, that.endpoint) && Objects.equals(pskIdentity, that.pskIdentity) && Objects.deepEquals(preSharedKey, that.preSharedKey) && Objects.equals(rawPublicKey, that.rawPublicKey) && Objects.equals(oscoreSetting, that.oscoreSetting);
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(endpoint, pskIdentity, Arrays.hashCode(preSharedKey), rawPublicKey, useX509Cert, oscoreSetting);
+    }
 }

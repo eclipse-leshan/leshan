@@ -15,13 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 
 import org.eclipse.leshan.core.node.codec.tlv.LwM2mNodeTlvDecoder;
 import org.eclipse.leshan.core.util.Validate;
@@ -120,40 +115,6 @@ public class LwM2mObjectInstance implements LwM2mChildNode {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + id;
-        result = prime * result + ((resources == null) ? 0 : resources.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        LwM2mObjectInstance other = (LwM2mObjectInstance) obj;
-        if (id != other.id) {
-            return false;
-        }
-        if (resources == null) {
-            if (other.resources != null) {
-                return false;
-            }
-        } else if (!resources.equals(other.resources)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
     public String toPrettyString(LwM2mPath path) {
         return appendPrettyNode(new StringBuilder(), path).toString();
     }
@@ -179,5 +140,18 @@ public class LwM2mObjectInstance implements LwM2mChildNode {
             }
         }
         return b;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof LwM2mObjectInstance)) return false;
+        LwM2mObjectInstance that = (LwM2mObjectInstance) o;
+        return id == that.id && Objects.equals(resources, that.resources);
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(id, resources);
     }
 }

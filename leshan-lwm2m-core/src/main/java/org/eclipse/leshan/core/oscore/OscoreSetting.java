@@ -17,6 +17,7 @@ package org.eclipse.leshan.core.oscore;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Objects;
 
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.core.util.Validate;
@@ -99,45 +100,15 @@ public class OscoreSetting implements Serializable {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((aeadAlgorithm == null) ? 0 : aeadAlgorithm.hashCode());
-        result = prime * result + ((hkdfAlgorithm == null) ? 0 : hkdfAlgorithm.hashCode());
-        result = prime * result + Arrays.hashCode(masterSalt);
-        result = prime * result + Arrays.hashCode(masterSecret);
-        result = prime * result + Arrays.hashCode(recipientId);
-        result = prime * result + Arrays.hashCode(senderId);
-        return result;
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof OscoreSetting)) return false;
+        OscoreSetting that = (OscoreSetting) o;
+        return Objects.deepEquals(senderId, that.senderId) && Objects.deepEquals(recipientId, that.recipientId) && Objects.deepEquals(masterSecret, that.masterSecret) && Objects.equals(aeadAlgorithm, that.aeadAlgorithm) && Objects.equals(hkdfAlgorithm, that.hkdfAlgorithm) && Objects.deepEquals(masterSalt, that.masterSalt);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        OscoreSetting other = (OscoreSetting) obj;
-        if (aeadAlgorithm == null) {
-            if (other.aeadAlgorithm != null)
-                return false;
-        } else if (!aeadAlgorithm.equals(other.aeadAlgorithm))
-            return false;
-        if (hkdfAlgorithm == null) {
-            if (other.hkdfAlgorithm != null)
-                return false;
-        } else if (!hkdfAlgorithm.equals(other.hkdfAlgorithm))
-            return false;
-        if (!Arrays.equals(masterSalt, other.masterSalt))
-            return false;
-        if (!Arrays.equals(masterSecret, other.masterSecret))
-            return false;
-        if (!Arrays.equals(recipientId, other.recipientId))
-            return false;
-        if (!Arrays.equals(senderId, other.senderId))
-            return false;
-        return true;
+    public final int hashCode() {
+        return Objects.hash(Arrays.hashCode(senderId), Arrays.hashCode(recipientId), Arrays.hashCode(masterSecret), aeadAlgorithm, hkdfAlgorithm, Arrays.hashCode(masterSalt));
     }
 }

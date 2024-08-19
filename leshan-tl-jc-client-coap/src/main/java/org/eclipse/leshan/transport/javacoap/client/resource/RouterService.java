@@ -124,7 +124,7 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
     static final class RequestMatcher {
         private final Method method;
         private final String uriPath;
-        private transient final boolean isPrefixed;
+        private final boolean isPrefixed;
 
         RequestMatcher(Method method, String uriPath) {
             this.method = method;
@@ -158,20 +158,15 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
+            if (this == o) return true;
+            if (!(o instanceof RequestMatcher)) return false;
             RequestMatcher that = (RequestMatcher) o;
-            return method == that.method && Objects.equals(uriPath, that.uriPath)
-                    && Objects.equals(isPrefixed, that.isPrefixed);
+            return isPrefixed == that.isPrefixed && method == that.method && Objects.equals(uriPath, that.uriPath);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(method, isPrefixed, uriPath);
+            return Objects.hash(method, uriPath, isPrefixed);
         }
     }
 }

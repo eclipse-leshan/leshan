@@ -15,11 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.attributes;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import org.eclipse.leshan.core.node.LwM2mPath;
+
+import java.util.*;
 
 /**
  * A set of {@link Attribute}
@@ -73,28 +71,22 @@ public class AttributeSet implements Iterable<Attribute> {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((attributes == null) ? 0 : attributes.hashCode());
+    public boolean equals(Object o) {
+        boolean result = false;
+        if (o instanceof AttributeSet) {
+            AttributeSet that = (AttributeSet) o;
+            result = that.canEqual(this) && Objects.equals(attributes, that.attributes);
+        }
         return result;
     }
 
+    public boolean canEqual(Object o) {
+        return (o instanceof AttributeSet);
+    }
+
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        AttributeSet other = (AttributeSet) obj;
-        if (attributes == null) {
-            if (other.attributes != null)
-                return false;
-        } else if (!attributes.equals(other.attributes))
-            return false;
-        return true;
+    public int hashCode() {
+        return Objects.hashCode(attributes);
     }
 
     @Override

@@ -16,6 +16,7 @@
 package org.eclipse.leshan.core.node;
 
 import java.time.Instant;
+import java.util.Objects;
 
 import org.eclipse.leshan.core.util.Validate;
 
@@ -44,38 +45,20 @@ public class TimestampedLwM2mNode {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((node == null) ? 0 : node.hashCode());
-        result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        TimestampedLwM2mNode other = (TimestampedLwM2mNode) obj;
-        if (node == null) {
-            if (other.node != null)
-                return false;
-        } else if (!node.equals(other.node))
-            return false;
-        if (timestamp == null) {
-            if (other.timestamp != null)
-                return false;
-        } else if (!timestamp.equals(other.timestamp))
-            return false;
-        return true;
-    }
-
-    @Override
     public String toString() {
         return String.format("TimestampedLwM2mNode [timestamp=%s, node=%s]", timestamp, node);
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TimestampedLwM2mNode)) return false;
+        TimestampedLwM2mNode that = (TimestampedLwM2mNode) o;
+        return Objects.equals(timestamp, that.timestamp) && Objects.equals(node, that.node);
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(timestamp, node);
     }
 }

@@ -16,6 +16,7 @@
 package org.eclipse.leshan.core.util.datatype;
 
 import java.math.BigInteger;
+import java.util.Objects;
 
 /**
  * The <code>unsigned long</code> type
@@ -174,20 +175,6 @@ public final class ULong extends Number implements Comparable<ULong> {
     }
 
     @Override
-    public int hashCode() {
-
-        return Long.valueOf(value).hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof ULong)
-            return value == ((ULong) obj).value;
-
-        return false;
-    }
-
-    @Override
     public String toString() {
         if (value >= 0)
             return Long.toString(value);
@@ -261,5 +248,18 @@ public final class ULong extends Number implements Comparable<ULong> {
      */
     public BigInteger toBigInteger() {
         return new BigInteger(toString());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ULong)) return false;
+        ULong that = (ULong) o;
+        return value == that.value;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(value);
     }
 }

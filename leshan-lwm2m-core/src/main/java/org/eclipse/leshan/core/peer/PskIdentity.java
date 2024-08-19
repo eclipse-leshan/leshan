@@ -44,20 +44,15 @@ public class PskIdentity implements LwM2mIdentity {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((pskIdentity == null) ? 0 : pskIdentity.hashCode());
-        return result;
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PskIdentity)) return false;
+        PskIdentity that = (PskIdentity) o;
+        return Objects.equals(pskIdentity, that.pskIdentity);
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        PskIdentity that = (PskIdentity) o;
-        return Objects.equals(pskIdentity, that.pskIdentity);
+    public final int hashCode() {
+        return Objects.hashCode(pskIdentity);
     }
 }

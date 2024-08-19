@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import java.util.Collection;
 import java.util.Map;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.link.lwm2m.attributes.DefaultLwM2mAttributeParser;
 import org.eclipse.leshan.core.link.lwm2m.attributes.InvalidAttributesException;
@@ -155,5 +156,20 @@ public class AttributeSetTest {
             // OBJECT_VERSION cannot be assigned on resource level
             sut.validate(new LwM2mPath("/3/0/9"));
         });
+    }
+
+    private class ExtendedAttributeSet extends AttributeSet {
+        public ExtendedAttributeSet(Attribute... attributes) {
+            super(attributes);
+        }
+        @Override
+        public boolean canEqual(Object obj) {
+            return (obj instanceof AttributeSetTest.ExtendedAttributeSet);
+        }
+    }
+
+    @Test
+    public void assertEqualsHashcode() {
+        EqualsVerifier.forClass(AttributeSet.class).withRedefinedSubclass(AttributeSetTest.ExtendedAttributeSet.class).verify();
     }
 }

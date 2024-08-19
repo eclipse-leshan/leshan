@@ -23,8 +23,10 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.peer.IpPeer;
+import org.eclipse.leshan.senml.SenMLPack;
 import org.eclipse.leshan.server.queue.PresenceService;
 import org.junit.jupiter.api.Test;
 
@@ -91,5 +93,10 @@ public class RegistrationUpdateTest {
         assertEquals("1", updatedAppData.get("x"));
         assertEquals("10", updatedAppData.get("y"));
         assertEquals("100", updatedAppData.get("z"));
+    }
+
+    @Test
+    public void assertEqualsHashcode() {
+        EqualsVerifier.forClass(RegistrationUpdate.class).verify();
     }
 }

@@ -15,13 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 
 /**
  * The top level element in the LWM2M resource tree.
@@ -119,37 +114,16 @@ public class LwM2mObject implements LwM2mChildNode {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + id;
-        result = prime * result + ((instances == null) ? 0 : instances.hashCode());
-        return result;
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof LwM2mObject)) return false;
+        LwM2mObject that = (LwM2mObject) o;
+        return id == that.id && Objects.equals(instances, that.instances);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        LwM2mObject other = (LwM2mObject) obj;
-        if (id != other.id) {
-            return false;
-        }
-        if (instances == null) {
-            if (other.instances != null) {
-                return false;
-            }
-        } else if (!instances.equals(other.instances)) {
-            return false;
-        }
-        return true;
+    public final int hashCode() {
+        return Objects.hash(id, instances);
     }
 
 }

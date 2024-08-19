@@ -44,20 +44,15 @@ public class SocketIdentity implements LwM2mIdentity {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((peerAddress == null) ? 0 : peerAddress.hashCode());
-        return result;
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SocketIdentity)) return false;
+        SocketIdentity that = (SocketIdentity) o;
+        return Objects.equals(peerAddress, that.peerAddress);
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        SocketIdentity that = (SocketIdentity) o;
-        return Objects.equals(peerAddress, that.peerAddress);
+    public final int hashCode() {
+        return Objects.hashCode(peerAddress);
     }
 }

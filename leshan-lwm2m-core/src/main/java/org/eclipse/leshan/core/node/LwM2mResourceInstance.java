@@ -182,7 +182,7 @@ public class LwM2mResourceInstance implements LwM2mChildNode {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + id;
@@ -200,13 +200,10 @@ public class LwM2mResourceInstance implements LwM2mChildNode {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public final boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (!(obj instanceof LwM2mResourceInstance)) return false;
         LwM2mResourceInstance other = (LwM2mResourceInstance) obj;
         if (id != other.id)
             return false;

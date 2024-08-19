@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request.argument;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
@@ -93,30 +94,15 @@ public class Argument {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + digit;
-        result = prime * result + ((value == null) ? 0 : value.hashCode());
-        return result;
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Argument)) return false;
+        Argument argument = (Argument) o;
+        return digit == argument.digit && Objects.equals(value, argument.value);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Argument other = (Argument) obj;
-        if (digit != other.digit)
-            return false;
-        if (value == null) {
-            if (other.value != null)
-                return false;
-        } else if (!value.equals(other.value))
-            return false;
-        return true;
+    public final int hashCode() {
+        return Objects.hash(digit, value);
     }
 }

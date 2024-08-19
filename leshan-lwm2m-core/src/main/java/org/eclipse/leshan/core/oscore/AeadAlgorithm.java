@@ -16,6 +16,7 @@ package org.eclipse.leshan.core.oscore;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Objects;
 
 import org.eclipse.leshan.core.util.datatype.NumberUtil;
 
@@ -113,33 +114,15 @@ public class AeadAlgorithm implements Serializable {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + nonceSize;
-        result = prime * result + value;
-        return result;
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AeadAlgorithm)) return false;
+        AeadAlgorithm that = (AeadAlgorithm) o;
+        return value == that.value && nonceSize == that.nonceSize && Objects.equals(name, that.name);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        AeadAlgorithm other = (AeadAlgorithm) obj;
-        if (name == null) {
-            if (other.name != null)
-                return false;
-        } else if (!name.equals(other.name))
-            return false;
-        if (nonceSize != other.nonceSize)
-            return false;
-        if (value != other.value)
-            return false;
-        return true;
+    public final int hashCode() {
+        return Objects.hash(name, value, nonceSize);
     }
 }

@@ -15,10 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class LwM2mRoot implements LwM2mNode {
     private final Map<Integer, LwM2mObject> objects;
@@ -46,32 +43,20 @@ public class LwM2mRoot implements LwM2mNode {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((objects == null) ? 0 : objects.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        LwM2mRoot other = (LwM2mRoot) obj;
-        if (objects == null) {
-            if (other.objects != null)
-                return false;
-        } else if (!objects.equals(other.objects))
-            return false;
-        return true;
-    }
-
-    @Override
     public String toString() {
         return String.format("LwM2mRoot [objects=%s]", objects);
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof LwM2mRoot)) return false;
+        LwM2mRoot lwM2mRoot = (LwM2mRoot) o;
+        return Objects.equals(objects, lwM2mRoot.objects);
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hashCode(objects);
     }
 }

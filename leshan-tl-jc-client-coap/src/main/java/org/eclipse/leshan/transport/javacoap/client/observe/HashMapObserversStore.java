@@ -93,26 +93,22 @@ public class HashMapObserversStore implements ObserversStore {
         }
 
         @Override
-        public int hashCode() {
-            return Objects.hash(peerAddress, token);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            ObserverKey other = (ObserverKey) obj;
-            return Objects.equals(peerAddress, other.peerAddress) && Objects.equals(token, other.token);
-        }
-
-        @Override
         public String toString() {
             return String.format("ObserverKey [token=%s, peerAddress=%s]", token != null ? token.toHex() : "null",
                     peerAddress);
+        }
+
+        @Override
+        public final boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof ObserverKey)) return false;
+            ObserverKey that = (ObserverKey) o;
+            return Objects.equals(token, that.token) && Objects.equals(peerAddress, that.peerAddress);
+        }
+
+        @Override
+        public final int hashCode() {
+            return Objects.hash(token, peerAddress);
         }
     }
 }

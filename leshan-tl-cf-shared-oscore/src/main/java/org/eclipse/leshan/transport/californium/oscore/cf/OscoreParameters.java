@@ -16,6 +16,7 @@
 package org.eclipse.leshan.transport.californium.oscore.cf;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import org.eclipse.californium.cose.AlgorithmID;
 import org.eclipse.leshan.core.util.Hex;
@@ -77,45 +78,15 @@ public class OscoreParameters {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((aeadAlgorithm == null) ? 0 : aeadAlgorithm.hashCode());
-        result = prime * result + ((hmacAlgorithm == null) ? 0 : hmacAlgorithm.hashCode());
-        result = prime * result + Arrays.hashCode(masterSalt);
-        result = prime * result + Arrays.hashCode(masterSecret);
-        result = prime * result + Arrays.hashCode(recipientId);
-        result = prime * result + Arrays.hashCode(senderId);
-        return result;
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof OscoreParameters)) return false;
+        OscoreParameters that = (OscoreParameters) o;
+        return Objects.deepEquals(senderId, that.senderId) && Objects.deepEquals(recipientId, that.recipientId) && Objects.deepEquals(masterSecret, that.masterSecret) && aeadAlgorithm == that.aeadAlgorithm && hmacAlgorithm == that.hmacAlgorithm && Objects.deepEquals(masterSalt, that.masterSalt);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        OscoreParameters other = (OscoreParameters) obj;
-        if (aeadAlgorithm == null) {
-            if (other.aeadAlgorithm != null)
-                return false;
-        } else if (!aeadAlgorithm.equals(other.aeadAlgorithm))
-            return false;
-        if (hmacAlgorithm == null) {
-            if (other.hmacAlgorithm != null)
-                return false;
-        } else if (!hmacAlgorithm.equals(other.hmacAlgorithm))
-            return false;
-        if (!Arrays.equals(masterSalt, other.masterSalt))
-            return false;
-        if (!Arrays.equals(masterSecret, other.masterSecret))
-            return false;
-        if (!Arrays.equals(recipientId, other.recipientId))
-            return false;
-        if (!Arrays.equals(senderId, other.senderId))
-            return false;
-        return true;
+    public final int hashCode() {
+        return Objects.hash(Arrays.hashCode(senderId), Arrays.hashCode(recipientId), Arrays.hashCode(masterSecret), aeadAlgorithm, hmacAlgorithm, Arrays.hashCode(masterSalt));
     }
 }

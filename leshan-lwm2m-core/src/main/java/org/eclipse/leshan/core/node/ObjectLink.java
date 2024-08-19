@@ -16,6 +16,7 @@
 package org.eclipse.leshan.core.node;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import org.eclipse.leshan.core.util.Validate;
 
@@ -104,32 +105,20 @@ public class ObjectLink {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + objectId;
-        result = prime * result + objectInstanceId;
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        ObjectLink other = (ObjectLink) obj;
-        if (objectId != other.objectId)
-            return false;
-        if (objectInstanceId != other.objectInstanceId)
-            return false;
-        return true;
-    }
-
-    @Override
     public String toString() {
         return String.format("/%d/%d", objectId, objectInstanceId);
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ObjectLink)) return false;
+        ObjectLink that = (ObjectLink) o;
+        return objectId == that.objectId && objectInstanceId == that.objectInstanceId;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(objectId, objectInstanceId);
     }
 }

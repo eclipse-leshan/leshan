@@ -44,21 +44,15 @@ public class X509Identity implements LwM2mIdentity {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((x509CommonName == null) ? 0 : x509CommonName.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof X509Identity)) return false;
         X509Identity that = (X509Identity) o;
         return Objects.equals(x509CommonName, that.x509CommonName);
     }
 
+    @Override
+    public final int hashCode() {
+        return Objects.hashCode(x509CommonName);
+    }
 }

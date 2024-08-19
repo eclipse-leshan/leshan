@@ -44,20 +44,15 @@ public class RpkIdentity implements LwM2mIdentity {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((rawPublicKey == null) ? 0 : rawPublicKey.hashCode());
-        return result;
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof RpkIdentity)) return false;
+        RpkIdentity that = (RpkIdentity) o;
+        return Objects.equals(rawPublicKey, that.rawPublicKey);
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        RpkIdentity that = (RpkIdentity) o;
-        return Objects.equals(rawPublicKey, that.rawPublicKey);
+    public final int hashCode() {
+        return Objects.hashCode(rawPublicKey);
     }
 }
