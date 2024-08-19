@@ -30,6 +30,8 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
+
 public class TimestampedLwM2mNodesTest {
 
     private final Instant timestamp_1E9_ms = Instant.ofEpochMilli(1_000_000_000);
@@ -221,5 +223,10 @@ public class TimestampedLwM2mNodesTest {
         tsNodes.put(new LwM2mPath("/0/0/2"), LwM2mSingleResource.newIntegerResource(2, 222L));
         tsNodes.put(timestamp_1E9_ms, new LwM2mPath("/0/0/1"), LwM2mSingleResource.newIntegerResource(1, 111L));
         return tsNodes.build();
+    }
+
+    @Test
+    public void assertEqualsHashcode() {
+        EqualsVerifier.forClass(TimestampedLwM2mNodes.class).verify();
     }
 }

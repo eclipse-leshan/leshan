@@ -114,4 +114,8 @@ public class LwM2mIncompletePath extends LwM2mPath {
         }
         return b.toString();
     }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof LwM2mIncompletePath);
+    }
 }

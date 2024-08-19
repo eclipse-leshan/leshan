@@ -40,6 +40,8 @@ import org.eclipse.leshan.server.registration.Registration.Builder;
 import org.eclipse.leshan.server.registration.RegistrationDataExtractor.RegistrationData;
 import org.junit.jupiter.api.Test;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
+
 public class RegistrationTest {
 
     private final LinkParser linkParser = new DefaultLwM2mLinkParser();
@@ -292,5 +294,10 @@ public class RegistrationTest {
         builder.availableInstances(dataFromObjectLinks.getAvailableInstances());
 
         return builder.build();
+    }
+
+    @Test
+    public void assertEqualsHashcode() {
+        EqualsVerifier.forClass(Registration.class).verify();
     }
 }

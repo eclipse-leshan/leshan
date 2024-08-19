@@ -18,6 +18,7 @@ package org.eclipse.leshan.core.observation;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -82,40 +83,25 @@ public class CompositeObservation extends Observation {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((paths == null) ? 0 : paths.hashCode());
-        result = prime * result + ((requestContentFormat == null) ? 0 : requestContentFormat.hashCode());
-        result = prime * result + ((responseContentFormat == null) ? 0 : responseContentFormat.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof CompositeObservation))
+            return false;
+        if (!super.equals(o))
+            return false;
+        CompositeObservation that = (CompositeObservation) o;
+        return that.canEqual(this) && Objects.equals(paths, that.paths)
+                && Objects.equals(requestContentFormat, that.requestContentFormat)
+                && Objects.equals(responseContentFormat, that.responseContentFormat);
+    }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof CompositeObservation);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        CompositeObservation other = (CompositeObservation) obj;
-        if (paths == null) {
-            if (other.paths != null)
-                return false;
-        } else if (!paths.equals(other.paths))
-            return false;
-        if (requestContentFormat == null) {
-            if (other.requestContentFormat != null)
-                return false;
-        } else if (!requestContentFormat.equals(other.requestContentFormat))
-            return false;
-        if (responseContentFormat == null) {
-            if (other.responseContentFormat != null)
-                return false;
-        } else if (!responseContentFormat.equals(other.responseContentFormat))
-            return false;
-        return true;
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), paths, requestContentFormat, responseContentFormat);
     }
-
 }

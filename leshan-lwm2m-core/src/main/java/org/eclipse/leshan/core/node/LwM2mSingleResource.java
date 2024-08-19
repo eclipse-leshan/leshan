@@ -45,6 +45,51 @@ public class LwM2mSingleResource implements LwM2mResource {
         this.type = type;
     }
 
+    @Override
+    public final boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!(obj instanceof LwM2mSingleResource))
+            return false;
+        LwM2mSingleResource other = (LwM2mSingleResource) obj;
+        if (id != other.id)
+            return false;
+        if (type != other.type)
+            return false;
+        if (value == null) {
+            if (other.value != null)
+                return false;
+        } else {
+            // Custom equals to handle arrays
+            if (type == Type.OPAQUE) {
+                return Arrays.equals((byte[]) value, (byte[]) other.value);
+            } else if (type == Type.CORELINK) {
+                return Arrays.equals((Link[]) value, (Link[]) other.value);
+            } else {
+                return value.equals(other.value);
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public final int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + id;
+        result = prime * result + ((type == null) ? 0 : type.hashCode());
+
+        // Custom hashcode to handle arrays
+        if (type == Type.OPAQUE) {
+            result = prime * result + ((value == null) ? 0 : Arrays.hashCode((byte[]) value));
+        } else if (type == Type.CORELINK) {
+            result = prime * result + ((value == null) ? 0 : Arrays.hashCode((Link[]) value));
+        } else {
+            result = prime * result + ((value == null) ? 0 : value.hashCode());
+        }
+        return result;
+    }
+
     public static LwM2mSingleResource newResource(int id, Object value) {
         LwM2mNodeUtil.validateNotNull(value, "value MUST NOT be null");
 
@@ -243,53 +288,6 @@ public class LwM2mSingleResource implements LwM2mResource {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + id;
-        result = prime * result + ((type == null) ? 0 : type.hashCode());
-
-        // Custom hashcode to handle arrays
-        if (type == Type.OPAQUE) {
-            result = prime * result + ((value == null) ? 0 : Arrays.hashCode((byte[]) value));
-        } else if (type == Type.CORELINK) {
-            result = prime * result + ((value == null) ? 0 : Arrays.hashCode((Link[]) value));
-        } else {
-            result = prime * result + ((value == null) ? 0 : value.hashCode());
-        }
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        LwM2mSingleResource other = (LwM2mSingleResource) obj;
-        if (id != other.id)
-            return false;
-        if (type != other.type)
-            return false;
-        if (value == null) {
-            if (other.value != null)
-                return false;
-        } else {
-            // Custom equals to handle arrays
-            if (type == Type.OPAQUE) {
-                return Arrays.equals((byte[]) value, (byte[]) other.value);
-            } else if (type == Type.CORELINK) {
-                return Arrays.equals((Link[]) value, (Link[]) other.value);
-            } else {
-                return value.equals(other.value);
-            }
-        }
-        return true;
-    }
-
-    @Override
     public String toString() {
         // We don't print OPAQUE value as this could be credentials one.
         // Not ideal but didn't find better way for now.
@@ -314,4 +312,5 @@ public class LwM2mSingleResource implements LwM2mResource {
 
         return b;
     }
+
 }

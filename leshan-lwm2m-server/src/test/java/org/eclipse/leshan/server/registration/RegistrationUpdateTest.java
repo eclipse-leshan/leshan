@@ -28,6 +28,8 @@ import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.server.queue.PresenceService;
 import org.junit.jupiter.api.Test;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
+
 /**
  * tests the implementation of {@link PresenceService}
  *
@@ -91,5 +93,10 @@ public class RegistrationUpdateTest {
         assertEquals("1", updatedAppData.get("x"));
         assertEquals("10", updatedAppData.get("y"));
         assertEquals("100", updatedAppData.get("z"));
+    }
+
+    @Test
+    public void assertEqualsHashcode() {
+        EqualsVerifier.forClass(RegistrationUpdate.class).verify();
     }
 }

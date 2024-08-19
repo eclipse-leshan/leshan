@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core;
 
+import java.util.Objects;
+
 import org.eclipse.leshan.core.util.Validate;
 
 /**
@@ -84,8 +86,8 @@ public class ResponseCode {
             REQUEST_ENTITY_INCOMPLETE, PRECONDITION_FAILED, REQUEST_ENTITY_TOO_LARGE, UNSUPPORTED_CONTENT_FORMAT,
             INTERNAL_SERVER_ERROR };
 
-    private int code;
-    private String name;
+    private final int code;
+    private final String name;
 
     public ResponseCode(int code, String name) {
         Validate.notNull(name);
@@ -145,24 +147,17 @@ public class ResponseCode {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + code;
-        return result;
+    public final boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof ResponseCode))
+            return false;
+        ResponseCode that = (ResponseCode) o;
+        return code == that.code;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        ResponseCode other = (ResponseCode) obj;
-        if (code != other.code)
-            return false;
-        return true;
+    public final int hashCode() {
+        return Objects.hash(code);
     }
 }

@@ -27,6 +27,8 @@ import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.junit.jupiter.api.Test;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
+
 public class SendRequestTest {
 
     @Test
@@ -56,5 +58,22 @@ public class SendRequestTest {
 
             new SendRequest(ContentFormat.SENML_JSON, nodes);
         });
+    }
+
+    private class ExtendedSendRequest extends SendRequest {
+        ExtendedSendRequest(ContentFormat format, Map<LwM2mPath, LwM2mNode> nodes) {
+            super(format, nodes, null);
+        }
+
+        @Override
+        public boolean canEqual(Object obj) {
+            return (obj instanceof ExtendedSendRequest);
+        }
+    }
+
+    @Test
+    public void assertEqualsHashcode() {
+        EqualsVerifier.forClass(SendRequest.class).withRedefinedSubclass(ExtendedSendRequest.class)
+                .withIgnoredFields("coapRequest").verify();
     }
 }

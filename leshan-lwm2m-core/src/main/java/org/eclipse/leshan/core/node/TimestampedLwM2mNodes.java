@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -79,37 +80,27 @@ public class TimestampedLwM2mNodes {
         return String.format("TimestampedLwM2mNodes [%s]", timestampedPathNodesMap);
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((timestampedPathNodesMap == null) ? 0 : timestampedPathNodesMap.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        TimestampedLwM2mNodes other = (TimestampedLwM2mNodes) obj;
-        if (timestampedPathNodesMap == null) {
-            if (other.timestampedPathNodesMap != null)
-                return false;
-        } else if (!timestampedPathNodesMap.equals(other.timestampedPathNodesMap))
-            return false;
-        return true;
-    }
-
     public static Builder builder() {
         return new Builder();
     }
 
     public static Builder builder(List<LwM2mPath> paths) {
         return new Builder(paths);
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof TimestampedLwM2mNodes))
+            return false;
+        TimestampedLwM2mNodes that = (TimestampedLwM2mNodes) o;
+        return Objects.equals(timestampedPathNodesMap, that.timestampedPathNodesMap);
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hashCode(timestampedPathNodesMap);
     }
 
     public static class Builder {

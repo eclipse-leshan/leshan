@@ -32,6 +32,8 @@ import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.junit.jupiter.api.Test;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
+
 public class ContentFormatTest {
 
     @Test
@@ -50,5 +52,11 @@ public class ContentFormatTest {
 
         assertEquals(Arrays.asList(TLV, JSON, SENML_JSON, SENML_CBOR, CBOR), optionalContentFormat);
 
+    }
+
+    @Test
+    public void assertEqualsHashcode() {
+        EqualsVerifier.forClass(ContentFormat.class).withIgnoredFields("name", "mediaType", "mandatoryForClient")
+                .verify();
     }
 }

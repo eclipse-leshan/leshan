@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * A set of {@link Attribute}
@@ -73,31 +74,6 @@ public class AttributeSet implements Iterable<Attribute> {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((attributes == null) ? 0 : attributes.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        AttributeSet other = (AttributeSet) obj;
-        if (attributes == null) {
-            if (other.attributes != null)
-                return false;
-        } else if (!attributes.equals(other.attributes))
-            return false;
-        return true;
-    }
-
-    @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         for (Attribute attr : attributes.values()) {
@@ -118,5 +94,24 @@ public class AttributeSet implements Iterable<Attribute> {
 
         }
         return builder.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof AttributeSet))
+            return false;
+        AttributeSet that = (AttributeSet) o;
+        return that.canEqual(this) && Objects.equals(attributes, that.attributes);
+    }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof AttributeSet);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(attributes);
     }
 }

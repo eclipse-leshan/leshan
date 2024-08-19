@@ -33,6 +33,7 @@ import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.ObservationIdentifier;
 import org.eclipse.leshan.core.observation.SingleObservation;
@@ -58,6 +59,8 @@ import org.eclipse.leshan.server.request.UplinkDeviceManagementRequestReceiver;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import nl.jqno.equalsverifier.EqualsVerifier;
 
 public class ObservationServiceTest {
 
@@ -261,5 +264,13 @@ public class ObservationServiceTest {
         @Override
         public void destroy() {
         }
+    }
+
+    @Test
+    public void assertEqualsHashcode() {
+        EqualsVerifier.forClass(Observation.class).withRedefinedSubclass(CompositeObservation.class)
+                .withIgnoredFields("protocolData").verify();
+        EqualsVerifier.forClass(Observation.class).withRedefinedSubclass(SingleObservation.class)
+                .withIgnoredFields("protocolData").verify();
     }
 }

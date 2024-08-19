@@ -90,4 +90,8 @@ public class DeleteRequest extends AbstractSimpleDownlinkRequest<DeleteResponse>
     public final String toString() {
         return String.format("DeleteRequest [%s]", getPath());
     }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof DeleteRequest);
+    }
 }

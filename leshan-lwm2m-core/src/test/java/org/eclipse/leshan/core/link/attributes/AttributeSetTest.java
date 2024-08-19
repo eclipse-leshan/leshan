@@ -32,6 +32,8 @@ import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.junit.jupiter.api.Test;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
+
 public class AttributeSetTest {
     private static LwM2mAttributeParser parser = new DefaultLwM2mAttributeParser();
 
@@ -155,5 +157,22 @@ public class AttributeSetTest {
             // OBJECT_VERSION cannot be assigned on resource level
             sut.validate(new LwM2mPath("/3/0/9"));
         });
+    }
+
+    private class ExtendedAttributeSet extends AttributeSet {
+        public ExtendedAttributeSet(Attribute... attributes) {
+            super(attributes);
+        }
+
+        @Override
+        public boolean canEqual(Object obj) {
+            return (obj instanceof AttributeSetTest.ExtendedAttributeSet);
+        }
+    }
+
+    @Test
+    public void assertEqualsHashcode() {
+        EqualsVerifier.forClass(AttributeSet.class).withRedefinedSubclass(AttributeSetTest.ExtendedAttributeSet.class)
+                .verify();
     }
 }

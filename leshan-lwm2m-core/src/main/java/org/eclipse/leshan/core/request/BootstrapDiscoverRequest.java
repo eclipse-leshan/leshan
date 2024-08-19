@@ -87,4 +87,8 @@ public class BootstrapDiscoverRequest extends AbstractSimpleDownlinkRequest<Boot
     public void accept(DownlinkBootstrapRequestVisitor visitor) {
         visitor.visit(this);
     }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof BootstrapDiscoverRequest);
+    }
 }

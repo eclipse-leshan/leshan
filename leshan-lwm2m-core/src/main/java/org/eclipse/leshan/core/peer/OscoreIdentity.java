@@ -45,23 +45,17 @@ public class OscoreIdentity implements LwM2mIdentity {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + Arrays.hashCode(RecipientId);
-        return result;
+    public final boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof OscoreIdentity))
+            return false;
+        OscoreIdentity that = (OscoreIdentity) o;
+        return Arrays.equals(RecipientId, that.RecipientId);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        OscoreIdentity other = (OscoreIdentity) obj;
-        return Arrays.equals(RecipientId, other.RecipientId);
+    public final int hashCode() {
+        return Arrays.hashCode(RecipientId);
     }
-
 }

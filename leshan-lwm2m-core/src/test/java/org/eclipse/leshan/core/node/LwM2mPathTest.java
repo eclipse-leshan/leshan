@@ -78,9 +78,6 @@ public class LwM2mPathTest {
 
     @Test
     public void assertEqualsHashcode() {
-        // TODO we should not use EqualsVerifier.simple()
-        // But implement a right hashcode/equals way
-        // see : https://github.com/eclipse-leshan/leshan/issues/1504
-        EqualsVerifier.simple().forClass(LwM2mPath.class).verify();
+        EqualsVerifier.forClass(LwM2mPath.class).withRedefinedSubclass(LwM2mIncompletePath.class).verify();
     }
 }

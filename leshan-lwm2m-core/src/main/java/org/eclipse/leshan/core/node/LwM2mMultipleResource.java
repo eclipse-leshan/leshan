@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.TreeMap;
 
 import org.eclipse.leshan.core.link.Link;
@@ -227,37 +228,6 @@ public class LwM2mMultipleResource implements LwM2mResource {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + id;
-        result = prime * result + ((type == null) ? 0 : type.hashCode());
-        result = prime * result + ((instances == null) ? 0 : instances.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        LwM2mMultipleResource other = (LwM2mMultipleResource) obj;
-        if (id != other.id)
-            return false;
-        if (type != other.type)
-            return false;
-        if (instances == null) {
-            if (other.instances != null)
-                return false;
-        } else if (!instances.equals(other.instances))
-            return false;
-        return true;
-    }
-
-    @Override
     public String toString() {
         return String.format("LwM2mMultipleResource [id=%s, values=%s, type=%s]", id, instances, type);
     }
@@ -288,5 +258,20 @@ public class LwM2mMultipleResource implements LwM2mResource {
             }
         }
         return b;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof LwM2mMultipleResource))
+            return false;
+        LwM2mMultipleResource that = (LwM2mMultipleResource) o;
+        return id == that.id && Objects.equals(instances, that.instances) && type == that.type;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(id, instances, type);
     }
 }

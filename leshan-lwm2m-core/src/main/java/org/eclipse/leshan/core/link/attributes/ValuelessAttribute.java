@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.attributes;
 
+import java.util.Objects;
+
 import org.eclipse.leshan.core.util.Validate;
 
 /**
@@ -22,7 +24,7 @@ import org.eclipse.leshan.core.util.Validate;
  */
 public class ValuelessAttribute implements Attribute {
 
-    private String name;
+    private final String name;
 
     public ValuelessAttribute(String name) {
         Validate.notNull(name);
@@ -60,27 +62,17 @@ public class ValuelessAttribute implements Attribute {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        return result;
+    public final boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof ValuelessAttribute))
+            return false;
+        ValuelessAttribute that = (ValuelessAttribute) o;
+        return Objects.equals(name, that.name);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        ValuelessAttribute other = (ValuelessAttribute) obj;
-        if (name == null) {
-            if (other.name != null)
-                return false;
-        } else if (!name.equals(other.name))
-            return false;
-        return true;
+    public final int hashCode() {
+        return Objects.hashCode(name);
     }
 }

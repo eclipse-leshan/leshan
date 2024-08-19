@@ -15,11 +15,14 @@
  *******************************************************************************/
 package org.eclipse.leshan.core;
 
+import java.util.Objects;
+
 public interface LwM2m {
 
     /**
      * Version of LWM2M specification.
      */
+
     public class LwM2mVersion extends Version {
 
         public static final LwM2mVersion V1_0 = new LwM2mVersion("1.0", true);
@@ -64,25 +67,24 @@ public interface LwM2m {
         }
 
         @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = super.hashCode();
-            result = prime * result + (supported ? 1231 : 1237);
-            return result;
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (!(o instanceof LwM2mVersion))
+                return false;
+            if (!super.equals(o))
+                return false;
+            LwM2mVersion that = (LwM2mVersion) o;
+            return that.canEqual(this) && supported == that.supported;
+        }
+
+        public boolean canEqual(Object o) {
+            return (o instanceof LwM2mVersion);
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (!super.equals(obj))
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            LwM2mVersion other = (LwM2mVersion) obj;
-            if (supported != other.supported)
-                return false;
-            return true;
+        public int hashCode() {
+            return Objects.hash(super.hashCode(), supported);
         }
     }
 
@@ -169,31 +171,6 @@ public interface LwM2m {
         }
 
         @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + major;
-            result = prime * result + minor;
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            Version other = (Version) obj;
-            if (major != other.major)
-                return false;
-            if (minor != other.minor)
-                return false;
-            return true;
-        }
-
-        @Override
         public int compareTo(Version other) {
             if (major != other.major)
                 return major - other.major;
@@ -210,6 +187,25 @@ public interface LwM2m {
 
         public boolean newerThan(String version) {
             return newerThan(new Version(version));
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (!(o instanceof Version))
+                return false;
+            Version that = (Version) o;
+            return that.canEqual(this) && major == that.major && minor == that.minor;
+        }
+
+        public boolean canEqual(Object o) {
+            return (o instanceof Version);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(major, minor);
         }
     }
 

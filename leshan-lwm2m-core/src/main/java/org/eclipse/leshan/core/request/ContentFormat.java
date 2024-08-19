@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
@@ -165,28 +166,6 @@ public class ContentFormat implements Comparable<ContentFormat> {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + code;
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        ContentFormat other = (ContentFormat) obj;
-        if (code != other.code)
-            return false;
-        return true;
-    }
-
-    @Override
     public int compareTo(ContentFormat ct) {
         return Integer.compare(this.code, ct.code);
     }
@@ -208,5 +187,20 @@ public class ContentFormat implements Comparable<ContentFormat> {
             }
         }
         return optionalFormat;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof ContentFormat))
+            return false;
+        ContentFormat that = (ContentFormat) o;
+        return code == that.code;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hashCode(code);
     }
 }

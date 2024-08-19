@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import java.util.Objects;
+
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
@@ -66,27 +68,23 @@ public class CancelObservationRequest extends AbstractSimpleDownlinkRequest<Canc
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((observation == null) ? 0 : observation.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof CancelObservationRequest))
+            return false;
+        if (!super.equals(o))
+            return false;
+        CancelObservationRequest that = (CancelObservationRequest) o;
+        return that.canEqual(this) && Objects.equals(observation, that.observation);
+    }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof CancelObservationRequest);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        CancelObservationRequest other = (CancelObservationRequest) obj;
-        if (observation == null) {
-            if (other.observation != null)
-                return false;
-        } else if (!observation.equals(other.observation))
-            return false;
-        return true;
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), observation);
     }
 }

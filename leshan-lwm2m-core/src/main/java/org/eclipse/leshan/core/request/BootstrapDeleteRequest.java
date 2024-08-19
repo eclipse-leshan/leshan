@@ -99,4 +99,8 @@ public class BootstrapDeleteRequest extends AbstractSimpleDownlinkRequest<Bootst
         return String.format("BootstrapDeleteRequest [%s]", getPath());
     }
 
+    public boolean canEqual(Object o) {
+        return (o instanceof BootstrapDeleteRequest);
+    }
+
 }

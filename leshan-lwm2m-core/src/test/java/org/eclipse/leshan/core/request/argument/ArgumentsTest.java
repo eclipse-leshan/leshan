@@ -26,6 +26,8 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
+
 public class ArgumentsTest {
 
     @Test
@@ -102,5 +104,10 @@ public class ArgumentsTest {
                     .addArgument(3, "stringValue") //
                     .build();
         });
+    }
+
+    @Test
+    public void assertEqualsHashcode() {
+        EqualsVerifier.forClass(Arguments.class).verify();
     }
 }

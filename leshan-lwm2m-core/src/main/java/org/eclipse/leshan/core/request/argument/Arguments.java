@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -41,31 +42,6 @@ public class Arguments implements Iterable<Argument> {
     @Override
     public String toString() {
         return String.format("Arguments [argumentMap=%s]", argumentMap.toString());
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((argumentMap == null) ? 0 : argumentMap.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Arguments other = (Arguments) obj;
-        if (argumentMap == null) {
-            if (other.argumentMap != null)
-                return false;
-        } else if (!argumentMap.equals(other.argumentMap))
-            return false;
-        return true;
     }
 
     /**
@@ -264,6 +240,21 @@ public class Arguments implements Iterable<Argument> {
      */
     public static Arguments emptyArguments() {
         return new Arguments(Collections.emptyMap());
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof Arguments))
+            return false;
+        Arguments arguments = (Arguments) o;
+        return Objects.equals(argumentMap, arguments.argumentMap);
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hashCode(argumentMap);
     }
 
     /**
