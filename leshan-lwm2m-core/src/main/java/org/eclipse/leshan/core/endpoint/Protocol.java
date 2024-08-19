@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.endpoint;
 
+import java.util.Objects;
+
 public class Protocol {
 
     public static final Protocol COAP = new Protocol("COAP", "coap");
@@ -42,31 +44,6 @@ public class Protocol {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Protocol other = (Protocol) obj;
-        if (name == null) {
-            if (other.name != null)
-                return false;
-        } else if (!name.equals(other.name))
-            return false;
-        return true;
-    }
-
-    @Override
     public String toString() {
         return getName();
     }
@@ -78,5 +55,18 @@ public class Protocol {
             }
         }
         return null;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Protocol)) return false;
+        Protocol protocol = (Protocol) o;
+        return Objects.equals(name, protocol.name);
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hashCode(name);
     }
 }

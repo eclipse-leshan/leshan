@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
@@ -292,5 +293,10 @@ public class RegistrationTest {
         builder.availableInstances(dataFromObjectLinks.getAvailableInstances());
 
         return builder.build();
+    }
+
+    @Test
+    public void assertEqualsHashcode() {
+        EqualsVerifier.forClass(Registration.class).withIgnoredFields("lastEndpointUsed").verify();
     }
 }

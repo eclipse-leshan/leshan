@@ -28,6 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Arrays;
 import java.util.List;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.junit.jupiter.api.Test;
@@ -50,5 +52,10 @@ public class ContentFormatTest {
 
         assertEquals(Arrays.asList(TLV, JSON, SENML_JSON, SENML_CBOR, CBOR), optionalContentFormat);
 
+    }
+
+    @Test
+    public void assertEqualsHashcode() {
+        EqualsVerifier.forClass(ContentFormat.class).withIgnoredFields("name", "mediaType", "mandatoryForClient").verify();
     }
 }

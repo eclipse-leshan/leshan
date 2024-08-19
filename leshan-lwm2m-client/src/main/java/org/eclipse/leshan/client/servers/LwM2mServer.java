@@ -16,6 +16,7 @@
 package org.eclipse.leshan.client.servers;
 
 import java.net.URI;
+import java.util.Objects;
 
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 
@@ -126,36 +127,15 @@ public class LwM2mServer {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((transportData == null) ? 0 : transportData.hashCode());
-        result = prime * result + ((role == null) ? 0 : role.hashCode());
-        return result;
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof LwM2mServer)) return false;
+        LwM2mServer that = (LwM2mServer) o;
+        return Objects.equals(transportData, that.transportData) && Objects.equals(id, that.id) && role == that.role;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        LwM2mServer other = (LwM2mServer) obj;
-        if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
-        if (transportData == null) {
-            if (other.transportData != null)
-                return false;
-        } else if (!transportData.equals(other.transportData))
-            return false;
-        if (role != other.role)
-            return false;
-        return true;
+    public final int hashCode() {
+        return Objects.hash(transportData, id, role);
     }
 }

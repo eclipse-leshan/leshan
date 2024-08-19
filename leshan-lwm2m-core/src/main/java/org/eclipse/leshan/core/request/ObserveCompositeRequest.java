@@ -15,10 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mNodeException;
@@ -150,37 +147,21 @@ public class ObserveCompositeRequest extends AbstractLwM2mRequest<ObserveComposi
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((paths == null) ? 0 : paths.hashCode());
-        result = prime * result + ((requestContentFormat == null) ? 0 : requestContentFormat.hashCode());
-        result = prime * result + ((responseContentFormat == null) ? 0 : responseContentFormat.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ObserveCompositeRequest)) return false;
+        ObserveCompositeRequest that = (ObserveCompositeRequest) o;
+        return that.canEqual(this) && Objects.equals(requestContentFormat, that.requestContentFormat)
+                && Objects.equals(responseContentFormat, that.responseContentFormat)
+                && Objects.equals(paths, that.paths);
+    }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof ObserveCompositeRequest);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        ObserveCompositeRequest other = (ObserveCompositeRequest) obj;
-        if (paths == null) {
-            if (other.paths != null)
-                return false;
-        } else if (!paths.equals(other.paths))
-            return false;
-        if (requestContentFormat == null) {
-            if (other.requestContentFormat != null)
-                return false;
-        } else if (!requestContentFormat.equals(other.requestContentFormat))
-            return false;
-        if (responseContentFormat == null) {
-            return other.responseContentFormat == null;
-        } else
-            return responseContentFormat.equals(other.responseContentFormat);
+    public int hashCode() {
+        return Objects.hash(requestContentFormat, responseContentFormat, paths);
     }
 }
