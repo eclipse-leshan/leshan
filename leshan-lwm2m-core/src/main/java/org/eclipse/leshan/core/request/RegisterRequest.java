@@ -16,11 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
@@ -177,63 +173,23 @@ public class RegisterRequest extends AbstractLwM2mRequest<RegisterResponse>
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((additionalAttributes == null) ? 0 : additionalAttributes.hashCode());
-        result = prime * result + ((bindingMode == null) ? 0 : bindingMode.hashCode());
-        result = prime * result + ((endpointName == null) ? 0 : endpointName.hashCode());
-        result = prime * result + ((lifetime == null) ? 0 : lifetime.hashCode());
-        result = prime * result + ((lwVersion == null) ? 0 : lwVersion.hashCode());
-        result = prime * result + Arrays.hashCode(objectLinks);
-        result = prime * result + ((queueMode == null) ? 0 : queueMode.hashCode());
-        result = prime * result + ((smsNumber == null) ? 0 : smsNumber.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof RegisterRequest)) return false;
+        RegisterRequest that = (RegisterRequest) o;
+        return that.canEqual(this) && Objects.equals(endpointName, that.endpointName) && Objects.equals(lifetime, that.lifetime)
+                && Objects.equals(lwVersion, that.lwVersion) && Objects.equals(bindingMode, that.bindingMode)
+                && Objects.equals(queueMode, that.queueMode) && Objects.equals(smsNumber, that.smsNumber)
+                && Objects.deepEquals(objectLinks, that.objectLinks) && Objects.equals(additionalAttributes, that.additionalAttributes);
+    }
+
+    public boolean canEqual(Object o){
+        return (o instanceof RegisterRequest);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        RegisterRequest other = (RegisterRequest) obj;
-        if (additionalAttributes == null) {
-            if (other.additionalAttributes != null)
-                return false;
-        } else if (!additionalAttributes.equals(other.additionalAttributes))
-            return false;
-        if (bindingMode != other.bindingMode)
-            return false;
-        if (endpointName == null) {
-            if (other.endpointName != null)
-                return false;
-        } else if (!endpointName.equals(other.endpointName))
-            return false;
-        if (lifetime == null) {
-            if (other.lifetime != null)
-                return false;
-        } else if (!lifetime.equals(other.lifetime))
-            return false;
-        if (lwVersion == null) {
-            if (other.lwVersion != null)
-                return false;
-        } else if (!lwVersion.equals(other.lwVersion))
-            return false;
-        if (!Arrays.equals(objectLinks, other.objectLinks))
-            return false;
-        if (queueMode == null) {
-            if (other.queueMode != null)
-                return false;
-        } else if (!queueMode.equals(other.queueMode))
-            return false;
-        if (smsNumber == null) {
-            if (other.smsNumber != null)
-                return false;
-        } else if (!smsNumber.equals(other.smsNumber))
-            return false;
-        return true;
+    public int hashCode() {
+        return Objects.hash(endpointName, lifetime, lwVersion, bindingMode, queueMode, smsNumber,
+                Arrays.hashCode(objectLinks), additionalAttributes);
     }
 }

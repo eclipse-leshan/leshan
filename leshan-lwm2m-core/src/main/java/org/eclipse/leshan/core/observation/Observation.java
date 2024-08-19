@@ -17,9 +17,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.observation;
 
+import org.eclipse.leshan.core.node.LwM2mPath;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * An abstract class for observation of a resource provided by a LWM2M Client.
@@ -84,39 +87,22 @@ public abstract class Observation {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((context == null) ? 0 : context.hashCode());
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((registrationId == null) ? 0 : registrationId.hashCode());
+    public boolean equals(Object o) {
+        boolean result = false;
+        if (o instanceof Observation) {
+            Observation that = (Observation) o;
+            result = that.canEqual(this) && Objects.equals(id, that.id) && Objects.equals(registrationId, that.registrationId) && Objects.equals(context, that.context) && Objects.equals(protocolData, that.protocolData);
+        };
+
         return result;
     }
 
+    public boolean canEqual(Object o) {
+        return (o instanceof Observation);
+    }
+
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Observation other = (Observation) obj;
-        if (context == null) {
-            if (other.context != null)
-                return false;
-        } else if (!context.equals(other.context))
-            return false;
-        if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
-        if (registrationId == null) {
-            if (other.registrationId != null)
-                return false;
-        } else if (!registrationId.equals(other.registrationId))
-            return false;
-        return true;
+    public int hashCode() {
+        return Objects.hash(id, registrationId, context, protocolData);
     }
 }

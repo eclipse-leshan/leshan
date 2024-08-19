@@ -18,6 +18,7 @@
 package org.eclipse.leshan.core.observation;
 
 import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -72,33 +73,20 @@ public class SingleObservation extends Observation {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((contentFormat == null) ? 0 : contentFormat.hashCode());
-        result = prime * result + ((path == null) ? 0 : path.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SingleObservation)) return false;
+        if (!super.equals(o)) return false;
+        SingleObservation that = (SingleObservation) o;
+        return that.canEqual(this) && Objects.equals(path, that.path) && Objects.equals(contentFormat, that.contentFormat);
+    }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof SingleObservation);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        SingleObservation other = (SingleObservation) obj;
-        if (contentFormat == null) {
-            if (other.contentFormat != null)
-                return false;
-        } else if (!contentFormat.equals(other.contentFormat))
-            return false;
-        if (path == null) {
-            if (other.path != null)
-                return false;
-        } else if (!path.equals(other.path))
-            return false;
-        return true;
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), path, contentFormat);
     }
 }

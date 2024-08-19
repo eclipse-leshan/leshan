@@ -20,6 +20,8 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
+import java.util.Objects;
+
 /**
  * A base class for concrete LWM2M Downlink request types.
  *
@@ -44,31 +46,6 @@ public abstract class AbstractSimpleDownlinkRequest<T extends LwM2mResponse> ext
     @Override
     public LwM2mPath getPath() {
         return this.path;
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((path == null) ? 0 : path.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        AbstractSimpleDownlinkRequest<?> other = (AbstractSimpleDownlinkRequest<?>) obj;
-        if (path == null) {
-            if (other.path != null)
-                return false;
-        } else if (!path.equals(other.path))
-            return false;
-        return true;
     }
 
     protected static LwM2mPath newPath(Integer objectId) {
@@ -112,4 +89,22 @@ public abstract class AbstractSimpleDownlinkRequest<T extends LwM2mResponse> ext
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        boolean result = false;
+        if (o instanceof AbstractSimpleDownlinkRequest) {
+            AbstractSimpleDownlinkRequest<?> that = (AbstractSimpleDownlinkRequest<?>) o;
+            result = that.canEqual(this) && Objects.equals(path, that.path);
+        }
+        return result;
+    }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof AbstractSimpleDownlinkRequest);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(path);
+    }
 }

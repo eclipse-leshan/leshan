@@ -18,6 +18,7 @@ package org.eclipse.leshan.core.request;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.BootstrapResponse;
@@ -105,39 +106,19 @@ public class BootstrapRequest extends AbstractLwM2mRequest<BootstrapResponse>
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((additionalAttributes == null) ? 0 : additionalAttributes.hashCode());
-        result = prime * result + ((endpointName == null) ? 0 : endpointName.hashCode());
-        result = prime * result + ((preferredContentFormat == null) ? 0 : preferredContentFormat.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof BootstrapRequest)) return false;
+        BootstrapRequest that = (BootstrapRequest) o;
+        return that.canEqual(this) && Objects.equals(endpointName, that.endpointName) && Objects.equals(additionalAttributes, that.additionalAttributes) && Objects.equals(preferredContentFormat, that.preferredContentFormat);
+    }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof BootstrapRequest);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        BootstrapRequest other = (BootstrapRequest) obj;
-        if (additionalAttributes == null) {
-            if (other.additionalAttributes != null)
-                return false;
-        } else if (!additionalAttributes.equals(other.additionalAttributes))
-            return false;
-        if (endpointName == null) {
-            if (other.endpointName != null)
-                return false;
-        } else if (!endpointName.equals(other.endpointName))
-            return false;
-        if (preferredContentFormat == null) {
-            if (other.preferredContentFormat != null)
-                return false;
-        } else if (!preferredContentFormat.equals(other.preferredContentFormat))
-            return false;
-        return true;
+    public int hashCode() {
+        return Objects.hash(endpointName, additionalAttributes, preferredContentFormat);
     }
 }

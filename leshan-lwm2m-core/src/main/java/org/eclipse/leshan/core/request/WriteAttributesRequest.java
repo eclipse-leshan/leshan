@@ -23,6 +23,8 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
 
+import java.util.Objects;
+
 public class WriteAttributesRequest extends AbstractSimpleDownlinkRequest<WriteAttributesResponse>
         implements DownlinkDeviceManagementRequest<WriteAttributesResponse> {
 
@@ -110,27 +112,20 @@ public class WriteAttributesRequest extends AbstractSimpleDownlinkRequest<WriteA
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((attributes == null) ? 0 : attributes.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof WriteAttributesRequest)) return false;
+        if (!super.equals(o)) return false;
+        WriteAttributesRequest that = (WriteAttributesRequest) o;
+        return that.canEqual(this) && Objects.equals(attributes, that.attributes);
+    }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof WriteAttributesRequest);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        WriteAttributesRequest other = (WriteAttributesRequest) obj;
-        if (attributes == null) {
-            if (other.attributes != null)
-                return false;
-        } else if (!attributes.equals(other.attributes))
-            return false;
-        return true;
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), attributes);
     }
 }

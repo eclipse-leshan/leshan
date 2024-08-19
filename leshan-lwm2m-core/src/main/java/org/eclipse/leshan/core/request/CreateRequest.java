@@ -15,10 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -315,39 +312,19 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((contentFormat == null) ? 0 : contentFormat.hashCode());
-        result = prime * result + ((instances == null) ? 0 : instances.hashCode());
-        result = prime * result + ((resources == null) ? 0 : resources.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (!super.equals(o)) return false;
+        if (!(o instanceof CreateRequest)) return false;
+        CreateRequest that = (CreateRequest) o;
+        return that.canEqual(this) && Objects.equals(resources, that.resources) && Objects.equals(instances, that.instances) && Objects.equals(contentFormat, that.contentFormat);
+    }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof CreateRequest);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        CreateRequest other = (CreateRequest) obj;
-        if (contentFormat == null) {
-            if (other.contentFormat != null)
-                return false;
-        } else if (!contentFormat.equals(other.contentFormat))
-            return false;
-        if (instances == null) {
-            if (other.instances != null)
-                return false;
-        } else if (!instances.equals(other.instances))
-            return false;
-        if (resources == null) {
-            if (other.resources != null)
-                return false;
-        } else if (!resources.equals(other.resources))
-            return false;
-        return true;
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), resources, instances, contentFormat);
     }
 }

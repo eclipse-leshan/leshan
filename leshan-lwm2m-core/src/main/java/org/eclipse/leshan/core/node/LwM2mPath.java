@@ -385,17 +385,19 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        LwM2mPath other = (LwM2mPath) obj;
-        return Objects.equals(objectId, other.objectId) && Objects.equals(objectInstanceId, other.objectInstanceId)
-                && Objects.equals(resourceId, other.resourceId)
-                && Objects.equals(resourceInstanceId, other.resourceInstanceId);
+    public boolean equals(Object o) {
+        boolean result = false;
+        if (o instanceof LwM2mPath) {
+            LwM2mPath that = (LwM2mPath) o;
+            result = (that.canEqual(this) && Objects.equals(objectId, that.objectId) && Objects.equals(objectInstanceId, that.objectInstanceId)
+                    && Objects.equals(resourceId, that.resourceId)
+                    && Objects.equals(resourceInstanceId, that.resourceInstanceId));
+        }
+        return result;
+    }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof LwM2mPath);
     }
 
     @Override

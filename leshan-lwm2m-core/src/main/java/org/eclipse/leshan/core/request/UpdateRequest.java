@@ -16,11 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.link.Link;
@@ -130,59 +126,29 @@ public class UpdateRequest extends AbstractLwM2mRequest<UpdateResponse>
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((additionalAttributes == null) ? 0 : additionalAttributes.hashCode());
-        result = prime * result + ((bindingMode == null) ? 0 : bindingMode.hashCode());
-        result = prime * result + ((lifeTimeInSec == null) ? 0 : lifeTimeInSec.hashCode());
-        result = prime * result + Arrays.hashCode(objectLinks);
-        result = prime * result + ((registrationId == null) ? 0 : registrationId.hashCode());
-        result = prime * result + ((smsNumber == null) ? 0 : smsNumber.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        UpdateRequest other = (UpdateRequest) obj;
-        if (additionalAttributes == null) {
-            if (other.additionalAttributes != null)
-                return false;
-        } else if (!additionalAttributes.equals(other.additionalAttributes))
-            return false;
-        if (bindingMode != other.bindingMode)
-            return false;
-        if (lifeTimeInSec == null) {
-            if (other.lifeTimeInSec != null)
-                return false;
-        } else if (!lifeTimeInSec.equals(other.lifeTimeInSec))
-            return false;
-        if (!Arrays.equals(objectLinks, other.objectLinks))
-            return false;
-        if (registrationId == null) {
-            if (other.registrationId != null)
-                return false;
-        } else if (!registrationId.equals(other.registrationId))
-            return false;
-        if (smsNumber == null) {
-            if (other.smsNumber != null)
-                return false;
-        } else if (!smsNumber.equals(other.smsNumber))
-            return false;
-        return true;
-    }
-
-    @Override
     public String toString() {
         return String.format(
                 "UpdateRequest [registrationId=%s, lifeTimeInSec=%s, smsNumber=%s, bindingMode=%s, objectLinks=%s, additionalAttributes=%s]",
                 registrationId, lifeTimeInSec, smsNumber, bindingMode, Arrays.toString(objectLinks),
                 additionalAttributes);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof UpdateRequest)) return false;
+        UpdateRequest that = (UpdateRequest) o;
+        return that.canEqual(this) && Objects.equals(lifeTimeInSec, that.lifeTimeInSec) && Objects.equals(smsNumber, that.smsNumber)
+                && Objects.equals(bindingMode, that.bindingMode) && Objects.equals(registrationId, that.registrationId)
+                && Objects.deepEquals(objectLinks, that.objectLinks) && Objects.equals(additionalAttributes, that.additionalAttributes);
+    }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof UpdateRequest);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(lifeTimeInSec, smsNumber, bindingMode, registrationId, Arrays.hashCode(objectLinks), additionalAttributes);
     }
 }

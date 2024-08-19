@@ -15,10 +15,13 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.CancelObservationResponse;
+
+import java.util.Objects;
 
 /**
  * A Lightweight M2M request for actively cancel an observation.
@@ -66,27 +69,22 @@ public class CancelObservationRequest extends AbstractSimpleDownlinkRequest<Canc
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((observation == null) ? 0 : observation.hashCode());
+    public boolean equals(Object o) {
+        if (!super.equals(o)) return false;
+        boolean result = false;
+        if (o instanceof CancelObservationRequest) {
+            CancelObservationRequest that = (CancelObservationRequest) o;
+            result = that.canEqual(this) && Objects.equals(observation, that.observation);
+        }
         return result;
     }
 
+    public boolean canEqual(Object o) {
+        return (o instanceof CancelObservationRequest);
+    }
+
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        CancelObservationRequest other = (CancelObservationRequest) obj;
-        if (observation == null) {
-            if (other.observation != null)
-                return false;
-        } else if (!observation.equals(other.observation))
-            return false;
-        return true;
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), observation);
     }
 }

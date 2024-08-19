@@ -19,6 +19,8 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.ReadResponse;
 
+import java.util.Objects;
+
 /**
  * A Lightweight M2M request for retrieving the values of resources from a LWM2M Client.
  *
@@ -194,24 +196,20 @@ public class ReadRequest extends AbstractSimpleDownlinkRequest<ReadResponse>
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((format == null) ? 0 : format.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ReadRequest)) return false;
+        if (!super.equals(o)) return false;
+        ReadRequest that = (ReadRequest) o;
+        return that.canEqual(this) && Objects.equals(format, that.format);
+    }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof ReadRequest);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        ReadRequest other = (ReadRequest) obj;
-        if (format != other.format)
-            return false;
-        return true;
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), format);
     }
 }

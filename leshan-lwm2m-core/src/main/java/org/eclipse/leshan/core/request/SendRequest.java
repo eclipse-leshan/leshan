@@ -17,6 +17,7 @@ package org.eclipse.leshan.core.request;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
@@ -129,33 +130,19 @@ public class SendRequest extends AbstractLwM2mRequest<SendResponse>
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((format == null) ? 0 : format.hashCode());
-        result = prime * result + ((timestampedNodes == null) ? 0 : timestampedNodes.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SendRequest)) return false;
+        SendRequest that = (SendRequest) o;
+        return that.canEqual(this) && Objects.equals(format, that.format) && Objects.equals(timestampedNodes, that.timestampedNodes);
+    }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof SendRequest);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        SendRequest other = (SendRequest) obj;
-        if (format == null) {
-            if (other.format != null)
-                return false;
-        } else if (!format.equals(other.format))
-            return false;
-        if (timestampedNodes == null) {
-            if (other.timestampedNodes != null)
-                return false;
-        } else if (!timestampedNodes.equals(other.timestampedNodes))
-            return false;
-        return true;
+    public int hashCode() {
+        return Objects.hash(format, timestampedNodes);
     }
 }

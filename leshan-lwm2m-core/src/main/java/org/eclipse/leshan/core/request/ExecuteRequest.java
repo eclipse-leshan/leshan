@@ -21,6 +21,8 @@ import org.eclipse.leshan.core.request.argument.InvalidArgumentException;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 
+import java.util.Objects;
+
 /**
  * A Lightweight M2M request for initiate some action, it can only be performed on individual Resources.
  */
@@ -165,27 +167,20 @@ public class ExecuteRequest extends AbstractSimpleDownlinkRequest<ExecuteRespons
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((arguments == null) ? 0 : arguments.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ExecuteRequest)) return false;
+        if (!super.equals(o)) return false;
+        ExecuteRequest that = (ExecuteRequest) o;
+        return that.canEqual(this) && Objects.equals(arguments, that.arguments);
+    }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof ExecuteRequest);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        ExecuteRequest other = (ExecuteRequest) obj;
-        if (arguments == null) {
-            if (other.arguments != null)
-                return false;
-        } else if (!arguments.equals(other.arguments))
-            return false;
-        return true;
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), arguments);
     }
 }

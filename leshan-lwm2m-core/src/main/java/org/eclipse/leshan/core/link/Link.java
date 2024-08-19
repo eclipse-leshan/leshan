@@ -17,6 +17,7 @@
 package org.eclipse.leshan.core.link;
 
 import java.util.Collection;
+import java.util.Objects;
 
 import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.link.attributes.AttributeSet;
@@ -119,33 +120,18 @@ public class Link {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((attributes == null) ? 0 : attributes.hashCode());
-        result = prime * result + ((uriReference == null) ? 0 : uriReference.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (!(o instanceof Link)) return false;
+        Link that = (Link) o;
+        return that.canEqual(this) && Objects.equals(uriReference, that.uriReference) && Objects.equals(attributes, that.attributes);
+    }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof Link);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Link other = (Link) obj;
-        if (attributes == null) {
-            if (other.attributes != null)
-                return false;
-        } else if (!attributes.equals(other.attributes))
-            return false;
-        if (uriReference == null) {
-            if (other.uriReference != null)
-                return false;
-        } else if (!uriReference.equals(other.uriReference))
-            return false;
-        return true;
+    public int hashCode() {
+        return Objects.hash(uriReference, attributes);
     }
 }

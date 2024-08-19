@@ -23,12 +23,9 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.Link;
@@ -261,5 +258,21 @@ public class ObservationServiceTest {
         @Override
         public void destroy() {
         }
+    }
+
+    private class ExtendedObservation extends Observation {
+        public ExtendedObservation(ObservationIdentifier id, String registrationId, Map<String, String> context,
+                                   Map<String, String> protocolData) {
+            super(id, registrationId, context, protocolData);
+        }
+        @Override
+        public boolean canEqual(Object obj) {
+            return (obj instanceof ExtendedObservation);
+        }
+    }
+
+    @Test
+    public void assertEqualsHashcode() {
+        EqualsVerifier.forClass(Observation.class).withRedefinedSubclass(ExtendedObservation.class).verify();
     }
 }

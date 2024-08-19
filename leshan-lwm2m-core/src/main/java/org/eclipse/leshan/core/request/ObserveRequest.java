@@ -18,6 +18,7 @@ package org.eclipse.leshan.core.request;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.Observation;
@@ -221,24 +222,20 @@ public class ObserveRequest extends AbstractSimpleDownlinkRequest<ObserveRespons
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((format == null) ? 0 : format.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ObserveRequest)) return false;
+        if (!super.equals(o)) return false;
+        ObserveRequest that = (ObserveRequest) o;
+        return that.canEqual(this) && Objects.equals(format, that.format) && Objects.equals(context, that.context);
+    }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof ObserveRequest);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        ObserveRequest other = (ObserveRequest) obj;
-        if (format != other.format)
-            return false;
-        return true;
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), format, context);
     }
 }
