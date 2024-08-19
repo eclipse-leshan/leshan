@@ -20,6 +20,7 @@ package org.eclipse.leshan.core.json;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The class representing the JSON format of LWM2M
@@ -62,46 +63,27 @@ public class JsonRootObject {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((baseName == null) ? 0 : baseName.hashCode());
-        result = prime * result + ((baseTime == null) ? 0 : baseTime.hashCode());
-        result = prime * result + ((jsonArray == null) ? 0 : jsonArray.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        JsonRootObject other = (JsonRootObject) obj;
-        if (baseName == null) {
-            if (other.baseName != null)
-                return false;
-        } else if (!baseName.equals(other.baseName))
-            return false;
-        if (baseTime == null) {
-            if (other.baseTime != null)
-                return false;
-        } else if (!baseTime.equals(other.baseTime))
-            return false;
-        if (jsonArray == null) {
-            if (other.jsonArray != null)
-                return false;
-        } else if (!jsonArray.equals(other.jsonArray))
-            return false;
-        return true;
-    }
-
-    @Override
     public String toString() {
         return String.format("LwM2mJsonElement [baseName=%s, baseTime=%s, resourceList=%s]", baseName, baseTime,
                 jsonArray);
     }
 
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof JsonRootObject)) return false;
+        JsonRootObject that = (JsonRootObject) o;
+
+        boolean comparablyEqual = (baseTime == null && that.baseTime == null)
+                || (baseTime != null && that.baseTime != null
+                && baseTime.compareTo(that.baseTime) == 0);
+
+        return Objects.equals(baseName, that.baseName) && Objects.equals(jsonArray, that.jsonArray)
+                && comparablyEqual;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(baseName, jsonArray, baseTime != null ? baseTime.stripTrailingZeros() : null);
+    }
 }

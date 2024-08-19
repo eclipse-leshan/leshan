@@ -17,6 +17,8 @@ package org.eclipse.leshan.core;
 
 import org.eclipse.leshan.core.util.Validate;
 
+import java.util.Objects;
+
 /**
  * Response codes defined for LWM2M enabler
  */
@@ -145,24 +147,15 @@ public class ResponseCode {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + code;
-        return result;
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ResponseCode)) return false;
+        ResponseCode that = (ResponseCode) o;
+        return code == that.code && Objects.equals(name, that.name);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        ResponseCode other = (ResponseCode) obj;
-        if (code != other.code)
-            return false;
-        return true;
+    public final int hashCode() {
+        return Objects.hash(code, name);
     }
 }

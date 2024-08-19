@@ -15,10 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.model;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.NavigableMap;
-import java.util.TreeMap;
+import java.util.*;
 
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.node.LwM2mNodeUtil;
@@ -60,41 +57,22 @@ public class LwM2mModelRepository {
         }
 
         @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((id == null) ? 0 : id.hashCode());
-            result = prime * result + ((version == null) ? 0 : version.hashCode());
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            Key other = (Key) obj;
-            if (id == null) {
-                if (other.id != null)
-                    return false;
-            } else if (!id.equals(other.id))
-                return false;
-            if (version == null) {
-                if (other.version != null)
-                    return false;
-            } else if (!version.equals(other.version))
-                return false;
-            return true;
-        }
-
-        @Override
         public String toString() {
             return String.format("key[%s/%s]", id, version);
         }
 
+        @Override
+        public final boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Key)) return false;
+            Key that = (Key) o;
+            return Objects.equals(id, that.id) && Objects.equals(version, that.version);
+        }
+
+        @Override
+        public final int hashCode() {
+            return Objects.hash(id, version);
+        }
     }
 
     // This map contains all the object models available. Different version could be used.

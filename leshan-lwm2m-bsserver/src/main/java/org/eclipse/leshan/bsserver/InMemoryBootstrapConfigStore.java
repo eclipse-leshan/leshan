@@ -18,6 +18,7 @@ package org.eclipse.leshan.bsserver;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.leshan.bsserver.BootstrapConfig.ServerSecurity;
@@ -113,34 +114,16 @@ public class InMemoryBootstrapConfigStore implements EditableBootstrapConfigStor
         }
 
         @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((identity == null) ? 0 : identity.hashCode());
-            result = prime * result + ((serverUrl == null) ? 0 : serverUrl.hashCode());
-            return result;
+        public final boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof PskByServer)) return false;
+            PskByServer that = (PskByServer) o;
+            return Objects.equals(serverUrl, that.serverUrl) && Objects.equals(identity, that.identity);
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            PskByServer other = (PskByServer) obj;
-            if (identity == null) {
-                if (other.identity != null)
-                    return false;
-            } else if (!identity.equals(other.identity))
-                return false;
-            if (serverUrl == null) {
-                if (other.serverUrl != null)
-                    return false;
-            } else if (!serverUrl.equals(other.serverUrl))
-                return false;
-            return true;
+        public final int hashCode() {
+            return Objects.hash(serverUrl, identity);
         }
     }
 }
