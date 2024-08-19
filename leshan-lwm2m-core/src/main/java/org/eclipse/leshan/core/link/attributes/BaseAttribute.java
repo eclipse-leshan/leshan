@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.attributes;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import org.eclipse.leshan.core.util.Validate;
@@ -26,8 +27,8 @@ public abstract class BaseAttribute implements Attribute {
 
     private static final Pattern parnamePattern = Pattern.compile("[!#$&+\\-.^_`|~a-zA-Z0-9]+");
 
-    private String name;
-    private Object value;
+    private final String name;
+    private final Object value;
 
     public BaseAttribute(String name, Object value, boolean validate) {
         this.name = name;
@@ -66,38 +67,26 @@ public abstract class BaseAttribute implements Attribute {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((value == null) ? 0 : value.hashCode());
+    public String toString() {
+        return String.format("%s=%s", name, value);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        boolean result = false;
+        if (o instanceof BaseAttribute) {
+            BaseAttribute that = (BaseAttribute) o;
+            result = that.canEqual(this) && Objects.equals(name, that.name) && Objects.equals(value, that.value);
+        }
         return result;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        BaseAttribute other = (BaseAttribute) obj;
-        if (name == null) {
-            if (other.name != null)
-                return false;
-        } else if (!name.equals(other.name))
-            return false;
-        if (value == null) {
-            if (other.value != null)
-                return false;
-        } else if (!value.equals(other.value))
-            return false;
-        return true;
+    public boolean canEqual(Object o) {
+        return (o instanceof BaseAttribute);
     }
 
     @Override
-    public String toString() {
-        return String.format("%s=%s", name, value);
+    public int hashCode() {
+        return Objects.hash(name, value);
     }
 }

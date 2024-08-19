@@ -16,6 +16,7 @@
 package org.eclipse.leshan.core.link.lwm2m;
 
 import java.util.Collection;
+import java.util.Objects;
 
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.Attribute;
@@ -31,8 +32,8 @@ import org.eclipse.leshan.core.util.Validate;
  */
 public class MixedLwM2mLink extends Link {
 
-    private LwM2mPath path;
-    private String rootPath;
+    private final LwM2mPath path;
+    private final String rootPath;
 
     public MixedLwM2mLink(String rootPath, LwM2mPath path, Attribute... attributes) {
         this(rootPath, path, new MixedLwM2mAttributeSet(attributes));
@@ -78,33 +79,20 @@ public class MixedLwM2mLink extends Link {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((path == null) ? 0 : path.hashCode());
-        result = prime * result + ((rootPath == null) ? 0 : rootPath.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MixedLwM2mLink)) return false;
+        if (!super.equals(o)) return false;
+        MixedLwM2mLink that = (MixedLwM2mLink) o;
+        return that.canEqual(this) && Objects.equals(path, that.path) && Objects.equals(rootPath, that.rootPath);
+    }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof MixedLwM2mLink);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        MixedLwM2mLink other = (MixedLwM2mLink) obj;
-        if (path == null) {
-            if (other.path != null)
-                return false;
-        } else if (!path.equals(other.path))
-            return false;
-        if (rootPath == null) {
-            if (other.rootPath != null)
-                return false;
-        } else if (!rootPath.equals(other.rootPath))
-            return false;
-        return true;
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), path, rootPath);
     }
 }

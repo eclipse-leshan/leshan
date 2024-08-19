@@ -16,6 +16,7 @@
 package org.eclipse.leshan.core.tlv;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * A Type-Length-Value container, can contain multiple TLV entries.
@@ -23,15 +24,15 @@ import java.util.Arrays;
 public class Tlv {
 
     // type of TLV, indicate if it's containing a value or TLV containing more TLV or values
-    private TlvType type;
+    private final TlvType type;
 
     // if of type OBJECT_INSTANCE,MULTIPLE_RESOURCE or null
-    private Tlv[] children;
+    private final Tlv[] children;
 
     // if type RESOURCE_VALUE or RESOURCE_INSTANCE => null
-    private byte[] value;
+    private final byte[] value;
 
-    private int identifier;
+    private final int identifier;
 
     /**
      * Creates a TLV container.
@@ -67,32 +68,31 @@ public class Tlv {
         return type;
     }
 
-    public void setType(TlvType type) {
-        this.type = type;
-    }
 
     public Tlv[] getChildren() {
         return children;
-    }
-
-    public void setChildren(Tlv[] children) {
-        this.children = children;
     }
 
     public byte[] getValue() {
         return value;
     }
 
-    public void setValue(byte[] value) {
-        this.value = value;
-    }
-
     public int getIdentifier() {
         return identifier;
     }
 
-    public void setIdentifier(int identifier) {
-        this.identifier = identifier;
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Tlv)) return false;
+        Tlv tlv = (Tlv) o;
+        return identifier == tlv.identifier && type == tlv.type
+                && Objects.deepEquals(children, tlv.children) && Objects.deepEquals(value, tlv.value);
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(type, Arrays.hashCode(children), Arrays.hashCode(value), identifier);
     }
 
     public enum TlvType {
@@ -105,34 +105,4 @@ public class Tlv {
                 Arrays.toString(children), Arrays.toString(value), Integer.toString(identifier) });
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + Arrays.hashCode(children);
-        result = prime * result + identifier;
-        result = prime * result + ((type == null) ? 0 : type.hashCode());
-        result = prime * result + Arrays.hashCode(value);
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Tlv other = (Tlv) obj;
-        if (!Arrays.equals(children, other.children))
-            return false;
-        if (identifier != other.identifier)
-            return false;
-        if (type != other.type)
-            return false;
-        if (!Arrays.equals(value, other.value))
-            return false;
-        return true;
-    }
 }
