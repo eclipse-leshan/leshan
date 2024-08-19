@@ -37,6 +37,22 @@ Contributors:
       <groupId>org.eclipse.leshan</groupId>
       <artifactId>leshan-tl-jc-shared</artifactId>
     </dependency>
+      <dependency>
+          <groupId>nl.jqno.equalsverifier</groupId>
+          <artifactId>equalsverifier</artifactId>
+      </dependency>
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>RELEASE</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>5.10.1</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
