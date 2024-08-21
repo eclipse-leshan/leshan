@@ -306,7 +306,7 @@ public class LeshanServerDemo {
         ServletHolder eventServletHolder = new ServletHolder(eventServlet);
         root.addServlet(eventServletHolder, "/api/event/*");
 
-        ServletHolder clientServletHolder = new ServletHolder(new ClientServlet(lwServer));
+        ServletHolder clientServletHolder = new ServletHolder(new ClientServlet(lwServer, eventServlet));
         root.addServlet(clientServletHolder, "/api/clients/*");
 
         ServletHolder securityServletHolder;

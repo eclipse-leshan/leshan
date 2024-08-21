@@ -185,6 +185,21 @@ export default {
           this.$store.newNode(this.$route.params.endpoint, path, msg.val[path]);
         }
       })
+      .on("REQUEST_RESPONSE", (msg) => {
+        if (msg.path) {
+          // we suppose that if we have a path property then this is a single node
+          this.$store.newNode(
+            this.$route.params.endpoint,
+            msg.path,
+            msg.response.content
+          );
+        } else {
+          this.$store.newNodes(
+            this.$route.params.endpoint,
+            msg.response.content
+          );
+        }
+      })
       .on("NOTIFICATION", (msg) => {
         if (msg.kind == "composite") {
           this.$store.newNodes(this.$route.params.endpoint, msg.val);

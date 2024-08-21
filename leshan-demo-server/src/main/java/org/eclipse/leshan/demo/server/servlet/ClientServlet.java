@@ -27,6 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -55,11 +58,13 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.core.request.DeleteRequest;
 import org.eclipse.leshan.core.request.DiscoverRequest;
+import org.eclipse.leshan.core.request.DownlinkDeviceManagementRequest;
 import org.eclipse.leshan.core.request.ExecuteRequest;
 import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
+import org.eclipse.leshan.core.request.SimpleDownlinkRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteCompositeRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
@@ -69,25 +74,13 @@ import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.RequestRejectedException;
-import org.eclipse.leshan.core.response.CancelCompositeObservationResponse;
-import org.eclipse.leshan.core.response.CancelObservationResponse;
-import org.eclipse.leshan.core.response.CreateResponse;
-import org.eclipse.leshan.core.response.DeleteResponse;
-import org.eclipse.leshan.core.response.DiscoverResponse;
-import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
-import org.eclipse.leshan.core.response.ObserveCompositeResponse;
-import org.eclipse.leshan.core.response.ObserveResponse;
-import org.eclipse.leshan.core.response.ReadCompositeResponse;
-import org.eclipse.leshan.core.response.ReadResponse;
-import org.eclipse.leshan.core.response.WriteAttributesResponse;
-import org.eclipse.leshan.core.response.WriteCompositeResponse;
-import org.eclipse.leshan.core.response.WriteResponse;
 import org.eclipse.leshan.demo.server.servlet.json.JacksonLinkSerializer;
 import org.eclipse.leshan.demo.server.servlet.json.JacksonLwM2mNodeDeserializer;
 import org.eclipse.leshan.demo.server.servlet.json.JacksonLwM2mNodeSerializer;
 import org.eclipse.leshan.demo.server.servlet.json.JacksonRegistrationSerializer;
 import org.eclipse.leshan.demo.server.servlet.json.JacksonResponseSerializer;
+import org.eclipse.leshan.demo.server.servlet.queuemode.QueueHandler;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.registration.Registration;
 import org.slf4j.Logger;
@@ -124,9 +117,13 @@ public class ClientServlet extends HttpServlet {
     private final LeshanServer server;
     private final ObjectMapper mapper;
     private final LwM2mAttributeParser attributeParser;
+    private final QueueHandler queueHandler;
+    private final EventServlet eventServlet;
 
-    public ClientServlet(LeshanServer server) {
+    public ClientServlet(LeshanServer server, EventServlet servlet) {
         this.server = server;
+        this.queueHandler = new QueueHandler(server);
+        this.eventServlet = servlet;
 
         mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -204,8 +201,7 @@ public class ClientServlet extends HttpServlet {
                     // create & process request
                     ReadCompositeRequest request = new ReadCompositeRequest(pathContentFormat, nodeContentFormat,
                             paths);
-                    ReadCompositeResponse cResponse = server.send(registration, request, extractTimeout(req));
-                    processDeviceResponse(req, resp, cResponse);
+                    sendRequestAndWriteResponse(registration, request, req, resp);
                 } else {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     resp.getWriter().format("No registered client with id '%s'", clientEndpoint).flush();
@@ -224,8 +220,7 @@ public class ClientServlet extends HttpServlet {
                 if (registration != null) {
                     // create & process request
                     DiscoverRequest request = new DiscoverRequest(target);
-                    DiscoverResponse cResponse = server.send(registration, request, extractTimeout(req));
-                    processDeviceResponse(req, resp, cResponse);
+                    sendRequestAndWriteResponse(registration, request, req, resp);
                 } else {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     resp.getWriter().format("No registered client with id '%s'", clientEndpoint).flush();
@@ -249,8 +244,7 @@ public class ClientServlet extends HttpServlet {
 
                 // create & process request
                 ReadRequest request = new ReadRequest(contentFormat, target);
-                ReadResponse cResponse = server.send(registration, request, extractTimeout(req));
-                processDeviceResponse(req, resp, cResponse);
+                sendRequestAndWriteResponse(registration, request, req, resp);
             } else {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().format("No registered client with id '%s'", clientEndpoint).flush();
@@ -314,10 +308,8 @@ public class ClientServlet extends HttpServlet {
                             new TypeReference<HashMap<LwM2mPath, LwM2mNode>>() {
                             });
                     // create & process request
-                    WriteCompositeResponse cResponse = server.send(registration,
-                            new WriteCompositeRequest(nodeContentFormat, values, null), extractTimeout(req));
-                    processDeviceResponse(req, resp, cResponse);
-
+                    sendRequestAndWriteResponse(registration,
+                            new WriteCompositeRequest(nodeContentFormat, values, null), req, resp);
                 } else {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
@@ -344,8 +336,7 @@ public class ClientServlet extends HttpServlet {
                     LwM2mAttributeSet attributes = new LwM2mAttributeSet(
                             attributeParser.parseUriQuery(req.getQueryString()));
                     WriteAttributesRequest request = new WriteAttributesRequest(target, attributes);
-                    WriteAttributesResponse cResponse = server.send(registration, request, extractTimeout(req));
-                    processDeviceResponse(req, resp, cResponse);
+                    sendRequestAndWriteResponse(registration, request, req, resp);
                 } else {
                     // get content format
                     String contentFormatParam = req.getParameter(FORMAT_PARAM);
@@ -363,8 +354,7 @@ public class ClientServlet extends HttpServlet {
                     LwM2mNode node = extractLwM2mNode(target, req, new LwM2mPath(target));
                     WriteRequest request = new WriteRequest(replace ? Mode.REPLACE : Mode.UPDATE, contentFormat, target,
                             node);
-                    WriteResponse cResponse = server.send(registration, request, extractTimeout(req));
-                    processDeviceResponse(req, resp, cResponse);
+                    sendRequestAndWriteResponse(registration, request, req, resp);
                 }
             } else {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -405,8 +395,7 @@ public class ClientServlet extends HttpServlet {
                     // create & process request
                     ObserveCompositeRequest request = new ObserveCompositeRequest(pathContentFormat, nodeContentFormat,
                             paths);
-                    ObserveCompositeResponse cResponse = server.send(registration, request, extractTimeout(req));
-                    processDeviceResponse(req, resp, cResponse);
+                    sendRequestAndWriteResponse(registration, request, req, resp);
                 } else {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     resp.getWriter().format("No registered client with id '%s'", clientEndpoint).flush();
@@ -431,8 +420,7 @@ public class ClientServlet extends HttpServlet {
 
                     // create & process request
                     ObserveRequest request = new ObserveRequest(contentFormat, target);
-                    ObserveResponse cResponse = server.send(registration, request, extractTimeout(req));
-                    processDeviceResponse(req, resp, cResponse);
+                    sendRequestAndWriteResponse(registration, request, req, resp);
                 } else {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
@@ -455,8 +443,7 @@ public class ClientServlet extends HttpServlet {
                         params = IOUtils.toString(req.getInputStream(), StandardCharsets.UTF_8);
                     }
                     ExecuteRequest request = new ExecuteRequest(target, params);
-                    ExecuteResponse cResponse = server.send(registration, request, extractTimeout(req));
-                    processDeviceResponse(req, resp, cResponse);
+                    sendRequestAndWriteResponse(registration, request, req, resp);
                 } else {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
@@ -489,8 +476,7 @@ public class ClientServlet extends HttpServlet {
                             request = new CreateRequest(contentFormat, target, (LwM2mObjectInstance) node);
                         }
 
-                        CreateResponse cResponse = server.send(registration, request, extractTimeout(req));
-                        processDeviceResponse(req, resp, cResponse);
+                        sendRequestAndWriteResponse(registration, request, req, resp);
                     } else {
                         throw new IllegalArgumentException("payload must contain an object instance");
                     }
@@ -531,13 +517,15 @@ public class ClientServlet extends HttpServlet {
                                         .getPaths().equals(LwM2mPath.getLwM2mPathList(Arrays.asList(paths))))
                                 .findFirst();
                         if (observation.isPresent()) {
-                            CancelCompositeObservationResponse response = server.send(registration,
+                            CompletableFuture<LwM2mResponse> futureResponse = sendRequestAndWriteResponse(registration,
                                     new CancelCompositeObservationRequest((CompositeObservation) observation.get()),
-                                    extractTimeout(req));
-                            processDeviceResponse(req, resp, response);
-                            if (response.isSuccess()) {
-                                server.getObservationService().cancelCompositeObservations(registration, paths);
-                            }
+                                    req, resp);
+                            futureResponse.thenApply(r -> {
+                                if (r.isSuccess()) {
+                                    server.getObservationService().cancelCompositeObservations(registration, paths);
+                                }
+                                return r;
+                            });
                         } else {
                             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                             resp.getWriter().format("no composite observation for paths %s for  client '%s'",
@@ -571,13 +559,15 @@ public class ClientServlet extends HttpServlet {
                                         && ((SingleObservation) obs).getPath().equals(new LwM2mPath(target)))
                                 .findFirst();
                         if (observation.isPresent()) {
-                            CancelObservationResponse response = server.send(registration,
-                                    new CancelObservationRequest((SingleObservation) observation.get()),
-                                    extractTimeout(req));
-                            processDeviceResponse(req, resp, response);
-                            if (response.isSuccess()) {
-                                server.getObservationService().cancelObservations(registration, target);
-                            }
+                            CompletableFuture<LwM2mResponse> futureResponse = sendRequestAndWriteResponse(registration,
+                                    new CancelObservationRequest((SingleObservation) observation.get()), req, resp);
+
+                            futureResponse.thenApply(r -> {
+                                if (r.isSuccess()) {
+                                    server.getObservationService().cancelObservations(registration, target);
+                                }
+                                return r;
+                            });
                         } else {
                             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                             resp.getWriter()
@@ -604,8 +594,7 @@ public class ClientServlet extends HttpServlet {
             Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
             if (registration != null) {
                 DeleteRequest request = new DeleteRequest(target);
-                DeleteResponse cResponse = server.send(registration, request, extractTimeout(req));
-                processDeviceResponse(req, resp, cResponse);
+                sendRequestAndWriteResponse(registration, request, req, resp);
             } else {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
@@ -615,17 +604,85 @@ public class ClientServlet extends HttpServlet {
         }
     }
 
-    private void processDeviceResponse(HttpServletRequest req, HttpServletResponse resp, LwM2mResponse cResponse)
-            throws IOException {
-        if (cResponse == null) {
-            LOG.warn(String.format("Request %s%s timed out.", req.getServletPath(), req.getPathInfo()));
-            resp.setStatus(HttpServletResponse.SC_GATEWAY_TIMEOUT);
-            resp.getWriter().append("Request timeout").flush();
+    private CompletableFuture<LwM2mResponse> sendRequestAndWriteResponse(Registration destination,
+            DownlinkDeviceManagementRequest<?> lwm2mReq, HttpServletRequest httpReq, HttpServletResponse httpResp)
+            throws InterruptedException, IOException {
+
+        // Send Request
+        CompletableFuture<LwM2mResponse> future = queueHandler.send(destination, lwm2mReq, extractTimeout(httpReq));
+
+        if (future.isDone()) {
+            // if we get response now
+            try {
+                LwM2mResponse lwm2mResp = future.get();
+                processDeviceResponse(httpReq, httpResp, lwm2mResp);
+            } catch (ExecutionException e) {
+                Throwable cause = e.getCause();
+                if (cause instanceof RuntimeException) {
+                    throw (RuntimeException) cause;
+                } else {
+                    throw new RuntimeException(String
+                            .format("Unexpected error when trying to send request %s because of %s", lwm2mReq, cause));
+                }
+            }
         } else {
-            String response = this.mapper.writeValueAsString(cResponse);
-            resp.setContentType("application/json");
-            resp.getOutputStream().write(response.getBytes());
-            resp.setStatus(HttpServletResponse.SC_OK);
+            // else response will be receive later (probably because request was delayed as device is not awake)
+            final String requestId = UUID.randomUUID().toString();
+            future.thenApply(lwm2mResp -> {
+                try {
+                    // when response will be received, send a event with the response
+                    ResponseDelayed responseDelayed = new ResponseDelayed();
+                    responseDelayed.ep = destination.getEndpoint();
+                    if (lwm2mReq instanceof SimpleDownlinkRequest) {
+                        responseDelayed.path = ((SimpleDownlinkRequest<?>) lwm2mReq).getPath().toString();
+                    }
+                    responseDelayed.response = lwm2mResp;
+                    responseDelayed.requestId = requestId;
+                    responseDelayed.delayed = true;
+                    eventServlet.sendEvent("REQUEST_RESPONSE", this.mapper.writeValueAsString(responseDelayed),
+                            destination.getEndpoint());
+                } catch (JsonProcessingException e) {
+                    throw new IllegalStateException(e);
+                }
+                return lwm2mResp;
+            });
+
+            // answer that request is delayed
+            ResponseDelayed responseDelayed = new ResponseDelayed();
+            responseDelayed.ep = destination.getEndpoint();
+            if (lwm2mReq instanceof SimpleDownlinkRequest) {
+                responseDelayed.path = ((SimpleDownlinkRequest<?>) lwm2mReq).getPath().toString();
+            }
+            responseDelayed.response = null;
+            responseDelayed.requestId = requestId;
+            responseDelayed.delayed = true;
+            httpResp.setContentType("application/json");
+            httpResp.getOutputStream().write(this.mapper.writeValueAsString(responseDelayed).getBytes());
+            httpResp.setStatus(HttpServletResponse.SC_OK);
+        }
+
+        return future;
+    }
+
+    public static class ResponseDelayed {
+        public String ep;
+        public String path;
+        public String requestId;
+        public LwM2mResponse response; // may be null if response is delayed
+        public boolean delayed;
+    }
+
+    private void processDeviceResponse(HttpServletRequest httpReq, HttpServletResponse httpResp,
+            LwM2mResponse lwm2mResp) throws IOException {
+        if (lwm2mResp == null) {
+            LOG.warn(String.format("Request %s%s timed out.", httpReq.getServletPath(), httpReq.getPathInfo()));
+            httpResp.setStatus(HttpServletResponse.SC_GATEWAY_TIMEOUT);
+            httpResp.getWriter().append("Request timeout").flush();
+        } else {
+            String response = this.mapper.writeValueAsString(lwm2mResp);
+            httpResp.setContentType("application/json");
+            httpResp.getOutputStream().write(response.getBytes());
+            httpResp.setStatus(HttpServletResponse.SC_OK);
         }
     }
 

@@ -22,7 +22,7 @@ public class StaticClientAwakeTimeProvider implements ClientAwakeTimeProvider {
     private final int clientAwakeTime;
 
     /**
-     * Create a {@link ClientAwakeTimeProvider} which always return 9300ms which is the default CoAP MAX_TRANSMIT_WAIT
+     * Create a {@link ClientAwakeTimeProvider} which always return 93000ms which is the default CoAP MAX_TRANSMIT_WAIT
      * value.
      */
     public StaticClientAwakeTimeProvider() {

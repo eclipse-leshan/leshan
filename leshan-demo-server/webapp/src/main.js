@@ -32,8 +32,24 @@ Vue.directive("visible", function (el, binding) {
   el.style.visibility = binding.value ? "visible" : "hidden";
 });
 
-new Vue({
+let v = new Vue({
   vuetify,
   router,
   render: (h) => h(App),
 }).$mount("#app");
+
+/** Add Leshan Server Demo specific axios interceptor */
+v.$axios.interceptors.response.use(function (response) {
+  if (response.data.delayed) {
+    // show request will be delayed
+    let msg = `<strong>Device is not awake</strong>
+         </br>Request will be delayed until device is awake again.
+         </br><strong>Leshan Server Demo</strong> is only able to delayed the last request.`;
+
+    Vue.prototype.$dialog.notify.info(msg, {
+      position: "bottom-right",
+      timeout: 5000,
+    });
+  }
+  return response;
+});

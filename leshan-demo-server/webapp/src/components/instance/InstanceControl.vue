@@ -89,12 +89,16 @@ export default {
       return `?timeout=${timeout.get()}&format=${format.get()}`;
     },
     updateState(content, requestButton) {
-      let state = !content.valid
-        ? "warning"
-        : content.success
-        ? "success"
-        : "error";
-      requestButton.changeState(state, content.status);
+      if ("valid" in content || "success" in content) {
+        let state = !content.valid
+          ? "warning"
+          : content.success
+          ? "success"
+          : "error";
+        requestButton.changeState(state, content.status);
+      } else {
+        requestButton.resetState();
+      }
     },
     read(requestButton) {
       this.axios
