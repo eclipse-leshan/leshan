@@ -31,7 +31,6 @@ import org.eclipse.leshan.core.observation.CompositeObservation;
 public class ObserveCompositeResponse extends ReadCompositeResponse {
 
     protected final CompositeObservation observation;
-    protected final TimestampedLwM2mNodes timestampedValues;
 
     public ObserveCompositeResponse(ResponseCode code, Map<LwM2mPath, LwM2mNode> content,
             TimestampedLwM2mNodes timestampedValues, CompositeObservation observation, String errorMessage,

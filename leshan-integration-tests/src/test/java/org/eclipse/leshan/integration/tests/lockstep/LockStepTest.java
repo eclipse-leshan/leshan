@@ -545,18 +545,15 @@ public class LockStepTest {
         Registration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
 
         // create timestamped data
-
         List<LwM2mPath> paths = new ArrayList<>();
         paths.add(new LwM2mPath("/1/0/1"));
         paths.add(new LwM2mPath("/3/0/15"));
-        // and expected Time-stamped nodes
         TimestampedLwM2mNodes.Builder builder = new TimestampedLwM2mNodes.Builder();
         Instant t1 = Instant.now().truncatedTo(ChronoUnit.MILLIS);
         builder.put(t1, paths.get(0), LwM2mSingleResource.newIntegerResource(1, 3600));
         builder.put(t1, paths.get(1), LwM2mSingleResource.newStringResource(15, "Europe/Belgrade"));
         TimestampedLwM2mNodes timestampednodes = builder.build();
 
-        // TEST
         LwM2mEncoder encoder = new DefaultLwM2mEncoder();
 
         byte[] payload = encoder.encodeTimestampedNodes(timestampednodes, ContentFormat.SENML_JSON,

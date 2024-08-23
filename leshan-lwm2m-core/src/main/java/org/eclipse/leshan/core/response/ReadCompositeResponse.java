@@ -15,10 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.response;
 
+import java.time.Instant;
 import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -29,39 +27,37 @@ public class ReadCompositeResponse extends AbstractLwM2mResponse {
 
     protected final Map<LwM2mPath, LwM2mNode> content;
 
-    protected final TimestampedLwM2mNodes timestampedValues;
+    protected TimestampedLwM2mNodes timestampedValues;
 
     public ReadCompositeResponse(ResponseCode code, Map<LwM2mPath, LwM2mNode> content,
             TimestampedLwM2mNodes timestampedValues, String errorMessage, Object coapResponse) {
         super(code, errorMessage, coapResponse);
 
-        Map<LwM2mPath, LwM2mNode> responseContent;
-        TimestampedLwM2mNodes responsetimestampedValues;
+        Map<LwM2mPath, LwM2mNode> responseContent = null;
+        TimestampedLwM2mNodes responsetimestampedValues = null;
 
         if (timestampedValues != null) {
             // handle if timestamped value is passed
             if (content != null) {
                 throw new IllegalArgumentException("content OR timestampedValue should be passed but not both");
             }
-            // store value if all timestamps in timestampedValues are null
-            if (!timestampedValues.getNodes().isEmpty()
-                    && timestampedValues.getTimestamps().stream().noneMatch(Objects::nonNull)) {
-
-                responseContent = timestampedValues.getNodes();
-                responsetimestampedValues = null;
-            } else {
-                // check if we have only timestamp in timestampedValues
-                if (timestampedValues.getTimestamps().stream()
-                        .collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).size() >= 2) {
-                    throw new IllegalArgumentException("only one timestamp in the content is allowed");
-                }
-
-                responseContent = null;
-                responsetimestampedValues = timestampedValues;
+            if (timestampedValues.getTimestamps().size() > 1) {
+                throw new IllegalArgumentException("only one timestamp in the content is allowed");
             }
+            // check if we have only timestamp in timestampedValues
+            if (timestampedValues.getTimestamps().size() == 1) {
+                Instant timestamp = timestampedValues.getTimestamps().iterator().next();
+                if (timestamp != null) {
+                    responsetimestampedValues = timestampedValues;
+                    responseContent = timestampedValues.getNodesAt(timestamp);
+
+                } else {
+                    responseContent = timestampedValues.getNodes();
+                }
+            }
+
         } else {
             // handle if content (not timestamped) value is passed
-            responsetimestampedValues = null;
             responseContent = content;
         }
 
@@ -74,10 +70,21 @@ public class ReadCompositeResponse extends AbstractLwM2mResponse {
         return content;
     }
 
+    /**
+     * Get the {@link LwM2mNode} value returned as response payload.
+     *
+     * @return the value or <code>null</code> if the client returned an error response.
+     */
     public LwM2mNode getContent(String path) {
         return content.get(new LwM2mPath(path));
     }
 
+    /**
+     * Get the {@link TimestampedLwM2mNodes} value returned as response payload or <code>null</code> if the value is not
+     * timestamped, in that case you should use {@link #getContent()} instead.
+     *
+     * @return the value or <code>null</code> if the value is not timestamped OR if this is an error response.
+     */
     public TimestampedLwM2mNodes getTimestampedLwM2mNodes() {
         return timestampedValues;
     }
