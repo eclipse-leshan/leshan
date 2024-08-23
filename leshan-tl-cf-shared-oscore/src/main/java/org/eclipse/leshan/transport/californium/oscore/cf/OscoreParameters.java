@@ -79,14 +79,19 @@ public class OscoreParameters {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof OscoreParameters)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof OscoreParameters))
+            return false;
         OscoreParameters that = (OscoreParameters) o;
-        return Objects.deepEquals(senderId, that.senderId) && Objects.deepEquals(recipientId, that.recipientId) && Objects.deepEquals(masterSecret, that.masterSecret) && aeadAlgorithm == that.aeadAlgorithm && hmacAlgorithm == that.hmacAlgorithm && Objects.deepEquals(masterSalt, that.masterSalt);
+        return Objects.deepEquals(senderId, that.senderId) && Objects.deepEquals(recipientId, that.recipientId)
+                && Objects.deepEquals(masterSecret, that.masterSecret) && aeadAlgorithm == that.aeadAlgorithm
+                && hmacAlgorithm == that.hmacAlgorithm && Objects.deepEquals(masterSalt, that.masterSalt);
     }
 
     @Override
     public final int hashCode() {
-        return Objects.hash(Arrays.hashCode(senderId), Arrays.hashCode(recipientId), Arrays.hashCode(masterSecret), aeadAlgorithm, hmacAlgorithm, Arrays.hashCode(masterSalt));
+        return Objects.hash(Arrays.hashCode(senderId), Arrays.hashCode(recipientId), Arrays.hashCode(masterSecret),
+                aeadAlgorithm, hmacAlgorithm, Arrays.hashCode(masterSalt));
     }
 }

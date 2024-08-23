@@ -100,8 +100,10 @@ public class HashMapObserversStore implements ObserversStore {
 
         @Override
         public final boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof ObserverKey)) return false;
+            if (this == o)
+                return true;
+            if (!(o instanceof ObserverKey))
+                return false;
             ObserverKey that = (ObserverKey) o;
             return Objects.equals(token, that.token) && Objects.equals(peerAddress, that.peerAddress);
         }

@@ -15,12 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import java.util.Objects;
+
 import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.LwM2mResponse;
-
-import java.util.Objects;
 
 /**
  * A base class for concrete LWM2M Downlink request types.
@@ -91,12 +91,12 @@ public abstract class AbstractSimpleDownlinkRequest<T extends LwM2mResponse> ext
 
     @Override
     public boolean equals(Object o) {
-        boolean result = false;
-        if (o instanceof AbstractSimpleDownlinkRequest) {
-            AbstractSimpleDownlinkRequest<?> that = (AbstractSimpleDownlinkRequest<?>) o;
-            result = that.canEqual(this) && Objects.equals(path, that.path);
-        }
-        return result;
+        if (this == o)
+            return true;
+        if (!(o instanceof AbstractSimpleDownlinkRequest))
+            return false;
+        AbstractSimpleDownlinkRequest<?> that = (AbstractSimpleDownlinkRequest<?>) o;
+        return that.canEqual(this) && Objects.equals(path, that.path);
     }
 
     public boolean canEqual(Object o) {

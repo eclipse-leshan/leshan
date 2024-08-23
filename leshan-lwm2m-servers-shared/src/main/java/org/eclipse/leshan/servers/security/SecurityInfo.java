@@ -209,14 +209,19 @@ public class SecurityInfo implements Serializable {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SecurityInfo)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof SecurityInfo))
+            return false;
         SecurityInfo that = (SecurityInfo) o;
-        return useX509Cert == that.useX509Cert && Objects.equals(endpoint, that.endpoint) && Objects.equals(pskIdentity, that.pskIdentity) && Objects.deepEquals(preSharedKey, that.preSharedKey) && Objects.equals(rawPublicKey, that.rawPublicKey) && Objects.equals(oscoreSetting, that.oscoreSetting);
+        return useX509Cert == that.useX509Cert && Objects.equals(endpoint, that.endpoint)
+                && Objects.equals(pskIdentity, that.pskIdentity) && Objects.deepEquals(preSharedKey, that.preSharedKey)
+                && Objects.equals(rawPublicKey, that.rawPublicKey) && Objects.equals(oscoreSetting, that.oscoreSetting);
     }
 
     @Override
     public final int hashCode() {
-        return Objects.hash(endpoint, pskIdentity, Arrays.hashCode(preSharedKey), rawPublicKey, useX509Cert, oscoreSetting);
+        return Objects.hash(endpoint, pskIdentity, Arrays.hashCode(preSharedKey), rawPublicKey, useX509Cert,
+                oscoreSetting);
     }
 }

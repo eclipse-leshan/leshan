@@ -15,13 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import org.eclipse.leshan.core.node.LwM2mPath;
+import java.util.Objects;
+
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.CancelObservationResponse;
-
-import java.util.Objects;
 
 /**
  * A Lightweight M2M request for actively cancel an observation.
@@ -70,13 +69,14 @@ public class CancelObservationRequest extends AbstractSimpleDownlinkRequest<Canc
 
     @Override
     public boolean equals(Object o) {
-        if (!super.equals(o)) return false;
-        boolean result = false;
-        if (o instanceof CancelObservationRequest) {
-            CancelObservationRequest that = (CancelObservationRequest) o;
-            result = that.canEqual(this) && Objects.equals(observation, that.observation);
-        }
-        return result;
+        if (this == o)
+            return true;
+        if (!(o instanceof CancelObservationRequest))
+            return false;
+        if (!super.equals(o))
+            return false;
+        CancelObservationRequest that = (CancelObservationRequest) o;
+        return that.canEqual(this) && Objects.equals(observation, that.observation);
     }
 
     public boolean canEqual(Object o) {

@@ -121,9 +121,11 @@ public class Link {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Link)) return false;
+        if (!(o instanceof Link))
+            return false;
         Link that = (Link) o;
-        return that.canEqual(this) && Objects.equals(uriReference, that.uriReference) && Objects.equals(attributes, that.attributes);
+        return that.canEqual(this) && Objects.equals(uriReference, that.uriReference)
+                && Objects.equals(attributes, that.attributes);
     }
 
     public boolean canEqual(Object o) {

@@ -80,6 +80,7 @@ public class LwM2mPathTest {
         public ExtendedLwM2mPath(int objectId) throws InvalidLwM2mPathException {
             super(objectId);
         }
+
         @Override
         public boolean canEqual(Object obj) {
             return (obj instanceof ExtendedLwM2mPath);

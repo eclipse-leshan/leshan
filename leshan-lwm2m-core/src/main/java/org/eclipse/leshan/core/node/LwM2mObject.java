@@ -15,8 +15,14 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.TreeMap;
 
 /**
  * The top level element in the LWM2M resource tree.
@@ -115,8 +121,10 @@ public class LwM2mObject implements LwM2mChildNode {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof LwM2mObject)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof LwM2mObject))
+            return false;
         LwM2mObject that = (LwM2mObject) o;
         return id == that.id && Objects.equals(instances, that.instances);
     }

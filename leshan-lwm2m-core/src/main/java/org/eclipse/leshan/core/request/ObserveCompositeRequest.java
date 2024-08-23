@@ -15,7 +15,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mNodeException;
@@ -148,8 +152,10 @@ public class ObserveCompositeRequest extends AbstractLwM2mRequest<ObserveComposi
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ObserveCompositeRequest)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof ObserveCompositeRequest))
+            return false;
         ObserveCompositeRequest that = (ObserveCompositeRequest) o;
         return that.canEqual(this) && Objects.equals(requestContentFormat, that.requestContentFormat)
                 && Objects.equals(responseContentFormat, that.responseContentFormat)

@@ -47,8 +47,10 @@ public class OscoreIdentity implements LwM2mIdentity {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof OscoreIdentity)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof OscoreIdentity))
+            return false;
         OscoreIdentity that = (OscoreIdentity) o;
         return Objects.deepEquals(RecipientId, that.RecipientId);
     }

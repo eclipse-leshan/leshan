@@ -16,8 +16,16 @@
 package org.eclipse.leshan.core.node;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * A container for nodes {@link LwM2mNode} with path {@link LwM2mPath} and optional timestamp information.
@@ -82,8 +90,10 @@ public class TimestampedLwM2mNodes {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TimestampedLwM2mNodes)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof TimestampedLwM2mNodes))
+            return false;
         TimestampedLwM2mNodes that = (TimestampedLwM2mNodes) o;
         return Objects.equals(timestampedPathNodesMap, that.timestampedPathNodesMap);
     }

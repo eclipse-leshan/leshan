@@ -15,8 +15,16 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.TreeMap;
 
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -254,8 +262,10 @@ public class LwM2mMultipleResource implements LwM2mResource {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof LwM2mMultipleResource)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof LwM2mMultipleResource))
+            return false;
         LwM2mMultipleResource that = (LwM2mMultipleResource) o;
         return id == that.id && Objects.equals(instances, that.instances) && type == that.type;
     }

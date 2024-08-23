@@ -24,10 +24,8 @@ import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
-import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.junit.jupiter.api.Test;
 

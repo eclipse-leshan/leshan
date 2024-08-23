@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import java.util.Collection;
 import java.util.Map;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.link.lwm2m.attributes.DefaultLwM2mAttributeParser;
 import org.eclipse.leshan.core.link.lwm2m.attributes.InvalidAttributesException;
@@ -32,6 +31,8 @@ import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.junit.jupiter.api.Test;
+
+import nl.jqno.equalsverifier.EqualsVerifier;
 
 public class AttributeSetTest {
     private static LwM2mAttributeParser parser = new DefaultLwM2mAttributeParser();
@@ -162,6 +163,7 @@ public class AttributeSetTest {
         public ExtendedAttributeSet(Attribute... attributes) {
             super(attributes);
         }
+
         @Override
         public boolean canEqual(Object obj) {
             return (obj instanceof AttributeSetTest.ExtendedAttributeSet);
@@ -170,6 +172,7 @@ public class AttributeSetTest {
 
     @Test
     public void assertEqualsHashcode() {
-        EqualsVerifier.forClass(AttributeSet.class).withRedefinedSubclass(AttributeSetTest.ExtendedAttributeSet.class).verify();
+        EqualsVerifier.forClass(AttributeSet.class).withRedefinedSubclass(AttributeSetTest.ExtendedAttributeSet.class)
+                .verify();
     }
 }

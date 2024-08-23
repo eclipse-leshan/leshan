@@ -223,9 +223,12 @@ public class ObserveRequest extends AbstractSimpleDownlinkRequest<ObserveRespons
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ObserveRequest)) return false;
-        if (!super.equals(o)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof ObserveRequest))
+            return false;
+        if (!super.equals(o))
+            return false;
         ObserveRequest that = (ObserveRequest) o;
         return that.canEqual(this) && Objects.equals(format, that.format) && Objects.equals(context, that.context);
     }

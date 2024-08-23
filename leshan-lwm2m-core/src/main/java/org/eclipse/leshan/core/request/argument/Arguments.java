@@ -15,7 +15,15 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request.argument;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Arguments for Execute Operation.
@@ -236,8 +244,10 @@ public class Arguments implements Iterable<Argument> {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Arguments)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Arguments))
+            return false;
         Arguments arguments = (Arguments) o;
         return Objects.equals(argumentMap, arguments.argumentMap);
     }

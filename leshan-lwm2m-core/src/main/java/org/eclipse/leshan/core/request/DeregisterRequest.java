@@ -15,10 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import java.util.Objects;
+
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.DeregisterResponse;
-
-import java.util.Objects;
 
 /**
  * A Lightweight M2M request for removing the registration information from the LWM2M Server.
@@ -75,8 +75,10 @@ public class DeregisterRequest extends AbstractLwM2mRequest<DeregisterResponse>
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DeregisterRequest)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof DeregisterRequest))
+            return false;
         DeregisterRequest that = (DeregisterRequest) o;
         return that.canEqual(this) && Objects.equals(registrationId, that.registrationId);
     }

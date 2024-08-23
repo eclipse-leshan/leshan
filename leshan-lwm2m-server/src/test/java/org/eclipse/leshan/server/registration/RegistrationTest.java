@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
@@ -40,6 +39,8 @@ import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.server.registration.Registration.Builder;
 import org.eclipse.leshan.server.registration.RegistrationDataExtractor.RegistrationData;
 import org.junit.jupiter.api.Test;
+
+import nl.jqno.equalsverifier.EqualsVerifier;
 
 public class RegistrationTest {
 

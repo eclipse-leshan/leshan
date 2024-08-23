@@ -380,27 +380,6 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(objectId, objectInstanceId, resourceId, resourceInstanceId);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        boolean result = false;
-        if (o instanceof LwM2mPath) {
-            LwM2mPath that = (LwM2mPath) o;
-            result = (that.canEqual(this) && Objects.equals(objectId, that.objectId) && Objects.equals(objectInstanceId, that.objectInstanceId)
-                    && Objects.equals(resourceId, that.resourceId)
-                    && Objects.equals(resourceInstanceId, that.resourceInstanceId));
-        }
-        return result;
-    }
-
-    public boolean canEqual(Object o) {
-        return (o instanceof LwM2mPath);
-    }
-
-    @Override
     public int compareTo(LwM2mPath o) {
         int res = compareInteger(this.objectId, o.objectId);
         if (res != 0 || this.objectId == null)
@@ -490,5 +469,27 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
                 }
             }
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof LwM2mPath))
+            return false;
+        LwM2mPath that = (LwM2mPath) o;
+        return that.canEqual(this) && Objects.equals(objectId, that.objectId)
+                && Objects.equals(objectInstanceId, that.objectInstanceId)
+                && Objects.equals(resourceId, that.resourceId)
+                && Objects.equals(resourceInstanceId, that.resourceInstanceId);
+    }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof LwM2mPath);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(objectId, objectInstanceId, resourceId, resourceInstanceId);
     }
 }

@@ -15,7 +15,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.model;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.NavigableMap;
+import java.util.Objects;
+import java.util.TreeMap;
 
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.node.LwM2mNodeUtil;
@@ -63,8 +67,10 @@ public class LwM2mModelRepository {
 
         @Override
         public final boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Key)) return false;
+            if (this == o)
+                return true;
+            if (!(o instanceof Key))
+                return false;
             Key that = (Key) o;
             return Objects.equals(id, that.id) && Objects.equals(version, that.version);
         }

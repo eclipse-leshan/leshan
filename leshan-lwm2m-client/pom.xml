@@ -47,9 +47,9 @@ Contributors:
       <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
     </dependency>
-      <dependency>
-          <groupId>nl.jqno.equalsverifier</groupId>
-          <artifactId>equalsverifier</artifactId>
-      </dependency>
+    <dependency>
+      <groupId>nl.jqno.equalsverifier</groupId>
+      <artifactId>equalsverifier</artifactId>
+    </dependency>
   </dependencies>
 </project>

@@ -22,6 +22,7 @@ public interface LwM2m {
     /**
      * Version of LWM2M specification.
      */
+
     public class LwM2mVersion extends Version {
 
         public static final LwM2mVersion V1_0 = new LwM2mVersion("1.0", true);
@@ -67,8 +68,10 @@ public interface LwM2m {
 
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof LwM2mVersion)) return false;
-            if (!super.equals(o)) return false;
+            if (!(o instanceof LwM2mVersion))
+                return false;
+            if (!super.equals(o))
+                return false;
             LwM2mVersion that = (LwM2mVersion) o;
             return that.canEqual(this) && supported == that.supported;
         }
@@ -186,8 +189,10 @@ public interface LwM2m {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Version)) return false;
+            if (this == o)
+                return true;
+            if (!(o instanceof Version))
+                return false;
             Version that = (Version) o;
             return that.canEqual(this) && major == that.major && minor == that.minor;
         }

@@ -45,8 +45,10 @@ public class RpkIdentity implements LwM2mIdentity {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof RpkIdentity)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof RpkIdentity))
+            return false;
         RpkIdentity that = (RpkIdentity) o;
         return Objects.equals(rawPublicKey, that.rawPublicKey);
     }

@@ -101,14 +101,20 @@ public class OscoreSetting implements Serializable {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof OscoreSetting)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof OscoreSetting))
+            return false;
         OscoreSetting that = (OscoreSetting) o;
-        return Objects.deepEquals(senderId, that.senderId) && Objects.deepEquals(recipientId, that.recipientId) && Objects.deepEquals(masterSecret, that.masterSecret) && Objects.equals(aeadAlgorithm, that.aeadAlgorithm) && Objects.equals(hkdfAlgorithm, that.hkdfAlgorithm) && Objects.deepEquals(masterSalt, that.masterSalt);
+        return Objects.deepEquals(senderId, that.senderId) && Objects.deepEquals(recipientId, that.recipientId)
+                && Objects.deepEquals(masterSecret, that.masterSecret)
+                && Objects.equals(aeadAlgorithm, that.aeadAlgorithm)
+                && Objects.equals(hkdfAlgorithm, that.hkdfAlgorithm) && Objects.deepEquals(masterSalt, that.masterSalt);
     }
 
     @Override
     public final int hashCode() {
-        return Objects.hash(Arrays.hashCode(senderId), Arrays.hashCode(recipientId), Arrays.hashCode(masterSecret), aeadAlgorithm, hkdfAlgorithm, Arrays.hashCode(masterSalt));
+        return Objects.hash(Arrays.hashCode(senderId), Arrays.hashCode(recipientId), Arrays.hashCode(masterSecret),
+                aeadAlgorithm, hkdfAlgorithm, Arrays.hashCode(masterSalt));
     }
 }

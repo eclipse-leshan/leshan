@@ -17,8 +17,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.observation;
 
-import org.eclipse.leshan.core.node.LwM2mPath;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -88,13 +86,13 @@ public abstract class Observation {
 
     @Override
     public boolean equals(Object o) {
-        boolean result = false;
-        if (o instanceof Observation) {
-            Observation that = (Observation) o;
-            result = that.canEqual(this) && Objects.equals(id, that.id) && Objects.equals(registrationId, that.registrationId) && Objects.equals(context, that.context) && Objects.equals(protocolData, that.protocolData);
-        };
-
-        return result;
+        if (this == o)
+            return true;
+        if (!(o instanceof Observation))
+            return false;
+        Observation that = (Observation) o;
+        return that.canEqual(this) && Objects.equals(id, that.id) && Objects.equals(registrationId, that.registrationId)
+                && Objects.equals(context, that.context) && Objects.equals(protocolData, that.protocolData);
     }
 
     public boolean canEqual(Object o) {

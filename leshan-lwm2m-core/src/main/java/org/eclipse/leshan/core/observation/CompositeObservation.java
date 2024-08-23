@@ -82,21 +82,22 @@ public class CompositeObservation extends Observation {
                 paths, id, requestContentFormat, responseContentFormat, registrationId, context);
     }
 
-    public boolean canEqual(Object o) {
-        return (o instanceof CompositeObservation);
-    }
-
     @Override
     public boolean equals(Object o) {
-        boolean result = false;
+        if (this == o)
+            return true;
+        if (!(o instanceof CompositeObservation))
+            return false;
         if (!super.equals(o))
             return false;
-        if (o instanceof CompositeObservation) {
-            CompositeObservation that = (CompositeObservation) o;
-            result = that.canEqual(this) && Objects.equals(paths, that.paths) && Objects.equals(requestContentFormat, that.requestContentFormat) && Objects.equals(responseContentFormat, that.responseContentFormat);
-        }
-        return result;
+        CompositeObservation that = (CompositeObservation) o;
+        return that.canEqual(this) && Objects.equals(paths, that.paths)
+                && Objects.equals(requestContentFormat, that.requestContentFormat)
+                && Objects.equals(responseContentFormat, that.responseContentFormat);
+    }
 
+    public boolean canEqual(Object o) {
+        return (o instanceof CompositeObservation);
     }
 
     @Override

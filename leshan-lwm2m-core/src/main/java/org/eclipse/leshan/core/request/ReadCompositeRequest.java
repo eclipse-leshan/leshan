@@ -132,10 +132,14 @@ public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResp
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ReadCompositeRequest)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof ReadCompositeRequest))
+            return false;
         ReadCompositeRequest that = (ReadCompositeRequest) o;
-        return that.canEqual(this) && Objects.equals(paths, that.paths) && Objects.equals(requestContentFormat, that.requestContentFormat) && Objects.equals(responseContentFormat, that.responseContentFormat);
+        return that.canEqual(this) && Objects.equals(paths, that.paths)
+                && Objects.equals(requestContentFormat, that.requestContentFormat)
+                && Objects.equals(responseContentFormat, that.responseContentFormat);
     }
 
     public boolean canEqual(Object o) {

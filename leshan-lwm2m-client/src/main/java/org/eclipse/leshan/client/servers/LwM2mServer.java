@@ -128,8 +128,10 @@ public class LwM2mServer {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof LwM2mServer)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof LwM2mServer))
+            return false;
         LwM2mServer that = (LwM2mServer) o;
         return Objects.equals(transportData, that.transportData) && Objects.equals(id, that.id) && role == that.role;
     }

@@ -70,16 +70,16 @@ public class JsonRootObject {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof JsonRootObject)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof JsonRootObject))
+            return false;
         JsonRootObject that = (JsonRootObject) o;
 
         boolean comparablyEqual = (baseTime == null && that.baseTime == null)
-                || (baseTime != null && that.baseTime != null
-                && baseTime.compareTo(that.baseTime) == 0);
+                || (baseTime != null && that.baseTime != null && baseTime.compareTo(that.baseTime) == 0);
 
-        return Objects.equals(baseName, that.baseName) && Objects.equals(jsonArray, that.jsonArray)
-                && comparablyEqual;
+        return Objects.equals(baseName, that.baseName) && Objects.equals(jsonArray, that.jsonArray) && comparablyEqual;
     }
 
     @Override

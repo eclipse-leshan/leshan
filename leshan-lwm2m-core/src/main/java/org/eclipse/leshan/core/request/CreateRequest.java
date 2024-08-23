@@ -15,7 +15,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -313,10 +317,13 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
 
     @Override
     public boolean equals(Object o) {
-        if (!super.equals(o)) return false;
-        if (!(o instanceof CreateRequest)) return false;
+        if (!super.equals(o))
+            return false;
+        if (!(o instanceof CreateRequest))
+            return false;
         CreateRequest that = (CreateRequest) o;
-        return that.canEqual(this) && Objects.equals(resources, that.resources) && Objects.equals(instances, that.instances) && Objects.equals(contentFormat, that.contentFormat);
+        return that.canEqual(this) && Objects.equals(resources, that.resources)
+                && Objects.equals(instances, that.instances) && Objects.equals(contentFormat, that.contentFormat);
     }
 
     public boolean canEqual(Object o) {

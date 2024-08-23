@@ -51,8 +51,10 @@ public class TimestampedLwM2mNode {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TimestampedLwM2mNode)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof TimestampedLwM2mNode))
+            return false;
         TimestampedLwM2mNode that = (TimestampedLwM2mNode) o;
         return Objects.equals(timestamp, that.timestamp) && Objects.equals(node, that.node);
     }

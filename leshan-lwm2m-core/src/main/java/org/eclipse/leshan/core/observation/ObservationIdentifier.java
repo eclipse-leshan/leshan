@@ -54,8 +54,10 @@ public class ObservationIdentifier {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ObservationIdentifier)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof ObservationIdentifier))
+            return false;
         ObservationIdentifier that = (ObservationIdentifier) o;
         return Objects.deepEquals(bytes, that.bytes);
     }

@@ -28,11 +28,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Arrays;
 import java.util.List;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.junit.jupiter.api.Test;
+
+import nl.jqno.equalsverifier.EqualsVerifier;
 
 public class ContentFormatTest {
 
@@ -56,6 +56,7 @@ public class ContentFormatTest {
 
     @Test
     public void assertEqualsHashcode() {
-        EqualsVerifier.forClass(ContentFormat.class).withIgnoredFields("name", "mediaType", "mandatoryForClient").verify();
+        EqualsVerifier.forClass(ContentFormat.class).withIgnoredFields("name", "mediaType", "mandatoryForClient")
+                .verify();
     }
 }

@@ -20,7 +20,17 @@ package org.eclipse.leshan.server.registration;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
@@ -364,25 +374,30 @@ public class Registration {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Registration)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Registration))
+            return false;
         Registration that = (Registration) o;
         return lifeTimeInSec == that.lifeTimeInSec && Objects.equals(registrationDate, that.registrationDate)
-                && Objects.equals(clientTransportData, that.clientTransportData) && Objects.equals(smsNumber, that.smsNumber)
-                && Objects.equals(lwM2mVersion, that.lwM2mVersion) && Objects.equals(bindingMode, that.bindingMode)
-                && Objects.equals(queueMode, that.queueMode) && Objects.equals(endpoint, that.endpoint)
-                && Objects.equals(id, that.id) && Objects.deepEquals(objectLinks, that.objectLinks)
-                && Objects.equals(additionalRegistrationAttributes, that.additionalRegistrationAttributes) && Objects.equals(rootPath, that.rootPath)
-                && Objects.equals(supportedContentFormats, that.supportedContentFormats) && Objects.equals(supportedObjects, that.supportedObjects)
-                && Objects.equals(availableInstances, that.availableInstances) && Objects.equals(lastUpdate, that.lastUpdate)
-                && Objects.equals(applicationData, that.applicationData);
+                && Objects.equals(clientTransportData, that.clientTransportData)
+                && Objects.equals(smsNumber, that.smsNumber) && Objects.equals(lwM2mVersion, that.lwM2mVersion)
+                && Objects.equals(bindingMode, that.bindingMode) && Objects.equals(queueMode, that.queueMode)
+                && Objects.equals(endpoint, that.endpoint) && Objects.equals(id, that.id)
+                && Objects.deepEquals(objectLinks, that.objectLinks)
+                && Objects.equals(additionalRegistrationAttributes, that.additionalRegistrationAttributes)
+                && Objects.equals(rootPath, that.rootPath)
+                && Objects.equals(supportedContentFormats, that.supportedContentFormats)
+                && Objects.equals(supportedObjects, that.supportedObjects)
+                && Objects.equals(availableInstances, that.availableInstances)
+                && Objects.equals(lastUpdate, that.lastUpdate) && Objects.equals(applicationData, that.applicationData);
     }
 
     @Override
     public final int hashCode() {
-        return Objects.hash(registrationDate, clientTransportData, lifeTimeInSec, smsNumber, lwM2mVersion,
-                bindingMode, queueMode, endpoint, id, Arrays.hashCode(objectLinks), additionalRegistrationAttributes,
-                rootPath, supportedContentFormats, supportedObjects, availableInstances, lastUpdate, applicationData);
+        return Objects.hash(registrationDate, clientTransportData, lifeTimeInSec, smsNumber, lwM2mVersion, bindingMode,
+                queueMode, endpoint, id, Arrays.hashCode(objectLinks), additionalRegistrationAttributes, rootPath,
+                supportedContentFormats, supportedObjects, availableInstances, lastUpdate, applicationData);
     }
 
     public static class Builder {

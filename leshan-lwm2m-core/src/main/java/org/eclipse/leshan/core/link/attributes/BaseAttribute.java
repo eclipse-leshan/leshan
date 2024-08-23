@@ -73,12 +73,12 @@ public abstract class BaseAttribute implements Attribute {
 
     @Override
     public boolean equals(Object o) {
-        boolean result = false;
-        if (o instanceof BaseAttribute) {
-            BaseAttribute that = (BaseAttribute) o;
-            result = that.canEqual(this) && Objects.equals(name, that.name) && Objects.equals(value, that.value);
-        }
-        return result;
+        if (this == o)
+            return true;
+        if (!(o instanceof BaseAttribute))
+            return false;
+        BaseAttribute that = (BaseAttribute) o;
+        return that.canEqual(this) && Objects.equals(name, that.name) && Objects.equals(value, that.value);
     }
 
     public boolean canEqual(Object o) {

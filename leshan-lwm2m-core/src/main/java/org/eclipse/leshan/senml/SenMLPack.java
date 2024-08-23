@@ -67,8 +67,10 @@ public class SenMLPack {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SenMLPack)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof SenMLPack))
+            return false;
         SenMLPack senMLPack = (SenMLPack) o;
         return Objects.equals(records, senMLPack.records);
     }

@@ -203,7 +203,8 @@ public class LwM2mResourceInstance implements LwM2mChildNode {
     public final boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (!(obj instanceof LwM2mResourceInstance)) return false;
+        if (!(obj instanceof LwM2mResourceInstance))
+            return false;
         LwM2mResourceInstance other = (LwM2mResourceInstance) obj;
         if (id != other.id)
             return false;

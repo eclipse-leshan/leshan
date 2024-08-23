@@ -15,7 +15,14 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 
@@ -184,8 +191,10 @@ public class ContentFormat implements Comparable<ContentFormat> {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ContentFormat)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof ContentFormat))
+            return false;
         ContentFormat that = (ContentFormat) o;
         return code == that.code;
     }

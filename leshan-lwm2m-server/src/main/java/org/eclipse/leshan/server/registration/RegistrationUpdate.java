@@ -233,14 +233,27 @@ public class RegistrationUpdate {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof RegistrationUpdate)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof RegistrationUpdate))
+            return false;
         RegistrationUpdate that = (RegistrationUpdate) o;
-        return Objects.equals(registrationId, that.registrationId) && Objects.equals(clientTransportData, that.clientTransportData) && Objects.equals(lifeTimeInSec, that.lifeTimeInSec) && Objects.equals(smsNumber, that.smsNumber) && Objects.equals(bindingMode, that.bindingMode) && Objects.deepEquals(objectLinks, that.objectLinks) && Objects.equals(alternatePath, that.alternatePath) && Objects.equals(supportedContentFormats, that.supportedContentFormats) && Objects.equals(supportedObjects, that.supportedObjects) && Objects.equals(availableInstances, that.availableInstances) && Objects.equals(additionalAttributes, that.additionalAttributes) && Objects.equals(applicationData, that.applicationData);
+        return Objects.equals(registrationId, that.registrationId)
+                && Objects.equals(clientTransportData, that.clientTransportData)
+                && Objects.equals(lifeTimeInSec, that.lifeTimeInSec) && Objects.equals(smsNumber, that.smsNumber)
+                && Objects.equals(bindingMode, that.bindingMode) && Objects.deepEquals(objectLinks, that.objectLinks)
+                && Objects.equals(alternatePath, that.alternatePath)
+                && Objects.equals(supportedContentFormats, that.supportedContentFormats)
+                && Objects.equals(supportedObjects, that.supportedObjects)
+                && Objects.equals(availableInstances, that.availableInstances)
+                && Objects.equals(additionalAttributes, that.additionalAttributes)
+                && Objects.equals(applicationData, that.applicationData);
     }
 
     @Override
     public final int hashCode() {
-        return Objects.hash(registrationId, clientTransportData, lifeTimeInSec, smsNumber, bindingMode, Arrays.hashCode(objectLinks), alternatePath, supportedContentFormats, supportedObjects, availableInstances, additionalAttributes, applicationData);
+        return Objects.hash(registrationId, clientTransportData, lifeTimeInSec, smsNumber, bindingMode,
+                Arrays.hashCode(objectLinks), alternatePath, supportedContentFormats, supportedObjects,
+                availableInstances, additionalAttributes, applicationData);
     }
 }

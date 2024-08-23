@@ -15,8 +15,14 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.TreeMap;
 
 import org.eclipse.leshan.core.node.codec.tlv.LwM2mNodeTlvDecoder;
 import org.eclipse.leshan.core.util.Validate;
@@ -144,8 +150,10 @@ public class LwM2mObjectInstance implements LwM2mChildNode {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof LwM2mObjectInstance)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof LwM2mObjectInstance))
+            return false;
         LwM2mObjectInstance that = (LwM2mObjectInstance) o;
         return id == that.id && Objects.equals(resources, that.resources);
     }

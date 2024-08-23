@@ -16,7 +16,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.link.Link;
@@ -135,12 +140,16 @@ public class UpdateRequest extends AbstractLwM2mRequest<UpdateResponse>
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof UpdateRequest)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof UpdateRequest))
+            return false;
         UpdateRequest that = (UpdateRequest) o;
-        return that.canEqual(this) && Objects.equals(lifeTimeInSec, that.lifeTimeInSec) && Objects.equals(smsNumber, that.smsNumber)
-                && Objects.equals(bindingMode, that.bindingMode) && Objects.equals(registrationId, that.registrationId)
-                && Objects.deepEquals(objectLinks, that.objectLinks) && Objects.equals(additionalAttributes, that.additionalAttributes);
+        return that.canEqual(this) && Objects.equals(lifeTimeInSec, that.lifeTimeInSec)
+                && Objects.equals(smsNumber, that.smsNumber) && Objects.equals(bindingMode, that.bindingMode)
+                && Objects.equals(registrationId, that.registrationId)
+                && Objects.deepEquals(objectLinks, that.objectLinks)
+                && Objects.equals(additionalAttributes, that.additionalAttributes);
     }
 
     public boolean canEqual(Object o) {
@@ -149,6 +158,7 @@ public class UpdateRequest extends AbstractLwM2mRequest<UpdateResponse>
 
     @Override
     public int hashCode() {
-        return Objects.hash(lifeTimeInSec, smsNumber, bindingMode, registrationId, Arrays.hashCode(objectLinks), additionalAttributes);
+        return Objects.hash(lifeTimeInSec, smsNumber, bindingMode, registrationId, Arrays.hashCode(objectLinks),
+                additionalAttributes);
     }
 }

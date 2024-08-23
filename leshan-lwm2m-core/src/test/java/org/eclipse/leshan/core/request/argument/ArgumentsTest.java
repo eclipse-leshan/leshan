@@ -24,8 +24,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
+
+import nl.jqno.equalsverifier.EqualsVerifier;
 
 public class ArgumentsTest {
 

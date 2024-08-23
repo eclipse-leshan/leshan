@@ -252,8 +252,10 @@ public final class ULong extends Number implements Comparable<ULong> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ULong)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof ULong))
+            return false;
         ULong that = (ULong) o;
         return value == that.value;
     }

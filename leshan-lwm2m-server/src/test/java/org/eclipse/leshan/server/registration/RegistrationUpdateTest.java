@@ -23,12 +23,12 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.peer.IpPeer;
-import org.eclipse.leshan.senml.SenMLPack;
 import org.eclipse.leshan.server.queue.PresenceService;
 import org.junit.jupiter.api.Test;
+
+import nl.jqno.equalsverifier.EqualsVerifier;
 
 /**
  * tests the implementation of {@link PresenceService}

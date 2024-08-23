@@ -28,8 +28,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
+
+import nl.jqno.equalsverifier.EqualsVerifier;
 
 public class TimestampedLwM2mNodesTest {
 

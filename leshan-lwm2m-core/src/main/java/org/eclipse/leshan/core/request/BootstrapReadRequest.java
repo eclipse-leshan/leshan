@@ -15,11 +15,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import java.util.Objects;
+
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.BootstrapReadResponse;
-
-import java.util.Objects;
 
 /**
  * A Lightweight M2M request for retrieving the values of resources from a LWM2M Client.
@@ -149,9 +149,12 @@ public class BootstrapReadRequest extends AbstractSimpleDownlinkRequest<Bootstra
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof BootstrapReadRequest)) return false;
-        if (!super.equals(o)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof BootstrapReadRequest))
+            return false;
+        if (!super.equals(o))
+            return false;
         BootstrapReadRequest that = (BootstrapReadRequest) o;
         return that.canEqual(this) && Objects.equals(format, that.format);
     }

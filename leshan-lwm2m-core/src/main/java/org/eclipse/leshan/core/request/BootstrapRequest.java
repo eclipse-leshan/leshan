@@ -107,10 +107,14 @@ public class BootstrapRequest extends AbstractLwM2mRequest<BootstrapResponse>
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof BootstrapRequest)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof BootstrapRequest))
+            return false;
         BootstrapRequest that = (BootstrapRequest) o;
-        return that.canEqual(this) && Objects.equals(endpointName, that.endpointName) && Objects.equals(additionalAttributes, that.additionalAttributes) && Objects.equals(preferredContentFormat, that.preferredContentFormat);
+        return that.canEqual(this) && Objects.equals(endpointName, that.endpointName)
+                && Objects.equals(additionalAttributes, that.additionalAttributes)
+                && Objects.equals(preferredContentFormat, that.preferredContentFormat);
     }
 
     public boolean canEqual(Object o) {

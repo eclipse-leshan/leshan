@@ -45,8 +45,10 @@ public class PskIdentity implements LwM2mIdentity {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof PskIdentity)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof PskIdentity))
+            return false;
         PskIdentity that = (PskIdentity) o;
         return Objects.equals(pskIdentity, that.pskIdentity);
     }

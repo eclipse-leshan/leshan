@@ -45,8 +45,10 @@ public class SocketIdentity implements LwM2mIdentity {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SocketIdentity)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof SocketIdentity))
+            return false;
         SocketIdentity that = (SocketIdentity) o;
         return Objects.equals(peerAddress, that.peerAddress);
     }

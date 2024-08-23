@@ -15,9 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.attributes;
 
-import org.eclipse.leshan.core.util.Validate;
-
 import java.util.Objects;
+
+import org.eclipse.leshan.core.util.Validate;
 
 /**
  * An attribute without value
@@ -63,8 +63,10 @@ public class ValuelessAttribute implements Attribute {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ValuelessAttribute)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof ValuelessAttribute))
+            return false;
         ValuelessAttribute that = (ValuelessAttribute) o;
         return Objects.equals(name, that.name);
     }

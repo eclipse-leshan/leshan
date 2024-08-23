@@ -158,8 +158,10 @@ public class RouterService implements Service<CoapRequest, CoapResponse> {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof RequestMatcher)) return false;
+            if (this == o)
+                return true;
+            if (!(o instanceof RequestMatcher))
+                return false;
             RequestMatcher that = (RequestMatcher) o;
             return isPrefixed == that.isPrefixed && method == that.method && Objects.equals(uriPath, that.uriPath);
         }

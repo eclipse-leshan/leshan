@@ -80,9 +80,12 @@ public class MixedLwM2mLink extends Link {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof MixedLwM2mLink)) return false;
-        if (!super.equals(o)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof MixedLwM2mLink))
+            return false;
+        if (!super.equals(o))
+            return false;
         MixedLwM2mLink that = (MixedLwM2mLink) o;
         return that.canEqual(this) && Objects.equals(path, that.path) && Objects.equals(rootPath, that.rootPath);
     }

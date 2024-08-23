@@ -111,8 +111,10 @@ public class ObjectLink {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ObjectLink)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof ObjectLink))
+            return false;
         ObjectLink that = (ObjectLink) o;
         return objectId == that.objectId && objectInstanceId == that.objectInstanceId;
     }

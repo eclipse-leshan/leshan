@@ -74,11 +74,15 @@ public class SingleObservation extends Observation {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SingleObservation)) return false;
-        if (!super.equals(o)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof SingleObservation))
+            return false;
+        if (!super.equals(o))
+            return false;
         SingleObservation that = (SingleObservation) o;
-        return that.canEqual(this) && Objects.equals(path, that.path) && Objects.equals(contentFormat, that.contentFormat);
+        return that.canEqual(this) && Objects.equals(path, that.path)
+                && Objects.equals(contentFormat, that.contentFormat);
     }
 
     public boolean canEqual(Object o) {

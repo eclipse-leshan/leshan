@@ -17,13 +17,14 @@ package org.eclipse.leshan.core.link;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
 import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
 import org.eclipse.leshan.core.link.lwm2m.MixedLwM2mLink;
 import org.eclipse.leshan.core.link.lwm2m.attributes.MixedLwM2mAttributeSet;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.junit.jupiter.api.Test;
+
+import nl.jqno.equalsverifier.EqualsVerifier;
 
 public class MixedLwM2mLinkTest {
 
@@ -49,6 +50,7 @@ public class MixedLwM2mLinkTest {
         public ExtendedMixedLwM2mLink(String rootPath, LwM2mPath path, Attribute... attributes) {
             super(rootPath, path, new MixedLwM2mAttributeSet(attributes));
         }
+
         @Override
         public boolean canEqual(Object obj) {
             return (obj instanceof ExtendedMixedLwM2mLink);
@@ -57,6 +59,7 @@ public class MixedLwM2mLinkTest {
 
     @Test
     public void assertEqualsHashcode() {
-        EqualsVerifier.forClass(MixedLwM2mLink.class).withRedefinedSuperclass().withRedefinedSubclass(ExtendedMixedLwM2mLink.class).verify();
+        EqualsVerifier.forClass(MixedLwM2mLink.class).withRedefinedSuperclass()
+                .withRedefinedSubclass(ExtendedMixedLwM2mLink.class).verify();
     }
 }

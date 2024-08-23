@@ -68,7 +68,6 @@ public class Tlv {
         return type;
     }
 
-
     public Tlv[] getChildren() {
         return children;
     }
@@ -83,11 +82,13 @@ public class Tlv {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Tlv)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Tlv))
+            return false;
         Tlv tlv = (Tlv) o;
-        return identifier == tlv.identifier && type == tlv.type
-                && Objects.deepEquals(children, tlv.children) && Objects.deepEquals(value, tlv.value);
+        return identifier == tlv.identifier && type == tlv.type && Objects.deepEquals(children, tlv.children)
+                && Objects.deepEquals(value, tlv.value);
     }
 
     @Override

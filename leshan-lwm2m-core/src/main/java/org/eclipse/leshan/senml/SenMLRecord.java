@@ -155,30 +155,30 @@ public class SenMLRecord {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SenMLRecord)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof SenMLRecord))
+            return false;
         SenMLRecord that = (SenMLRecord) o;
 
         boolean comparablyEqualTime = (time == null && that.time == null)
-                || (time != null && that.time != null
-                && time.compareTo(that.time) == 0);
+                || (time != null && that.time != null && time.compareTo(that.time) == 0);
 
         boolean comparablyEqualBaseTime = (baseTime == null && that.baseTime == null)
-                || (baseTime != null && that.baseTime != null
-                && baseTime.compareTo(that.baseTime) == 0);
+                || (baseTime != null && that.baseTime != null && baseTime.compareTo(that.baseTime) == 0);
 
-        return Objects.equals(baseName, that.baseName) && comparablyEqualBaseTime
-                && Objects.equals(name, that.name) && comparablyEqualTime
-                && Objects.equals(numberValue, that.numberValue) && Objects.equals(booleanValue, that.booleanValue)
-                && Objects.equals(objectLinkValue, that.objectLinkValue) && Objects.equals(stringValue, that.stringValue)
-                && Objects.deepEquals(opaqueValue, that.opaqueValue);
+        return Objects.equals(baseName, that.baseName) && comparablyEqualBaseTime && Objects.equals(name, that.name)
+                && comparablyEqualTime && Objects.equals(numberValue, that.numberValue)
+                && Objects.equals(booleanValue, that.booleanValue)
+                && Objects.equals(objectLinkValue, that.objectLinkValue)
+                && Objects.equals(stringValue, that.stringValue) && Objects.deepEquals(opaqueValue, that.opaqueValue);
     }
 
     @Override
     public final int hashCode() {
-        return Objects.hash(baseName, baseTime != null ? baseTime.stripTrailingZeros() : null,
-                name, time != null ? time.stripTrailingZeros() : null, numberValue, booleanValue,
-                objectLinkValue, stringValue, Arrays.hashCode(opaqueValue));
+        return Objects.hash(baseName, baseTime != null ? baseTime.stripTrailingZeros() : null, name,
+                time != null ? time.stripTrailingZeros() : null, numberValue, booleanValue, objectLinkValue,
+                stringValue, Arrays.hashCode(opaqueValue));
     }
 
     @Override

@@ -127,21 +127,24 @@ public class JsonArrayEntry {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof JsonArrayEntry)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof JsonArrayEntry))
+            return false;
         JsonArrayEntry that = (JsonArrayEntry) o;
 
         boolean comparablyEqual = (time == null && that.time == null)
-                || (time != null && that.time != null
-                && time.compareTo(that.time) == 0);
+                || (time != null && that.time != null && time.compareTo(that.time) == 0);
 
         return Objects.equals(name, that.name) && Objects.equals(floatValue, that.floatValue)
-                && Objects.equals(booleanValue, that.booleanValue) && Objects.equals(objectLinkValue, that.objectLinkValue)
+                && Objects.equals(booleanValue, that.booleanValue)
+                && Objects.equals(objectLinkValue, that.objectLinkValue)
                 && Objects.equals(stringValue, that.stringValue) && comparablyEqual;
     }
 
     @Override
     public final int hashCode() {
-        return Objects.hash(name, floatValue, booleanValue, objectLinkValue, stringValue, time != null ? time.stripTrailingZeros() : null);
+        return Objects.hash(name, floatValue, booleanValue, objectLinkValue, stringValue,
+                time != null ? time.stripTrailingZeros() : null);
     }
 }

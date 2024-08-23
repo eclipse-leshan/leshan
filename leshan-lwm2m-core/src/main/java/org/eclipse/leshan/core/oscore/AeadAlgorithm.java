@@ -115,8 +115,10 @@ public class AeadAlgorithm implements Serializable {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof AeadAlgorithm)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof AeadAlgorithm))
+            return false;
         AeadAlgorithm that = (AeadAlgorithm) o;
         return value == that.value && nonceSize == that.nonceSize && Objects.equals(name, that.name);
     }

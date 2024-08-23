@@ -17,12 +17,13 @@ package org.eclipse.leshan.core.request;
 
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.junit.jupiter.api.Test;
+
+import nl.jqno.equalsverifier.EqualsVerifier;
 
 public class WriteAttributesRequestTest {
 
@@ -106,6 +107,7 @@ public class WriteAttributesRequestTest {
         ExtendedWriteAttributesRequest(LwM2mPath path, LwM2mAttributeSet attributes) {
             super(String.valueOf(path), attributes, null);
         }
+
         @Override
         public boolean canEqual(Object obj) {
             return (obj instanceof ExtendedWriteAttributesRequest);
@@ -114,6 +116,7 @@ public class WriteAttributesRequestTest {
 
     @Test
     public void assertEqualsHashcode() {
-        EqualsVerifier.forClass(WriteAttributesRequest.class).withRedefinedSuperclass().withRedefinedSubclass(ExtendedWriteAttributesRequest.class).withIgnoredFields("coapRequest").verify();
+        EqualsVerifier.forClass(WriteAttributesRequest.class).withRedefinedSuperclass()
+                .withRedefinedSubclass(ExtendedWriteAttributesRequest.class).withIgnoredFields("coapRequest").verify();
     }
 }

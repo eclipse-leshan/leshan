@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
+import java.util.Objects;
+
 import org.eclipse.leshan.core.link.lwm2m.attributes.AttributeClass;
 import org.eclipse.leshan.core.link.lwm2m.attributes.InvalidAttributesException;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
@@ -22,8 +24,6 @@ import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.WriteAttributesResponse;
-
-import java.util.Objects;
 
 public class WriteAttributesRequest extends AbstractSimpleDownlinkRequest<WriteAttributesResponse>
         implements DownlinkDeviceManagementRequest<WriteAttributesResponse> {
@@ -113,9 +113,12 @@ public class WriteAttributesRequest extends AbstractSimpleDownlinkRequest<WriteA
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof WriteAttributesRequest)) return false;
-        if (!super.equals(o)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof WriteAttributesRequest))
+            return false;
+        if (!super.equals(o))
+            return false;
         WriteAttributesRequest that = (WriteAttributesRequest) o;
         return that.canEqual(this) && Objects.equals(attributes, that.attributes);
     }

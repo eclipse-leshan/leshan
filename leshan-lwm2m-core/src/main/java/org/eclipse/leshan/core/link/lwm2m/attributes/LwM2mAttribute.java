@@ -16,10 +16,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.lwm2m.attributes;
 
+import java.util.Objects;
+
 import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.util.Validate;
-
-import java.util.Objects;
 
 /**
  * Represents an LwM2m Attribute that can be attached to an object, instance or resource.
@@ -138,8 +138,10 @@ public class LwM2mAttribute<T> implements Attribute {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof LwM2mAttribute)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof LwM2mAttribute))
+            return false;
         LwM2mAttribute<?> that = (LwM2mAttribute<?>) o;
         return Objects.equals(model, that.model) && Objects.equals(value, that.value);
     }

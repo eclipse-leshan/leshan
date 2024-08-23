@@ -15,7 +15,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class LwM2mRoot implements LwM2mNode {
     private final Map<Integer, LwM2mObject> objects;
@@ -49,8 +53,10 @@ public class LwM2mRoot implements LwM2mNode {
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof LwM2mRoot)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof LwM2mRoot))
+            return false;
         LwM2mRoot lwM2mRoot = (LwM2mRoot) o;
         return Objects.equals(objects, lwM2mRoot.objects);
     }

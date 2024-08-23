@@ -15,9 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.attributes;
 
-import org.eclipse.leshan.core.node.LwM2mPath;
-
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * A set of {@link Attribute}
@@ -71,25 +74,6 @@ public class AttributeSet implements Iterable<Attribute> {
     }
 
     @Override
-    public boolean equals(Object o) {
-        boolean result = false;
-        if (o instanceof AttributeSet) {
-            AttributeSet that = (AttributeSet) o;
-            result = that.canEqual(this) && Objects.equals(attributes, that.attributes);
-        }
-        return result;
-    }
-
-    public boolean canEqual(Object o) {
-        return (o instanceof AttributeSet);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(attributes);
-    }
-
-    @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         for (Attribute attr : attributes.values()) {
@@ -110,5 +94,24 @@ public class AttributeSet implements Iterable<Attribute> {
 
         }
         return builder.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof AttributeSet))
+            return false;
+        AttributeSet that = (AttributeSet) o;
+        return that.canEqual(this) && Objects.equals(attributes, that.attributes);
+    }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof AttributeSet);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(attributes);
     }
 }

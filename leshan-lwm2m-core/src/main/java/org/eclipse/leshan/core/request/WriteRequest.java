@@ -529,10 +529,13 @@ public class WriteRequest extends AbstractSimpleDownlinkRequest<WriteResponse>
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof WriteRequest)) return false;
-        if (!super.equals(o)) return false;
+        if (!(o instanceof WriteRequest))
+            return false;
+        if (!super.equals(o))
+            return false;
         WriteRequest that = (WriteRequest) o;
-        return that.canEqual(this) && Objects.equals(node, that.node) && Objects.equals(contentFormat, that.contentFormat) && mode == that.mode;
+        return that.canEqual(this) && Objects.equals(node, that.node)
+                && Objects.equals(contentFormat, that.contentFormat) && mode == that.mode;
     }
 
     public boolean canEqual(Object o) {

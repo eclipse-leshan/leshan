@@ -131,10 +131,13 @@ public class SendRequest extends AbstractLwM2mRequest<SendResponse>
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SendRequest)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof SendRequest))
+            return false;
         SendRequest that = (SendRequest) o;
-        return that.canEqual(this) && Objects.equals(format, that.format) && Objects.equals(timestampedNodes, that.timestampedNodes);
+        return that.canEqual(this) && Objects.equals(format, that.format)
+                && Objects.equals(timestampedNodes, that.timestampedNodes);
     }
 
     public boolean canEqual(Object o) {

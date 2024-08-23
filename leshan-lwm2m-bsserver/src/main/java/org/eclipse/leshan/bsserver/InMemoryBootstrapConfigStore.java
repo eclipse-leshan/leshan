@@ -115,8 +115,10 @@ public class InMemoryBootstrapConfigStore implements EditableBootstrapConfigStor
 
         @Override
         public final boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof PskByServer)) return false;
+            if (this == o)
+                return true;
+            if (!(o instanceof PskByServer))
+                return false;
             PskByServer that = (PskByServer) o;
             return Objects.equals(serverUrl, that.serverUrl) && Objects.equals(identity, that.identity);
         }

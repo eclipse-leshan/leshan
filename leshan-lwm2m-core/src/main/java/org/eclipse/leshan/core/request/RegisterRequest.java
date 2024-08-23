@@ -16,7 +16,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
@@ -174,16 +179,19 @@ public class RegisterRequest extends AbstractLwM2mRequest<RegisterResponse>
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof RegisterRequest)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof RegisterRequest))
+            return false;
         RegisterRequest that = (RegisterRequest) o;
-        return that.canEqual(this) && Objects.equals(endpointName, that.endpointName) && Objects.equals(lifetime, that.lifetime)
-                && Objects.equals(lwVersion, that.lwVersion) && Objects.equals(bindingMode, that.bindingMode)
-                && Objects.equals(queueMode, that.queueMode) && Objects.equals(smsNumber, that.smsNumber)
-                && Objects.deepEquals(objectLinks, that.objectLinks) && Objects.equals(additionalAttributes, that.additionalAttributes);
+        return that.canEqual(this) && Objects.equals(endpointName, that.endpointName)
+                && Objects.equals(lifetime, that.lifetime) && Objects.equals(lwVersion, that.lwVersion)
+                && Objects.equals(bindingMode, that.bindingMode) && Objects.equals(queueMode, that.queueMode)
+                && Objects.equals(smsNumber, that.smsNumber) && Objects.deepEquals(objectLinks, that.objectLinks)
+                && Objects.equals(additionalAttributes, that.additionalAttributes);
     }
 
-    public boolean canEqual(Object o){
+    public boolean canEqual(Object o) {
         return (o instanceof RegisterRequest);
     }
 
