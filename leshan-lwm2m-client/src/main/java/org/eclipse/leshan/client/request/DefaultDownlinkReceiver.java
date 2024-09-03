@@ -366,7 +366,7 @@ public class DefaultDownlinkReceiver implements DownlinkRequestReceiver {
 
         @Override
         public void visit(ObserveCompositeRequest request) {
-            response = new ObserveCompositeResponse(code, null, null, null, errorMessage, null);
+            response = new ObserveCompositeResponse(code, null, null, null, null, errorMessage, null);
         }
 
         @Override

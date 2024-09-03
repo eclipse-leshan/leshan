@@ -28,7 +28,7 @@ public class CancelCompositeObservationResponse extends ObserveCompositeResponse
     public CancelCompositeObservationResponse(ResponseCode code, Map<LwM2mPath, LwM2mNode> content,
             TimestampedLwM2mNodes timestampedValues, CompositeObservation observation, String errorMessage,
             Object coapResponse) {
-        super(code, content, null, observation, errorMessage, coapResponse);
+        super(code, content, timestampedValues, null, observation, errorMessage, coapResponse);
     }
 
     @Override

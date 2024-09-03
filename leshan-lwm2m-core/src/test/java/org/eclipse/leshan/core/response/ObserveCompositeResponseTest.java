@@ -37,7 +37,7 @@ public class ObserveCompositeResponseTest {
 
         // when
         ObserveCompositeResponse response = new ObserveCompositeResponse(CONTENT, exampleContent, null, null, null,
-                null);
+                null, null);
 
         // then
         assertEquals(exampleContent, response.getContent());

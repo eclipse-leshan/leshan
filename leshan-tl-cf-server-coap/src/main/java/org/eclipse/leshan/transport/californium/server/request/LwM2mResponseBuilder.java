@@ -314,20 +314,20 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkDe
         if (coapResponse.isError()) {
             // handle error response:
             lwM2mresponse = new ObserveCompositeResponse(toLwM2mResponseCode(coapResponse.getCode()), null, null, null,
-                    coapResponse.getPayloadString(), coapResponse);
+                    null, coapResponse.getPayloadString(), coapResponse);
 
         } else if (isResponseCodeContent()) {
             // handle success response:
-            Map<LwM2mPath, LwM2mNode> content = decodeCompositeCoapResponse(request.getPaths(), coapResponse, request,
-                    clientEndpoint);
+            TimestampedLwM2mNodes timestampedNodes = decodeTimestampedCompositeCoapResponse(request.getPaths(),
+                    coapResponse, request, clientEndpoint);
 
             CompositeObservation observation = null;
             if (coapResponse.getOptions().hasObserve()) {
                 // observe request successful
                 observation = ObserveUtil.createLwM2mCompositeObservation(coapRequest);
             }
-            lwM2mresponse = new ObserveCompositeResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null,
-                    observation, null, coapResponse);
+            lwM2mresponse = new ObserveCompositeResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
+                    timestampedNodes, null, observation, null, coapResponse);
         } else {
             // handle unexpected response:
             handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);

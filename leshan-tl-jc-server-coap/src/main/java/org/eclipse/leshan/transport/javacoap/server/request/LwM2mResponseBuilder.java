@@ -314,19 +314,19 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkDe
         if (coapResponse.getCode().getHttpCode() >= 400) {
             // handle error response:
             lwM2mresponse = new ObserveCompositeResponse(toLwM2mResponseCode(coapResponse.getCode()), null, null, null,
-                    coapResponse.getPayloadString(), coapResponse);
+                    null, coapResponse.getPayloadString(), coapResponse);
 
         } else if (isResponseCodeContent()) {
             // handle success response:
-            Map<LwM2mPath, LwM2mNode> content = decodeCompositeCoapResponse(request.getPaths(), coapResponse, request,
-                    clientEndpoint);
+            TimestampedLwM2mNodes timestampedNodes = decodeTimestampedCompositeCoapResponse(request.getPaths(),
+                    coapResponse, request, clientEndpoint);
 
             if (coapResponse.options().getObserve() != null) {
                 // Observe relation established
                 Observation observation = coapRequest.getTransContext().get(LwM2mKeys.LESHAN_OBSERVATION);
                 if (observation instanceof CompositeObservation) {
-                    lwM2mresponse = new ObserveCompositeResponse(toLwM2mResponseCode(coapResponse.getCode()), content,
-                            null, (CompositeObservation) observation, null, coapResponse);
+                    lwM2mresponse = new ObserveCompositeResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
+                            timestampedNodes, null, (CompositeObservation) observation, null, coapResponse);
                 } else {
                     throw new IllegalStateException(String.format(
                             "A Composite Observation is expected in coapRequest transport Context, but was %s",
@@ -334,8 +334,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkDe
                 }
             } else {
                 // Observe relation NOTestablished
-                lwM2mresponse = new ObserveCompositeResponse(toLwM2mResponseCode(coapResponse.getCode()), content, null,
-                        null, null, coapResponse);
+                lwM2mresponse = new ObserveCompositeResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
+                        timestampedNodes, null, null, null, coapResponse);
             }
         } else {
             // handle unexpected response:
