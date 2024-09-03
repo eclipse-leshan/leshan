@@ -574,7 +574,7 @@ public class LockStepTest {
 
         // check response received at server side
         ReadCompositeResponse response = future.get(1, TimeUnit.SECONDS);
-        assertThat(response.getTimestampedLwM2mNodes()).isEqualTo(timestampednodes);
+        assertThat(response.getTimestampedLwM2mNode()).isEqualTo(timestampednodes);
     }
 
 }

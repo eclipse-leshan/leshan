@@ -26,66 +26,94 @@ import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 public class ReadCompositeResponse extends AbstractLwM2mResponse {
 
     protected final Map<LwM2mPath, LwM2mNode> content;
+    protected final TimestampedLwM2mNodes timestampedValues;
 
-    protected TimestampedLwM2mNodes timestampedValues;
+    /**
+     * Generic constructor to create an {@link ReadCompositeResponse}
+     *
+     * On success response only one of that argument must be not <code>null</code> :
+     * <ul>
+     * <li>content
+     * <li>timestampedContent
+     * </ul>
+     * errorMessage could only be null on error.
+     *
+     * @param responseCode The {@link ResponseCode} of the response
+     * @param content If response code is success, content is all {@link LwM2mNode} requested. (else <code>null</code>)
+     * @param timestampedContent If response code is success, timestampedContent is all {@link LwM2mNode} requested with
+     *        1 associated timestamp.(else <code>null</code>)
+     * @param errorMessage A optional error message if {@link ResponseCode} is an error. (else <code>null</code>)
+     * @param coapResponse The underlying protocol response object generally when you receive the response not when you
+     *        send it.
+     */
+    public ReadCompositeResponse(ResponseCode responseCode, Map<LwM2mPath, LwM2mNode> content,
+            TimestampedLwM2mNodes timestampedContent, String errorMessage, Object coapResponse) {
+        super(responseCode, errorMessage, coapResponse);
 
-    public ReadCompositeResponse(ResponseCode code, Map<LwM2mPath, LwM2mNode> content,
-            TimestampedLwM2mNodes timestampedValues, String errorMessage, Object coapResponse) {
-        super(code, errorMessage, coapResponse);
+        if (timestampedContent != null) {
+            // Handle if timestamped value is passed
 
-        Map<LwM2mPath, LwM2mNode> responseContent = null;
-        TimestampedLwM2mNodes responsetimestampedValues = null;
-
-        if (timestampedValues != null) {
-            // handle if timestamped value is passed
+            // check that we don't pass content too.
             if (content != null) {
                 throw new IllegalArgumentException("content OR timestampedValue should be passed but not both");
             }
-            if (timestampedValues.getTimestamps().size() > 1) {
+            // check invalid size
+            if (timestampedContent.getTimestamps().size() == 0) {
+                throw new IllegalArgumentException("timestampValue can not be empty");
+            } else if (timestampedContent.getTimestamps().size() > 1) {
                 throw new IllegalArgumentException("only one timestamp in the content is allowed");
-            }
-            // check if we have only timestamp in timestampedValues
-            if (timestampedValues.getTimestamps().size() == 1) {
-                Instant timestamp = timestampedValues.getTimestamps().iterator().next();
+            } else {
+                // So we have only 1 timestamp value
+                Instant timestamp = timestampedContent.getTimestamps().iterator().next();
                 if (timestamp != null) {
-                    responsetimestampedValues = timestampedValues;
-                    responseContent = timestampedValues.getNodesAt(timestamp);
+                    this.timestampedValues = timestampedContent;
+                    this.content = timestampedContent.getNodesAt(timestamp);
 
                 } else {
-                    responseContent = timestampedValues.getNodes();
+                    this.timestampedValues = null;
+                    this.content = timestampedContent.getNodes();
                 }
             }
-
         } else {
             // handle if content (not timestamped) value is passed
-            responseContent = content;
+
+            // check content is not null
+            if (content == null) {
+                throw new IllegalArgumentException("content OR timestampedValue should be not null");
+            }
+
+            this.timestampedValues = null;
+            this.content = content;
         }
-
-        this.content = responseContent;
-        this.timestampedValues = responsetimestampedValues;
-
     }
 
+    /**
+     * Get all {@link LwM2mNode} returned as response payload.
+     *
+     * @return the value or <code>null</code> if the client returned an error response.
+     */
     public Map<LwM2mPath, LwM2mNode> getContent() {
         return content;
     }
 
     /**
-     * Get the {@link LwM2mNode} value returned as response payload.
+     * Get the {@link LwM2mNode} value for the given requested path
      *
      * @return the value or <code>null</code> if the client returned an error response.
      */
     public LwM2mNode getContent(String path) {
+        if (content == null)
+            return null;
         return content.get(new LwM2mPath(path));
     }
 
     /**
-     * Get the {@link TimestampedLwM2mNodes} value returned as response payload or <code>null</code> if the value is not
+     * Get all {@link LwM2mNode} with the corresponding associated timestamp or <code>null</code> if the value is not
      * timestamped, in that case you should use {@link #getContent()} instead.
      *
      * @return the value or <code>null</code> if the value is not timestamped OR if this is an error response.
      */
-    public TimestampedLwM2mNodes getTimestampedLwM2mNodes() {
+    public TimestampedLwM2mNodes getTimestampedLwM2mNode() {
         return timestampedValues;
     }
 

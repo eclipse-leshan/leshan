@@ -31,6 +31,7 @@ import org.eclipse.leshan.core.observation.CompositeObservation;
 public class ObserveCompositeResponse extends ReadCompositeResponse {
 
     protected final CompositeObservation observation;
+    protected final TimestampedLwM2mNodes historicalValues;
 
     public ObserveCompositeResponse(ResponseCode code, Map<LwM2mPath, LwM2mNode> content,
             TimestampedLwM2mNodes timestampedValues, CompositeObservation observation, String errorMessage,
@@ -38,7 +39,7 @@ public class ObserveCompositeResponse extends ReadCompositeResponse {
         super(code, timestampedValues != null && !timestampedValues.isEmpty() ? timestampedValues.getNodes() : content,
                 null, errorMessage, coapResponse);
         this.observation = observation;
-        this.timestampedValues = timestampedValues;
+        this.historicalValues = timestampedValues;
     }
 
     public CompositeObservation getObservation() {
@@ -46,7 +47,7 @@ public class ObserveCompositeResponse extends ReadCompositeResponse {
     }
 
     public TimestampedLwM2mNodes getTimestampedLwM2mNodes() {
-        return timestampedValues;
+        return historicalValues;
     }
 
     @Override
