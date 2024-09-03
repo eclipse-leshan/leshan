@@ -217,7 +217,7 @@ public class DefaultLwM2mEncoder implements LwM2mEncoder {
         if (encoder instanceof TimestampedMultiNodeEncoder) {
             return ((TimestampedMultiNodeEncoder) encoder).encodeTimestampedNodes(timestampedNodes, model, converter);
         } else if (encoder instanceof MultiNodeEncoder) {
-            return ((MultiNodeEncoder) encoder).encodeNodes(timestampedNodes.getNodes(), model, converter);
+            return ((MultiNodeEncoder) encoder).encodeNodes(timestampedNodes.getMostRecentNodes(), model, converter);
         } else {
             throw new CodecException("Encoder does not support multiple nodes encoding for this content format: %s",
                     format);

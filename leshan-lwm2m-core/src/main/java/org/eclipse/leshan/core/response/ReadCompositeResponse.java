@@ -71,7 +71,7 @@ public class ReadCompositeResponse extends AbstractLwM2mResponse {
 
                 } else {
                     this.timestampedValues = null;
-                    this.content = timestampedContent.getNodes();
+                    this.content = timestampedContent.getMostRecentNodes();
                 }
             }
         } else {

@@ -172,7 +172,7 @@ public class CoapNotificationReceiver implements NotificationsReceiver {
             if (timestampedNodes.getTimestamps().size() == 1
                     && timestampedNodes.getTimestamps().iterator().next() == null) {
 
-                return new ObserveCompositeResponse(responseCode, timestampedNodes.getNodes(), null,
+                return new ObserveCompositeResponse(responseCode, timestampedNodes.getMostRecentNodes(), null,
                         compositeObservation, null, coapResponse);
             } else {
                 return new ObserveCompositeResponse(responseCode, null, timestampedNodes, compositeObservation, null,

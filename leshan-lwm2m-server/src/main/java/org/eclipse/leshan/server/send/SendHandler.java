@@ -138,7 +138,7 @@ public class SendHandler implements SendService {
         // check if all data of Send request are registered by LwM2M device.
         // see : https://github.com/eclipse-leshan/leshan/issues/1472
         TimestampedLwM2mNodes timestampedNodes = request.getTimestampedNodes();
-        Map<LwM2mPath, LwM2mNode> nodes = timestampedNodes.getNodes();
+        Map<LwM2mPath, LwM2mNode> nodes = timestampedNodes.getFlattenNodes();
         for (LwM2mPath path : nodes.keySet()) {
             if (path.isRoot()) {
                 continue;

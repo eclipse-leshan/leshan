@@ -71,7 +71,7 @@ public class SendRequest extends AbstractLwM2mRequest<SendResponse>
             throw new InvalidRequestException("Content format MUST be SenML_CBOR or SenML_JSON but was " + format);
         }
         // Validate Nodes
-        validateNodes(timestampedNodes.getNodes());
+        validateNodes(timestampedNodes.getFlattenNodes());
 
         this.format = format;
     }

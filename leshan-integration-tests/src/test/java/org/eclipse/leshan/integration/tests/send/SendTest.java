@@ -129,7 +129,7 @@ public class SendTest {
 
         // wait for data and check result
         TimestampedLwM2mNodes data = server.waitForData(client.getEndpointName(), 1, TimeUnit.SECONDS);
-        Map<LwM2mPath, LwM2mNode> nodes = data.getNodes();
+        Map<LwM2mPath, LwM2mNode> nodes = data.getMostRecentNodes();
         LwM2mResource modelnumber = (LwM2mResource) nodes.get(new LwM2mPath("/3/0/1"));
         assertThat(modelnumber.getId()).isEqualTo(1);
         assertThat(modelnumber.getValue()).isEqualTo("IT-TEST-123");
@@ -159,7 +159,7 @@ public class SendTest {
 
         // wait for data and check result
         TimestampedLwM2mNodes data = server.waitForData(client.getEndpointName(), 1, TimeUnit.SECONDS);
-        Map<LwM2mPath, LwM2mNode> nodes = data.getNodes();
+        Map<LwM2mPath, LwM2mNode> nodes = data.getMostRecentNodes();
         LwM2mResource modelnumber = (LwM2mResource) nodes.get(new LwM2mPath("/3/0/1"));
         assertThat(modelnumber.getId()).isEqualTo(1);
         assertThat(modelnumber.getValue()).isEqualTo("IT-TEST-123");

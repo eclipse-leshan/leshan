@@ -36,8 +36,8 @@ public class ObserveCompositeResponse extends ReadCompositeResponse {
     public ObserveCompositeResponse(ResponseCode code, Map<LwM2mPath, LwM2mNode> content,
             TimestampedLwM2mNodes timestampedValues, CompositeObservation observation, String errorMessage,
             Object coapResponse) {
-        super(code, timestampedValues != null && !timestampedValues.isEmpty() ? timestampedValues.getNodes() : content,
-                null, errorMessage, coapResponse);
+        super(code, timestampedValues != null && !timestampedValues.isEmpty() ? timestampedValues.getMostRecentNodes()
+                : content, null, errorMessage, coapResponse);
         this.observation = observation;
         this.historicalValues = timestampedValues;
     }
