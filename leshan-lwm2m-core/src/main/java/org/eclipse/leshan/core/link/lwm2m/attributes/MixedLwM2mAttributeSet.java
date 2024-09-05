@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.lwm2m.attributes;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -117,21 +118,22 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
 
         // "lt" value < "gt" value MUST BE TRUE
         // https://www.openmobilealliance.org/release/LightweightM2M/V1_2_1-20221209-A/HTML-Version/OMA-TS-LightweightM2M_Core-V1_2_1-20221209-A.html#7-3-0-73-Attributes
-        LwM2mAttribute<Double> lt = this.getLwM2mAttribute(LwM2mAttributes.LESSER_THAN);
-        LwM2mAttribute<Double> gt = this.getLwM2mAttribute(LwM2mAttributes.GREATER_THAN);
+        LwM2mAttribute<BigDecimal> lt = this.getLwM2mAttribute(LwM2mAttributes.LESSER_THAN);
+        LwM2mAttribute<BigDecimal> gt = this.getLwM2mAttribute(LwM2mAttributes.GREATER_THAN);
         if ((lt != null) && (gt != null) //
                 && lt.hasValue() && gt.hasValue() //
-                && !(lt.getValue() < gt.getValue())) {
+                && !(lt.getValue().compareTo(gt.getValue()) < 0)) {
+            // && !(lt.getValue() < gt.getValue())) {
             throw new InvalidAttributesException("Attributes doesn't fulfill '%s'< '%s' condition", lt.getName(),
                     gt.getName());
         }
 
         // ("lt" value + 2*"st" values) <"gt" value MUST BE TRUE
         // https://www.openmobilealliance.org/release/LightweightM2M/V1_2_1-20221209-A/HTML-Version/OMA-TS-LightweightM2M_Core-V1_2_1-20221209-A.html#7-3-0-73-Attributes
-        LwM2mAttribute<Double> st = this.getLwM2mAttribute(LwM2mAttributes.STEP);
+        LwM2mAttribute<BigDecimal> st = this.getLwM2mAttribute(LwM2mAttributes.STEP);
         if ((lt != null) && (gt != null) && (st != null) ///
                 && lt.hasValue() && gt.hasValue() && st.hasValue() //
-                && !(lt.getValue() + 2 * st.getValue() < gt.getValue())) {
+                && !(lt.getValue().add(st.getValue().multiply(new BigDecimal(2))).compareTo(gt.getValue()) < 0)) {
             throw new InvalidAttributesException(
                     "Attributes doesn't fulfill  (\"lt\" value + 2*\"st\" values) <\"gt\") condition");
         }

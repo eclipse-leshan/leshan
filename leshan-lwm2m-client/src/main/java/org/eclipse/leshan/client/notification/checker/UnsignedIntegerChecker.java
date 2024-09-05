@@ -41,9 +41,9 @@ public class UnsignedIntegerChecker implements CriteriaBasedOnValueChecker {
             hasNumericalAttributes = true;
 
             // Handle Step
-            BigInteger step = new BigDecimal(attributes.get(LwM2mAttributes.STEP).getValue())
-                    .setScale(0, RoundingMode.CEILING).toBigIntegerExact();
-            if (lastSentULong.subtract(newULong).abs().subtract(step).signum() >= 0) {
+            BigDecimal step = attributes.get(LwM2mAttributes.STEP).getValue();
+            BigInteger stepRounded = step.setScale(0, RoundingMode.CEILING).toBigIntegerExact();
+            if (lastSentULong.subtract(newULong).abs().subtract(stepRounded).signum() >= 0) {
                 return true;
             }
         }
@@ -52,7 +52,7 @@ public class UnsignedIntegerChecker implements CriteriaBasedOnValueChecker {
             hasNumericalAttributes = true;
 
             // Handle LESSER_THAN
-            BigDecimal lessThan = new BigDecimal(attributes.get(LwM2mAttributes.LESSER_THAN).getValue());
+            BigDecimal lessThan = attributes.get(LwM2mAttributes.LESSER_THAN).getValue();
             BigInteger lessThanRounded = lessThan.setScale(0, RoundingMode.CEILING).toBigIntegerExact();
             if (lastSentULong.compareTo(lessThanRounded) >= 0 && newULong.compareTo(lessThanRounded) < 0) {
                 return true;
@@ -62,10 +62,10 @@ public class UnsignedIntegerChecker implements CriteriaBasedOnValueChecker {
         if (attributes.contains(LwM2mAttributes.GREATER_THAN)) {
             hasNumericalAttributes = true;
 
-            // Handle LESSER_THAN
-            BigDecimal lessThan = new BigDecimal(attributes.get(LwM2mAttributes.GREATER_THAN).getValue());
-            BigInteger lessThanRounded = lessThan.setScale(0, RoundingMode.FLOOR).toBigIntegerExact();
-            if (lastSentULong.compareTo(lessThanRounded) <= 0 && newULong.compareTo(lessThanRounded) > 0) {
+            // Handle GREATER_THAN
+            BigDecimal greaterThan = attributes.get(LwM2mAttributes.GREATER_THAN).getValue();
+            BigInteger greaterThanRounded = greaterThan.setScale(0, RoundingMode.FLOOR).toBigIntegerExact();
+            if (lastSentULong.compareTo(greaterThanRounded) <= 0 && newULong.compareTo(greaterThanRounded) > 0) {
                 return true;
             }
         }

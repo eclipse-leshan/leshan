@@ -42,6 +42,10 @@ public abstract class LwM2mAttributeModel<T> extends AttributeModel<LwM2mAttribu
         this.attributeClass = attributeClass;
     }
 
+    public T initValue(T value) {
+        return value;
+    }
+
     public String toCoreLinkValue(LwM2mAttribute<T> attr) {
         return attr.getValue().toString();
     }

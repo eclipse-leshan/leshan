@@ -51,12 +51,13 @@ public class LwM2mAttribute<T> implements Attribute {
     public LwM2mAttribute(LwM2mAttributeModel<T> model, T value) {
         Validate.notNull(model);
         this.model = model;
-        this.value = value;
         if (value == null) {
             if (!model.canBeValueless()) {
                 throw new IllegalArgumentException(String.format("Attribute %s must have a value", model.getName()));
             }
+            this.value = null;
         } else {
+            this.value = model.initValue(value);
             String errorMessage = model.getInvalidValueCause(value);
             if (errorMessage != null) {
                 throw new IllegalArgumentException(errorMessage);
@@ -149,5 +150,14 @@ public class LwM2mAttribute<T> implements Attribute {
     @Override
     public final int hashCode() {
         return Objects.hash(model, value);
+    }
+
+    @Override
+    public String toString() {
+        if (hasValue()) {
+            return getName() + "=" + value;
+        } else {
+            return getName();
+        }
     }
 }

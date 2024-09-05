@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.lwm2m.attributes;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -174,7 +175,7 @@ public final class LwM2mAttributes {
     // gt
     // LWM2M v1.1.1 doesn't allow negative value but this is a bug in the specification
     // See : https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/563
-    public static final LwM2mAttributeModel<Double> GREATER_THAN = new DoubleAttributeModel(//
+    public static final LwM2mAttributeModel<BigDecimal> GREATER_THAN = new BigDecimalAttributeModel(//
             "gt", //
             EnumSet.of(Attachment.RESOURCE, Attachment.RESOURCE_INTANCE), //
             AccessMode.RW, //
@@ -206,7 +207,7 @@ public final class LwM2mAttributes {
     // lt
     // LWM2M v1.1.1 doesn't allow negative value but this is a bug in the specification
     // See : https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues/563
-    public static final LwM2mAttributeModel<Double> LESSER_THAN = new DoubleAttributeModel( //
+    public static final LwM2mAttributeModel<BigDecimal> LESSER_THAN = new BigDecimalAttributeModel( //
             "lt", //
             EnumSet.of(Attachment.RESOURCE, Attachment.RESOURCE_INTANCE), //
             AccessMode.RW, //
@@ -236,7 +237,7 @@ public final class LwM2mAttributes {
         };
     };
     // st
-    public static final LwM2mAttributeModel<Double> STEP = new PositiveDoubleAttributeModel(//
+    public static final LwM2mAttributeModel<BigDecimal> STEP = new PositiveBigDecimalAttributeModel(//
             "st", //
             EnumSet.of(Attachment.RESOURCE, Attachment.RESOURCE_INTANCE), //
             AccessMode.RW, //
@@ -330,6 +331,18 @@ public final class LwM2mAttributes {
 
     public static <T> LwM2mAttribute<T> create(LwM2mAttributeModel<T> model, T value) {
         return new LwM2mAttribute<>(model, value);
+    }
+
+    public static LwM2mAttribute<BigDecimal> create(LwM2mAttributeModel<BigDecimal> model, double value) {
+        return new LwM2mAttribute<>(model, new BigDecimal(value));
+    }
+
+    public static LwM2mAttribute<BigDecimal> create(LwM2mAttributeModel<BigDecimal> model, long value) {
+        return new LwM2mAttribute<>(model, new BigDecimal(value));
+    }
+
+    public static LwM2mAttribute<BigDecimal> create(LwM2mAttributeModel<BigDecimal> model, String value) {
+        return new LwM2mAttribute<>(model, new BigDecimal(value));
     }
 
     public static <T> LwM2mAttribute<T> create(LwM2mAttributeModel<T> model) {

@@ -45,16 +45,16 @@ public class DefaultLwM2mAttributeParserTest {
                 Arguments.of("lt", LwM2mAttributes.create(LwM2mAttributes.LESSER_THAN)), //
                 Arguments.of("lt=30", LwM2mAttributes.create(LwM2mAttributes.LESSER_THAN, 30d)), //
                 Arguments.of("lt=-30", LwM2mAttributes.create(LwM2mAttributes.LESSER_THAN, -30d)), //
-                Arguments.of("lt=30.55", LwM2mAttributes.create(LwM2mAttributes.LESSER_THAN, 30.55)), //
-                Arguments.of("lt=-30.55", LwM2mAttributes.create(LwM2mAttributes.LESSER_THAN, -30.55)), //
+                Arguments.of("lt=30.55", LwM2mAttributes.create(LwM2mAttributes.LESSER_THAN, "30.55")), //
+                Arguments.of("lt=-30.55", LwM2mAttributes.create(LwM2mAttributes.LESSER_THAN, "-30.55")), //
                 Arguments.of("gt", LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN)), //
                 Arguments.of("gt=60", LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN, 60d)), //
                 Arguments.of("gt=-60", LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN, -60d)), //
-                Arguments.of("gt=60.55", LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN, 60.55)), //
-                Arguments.of("gt=-60.55", LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN, -60.55)), //
+                Arguments.of("gt=60.55", LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN, "60.55")), //
+                Arguments.of("gt=-60.55", LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN, "-60.55")), //
                 Arguments.of("st", LwM2mAttributes.create(LwM2mAttributes.STEP)), //
                 Arguments.of("st=60", LwM2mAttributes.create(LwM2mAttributes.STEP, 60d)), //
-                Arguments.of("st=60.55", LwM2mAttributes.create(LwM2mAttributes.STEP, 60.55)) //
+                Arguments.of("st=60.55", LwM2mAttributes.create(LwM2mAttributes.STEP, "60.55")) //
         );
     }
 

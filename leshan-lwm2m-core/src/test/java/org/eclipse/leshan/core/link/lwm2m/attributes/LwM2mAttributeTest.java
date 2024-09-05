@@ -15,6 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.lwm2m.attributes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.math.BigDecimal;
+
 import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
@@ -23,5 +27,15 @@ class LwM2mAttributeTest {
     @Test
     public void assertEqualsHashcode() {
         EqualsVerifier.forClass(LwM2mAttribute.class).verify();
+    }
+
+    @Test
+    public void assertEqualsHashcodeWithBigDecimalAttribute() {
+
+        LwM2mAttribute<BigDecimal> a1 = LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN, new BigDecimal("1.0"));
+        LwM2mAttribute<BigDecimal> a2 = LwM2mAttributes.create(LwM2mAttributes.GREATER_THAN, new BigDecimal("1"));
+
+        assertEquals(a1, a2);
+        assertEquals(a1.hashCode(), a2.hashCode());
     }
 }

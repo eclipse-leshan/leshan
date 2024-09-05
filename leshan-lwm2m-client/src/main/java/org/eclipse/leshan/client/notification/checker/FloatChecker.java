@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.notification.checker;
 
+import java.math.BigDecimal;
+
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -28,14 +30,15 @@ public class FloatChecker implements CriteriaBasedOnValueChecker {
     @Override
     public boolean shouldTriggerNotificationBasedOnValueChange(LwM2mAttributeSet attributes, Object lastSentValue,
             Object newValue) {
-        Double lastSentDouble = (Double) lastSentValue;
-        Double newDouble = (Double) newValue;
+        BigDecimal lastSentDouble = new BigDecimal((Double) lastSentValue);
+        BigDecimal newDouble = new BigDecimal((Double) newValue);
         boolean hasNumericalAttributes = false;
 
         if (attributes.contains(LwM2mAttributes.STEP)) {
             hasNumericalAttributes = true;
 
-            if (Math.abs(lastSentDouble - newDouble) >= attributes.get(LwM2mAttributes.STEP).getValue()) {
+            BigDecimal step = attributes.get(LwM2mAttributes.STEP).getValue();
+            if (lastSentDouble.subtract(newDouble).abs().subtract(step).signum() >= 0) {
                 return true;
             }
         }
@@ -43,8 +46,8 @@ public class FloatChecker implements CriteriaBasedOnValueChecker {
         if (attributes.contains(LwM2mAttributes.LESSER_THAN)) {
             hasNumericalAttributes = true;
 
-            Double lessThan = attributes.get(LwM2mAttributes.LESSER_THAN).getValue();
-            if (lastSentDouble >= lessThan && newDouble < lessThan) {
+            BigDecimal lessThan = attributes.get(LwM2mAttributes.LESSER_THAN).getValue();
+            if (lastSentDouble.compareTo(lessThan) >= 0 && newDouble.compareTo(lessThan) < 0) {
                 return true;
             }
         }
@@ -52,8 +55,8 @@ public class FloatChecker implements CriteriaBasedOnValueChecker {
         if (attributes.contains(LwM2mAttributes.GREATER_THAN)) {
             hasNumericalAttributes = true;
 
-            Double greaterThan = attributes.get(LwM2mAttributes.GREATER_THAN).getValue();
-            if (lastSentDouble <= greaterThan && newDouble > greaterThan) {
+            BigDecimal greaterThan = attributes.get(LwM2mAttributes.GREATER_THAN).getValue();
+            if (lastSentDouble.compareTo(greaterThan) <= 0 && newDouble.compareTo(greaterThan) > 0) {
                 return true;
             }
         }
