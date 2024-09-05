@@ -529,6 +529,8 @@ public class WriteRequest extends AbstractSimpleDownlinkRequest<WriteResponse>
 
     @Override
     public boolean equals(Object o) {
+        if (this == o)
+            return true;
         if (!(o instanceof WriteRequest))
             return false;
         if (!super.equals(o))

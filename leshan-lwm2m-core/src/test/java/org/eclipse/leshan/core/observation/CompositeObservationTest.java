@@ -43,6 +43,6 @@ class CompositeObservationTest {
     @Test
     public void assertEqualsHashcode() {
         EqualsVerifier.forClass(CompositeObservation.class).withRedefinedSuperclass()
-                .withRedefinedSubclass(ExtendedCompositeObservation.class).verify();
+                .withRedefinedSubclass(ExtendedCompositeObservation.class).withIgnoredFields("protocolData").verify();
     }
 }

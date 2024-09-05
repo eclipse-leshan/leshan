@@ -384,20 +384,22 @@ public class Registration {
                 && Objects.equals(smsNumber, that.smsNumber) && Objects.equals(lwM2mVersion, that.lwM2mVersion)
                 && Objects.equals(bindingMode, that.bindingMode) && Objects.equals(queueMode, that.queueMode)
                 && Objects.equals(endpoint, that.endpoint) && Objects.equals(id, that.id)
-                && Objects.deepEquals(objectLinks, that.objectLinks)
+                && Arrays.equals(objectLinks, that.objectLinks)
                 && Objects.equals(additionalRegistrationAttributes, that.additionalRegistrationAttributes)
                 && Objects.equals(rootPath, that.rootPath)
                 && Objects.equals(supportedContentFormats, that.supportedContentFormats)
                 && Objects.equals(supportedObjects, that.supportedObjects)
                 && Objects.equals(availableInstances, that.availableInstances)
-                && Objects.equals(lastUpdate, that.lastUpdate) && Objects.equals(applicationData, that.applicationData);
+                && Objects.equals(lastUpdate, that.lastUpdate) && Objects.equals(applicationData, that.applicationData)
+                && Objects.equals(lastEndpointUsed, that.lastEndpointUsed);
     }
 
     @Override
     public final int hashCode() {
         return Objects.hash(registrationDate, clientTransportData, lifeTimeInSec, smsNumber, lwM2mVersion, bindingMode,
                 queueMode, endpoint, id, Arrays.hashCode(objectLinks), additionalRegistrationAttributes, rootPath,
-                supportedContentFormats, supportedObjects, availableInstances, lastUpdate, applicationData);
+                supportedContentFormats, supportedObjects, availableInstances, lastUpdate, applicationData,
+                lastEndpointUsed);
     }
 
     public static class Builder {

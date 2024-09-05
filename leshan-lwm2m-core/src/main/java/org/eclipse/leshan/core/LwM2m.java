@@ -68,6 +68,8 @@ public interface LwM2m {
 
         @Override
         public boolean equals(Object o) {
+            if (this == o)
+                return true;
             if (!(o instanceof LwM2mVersion))
                 return false;
             if (!super.equals(o))

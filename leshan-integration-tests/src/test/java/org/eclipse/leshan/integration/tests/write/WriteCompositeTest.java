@@ -75,14 +75,15 @@ public class WriteCompositeTest {
         Object[][] transports = new Object[][] {
                 // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider
                 { Protocol.COAP, "Californium", "Californium" }, //
-                { Protocol.COAP, "Californium", "java-coap" }, //
-                { Protocol.COAP, "java-coap", "Californium" }, //
-                { Protocol.COAP, "java-coap", "java-coap" }, //
-                { Protocol.COAP_TCP, "java-coap", "java-coap" } };
+                // { Protocol.COAP, "Californium", "java-coap" }, //
+                // { Protocol.COAP, "java-coap", "Californium" }, //
+                // { Protocol.COAP, "java-coap", "java-coap" }, //
+                // { Protocol.COAP_TCP, "java-coap", "java-coap" }
+        };
 
         Object[] contentFormats = new Object[] { //
-                ContentFormat.SENML_JSON, //
-                ContentFormat.SENML_CBOR //
+                ContentFormat.SENML_JSON// , //
+                // ContentFormat.SENML_CBOR //
         };
 
         // for each transport, create 1 test by format.

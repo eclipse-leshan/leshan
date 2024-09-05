@@ -92,7 +92,7 @@ public abstract class Observation {
             return false;
         Observation that = (Observation) o;
         return that.canEqual(this) && Objects.equals(id, that.id) && Objects.equals(registrationId, that.registrationId)
-                && Objects.equals(context, that.context) && Objects.equals(protocolData, that.protocolData);
+                && Objects.equals(context, that.context);
     }
 
     public boolean canEqual(Object o) {
@@ -101,6 +101,6 @@ public abstract class Observation {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, registrationId, context, protocolData);
+        return Objects.hash(id, registrationId, context);
     }
 }

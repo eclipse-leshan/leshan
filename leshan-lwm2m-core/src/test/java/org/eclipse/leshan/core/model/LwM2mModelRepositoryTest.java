@@ -18,12 +18,12 @@ package org.eclipse.leshan.core.model;
 
 import org.junit.jupiter.api.Test;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+
 class LwM2mModelRepositoryTest {
     @Test
     public void assertEqualsHashcode() {
-        // EqualsVerifier.forClass(LwM2mModelRepository.class).suppress(Warning.NONFINAL_FIELDS).verify();
-        // Problem with Key class (it is the one that should be tested) - it is a PRIVATE nested class - cannot access
-        // the hash/equals methods
-        // Solution: make Key package-private for this test (it passes then)
+        EqualsVerifier.forClass(LwM2mModelRepository.Key.class).suppress(Warning.NONFINAL_FIELDS).verify();
     }
 }

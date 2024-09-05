@@ -40,6 +40,6 @@ class SingleObservationTest {
     @Test
     public void assertEqualsHashcode() {
         EqualsVerifier.forClass(SingleObservation.class).withRedefinedSuperclass()
-                .withRedefinedSubclass(ExtendedSingleObservation.class).verify();
+                .withRedefinedSubclass(ExtendedSingleObservation.class).withIgnoredFields("protocolData").verify();
     }
 }

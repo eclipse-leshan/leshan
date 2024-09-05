@@ -106,10 +106,9 @@ public class OscoreSetting implements Serializable {
         if (!(o instanceof OscoreSetting))
             return false;
         OscoreSetting that = (OscoreSetting) o;
-        return Objects.deepEquals(senderId, that.senderId) && Objects.deepEquals(recipientId, that.recipientId)
-                && Objects.deepEquals(masterSecret, that.masterSecret)
-                && Objects.equals(aeadAlgorithm, that.aeadAlgorithm)
-                && Objects.equals(hkdfAlgorithm, that.hkdfAlgorithm) && Objects.deepEquals(masterSalt, that.masterSalt);
+        return Arrays.equals(senderId, that.senderId) && Arrays.equals(recipientId, that.recipientId)
+                && Arrays.equals(masterSecret, that.masterSecret) && Objects.equals(aeadAlgorithm, that.aeadAlgorithm)
+                && Objects.equals(hkdfAlgorithm, that.hkdfAlgorithm) && Arrays.equals(masterSalt, that.masterSalt);
     }
 
     @Override

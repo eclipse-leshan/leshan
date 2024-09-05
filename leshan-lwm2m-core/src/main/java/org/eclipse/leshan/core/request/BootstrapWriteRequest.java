@@ -125,4 +125,8 @@ public class BootstrapWriteRequest extends AbstractSimpleDownlinkRequest<Bootstr
         return String.format("BootstrapWriteRequest [path=%s, node=%s, contentFormat=%s]", getPath(), node,
                 contentFormat);
     }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof BootstrapWriteRequest);
+    }
 }

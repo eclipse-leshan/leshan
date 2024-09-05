@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 public class LwM2mModelRepository {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mModelRepository.class);
 
-    private static class Key implements Comparable<Key> {
+    static class Key implements Comparable<Key> {
         Integer id;
         Version version;
 

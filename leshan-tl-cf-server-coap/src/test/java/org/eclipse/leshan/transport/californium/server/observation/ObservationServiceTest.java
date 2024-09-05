@@ -26,7 +26,6 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -34,6 +33,7 @@ import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.ObservationIdentifier;
 import org.eclipse.leshan.core.observation.SingleObservation;
@@ -266,20 +266,11 @@ public class ObservationServiceTest {
         }
     }
 
-    private class ExtendedObservation extends Observation {
-        public ExtendedObservation(ObservationIdentifier id, String registrationId, Map<String, String> context,
-                Map<String, String> protocolData) {
-            super(id, registrationId, context, protocolData);
-        }
-
-        @Override
-        public boolean canEqual(Object obj) {
-            return (obj instanceof ExtendedObservation);
-        }
-    }
-
     @Test
     public void assertEqualsHashcode() {
-        EqualsVerifier.forClass(Observation.class).withRedefinedSubclass(ExtendedObservation.class).verify();
+        EqualsVerifier.forClass(Observation.class).withRedefinedSubclass(CompositeObservation.class)
+                .withIgnoredFields("protocolData").verify();
+        EqualsVerifier.forClass(Observation.class).withRedefinedSubclass(SingleObservation.class)
+                .withIgnoredFields("protocolData").verify();
     }
 }

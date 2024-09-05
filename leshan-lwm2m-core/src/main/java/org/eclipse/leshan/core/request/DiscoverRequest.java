@@ -100,4 +100,8 @@ public class DiscoverRequest extends AbstractSimpleDownlinkRequest<DiscoverRespo
     public final String toString() {
         return String.format("DiscoverRequest [%s]", getPath());
     }
+
+    public boolean canEqual(Object o) {
+        return (o instanceof DiscoverRequest);
+    }
 }

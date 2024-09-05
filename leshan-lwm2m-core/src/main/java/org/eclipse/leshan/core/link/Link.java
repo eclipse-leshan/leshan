@@ -121,6 +121,8 @@ public class Link {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o)
+            return true;
         if (!(o instanceof Link))
             return false;
         Link that = (Link) o;

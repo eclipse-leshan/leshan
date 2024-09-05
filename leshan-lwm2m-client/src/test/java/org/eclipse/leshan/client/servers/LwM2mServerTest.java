@@ -22,6 +22,6 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 class LwM2mServerTest {
     @Test
     public void assertEqualsHashcode() {
-        EqualsVerifier.forClass(LwM2mServer.class).withIgnoredFields("uri").verify();
+        EqualsVerifier.forClass(LwM2mServer.class).verify();
     }
 }

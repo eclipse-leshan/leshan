@@ -171,7 +171,7 @@ public class SenMLRecord {
                 && comparablyEqualTime && Objects.equals(numberValue, that.numberValue)
                 && Objects.equals(booleanValue, that.booleanValue)
                 && Objects.equals(objectLinkValue, that.objectLinkValue)
-                && Objects.equals(stringValue, that.stringValue) && Objects.deepEquals(opaqueValue, that.opaqueValue);
+                && Objects.equals(stringValue, that.stringValue) && Arrays.equals(opaqueValue, that.opaqueValue);
     }
 
     @Override

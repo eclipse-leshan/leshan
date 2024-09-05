@@ -18,12 +18,10 @@ package org.eclipse.leshan.bsserver;
 import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
 
 class InMemoryBootstrapConfigStoreTest {
     @Test
     public void assertEqualsHashcode() {
-        EqualsVerifier.forClass(InMemoryBootstrapConfigStore.PskByServer.class).suppress(Warning.NONFINAL_FIELDS)
-                .verify();
+        EqualsVerifier.forClass(InMemoryBootstrapConfigStore.PskByServer.class).verify();
     }
 }

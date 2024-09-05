@@ -215,7 +215,7 @@ public class SecurityInfo implements Serializable {
             return false;
         SecurityInfo that = (SecurityInfo) o;
         return useX509Cert == that.useX509Cert && Objects.equals(endpoint, that.endpoint)
-                && Objects.equals(pskIdentity, that.pskIdentity) && Objects.deepEquals(preSharedKey, that.preSharedKey)
+                && Objects.equals(pskIdentity, that.pskIdentity) && Arrays.equals(preSharedKey, that.preSharedKey)
                 && Objects.equals(rawPublicKey, that.rawPublicKey) && Objects.equals(oscoreSetting, that.oscoreSetting);
     }
 

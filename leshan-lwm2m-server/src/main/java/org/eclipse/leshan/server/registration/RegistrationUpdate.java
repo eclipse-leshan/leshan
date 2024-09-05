@@ -241,7 +241,7 @@ public class RegistrationUpdate {
         return Objects.equals(registrationId, that.registrationId)
                 && Objects.equals(clientTransportData, that.clientTransportData)
                 && Objects.equals(lifeTimeInSec, that.lifeTimeInSec) && Objects.equals(smsNumber, that.smsNumber)
-                && Objects.equals(bindingMode, that.bindingMode) && Objects.deepEquals(objectLinks, that.objectLinks)
+                && Objects.equals(bindingMode, that.bindingMode) && Arrays.equals(objectLinks, that.objectLinks)
                 && Objects.equals(alternatePath, that.alternatePath)
                 && Objects.equals(supportedContentFormats, that.supportedContentFormats)
                 && Objects.equals(supportedObjects, that.supportedObjects)

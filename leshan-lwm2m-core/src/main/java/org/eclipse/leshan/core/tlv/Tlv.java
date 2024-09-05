@@ -88,7 +88,7 @@ public class Tlv {
             return false;
         Tlv tlv = (Tlv) o;
         return identifier == tlv.identifier && type == tlv.type && Objects.deepEquals(children, tlv.children)
-                && Objects.deepEquals(value, tlv.value);
+                && Arrays.equals(value, tlv.value);
     }
 
     @Override

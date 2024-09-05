@@ -15,30 +15,14 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link;
 
-import java.util.Collection;
-
-import org.eclipse.leshan.core.link.attributes.Attribute;
-import org.eclipse.leshan.core.link.attributes.AttributeSet;
+import org.eclipse.leshan.core.link.lwm2m.MixedLwM2mLink;
 import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 class LinkTest {
-
-    private class ExtendedLink extends Link {
-        public ExtendedLink(String uriReference, Collection<Attribute> attributes) {
-            super(uriReference, new AttributeSet(attributes));
-        }
-
-        @Override
-        public boolean canEqual(Object obj) {
-            return (obj instanceof ExtendedLink);
-        }
-    }
-
     @Test
     public void assertEqualsHashcode() {
-        EqualsVerifier.forClass(Link.class).withRedefinedSubclass(ExtendedLink.class).verify();
+        EqualsVerifier.forClass(Link.class).withRedefinedSubclass(MixedLwM2mLink.class).verify();
     }
-
 }

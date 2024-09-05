@@ -38,18 +38,8 @@ class LwM2mTest {
                 .withRedefinedSubclass(ExtendedLwM2mVersion.class).verify();
     }
 
-    /*
-     * private class ExtendedVersion extends LwM2m.Version { ExtendedVersion(int major, int minor) {
-     * super(toShortExact(major, "version (%d.%d) major part (%d) is not a valid short", major, minor, major),
-     * toShortExact(minor, "version (%d.%d) minor part (%d) is not a valid short", major, minor, minor)); }
-     *
-     * @Override public boolean canEqual(Object obj) { return (obj instanceof ExtendedVersion); } }
-     */
-
     @Test
     public void assertEqualsHashcodeVersion() {
-        // EqualsVerifier.forClass(LwM2m.Version.class).verify();
-        // don't know how to create a constructor for the ExtendedVersion, problem with toShortExact being private, not
-        // fe package-private
+        EqualsVerifier.forClass(LwM2m.Version.class).withRedefinedSubclass(LwM2m.LwM2mVersion.class).verify();
     }
 }

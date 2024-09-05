@@ -15,32 +15,38 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.request;
 
-import org.eclipse.leshan.core.node.LwM2mPath;
 import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 class AbstractSimpleDownlinkRequestTest {
-    private class ExtendedAbstractSimpleDownlinkRequest extends AbstractSimpleDownlinkRequest {
-        public ExtendedAbstractSimpleDownlinkRequest(LwM2mPath path, Object coapRequest) {
-            super(path, coapRequest);
-        }
-
-        @Override
-        public boolean canEqual(Object obj) {
-            return (obj instanceof ExtendedAbstractSimpleDownlinkRequest);
-        }
-
-        @Override
-        public void accept(DownlinkRequestVisitor visitor) {
-
-        }
-    }
-
     @Test
     public void assertEqualsHashcode() {
+        EqualsVerifier.forClass(AbstractSimpleDownlinkRequest.class).withRedefinedSubclass(CreateRequest.class)
+                .withIgnoredFields("coapRequest").verify();
+        EqualsVerifier.forClass(AbstractSimpleDownlinkRequest.class).withRedefinedSubclass(BootstrapReadRequest.class)
+                .withIgnoredFields("coapRequest").verify();
         EqualsVerifier.forClass(AbstractSimpleDownlinkRequest.class)
-                .withRedefinedSubclass(ExtendedAbstractSimpleDownlinkRequest.class).withIgnoredFields("coapRequest")
-                .verify();
+                .withRedefinedSubclass(CancelObservationRequest.class).withIgnoredFields("coapRequest").verify();
+        EqualsVerifier.forClass(AbstractSimpleDownlinkRequest.class).withRedefinedSubclass(ExecuteRequest.class)
+                .withIgnoredFields("coapRequest").verify();
+        EqualsVerifier.forClass(AbstractSimpleDownlinkRequest.class).withRedefinedSubclass(ObserveRequest.class)
+                .withIgnoredFields("coapRequest").verify();
+        EqualsVerifier.forClass(AbstractSimpleDownlinkRequest.class).withRedefinedSubclass(ReadRequest.class)
+                .withIgnoredFields("coapRequest").verify();
+        EqualsVerifier.forClass(AbstractSimpleDownlinkRequest.class).withRedefinedSubclass(WriteAttributesRequest.class)
+                .withIgnoredFields("coapRequest").verify();
+        EqualsVerifier.forClass(AbstractSimpleDownlinkRequest.class).withRedefinedSubclass(WriteRequest.class)
+                .withIgnoredFields("coapRequest").verify();
+        EqualsVerifier.forClass(AbstractSimpleDownlinkRequest.class).withRedefinedSubclass(DiscoverRequest.class)
+                .withIgnoredFields("coapRequest").verify();
+        EqualsVerifier.forClass(AbstractSimpleDownlinkRequest.class).withRedefinedSubclass(BootstrapDeleteRequest.class)
+                .withIgnoredFields("coapRequest").verify();
+        EqualsVerifier.forClass(AbstractSimpleDownlinkRequest.class)
+                .withRedefinedSubclass(BootstrapDiscoverRequest.class).withIgnoredFields("coapRequest").verify();
+        EqualsVerifier.forClass(AbstractSimpleDownlinkRequest.class).withRedefinedSubclass(BootstrapWriteRequest.class)
+                .withIgnoredFields("coapRequest").verify();
+        EqualsVerifier.forClass(AbstractSimpleDownlinkRequest.class).withRedefinedSubclass(DeleteRequest.class)
+                .withIgnoredFields("coapRequest").verify();
     }
 }

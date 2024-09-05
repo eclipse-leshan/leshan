@@ -30,6 +30,22 @@ public class LwM2mServer {
      */
     public final static LwM2mServer SYSTEM = new LwM2mServer(null, null, Role.SYSTEM, null);
 
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof LwM2mServer))
+            return false;
+        LwM2mServer that = (LwM2mServer) o;
+        return Objects.equals(transportData, that.transportData) && Objects.equals(id, that.id) && role == that.role
+                && Objects.equals(uri, that.uri);
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(transportData, id, role, uri);
+    }
+
     public enum Role {
         /**
          * Indicate internal call. Enables the "system" to read protected resources (e.g. resources of the security
@@ -126,18 +142,4 @@ public class LwM2mServer {
         return null;
     }
 
-    @Override
-    public final boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof LwM2mServer))
-            return false;
-        LwM2mServer that = (LwM2mServer) o;
-        return Objects.equals(transportData, that.transportData) && Objects.equals(id, that.id) && role == that.role;
-    }
-
-    @Override
-    public final int hashCode() {
-        return Objects.hash(transportData, id, role);
-    }
 }

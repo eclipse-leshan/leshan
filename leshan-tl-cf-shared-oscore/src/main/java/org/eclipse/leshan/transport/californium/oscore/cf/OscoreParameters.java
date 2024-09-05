@@ -84,9 +84,9 @@ public class OscoreParameters {
         if (!(o instanceof OscoreParameters))
             return false;
         OscoreParameters that = (OscoreParameters) o;
-        return Objects.deepEquals(senderId, that.senderId) && Objects.deepEquals(recipientId, that.recipientId)
-                && Objects.deepEquals(masterSecret, that.masterSecret) && aeadAlgorithm == that.aeadAlgorithm
-                && hmacAlgorithm == that.hmacAlgorithm && Objects.deepEquals(masterSalt, that.masterSalt);
+        return Arrays.equals(senderId, that.senderId) && Arrays.equals(recipientId, that.recipientId)
+                && Arrays.equals(masterSecret, that.masterSecret) && aeadAlgorithm == that.aeadAlgorithm
+                && hmacAlgorithm == that.hmacAlgorithm && Arrays.equals(masterSalt, that.masterSalt);
     }
 
     @Override

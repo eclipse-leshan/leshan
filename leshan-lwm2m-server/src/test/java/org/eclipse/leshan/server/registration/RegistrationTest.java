@@ -298,6 +298,6 @@ public class RegistrationTest {
 
     @Test
     public void assertEqualsHashcode() {
-        EqualsVerifier.forClass(Registration.class).withIgnoredFields("lastEndpointUsed").verify();
+        EqualsVerifier.forClass(Registration.class).verify();
     }
 }

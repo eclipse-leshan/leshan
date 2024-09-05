@@ -76,19 +76,8 @@ public class LwM2mPathTest {
 
     }
 
-    private class ExtendedLwM2mPath extends LwM2mPath {
-        public ExtendedLwM2mPath(int objectId) throws InvalidLwM2mPathException {
-            super(objectId);
-        }
-
-        @Override
-        public boolean canEqual(Object obj) {
-            return (obj instanceof ExtendedLwM2mPath);
-        }
-    }
-
     @Test
     public void assertEqualsHashcode() {
-        EqualsVerifier.forClass(LwM2mPath.class).withRedefinedSubclass(ExtendedLwM2mPath.class).verify();
+        EqualsVerifier.forClass(LwM2mPath.class).withRedefinedSubclass(LwM2mIncompletePath.class).verify();
     }
 }

@@ -86,7 +86,7 @@ public class ResponseCode {
             REQUEST_ENTITY_INCOMPLETE, PRECONDITION_FAILED, REQUEST_ENTITY_TOO_LARGE, UNSUPPORTED_CONTENT_FORMAT,
             INTERNAL_SERVER_ERROR };
 
-    private int code;
+    private final int code;
     private String name;
 
     public ResponseCode(int code, String name) {
@@ -153,11 +153,11 @@ public class ResponseCode {
         if (!(o instanceof ResponseCode))
             return false;
         ResponseCode that = (ResponseCode) o;
-        return code == that.code && Objects.equals(name, that.name);
+        return code == that.code;
     }
 
     @Override
     public final int hashCode() {
-        return Objects.hash(code, name);
+        return Objects.hash(code);
     }
 }

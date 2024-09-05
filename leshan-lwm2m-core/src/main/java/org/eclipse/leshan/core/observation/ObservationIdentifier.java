@@ -16,7 +16,6 @@
 package org.eclipse.leshan.core.observation;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 import org.eclipse.leshan.core.util.Hex;
 
@@ -59,7 +58,7 @@ public class ObservationIdentifier {
         if (!(o instanceof ObservationIdentifier))
             return false;
         ObservationIdentifier that = (ObservationIdentifier) o;
-        return Objects.deepEquals(bytes, that.bytes);
+        return Arrays.equals(bytes, that.bytes);
     }
 
     @Override

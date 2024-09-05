@@ -317,6 +317,8 @@ public class CreateRequest extends AbstractSimpleDownlinkRequest<CreateResponse>
 
     @Override
     public boolean equals(Object o) {
+        if (this == o)
+            return true;
         if (!super.equals(o))
             return false;
         if (!(o instanceof CreateRequest))

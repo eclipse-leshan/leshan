@@ -16,7 +16,6 @@
 package org.eclipse.leshan.core.peer;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 import org.eclipse.leshan.core.util.Validate;
 
@@ -52,7 +51,7 @@ public class OscoreIdentity implements LwM2mIdentity {
         if (!(o instanceof OscoreIdentity))
             return false;
         OscoreIdentity that = (OscoreIdentity) o;
-        return Objects.deepEquals(RecipientId, that.RecipientId);
+        return Arrays.equals(RecipientId, that.RecipientId);
     }
 
     @Override

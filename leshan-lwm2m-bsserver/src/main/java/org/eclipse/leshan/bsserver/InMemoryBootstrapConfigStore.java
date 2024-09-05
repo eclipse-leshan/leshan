@@ -105,8 +105,8 @@ public class InMemoryBootstrapConfigStore implements EditableBootstrapConfigStor
     }
 
     protected static class PskByServer {
-        public String serverUrl;
-        public String identity;
+        public final String serverUrl;
+        public final String identity;
 
         public PskByServer(String serverUrl, String identity) {
             this.serverUrl = serverUrl;
