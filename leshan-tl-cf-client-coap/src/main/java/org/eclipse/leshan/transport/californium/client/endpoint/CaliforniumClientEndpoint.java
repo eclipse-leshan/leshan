@@ -15,8 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.transport.californium.client.endpoint;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +26,8 @@ import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpoint;
 import org.eclipse.leshan.client.servers.LwM2mServer;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.request.UplinkRequest;
@@ -80,14 +80,9 @@ public class CaliforniumClientEndpoint implements LwM2mClientEndpoint {
     }
 
     @Override
-    public URI getURI() {
-        try {
-            return new URI(protocol.getUriScheme(), null, getCoapEndpoint().getAddress().getHostString(),
-                    getCoapEndpoint().getAddress().getPort(), null, null, null);
-        } catch (URISyntaxException e) {
-            // TODO TL : handle this properly
-            throw new IllegalStateException(e);
-        }
+    public EndpointUri getURI() {
+        return EndpointUriUtil.createUri(protocol.getUriScheme(), getCoapEndpoint().getAddress().getHostString(),
+                getCoapEndpoint().getAddress().getPort());
     }
 
     @Override

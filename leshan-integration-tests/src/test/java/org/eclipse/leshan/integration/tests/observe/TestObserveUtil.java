@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.observe;
 
-import java.net.URI;
 import java.util.Random;
 
 import org.eclipse.californium.core.coap.CoAP.Type;
@@ -26,13 +25,14 @@ import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.RawData;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.request.ContentFormat;
 
 public class TestObserveUtil {
     public static Random r = new Random();
 
-    public static void sendNotification(Connector connector, URI destination, byte[] payload, byte[] token, int observe,
-            ContentFormat contentFormat) {
+    public static void sendNotification(Connector connector, EndpointUri destination, byte[] payload, byte[] token,
+            int observe, ContentFormat contentFormat) {
 
         // create observe response
         Response response = new Response(org.eclipse.californium.core.coap.CoAP.ResponseCode.CONTENT);

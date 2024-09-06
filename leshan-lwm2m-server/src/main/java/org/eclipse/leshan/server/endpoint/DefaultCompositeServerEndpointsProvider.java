@@ -15,13 +15,13 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.endpoint;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
@@ -56,7 +56,7 @@ public class DefaultCompositeServerEndpointsProvider implements CompositeServerE
     }
 
     @Override
-    public LwM2mServerEndpoint getEndpoint(URI uri) {
+    public LwM2mServerEndpoint getEndpoint(EndpointUri uri) {
         for (LwM2mServerEndpointsProvider provider : providers) {
             LwM2mServerEndpoint endpoint = provider.getEndpoint(uri);
             if (endpoint != null) {

@@ -15,8 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.bsserver.request;
 
-import java.net.URI;
-
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.UplinkBootstrapRequest;
 import org.eclipse.leshan.core.request.UplinkRequest;
@@ -26,8 +25,8 @@ import org.eclipse.leshan.core.response.SendableResponse;
 public interface BootstrapUplinkRequestReceiver {
 
     <T extends LwM2mResponse> SendableResponse<T> requestReceived(LwM2mPeer sender, UplinkBootstrapRequest<T> request,
-            URI serverEndpointUri);
+            EndpointUri serverEndpointUri);
 
     void onError(LwM2mPeer sender, Exception exception,
-            Class<? extends UplinkRequest<? extends LwM2mResponse>> requestType, URI serverEndpointUri);
+            Class<? extends UplinkRequest<? extends LwM2mResponse>> requestType, EndpointUri serverEndpointUri);
 }

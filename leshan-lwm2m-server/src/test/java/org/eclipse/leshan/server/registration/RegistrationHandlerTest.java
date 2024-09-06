@@ -18,12 +18,12 @@ package org.eclipse.leshan.server.registration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.DefaultLinkParser;
 import org.eclipse.leshan.core.link.LinkParseException;
@@ -115,7 +115,7 @@ public class RegistrationHandlerTest {
         return new IpPeer(new InetSocketAddress(0));
     }
 
-    private URI givenServerEndpointUri() {
+    private EndpointUri givenServerEndpointUri() {
         return EndpointUriUtil.createUri("coap", "localhost", 5683);
     }
 

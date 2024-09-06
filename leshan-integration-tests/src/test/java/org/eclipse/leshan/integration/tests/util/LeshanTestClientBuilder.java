@@ -18,7 +18,6 @@ package org.eclipse.leshan.integration.tests.util;
 import static org.eclipse.leshan.core.LwM2mId.OSCORE;
 
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
@@ -59,6 +58,7 @@ import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.LwM2mId;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.LinkSerializer;
@@ -135,7 +135,7 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
         try {
             // connect to LWM2M Server
             if (server != null) {
-                URI uri = getServerUri();
+                EndpointUri uri = getServerUri();
 
                 int serverID = 12345;
 
@@ -166,7 +166,7 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
             // connect to LWM2M Bootstrap Server
             else if (bootstrapServer != null) {
                 LwM2mBootstrapServerEndpoint endpoint = bootstrapServer.getEndpoint(protocolToUse);
-                URI uri = endpoint.getURI();
+                EndpointUri uri = endpoint.getURI();
                 Security securityEnabler = null;
 
                 if (pskIdentity != null && pskKey != null) {
@@ -458,9 +458,9 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
         return this;
     }
 
-    private URI getServerUri() {
+    private EndpointUri getServerUri() {
         LwM2mServerEndpoint endpoint = server.getEndpoint(protocolToUse);
-        URI serverUri = endpoint.getURI();
+        EndpointUri serverUri = endpoint.getURI();
         // we force usage of "localhost" as hostname to be sure that X.509 test works.
         // see : https://github.com/eclipse-leshan/leshan/issues/1461#issuecomment-1631143202
         if (proxy != null) {

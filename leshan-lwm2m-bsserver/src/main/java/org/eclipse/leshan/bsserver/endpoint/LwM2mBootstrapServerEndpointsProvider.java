@@ -15,18 +15,18 @@
  *******************************************************************************/
 package org.eclipse.leshan.bsserver.endpoint;
 
-import java.net.URI;
 import java.util.List;
 
 import org.eclipse.leshan.bsserver.LeshanBootstrapServer;
 import org.eclipse.leshan.bsserver.request.BootstrapUplinkRequestReceiver;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 
 public interface LwM2mBootstrapServerEndpointsProvider {
 
     List<LwM2mBootstrapServerEndpoint> getEndpoints();
 
-    LwM2mBootstrapServerEndpoint getEndpoint(URI uri);
+    LwM2mBootstrapServerEndpoint getEndpoint(EndpointUri uri);
 
     void createEndpoints(BootstrapUplinkRequestReceiver requestReceiver, BootstrapServerEndpointToolbox toolbox,
             ServerSecurityInfo serverSecurityInfo, LeshanBootstrapServer server);

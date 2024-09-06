@@ -16,7 +16,6 @@
 package org.eclipse.leshan.transport.californium.server.endpoint.coaps;
 
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.security.Principal;
 import java.security.PublicKey;
 import java.util.Arrays;
@@ -57,6 +56,7 @@ import org.eclipse.californium.scandium.dtls.DtlsHandshakeTimeoutException;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.californium.scandium.dtls.x509.SingleCertificateProvider;
 import org.eclipse.californium.scandium.dtls.x509.StaticNewAdvancedCertificateVerifier;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.peer.IpPeer;
@@ -112,17 +112,17 @@ public class CoapsServerEndpointFactory implements CaliforniumServerEndpointFact
                 DtlsConfig.DEFINITIONS);
     }
 
-    protected final URI endpointUri;
+    protected final EndpointUri endpointUri;
     protected final String loggingTagPrefix;
     protected final Configuration configuration;
     protected final Consumer<DtlsConnectorConfig.Builder> dtlsConnectorConfigInitializer;
     protected final Consumer<CoapEndpoint.Builder> coapEndpointConfigInitializer;
 
-    public CoapsServerEndpointFactory(URI uri) {
+    public CoapsServerEndpointFactory(EndpointUri uri) {
         this(uri, null, null, null, null);
     }
 
-    public CoapsServerEndpointFactory(URI uri, String loggingTagPrefix, Configuration configuration,
+    public CoapsServerEndpointFactory(EndpointUri uri, String loggingTagPrefix, Configuration configuration,
             Consumer<DtlsConnectorConfig.Builder> dtlsConnectorConfigInitializer,
             Consumer<Builder> coapEndpointConfigInitializer) {
         EndpointUriUtil.validateURI(uri);
@@ -140,7 +140,7 @@ public class CoapsServerEndpointFactory implements CaliforniumServerEndpointFact
     }
 
     @Override
-    public URI getUri() {
+    public EndpointUri getUri() {
         return endpointUri;
     }
 

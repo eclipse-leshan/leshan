@@ -15,8 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.transport.javacoap.server.endpoint;
 
-import java.net.URI;
-
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 
@@ -35,7 +34,7 @@ public class EndpointUriProvider {
         this.coapServer = coapServer;
     }
 
-    public URI getEndpointUri() {
+    public EndpointUri getEndpointUri() {
         return EndpointUriUtil.createUri(protocol.getUriScheme(), coapServer.getLocalSocketAddress());
     }
 }

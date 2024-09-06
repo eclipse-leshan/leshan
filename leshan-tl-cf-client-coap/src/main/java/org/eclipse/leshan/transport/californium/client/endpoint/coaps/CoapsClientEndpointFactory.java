@@ -17,7 +17,6 @@ package org.eclipse.leshan.transport.californium.client.endpoint.coaps;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.security.Principal;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
@@ -60,6 +59,7 @@ import org.eclipse.leshan.client.security.CertificateVerifierFactory;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.SecurityMode;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.peer.IpPeer;
@@ -107,7 +107,7 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
     }
 
     @Override
-    protected String getLoggingTag(URI uri) {
+    protected String getLoggingTag(EndpointUri uri) {
         if (loggingTagPrefix != null) {
             return String.format("[%s-%s]", loggingTagPrefix, uri);
         } else {

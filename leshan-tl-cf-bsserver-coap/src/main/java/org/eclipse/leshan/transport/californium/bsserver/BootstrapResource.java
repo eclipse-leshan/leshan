@@ -25,6 +25,7 @@ import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.bsserver.request.BootstrapUplinkRequestReceiver;
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -94,7 +95,7 @@ public class BootstrapResource extends LwM2mCoapResource {
         Request coapRequest = exchange.advanced().getRequest();
         SendableResponse<BootstrapResponse> sendableResponse = receiver.requestReceived(clientIdentity,
                 new BootstrapRequest(endpoint, preferredContentFomart, additionalParams, coapRequest),
-                exchange.advanced().getEndpoint().getUri());
+                EndpointUriUtil.createUri(exchange.advanced().getEndpoint().getUri()));
         BootstrapResponse response = sendableResponse.getResponse();
         if (response.isSuccess()) {
             exchange.respond(toCoapResponseCode(response.getCode()));

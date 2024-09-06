@@ -16,8 +16,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.redis.serialization;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -31,6 +29,8 @@ import java.util.Set;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.Attribute;
 import org.eclipse.leshan.core.link.attributes.AttributeModel;
@@ -165,10 +165,10 @@ public class RegistrationSerDes {
     }
 
     public Registration deserialize(JsonNode jObj) {
-        URI lastEndpointUsed;
+        EndpointUri lastEndpointUsed;
         try {
-            lastEndpointUsed = new URI(jObj.get("epUri").asText());
-        } catch (URISyntaxException e1) {
+            lastEndpointUsed = EndpointUriUtil.createUri(jObj.get("epUri").asText());
+        } catch (IllegalStateException e1) {
             throw new IllegalStateException(
                     String.format("Unable to deserialize last endpoint used URI %s of registration %s/%s",
                             jObj.get("epUri").asText(), jObj.get("regId").asText(), jObj.get("ep").asText()));

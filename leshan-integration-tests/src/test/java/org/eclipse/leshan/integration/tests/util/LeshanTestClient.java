@@ -26,7 +26,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.security.cert.Certificate;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +46,7 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.send.DataSender;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
@@ -244,10 +244,10 @@ public class LeshanTestClient extends LeshanClient {
 
     private boolean isServerIdentifiedByUri(LeshanTestServer server, String expectedUri) {
         for (LwM2mServerEndpoint endpoint : server.getEndpoints()) {
-            URI endpointURI = endpoint.getURI();
+            EndpointUri endpointURI = endpoint.getURI();
             InetSocketAddress endpointAddr = EndpointUriUtil.getSocketAddr(endpointURI);
             if (proxy != null && endpointAddr.equals(proxy.getServerAddress())) {
-                URI proxyUri = EndpointUriUtil.replaceAddress(endpointURI, proxy.getClientSideProxyAddress());
+                EndpointUri proxyUri = EndpointUriUtil.replaceAddress(endpointURI, proxy.getClientSideProxyAddress());
                 if (proxyUri.toString().equals(expectedUri)) {
                     return true;
                 }

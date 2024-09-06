@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 Sierra Wireless and others.
+ * Copyright (c) 2024 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -13,18 +13,16 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.integration.tests.util;
+package org.eclipse.leshan.core.endpoint;
 
-import java.net.InetSocketAddress;
+import org.junit.jupiter.api.Test;
 
-import org.eclipse.leshan.core.endpoint.EndpointUri;
-import org.eclipse.leshan.core.endpoint.Protocol;
+import nl.jqno.equalsverifier.EqualsVerifier;
 
-public class LeshanProxyBuilder {
+public class EndpointUriTest {
 
-    public static ReverseProxy givenReverseProxyFor(LeshanTestServer server, Protocol protocol) {
-        EndpointUri serverEndpointUri = server.getEndpoint(protocol).getURI();
-        return new ReverseProxy(new InetSocketAddress("localhost", 0),
-                new InetSocketAddress(serverEndpointUri.getHost(), serverEndpointUri.getPort()));
+    @Test
+    public void assertEqualsHashcode() {
+        EqualsVerifier.forClass(EndpointUri.class).verify();
     }
 }

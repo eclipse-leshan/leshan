@@ -16,12 +16,12 @@
 package org.eclipse.leshan.transport.californium.bsserver.endpoint.coap;
 
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.util.List;
 
 import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.transport.californium.bsserver.endpoint.BootstrapServerProtocolProvider;
@@ -45,12 +45,12 @@ public class CoapBootstrapServerProtocolProvider implements BootstrapServerProto
     }
 
     @Override
-    public CaliforniumBootstrapServerEndpointFactory createDefaultEndpointFactory(URI uri) {
+    public CaliforniumBootstrapServerEndpointFactory createDefaultEndpointFactory(EndpointUri uri) {
         return new CoapBootstrapServerEndpointFactory(uri);
     }
 
     @Override
-    public URI getDefaultUri(Configuration configuration) {
+    public EndpointUri getDefaultUri(Configuration configuration) {
         return EndpointUriUtil.createUri(getProtocol().getUriScheme(),
                 new InetSocketAddress(configuration.get(CoapConfig.COAP_PORT)));
     }

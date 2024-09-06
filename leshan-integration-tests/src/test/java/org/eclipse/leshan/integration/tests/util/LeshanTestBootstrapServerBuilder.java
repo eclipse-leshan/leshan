@@ -17,7 +17,6 @@ package org.eclipse.leshan.integration.tests.util;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
@@ -34,6 +33,7 @@ import org.eclipse.leshan.bsserver.LeshanBootstrapServerBuilder;
 import org.eclipse.leshan.bsserver.endpoint.LwM2mBootstrapServerEndpointsProvider;
 import org.eclipse.leshan.bsserver.security.BootstrapSecurityStore;
 import org.eclipse.leshan.bsserver.security.BootstrapSecurityStoreAdapter;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
@@ -206,7 +206,7 @@ public class LeshanTestBootstrapServerBuilder extends LeshanBootstrapServerBuild
         if (protocolToUse.equals(Protocol.COAP)) {
             return new CoapBootstrapServerProtocolProvider() {
                 @Override
-                public CaliforniumBootstrapServerEndpointFactory createDefaultEndpointFactory(URI uri) {
+                public CaliforniumBootstrapServerEndpointFactory createDefaultEndpointFactory(EndpointUri uri) {
                     return new CoapOscoreBootstrapServerEndpointFactory(uri);
                 }
             };

@@ -15,9 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.endpoint;
 
-import java.net.URI;
 import java.util.List;
 
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.request.UplinkDeviceManagementRequestReceiver;
@@ -27,7 +27,7 @@ public interface LwM2mServerEndpointsProvider {
 
     List<LwM2mServerEndpoint> getEndpoints();
 
-    LwM2mServerEndpoint getEndpoint(URI uri);
+    LwM2mServerEndpoint getEndpoint(EndpointUri uri);
 
     void createEndpoints(UplinkDeviceManagementRequestReceiver requestReceiver,
             LwM2mNotificationReceiver observationService, ServerEndpointToolbox toolbox,

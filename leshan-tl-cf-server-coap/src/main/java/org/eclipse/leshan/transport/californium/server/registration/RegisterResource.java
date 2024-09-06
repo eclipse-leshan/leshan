@@ -28,6 +28,7 @@ import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.LinkParser;
@@ -182,7 +183,7 @@ public class RegisterResource extends LwM2mCoapResource {
         // Handle request
         // -------------------------------
         final SendableResponse<RegisterResponse> sendableResponse = receiver.requestReceived(sender, null,
-                registerRequest, exchange.advanced().getEndpoint().getUri());
+                registerRequest, EndpointUriUtil.createUri(exchange.advanced().getEndpoint().getUri()));
         RegisterResponse response = sendableResponse.getResponse();
 
         // Create CoAP Response from LwM2m request
@@ -235,7 +236,7 @@ public class RegisterResource extends LwM2mCoapResource {
 
         // Handle request
         final SendableResponse<UpdateResponse> sendableResponse = receiver.requestReceived(sender, null, updateRequest,
-                exchange.advanced().getEndpoint().getUri());
+                EndpointUriUtil.createUri(exchange.advanced().getEndpoint().getUri()));
         UpdateResponse updateResponse = sendableResponse.getResponse();
 
         // Create CoAP Response from LwM2m request
@@ -257,7 +258,7 @@ public class RegisterResource extends LwM2mCoapResource {
 
         // Handle request
         final SendableResponse<DeregisterResponse> sendableResponse = receiver.requestReceived(sender, null,
-                deregisterRequest, exchange.advanced().getEndpoint().getUri());
+                deregisterRequest, EndpointUriUtil.createUri(exchange.advanced().getEndpoint().getUri()));
         DeregisterResponse deregisterResponse = sendableResponse.getResponse();
 
         // Create CoAP Response from LwM2m request

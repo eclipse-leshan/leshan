@@ -19,7 +19,6 @@ package org.eclipse.leshan.server.registration;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,6 +33,7 @@ import java.util.TreeSet;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -91,7 +91,7 @@ public class Registration {
 
     private final Map<String, String> applicationData;
 
-    private final URI lastEndpointUsed;
+    private final EndpointUri lastEndpointUsed;
 
     protected Registration(Builder builder) {
 
@@ -359,7 +359,7 @@ public class Registration {
      *         <p>
      *         This can be changed in next milestones : https://github.com/eclipse/leshan/issues/1415
      */
-    public URI getLastEndpointUsed() {
+    public EndpointUri getLastEndpointUsed() {
         return lastEndpointUsed;
     }
 
@@ -406,7 +406,7 @@ public class Registration {
         private final String registrationId;
         private final String endpoint;
         private final LwM2mPeer clientTransportData;
-        private final URI lastEndpointUsed;
+        private final EndpointUri lastEndpointUsed;
 
         private Date registrationDate;
         private Date lastUpdate;
@@ -451,7 +451,8 @@ public class Registration {
             applicationData = registration.applicationData;
         }
 
-        public Builder(String registrationId, String endpoint, LwM2mPeer clientTransportData, URI lastEndpointUsed) {
+        public Builder(String registrationId, String endpoint, LwM2mPeer clientTransportData,
+                EndpointUri lastEndpointUsed) {
 
             Validate.notNull(registrationId);
             Validate.notEmpty(endpoint);

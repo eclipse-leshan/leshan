@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +28,7 @@ import java.util.Map;
 
 import org.eclipse.leshan.bsserver.request.BootstrapDownlinkRequestSender;
 import org.eclipse.leshan.core.ResponseCode;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
@@ -55,7 +55,7 @@ public class BootstrapHandlerTest {
         ALWAYS_SUCCESS, ALWAYS_FAILURE, NO_RESPONSE
     };
 
-    private final URI endpointUsed = EndpointUriUtil.createUri("coap://localhost:5683");
+    private final EndpointUri endpointUsed = EndpointUriUtil.createUri("coap://localhost:5683");
 
     @Test
     public void error_if_not_authorized() {
@@ -242,7 +242,7 @@ public class BootstrapHandlerTest {
         }
 
         @Override
-        public BootstrapSession begin(BootstrapRequest request, LwM2mPeer sender, URI endpointUsed) {
+        public BootstrapSession begin(BootstrapRequest request, LwM2mPeer sender, EndpointUri endpointUsed) {
             lastSession = new DefaultBootstrapSession(request, sender, authorized, null, endpointUsed);
             return lastSession;
         }

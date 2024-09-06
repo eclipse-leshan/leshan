@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.transport.californium.server.endpoint;
 
-import java.net.URI;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -28,6 +27,8 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.network.CoapEndpoint;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
+import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.DownlinkDeviceManagementRequest;
@@ -84,8 +85,8 @@ public class CaliforniumServerEndpoint implements LwM2mServerEndpoint {
     }
 
     @Override
-    public URI getURI() {
-        return endpoint.getUri();
+    public EndpointUri getURI() {
+        return EndpointUriUtil.createUri(endpoint.getUri());
     }
 
     @Override

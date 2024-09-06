@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -29,6 +28,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.Link;
@@ -213,7 +213,7 @@ public class ObservationServiceTest {
             }
 
             @Override
-            public URI getURI() {
+            public EndpointUri getURI() {
                 return null;
             }
 
@@ -243,7 +243,7 @@ public class ObservationServiceTest {
         }
 
         @Override
-        public LwM2mServerEndpoint getEndpoint(URI uri) {
+        public LwM2mServerEndpoint getEndpoint(EndpointUri uri) {
             return dummyEndpoint;
         }
 

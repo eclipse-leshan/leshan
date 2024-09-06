@@ -33,7 +33,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -56,6 +55,7 @@ import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.californium.elements.config.Configuration;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
@@ -183,7 +183,7 @@ public class LockStepTest {
 
         // create a register request without the list of supported object
         Request invalidRegisterRequest = new Request(Code.POST);
-        URI destinationURI = server.getEndpoint(Protocol.COAP).getURI();
+        EndpointUri destinationURI = server.getEndpoint(Protocol.COAP).getURI();
         invalidRegisterRequest
                 .setDestinationContext(new AddressEndpointContext(destinationURI.getHost(), destinationURI.getPort()));
         invalidRegisterRequest.getOptions().setContentFormat(ContentFormat.LINK.getCode());

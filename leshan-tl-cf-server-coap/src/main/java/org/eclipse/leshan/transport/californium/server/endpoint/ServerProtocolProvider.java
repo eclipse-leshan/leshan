@@ -15,11 +15,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.transport.californium.server.endpoint;
 
-import java.net.URI;
 import java.util.List;
 
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.Protocol;
 
 public interface ServerProtocolProvider {
@@ -30,7 +30,7 @@ public interface ServerProtocolProvider {
 
     void applyDefaultValue(Configuration configuration);
 
-    CaliforniumServerEndpointFactory createDefaultEndpointFactory(URI uri);
+    CaliforniumServerEndpointFactory createDefaultEndpointFactory(EndpointUri uri);
 
-    URI getDefaultUri(Configuration configuration);
+    EndpointUri getDefaultUri(Configuration configuration);
 }

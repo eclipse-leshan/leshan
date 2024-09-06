@@ -15,8 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.request;
 
-import java.net.URI;
-
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.UplinkDeviceManagementRequest;
 import org.eclipse.leshan.core.response.LwM2mResponse;
@@ -26,8 +25,9 @@ import org.eclipse.leshan.server.profile.ClientProfile;
 public interface UplinkDeviceManagementRequestReceiver {
 
     <T extends LwM2mResponse> SendableResponse<T> requestReceived(LwM2mPeer sender, ClientProfile senderProfile,
-            UplinkDeviceManagementRequest<T> request, URI serverEndpointUri);
+            UplinkDeviceManagementRequest<T> request, EndpointUri serverEndpointUri);
 
     void onError(LwM2mPeer sender, ClientProfile senderProfile, Exception exception,
-            Class<? extends UplinkDeviceManagementRequest<? extends LwM2mResponse>> requestType, URI serverEndpointUri);
+            Class<? extends UplinkDeviceManagementRequest<? extends LwM2mResponse>> requestType,
+            EndpointUri serverEndpointUri);
 }

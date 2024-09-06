@@ -17,11 +17,11 @@ package org.eclipse.leshan.transport.javacoap.server.endpoint;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
@@ -116,7 +116,7 @@ public abstract class AbstractJavaCoapServerEndpointsProvider implements LwM2mSe
     }
 
     @Override
-    public LwM2mServerEndpoint getEndpoint(URI uri) {
+    public LwM2mServerEndpoint getEndpoint(EndpointUri uri) {
         if (lwm2mEndpoint != null && lwm2mEndpoint.getURI().equals(uri))
             return lwm2mEndpoint;
         else

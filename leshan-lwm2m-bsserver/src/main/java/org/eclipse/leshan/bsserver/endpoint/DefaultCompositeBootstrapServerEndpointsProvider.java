@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.bsserver.endpoint;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -24,6 +23,7 @@ import java.util.List;
 
 import org.eclipse.leshan.bsserver.LeshanBootstrapServer;
 import org.eclipse.leshan.bsserver.request.BootstrapUplinkRequestReceiver;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.util.Validate;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 
@@ -56,7 +56,7 @@ public class DefaultCompositeBootstrapServerEndpointsProvider implements Composi
     }
 
     @Override
-    public LwM2mBootstrapServerEndpoint getEndpoint(URI uri) {
+    public LwM2mBootstrapServerEndpoint getEndpoint(EndpointUri uri) {
         for (LwM2mBootstrapServerEndpointsProvider provider : providers) {
             LwM2mBootstrapServerEndpoint endpoint = provider.getEndpoint(uri);
             if (endpoint != null) {

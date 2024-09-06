@@ -16,7 +16,6 @@
 package org.eclipse.leshan.transport.californium.server.endpoint.coaps;
 
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -24,6 +23,7 @@ import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServerEndpointFactory;
@@ -56,13 +56,13 @@ public class CoapsServerProtocolProvider implements ServerProtocolProvider {
     }
 
     @Override
-    public CaliforniumServerEndpointFactory createDefaultEndpointFactory(URI uri) {
+    public CaliforniumServerEndpointFactory createDefaultEndpointFactory(EndpointUri uri) {
         return new CoapsServerEndpointFactoryBuilder().setURI(uri)
                 .setDtlsConnectorConfig(dtlsConnectorConfigInitializer).build();
     }
 
     @Override
-    public URI getDefaultUri(Configuration configuration) {
+    public EndpointUri getDefaultUri(Configuration configuration) {
         return EndpointUriUtil.createUri(getProtocol().getUriScheme(),
                 new InetSocketAddress(configuration.get(CoapConfig.COAP_SECURE_PORT)));
     }

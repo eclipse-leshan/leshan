@@ -15,8 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.request;
 
-import java.net.URI;
-
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
@@ -43,7 +42,7 @@ public class DefaultUplinkRequestReceiver implements UplinkDeviceManagementReque
     @Override
     public void onError(LwM2mPeer sender, ClientProfile senderProfile, Exception exception,
             Class<? extends UplinkDeviceManagementRequest<? extends LwM2mResponse>> requestType,
-            URI serverEndpointUri) {
+            EndpointUri serverEndpointUri) {
         if (requestType.equals(SendRequest.class)) {
             sendHandler.onError(senderProfile.getRegistration(),
                     exception.getMessage() != null ? exception.getMessage() : null, exception);
@@ -52,7 +51,7 @@ public class DefaultUplinkRequestReceiver implements UplinkDeviceManagementReque
 
     @Override
     public <T extends LwM2mResponse> SendableResponse<T> requestReceived(LwM2mPeer sender, ClientProfile senderProfile,
-            UplinkDeviceManagementRequest<T> request, URI serverEndpointUri) {
+            UplinkDeviceManagementRequest<T> request, EndpointUri serverEndpointUri) {
 
         RequestHandler<T> requestHandler = new RequestHandler<T>(sender, senderProfile, serverEndpointUri);
         request.accept(requestHandler);
@@ -63,10 +62,10 @@ public class DefaultUplinkRequestReceiver implements UplinkDeviceManagementReque
 
         private final LwM2mPeer sender;
         private final ClientProfile senderProfile;
-        private final URI endpoint;
+        private final EndpointUri endpoint;
         private SendableResponse<? extends LwM2mResponse> response;
 
-        public RequestHandler(LwM2mPeer sender, ClientProfile clientProfile, URI serverEndpointUri) {
+        public RequestHandler(LwM2mPeer sender, ClientProfile clientProfile, EndpointUri serverEndpointUri) {
             this.sender = sender;
             this.senderProfile = clientProfile;
             this.endpoint = serverEndpointUri;

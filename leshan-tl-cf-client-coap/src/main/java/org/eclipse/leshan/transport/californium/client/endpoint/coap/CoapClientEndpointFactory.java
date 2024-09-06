@@ -17,7 +17,6 @@ package org.eclipse.leshan.transport.californium.client.endpoint.coap;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.security.cert.Certificate;
 import java.util.List;
 
@@ -30,6 +29,7 @@ import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServerInfo;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.transport.californium.DefaultExceptionTranslator;
@@ -61,7 +61,7 @@ public class CoapClientEndpointFactory implements CaliforniumClientEndpointFacto
         return "CoAP over UDP endpoint based on Californium library";
     }
 
-    protected String getLoggingTag(URI uri) {
+    protected String getLoggingTag(EndpointUri uri) {
         if (loggingTagPrefix != null) {
             return String.format("[%s-%s]", loggingTagPrefix, uri);
         } else {

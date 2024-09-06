@@ -15,10 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.bsserver;
 
-import java.net.URI;
 import java.util.Map;
 
 import org.eclipse.leshan.bsserver.security.BootstrapAuthorizer;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BootstrapRequest;
@@ -28,7 +28,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
  * Represent a single Bootstrapping session.
  *
  * Should be created by {@link BootstrapSessionManager} implementations in
- * {@link BootstrapSessionManager#begin(BootstrapRequest, LwM2mPeer, URI)}.
+ * {@link BootstrapSessionManager#begin(BootstrapRequest, LwM2mPeer, EndpointUri)}.
  */
 public interface BootstrapSession {
 
@@ -52,7 +52,10 @@ public interface BootstrapSession {
      */
     LwM2mPeer getClientTransportData();
 
-    URI getEndpointUsed();
+    /**
+     * @return the URI of the endpoint used for this session
+     */
+    EndpointUri getEndpointUsed();
 
     /**
      * @return <code>true</code> if the LwM2M client is authorized to start a bootstrap session.

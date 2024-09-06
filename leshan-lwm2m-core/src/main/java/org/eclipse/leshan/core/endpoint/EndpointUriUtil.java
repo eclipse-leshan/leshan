@@ -25,44 +25,51 @@ import org.eclipse.leshan.core.util.Validate;
 
 public class EndpointUriUtil {
 
-    public static URI createUri(String scheme, String host, int port) {
+    public static EndpointUri createUri(String scheme, String host, int port) {
         try {
-            return new URI(scheme, null, host, port, null, null, null);
-        } catch (URISyntaxException e) {
+            return new EndpointUri(scheme, host, port);
+        } catch (InvalidEndpointUriException e) {
             throw new IllegalStateException(e);
         }
     }
 
-    public static URI createUri(String scheme, InetSocketAddress addr) {
+    public static EndpointUri createUri(String scheme, InetSocketAddress addr) {
         try {
-            return new URI(scheme, null, toUriHostName(addr), addr.getPort(), null, null, null);
-        } catch (URISyntaxException e) {
+            return new EndpointUri(scheme, toUriHostName(addr), addr.getPort());
+        } catch (InvalidEndpointUriException e) {
             throw new IllegalStateException(e);
         }
     }
 
-    public static URI createUri(String uri) {
+    public static EndpointUri createUri(String uri) {
         try {
-            return new URI(uri);
-        } catch (URISyntaxException e) {
+            return createUri(new URI(uri));
+        } catch (InvalidEndpointUriException | URISyntaxException e) {
             throw new IllegalStateException(e);
         }
     }
 
-    public static URI replaceAddress(URI originalUri, InetSocketAddress newAddress) {
+    public static EndpointUri createUri(URI uri) {
         try {
-            return new URI(originalUri.getScheme(), null, toUriHostName(newAddress), newAddress.getPort(), null, null,
-                    null);
-        } catch (URISyntaxException e) {
+            return new EndpointUri(uri.getScheme(), uri.getHost(), uri.getPort());
+        } catch (InvalidEndpointUriException e) {
             throw new IllegalStateException(e);
         }
     }
 
-    public static InetSocketAddress getSocketAddr(URI uri) {
+    public static EndpointUri replaceAddress(EndpointUri originalUri, InetSocketAddress newAddress) {
+        try {
+            return new EndpointUri(originalUri.getScheme(), toUriHostName(newAddress), newAddress.getPort());
+        } catch (InvalidEndpointUriException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public static InetSocketAddress getSocketAddr(EndpointUri uri) {
         return new InetSocketAddress(uri.getHost(), uri.getPort());
     }
 
-    public static void validateURI(URI uri) throws IllegalArgumentException {
+    public static void validateURI(EndpointUri uri) throws IllegalArgumentException {
         Validate.notNull(uri);
 
         if (uri.getScheme() == null) {
