@@ -19,11 +19,12 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import org.eclipse.leshan.core.util.Validate;
 
 public class EndpointUriUtil {
+
+    private static final EndPointUriParser parser = new DefaultEndPointUriParser();
 
     public static EndpointUri createUri(String scheme, String host, int port) {
         try {
@@ -42,11 +43,7 @@ public class EndpointUriUtil {
     }
 
     public static EndpointUri createUri(String uri) {
-        try {
-            return createUri(new URI(uri));
-        } catch (InvalidEndpointUriException | URISyntaxException e) {
-            throw new IllegalStateException(e);
-        }
+        return parser.parse(uri);
     }
 
     public static EndpointUri createUri(URI uri) {
@@ -69,20 +66,13 @@ public class EndpointUriUtil {
         return new InetSocketAddress(uri.getHost(), uri.getPort());
     }
 
-    public static void validateURI(EndpointUri uri) throws IllegalArgumentException {
-        Validate.notNull(uri);
-
-        if (uri.getScheme() == null) {
-            throw new IllegalArgumentException(String.format("Invalid URI[%s]: Scheme MUST NOT be null", uri));
+    public static void validateURI(EndpointUri uri) throws InvalidEndpointUriException {
+        if (uri == null) {
+            throw new InvalidEndpointUriException("uri must not be null");
         }
-
-        if (uri.getHost() == null) {
-            throw new IllegalArgumentException(String.format("Invalid URI[%s]: Host MUST NOT be null", uri));
-        }
-
-        if (uri.getPort() == -1) {
-            throw new IllegalArgumentException(String.format("Invalid URI[%s]: Post MUST NOT be undefined", uri));
-        }
+        parser.validateScheme(uri.getScheme());
+        parser.validateHost(uri.getHost());
+        parser.validatePort(uri.getPort());
     }
 
     /**
