@@ -158,11 +158,20 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
                         if (observation == null) {
                             LOG.warn("Unexpected error: Unable to find observation with token {} for registration {}",
                                     coapResponse.getToken(), regid);
+                            // We just log it because, this is probably caused by bad device behavior :
+                            // https://github.com/eclipse-leshan/leshan/issues/1634
                             return;
                         }
                         // Get profile
                         LwM2mPeer client = identityHandler.getIdentity(coapResponse);
                         ClientProfile profile = toolbox.getProfileProvider().getProfile(client.getIdentity());
+                        if (profile == null) {
+                            LOG.warn("Unexpected error: Unable to find registration with id {} for observation {}",
+                                    regid, coapResponse.getToken());
+                            // We just log it because, this is probably caused by bad device behavior :
+                            // https://github.com/eclipse-leshan/leshan/issues/1634
+                            return;
+                        }
 
                         // create Observe Response
                         try {
