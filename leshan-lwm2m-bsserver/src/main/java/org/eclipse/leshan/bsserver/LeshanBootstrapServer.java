@@ -32,6 +32,7 @@ import org.eclipse.leshan.bsserver.security.BootstrapSecurityStore;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
@@ -67,8 +68,8 @@ public class LeshanBootstrapServer {
      */
     public LeshanBootstrapServer(LwM2mBootstrapServerEndpointsProvider endpointsProvider,
             BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory, LwM2mEncoder encoder,
-            LwM2mDecoder decoder, LwM2mLinkParser linkParser, BootstrapSecurityStore securityStore,
-            ServerSecurityInfo serverSecurityInfo) {
+            LwM2mDecoder decoder, LwM2mLinkParser linkParser, EndPointUriHandler uriHandler,
+            BootstrapSecurityStore securityStore, ServerSecurityInfo serverSecurityInfo) {
 
         Validate.notNull(endpointsProvider, "endpoints provider must not be null");
         Validate.notNull(bsSessionManager, "session manager must not be null");
@@ -80,7 +81,8 @@ public class LeshanBootstrapServer {
         requestSender = createRequestSender(endpointsProvider);
 
         // create endpoints
-        BootstrapServerEndpointToolbox toolbox = new BootstrapServerEndpointToolbox(decoder, encoder, linkParser);
+        BootstrapServerEndpointToolbox toolbox = new BootstrapServerEndpointToolbox(decoder, encoder, linkParser,
+                uriHandler);
         BootstrapHandler bootstrapHandler = bsHandlerFactory.create(requestSender, bsSessionManager, dispatcher);
         BootstrapUplinkRequestReceiver requestReceiver = createRequestReceiver(bootstrapHandler);
         endpointsProvider.createEndpoints(requestReceiver, toolbox, serverSecurityInfo, this);

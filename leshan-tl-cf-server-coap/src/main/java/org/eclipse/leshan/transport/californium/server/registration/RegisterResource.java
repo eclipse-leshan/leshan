@@ -28,7 +28,7 @@ import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.LinkParser;
@@ -75,13 +75,15 @@ public class RegisterResource extends LwM2mCoapResource {
 
     private final UplinkDeviceManagementRequestReceiver receiver;
     private final LinkParser linkParser;
+    private final EndPointUriHandler uriHandler;
 
     public RegisterResource(UplinkDeviceManagementRequestReceiver receiver, LinkParser linkParser,
-            IdentityHandlerProvider identityHandlerProvider) {
+            IdentityHandlerProvider identityHandlerProvider, EndPointUriHandler uriHandler) {
         super(RESOURCE_NAME, identityHandlerProvider);
 
         this.receiver = receiver;
         this.linkParser = linkParser;
+        this.uriHandler = uriHandler;
         getAttributes().addResourceType("core.rd");
     }
 
@@ -183,7 +185,7 @@ public class RegisterResource extends LwM2mCoapResource {
         // Handle request
         // -------------------------------
         final SendableResponse<RegisterResponse> sendableResponse = receiver.requestReceived(sender, null,
-                registerRequest, EndpointUriUtil.createUri(exchange.advanced().getEndpoint().getUri()));
+                registerRequest, uriHandler.createUri(exchange.advanced().getEndpoint().getUri()));
         RegisterResponse response = sendableResponse.getResponse();
 
         // Create CoAP Response from LwM2m request
@@ -236,7 +238,7 @@ public class RegisterResource extends LwM2mCoapResource {
 
         // Handle request
         final SendableResponse<UpdateResponse> sendableResponse = receiver.requestReceived(sender, null, updateRequest,
-                EndpointUriUtil.createUri(exchange.advanced().getEndpoint().getUri()));
+                uriHandler.createUri(exchange.advanced().getEndpoint().getUri()));
         UpdateResponse updateResponse = sendableResponse.getResponse();
 
         // Create CoAP Response from LwM2m request
@@ -258,7 +260,7 @@ public class RegisterResource extends LwM2mCoapResource {
 
         // Handle request
         final SendableResponse<DeregisterResponse> sendableResponse = receiver.requestReceived(sender, null,
-                deregisterRequest, EndpointUriUtil.createUri(exchange.advanced().getEndpoint().getUri()));
+                deregisterRequest, uriHandler.createUri(exchange.advanced().getEndpoint().getUri()));
         DeregisterResponse deregisterResponse = sendableResponse.getResponse();
 
         // Create CoAP Response from LwM2m request

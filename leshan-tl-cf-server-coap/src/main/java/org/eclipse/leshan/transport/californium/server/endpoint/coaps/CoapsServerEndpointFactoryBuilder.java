@@ -21,6 +21,8 @@ import java.util.function.Consumer;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
+import org.eclipse.leshan.core.endpoint.DefaultEndPointUriHandler;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.transport.californium.server.endpoint.AbstractEndpointFactoryBuilder;
 
@@ -28,6 +30,14 @@ public class CoapsServerEndpointFactoryBuilder
         extends AbstractEndpointFactoryBuilder<CoapsServerEndpointFactoryBuilder, CoapsServerEndpointFactory> {
 
     protected Consumer<DtlsConnectorConfig.Builder> dtlsConnectorConfigInitializer;
+
+    public CoapsServerEndpointFactoryBuilder() {
+        this(new DefaultEndPointUriHandler());
+    }
+
+    public CoapsServerEndpointFactoryBuilder(EndPointUriHandler uriHandler) {
+        super(uriHandler);
+    }
 
     @Override
     protected Protocol getSupportedProtocol() {
@@ -54,6 +64,6 @@ public class CoapsServerEndpointFactoryBuilder
     @Override
     public CoapsServerEndpointFactory build() {
         return new CoapsServerEndpointFactory(uri, loggingTagPrefix, configuration, dtlsConnectorConfigInitializer,
-                coapEndpointConfigInitializer);
+                coapEndpointConfigInitializer, getUriHandler());
     }
 }

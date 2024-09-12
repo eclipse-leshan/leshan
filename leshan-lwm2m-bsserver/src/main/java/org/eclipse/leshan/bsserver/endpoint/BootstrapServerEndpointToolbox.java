@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.bsserver.endpoint;
 
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
@@ -24,11 +25,14 @@ public class BootstrapServerEndpointToolbox {
     private final LwM2mDecoder decoder;
     private final LwM2mEncoder encoder;
     private final LwM2mLinkParser linkParser;
+    private final EndPointUriHandler uriHandler;
 
-    public BootstrapServerEndpointToolbox(LwM2mDecoder decoder, LwM2mEncoder encoder, LwM2mLinkParser linkParser) {
+    public BootstrapServerEndpointToolbox(LwM2mDecoder decoder, LwM2mEncoder encoder, LwM2mLinkParser linkParser,
+            EndPointUriHandler uriHandler) {
         this.decoder = decoder;
         this.encoder = encoder;
         this.linkParser = linkParser;
+        this.uriHandler = uriHandler;
     }
 
     public LwM2mDecoder getDecoder() {
@@ -41,5 +45,9 @@ public class BootstrapServerEndpointToolbox {
 
     public LwM2mLinkParser getLinkParser() {
         return linkParser;
+    }
+
+    public EndPointUriHandler getUriHandler() {
+        return uriHandler;
     }
 }

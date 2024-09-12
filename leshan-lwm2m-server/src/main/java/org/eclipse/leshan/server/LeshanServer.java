@@ -24,6 +24,7 @@ import java.util.List;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.codec.CodecException;
@@ -135,7 +136,7 @@ public class LeshanServer {
             LwM2mDecoder decoder, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
             RegistrationIdProvider registrationIdProvider, RegistrationDataExtractor registrationDataExtractor,
             boolean updateRegistrationOnNotification, boolean updateRegistrationOnSend, LwM2mLinkParser linkParser,
-            ServerSecurityInfo serverSecurityInfo) {
+            EndPointUriHandler uriHandler, ServerSecurityInfo serverSecurityInfo) {
 
         Validate.notNull(endpointsProvider, "endpointsProvider cannot be null");
         Validate.notNull(registrationStore, "registration store cannot be null");
@@ -163,7 +164,7 @@ public class LeshanServer {
 
         // create endpoints
         ServerEndpointToolbox toolbox = new ServerEndpointToolbox(decoder, encoder, linkParser,
-                new DefaultClientProfileProvider(registrationStore, modelProvider));
+                new DefaultClientProfileProvider(registrationStore, modelProvider), uriHandler);
         RegistrationHandler registrationHandler = new RegistrationHandler(registrationService, authorizer,
                 registrationIdProvider, registrationDataExtractor);
         UplinkDeviceManagementRequestReceiver requestReceiver = createRequestReceiver(registrationHandler, sendService);

@@ -17,6 +17,7 @@
 
 package org.eclipse.leshan.server.registration;
 
+import static org.eclipse.leshan.core.util.TestToolBox.uriHandler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -24,7 +25,6 @@ import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.junit.jupiter.api.Test;
@@ -40,7 +40,7 @@ public class RegistrationSortObjectLinksTest {
 
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
                 new IpPeer(new InetSocketAddress(Inet4Address.getLocalHost(), 1)),
-                EndpointUriUtil.createUri("coap://localhost:5683")).objectLinks(objs);
+                uriHandler.createUri("coap://localhost:5683")).objectLinks(objs);
 
         Registration r = builder.build();
 

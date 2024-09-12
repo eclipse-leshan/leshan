@@ -35,8 +35,9 @@ import org.eclipse.californium.core.observe.NotificationListener;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
+import org.eclipse.leshan.core.endpoint.DefaultEndPointUriHandler;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
@@ -226,8 +227,13 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
         private final List<ServerProtocolProvider> protocolProviders;
         private Configuration serverConfiguration;
         private final List<CaliforniumServerEndpointFactory> endpointsFactory;
+        private final EndPointUriHandler uriHandler;
 
         public Builder(ServerProtocolProvider... protocolProviders) {
+            this(new DefaultEndPointUriHandler(), protocolProviders);
+        }
+
+        public Builder(EndPointUriHandler uriHandler, ServerProtocolProvider... protocolProviders) {
             // TODO TL : handle duplicate ?
             this.protocolProviders = new ArrayList<ServerProtocolProvider>();
             if (protocolProviders.length == 0) {
@@ -235,7 +241,7 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
             } else {
                 this.protocolProviders.addAll(Arrays.asList(protocolProviders));
             }
-
+            this.uriHandler = uriHandler;
             this.endpointsFactory = new ArrayList<>();
         }
 
@@ -322,7 +328,7 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
         }
 
         public Builder addEndpoint(String uri) {
-            return addEndpoint(EndpointUriUtil.createUri(uri));
+            return addEndpoint(uriHandler.createUri(uri));
         }
 
         public Builder addEndpoint(EndpointUri uri) {
@@ -330,7 +336,7 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
                 // TODO TL : validate URI
                 if (protocolProvider.getProtocol().getUriScheme().equals(uri.getScheme())) {
                     // TODO TL: handle duplicate addr
-                    endpointsFactory.add(protocolProvider.createDefaultEndpointFactory(uri));
+                    endpointsFactory.add(protocolProvider.createDefaultEndpointFactory(uri, uriHandler));
                 }
             }
             // TODO TL: handle missing provider for given protocol
@@ -338,7 +344,7 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
         }
 
         public Builder addEndpoint(InetSocketAddress addr, Protocol protocol) {
-            return addEndpoint(EndpointUriUtil.createUri(protocol.getUriScheme(), addr));
+            return addEndpoint(uriHandler.createUri(protocol.getUriScheme(), addr));
         }
 
         public Builder addEndpoint(CaliforniumServerEndpointFactory endpointFactory) {
@@ -355,8 +361,8 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
             if (endpointsFactory.isEmpty()) {
                 for (ServerProtocolProvider protocolProvider : protocolProviders) {
                     // TODO TL : handle duplicates
-                    endpointsFactory.add(protocolProvider
-                            .createDefaultEndpointFactory(protocolProvider.getDefaultUri(serverConfiguration)));
+                    endpointsFactory.add(protocolProvider.createDefaultEndpointFactory(
+                            protocolProvider.getDefaultUri(serverConfiguration, uriHandler), uriHandler));
                 }
             }
             return this;

@@ -26,6 +26,7 @@ import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.oscore.OSCoreCoapStackFactory;
 import org.eclipse.californium.oscore.OSCoreEndpointContextInfo;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
@@ -47,6 +48,10 @@ public class CoapOscoreServerEndpointFactory extends CoapServerEndpointFactory {
 
     public CoapOscoreServerEndpointFactory(EndpointUri uri) {
         super(uri);
+    }
+
+    public CoapOscoreServerEndpointFactory(EndpointUri uri, EndPointUriHandler uriHandler) {
+        super(uri, null, null, null, uriHandler);
     }
 
     @Override

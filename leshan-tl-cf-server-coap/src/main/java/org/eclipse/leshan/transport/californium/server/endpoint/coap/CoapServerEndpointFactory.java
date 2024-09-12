@@ -32,8 +32,9 @@ import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
 import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
+import org.eclipse.leshan.core.endpoint.DefaultEndPointUriHandler;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
@@ -64,14 +65,16 @@ public class CoapServerEndpointFactory implements CaliforniumServerEndpointFacto
     protected final String loggingTagPrefix;
     protected final Configuration configuration;
     protected final Consumer<CoapEndpoint.Builder> coapEndpointConfigInitializer;
+    protected final EndPointUriHandler uriHandler;
 
     public CoapServerEndpointFactory(EndpointUri uri) {
-        this(uri, null, null, null);
+        this(uri, null, null, null, new DefaultEndPointUriHandler());
     }
 
     public CoapServerEndpointFactory(EndpointUri uri, String loggingTagPrefix, Configuration configuration,
-            Consumer<CoapEndpoint.Builder> coapEndpointConfigInitializer) {
-        EndpointUriUtil.validateURI(uri);
+            Consumer<CoapEndpoint.Builder> coapEndpointConfigInitializer, EndPointUriHandler uriHandler) {
+        this.uriHandler = uriHandler;
+        uriHandler.validateURI(uri);
 
         this.endpointUri = uri;
         this.loggingTagPrefix = loggingTagPrefix == null ? "LWM2M Server" : loggingTagPrefix;
@@ -116,8 +119,8 @@ public class CoapServerEndpointFactory implements CaliforniumServerEndpointFacto
             configurationToUse = configuration;
         }
 
-        return createEndpointBuilder(EndpointUriUtil.getSocketAddr(endpointUri), configurationToUse,
-                notificationReceiver, server).build();
+        return createEndpointBuilder(uriHandler.getSocketAddr(endpointUri), configurationToUse, notificationReceiver,
+                server).build();
     }
 
     /**

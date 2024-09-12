@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
@@ -92,8 +93,8 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
             LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder, boolean noQueueMode,
             ClientAwakeTimeProvider awakeTimeProvider, RegistrationIdProvider registrationIdProvider,
             RegistrationDataExtractor registrationDataExtractor, LwM2mLinkParser linkParser,
-            ServerSecurityInfo serverSecurityInfo, boolean updateRegistrationOnNotification,
-            boolean updateRegistrationOnSend) {
+            EndPointUriHandler uriHandler, ServerSecurityInfo serverSecurityInfo,
+            boolean updateRegistrationOnNotification, boolean updateRegistrationOnSend) {
 
         // create endpoint provider.
         if (endpointsProvider == null) {
@@ -120,7 +121,7 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
         }
         return new LeshanTestServer(endpointsProvider, registrationStore, securityStore, authorizer, modelProvider,
                 encoder, decoder, noQueueMode, awakeTimeProvider, registrationIdProvider, registrationDataExtractor,
-                linkParser, serverSecurityInfo, updateRegistrationOnNotification, updateRegistrationOnSend);
+                linkParser, uriHandler, serverSecurityInfo, updateRegistrationOnNotification, updateRegistrationOnSend);
     }
 
     public static LeshanTestServerBuilder givenServerUsing(Protocol protocolToUse) {
@@ -237,7 +238,8 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
         if (protocolToUse.equals(Protocol.COAP)) {
             return new CoapServerProtocolProvider() {
                 @Override
-                public CaliforniumServerEndpointFactory createDefaultEndpointFactory(EndpointUri uri) {
+                public CaliforniumServerEndpointFactory createDefaultEndpointFactory(EndpointUri uri,
+                        EndPointUriHandler uriHandler) {
                     return new CoapOscoreServerEndpointFactory(uri);
                 }
             };

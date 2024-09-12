@@ -79,9 +79,10 @@ public class ServerCoapMessageTranslator {
     public List<Resource> createResources(UplinkDeviceManagementRequestReceiver receiver, ServerEndpointToolbox toolbox,
             IdentityHandlerProvider identityHandlerProvider) {
         return Arrays.asList( //
-                (Resource) new RegisterResource(receiver, toolbox.getLinkParser(), identityHandlerProvider), //
+                (Resource) new RegisterResource(receiver, toolbox.getLinkParser(), identityHandlerProvider,
+                        toolbox.getUriHandler()), //
                 (Resource) new SendResource(receiver, toolbox.getDecoder(), toolbox.getProfileProvider(),
-                        identityHandlerProvider));
+                        identityHandlerProvider, toolbox.getUriHandler()));
     }
 
     public AbstractLwM2mResponse createObserveResponse(Observation observation, Response coapResponse,

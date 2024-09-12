@@ -16,6 +16,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.lockstep;
 
+import static org.eclipse.leshan.core.util.TestToolBox.uriHandler;
+
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Random;
@@ -30,7 +32,6 @@ import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.DefaultLinkSerializer;
 import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -49,6 +50,7 @@ import org.eclipse.leshan.transport.californium.identity.DefaultCoapIdentityHand
 public class LockStepLwM2mClient extends LockstepEndpoint {
 
     private static final Random r = new Random();
+
     private final InetSocketAddress destination;
     private final LwM2mEncoder encoder;
     private final LwM2mModel model;
@@ -57,7 +59,7 @@ public class LockStepLwM2mClient extends LockstepEndpoint {
     private final String endpointName;
 
     public LockStepLwM2mClient(final EndpointUri destination) {
-        this(EndpointUriUtil.getSocketAddr(destination));
+        this(uriHandler.getSocketAddr(destination));
     }
 
     public LockStepLwM2mClient(final InetSocketAddress destination) {

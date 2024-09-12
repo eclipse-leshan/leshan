@@ -31,8 +31,9 @@ import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsPr
 import org.eclipse.californium.elements.config.SystemConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
 import org.eclipse.leshan.bsserver.LeshanBootstrapServer;
+import org.eclipse.leshan.core.endpoint.DefaultEndPointUriHandler;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.eclipse.leshan.transport.californium.DefaultExceptionTranslator;
@@ -59,14 +60,16 @@ public class CoapBootstrapServerEndpointFactory implements CaliforniumBootstrapS
     protected final String loggingTagPrefix;
     protected final Configuration configuration;
     protected final Consumer<CoapEndpoint.Builder> coapEndpointConfigInitializer;
+    protected final EndPointUriHandler uriHandler;
 
     public CoapBootstrapServerEndpointFactory(EndpointUri uri) {
-        this(uri, null, null, null);
+        this(uri, null, null, null, new DefaultEndPointUriHandler());
     }
 
     public CoapBootstrapServerEndpointFactory(EndpointUri uri, String loggingTagPrefix, Configuration configuration,
-            Consumer<Builder> coapEndpointConfigInitializer) {
-        EndpointUriUtil.validateURI(uri);
+            Consumer<Builder> coapEndpointConfigInitializer, EndPointUriHandler uriHandler) {
+        this.uriHandler = uriHandler;
+        uriHandler.validateURI(uri);
 
         this.endpointUri = uri;
         this.loggingTagPrefix = loggingTagPrefix == null ? "Bootstrap Server" : loggingTagPrefix;
@@ -112,7 +115,7 @@ public class CoapBootstrapServerEndpointFactory implements CaliforniumBootstrapS
             configurationToUse = configuration;
         }
 
-        return createEndpointBuilder(EndpointUriUtil.getSocketAddr(endpointUri), configurationToUse, server).build();
+        return createEndpointBuilder(uriHandler.getSocketAddr(endpointUri), configurationToUse, server).build();
     }
 
     /**

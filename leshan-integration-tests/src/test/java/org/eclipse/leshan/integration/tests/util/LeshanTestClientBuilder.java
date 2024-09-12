@@ -16,6 +16,7 @@
 package org.eclipse.leshan.integration.tests.util;
 
 import static org.eclipse.leshan.core.LwM2mId.OSCORE;
+import static org.eclipse.leshan.core.util.TestToolBox.uriHandler;
 
 import java.net.InetSocketAddress;
 import java.security.PrivateKey;
@@ -58,8 +59,8 @@ import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.LwM2mId;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
@@ -88,7 +89,6 @@ import org.eclipse.leshan.transport.javacoap.client.endpoint.JavaCoapClientEndpo
 public class LeshanTestClientBuilder extends LeshanClientBuilder {
 
     private static final Random r = new Random();
-
     private String endpointName;
     private Protocol protocolToUse;
     private LeshanServer server;
@@ -230,7 +230,8 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
             BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
             ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer, LinkFormatHelper linkFormatHelper,
-            LwM2mAttributeParser attributeParser, LwM2mClientEndpointsProvider endpointsProvider) {
+            LwM2mAttributeParser attributeParser, EndPointUriHandler uriHandler,
+            LwM2mClientEndpointsProvider endpointsProvider) {
         String endpointName;
         if (this.endpointName != null) {
             endpointName = this.endpointName;
@@ -243,7 +244,7 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
 
         return new LeshanTestClient(endpointName, objectEnablers, dataSenders, trustStore, engineFactory, checker,
                 additionalAttributes, bsAdditionalAttributes, encoder, decoder, sharedExecutor, linkSerializer,
-                linkFormatHelper, attributeParser, endpointsProvider, proxy);
+                linkFormatHelper, attributeParser, uriHandler, endpointsProvider, proxy);
     }
 
     public static LeshanTestClientBuilder givenClientUsing(Protocol protocol) {
@@ -465,10 +466,10 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
         // see : https://github.com/eclipse-leshan/leshan/issues/1461#issuecomment-1631143202
         if (proxy != null) {
             // if server is behind a proxy we use its URI
-            return EndpointUriUtil.replaceAddress(serverUri,
+            return uriHandler.replaceAddress(serverUri,
                     new InetSocketAddress("localhost", proxy.getClientSideProxyAddress().getPort()));
         } else {
-            return EndpointUriUtil.replaceAddress(serverUri, new InetSocketAddress("localhost", serverUri.getPort()));
+            return uriHandler.replaceAddress(serverUri, new InetSocketAddress("localhost", serverUri.getPort()));
         }
     }
 }

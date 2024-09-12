@@ -41,6 +41,8 @@ import org.eclipse.leshan.client.send.DataSender;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2mId;
+import org.eclipse.leshan.core.endpoint.DefaultEndPointUriHandler;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.DefaultLinkSerializer;
 import org.eclipse.leshan.core.link.LinkSerializer;
@@ -85,6 +87,8 @@ public class LeshanClientBuilder {
     private LwM2mClientEndpointsProvider endpointsProvider;
 
     private LinkFormatHelper linkFormatHelper;
+
+    private EndPointUriHandler uriHandler;
 
     /**
      * Creates a new instance for setting the configuration options for a {@link LeshanClient} instance.
@@ -190,6 +194,16 @@ public class LeshanClientBuilder {
      */
     public LeshanClientBuilder setAttributeParser(LwM2mAttributeParser attributeParser) {
         this.attributeParser = attributeParser;
+        return this;
+    }
+
+    /**
+     * Set the Uri Handler {@link EndPointUriHandler}
+     * <p>
+     * By default the {@link DefaultEndPointUriHandler} is used.
+     */
+    public LeshanClientBuilder setEndpointUriHandler(EndPointUriHandler uriHandler) {
+        this.uriHandler = uriHandler;
         return this;
     }
 
@@ -328,10 +342,13 @@ public class LeshanClientBuilder {
         if (bootstrapConsistencyChecker == null) {
             bootstrapConsistencyChecker = new DefaultBootstrapConsistencyChecker();
         }
+        if (uriHandler == null) {
+            uriHandler = new DefaultEndPointUriHandler();
+        }
 
         return createLeshanClient(endpoint, objectEnablers, dataSenders, this.trustStore, engineFactory,
                 bootstrapConsistencyChecker, additionalAttributes, bsAdditionalAttributes, encoder, decoder, executor,
-                linkSerializer, linkFormatHelper, attributeParser, endpointsProvider);
+                linkSerializer, linkFormatHelper, attributeParser, uriHandler, endpointsProvider);
     }
 
     /**
@@ -364,9 +381,10 @@ public class LeshanClientBuilder {
             BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
             ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer, LinkFormatHelper linkFormatHelper,
-            LwM2mAttributeParser attributeParser, LwM2mClientEndpointsProvider endpointsProvider) {
+            LwM2mAttributeParser attributeParser, EndPointUriHandler uriHandler,
+            LwM2mClientEndpointsProvider endpointsProvider) {
         return new LeshanClient(endpoint, objectEnablers, dataSenders, trustStore, engineFactory, checker,
                 additionalAttributes, bsAdditionalAttributes, encoder, decoder, sharedExecutor, linkSerializer,
-                linkFormatHelper, attributeParser, endpointsProvider);
+                linkFormatHelper, attributeParser, uriHandler, endpointsProvider);
     }
 }

@@ -34,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.scandium.DTLSConnector;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
@@ -80,11 +81,11 @@ public class LeshanTestServer extends LeshanServer {
             SecurityStore securityStore, Authorizer authorizer, LwM2mModelProvider modelProvider, LwM2mEncoder encoder,
             LwM2mDecoder decoder, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
             RegistrationIdProvider registrationIdProvider, RegistrationDataExtractor registrationDataExtractor,
-            LwM2mLinkParser linkParser, ServerSecurityInfo serverSecurityInfo, boolean updateRegistrationOnNotification,
-            boolean updateRegistrationOnSend) {
+            LwM2mLinkParser linkParser, EndPointUriHandler uriHandler, ServerSecurityInfo serverSecurityInfo,
+            boolean updateRegistrationOnNotification, boolean updateRegistrationOnSend) {
         super(endpointsProvider, registrationStore, securityStore, authorizer, modelProvider, encoder, decoder,
                 noQueueMode, awakeTimeProvider, registrationIdProvider, registrationDataExtractor,
-                updateRegistrationOnNotification, updateRegistrationOnSend, linkParser, serverSecurityInfo);
+                updateRegistrationOnNotification, updateRegistrationOnSend, linkParser, uriHandler, serverSecurityInfo);
 
         if (securityStore != null && !(securityStore instanceof EditableSecurityStore)) {
             throw new IllegalStateException(

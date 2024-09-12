@@ -68,7 +68,7 @@ public abstract class AbstractJavaCoapServerEndpointsProvider implements LwM2mSe
             ServerSecurityInfo serverSecurityInfo, LeshanServer server) {
 
         // TODO: HACK to be able to get local URI in resource, need to discuss about it with java-coap.
-        EndpointUriProvider endpointUriProvider = new EndpointUriProvider(supportedProtocol);
+        EndpointUriProvider endpointUriProvider = new EndpointUriProvider(toolbox.getUriHandler(), supportedProtocol);
 
         // Create Resources / Routes
         RegistrationResource registerResource = new RegistrationResource(requestReceiver, toolbox.getLinkParser(),

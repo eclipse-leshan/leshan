@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 Sierra Wireless and others.
+ * Copyright (c) 2024 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -22,31 +22,35 @@ import java.net.URI;
 
 import org.eclipse.leshan.core.util.Validate;
 
-public class EndpointUriUtil {
+public class DefaultEndPointUriHandler implements EndPointUriHandler {
 
-    private static final EndPointUriParser parser = new DefaultEndPointUriParser();
+    private final EndPointUriParser parser;
 
-    public static EndpointUri createUri(String scheme, String host, int port) {
-        try {
-            return new EndpointUri(scheme, host, port);
-        } catch (InvalidEndpointUriException e) {
-            throw new IllegalStateException(e);
-        }
+    public DefaultEndPointUriHandler() {
+        this(new DefaultEndPointUriParser());
     }
 
-    public static EndpointUri createUri(String scheme, InetSocketAddress addr) {
-        try {
-            return new EndpointUri(scheme, toUriHostName(addr), addr.getPort());
-        } catch (InvalidEndpointUriException e) {
-            throw new IllegalStateException(e);
-        }
+    public DefaultEndPointUriHandler(EndPointUriParser parser) {
+        this.parser = parser;
     }
 
-    public static EndpointUri createUri(String uri) {
+    @Override
+    public EndPointUriParser getParser() {
+        return parser;
+    }
+
+    @Override
+    public EndpointUri createUri(String scheme, InetSocketAddress addr) {
+        return new EndpointUri(scheme, toUriHostName(addr), addr.getPort());
+    }
+
+    @Override
+    public EndpointUri createUri(String uri) {
         return parser.parse(uri);
     }
 
-    public static EndpointUri createUri(URI uri) {
+    @Override
+    public EndpointUri createUri(URI uri) {
         try {
             return new EndpointUri(uri.getScheme(), uri.getHost(), uri.getPort());
         } catch (InvalidEndpointUriException e) {
@@ -54,7 +58,8 @@ public class EndpointUriUtil {
         }
     }
 
-    public static EndpointUri replaceAddress(EndpointUri originalUri, InetSocketAddress newAddress) {
+    @Override
+    public EndpointUri replaceAddress(EndpointUri originalUri, InetSocketAddress newAddress) {
         try {
             return new EndpointUri(originalUri.getScheme(), toUriHostName(newAddress), newAddress.getPort());
         } catch (InvalidEndpointUriException e) {
@@ -62,11 +67,13 @@ public class EndpointUriUtil {
         }
     }
 
-    public static InetSocketAddress getSocketAddr(EndpointUri uri) {
+    @Override
+    public InetSocketAddress getSocketAddr(EndpointUri uri) {
         return new InetSocketAddress(uri.getHost(), uri.getPort());
     }
 
-    public static void validateURI(EndpointUri uri) throws InvalidEndpointUriException {
+    @Override
+    public void validateURI(EndpointUri uri) throws InvalidEndpointUriException {
         if (uri == null) {
             throw new InvalidEndpointUriException("uri must not be null");
         }
@@ -81,7 +88,7 @@ public class EndpointUriUtil {
      * Following https://www.rfc-editor.org/rfc/rfc6874#section-2, zone id (also called scope id) in URI should be
      * prefixed by <code>%25</code>
      */
-    private static String toUriHostName(InetSocketAddress socketAddr) {
+    protected static String toUriHostName(InetSocketAddress socketAddr) {
         if (socketAddr == null) {
             Validate.notNull(socketAddr);
         }

@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.endpoint;
 
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
@@ -26,13 +27,15 @@ public class ServerEndpointToolbox {
     private final LwM2mEncoder encoder;
     private final LwM2mLinkParser linkParser;
     private final ClientProfileProvider profileProvider;
+    private final EndPointUriHandler uriHandler;
 
     public ServerEndpointToolbox(LwM2mDecoder decoder, LwM2mEncoder encoder, LwM2mLinkParser linkParser,
-            ClientProfileProvider profileProvider) {
+            ClientProfileProvider profileProvider, EndPointUriHandler uriHandler) {
         this.decoder = decoder;
         this.encoder = encoder;
         this.linkParser = linkParser;
         this.profileProvider = profileProvider;
+        this.uriHandler = uriHandler;
     }
 
     public LwM2mDecoder getDecoder() {
@@ -49,5 +52,9 @@ public class ServerEndpointToolbox {
 
     public ClientProfileProvider getProfileProvider() {
         return profileProvider;
+    }
+
+    public EndPointUriHandler getUriHandler() {
+        return uriHandler;
     }
 }

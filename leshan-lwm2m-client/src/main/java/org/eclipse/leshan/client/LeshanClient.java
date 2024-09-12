@@ -54,6 +54,7 @@ import org.eclipse.leshan.client.send.DataSenderManager;
 import org.eclipse.leshan.client.send.SendService;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -94,7 +95,8 @@ public class LeshanClient implements LwM2mClient {
             BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
             ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer, LinkFormatHelper linkFormatHelper,
-            LwM2mAttributeParser attributeParser, LwM2mClientEndpointsProvider endpointsProvider) {
+            LwM2mAttributeParser attributeParser, EndPointUriHandler uriHandler,
+            LwM2mClientEndpointsProvider endpointsProvider) {
 
         Validate.notNull(endpoint);
         Validate.notEmpty(objectEnablers);
@@ -113,7 +115,7 @@ public class LeshanClient implements LwM2mClient {
         bootstrapHandler = createBoostrapHandler(objectTree, checker, linkFormatHelper);
 
         ClientEndpointToolbox toolbox = new ClientEndpointToolbox(decoder, encoder, linkSerializer,
-                objectTree.getModel(), attributeParser);
+                objectTree.getModel(), attributeParser, uriHandler);
         endpointsManager = createEndpointsManager(this.endpointsProvider, toolbox, trustStore);
         requestSender = createRequestSender(this.endpointsProvider);
         dataSenderManager = createDataSenderManager(dataSenders, rootEnabler, requestSender);

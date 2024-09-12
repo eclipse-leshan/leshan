@@ -28,6 +28,8 @@ import java.util.Collection;
 
 import javax.security.auth.login.Configuration;
 
+import org.eclipse.leshan.core.endpoint.DefaultEndPointUriHandler;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -86,6 +88,7 @@ public class LeshanServerBuilder {
     private boolean updateRegistrationOnSend = false;
 
     private LwM2mServerEndpointsProvider endpointsProvider;
+    private EndPointUriHandler uriHandler;
 
     /**
      * <p>
@@ -302,6 +305,16 @@ public class LeshanServerBuilder {
     }
 
     /**
+     * Set the Uri Handler {@link EndPointUriHandler}
+     * <p>
+     * By default the {@link DefaultEndPointUriHandler} is used.
+     */
+    public LeshanServerBuilder setEndpointUriHandler(EndPointUriHandler uriHandler) {
+        this.uriHandler = uriHandler;
+        return this;
+    }
+
+    /**
      * By default LeshanServer doesn't support any protocol. Users need to provide 1 or several
      * {@link LwM2mServerEndpointsProvider} implementation.
      * <p>
@@ -357,13 +370,16 @@ public class LeshanServerBuilder {
         if (registrationDataExtractor == null) {
             registrationDataExtractor = new DefaultRegistrationDataExtractor();
         }
+        if (uriHandler == null) {
+            uriHandler = new DefaultEndPointUriHandler();
+        }
 
         ServerSecurityInfo serverSecurityInfo = new ServerSecurityInfo(privateKey, publicKey, certificateChain,
                 trustedCertificates);
 
         return createServer(endpointsProvider, registrationStore, securityStore, authorizer, modelProvider, encoder,
                 decoder, noQueueMode, awakeTimeProvider, registrationIdProvider, registrationDataExtractor, linkParser,
-                serverSecurityInfo, updateRegistrationOnNotification, updateRegistrationOnSend);
+                uriHandler, serverSecurityInfo, updateRegistrationOnNotification, updateRegistrationOnSend);
     }
 
     /**
@@ -374,17 +390,17 @@ public class LeshanServerBuilder {
      *
      * @see LeshanServer#LeshanServer(LwM2mServerEndpointsProvider, RegistrationStore, SecurityStore, Authorizer,
      *      LwM2mModelProvider, LwM2mEncoder, LwM2mDecoder, boolean, ClientAwakeTimeProvider, RegistrationIdProvider,
-     *      RegistrationDataExtractor, boolean, boolean, LwM2mLinkParser, ServerSecurityInfo)
+     *      RegistrationDataExtractor, boolean, boolean, LwM2mLinkParser, EndPointUriHandler, ServerSecurityInfo)
      */
     protected LeshanServer createServer(LwM2mServerEndpointsProvider endpointsProvider,
             RegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
             LwM2mModelProvider modelProvider, LwM2mEncoder encoder, LwM2mDecoder decoder, boolean noQueueMode,
             ClientAwakeTimeProvider awakeTimeProvider, RegistrationIdProvider registrationIdProvider,
             RegistrationDataExtractor registrationDataExtractor, LwM2mLinkParser linkParser,
-            ServerSecurityInfo serverSecurityInfo, boolean updateRegistrationOnNotification,
-            boolean updateRegistrationOnSend) {
+            EndPointUriHandler uriHandler, ServerSecurityInfo serverSecurityInfo,
+            boolean updateRegistrationOnNotification, boolean updateRegistrationOnSend) {
         return new LeshanServer(endpointsProvider, registrationStore, securityStore, authorizer, modelProvider, encoder,
                 decoder, noQueueMode, awakeTimeProvider, registrationIdProvider, registrationDataExtractor,
-                updateRegistrationOnNotification, updateRegistrationOnSend, linkParser, serverSecurityInfo);
+                updateRegistrationOnNotification, updateRegistrationOnSend, linkParser, uriHandler, serverSecurityInfo);
     }
 }

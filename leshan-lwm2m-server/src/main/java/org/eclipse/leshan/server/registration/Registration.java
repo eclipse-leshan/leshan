@@ -34,7 +34,6 @@ import java.util.TreeSet;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.peer.IpPeer;
@@ -457,7 +456,7 @@ public class Registration {
             Validate.notNull(registrationId);
             Validate.notEmpty(endpoint);
             Validate.notNull(clientTransportData);
-            EndpointUriUtil.validateURI(lastEndpointUsed);
+            Validate.notNull(lastEndpointUsed);
 
             this.registrationId = registrationId;
             this.endpoint = endpoint;

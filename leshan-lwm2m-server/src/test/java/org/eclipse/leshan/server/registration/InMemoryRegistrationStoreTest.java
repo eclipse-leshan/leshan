@@ -17,6 +17,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
+import static org.eclipse.leshan.core.util.TestToolBox.uriHandler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -27,7 +28,6 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.EnumSet;
 
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -101,7 +101,7 @@ public class InMemoryRegistrationStoreTest {
     private void givenASimpleRegistration(Long lifetime) {
 
         Registration.Builder builder = new Registration.Builder(registrationId, ep,
-                new IpPeer(new InetSocketAddress(address, port)), EndpointUriUtil.createUri("coap://localhost:5683"));
+                new IpPeer(new InetSocketAddress(address, port)), uriHandler.createUri("coap://localhost:5683"));
 
         registration = builder.lifeTimeInSec(lifetime).smsNumber(sms).bindingMode(binding).objectLinks(objectLinks)
                 .build();

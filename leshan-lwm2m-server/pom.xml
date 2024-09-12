@@ -47,6 +47,12 @@ Contributors:
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.eclipse.leshan</groupId>
+      <artifactId>leshan-lwm2m-core</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+    </dependency>
+    <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <scope>test</scope>

@@ -60,7 +60,6 @@ import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
@@ -139,7 +138,7 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
         }
 
         // create CoAP endpoint
-        CoapEndpoint endpoint = createEndpointBuilder(dtlsConfig, defaultConfiguration).build();
+        CoapEndpoint endpoint = createEndpointBuilder(dtlsConfig, defaultConfiguration, toolbox).build();
 
         return endpoint;
     }
@@ -257,13 +256,14 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
      * @param coapConfig the CoAP config used to create this endpoint.
      * @return the {@link Builder} used for secured communication.
      */
-    protected CoapEndpoint.Builder createEndpointBuilder(DtlsConnectorConfig dtlsConfig, Configuration coapConfig) {
+    protected CoapEndpoint.Builder createEndpointBuilder(DtlsConnectorConfig dtlsConfig, Configuration coapConfig,
+            ClientEndpointToolbox toolbox) {
 
         CoapEndpoint.Builder builder = new CoapEndpoint.Builder();
         builder.setConnector(createSecuredConnector(dtlsConfig));
         builder.setConfiguration(coapConfig);
-        builder.setLoggingTag(
-                getLoggingTag(EndpointUriUtil.createUri(getProtocol().getUriScheme(), dtlsConfig.getAddress())));
+        builder.setLoggingTag(getLoggingTag(
+                toolbox.getUriHandler().createUri(getProtocol().getUriScheme(), dtlsConfig.getAddress())));
 
         EndpointContextMatcher securedContextMatcher = createSecuredContextMatcher();
         builder.setEndpointContextMatcher(securedContextMatcher);

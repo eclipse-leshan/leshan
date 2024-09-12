@@ -36,7 +36,8 @@ import org.eclipse.leshan.bsserver.LeshanBootstrapServer;
 import org.eclipse.leshan.bsserver.LeshanBootstrapServerBuilder;
 import org.eclipse.leshan.bsserver.model.VersionedBootstrapModelProvider;
 import org.eclipse.leshan.bsserver.security.BootstrapSecurityStoreAdapter;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
+import org.eclipse.leshan.core.endpoint.DefaultEndPointUriHandler;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -72,6 +73,8 @@ public class LeshanBootstrapServerDemo {
     private static final String CF_CONFIGURATION_FILENAME = "Californium3.bsserver.properties";
     private static final String CF_CONFIGURATION_HEADER = "Leshan Bootstrap Server Demo - "
             + Configuration.DEFAULT_HEADER;
+
+    private static final EndPointUriHandler uriHandler = new DefaultEndPointUriHandler();
 
     public static void main(String[] args) {
 
@@ -189,7 +192,7 @@ public class LeshanBootstrapServerDemo {
             endpointsBuilder.addEndpoint(coapAddr, Protocol.COAP);
         } else {
             endpointsBuilder.addEndpoint(new CoapOscoreBootstrapServerEndpointFactory(
-                    EndpointUriUtil.createUri(Protocol.COAP.getUriScheme(), coapAddr)));
+                    uriHandler.createUri(Protocol.COAP.getUriScheme(), coapAddr)));
         }
 
         // Create CoAP over DTLS endpoint

@@ -37,8 +37,9 @@ import org.eclipse.leshan.bsserver.endpoint.BootstrapServerEndpointToolbox;
 import org.eclipse.leshan.bsserver.endpoint.LwM2mBootstrapServerEndpoint;
 import org.eclipse.leshan.bsserver.endpoint.LwM2mBootstrapServerEndpointsProvider;
 import org.eclipse.leshan.bsserver.request.BootstrapUplinkRequestReceiver;
+import org.eclipse.leshan.core.endpoint.DefaultEndPointUriHandler;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
@@ -165,8 +166,13 @@ public class CaliforniumBootstrapServerEndpointsProvider implements LwM2mBootstr
         private final List<BootstrapServerProtocolProvider> protocolProviders;
         private Configuration serverConfiguration;
         private final List<CaliforniumBootstrapServerEndpointFactory> endpointsFactory;
+        private EndPointUriHandler uriHandler;
 
         public Builder(BootstrapServerProtocolProvider... protocolProviders) {
+            this(new DefaultEndPointUriHandler(), protocolProviders);
+        }
+
+        public Builder(EndPointUriHandler uriHandler, BootstrapServerProtocolProvider... protocolProviders) {
             // TODO TL : handle duplicate ?
             this.protocolProviders = new ArrayList<BootstrapServerProtocolProvider>();
             if (protocolProviders.length == 0) {
@@ -174,8 +180,12 @@ public class CaliforniumBootstrapServerEndpointsProvider implements LwM2mBootstr
             } else {
                 this.protocolProviders.addAll(Arrays.asList(protocolProviders));
             }
-
+            this.uriHandler = uriHandler;
             this.endpointsFactory = new ArrayList<>();
+        }
+
+        public void setUriHandler(EndPointUriHandler uriHandler) {
+            this.uriHandler = uriHandler;
         }
 
         /**
@@ -261,7 +271,7 @@ public class CaliforniumBootstrapServerEndpointsProvider implements LwM2mBootstr
         }
 
         public Builder addEndpoint(String uri) {
-            return addEndpoint(EndpointUriUtil.createUri(uri));
+            return addEndpoint(uriHandler.createUri(uri));
         }
 
         public Builder addEndpoint(EndpointUri uri) {
@@ -269,7 +279,7 @@ public class CaliforniumBootstrapServerEndpointsProvider implements LwM2mBootstr
                 // TODO TL : validate URI
                 if (protocolProvider.getProtocol().getUriScheme().equals(uri.getScheme())) {
                     // TODO TL: handle duplicate addr
-                    endpointsFactory.add(protocolProvider.createDefaultEndpointFactory(uri));
+                    endpointsFactory.add(protocolProvider.createDefaultEndpointFactory(uri, uriHandler));
                 }
             }
             // TODO TL: handle missing provider for given protocol
@@ -277,7 +287,7 @@ public class CaliforniumBootstrapServerEndpointsProvider implements LwM2mBootstr
         }
 
         public Builder addEndpoint(InetSocketAddress addr, Protocol protocol) {
-            return addEndpoint(EndpointUriUtil.createUri(protocol.getUriScheme(), addr));
+            return addEndpoint(uriHandler.createUri(protocol.getUriScheme(), addr));
         }
 
         public Builder addEndpoint(CaliforniumBootstrapServerEndpointFactory endpointFactory) {
@@ -294,8 +304,8 @@ public class CaliforniumBootstrapServerEndpointsProvider implements LwM2mBootstr
             if (endpointsFactory.isEmpty()) {
                 for (BootstrapServerProtocolProvider protocolProvider : protocolProviders) {
                     // TODO TL : handle duplicates
-                    endpointsFactory.add(protocolProvider
-                            .createDefaultEndpointFactory(protocolProvider.getDefaultUri(serverConfiguration)));
+                    endpointsFactory.add(protocolProvider.createDefaultEndpointFactory(
+                            protocolProvider.getDefaultUri(serverConfiguration, uriHandler), uriHandler));
                 }
             }
             return this;

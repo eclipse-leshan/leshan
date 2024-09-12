@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.Protocol;
 
@@ -30,7 +31,8 @@ public interface BootstrapServerProtocolProvider {
 
     void applyDefaultValue(Configuration configuration);
 
-    CaliforniumBootstrapServerEndpointFactory createDefaultEndpointFactory(EndpointUri uri);
+    CaliforniumBootstrapServerEndpointFactory createDefaultEndpointFactory(EndpointUri uri,
+            EndPointUriHandler defaultUriHandler);
 
-    EndpointUri getDefaultUri(Configuration configuration);
+    EndpointUri getDefaultUri(Configuration configuration, EndPointUriHandler defaultUriHandler);
 }

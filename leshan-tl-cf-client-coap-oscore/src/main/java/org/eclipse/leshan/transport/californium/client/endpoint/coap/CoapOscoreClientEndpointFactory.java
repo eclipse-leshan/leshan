@@ -29,6 +29,7 @@ import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.oscore.OSCoreCoapStackFactory;
 import org.eclipse.californium.oscore.OSCoreEndpointContextInfo;
+import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.oscore.InvalidOscoreSettingException;
@@ -66,8 +67,8 @@ public class CoapOscoreClientEndpointFactory extends CoapClientEndpointFactory {
      */
     @Override
     protected CoapEndpoint.Builder createEndpointBuilder(InetSocketAddress address, ServerInfo serverInfo,
-            Configuration coapConfig) {
-        CoapEndpoint.Builder builder = super.createEndpointBuilder(address, serverInfo, coapConfig);
+            Configuration coapConfig, ClientEndpointToolbox toolbox) {
+        CoapEndpoint.Builder builder = super.createEndpointBuilder(address, serverInfo, coapConfig, toolbox);
 
         // handle oscore
         if (serverInfo.useOscore) {

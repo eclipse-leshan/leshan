@@ -56,8 +56,9 @@ import org.eclipse.californium.scandium.dtls.DtlsHandshakeTimeoutException;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.californium.scandium.dtls.x509.SingleCertificateProvider;
 import org.eclipse.californium.scandium.dtls.x509.StaticNewAdvancedCertificateVerifier;
+import org.eclipse.leshan.core.endpoint.DefaultEndPointUriHandler;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
@@ -117,15 +118,17 @@ public class CoapsServerEndpointFactory implements CaliforniumServerEndpointFact
     protected final Configuration configuration;
     protected final Consumer<DtlsConnectorConfig.Builder> dtlsConnectorConfigInitializer;
     protected final Consumer<CoapEndpoint.Builder> coapEndpointConfigInitializer;
+    protected final EndPointUriHandler uriHandler;
 
     public CoapsServerEndpointFactory(EndpointUri uri) {
-        this(uri, null, null, null, null);
+        this(uri, null, null, null, null, new DefaultEndPointUriHandler());
     }
 
     public CoapsServerEndpointFactory(EndpointUri uri, String loggingTagPrefix, Configuration configuration,
             Consumer<DtlsConnectorConfig.Builder> dtlsConnectorConfigInitializer,
-            Consumer<Builder> coapEndpointConfigInitializer) {
-        EndpointUriUtil.validateURI(uri);
+            Consumer<Builder> coapEndpointConfigInitializer, EndPointUriHandler uriHandler) {
+        this.uriHandler = uriHandler;
+        uriHandler.validateURI(uri);
 
         this.endpointUri = uri;
         this.loggingTagPrefix = loggingTagPrefix == null ? "LWM2M Server" : loggingTagPrefix;
@@ -173,7 +176,7 @@ public class CoapsServerEndpointFactory implements CaliforniumServerEndpointFact
 
         // create DTLS connector Config
         DtlsConnectorConfig.Builder dtlsConfigBuilder = createDtlsConnectorConfigBuilder(configurationToUse);
-        setUpDtlsConfig(dtlsConfigBuilder, EndpointUriUtil.getSocketAddr(endpointUri), serverSecurityInfo, server);
+        setUpDtlsConfig(dtlsConfigBuilder, uriHandler.getSocketAddr(endpointUri), serverSecurityInfo, server);
         DtlsConnectorConfig dtlsConfig;
         try {
             dtlsConfig = dtlsConfigBuilder.build();

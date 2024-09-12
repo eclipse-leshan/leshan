@@ -53,6 +53,7 @@ public class BootstrapServerCoapMessageTranslator {
 
     public List<Resource> createResources(BootstrapUplinkRequestReceiver receiver,
             BootstrapServerEndpointToolbox toolbox, IdentityHandlerProvider identityHandlerProvider) {
-        return Arrays.asList((Resource) new BootstrapResource(receiver, identityHandlerProvider));
+        return Arrays
+                .asList((Resource) new BootstrapResource(receiver, identityHandlerProvider, toolbox.getUriHandler()));
     }
 }

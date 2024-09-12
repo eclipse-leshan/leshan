@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
+import static org.eclipse.leshan.core.util.TestToolBox.uriHandler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -23,7 +24,6 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.server.queue.PresenceService;
 import org.junit.jupiter.api.Test;
@@ -40,7 +40,7 @@ public class RegistrationUpdateTest {
     public void testAdditionalAttributesUpdate() throws Exception {
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
                 new IpPeer(new InetSocketAddress(Inet4Address.getLocalHost(), 1)),
-                EndpointUriUtil.createUri("coap://localhost:5683"));
+                uriHandler.createUri("coap://localhost:5683"));
 
         Map<String, String> additionalAttributes = new HashMap<String, String>();
         additionalAttributes.put("x", "1");
@@ -75,7 +75,7 @@ public class RegistrationUpdateTest {
 
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
                 new IpPeer(new InetSocketAddress(Inet4Address.getLocalHost(), 1)),
-                EndpointUriUtil.createUri("coap://localhost:5683"));
+                uriHandler.createUri("coap://localhost:5683"));
         Map<String, String> appData = new HashMap<String, String>();
         appData.put("x", "1");
         appData.put("y", "10");

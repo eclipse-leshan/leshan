@@ -31,6 +31,8 @@ import org.eclipse.leshan.bsserver.model.StandardBootstrapModelProvider;
 import org.eclipse.leshan.bsserver.request.BootstrapDownlinkRequestSender;
 import org.eclipse.leshan.bsserver.security.BootstrapAuthorizer;
 import org.eclipse.leshan.bsserver.security.BootstrapSecurityStore;
+import org.eclipse.leshan.core.endpoint.DefaultEndPointUriHandler;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -71,6 +73,7 @@ public class LeshanBootstrapServerBuilder {
     private Certificate[] trustedCertificates;
 
     private LwM2mLinkParser linkParser;
+    private EndPointUriHandler uriHandler;
 
     private LwM2mBootstrapServerEndpointsProvider endpointsProvider;
 
@@ -249,6 +252,16 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
+     * Set the Uri Handler {@link EndPointUriHandler}
+     * <p>
+     * By default the {@link DefaultEndPointUriHandler} is used.
+     */
+    public LeshanBootstrapServerBuilder setEndpointUriHandler(EndPointUriHandler uriHandler) {
+        this.uriHandler = uriHandler;
+        return this;
+    }
+
+    /**
      * Set the Bootstrap authorizer {@link BootstrapAuthorizer}
      * <p>
      * By default the {@link DefaultBootstrapAuthorizer} is used.
@@ -310,6 +323,9 @@ public class LeshanBootstrapServerBuilder {
             decoder = new DefaultLwM2mDecoder();
         if (linkParser == null)
             linkParser = new DefaultLwM2mLinkParser();
+        if (uriHandler == null) {
+            uriHandler = new DefaultEndPointUriHandler();
+        }
 
         // Handle class depending of Session Manager
         if (sessionManager == null) {
@@ -353,7 +369,7 @@ public class LeshanBootstrapServerBuilder {
             }
         }
         return createBootstrapServer(endpointsProvider, sessionManager, bootstrapHandlerFactory, encoder, decoder,
-                linkParser, securityStore,
+                linkParser, uriHandler, securityStore,
                 new ServerSecurityInfo(privateKey, publicKey, certificateChain, trustedCertificates));
     }
 
@@ -372,9 +388,9 @@ public class LeshanBootstrapServerBuilder {
      */
     protected LeshanBootstrapServer createBootstrapServer(LwM2mBootstrapServerEndpointsProvider endpointsProvider,
             BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory, LwM2mEncoder encoder,
-            LwM2mDecoder decoder, LwM2mLinkParser linkParser, BootstrapSecurityStore securityStore,
-            ServerSecurityInfo serverSecurityInfo) {
+            LwM2mDecoder decoder, LwM2mLinkParser linkParser, EndPointUriHandler uriHandler,
+            BootstrapSecurityStore securityStore, ServerSecurityInfo serverSecurityInfo) {
         return new LeshanBootstrapServer(endpointsProvider, bsSessionManager, bsHandlerFactory, encoder, decoder,
-                linkParser, securityStore, serverSecurityInfo);
+                linkParser, uriHandler, securityStore, serverSecurityInfo);
     }
 }

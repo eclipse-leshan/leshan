@@ -33,6 +33,7 @@ import org.eclipse.leshan.bsserver.LeshanBootstrapServerBuilder;
 import org.eclipse.leshan.bsserver.endpoint.LwM2mBootstrapServerEndpointsProvider;
 import org.eclipse.leshan.bsserver.security.BootstrapSecurityStore;
 import org.eclipse.leshan.bsserver.security.BootstrapSecurityStoreAdapter;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
@@ -82,8 +83,8 @@ public class LeshanTestBootstrapServerBuilder extends LeshanBootstrapServerBuild
     @Override
     protected LeshanTestBootstrapServer createBootstrapServer(LwM2mBootstrapServerEndpointsProvider endpointsProvider,
             BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory, LwM2mEncoder encoder,
-            LwM2mDecoder decoder, LwM2mLinkParser linkParser, BootstrapSecurityStore securityStore,
-            ServerSecurityInfo serverSecurityInfo) {
+            LwM2mDecoder decoder, LwM2mLinkParser linkParser, EndPointUriHandler uriHandler,
+            BootstrapSecurityStore securityStore, ServerSecurityInfo serverSecurityInfo) {
 
         // create endpoint provider.
         if (endpointsProvider == null) {
@@ -108,7 +109,7 @@ public class LeshanTestBootstrapServerBuilder extends LeshanBootstrapServerBuild
         }
 
         return new LeshanTestBootstrapServer(endpointsProvider, bsSessionManager, bsHandlerFactory, encoder, decoder,
-                linkParser, securityStore, serverSecurityInfo, //
+                linkParser, uriHandler, securityStore, serverSecurityInfo, //
                 // arguments only needed for LeshanTestBootstrapServer
                 configStore, editableSecurityStore);
     }
@@ -206,8 +207,9 @@ public class LeshanTestBootstrapServerBuilder extends LeshanBootstrapServerBuild
         if (protocolToUse.equals(Protocol.COAP)) {
             return new CoapBootstrapServerProtocolProvider() {
                 @Override
-                public CaliforniumBootstrapServerEndpointFactory createDefaultEndpointFactory(EndpointUri uri) {
-                    return new CoapOscoreBootstrapServerEndpointFactory(uri);
+                public CaliforniumBootstrapServerEndpointFactory createDefaultEndpointFactory(EndpointUri uri,
+                        EndPointUriHandler uriHandler) {
+                    return new CoapOscoreBootstrapServerEndpointFactory(uri, uriHandler);
                 }
             };
         }

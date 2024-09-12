@@ -37,7 +37,8 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
+import org.eclipse.leshan.core.endpoint.DefaultEndPointUriHandler;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -83,6 +84,7 @@ public class LeshanServerDemo {
     private static final Logger LOG = LoggerFactory.getLogger(LeshanServerDemo.class);
     private static final String CF_CONFIGURATION_FILENAME = "Californium3.server.properties";
     private static final String CF_CONFIGURATION_HEADER = "Leshan Server Demo - " + Configuration.DEFAULT_HEADER;
+    private static final EndPointUriHandler uriHandler = new DefaultEndPointUriHandler();
 
     public static void main(String[] args) {
 
@@ -242,8 +244,8 @@ public class LeshanServerDemo {
         if (cli.main.disableOscore) {
             endpointsBuilder.addEndpoint(coapAddr, Protocol.COAP);
         } else {
-            endpointsBuilder.addEndpoint(new CoapOscoreServerEndpointFactory(
-                    EndpointUriUtil.createUri(Protocol.COAP.getUriScheme(), coapAddr)));
+            endpointsBuilder.addEndpoint(
+                    new CoapOscoreServerEndpointFactory(uriHandler.createUri(Protocol.COAP.getUriScheme(), coapAddr)));
         }
 
         // Create CoAP over DTLS endpoint

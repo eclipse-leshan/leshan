@@ -16,6 +16,7 @@
 package org.eclipse.leshan.integration.tests.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.eclipse.leshan.core.util.TestToolBox.uriHandler;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNotNull;
@@ -46,8 +47,8 @@ import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.send.DataSender;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
@@ -71,10 +72,11 @@ public class LeshanTestClient extends LeshanClient {
             BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
             ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer, LinkFormatHelper linkFormatHelper,
-            LwM2mAttributeParser attributeParser, LwM2mClientEndpointsProvider endpointsProvider, ReverseProxy proxy) {
+            LwM2mAttributeParser attributeParser, EndPointUriHandler uriHandler,
+            LwM2mClientEndpointsProvider endpointsProvider, ReverseProxy proxy) {
         super(endpoint, objectEnablers, dataSenders, trustStore, engineFactory, checker, additionalAttributes,
                 bsAdditionalAttributes, encoder, decoder, sharedExecutor, linkSerializer, linkFormatHelper,
-                attributeParser, endpointsProvider);
+                attributeParser, uriHandler, endpointsProvider);
 
         // Store some internal attribute
         this.endpointName = endpoint;
@@ -245,9 +247,9 @@ public class LeshanTestClient extends LeshanClient {
     private boolean isServerIdentifiedByUri(LeshanTestServer server, String expectedUri) {
         for (LwM2mServerEndpoint endpoint : server.getEndpoints()) {
             EndpointUri endpointURI = endpoint.getURI();
-            InetSocketAddress endpointAddr = EndpointUriUtil.getSocketAddr(endpointURI);
+            InetSocketAddress endpointAddr = uriHandler.getSocketAddr(endpointURI);
             if (proxy != null && endpointAddr.equals(proxy.getServerAddress())) {
-                EndpointUri proxyUri = EndpointUriUtil.replaceAddress(endpointURI, proxy.getClientSideProxyAddress());
+                EndpointUri proxyUri = uriHandler.replaceAddress(endpointURI, proxy.getClientSideProxyAddress());
                 if (proxyUri.toString().equals(expectedUri)) {
                     return true;
                 }

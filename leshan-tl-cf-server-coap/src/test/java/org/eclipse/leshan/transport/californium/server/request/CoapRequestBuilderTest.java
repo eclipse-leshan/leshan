@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.transport.californium.server.request;
 
+import static org.eclipse.leshan.core.util.TestToolBox.uriHandler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -28,7 +29,6 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttribute;
@@ -87,7 +87,7 @@ public class CoapRequestBuilderTest {
     private Registration newRegistration(String rootpath) throws UnknownHostException {
         Builder b = new Registration.Builder("regid", "endpoint",
                 new IpPeer(new InetSocketAddress(Inet4Address.getLoopbackAddress(), 12354)),
-                EndpointUriUtil.createUri("coap://localhost:5683"));
+                uriHandler.createUri("coap://localhost:5683"));
 
         if (rootpath != null) {
             Link[] links = new Link[] { new Link(rootpath, new ResourceTypeAttribute("oma.lwm2m")) };

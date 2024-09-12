@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.redis.serialization;
 
+import static org.eclipse.leshan.core.util.TestToolBox.uriHandler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.Inet4Address;
@@ -25,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.AttributeSet;
 import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
@@ -58,7 +58,7 @@ public class RegistrationSerDesTest {
 
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
                 new IpPeer(new InetSocketAddress(Inet4Address.getLoopbackAddress(), 1)),
-                EndpointUriUtil.createUri("coap://localhost:5683")).objectLinks(objs).rootPath("/")
+                uriHandler.createUri("coap://localhost:5683")).objectLinks(objs).rootPath("/")
                         .supportedContentFormats(ContentFormat.TLV, ContentFormat.TEXT);
         builder.registrationDate(new Date(100L));
         builder.lastUpdate(new Date(101L));
@@ -96,7 +96,7 @@ public class RegistrationSerDesTest {
 
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
                 new IpPeer(new InetSocketAddress(Inet4Address.getLoopbackAddress(), 1)),
-                EndpointUriUtil.createUri("coap://localhost:5683")).objectLinks(objs).rootPath("/")
+                uriHandler.createUri("coap://localhost:5683")).objectLinks(objs).rootPath("/")
                         .supportedContentFormats(ContentFormat.TLV, ContentFormat.TEXT).applicationData(appData);
 
         builder.registrationDate(new Date(100L));

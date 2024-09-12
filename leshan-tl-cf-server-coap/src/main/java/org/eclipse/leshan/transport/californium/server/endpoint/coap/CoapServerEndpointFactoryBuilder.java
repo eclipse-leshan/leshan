@@ -19,11 +19,21 @@ import java.util.List;
 
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
+import org.eclipse.leshan.core.endpoint.DefaultEndPointUriHandler;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.transport.californium.server.endpoint.AbstractEndpointFactoryBuilder;
 
 public class CoapServerEndpointFactoryBuilder
         extends AbstractEndpointFactoryBuilder<CoapServerEndpointFactoryBuilder, CoapServerEndpointFactory> {
+
+    public CoapServerEndpointFactoryBuilder() {
+        this(new DefaultEndPointUriHandler());
+    }
+
+    public CoapServerEndpointFactoryBuilder(EndPointUriHandler uriHandler) {
+        super(uriHandler);
+    }
 
     @Override
     protected Protocol getSupportedProtocol() {
@@ -43,6 +53,7 @@ public class CoapServerEndpointFactoryBuilder
 
     @Override
     public CoapServerEndpointFactory build() {
-        return new CoapServerEndpointFactory(uri, loggingTagPrefix, configuration, coapEndpointConfigInitializer);
+        return new CoapServerEndpointFactory(uri, loggingTagPrefix, configuration, coapEndpointConfigInitializer,
+                getUriHandler());
     }
 }

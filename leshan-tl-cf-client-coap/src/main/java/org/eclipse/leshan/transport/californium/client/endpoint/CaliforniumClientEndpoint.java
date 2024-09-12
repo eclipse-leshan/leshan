@@ -27,7 +27,6 @@ import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpoint;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.request.UplinkRequest;
@@ -81,8 +80,7 @@ public class CaliforniumClientEndpoint implements LwM2mClientEndpoint {
 
     @Override
     public EndpointUri getURI() {
-        return EndpointUriUtil.createUri(protocol.getUriScheme(), getCoapEndpoint().getAddress().getHostString(),
-                getCoapEndpoint().getAddress().getPort());
+        return toolbox.getUriHandler().createUri(protocol.getUriScheme(), getCoapEndpoint().getAddress());
     }
 
     @Override

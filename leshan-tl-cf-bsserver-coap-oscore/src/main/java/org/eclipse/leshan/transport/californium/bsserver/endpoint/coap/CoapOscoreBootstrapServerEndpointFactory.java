@@ -28,6 +28,7 @@ import org.eclipse.californium.oscore.OSCoreCoapStackFactory;
 import org.eclipse.californium.oscore.OSCoreCtxDB;
 import org.eclipse.californium.oscore.OSCoreEndpointContextInfo;
 import org.eclipse.leshan.bsserver.LeshanBootstrapServer;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
@@ -47,6 +48,10 @@ public class CoapOscoreBootstrapServerEndpointFactory extends CoapBootstrapServe
 
     public CoapOscoreBootstrapServerEndpointFactory(EndpointUri uri) {
         super(uri);
+    }
+
+    public CoapOscoreBootstrapServerEndpointFactory(EndpointUri uri, EndPointUriHandler uriHandler) {
+        super(uri, null, null, null, uriHandler);
     }
 
     @Override

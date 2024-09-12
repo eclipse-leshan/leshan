@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.core.endpoint.EndpointUri;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.link.DefaultLinkParser;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.peer.IpPeer;
@@ -116,7 +115,7 @@ public class RegistrationHandlerTest {
     }
 
     private EndpointUri givenServerEndpointUri() {
-        return EndpointUriUtil.createUri("coap", "localhost", 5683);
+        return new EndpointUri("coap", "localhost", 5683);
     }
 
     private RegisterRequest givenRegisterRequestWithEndpoint(String endpoint) {

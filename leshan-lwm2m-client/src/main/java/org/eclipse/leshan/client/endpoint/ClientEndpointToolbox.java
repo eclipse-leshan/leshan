@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.client.endpoint;
 
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.link.LinkSerializer;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
@@ -28,14 +29,16 @@ public class ClientEndpointToolbox {
     private final LinkSerializer linkSerializer;
     private final LwM2mModel model;
     private final LwM2mAttributeParser attributeParser;
+    private final EndPointUriHandler uriHandler;
 
     public ClientEndpointToolbox(LwM2mDecoder decoder, LwM2mEncoder encoder, LinkSerializer linkSerializer,
-            LwM2mModel model, LwM2mAttributeParser attributeParser) {
+            LwM2mModel model, LwM2mAttributeParser attributeParser, EndPointUriHandler uriHandler) {
         this.decoder = decoder;
         this.encoder = encoder;
         this.linkSerializer = linkSerializer;
         this.model = model;
         this.attributeParser = attributeParser;
+        this.uriHandler = uriHandler;
     }
 
     public LwM2mDecoder getDecoder() {
@@ -56,5 +59,9 @@ public class ClientEndpointToolbox {
 
     public LwM2mAttributeParser getAttributeParser() {
         return attributeParser;
+    }
+
+    public EndPointUriHandler getUriHandler() {
+        return uriHandler;
     }
 }

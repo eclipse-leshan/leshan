@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.bsserver;
 
+import static org.eclipse.leshan.core.util.TestToolBox.uriHandler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -29,7 +30,6 @@ import java.util.Map;
 import org.eclipse.leshan.bsserver.request.BootstrapDownlinkRequestSender;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
-import org.eclipse.leshan.core.endpoint.EndpointUriUtil;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.peer.PskIdentity;
@@ -55,7 +55,7 @@ public class BootstrapHandlerTest {
         ALWAYS_SUCCESS, ALWAYS_FAILURE, NO_RESPONSE
     };
 
-    private final EndpointUri endpointUsed = EndpointUriUtil.createUri("coap://localhost:5683");
+    private final EndpointUri endpointUsed = uriHandler.createUri("coap://localhost:5683");
 
     @Test
     public void error_if_not_authorized() {
