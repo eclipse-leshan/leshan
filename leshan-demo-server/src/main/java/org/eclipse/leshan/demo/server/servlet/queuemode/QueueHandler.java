@@ -101,11 +101,12 @@ public class QueueHandler {
             long timeoutInMs) throws InterruptedException {
 
         // is client awake ?
+        boolean useQueueMode = destination.usesQueueMode();
         boolean clientAwake = server.getPresenceService().isClientAwake(destination);
 
         // client is awake we try to send request now
         CompletableFuture<LwM2mResponse> future = new CompletableFuture<>();
-        if (clientAwake) {
+        if (clientAwake || !useQueueMode) {
             try {
                 // TODO ideally we should use async way to send request
                 LwM2mResponse response = server.send(destination, request, timeoutInMs);
@@ -116,7 +117,7 @@ public class QueueHandler {
         }
 
         // client is not awake we queue the request for later.
-        if (!clientAwake) {
+        if (useQueueMode && !clientAwake) {
             QueueRequestData data = new QueueRequestData();
             data.request = request;
             data.responseFuture = future;
