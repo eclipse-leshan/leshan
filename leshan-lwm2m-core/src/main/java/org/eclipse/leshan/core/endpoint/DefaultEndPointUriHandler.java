@@ -105,6 +105,7 @@ public class DefaultEndPointUriHandler implements EndPointUriHandler {
                     host = hostAddress + separator + scope;
                 }
             }
+            host = '[' + host + ']';
         }
         return host;
     }
