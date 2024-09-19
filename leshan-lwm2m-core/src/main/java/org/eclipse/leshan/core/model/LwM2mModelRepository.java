@@ -35,8 +35,8 @@ public class LwM2mModelRepository {
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mModelRepository.class);
 
     static class Key implements Comparable<Key> {
-        Integer id;
-        Version version;
+        final Integer id;
+        final Version version;
 
         public Key(Integer id, Version version) {
             this.id = id;

@@ -19,11 +19,10 @@ package org.eclipse.leshan.core.model;
 import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
 
 class LwM2mModelRepositoryTest {
     @Test
     public void assertEqualsHashcode() {
-        EqualsVerifier.forClass(LwM2mModelRepository.Key.class).suppress(Warning.NONFINAL_FIELDS).verify();
+        EqualsVerifier.forClass(LwM2mModelRepository.Key.class).verify();
     }
 }

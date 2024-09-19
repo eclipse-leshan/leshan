@@ -87,7 +87,7 @@ public class ResponseCode {
             INTERNAL_SERVER_ERROR };
 
     private final int code;
-    private String name;
+    private final String name;
 
     public ResponseCode(int code, String name) {
         Validate.notNull(name);

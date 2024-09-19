@@ -24,7 +24,7 @@ class TlvTest {
 
     @Test
     public void assertEqualsHashcode() {
-        byte[] bytes = {1, 2, 3, 4, 5};
+        byte[] bytes = { 1, 2, 3, 4, 5 };
         Tlv prefab1 = new Tlv(Tlv.TlvType.OBJECT_INSTANCE, new Tlv[0], null, 1);
         Tlv prefab2 = new Tlv(Tlv.TlvType.RESOURCE_VALUE, null, bytes, 2);
 
