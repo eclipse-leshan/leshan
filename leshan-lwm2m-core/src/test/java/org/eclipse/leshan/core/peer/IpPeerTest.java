@@ -22,6 +22,6 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 class IpPeerTest {
     @Test
     public void assertEqualsHashcode() {
-        EqualsVerifier.forClass(IpPeer.class).withIgnoredFields("virtualHost").verify();
+        EqualsVerifier.forClass(IpPeer.class).verify();
     }
 }
