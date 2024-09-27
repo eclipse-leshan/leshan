@@ -38,6 +38,7 @@ import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.util.Validate;
+import org.eclipse.leshan.servers.ServerEndpointNameProvider;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,15 +62,17 @@ public class LeshanBootstrapServer {
      * {@link LeshanBootstrapServerBuilder} is the priviledged way to create a {@link LeshanBootstrapServer}.
      *
      * @param bsSessionManager manages life cycle of a bootstrap process
+     * @param endpointNameProvider must guess endpoint name if missing and if possible else return <code>null</code>
      * @param bsHandlerFactory responsible to create the {@link BootstrapHandler}
      * @param encoder encode used to encode request payload.
      * @param decoder decoder used to decode response payload.
      * @param linkParser a parser {@link LwM2mLinkParser} used to parse a CoRE Link.
      */
     public LeshanBootstrapServer(LwM2mBootstrapServerEndpointsProvider endpointsProvider,
-            BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory, LwM2mEncoder encoder,
-            LwM2mDecoder decoder, LwM2mLinkParser linkParser, EndPointUriHandler uriHandler,
-            BootstrapSecurityStore securityStore, ServerSecurityInfo serverSecurityInfo) {
+            BootstrapSessionManager bsSessionManager, ServerEndpointNameProvider endpointNameProvider,
+            BootstrapHandlerFactory bsHandlerFactory, LwM2mEncoder encoder, LwM2mDecoder decoder,
+            LwM2mLinkParser linkParser, EndPointUriHandler uriHandler, BootstrapSecurityStore securityStore,
+            ServerSecurityInfo serverSecurityInfo) {
 
         Validate.notNull(endpointsProvider, "endpoints provider must not be null");
         Validate.notNull(bsSessionManager, "session manager must not be null");
@@ -83,7 +86,8 @@ public class LeshanBootstrapServer {
         // create endpoints
         BootstrapServerEndpointToolbox toolbox = new BootstrapServerEndpointToolbox(decoder, encoder, linkParser,
                 uriHandler);
-        BootstrapHandler bootstrapHandler = bsHandlerFactory.create(requestSender, bsSessionManager, dispatcher);
+        BootstrapHandler bootstrapHandler = bsHandlerFactory.create(requestSender, bsSessionManager,
+                endpointNameProvider, dispatcher);
         BootstrapUplinkRequestReceiver requestReceiver = createRequestReceiver(bootstrapHandler);
         endpointsProvider.createEndpoints(requestReceiver, toolbox, serverSecurityInfo, this);
     }

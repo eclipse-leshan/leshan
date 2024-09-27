@@ -36,6 +36,7 @@ import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.BootstrapRequest;
 import org.eclipse.leshan.core.response.BootstrapResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
+import org.eclipse.leshan.servers.ServerEndpointNameProvider;
 import org.eclipse.leshan.transport.californium.bsserver.endpoint.CaliforniumBootstrapServerEndpointsProvider;
 import org.junit.jupiter.api.Test;
 
@@ -49,8 +50,9 @@ public class LeshanBootstrapServerTest {
 
             @Override
             public BootstrapHandler create(BootstrapDownlinkRequestSender sender,
-                    BootstrapSessionManager sessionManager, BootstrapSessionListener listener) {
-                bsHandler = new DefaultBootstrapHandler(sender, sessionManager, listener);
+                    BootstrapSessionManager sessionManager, ServerEndpointNameProvider endpointNameProvider,
+                    BootstrapSessionListener listener) {
+                bsHandler = new DefaultBootstrapHandler(sender, sessionManager, endpointNameProvider, listener);
                 return bsHandler;
             }
         });

@@ -31,9 +31,11 @@ import java.security.PublicKey;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.response.ReadResponse;
+import org.eclipse.leshan.integration.tests.util.Failure;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
@@ -126,6 +128,36 @@ public class RpkTest {
         // check we can send request to client.
         ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
         assertThat(response.isSuccess()).isTrue();
+    }
+
+    @TestAllTransportLayer
+    public void registered_device_with_rpk_to_server_with_rpk_without_endpointname(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws NonUniqueSecurityInfoException, InterruptedException {
+        // Create RPK server & start it
+        server = givenServer.using(serverPublicKey, serverPrivateKey).build();
+        server.start();
+
+        // Create RPK Client
+        client = givenClient.connectingTo(server) //
+                .using(clientPublicKey, clientPrivateKey)//
+                .trusting(serverPublicKey)//
+                .dontSendEndpointName() //
+                .build();
+
+        // Add client credentials to the server
+        server.getSecurityStore().add(SecurityInfo.newRawPublicKeyInfo(client.getEndpointName(), clientPublicKey));
+
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Start it and wait for registration
+        client.start();
+        Failure failure = client.waitForRegistrationFailureTo(server);
+        assertThat(failure).failedWith(ResponseCode.FORBIDDEN);
+
+        // Check we are registered with the expected attributes
+        assertThat(client).isNotRegisteredAt(server);
     }
 
     @TestAllTransportLayer

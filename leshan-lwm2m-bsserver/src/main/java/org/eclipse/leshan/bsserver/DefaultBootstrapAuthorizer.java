@@ -40,9 +40,10 @@ public class DefaultBootstrapAuthorizer implements BootstrapAuthorizer {
     }
 
     @Override
-    public Authorization isAuthorized(BootstrapRequest request, LwM2mPeer client) {
+    public Authorization isAuthorized(String endpointName, BootstrapRequest request, LwM2mPeer client) {
+
         if (bsSecurityStore != null && securityChecker != null) {
-            Iterator<SecurityInfo> securityInfos = bsSecurityStore.getAllByEndpoint(request.getEndpointName());
+            Iterator<SecurityInfo> securityInfos = bsSecurityStore.getAllByEndpoint(endpointName);
             if (securityChecker.checkSecurityInfos(request.getEndpointName(), client, securityInfos)) {
                 return Authorization.approved();
             } else {

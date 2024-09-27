@@ -216,4 +216,42 @@ public class OscoreBootstrapTest {
         // check the client is registered
         assertThat(client).isRegisteredAt(server);
     }
+
+    @Test
+    public void bootstrap_via_oscore_to_unsecured_server_without_endpoint()
+            throws OSException, NonUniqueSecurityInfoException, InvalidConfigurationException {
+        // Create DM Server without security & start it
+        server = givenServer.build();
+        server.start();
+
+        // Create and start bootstrap server
+        bootstrapServer = givenBootstrapServer.with(new InMemorySecurityStore()).build();
+        bootstrapServer.start();
+
+        // Create Client and check it is not already registered
+        client = givenClient.connectingTo(bootstrapServer) //
+                .named(new String(getClientOscoreSetting().getSenderId())) //
+                .sendEndpointNameIfNecessary() //
+                .using(getBootstrapClientOscoreSetting()).build();
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Add client credentials to the Bootstrap server
+        bootstrapServer.getEditableSecurityStore()
+                .add(SecurityInfo.newOscoreInfo(client.getEndpointName(), getBootstrapServerOscoreSetting()));
+
+        // Add config for this client
+        bootstrapServer.getConfigStore().add(client.getEndpointName(), //
+                givenBootstrapConfig() //
+                        .adding(Protocol.COAP, bootstrapServer,
+                                getOscoreBootstrapObject(getBootstrapClientOscoreSetting())) //
+                        .adding(Protocol.COAP, server) //
+                        .build());
+
+        // Start it and wait for registration
+        client.start();
+        server.waitForNewRegistrationOf(client);
+
+        // check the client is registered
+        assertThat(client).isRegisteredAt(server);
+    }
 }

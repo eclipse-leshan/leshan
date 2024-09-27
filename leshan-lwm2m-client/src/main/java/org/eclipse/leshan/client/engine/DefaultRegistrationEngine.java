@@ -103,7 +103,6 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     }
 
     // device state
-    private final String endpoint;
     private final ContentFormat preferredContentFormat; // used for bootstrap
     private final Set<ContentFormat> supportedContentFormats;
     private final Map<String, String> additionalAttributes;
@@ -119,6 +118,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private final EndpointsManager endpointsManager;
     private final LwM2mClientObserver observer;
     private final LinkFormatHelper linkFormatHelper;
+    private final ClientEndpointNameProvider endpointNameProvider;
 
     // tasks stuff
     private boolean started = false;
@@ -129,15 +129,15 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private final ScheduledExecutorService schedExecutor;
     private final boolean attachedExecutor;
 
-    public DefaultRegistrationEngine(String endpoint, LwM2mObjectTree objectTree, EndpointsManager endpointsManager,
-            UplinkRequestSender requestSender, BootstrapHandler bootstrapState, LwM2mClientObserver observer,
-            Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes,
-            ScheduledExecutorService executor, long requestTimeoutInMs, long deregistrationTimeoutInMs,
-            int bootstrapSessionTimeoutInSec, int retryWaitingTimeInMs, Integer communicationPeriodInMs,
-            boolean reconnectOnUpdate, boolean resumeOnConnect, boolean useQueueMode,
+    public DefaultRegistrationEngine(ClientEndpointNameProvider endpointNameProvider, LwM2mObjectTree objectTree,
+            EndpointsManager endpointsManager, UplinkRequestSender requestSender, BootstrapHandler bootstrapState,
+            LwM2mClientObserver observer, Map<String, String> additionalAttributes,
+            Map<String, String> bsAdditionalAttributes, ScheduledExecutorService executor, long requestTimeoutInMs,
+            long deregistrationTimeoutInMs, int bootstrapSessionTimeoutInSec, int retryWaitingTimeInMs,
+            Integer communicationPeriodInMs, boolean reconnectOnUpdate, boolean resumeOnConnect, boolean useQueueMode,
             ContentFormat preferredContentFormat, Set<ContentFormat> supportedContentFormats,
             LinkFormatHelper linkFormatHelper) {
-        this.endpoint = endpoint;
+        this.endpointNameProvider = endpointNameProvider;
         this.objectEnablers = objectTree.getObjectEnablers();
         this.bootstrapHandler = bootstrapState;
         this.endpointsManager = endpointsManager;
@@ -228,7 +228,9 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             // Send bootstrap request
             BootstrapRequest request = null;
             try {
-                request = new BootstrapRequest(endpoint, preferredContentFormat, bsAdditionalAttributes);
+                request = new BootstrapRequest(
+                        endpointNameProvider.getEndpointNameFor(bootstrapServerInfo, BootstrapRequest.class),
+                        preferredContentFormat, bsAdditionalAttributes);
                 if (observer != null) {
                     observer.onBootstrapStarted(bootstrapServer, request);
                 }
@@ -323,8 +325,9 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             Link[] links = linkFormatHelper.getClientDescription(objectEnablers.values(), null,
                     ContentFormat.getOptionalContentFormatForClient(supportedContentFormats, lwM2mVersion));
 
-            request = new RegisterRequest(endpoint, dmInfo.lifetime, lwM2mVersion.toString(), supportedBindingMode,
-                    queueMode, null, links, additionalAttributes);
+            request = new RegisterRequest(endpointNameProvider.getEndpointNameFor(dmInfo, RegisterRequest.class),
+                    dmInfo.lifetime, lwM2mVersion.toString(), supportedBindingMode, queueMode, null, links,
+                    additionalAttributes);
             if (observer != null) {
                 observer.onRegistrationStarted(server, request);
             }
@@ -912,6 +915,6 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
      */
     @Override
     public String getEndpoint() {
-        return endpoint;
+        return endpointNameProvider.getEndpointName();
     }
 }

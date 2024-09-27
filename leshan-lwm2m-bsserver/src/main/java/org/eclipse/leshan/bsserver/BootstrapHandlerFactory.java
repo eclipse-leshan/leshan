@@ -16,6 +16,7 @@
 package org.eclipse.leshan.bsserver;
 
 import org.eclipse.leshan.bsserver.request.BootstrapDownlinkRequestSender;
+import org.eclipse.leshan.servers.ServerEndpointNameProvider;
 
 /**
  * Creates {@link BootstrapHandler}.
@@ -29,9 +30,10 @@ public interface BootstrapHandlerFactory {
      *
      * @param sender the class responsible to send LWM2M request during a bootstrapSession.
      * @param sessionManager the manager responsible to handle bootstrap session.
+     * @param endpointNameProvider must guess endpoint name if missing and if possible else return <code>null</code>
      * @param listener a listener of bootstrap session life-cycle.
      * @return the new {@link BootstrapHandler}.
      */
     BootstrapHandler create(BootstrapDownlinkRequestSender sender, BootstrapSessionManager sessionManager,
-            BootstrapSessionListener listener);
+            ServerEndpointNameProvider endpointNameProvider, BootstrapSessionListener listener);
 }

@@ -28,7 +28,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
  * Represent a single Bootstrapping session.
  *
  * Should be created by {@link BootstrapSessionManager} implementations in
- * {@link BootstrapSessionManager#begin(BootstrapRequest, LwM2mPeer, EndpointUri)}.
+ * {@link BootstrapSessionManager#begin(String, BootstrapRequest, LwM2mPeer, EndpointUri)}.
  */
 public interface BootstrapSession {
 

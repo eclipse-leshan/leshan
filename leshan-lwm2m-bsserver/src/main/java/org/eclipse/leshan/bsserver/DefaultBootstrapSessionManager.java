@@ -74,10 +74,11 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
     }
 
     @Override
-    public BootstrapSession begin(BootstrapRequest request, LwM2mPeer client, EndpointUri endpointUsed) {
-        Authorization authorization = authorizer.isAuthorized(request, client);
-        DefaultBootstrapSession session = new DefaultBootstrapSession(request, client, authorization.isApproved(),
-                authorization.getApplicationData(), endpointUsed);
+    public BootstrapSession begin(String endpointName, BootstrapRequest request, LwM2mPeer client,
+            EndpointUri endpointUsed) {
+        Authorization authorization = authorizer.isAuthorized(endpointName, request, client);
+        DefaultBootstrapSession session = new DefaultBootstrapSession(endpointName, request, client,
+                authorization.isApproved(), authorization.getApplicationData(), endpointUsed);
         LOG.trace("Bootstrap session started : {}", session);
 
         return session;

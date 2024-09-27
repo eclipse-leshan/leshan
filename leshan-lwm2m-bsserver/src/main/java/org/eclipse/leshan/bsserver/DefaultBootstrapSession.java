@@ -56,33 +56,37 @@ public class DefaultBootstrapSession implements BootstrapSession {
      * {@link BootstrapRequest#getPreferredContentFormat()} or {@link ContentFormat#TLV} content format if there is no
      * preferences and using <code>System.currentTimeMillis()</code> to set the creation time.
      *
+     * @param endpointName The endpoint name of the client.
      * @param request The bootstrap request which initiate the session.
      * @param client The transport layer information about client.
      * @param authorized True if device is authorized to bootstrap.
      * @param applicationData Data that could be attached to a session.
      */
-    public DefaultBootstrapSession(BootstrapRequest request, LwM2mPeer client, boolean authorized,
+    public DefaultBootstrapSession(String endpointName, BootstrapRequest request, LwM2mPeer client, boolean authorized,
             Map<String, String> applicationData, EndpointUri endpointUsed) {
-        this(request, client, authorized, null, applicationData, endpointUsed);
+        this(endpointName, request, client, authorized, null, applicationData, endpointUsed);
     }
 
     /**
      * Create a {@link DefaultBootstrapSession} using <code>System.currentTimeMillis()</code> to set the creation time.
      *
+     * @param endpointName The endpoint name of the client.
      * @param request The bootstrap request which initiate the session.
      * @param client The transport layer information about client.
      * @param authorized True if device is authorized to bootstrap.
      * @param contentFormat The content format to use to write object.
      * @param applicationData Data that could be attached to a session.
      */
-    public DefaultBootstrapSession(BootstrapRequest request, LwM2mPeer client, boolean authorized,
+    public DefaultBootstrapSession(String endpointName, BootstrapRequest request, LwM2mPeer client, boolean authorized,
             ContentFormat contentFormat, Map<String, String> applicationData, EndpointUri endpointUsed) {
-        this(request, client, authorized, contentFormat, applicationData, System.currentTimeMillis(), endpointUsed);
+        this(endpointName, request, client, authorized, contentFormat, applicationData, System.currentTimeMillis(),
+                endpointUsed);
     }
 
     /**
      * Create a {@link DefaultBootstrapSession}.
      *
+     * @param endpointName The endpoint name of the client.
      * @param request The bootstrap request which initiate the session.
      * @param client The transport layer information about client.
      * @param authorized True if device is authorized to bootstrap.
@@ -90,13 +94,13 @@ public class DefaultBootstrapSession implements BootstrapSession {
      * @param applicationData Data that could be attached to a session.
      * @param creationTime The creation time of this session in ms.
      */
-    public DefaultBootstrapSession(BootstrapRequest request, LwM2mPeer client, boolean authorized,
+    public DefaultBootstrapSession(String endpointName, BootstrapRequest request, LwM2mPeer client, boolean authorized,
             ContentFormat contentFormat, Map<String, String> applicationData, long creationTime,
             EndpointUri endpointUsed) {
         Validate.notNull(request);
         this.id = RandomStringUtils.random(10, true, true);
         this.request = request;
-        this.endpoint = request.getEndpointName();
+        this.endpoint = endpointName;
         this.client = client;
         this.endpointUsed = endpointUsed;
         this.authorized = authorized;

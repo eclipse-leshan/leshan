@@ -54,7 +54,7 @@ public class Credentials {
 
     public static final byte[] OSCORE_MASTER_SECRET = Hex.decodeHex("1234567890".toCharArray());
     public static final byte[] OSCORE_MASTER_SALT = Hex.decodeHex("0987654321".toCharArray());
-    public static final byte[] OSCORE_SENDER_ID = Hex.decodeHex("ABCDEF".toCharArray());
+    public static final byte[] OSCORE_SENDER_ID = "secret".getBytes();
     public static final byte[] OSCORE_RECIPIENT_ID = Hex.decodeHex("FEDCBA".toCharArray());
 
     public static final byte[] OSCORE_BOOTSTRAP_MASTER_SECRET = Hex.decodeHex("BB1234567890".toCharArray());

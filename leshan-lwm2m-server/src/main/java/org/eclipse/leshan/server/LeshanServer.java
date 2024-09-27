@@ -75,6 +75,7 @@ import org.eclipse.leshan.server.request.UplinkDeviceManagementRequestReceiver;
 import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.server.send.SendHandler;
 import org.eclipse.leshan.server.send.SendService;
+import org.eclipse.leshan.servers.ServerEndpointNameProvider;
 import org.eclipse.leshan.servers.security.SecurityInfo;
 import org.eclipse.leshan.servers.security.SecurityStore;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
@@ -128,7 +129,8 @@ public class LeshanServer {
      * @param updateRegistrationOnNotification will activate registration update on observe notification.
      * @param updateRegistrationOnSend will activate registration update on Send Operation.
      * @param linkParser a parser {@link LwM2mLinkParser} used to parse a CoRE Link.
-     * @param serverSecurityInfo credentials of the Server
+     * @param serverSecurityInfo credentials of the Server.
+     * @param endpointNameProvider try to find endpoint name from client identity.
      * @since 1.1
      */
     public LeshanServer(LwM2mServerEndpointsProvider endpointsProvider, RegistrationStore registrationStore,
@@ -136,7 +138,8 @@ public class LeshanServer {
             LwM2mDecoder decoder, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
             RegistrationIdProvider registrationIdProvider, RegistrationDataExtractor registrationDataExtractor,
             boolean updateRegistrationOnNotification, boolean updateRegistrationOnSend, LwM2mLinkParser linkParser,
-            EndPointUriHandler uriHandler, ServerSecurityInfo serverSecurityInfo) {
+            EndPointUriHandler uriHandler, ServerSecurityInfo serverSecurityInfo,
+            ServerEndpointNameProvider endpointNameProvider) {
 
         Validate.notNull(endpointsProvider, "endpointsProvider cannot be null");
         Validate.notNull(registrationStore, "registration store cannot be null");
@@ -166,7 +169,7 @@ public class LeshanServer {
         ServerEndpointToolbox toolbox = new ServerEndpointToolbox(decoder, encoder, linkParser,
                 new DefaultClientProfileProvider(registrationStore, modelProvider), uriHandler);
         RegistrationHandler registrationHandler = new RegistrationHandler(registrationService, authorizer,
-                registrationIdProvider, registrationDataExtractor);
+                registrationIdProvider, registrationDataExtractor, endpointNameProvider);
         UplinkDeviceManagementRequestReceiver requestReceiver = createRequestReceiver(registrationHandler, sendService);
         endpointsProvider.createEndpoints(requestReceiver, observationService, toolbox, serverSecurityInfo, this);
 

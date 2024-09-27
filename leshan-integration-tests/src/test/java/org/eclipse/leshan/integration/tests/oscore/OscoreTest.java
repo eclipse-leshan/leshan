@@ -104,6 +104,34 @@ public class OscoreTest {
     }
 
     @Test
+    public void registered_device_with_oscore_to_server_with_oscore_without_endpoint_name()
+            throws NonUniqueSecurityInfoException, InterruptedException {
+        // Create OSCORE Client
+        client = givenClient.connectingTo(server) //
+                .named(new String(getClientOscoreSetting().getSenderId())) //
+                .dontSendEndpointName() //
+                .using(getClientOscoreSetting()).build();
+
+        // Add client credentials to the server
+        server.getSecurityStore().add(SecurityInfo.newOscoreInfo(client.getEndpointName(), getServerOscoreSetting()));
+
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Start it and wait for registration
+        client.start();
+        server.waitForNewRegistrationOf(client);
+
+        // Check client is well registered
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
+
+        // check we can send request to client.
+        ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
+        assertThat(response.isSuccess()).isTrue();
+    }
+
+    @Test
     public void registered_device_with_oscore_to_server_with_oscore_then_removed_security_info_then_server_fails_to_send_request()
             throws NonUniqueSecurityInfoException, InterruptedException {
         // Create OSCORE Client

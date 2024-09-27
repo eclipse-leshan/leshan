@@ -33,9 +33,11 @@ public interface BootstrapAuthorizer {
      * return Authorization.approved(myAppData);
      * </pre>
      *
+     *
+     * @param endpointName The endpoint name of the client.
      * @param request the request received
      * @param client the transport information about client which sent the request.
      * @return an {@link Authorization} status.
      */
-    Authorization isAuthorized(BootstrapRequest request, LwM2mPeer client);
+    Authorization isAuthorized(String endpointName, BootstrapRequest request, LwM2mPeer client);
 }

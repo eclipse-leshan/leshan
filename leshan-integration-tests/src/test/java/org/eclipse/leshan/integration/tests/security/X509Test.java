@@ -197,6 +197,43 @@ public class X509Test {
     }
 
     @TestAllTransportLayer
+    public void registered_device_with_x509cert_to_server_with_x509cert_without_endpointname(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
+
+        // Create X509 server & start it
+        server = givenServer //
+                .actingAsServerOnly()//
+                .using(serverX509CertSignedByRoot, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificatesByServer).build();
+        server.start();
+
+        // Create X509 Client
+        client = givenClient.connectingTo(server) //
+                .dontSendEndpointName() // by default LeshanClientTest is using CN of certificate
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertSignedByRoot).build();
+
+        // Add client credentials to the server
+        server.getSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
+
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Start it and wait for registration
+        client.start();
+        server.waitForNewRegistrationOf(client);
+
+        // Check client is well registered
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
+
+        // check we can send request to client.
+        ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
+        assertThat(response.isSuccess()).isTrue();
+    }
+
+    @TestAllTransportLayer
     public void registered_device_with_x509cert_to_server_with_self_signed_x509cert(Protocol givenProtocol,
             String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {

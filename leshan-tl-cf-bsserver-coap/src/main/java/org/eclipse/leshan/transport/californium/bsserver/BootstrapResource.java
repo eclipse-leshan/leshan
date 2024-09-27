@@ -42,8 +42,8 @@ import org.slf4j.LoggerFactory;
 public class BootstrapResource extends LwM2mCoapResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(BootstrapResource.class);
-    private static final String QUERY_PARAM_ENDPOINT = "ep=";
-    private static final String QUERY_PARAM_PREFERRED_CONTENT_FORMAT = "pct=";
+    private static final String QUERY_PARAM_ENDPOINT = "ep";
+    private static final String QUERY_PARAM_PREFERRED_CONTENT_FORMAT = "pct";
 
     private final BootstrapUplinkRequestReceiver receiver;
     private final EndPointUriHandler uriHandler;
@@ -71,18 +71,30 @@ public class BootstrapResource extends LwM2mCoapResource {
         String endpoint = null;
         ContentFormat preferredContentFomart = null;
         Map<String, String> additionalParams = new HashMap<>();
+        // TODO maybe we should use LwM2mAttributeParser ?
         for (String param : request.getOptions().getUriQuery()) {
-            if (param.startsWith(QUERY_PARAM_ENDPOINT)) {
-                endpoint = param.substring(QUERY_PARAM_ENDPOINT.length());
-            } else if (param.startsWith(QUERY_PARAM_PREFERRED_CONTENT_FORMAT)) {
-                try {
-                    preferredContentFomart = ContentFormat
-                            .fromCode(param.substring(QUERY_PARAM_PREFERRED_CONTENT_FORMAT.length()));
-                } catch (NumberFormatException e) {
-                    handleInvalidRequest(exchange.advanced(),
-                            "Invalid preferre content format (pct) query param : must be a number", e);
-                    return;
+            String[] p = param.split("=", 2);
+            String paramName = p[0];
+            if (paramName.equals(QUERY_PARAM_ENDPOINT)) {
+                if (p.length == 2) {
+                    endpoint = p[1];
+                } else {
+                    endpoint = "";
                 }
+            } else if (paramName.equals(QUERY_PARAM_PREFERRED_CONTENT_FORMAT)) {
+                if (p.length == 2) {
+                    try {
+                        preferredContentFomart = ContentFormat.fromCode(p[1]);
+                    } catch (NumberFormatException e) {
+                        handleInvalidRequest(exchange.advanced(),
+                                "Invalid preferre content format (pct) query param : must be a number", e);
+                        return;
+                    }
+                } else {
+                    handleInvalidRequest(exchange.advanced(), "preferred content format (pct) param can not be empty",
+                            null);
+                }
+
             } else {
                 String[] tokens = param.split("\\=");
                 if (tokens != null && tokens.length == 2) {

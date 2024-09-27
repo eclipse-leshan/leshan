@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.request.ReadRequest;
@@ -46,6 +47,7 @@ import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.integration.tests.util.Failure;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
@@ -288,5 +290,23 @@ public class RegistrationTest {
         Registration registration = server.getRegistrationFor(client);
         assertThat(registration.getAdditionalRegistrationAttributes())
                 .containsExactlyEntriesOf(expectedAdditionalAttributes);
+    }
+
+    @TestAllTransportLayer
+    public void register_without_sending_endpoint(Protocol protocol, String clientEndpointProvider,
+            String serverEndpointProvider) throws InterruptedException, LinkParseException {
+
+        client = givenClient.dontSendEndpointName().build();
+
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Start it and wait for registration failure
+        client.start();
+        Failure failure = client.waitForRegistrationFailureTo(server);
+        assertThat(failure).failedWith(ResponseCode.FORBIDDEN);
+
+        // Check we are registered with the expected attributes
+        assertThat(client).isNotRegisteredAt(server);
     }
 }

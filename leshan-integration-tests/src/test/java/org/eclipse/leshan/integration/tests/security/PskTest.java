@@ -141,6 +141,39 @@ public class PskTest {
     }
 
     @TestAllTransportLayer
+    public void registered_device_with_psk_to_server_with_psk_without_endpointname(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws NonUniqueSecurityInfoException, InterruptedException {
+
+        // Create PSK server & start it
+        server = givenServer.build(); // default server support PSK
+        server.start();
+
+        // Create PSK Client
+        client = givenClient.connectingTo(server).named(GOOD_PSK_ID).dontSendEndpointName()
+                .usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY).build();
+
+        // Add client credentials to the server
+        server.getSecurityStore()
+                .add(SecurityInfo.newPreSharedKeyInfo(client.getEndpointName(), GOOD_PSK_ID, GOOD_PSK_KEY));
+
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Start it and wait for registration
+        client.start();
+        server.waitForNewRegistrationOf(client);
+
+        // Check client is well registered
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
+
+        // check we can send request to client.
+        ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
+        assertThat(response.isSuccess()).isTrue();
+    }
+
+    @TestAllTransportLayer
     public void register_update_deregister_reregister_device_with_psk_to_server_with_psk(Protocol givenProtocol,
             String givenClientEndpointProvider, String givenServerEndpointProvider)
             throws NonUniqueSecurityInfoException {

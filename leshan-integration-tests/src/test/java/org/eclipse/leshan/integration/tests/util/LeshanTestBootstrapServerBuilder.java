@@ -44,6 +44,7 @@ import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
 import org.eclipse.leshan.integration.tests.util.cf.CertPair;
 import org.eclipse.leshan.integration.tests.util.cf.MapBasedCertificateProvider;
+import org.eclipse.leshan.servers.ServerEndpointNameProvider;
 import org.eclipse.leshan.servers.security.EditableSecurityStore;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.eclipse.leshan.transport.californium.bsserver.endpoint.BootstrapServerProtocolProvider;
@@ -82,9 +83,10 @@ public class LeshanTestBootstrapServerBuilder extends LeshanBootstrapServerBuild
 
     @Override
     protected LeshanTestBootstrapServer createBootstrapServer(LwM2mBootstrapServerEndpointsProvider endpointsProvider,
-            BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory, LwM2mEncoder encoder,
-            LwM2mDecoder decoder, LwM2mLinkParser linkParser, EndPointUriHandler uriHandler,
-            BootstrapSecurityStore securityStore, ServerSecurityInfo serverSecurityInfo) {
+            BootstrapSessionManager bsSessionManager, ServerEndpointNameProvider endpointNameProvider,
+            BootstrapHandlerFactory bsHandlerFactory, LwM2mEncoder encoder, LwM2mDecoder decoder,
+            LwM2mLinkParser linkParser, EndPointUriHandler uriHandler, BootstrapSecurityStore securityStore,
+            ServerSecurityInfo serverSecurityInfo) {
 
         // create endpoint provider.
         if (endpointsProvider == null) {
@@ -108,8 +110,8 @@ public class LeshanTestBootstrapServerBuilder extends LeshanBootstrapServerBuild
             }
         }
 
-        return new LeshanTestBootstrapServer(endpointsProvider, bsSessionManager, bsHandlerFactory, encoder, decoder,
-                linkParser, uriHandler, securityStore, serverSecurityInfo, //
+        return new LeshanTestBootstrapServer(endpointsProvider, bsSessionManager, endpointNameProvider,
+                bsHandlerFactory, encoder, decoder, linkParser, uriHandler, securityStore, serverSecurityInfo, //
                 // arguments only needed for LeshanTestBootstrapServer
                 configStore, editableSecurityStore);
     }

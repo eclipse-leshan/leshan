@@ -84,9 +84,6 @@ public class RegisterRequest extends AbstractLwM2mRequest<RegisterResponse>
             Boolean queueMode, String smsNumber, Link[] objectLinks, Map<String, String> additionalAttributes,
             Object coapRequest) throws InvalidRequestException {
         super(coapRequest);
-        if (endpointName == null || endpointName.isEmpty())
-            throw new InvalidRequestException("endpoint is mandatory");
-
         if (objectLinks == null || objectLinks.length == 0)
             throw new InvalidRequestException(
                     "supported object list is mandatory and mandatory objects should be present for endpoint %s",

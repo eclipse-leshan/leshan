@@ -136,13 +136,13 @@ public class RegistrationResource extends LwM2mCoapResource {
         try {
             for (Entry<String, String> entry : coapRequest.options().getUriQueryMap().entrySet()) {
                 if (entry.getKey().equals(QUERY_PARAM_ENDPOINT)) {
-                    endpoint = entry.getValue();
+                    endpoint = entry.getValue() == null ? "" : entry.getValue();
                 } else if (entry.getKey().equals(QUERY_PARAM_LIFETIME)) {
                     lifetime = Long.valueOf(entry.getValue());
                 } else if (entry.getKey().equals(QUERY_PARAM_SMS)) {
-                    smsNumber = entry.getValue();
+                    smsNumber = entry.getValue() == null ? "" : entry.getValue();
                 } else if (entry.getKey().equals(QUERY_PARAM_LWM2M_VERSION)) {
-                    lwVersion = entry.getValue();
+                    lwVersion = entry.getValue() == null ? "" : entry.getValue();
                 } else if (entry.getKey().equals(QUERY_PARAM_BINDING_MODE)) {
                     binding = BindingMode.parse(entry.getValue());
                 } else if (entry.getKey().equals(QUERY_PARAM_QUEUEMMODE)) {
@@ -195,7 +195,7 @@ public class RegistrationResource extends LwM2mCoapResource {
                 if (entry.getKey().equals(QUERY_PARAM_LIFETIME)) {
                     lifetime = Long.valueOf(entry.getValue());
                 } else if (entry.getKey().equals(QUERY_PARAM_SMS)) {
-                    smsNumber = entry.getValue();
+                    smsNumber = entry.getValue() == null ? "" : entry.getValue();
                 } else if (entry.getKey().equals(QUERY_PARAM_BINDING_MODE)) {
                     binding = BindingMode.parse(entry.getValue());
                 } else {

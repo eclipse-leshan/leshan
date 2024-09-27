@@ -40,6 +40,8 @@ import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
+import org.eclipse.leshan.servers.DefaultServerEndpointNameProvider;
+import org.eclipse.leshan.servers.ServerEndpointNameProvider;
 import org.eclipse.leshan.servers.security.SecurityChecker;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.slf4j.Logger;
@@ -61,6 +63,7 @@ public class LeshanBootstrapServerBuilder {
     private BootstrapSessionManager sessionManager;
     private BootstrapHandlerFactory bootstrapHandlerFactory;
     private BootstrapAuthorizer authorizer;
+    private ServerEndpointNameProvider endpointNameProvider;
 
     private LwM2mBootstrapModelProvider modelProvider;
 
@@ -272,6 +275,17 @@ public class LeshanBootstrapServerBuilder {
     }
 
     /**
+     * Sets {@link ServerEndpointNameProvider} responsible to find client endpoint name if missing from client Identity.
+     * <p>
+     * By default, {@link DefaultServerEndpointNameProvider} is used.
+     *
+     * @param endpointNameProvider the {@link ServerEndpointNameProvider} to set.
+     */
+    public void setEndpointNameProvider(ServerEndpointNameProvider endpointNameProvider) {
+        this.endpointNameProvider = endpointNameProvider;
+    }
+
+    /**
      * By default LeshanBootstrapServer doesn't support any protocol. Users need to provide 1 or several
      * {@link LwM2mBootstrapServerEndpointsProvider} implementation.
      * <p>
@@ -312,8 +326,9 @@ public class LeshanBootstrapServerBuilder {
             bootstrapHandlerFactory = new BootstrapHandlerFactory() {
                 @Override
                 public BootstrapHandler create(BootstrapDownlinkRequestSender sender,
-                        BootstrapSessionManager sessionManager, BootstrapSessionListener listener) {
-                    return new DefaultBootstrapHandler(sender, sessionManager, listener);
+                        BootstrapSessionManager sessionManager, ServerEndpointNameProvider endpointNameProvider,
+                        BootstrapSessionListener listener) {
+                    return new DefaultBootstrapHandler(sender, sessionManager, endpointNameProvider, listener);
                 }
             };
 
@@ -325,6 +340,9 @@ public class LeshanBootstrapServerBuilder {
             linkParser = new DefaultLwM2mLinkParser();
         if (uriHandler == null) {
             uriHandler = new DefaultEndPointUriHandler();
+        }
+        if (endpointNameProvider == null) {
+            endpointNameProvider = new DefaultServerEndpointNameProvider();
         }
 
         // Handle class depending of Session Manager
@@ -368,8 +386,8 @@ public class LeshanBootstrapServerBuilder {
                         "authorizer is set but you also provide a custom SessionManager so this authorizer will not be used");
             }
         }
-        return createBootstrapServer(endpointsProvider, sessionManager, bootstrapHandlerFactory, encoder, decoder,
-                linkParser, uriHandler, securityStore,
+        return createBootstrapServer(endpointsProvider, sessionManager, endpointNameProvider, bootstrapHandlerFactory,
+                encoder, decoder, linkParser, uriHandler, securityStore,
                 new ServerSecurityInfo(privateKey, publicKey, certificateChain, trustedCertificates));
     }
 
@@ -387,10 +405,11 @@ public class LeshanBootstrapServerBuilder {
      * @return the LWM2M Bootstrap server.
      */
     protected LeshanBootstrapServer createBootstrapServer(LwM2mBootstrapServerEndpointsProvider endpointsProvider,
-            BootstrapSessionManager bsSessionManager, BootstrapHandlerFactory bsHandlerFactory, LwM2mEncoder encoder,
-            LwM2mDecoder decoder, LwM2mLinkParser linkParser, EndPointUriHandler uriHandler,
-            BootstrapSecurityStore securityStore, ServerSecurityInfo serverSecurityInfo) {
-        return new LeshanBootstrapServer(endpointsProvider, bsSessionManager, bsHandlerFactory, encoder, decoder,
-                linkParser, uriHandler, securityStore, serverSecurityInfo);
+            BootstrapSessionManager bsSessionManager, ServerEndpointNameProvider endpointNameProvider,
+            BootstrapHandlerFactory bsHandlerFactory, LwM2mEncoder encoder, LwM2mDecoder decoder,
+            LwM2mLinkParser linkParser, EndPointUriHandler uriHandler, BootstrapSecurityStore securityStore,
+            ServerSecurityInfo serverSecurityInfo) {
+        return new LeshanBootstrapServer(endpointsProvider, bsSessionManager, endpointNameProvider, bsHandlerFactory,
+                encoder, decoder, linkParser, uriHandler, securityStore, serverSecurityInfo);
     }
 }

@@ -59,6 +59,7 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.util.TestLwM2mId;
 import org.eclipse.leshan.integration.tests.util.BootstrapRequestChecker;
+import org.eclipse.leshan.integration.tests.util.Failure;
 import org.eclipse.leshan.integration.tests.util.LeshanTestBootstrapServer;
 import org.eclipse.leshan.integration.tests.util.LeshanTestBootstrapServerBuilder;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
@@ -155,6 +156,29 @@ public class BootstrapTest {
 
         // check the client is registered
         assertThat(client).isRegisteredAt(server);
+    }
+
+    @TestAllTransportLayer
+    public void bootstrap_without_endpoint_name(Protocol givenProtocol, String givenClientEndpointProvider,
+            String givenServerEndpointProvider, String givenBootstrapServerEndpointProvider)
+            throws InvalidConfigurationException {
+        // Create and start bootstrap server
+        bootstrapServer = givenBootstrapServer.build();
+        bootstrapServer.start();
+
+        // Create Client and check it is not already registered
+        client = givenClient.connectingTo(bootstrapServer).dontSendEndpointName().build();
+
+        // Add config for this client
+        bootstrapServer.getConfigStore().add(client.getEndpointName(), //
+                givenBootstrapConfig() //
+                        .adding(givenProtocol, bootstrapServer) //
+                        .build());
+
+        // Start it and wait for registration
+        client.start();
+        Failure cause = client.waitForBootstrapFailure(bootstrapServer, 2, TimeUnit.SECONDS);
+        assertThat(cause).failedWith(ResponseCode.BAD_REQUEST);
     }
 
     @TestAllTransportLayer
@@ -501,8 +525,8 @@ public class BootstrapTest {
         client.start();
 
         // ensure bootstrap session failed because of invalid state
-        Exception cause = client.waitForBootstrapFailure(bootstrapServer, 2, TimeUnit.SECONDS);
-        assertThat(cause).isExactlyInstanceOf(InvalidStateException.class);
+        Failure cause = client.waitForBootstrapFailure(bootstrapServer, 2, TimeUnit.SECONDS);
+        assertThat(cause).failedWith(InvalidStateException.class);
         BootstrapFailureCause failure = bootstrapServer.waitForBootstrapFailure(1, TimeUnit.SECONDS);
         assertThat(failure).isEqualTo(BootstrapFailureCause.FINISH_FAILED);
     }

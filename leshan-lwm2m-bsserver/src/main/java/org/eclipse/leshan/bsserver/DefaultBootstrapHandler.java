@@ -37,6 +37,8 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.core.util.Validate;
+import org.eclipse.leshan.servers.DefaultServerEndpointNameProvider;
+import org.eclipse.leshan.servers.ServerEndpointNameProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,19 +66,21 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
     protected final ConcurrentHashMap<String, BootstrapSession> onGoingSession = new ConcurrentHashMap<>();
     protected final BootstrapSessionManager sessionManager;
     protected final BootstrapSessionListener listener;
+    protected final ServerEndpointNameProvider endpointNameProvider;
 
     public DefaultBootstrapHandler(BootstrapDownlinkRequestSender sender, BootstrapSessionManager sessionManager,
-            BootstrapSessionListener listener) {
-        this(sender, sessionManager, listener, DEFAULT_TIMEOUT);
+            ServerEndpointNameProvider endpointNameProvider, BootstrapSessionListener listener) {
+        this(sender, sessionManager, new DefaultServerEndpointNameProvider(), listener, DEFAULT_TIMEOUT);
     }
 
     public DefaultBootstrapHandler(BootstrapDownlinkRequestSender sender, BootstrapSessionManager sessionManager,
-            BootstrapSessionListener listener, long requestTimeout) {
+            ServerEndpointNameProvider endpointNameProvider, BootstrapSessionListener listener, long requestTimeout) {
         Validate.notNull(sender);
         Validate.notNull(sessionManager);
         Validate.notNull(listener);
         this.sender = sender;
         this.sessionManager = sessionManager;
+        this.endpointNameProvider = endpointNameProvider;
         this.listener = listener;
         this.requestTimeout = requestTimeout;
     }
@@ -84,11 +88,19 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
     @Override
     public SendableResponse<BootstrapResponse> bootstrap(LwM2mPeer sender, BootstrapRequest request,
             EndpointUri endpointUsed) {
+        // Extract Endpoint Name
         String endpoint = request.getEndpointName();
+        if (endpoint == null) {
+            // find endpoint name from identity
+            endpoint = endpointNameProvider.getEndpointName(sender.getIdentity());
+            if (endpoint == null) {
+                return new SendableResponse<>(BootstrapResponse.badRequest("endpoint name missing"));
+            }
+        }
 
         // Start session, checking the BS credentials
         final BootstrapSession session;
-        session = sessionManager.begin(request, sender, endpointUsed);
+        session = sessionManager.begin(endpoint, request, sender, endpointUsed);
         listener.sessionInitiated(request, sender);
 
         if (!session.isAuthorized()) {

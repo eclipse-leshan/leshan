@@ -49,8 +49,6 @@ public class BootstrapRequest extends AbstractLwM2mRequest<BootstrapResponse>
     public BootstrapRequest(String endpointName, ContentFormat preferredFormat,
             Map<String, String> additionalAttributes, Object coapRequest) throws InvalidRequestException {
         super(coapRequest);
-        if (endpointName == null || endpointName.isEmpty())
-            throw new InvalidRequestException("endpoint is mandatory");
 
         this.endpointName = endpointName;
         if (additionalAttributes == null)

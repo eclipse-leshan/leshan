@@ -71,7 +71,11 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
         // @since 1.1
         HashMap<String, String> attributes = new HashMap<>();
         attributes.putAll(request.getAdditionalAttributes());
-        attributes.put("ep", request.getEndpointName());
+
+        String endpoint = request.getEndpointName();
+        if (endpoint != null) {
+            attributes.put("ep", endpoint);
+        }
         if (request.getPreferredContentFormat() != null) {
             attributes.put("pct", Integer.toString(request.getPreferredContentFormat().getCode()));
         }
@@ -90,7 +94,10 @@ public class CoapRequestBuilder implements UplinkRequestVisitor {
         HashMap<String, String> attributes = new HashMap<>();
         attributes.putAll(request.getAdditionalAttributes());
 
-        attributes.put("ep", request.getEndpointName());
+        String endpoint = request.getEndpointName();
+        if (endpoint != null) {
+            attributes.put("ep", endpoint);
+        }
 
         Long lifetime = request.getLifetime();
         if (lifetime != null)

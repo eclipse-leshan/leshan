@@ -33,6 +33,7 @@ import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.server.security.Authorizer;
+import org.eclipse.leshan.servers.DefaultServerEndpointNameProvider;
 import org.eclipse.leshan.servers.security.Authorization;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,7 +49,8 @@ public class RegistrationHandlerTest {
         authorizer = new TestAuthorizer();
         registrationStore = new InMemoryRegistrationStore();
         registrationHandler = new RegistrationHandler(new RegistrationServiceImpl(registrationStore), authorizer,
-                new RandomStringRegistrationIdProvider(), new DefaultRegistrationDataExtractor());
+                new RandomStringRegistrationIdProvider(), new DefaultRegistrationDataExtractor(),
+                new DefaultServerEndpointNameProvider());
     }
 
     @Test

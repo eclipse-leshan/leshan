@@ -59,6 +59,7 @@ import org.eclipse.leshan.server.registration.RegistrationListener;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.server.send.SendListener;
+import org.eclipse.leshan.servers.ServerEndpointNameProvider;
 import org.eclipse.leshan.servers.security.EditableSecurityStore;
 import org.eclipse.leshan.servers.security.SecurityStore;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
@@ -82,10 +83,12 @@ public class LeshanTestServer extends LeshanServer {
             LwM2mDecoder decoder, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
             RegistrationIdProvider registrationIdProvider, RegistrationDataExtractor registrationDataExtractor,
             LwM2mLinkParser linkParser, EndPointUriHandler uriHandler, ServerSecurityInfo serverSecurityInfo,
-            boolean updateRegistrationOnNotification, boolean updateRegistrationOnSend) {
+            ServerEndpointNameProvider endponNameProvider, boolean updateRegistrationOnNotification,
+            boolean updateRegistrationOnSend) {
         super(endpointsProvider, registrationStore, securityStore, authorizer, modelProvider, encoder, decoder,
                 noQueueMode, awakeTimeProvider, registrationIdProvider, registrationDataExtractor,
-                updateRegistrationOnNotification, updateRegistrationOnSend, linkParser, uriHandler, serverSecurityInfo);
+                updateRegistrationOnNotification, updateRegistrationOnSend, linkParser, uriHandler, serverSecurityInfo,
+                endponNameProvider);
 
         if (securityStore != null && !(securityStore instanceof EditableSecurityStore)) {
             throw new IllegalStateException(

@@ -48,16 +48,16 @@ public class DefaultRegistrationEngineFactory implements RegistrationEngineFacto
     }
 
     @Override
-    public RegistrationEngine createRegistratioEngine(String endpoint, LwM2mObjectTree objectTree,
-            EndpointsManager endpointsManager, UplinkRequestSender requestSender, BootstrapHandler bootstrapState,
-            LwM2mClientObserver observer, Map<String, String> additionalAttributes,
+    public RegistrationEngine createRegistratioEngine(ClientEndpointNameProvider endpointNameProvider,
+            LwM2mObjectTree objectTree, EndpointsManager endpointsManager, UplinkRequestSender requestSender,
+            BootstrapHandler bootstrapState, LwM2mClientObserver observer, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, Set<ContentFormat> supportedContentFormat,
             ScheduledExecutorService sharedExecutor, LinkFormatHelper linkFormatHelper) {
-        return new DefaultRegistrationEngine(endpoint, objectTree, endpointsManager, requestSender, bootstrapState,
-                observer, additionalAttributes, bsAdditionalAttributes, sharedExecutor, requestTimeoutInMs,
-                deregistrationTimeoutInMs, bootstrapSessionTimeoutInSec, retryWaitingTimeInMs, communicationPeriodInMs,
-                reconnectOnUpdate, resumeOnConnect, queueMode, preferredContentFormat, supportedContentFormat,
-                linkFormatHelper);
+        return new DefaultRegistrationEngine(endpointNameProvider, objectTree, endpointsManager, requestSender,
+                bootstrapState, observer, additionalAttributes, bsAdditionalAttributes, sharedExecutor,
+                requestTimeoutInMs, deregistrationTimeoutInMs, bootstrapSessionTimeoutInSec, retryWaitingTimeInMs,
+                communicationPeriodInMs, reconnectOnUpdate, resumeOnConnect, queueMode, preferredContentFormat,
+                supportedContentFormat, linkFormatHelper);
     }
 
     /**

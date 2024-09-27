@@ -36,8 +36,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.leshan.bsserver.InvalidConfigurationException;
 import org.eclipse.leshan.core.CertificateUsage;
+import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.integration.tests.util.Credentials;
+import org.eclipse.leshan.integration.tests.util.Failure;
 import org.eclipse.leshan.integration.tests.util.LeshanTestBootstrapServer;
 import org.eclipse.leshan.integration.tests.util.LeshanTestBootstrapServerBuilder;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
@@ -97,6 +99,41 @@ public class SecureBootstrapTest {
         // Create Client and check it is not already registered
         client = givenClient.connectingTo(bootstrapServer).using(Protocol.COAPS).usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY)
                 .build();
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Add client credentials to the server
+        bootstrapServer.getEditableSecurityStore()
+                .add(SecurityInfo.newPreSharedKeyInfo(client.getEndpointName(), GOOD_PSK_ID, GOOD_PSK_KEY));
+
+        // Add config for this client
+        bootstrapServer.getConfigStore().add(client.getEndpointName(), //
+                givenBootstrapConfig() //
+                        .adding(Protocol.COAPS, bootstrapServer, GOOD_PSK_ID, GOOD_PSK_KEY) //
+                        .adding(Protocol.COAP, server) //
+                        .build());
+
+        // Start it and wait for registration
+        client.start();
+        server.waitForNewRegistrationOf(client);
+
+        // check the client is registered
+        assertThat(client).isRegisteredAt(server);
+    }
+
+    @Test
+    public void bootstrap_using_psk_without_endpointname()
+            throws NonUniqueSecurityInfoException, InvalidConfigurationException {
+        // Create DM Server without security & start it
+        server = givenServer.using(Protocol.COAP).build();
+        server.start();
+
+        // Create and start bootstrap server
+        bootstrapServer = givenBootstrapServer.using(Protocol.COAPS).build();
+        bootstrapServer.start();
+
+        // Create Client and check it is not already registered
+        client = givenClient.connectingTo(bootstrapServer).named(GOOD_PSK_ID).sendEndpointNameIfNecessary()
+                .using(Protocol.COAPS).usingPsk(GOOD_PSK_ID, GOOD_PSK_KEY).build();
         assertThat(client).isNotRegisteredAt(server);
 
         // Add client credentials to the server
@@ -186,6 +223,42 @@ public class SecureBootstrapTest {
     }
 
     @Test
+    public void bootstrap_using_rpk_without_endpoint()
+            throws NonUniqueSecurityInfoException, InvalidConfigurationException {
+        // Create DM Server without security & start it
+        server = givenServer.using(Protocol.COAP).build();
+        server.start();
+
+        // Create and start bootstrap server
+        bootstrapServer = givenBootstrapServer.using(Protocol.COAPS).using(serverPublicKey, serverPrivateKey).build();
+        bootstrapServer.start();
+
+        // Create Client and check it is not already registered
+        client = givenClient.connectingTo(bootstrapServer).using(Protocol.COAPS) //
+                .dontSendEndpointName()//
+                .using(clientPublicKey, clientPrivateKey)//
+                .trusting(serverPublicKey).build();
+
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Add client credentials to the server
+        bootstrapServer.getEditableSecurityStore()
+                .add(SecurityInfo.newRawPublicKeyInfo(client.getEndpointName(), clientPublicKey));
+
+        // Add config for this client
+        bootstrapServer.getConfigStore().add(client.getEndpointName(), //
+                givenBootstrapConfig() //
+                        .adding(Protocol.COAPS, bootstrapServer, clientPublicKey, clientPrivateKey, serverPublicKey) //
+                        .adding(Protocol.COAP, server) //
+                        .build());
+
+        // Start it and wait for registration
+        client.start();
+        Failure cause = client.waitForBootstrapFailure(bootstrapServer, 2, TimeUnit.SECONDS);
+        assertThat(cause).failedWith(ResponseCode.BAD_REQUEST);
+    }
+
+    @Test
     public void bootstrap_using_x509()
             throws NonUniqueSecurityInfoException, InvalidConfigurationException, CertificateEncodingException {
 
@@ -201,6 +274,47 @@ public class SecureBootstrapTest {
 
         // Create Client and check it is not already registered
         client = givenClient.connectingTo(bootstrapServer).using(Protocol.COAPS)
+                .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
+                .trusting(serverX509CertSignedByRoot).build();
+
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Add client credentials to the server
+        bootstrapServer.getEditableSecurityStore().add(SecurityInfo.newX509CertInfo(client.getEndpointName()));
+
+        // Add config for this client
+        bootstrapServer.getConfigStore().add(client.getEndpointName(), //
+                givenBootstrapConfig() //
+                        .adding(Protocol.COAPS, bootstrapServer, clientX509CertSignedByRoot, clientPrivateKeyFromCert,
+                                serverX509CertSignedByRoot) //
+                        .adding(Protocol.COAP, server) //
+                        .build());
+
+        // Start it and wait for registration
+        client.start();
+        server.waitForNewRegistrationOf(client);
+
+        // check the client is registered
+        assertThat(client).isRegisteredAt(server);
+    }
+
+    @Test
+    public void bootstrap_using_x509_without_endpoint()
+            throws NonUniqueSecurityInfoException, InvalidConfigurationException, CertificateEncodingException {
+
+        // Create DM Server without security & start it
+        server = givenServer.using(Protocol.COAP).build();
+        server.start();
+
+        // Create and start bootstrap server
+        bootstrapServer = givenBootstrapServer.using(Protocol.COAPS)
+                .using(serverX509CertSignedByRoot, serverPrivateKeyFromCert)//
+                .trusting(trustedCertificatesByServer).build();
+        bootstrapServer.start();
+
+        // Create Client and check it is not already registered
+        client = givenClient.connectingTo(bootstrapServer).using(Protocol.COAPS) //
+                .sendEndpointNameIfNecessary() // by default LeshanClientTest is using CN of certificate
                 .using(clientX509CertSignedByRoot, clientPrivateKeyFromCert)//
                 .trusting(serverX509CertSignedByRoot).build();
 

@@ -31,6 +31,7 @@ import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.core.response.UpdateResponse;
 import org.eclipse.leshan.server.registration.RegistrationDataExtractor.RegistrationData;
 import org.eclipse.leshan.server.security.Authorizer;
+import org.eclipse.leshan.servers.ServerEndpointNameProvider;
 import org.eclipse.leshan.servers.security.Authorization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,17 +48,30 @@ public class RegistrationHandler {
     private final RegistrationIdProvider registrationIdProvider;
     private final Authorizer authorizer;
     private final RegistrationDataExtractor dataExtractor;
+    private final ServerEndpointNameProvider endpointNameProvider;
 
     public RegistrationHandler(RegistrationServiceImpl registrationService, Authorizer authorizer,
-            RegistrationIdProvider registrationIdProvider, RegistrationDataExtractor dataExtractor) {
+            RegistrationIdProvider registrationIdProvider, RegistrationDataExtractor dataExtractor,
+            ServerEndpointNameProvider endpointNameProvider) {
         this.registrationService = registrationService;
         this.authorizer = authorizer;
         this.registrationIdProvider = registrationIdProvider;
         this.dataExtractor = dataExtractor;
+        this.endpointNameProvider = endpointNameProvider;
     }
 
     public SendableResponse<RegisterResponse> register(LwM2mPeer sender, RegisterRequest registerRequest,
             EndpointUri endpointUsed) {
+
+        // Extract Endpoint Name
+        String endpointName = registerRequest.getEndpointName();
+        if (endpointName == null) {
+            // find endpoint name from identity
+            endpointName = endpointNameProvider.getEndpointName(sender.getIdentity());
+            if (endpointName == null) {
+                return new SendableResponse<>(RegisterResponse.forbidden("endpoint name missing"));
+            }
+        }
 
         // Extract data from object link
         LwM2mVersion lwM2mVersion = LwM2mVersion.get(registerRequest.getLwVersion());
@@ -66,8 +80,7 @@ public class RegistrationHandler {
 
         // Create Registration from RegisterRequest
         Registration.Builder builder = new Registration.Builder(
-                registrationIdProvider.getRegistrationId(registerRequest), registerRequest.getEndpointName(), sender,
-                endpointUsed);
+                registrationIdProvider.getRegistrationId(registerRequest), endpointName, sender, endpointUsed);
 
         builder.lwM2mVersion(lwM2mVersion) //
                 .lifeTimeInSec(registerRequest.getLifetime()) //

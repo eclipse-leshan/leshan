@@ -41,6 +41,9 @@ import org.eclipse.leshan.bsserver.endpoint.LwM2mBootstrapServerEndpoint;
 import org.eclipse.leshan.client.LeshanClientBuilder;
 import org.eclipse.leshan.client.bootstrap.BootstrapConsistencyChecker;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
+import org.eclipse.leshan.client.engine.ClientEndpointNameProvider;
+import org.eclipse.leshan.client.engine.DefaultClientEndpointNameProvider;
+import org.eclipse.leshan.client.engine.DefaultClientEndpointNameProvider.Mode;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
 import org.eclipse.leshan.client.object.Device;
@@ -90,6 +93,7 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
 
     private static final Random r = new Random();
     private String endpointName;
+    private Mode endpointNameMode = Mode.ALWAYS;
     private Protocol protocolToUse;
     private LeshanServer server;
     private LeshanBootstrapServer bootstrapServer;
@@ -225,25 +229,29 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
     }
 
     @Override
-    protected LeshanTestClient createLeshanClient(String endpoint, List<? extends LwM2mObjectEnabler> objectEnablers,
-            List<DataSender> dataSenders, List<Certificate> trustStore, RegistrationEngineFactory engineFactory,
-            BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
-            Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer, LinkFormatHelper linkFormatHelper,
-            LwM2mAttributeParser attributeParser, EndPointUriHandler uriHandler,
+    protected LeshanTestClient createLeshanClient(ClientEndpointNameProvider endpointNameProvider,
+            List<? extends LwM2mObjectEnabler> objectEnablers, List<DataSender> dataSenders,
+            List<Certificate> trustStore, RegistrationEngineFactory engineFactory, BootstrapConsistencyChecker checker,
+            Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder,
+            LwM2mDecoder decoder, ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer,
+            LinkFormatHelper linkFormatHelper, LwM2mAttributeParser attributeParser, EndPointUriHandler uriHandler,
             LwM2mClientEndpointsProvider endpointsProvider) {
-        String endpointName;
+
+        // custom behavior for endpoint name provider
+        ClientEndpointNameProvider testEndpointNameProvider;
         if (this.endpointName != null) {
-            endpointName = this.endpointName;
+            testEndpointNameProvider = new DefaultClientEndpointNameProvider(this.endpointName, this.endpointNameMode);
         } else if (clientCertificate != null) {
             X500Principal subjectDN = clientCertificate.getSubjectX500Principal();
-            endpointName = X509CertUtil.getPrincipalField(subjectDN, "CN");
+            testEndpointNameProvider = new DefaultClientEndpointNameProvider(
+                    X509CertUtil.getPrincipalField(subjectDN, "CN"), this.endpointNameMode);
         } else {
-            endpointName = endpoint;
+            testEndpointNameProvider = new DefaultClientEndpointNameProvider(endpointNameProvider.getEndpointName(),
+                    this.endpointNameMode);
         }
 
-        return new LeshanTestClient(endpointName, objectEnablers, dataSenders, trustStore, engineFactory, checker,
-                additionalAttributes, bsAdditionalAttributes, encoder, decoder, sharedExecutor, linkSerializer,
+        return new LeshanTestClient(testEndpointNameProvider, objectEnablers, dataSenders, trustStore, engineFactory,
+                checker, additionalAttributes, bsAdditionalAttributes, encoder, decoder, sharedExecutor, linkSerializer,
                 linkFormatHelper, attributeParser, uriHandler, endpointsProvider, proxy);
     }
 
@@ -316,6 +324,16 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
 
     public LeshanTestClientBuilder named(String endpointName) {
         this.endpointName = endpointName;
+        return this;
+    }
+
+    public LeshanTestClientBuilder dontSendEndpointName() {
+        this.endpointNameMode = Mode.NEVER;
+        return this;
+    }
+
+    public LeshanTestClientBuilder sendEndpointNameIfNecessary() {
+        this.endpointNameMode = Mode.IF_NECESSARY;
         return this;
     }
 

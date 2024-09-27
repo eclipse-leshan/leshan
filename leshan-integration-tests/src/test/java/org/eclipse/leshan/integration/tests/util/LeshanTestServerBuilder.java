@@ -49,6 +49,7 @@ import org.eclipse.leshan.server.registration.RegistrationDataExtractor;
 import org.eclipse.leshan.server.registration.RegistrationIdProvider;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.security.Authorizer;
+import org.eclipse.leshan.servers.ServerEndpointNameProvider;
 import org.eclipse.leshan.servers.security.EditableSecurityStore;
 import org.eclipse.leshan.servers.security.SecurityStore;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
@@ -94,7 +95,8 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
             ClientAwakeTimeProvider awakeTimeProvider, RegistrationIdProvider registrationIdProvider,
             RegistrationDataExtractor registrationDataExtractor, LwM2mLinkParser linkParser,
             EndPointUriHandler uriHandler, ServerSecurityInfo serverSecurityInfo,
-            boolean updateRegistrationOnNotification, boolean updateRegistrationOnSend) {
+            ServerEndpointNameProvider endpointNameProvider, boolean updateRegistrationOnNotification,
+            boolean updateRegistrationOnSend) {
 
         // create endpoint provider.
         if (endpointsProvider == null) {
@@ -121,7 +123,8 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
         }
         return new LeshanTestServer(endpointsProvider, registrationStore, securityStore, authorizer, modelProvider,
                 encoder, decoder, noQueueMode, awakeTimeProvider, registrationIdProvider, registrationDataExtractor,
-                linkParser, uriHandler, serverSecurityInfo, updateRegistrationOnNotification, updateRegistrationOnSend);
+                linkParser, uriHandler, serverSecurityInfo, endpointNameProvider, updateRegistrationOnNotification,
+                updateRegistrationOnSend);
     }
 
     public static LeshanTestServerBuilder givenServerUsing(Protocol protocolToUse) {

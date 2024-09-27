@@ -21,6 +21,7 @@ import org.assertj.core.matcher.AssertionMatcher;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.response.DiscoverResponse;
 import org.eclipse.leshan.core.response.LwM2mResponse;
+import org.eclipse.leshan.integration.tests.util.Failure;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.mockito.hamcrest.MockitoHamcrest;
 
@@ -49,5 +50,9 @@ public class Assertions extends org.assertj.core.api.Assertions {
 
     public static LinkArrayAssert assertThat(Link[] actual) {
         return new LinkArrayAssert(actual);
+    }
+
+    public static FailureAssert assertThat(Failure actual) {
+        return new FailureAssert(actual);
     }
 }

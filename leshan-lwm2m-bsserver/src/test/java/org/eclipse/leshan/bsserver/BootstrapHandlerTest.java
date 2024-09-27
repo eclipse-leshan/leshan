@@ -47,6 +47,7 @@ import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.response.SendableResponse;
+import org.eclipse.leshan.servers.DefaultServerEndpointNameProvider;
 import org.junit.jupiter.api.Test;
 
 public class BootstrapHandlerTest {
@@ -63,7 +64,7 @@ public class BootstrapHandlerTest {
         BootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(false,
                 new InMemoryBootstrapConfigStore());
         BootstrapHandler bsHandler = new DefaultBootstrapHandler(new MockRequestSender(Mode.ALWAYS_SUCCESS),
-                bsSessionManager, new BootstrapSessionDispatcher());
+                bsSessionManager, new DefaultServerEndpointNameProvider(), new BootstrapSessionDispatcher());
 
         // Try to bootstrap
         BootstrapResponse response = bsHandler
@@ -86,7 +87,7 @@ public class BootstrapHandlerTest {
         MockBootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(true, bsStore);
 
         BootstrapHandler bsHandler = new DefaultBootstrapHandler(requestSender, bsSessionManager,
-                new BootstrapSessionDispatcher());
+                new DefaultServerEndpointNameProvider(), new BootstrapSessionDispatcher());
 
         // Try to bootstrap
         SendableResponse<BootstrapResponse> sendableResponse = bsHandler.bootstrap(
@@ -109,7 +110,7 @@ public class BootstrapHandlerTest {
         bsStore.add("endpoint", new BootstrapConfig());
         MockBootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(true, bsStore);
         BootstrapHandler bsHandler = new DefaultBootstrapHandler(requestSender, bsSessionManager,
-                new BootstrapSessionDispatcher());
+                new DefaultServerEndpointNameProvider(), new BootstrapSessionDispatcher());
 
         // Try to bootstrap
         SendableResponse<BootstrapResponse> sendableResponse = bsHandler.bootstrap(
@@ -134,7 +135,8 @@ public class BootstrapHandlerTest {
         bsStore.add("endpoint", new BootstrapConfig());
         MockBootstrapSessionManager bsSessionManager = new MockBootstrapSessionManager(true, bsStore);
         BootstrapHandler bsHandler = new DefaultBootstrapHandler(requestSender, bsSessionManager,
-                new BootstrapSessionDispatcher(), DefaultBootstrapHandler.DEFAULT_TIMEOUT);
+                new DefaultServerEndpointNameProvider(), new BootstrapSessionDispatcher(),
+                DefaultBootstrapHandler.DEFAULT_TIMEOUT);
 
         // First bootstrap : which will not end (because of sender)
         SendableResponse<BootstrapResponse> first_response = bsHandler.bootstrap(
@@ -242,8 +244,9 @@ public class BootstrapHandlerTest {
         }
 
         @Override
-        public BootstrapSession begin(BootstrapRequest request, LwM2mPeer sender, EndpointUri endpointUsed) {
-            lastSession = new DefaultBootstrapSession(request, sender, authorized, null, endpointUsed);
+        public BootstrapSession begin(String endpointName, BootstrapRequest request, LwM2mPeer sender,
+                EndpointUri endpointUsed) {
+            lastSession = new DefaultBootstrapSession(endpointName, request, sender, authorized, null, endpointUsed);
             return lastSession;
         }
 

@@ -96,16 +96,18 @@ public interface BootstrapSessionManager {
      * Starts a bootstrapping session for an endpoint. In particular, this is responsible for authorizing the endpoint
      * if applicable.
      *
+     * @param endpointName The endpoint name of the client.
      * @param request the bootstrap request which initiates the session.
      * @param client the transport information about the client.
      *
      * @return a BootstrapSession, possibly authorized.
      */
-    public BootstrapSession begin(BootstrapRequest request, LwM2mPeer client, EndpointUri endpointUsed);
+    public BootstrapSession begin(String endpointName, BootstrapRequest request, LwM2mPeer client,
+            EndpointUri endpointUsed);
 
     /**
-     * Generally called after {@link #begin(BootstrapRequest, LwM2mPeer, EndpointUri)} to know if there is something to
-     * do on this device.
+     * Generally called after {@link #begin(String, BootstrapRequest, LwM2mPeer, EndpointUri)} to know if there is
+     * something to do on this device.
      *
      * @param bsSession the bootstrap session concerned.
      * @return true if there is a bootstrap requests to send for this client.

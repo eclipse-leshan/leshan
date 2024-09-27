@@ -32,6 +32,7 @@ import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.endpoint.DefaultEndpointsManager;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpoint;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
+import org.eclipse.leshan.client.engine.ClientEndpointNameProvider;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.engine.RegistrationEngineFactory;
 import org.eclipse.leshan.client.notification.DefaultNotificationStrategy;
@@ -90,15 +91,15 @@ public class LeshanClient implements LwM2mClient {
     private final DataSenderManager dataSenderManager;
     private final NotificationManager notificationManager;
 
-    public LeshanClient(String endpoint, List<? extends LwM2mObjectEnabler> objectEnablers,
-            List<DataSender> dataSenders, List<Certificate> trustStore, RegistrationEngineFactory engineFactory,
-            BootstrapConsistencyChecker checker, Map<String, String> additionalAttributes,
-            Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder, LwM2mDecoder decoder,
-            ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer, LinkFormatHelper linkFormatHelper,
-            LwM2mAttributeParser attributeParser, EndPointUriHandler uriHandler,
+    public LeshanClient(ClientEndpointNameProvider endpointNameProvider,
+            List<? extends LwM2mObjectEnabler> objectEnablers, List<DataSender> dataSenders,
+            List<Certificate> trustStore, RegistrationEngineFactory engineFactory, BootstrapConsistencyChecker checker,
+            Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder,
+            LwM2mDecoder decoder, ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer,
+            LinkFormatHelper linkFormatHelper, LwM2mAttributeParser attributeParser, EndPointUriHandler uriHandler,
             LwM2mClientEndpointsProvider endpointsProvider) {
 
-        Validate.notNull(endpoint);
+        // Validate.notNull(endpoint);
         Validate.notEmpty(objectEnablers);
         Validate.notNull(checker);
 
@@ -120,8 +121,8 @@ public class LeshanClient implements LwM2mClient {
         requestSender = createRequestSender(this.endpointsProvider);
         dataSenderManager = createDataSenderManager(dataSenders, rootEnabler, requestSender);
 
-        engine = engineFactory.createRegistratioEngine(endpoint, objectTree, endpointsManager, requestSender,
-                bootstrapHandler, observers, additionalAttributes, bsAdditionalAttributes,
+        engine = engineFactory.createRegistratioEngine(endpointNameProvider, objectTree, endpointsManager,
+                requestSender, bootstrapHandler, observers, additionalAttributes, bsAdditionalAttributes,
                 getSupportedContentFormat(decoder, encoder), sharedExecutor, linkFormatHelper);
 
         DownlinkRequestReceiver requestReceiver = createRequestReceiver(bootstrapHandler, rootEnabler, objectTree,

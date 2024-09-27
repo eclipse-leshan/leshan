@@ -32,9 +32,9 @@ import org.eclipse.leshan.core.request.ContentFormat;
  */
 public interface RegistrationEngineFactory {
 
-    RegistrationEngine createRegistratioEngine(String endpoint, LwM2mObjectTree objectTree,
-            EndpointsManager endpointsManager, UplinkRequestSender requestSender, BootstrapHandler bootstrapState,
-            LwM2mClientObserver observer, Map<String, String> additionalAttributes,
+    RegistrationEngine createRegistratioEngine(ClientEndpointNameProvider endpointNameProvider,
+            LwM2mObjectTree objectTree, EndpointsManager endpointsManager, UplinkRequestSender requestSender,
+            BootstrapHandler bootstrapState, LwM2mClientObserver observer, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, Set<ContentFormat> supportedContentFormat,
             ScheduledExecutorService sharedExecutor, LinkFormatHelper linkFormatHelper);
 }
