@@ -81,7 +81,9 @@ public class SenMLCborPackSerDes {
         hasValue |= deserializeOpaqueValue(o, record);
 
         if (!allowNoValue && !hasValue) {
-            throw new SenMLException("Invalid SenML record: record must have a value (v, vb, vlo, vd, vs): %s", o);
+            throw new SenMLException(
+                    "Invalid SenML record: record must have a value, meaning one of those field must be present v(number:2), vb(number:4), vlo(string:vlo) ,vd(number:8) or vs(number:3): %s",
+                    o);
         }
 
         return record;
