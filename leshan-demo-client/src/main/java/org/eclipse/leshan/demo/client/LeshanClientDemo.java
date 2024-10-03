@@ -44,6 +44,7 @@ import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.leshan.client.LeshanClient;
 import org.eclipse.leshan.client.LeshanClientBuilder;
 import org.eclipse.leshan.client.endpoint.LwM2mClientEndpointsProvider;
+import org.eclipse.leshan.client.engine.DefaultClientEndpointNameProvider;
 import org.eclipse.leshan.client.engine.DefaultRegistrationEngineFactory;
 import org.eclipse.leshan.client.object.LwM2mTestObject;
 import org.eclipse.leshan.client.object.Oscore;
@@ -323,7 +324,8 @@ public class LeshanClientDemo {
         endpointsProvider.add(new JavaCoapsTcpClientEndpointsProvider());
 
         // Create client
-        LeshanClientBuilder builder = new LeshanClientBuilder(cli.main.endpoint);
+        LeshanClientBuilder builder = new LeshanClientBuilder(
+                new DefaultClientEndpointNameProvider(cli.main.endpoint, cli.main.endpointNameMode));
         builder.setObjects(enablers);
         builder.setEndpointsProviders(
                 endpointsProvider.toArray(new LwM2mClientEndpointsProvider[endpointsProvider.size()]));

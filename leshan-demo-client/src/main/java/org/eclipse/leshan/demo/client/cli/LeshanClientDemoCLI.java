@@ -26,6 +26,8 @@ import java.util.stream.Stream;
 
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
+import org.eclipse.leshan.client.engine.DefaultClientEndpointNameProvider;
+import org.eclipse.leshan.client.engine.DefaultClientEndpointNameProvider.Mode;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -173,6 +175,13 @@ public class LeshanClientDemoCLI implements Runnable {
                 converter = ResourcePathConverter.class)
 
         public Map<LwM2mPath, String> factoryBootstrap;
+
+        @Option(names = { "-nm", "--endpoint-name-mode" },
+                description = { //
+                        "Can be used to set if client should or should not send client endpoint name during registration or bootstrap.", //
+                        "Default : ${DEFAULT-VALUE}.",//
+                })
+        public DefaultClientEndpointNameProvider.Mode endpointNameMode = Mode.ALWAYS;
     }
 
     /* ********************************** Location Section ******************************** */
