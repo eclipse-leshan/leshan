@@ -90,7 +90,8 @@ public class Registration {
 
     private final Map<String, String> applicationData;
 
-    private final EndpointUri lastEndpointUsed;
+    // URI of endpoint used for this registration.
+    private final EndpointUri endpointUri;
 
     protected Registration(Builder builder) {
 
@@ -98,7 +99,7 @@ public class Registration {
         id = builder.registrationId;
         clientTransportData = builder.clientTransportData;
         endpoint = builder.endpoint;
-        lastEndpointUsed = builder.lastEndpointUsed;
+        endpointUri = builder.endpointUri;
 
         // object links related params
         objectLinks = builder.objectLinks;
@@ -355,20 +356,19 @@ public class Registration {
 
     /**
      * @return URI of the server endpoint used by client to register.
-     *         <p>
-     *         This can be changed in next milestones : https://github.com/eclipse/leshan/issues/1415
      */
-    public EndpointUri getLastEndpointUsed() {
-        return lastEndpointUsed;
+    public EndpointUri getEndpointUri() {
+        return endpointUri;
     }
 
     @Override
     public String toString() {
         return String.format(
-                "Registration [registrationDate=%s, clientTransportData=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, queueMode=%s, endpoint=%s, id=%s, objectLinks=%s, additionalRegistrationAttributes=%s, rootPath=%s, supportedContentFormats=%s, supportedObjects=%s, availableInstances=%s, lastUpdate=%s, applicationData=%s]",
+                "Registration [registrationDate=%s, clientTransportData=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, queueMode=%s, endpoint=%s, id=%s, objectLinks=%s, additionalRegistrationAttributes=%s, rootPath=%s, supportedContentFormats=%s, supportedObjects=%s, availableInstances=%s, lastUpdate=%s, applicationData=%s, endpointUri=%s]",
                 registrationDate, clientTransportData, lifeTimeInSec, smsNumber, lwM2mVersion, bindingMode, queueMode,
                 endpoint, id, Arrays.toString(objectLinks), additionalRegistrationAttributes, rootPath,
-                supportedContentFormats, supportedObjects, availableInstances, lastUpdate, applicationData);
+                supportedContentFormats, supportedObjects, availableInstances, lastUpdate, applicationData,
+                endpointUri);
     }
 
     @Override
@@ -390,7 +390,7 @@ public class Registration {
                 && Objects.equals(supportedObjects, that.supportedObjects)
                 && Objects.equals(availableInstances, that.availableInstances)
                 && Objects.equals(lastUpdate, that.lastUpdate) && Objects.equals(applicationData, that.applicationData)
-                && Objects.equals(lastEndpointUsed, that.lastEndpointUsed);
+                && Objects.equals(endpointUri, that.endpointUri);
     }
 
     @Override
@@ -398,14 +398,14 @@ public class Registration {
         return Objects.hash(registrationDate, clientTransportData, lifeTimeInSec, smsNumber, lwM2mVersion, bindingMode,
                 queueMode, endpoint, id, Arrays.hashCode(objectLinks), additionalRegistrationAttributes, rootPath,
                 supportedContentFormats, supportedObjects, availableInstances, lastUpdate, applicationData,
-                lastEndpointUsed);
+                endpointUri);
     }
 
     public static class Builder {
         private final String registrationId;
         private final String endpoint;
         private final LwM2mPeer clientTransportData;
-        private final EndpointUri lastEndpointUsed;
+        private final EndpointUri endpointUri;
 
         private Date registrationDate;
         private Date lastUpdate;
@@ -428,7 +428,7 @@ public class Registration {
             registrationId = registration.id;
             clientTransportData = registration.clientTransportData;
             endpoint = registration.endpoint;
-            lastEndpointUsed = registration.lastEndpointUsed;
+            endpointUri = registration.endpointUri;
 
             // object links related params
             objectLinks = registration.objectLinks;
@@ -450,18 +450,17 @@ public class Registration {
             applicationData = registration.applicationData;
         }
 
-        public Builder(String registrationId, String endpoint, LwM2mPeer clientTransportData,
-                EndpointUri lastEndpointUsed) {
+        public Builder(String registrationId, String endpoint, LwM2mPeer clientTransportData, EndpointUri endpointUri) {
 
             Validate.notNull(registrationId);
             Validate.notEmpty(endpoint);
             Validate.notNull(clientTransportData);
-            Validate.notNull(lastEndpointUsed);
+            Validate.notNull(endpointUri);
 
             this.registrationId = registrationId;
             this.endpoint = endpoint;
             this.clientTransportData = clientTransportData;
-            this.lastEndpointUsed = lastEndpointUsed;
+            this.endpointUri = endpointUri;
         }
 
         public Builder registrationDate(Date registrationDate) {

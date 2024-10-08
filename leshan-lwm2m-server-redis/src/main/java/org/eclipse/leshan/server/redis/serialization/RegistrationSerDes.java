@@ -106,7 +106,7 @@ public class RegistrationSerDes {
             o.put("qm", r.getQueueMode());
         o.put("ep", r.getEndpoint());
         o.put("regId", r.getId());
-        o.put("epUri", r.getLastEndpointUsed().toString());
+        o.put("epUri", r.getEndpointUri().toString());
 
         ArrayNode links = JsonNodeFactory.instance.arrayNode();
         for (Link l : r.getObjectLinks()) {
@@ -173,20 +173,17 @@ public class RegistrationSerDes {
     }
 
     public Registration deserialize(JsonNode jObj) {
-        EndpointUri lastEndpointUsed;
+        EndpointUri endpointUri;
         try {
-            lastEndpointUsed = uriHandler.createUri(jObj.get("epUri").asText());
+            endpointUri = uriHandler.createUri(jObj.get("epUri").asText());
         } catch (IllegalStateException e1) {
             throw new IllegalStateException(
                     String.format("Unable to deserialize last endpoint used URI %s of registration %s/%s",
                             jObj.get("epUri").asText(), jObj.get("regId").asText(), jObj.get("ep").asText()));
         }
 
-// TODO handle backward compatibility ?
-//        Registration.Builder b = new Registration.Builder(jObj.get("regId").asText(), jObj.get("ep").asText(),
-//                IdentitySerDes.deserialize(jObj.get("identity")), lastEndpointUsed);
         Registration.Builder b = new Registration.Builder(jObj.get("regId").asText(), jObj.get("ep").asText(),
-                peerSerDes.deserialize(jObj.get("transportdata")), lastEndpointUsed);
+                peerSerDes.deserialize(jObj.get("transportdata")), endpointUri);
 
         b.bindingMode(BindingMode.parse(jObj.get("bnd").asText()));
         if (jObj.get("qm") != null)
