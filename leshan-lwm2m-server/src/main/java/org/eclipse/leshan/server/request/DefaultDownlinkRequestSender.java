@@ -153,19 +153,19 @@ public class DefaultDownlinkRequestSender implements DownlinkRequestSender {
     }
 
     protected LwM2mServerEndpoint getEndpoint(Registration registration) {
-        LwM2mServerEndpoint lastEndpointUsed = endpointsProvider.getEndpoint(registration.getLastEndpointUsed());
+        LwM2mServerEndpoint endpointUsed = endpointsProvider.getEndpoint(registration.getEndpointUri());
 
-        if (lastEndpointUsed == null) {
+        if (endpointUsed == null) {
             String endpoints = endpointsProvider.getEndpoints().stream().map(endpoint -> endpoint.getURI().toString())
                     .collect(Collectors.joining("\n"));
 
             String message = String.format(
-                    "Client %s register itself to %s endpoint, but it seems there is no available endpoints identified byt this URI.%nAvailable endpoints are : \n%s",
-                    registration.getEndpoint(), registration.getLastEndpointUsed(), endpoints);
+                    "Client %s register itself to %s endpoint, but it seems there is no available endpoints identified by this URI.%nAvailable endpoints are : \n%s",
+                    registration.getEndpoint(), registration.getEndpointUri(), endpoints);
 
             throw new IllegalStateException(message);
         }
 
-        return lastEndpointUsed;
+        return endpointUsed;
     }
 }
