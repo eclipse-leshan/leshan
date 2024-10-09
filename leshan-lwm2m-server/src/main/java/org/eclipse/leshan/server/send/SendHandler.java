@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
@@ -64,7 +65,7 @@ public class SendHandler implements SendService {
     }
 
     public SendableResponse<SendResponse> handleSend(LwM2mPeer sender, Registration registration,
-            final SendRequest request) {
+            final SendRequest request, EndpointUri serverEndpointUri) {
 
         // try to update registration if needed
         final Registration updatedRegistration;
