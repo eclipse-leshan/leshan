@@ -76,7 +76,8 @@ public class RegistrationHandlerTest {
         authorizer.willReturn(Authorization.approved(updatedAppData));
 
         // handle UPDATE request
-        registrationHandler.update(givenIdentity(), givenUpdateRequestWithID(registration.getId()));
+        registrationHandler.update(givenIdentity(), givenUpdateRequestWithID(registration.getId()),
+                givenServerEndpointUri());
 
         // check result
         registration = registrationStore.getRegistrationByEndpoint("myEndpoint");
@@ -105,7 +106,8 @@ public class RegistrationHandlerTest {
         authorizer.willReturn(Authorization.approved());
 
         // handle UPDATE request
-        registrationHandler.update(givenIdentity(), givenUpdateRequestWithID(registration.getId()));
+        registrationHandler.update(givenIdentity(), givenUpdateRequestWithID(registration.getId()),
+                givenServerEndpointUri());
 
         // check result
         registration = registrationStore.getRegistrationByEndpoint("myEndpoint");
@@ -142,7 +144,8 @@ public class RegistrationHandlerTest {
         }
 
         @Override
-        public Authorization isAuthorized(UplinkRequest<?> request, Registration registration, LwM2mPeer sender) {
+        public Authorization isAuthorized(UplinkRequest<?> request, Registration registration, LwM2mPeer sender,
+                EndpointUri endpointUri) {
             return autorization;
         }
     }

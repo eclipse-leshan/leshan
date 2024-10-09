@@ -98,7 +98,8 @@ public class RegistrationHandler {
         Registration registrationToApproved = builder.build();
 
         // We check if the client get authorization.
-        Authorization authorization = authorizer.isAuthorized(registerRequest, registrationToApproved, sender);
+        Authorization authorization = authorizer.isAuthorized(registerRequest, registrationToApproved, sender,
+                endpointUsed);
         if (authorization.isDeclined()) {
             return new SendableResponse<>(RegisterResponse.forbidden(null));
         }
@@ -134,7 +135,8 @@ public class RegistrationHandler {
         return new SendableResponse<>(RegisterResponse.success(approvedRegistration.getId()), whenSent);
     }
 
-    public SendableResponse<UpdateResponse> update(LwM2mPeer sender, UpdateRequest updateRequest) {
+    public SendableResponse<UpdateResponse> update(LwM2mPeer sender, UpdateRequest updateRequest,
+            EndpointUri endpointUsed) {
 
         // We check if there is a registration to update
         Registration currentRegistration = registrationService.getById(updateRequest.getRegistrationId());
@@ -143,7 +145,7 @@ public class RegistrationHandler {
         }
 
         // We check if the client get authorization.
-        Authorization authorization = authorizer.isAuthorized(updateRequest, currentRegistration, sender);
+        Authorization authorization = authorizer.isAuthorized(updateRequest, currentRegistration, sender, endpointUsed);
         if (authorization.isDeclined()) {
             return new SendableResponse<>(UpdateResponse.badRequest("forbidden"));
         }
@@ -183,7 +185,8 @@ public class RegistrationHandler {
         }
     }
 
-    public SendableResponse<DeregisterResponse> deregister(LwM2mPeer sender, DeregisterRequest deregisterRequest) {
+    public SendableResponse<DeregisterResponse> deregister(LwM2mPeer sender, DeregisterRequest deregisterRequest,
+            EndpointUri endpointUsed) {
 
         // We check if there is a registration to remove
         Registration currentRegistration = registrationService.getById(deregisterRequest.getRegistrationId());
@@ -192,7 +195,8 @@ public class RegistrationHandler {
         }
 
         // We check if the client get authorization.
-        Authorization authorization = authorizer.isAuthorized(deregisterRequest, currentRegistration, sender);
+        Authorization authorization = authorizer.isAuthorized(deregisterRequest, currentRegistration, sender,
+                endpointUsed);
         if (authorization.isDeclined()) {
             return new SendableResponse<>(DeregisterResponse.badRequest("forbidden"));
         }

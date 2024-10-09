@@ -62,34 +62,34 @@ public class DefaultUplinkRequestReceiver implements UplinkDeviceManagementReque
 
         private final LwM2mPeer sender;
         private final ClientProfile senderProfile;
-        private final EndpointUri endpoint;
+        private final EndpointUri endpointUri;
         private SendableResponse<? extends LwM2mResponse> response;
 
         public RequestHandler(LwM2mPeer sender, ClientProfile clientProfile, EndpointUri serverEndpointUri) {
             this.sender = sender;
             this.senderProfile = clientProfile;
-            this.endpoint = serverEndpointUri;
+            this.endpointUri = serverEndpointUri;
         }
 
         @Override
         public void visit(RegisterRequest request) {
-            response = registrationHandler.register(sender, request, endpoint);
+            response = registrationHandler.register(sender, request, endpointUri);
         }
 
         @Override
         public void visit(UpdateRequest request) {
-            response = registrationHandler.update(sender, request);
+            response = registrationHandler.update(sender, request, endpointUri);
 
         }
 
         @Override
         public void visit(DeregisterRequest request) {
-            response = registrationHandler.deregister(sender, request);
+            response = registrationHandler.deregister(sender, request, endpointUri);
         }
 
         @Override
         public void visit(SendRequest request) {
-            response = sendHandler.handleSend(sender, senderProfile.getRegistration(), request);
+            response = sendHandler.handleSend(sender, senderProfile.getRegistration(), request, endpointUri);
         }
 
         @SuppressWarnings("unchecked")

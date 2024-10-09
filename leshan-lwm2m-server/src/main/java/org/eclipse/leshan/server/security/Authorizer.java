@@ -16,6 +16,7 @@
 package org.eclipse.leshan.server.security;
 
 import org.eclipse.leshan.core.ResponseCode;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.server.registration.Registration;
@@ -42,8 +43,10 @@ public interface Authorizer {
      *        For register request this is the registration which will be created<br>
      *        For update request this is the registration before the update was done.
      * @param sender the {@link LwM2mPeer} which sent the request.
+     * @param endpointUri the endpoint URI which receive the request.
      *
      * @return an {@link Authorization} status.
      */
-    Authorization isAuthorized(UplinkRequest<?> request, Registration registration, LwM2mPeer sender);
+    Authorization isAuthorized(UplinkRequest<?> request, Registration registration, LwM2mPeer sender,
+            EndpointUri endpointUri);
 }
