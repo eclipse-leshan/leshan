@@ -163,7 +163,7 @@ public class LeshanServer {
             presenceService = createPresenceService(registrationService, awakeTimeProvider,
                     updateRegistrationOnNotification);
         }
-        this.sendService = createSendHandler(registrationStore, updateRegistrationOnSend);
+        this.sendService = createSendHandler(registrationStore, authorizer, updateRegistrationOnSend);
 
         // create endpoints
         ServerEndpointToolbox toolbox = new ServerEndpointToolbox(decoder, encoder, linkParser,
@@ -202,8 +202,9 @@ public class LeshanServer {
         return presenceService;
     }
 
-    protected SendHandler createSendHandler(RegistrationStore registrationStore, boolean updateRegistrationOnSend) {
-        return new SendHandler(registrationStore, updateRegistrationOnSend);
+    protected SendHandler createSendHandler(RegistrationStore registrationStore, Authorizer authorizer,
+            boolean updateRegistrationOnSend) {
+        return new SendHandler(registrationStore, authorizer, updateRegistrationOnSend);
     }
 
     protected UplinkDeviceManagementRequestReceiver createRequestReceiver(RegistrationHandler registrationHandler,

@@ -17,7 +17,10 @@ package org.eclipse.leshan.server.security;
 
 import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
+import org.eclipse.leshan.core.request.DeregisterRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
+import org.eclipse.leshan.core.request.SendRequest;
+import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.servers.security.Authorization;
@@ -72,15 +75,43 @@ public class DefaultAuthorizer implements Authorizer {
 
     protected Authorization checkIdentity(UplinkRequest<?> request, Registration registration, LwM2mPeer sender,
             EndpointUri endpointUri) {
-        // do we have security information for this client?
-        SecurityInfo expectedSecurityInfo = null;
-        if (securityStore != null)
-            expectedSecurityInfo = securityStore.getByEndpoint(registration.getEndpoint());
 
-        if (securityChecker.checkSecurityInfo(registration.getEndpoint(), sender, expectedSecurityInfo)) {
-            return Authorization.approved();
+        if (request instanceof RegisterRequest //
+                || request instanceof UpdateRequest || request instanceof DeregisterRequest) {
+
+            // TODO we should think what should be the right behavior here and maybe changed it if needed
+            // Meanwhile, to not change behavior we do not check security on with :
+            // - updateRegistrationOnSend mode
+            // - updateRegistrationOnNotification mode
+            // Those modes are out of specification and not recommended.
+            if (
+            // We use HACK to know if those mode are used
+
+            // means updateRegistrationOnSend is used (because trigger by given SEND request)
+            request.getCoapRequest() instanceof SendRequest) //
+            {
+                return Authorization.approved();
+            }
+
+            // For Register, Update, DeregisterRequest we check in security store
+            // do we have security information for this client?
+            SecurityInfo expectedSecurityInfo = null;
+            if (securityStore != null)
+                expectedSecurityInfo = securityStore.getByEndpoint(registration.getEndpoint());
+
+            if (securityChecker.checkSecurityInfo(registration.getEndpoint(), sender, expectedSecurityInfo)) {
+                return Authorization.approved();
+            } else {
+                return Authorization.declined();
+            }
         } else {
-            return Authorization.declined();
+            // for other we just check this is same identity
+            if (registration.getClientTransportData().getIdentity().equals(sender.getIdentity())) {
+                return Authorization.approved();
+            } else {
+                return Authorization.declined();
+            }
         }
     }
+
 }
