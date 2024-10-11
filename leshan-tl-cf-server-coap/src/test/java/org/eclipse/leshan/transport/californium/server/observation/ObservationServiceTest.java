@@ -68,6 +68,7 @@ public class ObservationServiceTest {
     RegistrationStore store;
     Registration registration;
     Random r;
+    private final EndpointUri endpointUri = uriHandler.createUri("coap://localhost:5683");
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -179,8 +180,8 @@ public class ObservationServiceTest {
 
         byte[] token = new byte[8];
         r.nextBytes(token);
-        SingleObservation observation = new SingleObservation(new ObservationIdentifier(token), registrationId, target,
-                ContentFormat.DEFAULT, null, null);
+        SingleObservation observation = new SingleObservation(new ObservationIdentifier(endpointUri, token),
+                registrationId, target, ContentFormat.DEFAULT, null, null);
         store.addObservation(registrationId, observation, false);
         return observation;
     }
@@ -189,8 +190,7 @@ public class ObservationServiceTest {
         Registration.Builder builder;
         try {
             builder = new Registration.Builder(registrationId, registrationId + "_ep",
-                    new IpPeer(new InetSocketAddress(InetAddress.getLocalHost(), 10000)),
-                    uriHandler.createUri("coap://localhost:5683"));
+                    new IpPeer(new InetSocketAddress(InetAddress.getLocalHost(), 10000)), endpointUri);
             return builder.build();
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);

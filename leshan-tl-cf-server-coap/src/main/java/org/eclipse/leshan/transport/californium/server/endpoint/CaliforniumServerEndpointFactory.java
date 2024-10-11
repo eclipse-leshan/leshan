@@ -20,6 +20,7 @@ import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.server.LeshanServer;
+import org.eclipse.leshan.server.endpoint.EffectiveEndpointUriProvider;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.eclipse.leshan.transport.californium.ExceptionTranslator;
@@ -34,7 +35,8 @@ public interface CaliforniumServerEndpointFactory {
     String getEndpointDescription();
 
     CoapEndpoint createCoapEndpoint(Configuration defaultCaliforniumConfiguration,
-            ServerSecurityInfo serverSecurityInfo, LwM2mNotificationReceiver notificationReceiver, LeshanServer server);
+            ServerSecurityInfo serverSecurityInfo, LwM2mNotificationReceiver notificationReceiver, LeshanServer server,
+            EffectiveEndpointUriProvider uriProvider);
 
     IdentityHandler createIdentityHandler();
 

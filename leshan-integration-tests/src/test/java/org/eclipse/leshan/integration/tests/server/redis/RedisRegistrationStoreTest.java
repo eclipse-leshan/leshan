@@ -36,6 +36,7 @@ import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.network.serialization.UdpDataParser;
 import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
 import org.eclipse.californium.elements.AddressEndpointContext;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
@@ -51,6 +52,7 @@ import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.integration.tests.util.RedisTestUtil;
+import org.eclipse.leshan.server.endpoint.EffectiveEndpointUriProvider;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.profile.ClientProfile;
 import org.eclipse.leshan.server.redis.RedisRegistrationStore;
@@ -73,7 +75,8 @@ public class RedisRegistrationStoreTest {
     private final Link[] objectLinks = new Link[] { new Link("/3") };
     private final String registrationId = "4711";
     private final Token aToken = Token.EMPTY;
-    private final ObservationIdentifier anObservationId = new ObservationIdentifier(aToken.getBytes());
+    private final EndpointUri endpointUri = uriHandler.createUri("coap://localhost:5683");
+    private final ObservationIdentifier anObservationId = new ObservationIdentifier(endpointUri, aToken.getBytes());
 
     RegistrationStore store;
     LwM2mObservationStore observationStore;
@@ -84,7 +87,12 @@ public class RedisRegistrationStoreTest {
     public void setUp() throws UnknownHostException {
         address = InetAddress.getLocalHost();
         store = new RedisRegistrationStore(RedisTestUtil.createJedisPool());
-        observationStore = new LwM2mObservationStore(store, new LwM2mNotificationReceiver() {
+        observationStore = new LwM2mObservationStore(new EffectiveEndpointUriProvider() {
+            @Override
+            public EndpointUri getEndpointUri() {
+                return endpointUri;
+            }
+        }, store, new LwM2mNotificationReceiver() {
 
             @Override
             public void onNotification(CompositeObservation observation, LwM2mPeer sender, ClientProfile profile,
@@ -173,7 +181,7 @@ public class RedisRegistrationStoreTest {
 
         // then
         Observation leshanObservation = store.getObservation(registrationId,
-                new ObservationIdentifier(aToken.getBytes()));
+                new ObservationIdentifier(endpointUri, aToken.getBytes()));
         assertNull(leshanObservation);
     }
 

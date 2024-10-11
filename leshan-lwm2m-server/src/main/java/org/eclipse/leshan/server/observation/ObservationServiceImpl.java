@@ -130,8 +130,8 @@ public class ObservationServiceImpl implements ObservationService, LwM2mNotifica
     }
 
     private void cancel(Observation observation) {
-        List<LwM2mServerEndpoint> endpoints = endpointProvider.getEndpoints();
-        for (LwM2mServerEndpoint lwM2mEndpoint : endpoints) {
+        LwM2mServerEndpoint lwM2mEndpoint = endpointProvider.getEndpoint(observation.getId().getEndpointUri());
+        if (lwM2mEndpoint != null) {
             lwM2mEndpoint.cancelObservation(observation);
         }
 
