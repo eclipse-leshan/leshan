@@ -49,6 +49,7 @@ import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
 import org.eclipse.leshan.server.LeshanServer;
+import org.eclipse.leshan.server.endpoint.EffectiveEndpointUriProvider;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
 import org.eclipse.leshan.server.endpoint.ServerEndpointToolbox;
@@ -125,9 +126,12 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
 
         // create endpoints
         for (CaliforniumServerEndpointFactory endpointFactory : endpointsFactory) {
+            //
+            EffectiveEndpointUriProvider uriProvider = new EffectiveEndpointUriProvider();
+
             // create Californium endpoint
             CoapEndpoint coapEndpoint = endpointFactory.createCoapEndpoint(serverConfig, serverSecurityInfo,
-                    notificatonReceiver, server);
+                    notificatonReceiver, server, uriProvider);
 
             if (coapEndpoint != null) {
 
@@ -142,6 +146,7 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
                 CaliforniumServerEndpoint lwm2mEndpoint = new CaliforniumServerEndpoint(endpointFactory.getProtocol(),
                         endpointFactory.getEndpointDescription(), coapEndpoint, messagetranslator, toolbox,
                         notificatonReceiver, identityHandler, exceptionTranslator, executor);
+                uriProvider.setEndpoint(lwm2mEndpoint);
                 endpoints.add(lwm2mEndpoint);
 
                 // add Californium endpoint to coap server
@@ -155,7 +160,7 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
                         // Get Observation
                         String regid = coapRequest.getUserContext().get(ObserveUtil.CTX_REGID);
                         Observation observation = server.getRegistrationStore().getObservation(regid,
-                                new ObservationIdentifier(coapResponse.getToken().getBytes()));
+                                new ObservationIdentifier(lwm2mEndpoint.getURI(), coapResponse.getToken().getBytes()));
                         if (observation == null) {
                             LOG.warn("Unexpected error: Unable to find observation with token {} for registration {}",
                                     coapResponse.getToken(), regid);

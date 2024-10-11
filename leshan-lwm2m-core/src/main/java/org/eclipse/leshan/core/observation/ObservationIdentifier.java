@@ -16,7 +16,9 @@
 package org.eclipse.leshan.core.observation;
 
 import java.util.Arrays;
+import java.util.Objects;
 
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.util.Hex;
 
 /**
@@ -25,13 +27,19 @@ import org.eclipse.leshan.core.util.Hex;
 public class ObservationIdentifier {
 
     private final byte[] bytes;
+    private final EndpointUri endpointUri;
 
-    public ObservationIdentifier(byte[] bytes) {
+    public ObservationIdentifier(EndpointUri uri, byte[] bytes) {
+        this.endpointUri = uri;
         this.bytes = Arrays.copyOf(bytes, bytes.length);
     }
 
     public final byte[] getBytes() {
         return Arrays.copyOf(this.bytes, length());
+    }
+
+    public EndpointUri getEndpointUri() {
+        return endpointUri;
     }
 
     public String getAsHexString() {
@@ -48,21 +56,25 @@ public class ObservationIdentifier {
 
     @Override
     public String toString() {
-        return String.format("Ox%s", getAsHexString());
-    }
-
-    @Override
-    public final boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof ObservationIdentifier))
-            return false;
-        ObservationIdentifier that = (ObservationIdentifier) o;
-        return Arrays.equals(bytes, that.bytes);
+        return String.format("Ox%s[%s]", getAsHexString(), getEndpointUri());
     }
 
     @Override
     public final int hashCode() {
-        return Arrays.hashCode(bytes);
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + Arrays.hashCode(bytes);
+        result = prime * result + Objects.hash(endpointUri);
+        return result;
+    }
+
+    @Override
+    public final boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!(obj instanceof ObservationIdentifier))
+            return false;
+        ObservationIdentifier other = (ObservationIdentifier) obj;
+        return Arrays.equals(bytes, other.bytes) && Objects.equals(endpointUri, other.endpointUri);
     }
 }

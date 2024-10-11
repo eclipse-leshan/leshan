@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.transport.californium.server.observation;
 
+import static org.eclipse.leshan.core.util.TestToolBox.uriHandler;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
@@ -28,6 +29,7 @@ import java.util.Map;
 
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Token;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.SingleObservation;
@@ -38,6 +40,8 @@ import org.eclipse.leshan.transport.californium.ObserveUtil;
 import org.junit.jupiter.api.Test;
 
 public class ObserveUtilTest {
+
+    private final EndpointUri endpointUri = uriHandler.createUri("coap://localhost:5683");
 
     @Test
     public void should_create_observation_from_context() {
@@ -58,7 +62,7 @@ public class ObserveUtilTest {
         coapRequest.setToken(exampleToken);
         coapRequest.getOptions().setAccept(ContentFormat.DEFAULT.getCode());
 
-        SingleObservation observation = ObserveUtil.createLwM2mObservation(coapRequest);
+        SingleObservation observation = ObserveUtil.createLwM2mObservation(endpointUri, coapRequest);
 
         // then
         assertEquals(examplePath, observation.getPath().toString());
@@ -89,7 +93,7 @@ public class ObserveUtilTest {
         coapRequest.getOptions().setContentFormat(ContentFormat.CBOR.getCode());
         coapRequest.getOptions().setAccept(ContentFormat.JSON.getCode());
 
-        CompositeObservation observation = ObserveUtil.createLwM2mCompositeObservation(coapRequest);
+        CompositeObservation observation = ObserveUtil.createLwM2mCompositeObservation(endpointUri, coapRequest);
 
         // then
         assertEquals(examplePaths, observation.getPaths());
@@ -108,7 +112,7 @@ public class ObserveUtilTest {
 
         // when / then
         assertThrowsExactly(IllegalStateException.class, () -> {
-            ObserveUtil.createLwM2mObservation(coapRequest);
+            ObserveUtil.createLwM2mObservation(endpointUri, coapRequest);
         });
 
     }
@@ -123,7 +127,7 @@ public class ObserveUtilTest {
 
         // when / then
         assertThrowsExactly(IllegalStateException.class, () -> {
-            ObserveUtil.createLwM2mObservation(coapRequest);
+            ObserveUtil.createLwM2mObservation(endpointUri, coapRequest);
         });
     }
 }

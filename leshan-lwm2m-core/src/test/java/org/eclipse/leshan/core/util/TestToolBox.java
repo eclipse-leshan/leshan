@@ -21,5 +21,4 @@ import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 public class TestToolBox {
 
     public static EndPointUriHandler uriHandler = new DefaultEndPointUriHandler();
-
 }

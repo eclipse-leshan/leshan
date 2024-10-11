@@ -33,6 +33,7 @@ import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.LeshanServer;
+import org.eclipse.leshan.server.endpoint.EffectiveEndpointUriProvider;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.servers.security.EditableSecurityStore;
 import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
@@ -69,8 +70,10 @@ public class CoapOscoreServerEndpointFactory extends CoapServerEndpointFactory {
      */
     @Override
     protected CoapEndpoint.Builder createEndpointBuilder(InetSocketAddress address, Configuration coapConfig,
-            LwM2mNotificationReceiver notificationReceiver, LeshanServer server) {
-        CoapEndpoint.Builder builder = super.createEndpointBuilder(address, coapConfig, notificationReceiver, server);
+            LwM2mNotificationReceiver notificationReceiver, LeshanServer server,
+            EffectiveEndpointUriProvider endpointUriProvider) {
+        CoapEndpoint.Builder builder = super.createEndpointBuilder(address, coapConfig, notificationReceiver, server,
+                endpointUriProvider);
 
         // handle oscore
         if (server.getSecurityStore() != null) {

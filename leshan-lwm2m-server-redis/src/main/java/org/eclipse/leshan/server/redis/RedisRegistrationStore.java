@@ -79,8 +79,8 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
     private final String endpointBySocketAddressPrefix; // secondary index key (Socket Address => Endpoint)
     private final String endpointByIdentityPrefix; // secondary index key (Identity => Endpoint)
     private final String endpointLockPrefix;
-    private final byte[] observationTokenPrefix;
-    private final String observationTokensByRegistrationIdPrefix; // secondary index (Registration => Token list)
+    private final byte[] observationByIdPrefix;
+    private final String observationIdsByRegistrationIdPrefix; // secondary index (Registration => observation id list)
     private final byte[] endpointExpirationKey; // a sorted set used for registration expiration (expiration date,
                                                 // Endpoint)
 
@@ -113,8 +113,8 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
         this.endpointBySocketAddressPrefix = builder.endpointBySocketAddressPrefix;
         this.endpointByIdentityPrefix = builder.endpointByIdentityPrefix;
         this.endpointLockPrefix = builder.endpointLockPrefix;
-        this.observationTokenPrefix = builder.observationTokenPrefix.getBytes(UTF_8);
-        this.observationTokensByRegistrationIdPrefix = builder.observationTokensByRegistrationIdPrefix;
+        this.observationByIdPrefix = builder.observationByIdPrefix.getBytes(UTF_8);
+        this.observationIdsByRegistrationIdPrefix = builder.observationIdsByRegistrationIdPrefix;
         this.endpointExpirationKey = builder.endpointExpirationKey.getBytes(UTF_8);
         this.cleanPeriod = builder.cleanPeriod;
         this.cleanLimit = builder.cleanLimit;
@@ -128,11 +128,21 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
 
     /* *************** Redis Key utility function **************** */
 
-    private byte[] toKey(byte[] prefix, byte[] key) {
-        byte[] result = new byte[prefix.length + key.length];
-        System.arraycopy(prefix, 0, result, 0, prefix.length);
-        System.arraycopy(key, 0, result, prefix.length, key.length);
-        return result;
+    private byte[] toKey(byte[]... arrays) {
+        // define array size
+        int resultArraySize = 0;
+        for (byte[] array : arrays) {
+            resultArraySize += array.length;
+        }
+        // create array
+        byte[] resultArray = new byte[resultArraySize];
+        // copy arrays to result
+        int currentIndex = 0;
+        for (byte[] array : arrays) {
+            System.arraycopy(array, 0, resultArray, currentIndex, array.length);
+            currentIndex += array.length;
+        }
+        return resultArray;
     }
 
     private byte[] toKey(String prefix, String registrationID) {
@@ -471,6 +481,18 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
         return toKey(registrationByEndpointPrefix.getBytes(UTF_8), endpoint);
     }
 
+    private byte[] toObservationKey(ObservationIdentifier observationId) {
+        return toKey(observationByIdPrefix, toObservationId(observationId));
+    }
+
+    private byte[] toObservationKey(byte[] observationIdAsByte) {
+        return toKey(observationByIdPrefix, observationIdAsByte);
+    }
+
+    private byte[] toObservationId(ObservationIdentifier observationId) {
+        return toKey(observationId.getEndpointUri().toString().getBytes(), "##".getBytes(), observationId.getBytes());
+    }
+
     private byte[] serializeReg(Registration registration) {
         return registrationSerDes.bSerialize(registration);
     }
@@ -501,7 +523,8 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
 
                 // Add and Get previous observation
                 byte[] previousValue;
-                byte[] key = toKey(observationTokenPrefix, observation.getId().getBytes());
+                byte[] obsId = toObservationId(observation.getId());
+                byte[] key = toObservationKey(obsId);
                 byte[] serializeObs = serializeObs(observation);
                 if (addIfAbsent) {
                     previousValue = j.get(key);
@@ -513,7 +536,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
                 }
 
                 // secondary index to get the list by registrationId
-                j.lpush(toKey(observationTokensByRegistrationIdPrefix, registrationId), observation.getId().getBytes());
+                j.lpush(toKey(observationIdsByRegistrationIdPrefix, registrationId), obsId);
 
                 // log any collisions
                 Observation previousObservation;
@@ -641,8 +664,8 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
 
     private Collection<Observation> unsafeGetObservations(Jedis j, String registrationId) {
         Collection<Observation> result = new ArrayList<>();
-        for (byte[] token : j.lrange(toKey(observationTokensByRegistrationIdPrefix, registrationId), 0, -1)) {
-            byte[] obs = j.get(toKey(observationTokenPrefix, token));
+        for (byte[] obsId : j.lrange(toKey(observationIdsByRegistrationIdPrefix, registrationId), 0, -1)) {
+            byte[] obs = j.get(toObservationKey(obsId));
             if (obs != null) {
                 result.add(deserializeObs(obs));
             }
@@ -651,7 +674,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
     }
 
     private Observation unsafeGetObservation(Jedis j, ObservationIdentifier observationId) {
-        byte[] obs = j.get(toKey(observationTokenPrefix, observationId.getBytes()));
+        byte[] obs = j.get(toObservationKey(observationId));
         if (obs == null) {
             return null;
         } else {
@@ -660,22 +683,24 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
     }
 
     private void unsafeRemoveObservation(Jedis j, String registrationId, ObservationIdentifier observationId) {
-        if (j.del(toKey(observationTokenPrefix, observationId.getBytes())) > 0L) {
-            j.lrem(toKey(observationTokensByRegistrationIdPrefix, registrationId), 0, observationId.getBytes());
+        byte[] obsId = toObservationId(observationId);
+        if (j.del(toObservationKey(obsId)) > 0L) {
+            j.lrem(toKey(observationIdsByRegistrationIdPrefix, registrationId), 0, obsId);
         }
     }
 
     private Collection<Observation> unsafeRemoveAllObservations(Jedis j, String registrationId) {
         Collection<Observation> removed = new ArrayList<>();
-        byte[] regIdKey = toKey(observationTokensByRegistrationIdPrefix, registrationId);
+        byte[] regIdKey = toKey(observationIdsByRegistrationIdPrefix, registrationId);
 
         // fetch all observations by token
-        for (byte[] token : j.lrange(regIdKey, 0, -1)) {
-            byte[] obs = j.get(toKey(observationTokenPrefix, token));
+        for (byte[] obsId : j.lrange(regIdKey, 0, -1)) {
+            byte[] key = toObservationKey(obsId);
+            byte[] obs = j.get(key);
             if (obs != null) {
                 removed.add(deserializeObs(obs));
             }
-            j.del(toKey(observationTokenPrefix, token));
+            j.del(key);
         }
         j.del(regIdKey);
 
@@ -776,8 +801,8 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
         private String endpointBySocketAddressPrefix;
         private String endpointByIdentityPrefix;
         private String endpointLockPrefix;
-        private String observationTokenPrefix;
-        private String observationTokensByRegistrationIdPrefix;
+        private String observationByIdPrefix;
+        private String observationIdsByRegistrationIdPrefix;
         private String endpointExpirationKey;
 
         /** Time in seconds between 2 cleaning tasks (used to remove expired registration) */
@@ -859,24 +884,24 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
         }
 
         /**
-         * Set the key prefix for observation token lookup.
+         * Set the key prefix for observation lookup by observation identifier.
          * <p>
-         * Default value is {@literal OBS#TKN#}. Should not be {@code null} or empty. Leshan v1.x used
+         * Default value is {@literal OBS#OBSID#}. Should not be {@code null} or empty. Leshan v1.x used
          * {@literal OBS:TKN:}.
          */
-        public Builder setObservationTokenPrefix(String observationTokenPrefix) {
-            this.observationTokenPrefix = observationTokenPrefix;
+        public Builder setObservationByIdPrefix(String observationByIdPrefix) {
+            this.observationByIdPrefix = observationByIdPrefix;
             return this;
         }
 
         /**
-         * Set the key prefix for observation tokens list lookup by registration ID.
+         * Set the key prefix for observation identifier list lookup by registration ID.
          * <p>
-         * Default value is {@literal TKNS#REGID#}. Should not be {@code null} or empty. Leshan v1.x used
+         * Default value is {@literal OBSIDS#REGID#}. Should not be {@code null} or empty. Leshan v1.x used
          * {@literal TKNS:REGID:}.
          */
-        public Builder setObservationTokensByRegistrationIdPrefix(String observationTokensByRegistrationIdPrefix) {
-            this.observationTokensByRegistrationIdPrefix = observationTokensByRegistrationIdPrefix;
+        public Builder setObservationIdsByRegistrationIdPrefix(String observationIdsByRegistrationIdPrefix) {
+            this.observationIdsByRegistrationIdPrefix = observationIdsByRegistrationIdPrefix;
             return this;
         }
 
@@ -981,8 +1006,8 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
             this.endpointBySocketAddressPrefix = "EP#ADDR#";
             this.endpointByIdentityPrefix = "EP#IDENTITY#";
             this.endpointLockPrefix = "LOCK#EP#";
-            this.observationTokenPrefix = "OBS#TKN#";
-            this.observationTokensByRegistrationIdPrefix = "TKNS#REGID#";
+            this.observationByIdPrefix = "OBS#OBSID#";
+            this.observationIdsByRegistrationIdPrefix = "OBSIDS#REGID#";
             this.endpointExpirationKey = "EXP#EP";
             this.cleanPeriod = 60;
             this.cleanLimit = 500;
@@ -1043,13 +1068,13 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
                 throw new IllegalArgumentException("endpointLockPrefix should not be empty");
             }
 
-            if (this.observationTokenPrefix == null || this.observationTokenPrefix.isEmpty()) {
-                throw new IllegalArgumentException("observationTokenPrefix should not be empty");
+            if (this.observationByIdPrefix == null || this.observationByIdPrefix.isEmpty()) {
+                throw new IllegalArgumentException("observationByIdPrefix should not be empty");
             }
 
-            if (this.observationTokensByRegistrationIdPrefix == null
-                    || this.observationTokensByRegistrationIdPrefix.isEmpty()) {
-                throw new IllegalArgumentException("observationTokensByRegistrationIdPrefix should not be empty");
+            if (this.observationIdsByRegistrationIdPrefix == null
+                    || this.observationIdsByRegistrationIdPrefix.isEmpty()) {
+                throw new IllegalArgumentException("observationIdsByRegistrationIdPrefix should not be empty");
             }
 
             if (this.endpointExpirationKey == null || this.endpointExpirationKey.isEmpty()) {
@@ -1059,8 +1084,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
             // Make sure same prefix is not used more than once
             String[] prefixes = new String[] { this.registrationByEndpointPrefix, this.endpointByRegistrationIdPrefix,
                     this.endpointBySocketAddressPrefix, this.endpointByIdentityPrefix, this.endpointLockPrefix,
-                    this.observationTokenPrefix, this.observationTokensByRegistrationIdPrefix,
-                    this.endpointExpirationKey };
+                    this.observationByIdPrefix, this.observationIdsByRegistrationIdPrefix, this.endpointExpirationKey };
             Set<String> uniquePrefixes = new HashSet<>();
 
             for (String prefix : prefixes) {
@@ -1075,9 +1099,8 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
                 this.endpointBySocketAddressPrefix = this.prefix + this.endpointBySocketAddressPrefix;
                 this.endpointByIdentityPrefix = this.prefix + this.endpointByIdentityPrefix;
                 this.endpointLockPrefix = this.prefix + this.endpointLockPrefix;
-                this.observationTokenPrefix = this.prefix + this.observationTokenPrefix;
-                this.observationTokensByRegistrationIdPrefix = this.prefix
-                        + this.observationTokensByRegistrationIdPrefix;
+                this.observationByIdPrefix = this.prefix + this.observationByIdPrefix;
+                this.observationIdsByRegistrationIdPrefix = this.prefix + this.observationIdsByRegistrationIdPrefix;
                 this.endpointExpirationKey = this.prefix + this.endpointExpirationKey;
             }
 

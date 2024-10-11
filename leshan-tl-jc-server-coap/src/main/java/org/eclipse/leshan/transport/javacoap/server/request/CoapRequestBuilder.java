@@ -169,9 +169,9 @@ public class CoapRequestBuilder implements DownlinkDeviceManagementRequestVisito
         // What happens in case of conflict but also how could we follow :
         // https://www.rfc-editor.org/rfc/rfc9175#section-4.2
         Opaque token = tokenGenerator.createToken();
-        SingleObservation observation = new SingleObservation(new ObservationIdentifier(token.getBytes()),
-                registration.getId(), request.getPath(), request.getContentFormat(), request.getContext(),
-                Collections.emptyMap());
+        SingleObservation observation = new SingleObservation(
+                new ObservationIdentifier(registration.getEndpointUri(), token.getBytes()), registration.getId(),
+                request.getPath(), request.getContentFormat(), request.getContext(), Collections.emptyMap());
 
         // Add Observation to request context
         TransportContext extendedContext = TransportContext.EMPTY //
@@ -221,9 +221,10 @@ public class CoapRequestBuilder implements DownlinkDeviceManagementRequestVisito
 
         // Create Observation
         Opaque token = tokenGenerator.createToken();
-        CompositeObservation observation = new CompositeObservation(new ObservationIdentifier(token.getBytes()),
-                registration.getId(), request.getPaths(), request.getRequestContentFormat(),
-                request.getResponseContentFormat(), request.getContext(), Collections.emptyMap());
+        CompositeObservation observation = new CompositeObservation(
+                new ObservationIdentifier(registration.getEndpointUri(), token.getBytes()), registration.getId(),
+                request.getPaths(), request.getRequestContentFormat(), request.getResponseContentFormat(),
+                request.getContext(), Collections.emptyMap());
 
         // Add Observation to request context
         coapRequestBuilder //

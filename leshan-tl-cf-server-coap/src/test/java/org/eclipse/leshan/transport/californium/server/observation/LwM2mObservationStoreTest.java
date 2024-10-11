@@ -35,6 +35,7 @@ import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.network.serialization.UdpDataParser;
 import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
 import org.eclipse.californium.elements.AddressEndpointContext;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
@@ -49,6 +50,7 @@ import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
+import org.eclipse.leshan.server.endpoint.EffectiveEndpointUriProvider;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.profile.ClientProfile;
 import org.eclipse.leshan.server.registration.InMemoryRegistrationStore;
@@ -70,6 +72,8 @@ public class LwM2mObservationStoreTest {
     private final String examplePath = "/1/2/3";
     private final List<LwM2mPath> examplePaths = Arrays.asList(new LwM2mPath("/1/2/3"), new LwM2mPath("/4/5/6"));
 
+    private final EndpointUri endpointUri = uriHandler.createUri("coap://localhost:5683");
+
     RegistrationStore store;
     LwM2mObservationStore observationStore;
     InetAddress address;
@@ -79,7 +83,12 @@ public class LwM2mObservationStoreTest {
     public void setUp() throws UnknownHostException {
         address = InetAddress.getLocalHost();
         store = new InMemoryRegistrationStore();
-        observationStore = new LwM2mObservationStore(store, new LwM2mNotificationReceiver() {
+        observationStore = new LwM2mObservationStore(new EffectiveEndpointUriProvider() {
+            @Override
+            public EndpointUri getEndpointUri() {
+                return endpointUri;
+            }
+        }, store, new LwM2mNotificationReceiver() {
             @Override
             public void onNotification(CompositeObservation observation, LwM2mPeer sender, ClientProfile profile,
                     ObserveCompositeResponse response) {
@@ -135,7 +144,7 @@ public class LwM2mObservationStoreTest {
 
         // then
         Observation leshanObservation = store.getObservation(registrationId,
-                new ObservationIdentifier(exampleToken.getBytes()));
+                new ObservationIdentifier(endpointUri, exampleToken.getBytes()));
         assertNotNull(leshanObservation);
         assertTrue(leshanObservation instanceof SingleObservation);
         SingleObservation observation = (SingleObservation) leshanObservation;
@@ -155,7 +164,7 @@ public class LwM2mObservationStoreTest {
 
         // then
         Observation leshanObservation = store.getObservation(registrationId,
-                new ObservationIdentifier(exampleToken.getBytes()));
+                new ObservationIdentifier(endpointUri, exampleToken.getBytes()));
         assertNotNull(leshanObservation);
         assertTrue(leshanObservation instanceof CompositeObservation);
         CompositeObservation observation = (CompositeObservation) leshanObservation;
@@ -176,7 +185,7 @@ public class LwM2mObservationStoreTest {
 
         // then
         Observation leshanObservation = store.getObservation(registrationId,
-                new ObservationIdentifier(exampleToken.getBytes()));
+                new ObservationIdentifier(endpointUri, exampleToken.getBytes()));
         assertNull(leshanObservation);
     }
 
@@ -217,7 +226,7 @@ public class LwM2mObservationStoreTest {
     private void givenASimpleRegistration(Long lifetime) {
 
         Registration.Builder builder = new Registration.Builder(registrationId, ep,
-                new IpPeer(new InetSocketAddress(address, port)), uriHandler.createUri("coap://localhost:5683"));
+                new IpPeer(new InetSocketAddress(address, port)), endpointUri);
 
         registration = builder.lifeTimeInSec(lifetime).smsNumber(sms).bindingMode(binding).objectLinks(objectLinks)
                 .build();

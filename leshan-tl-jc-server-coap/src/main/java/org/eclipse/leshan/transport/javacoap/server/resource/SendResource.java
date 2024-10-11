@@ -29,13 +29,13 @@ import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.SendResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
+import org.eclipse.leshan.server.endpoint.EffectiveEndpointUriProvider;
 import org.eclipse.leshan.server.profile.ClientProfile;
 import org.eclipse.leshan.server.profile.ClientProfileProvider;
 import org.eclipse.leshan.server.request.UplinkDeviceManagementRequestReceiver;
 import org.eclipse.leshan.transport.javacoap.identity.IdentityHandler;
 import org.eclipse.leshan.transport.javacoap.request.ResponseCodeUtil;
 import org.eclipse.leshan.transport.javacoap.resource.LwM2mCoapResource;
-import org.eclipse.leshan.transport.javacoap.server.endpoint.EndpointUriProvider;
 
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
@@ -54,10 +54,10 @@ public class SendResource extends LwM2mCoapResource {
     private final UplinkDeviceManagementRequestReceiver receiver;
     private final ClientProfileProvider profileProvider;
 
-    private final EndpointUriProvider endpointUriProvider;
+    private final EffectiveEndpointUriProvider endpointUriProvider;
 
     public SendResource(UplinkDeviceManagementRequestReceiver receiver, LwM2mDecoder decoder,
-            ClientProfileProvider profileProvider, EndpointUriProvider endpointUriProvider,
+            ClientProfileProvider profileProvider, EffectiveEndpointUriProvider endpointUriProvider,
             IdentityHandler identityHandler) {
         super(RESOURCE_URI, identityHandler);
         this.decoder = decoder;

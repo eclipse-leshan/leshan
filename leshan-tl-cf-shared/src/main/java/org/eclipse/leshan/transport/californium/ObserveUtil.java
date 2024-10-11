@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.observe.Observation;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.ObservationIdentifier;
@@ -46,28 +47,30 @@ public class ObserveUtil {
     public static final String CTX_LWM2M_PATH = "leshan-path";
     public static final String CTX_CF_OBERSATION = "leshan-cf-obs";
 
-    public static org.eclipse.leshan.core.observation.Observation createLwM2mObservation(Observation observation,
-            String serializedObservation) {
+    public static org.eclipse.leshan.core.observation.Observation createLwM2mObservation(EndpointUri endpointUri,
+            Observation observation, String serializedObservation) {
         if (observation == null)
             return null;
 
         if (observation.getRequest().getCode() == CoAP.Code.GET) {
-            return ObserveUtil.createLwM2mObservation(observation.getRequest(), serializedObservation);
+            return ObserveUtil.createLwM2mObservation(endpointUri, observation.getRequest(), serializedObservation);
         } else if (observation.getRequest().getCode() == CoAP.Code.FETCH) {
-            return ObserveUtil.createLwM2mCompositeObservation(observation.getRequest(), serializedObservation);
+            return ObserveUtil.createLwM2mCompositeObservation(endpointUri, observation.getRequest(),
+                    serializedObservation);
         } else {
             throw new IllegalStateException("Observation request can be GET or FETCH only");
         }
     }
 
-    public static SingleObservation createLwM2mObservation(Request request) {
-        return createLwM2mObservation(request, null);
+    public static SingleObservation createLwM2mObservation(EndpointUri endpointUri, Request request) {
+        return createLwM2mObservation(endpointUri, request, null);
     }
 
     /**
      * Create a LWM2M observation from a CoAP request.
      */
-    public static SingleObservation createLwM2mObservation(Request request, String serializedObservation) {
+    public static SingleObservation createLwM2mObservation(EndpointUri endpointUri, Request request,
+            String serializedObservation) {
         ObserveCommon observeCommon = new ObserveCommon(request, serializedObservation);
 
         if (observeCommon.lwm2mPaths.size() != 1) {
@@ -75,21 +78,22 @@ public class ObserveUtil {
                     "1 path is expected in observe request context but was " + observeCommon.lwm2mPaths);
         }
 
-        return new SingleObservation(new ObservationIdentifier(request.getToken().getBytes()), observeCommon.regId,
-                observeCommon.lwm2mPaths.get(0), observeCommon.responseContentFormat, observeCommon.context,
-                observeCommon.protocolData);
+        return new SingleObservation(new ObservationIdentifier(endpointUri, request.getToken().getBytes()),
+                observeCommon.regId, observeCommon.lwm2mPaths.get(0), observeCommon.responseContentFormat,
+                observeCommon.context, observeCommon.protocolData);
     }
 
-    public static CompositeObservation createLwM2mCompositeObservation(Request request) {
-        return createLwM2mCompositeObservation(request, null);
+    public static CompositeObservation createLwM2mCompositeObservation(EndpointUri endpointUri, Request request) {
+        return createLwM2mCompositeObservation(endpointUri, request, null);
     }
 
-    public static CompositeObservation createLwM2mCompositeObservation(Request request, String serializedObservation) {
+    public static CompositeObservation createLwM2mCompositeObservation(EndpointUri endpointUri, Request request,
+            String serializedObservation) {
         ObserveCommon observeCommon = new ObserveCommon(request, serializedObservation);
 
-        return new CompositeObservation(new ObservationIdentifier(request.getToken().getBytes()), observeCommon.regId,
-                observeCommon.lwm2mPaths, observeCommon.requestContentFormat, observeCommon.responseContentFormat,
-                observeCommon.context, observeCommon.protocolData);
+        return new CompositeObservation(new ObservationIdentifier(endpointUri, request.getToken().getBytes()),
+                observeCommon.regId, observeCommon.lwm2mPaths, observeCommon.requestContentFormat,
+                observeCommon.responseContentFormat, observeCommon.context, observeCommon.protocolData);
     }
 
     private static class ObserveCommon {

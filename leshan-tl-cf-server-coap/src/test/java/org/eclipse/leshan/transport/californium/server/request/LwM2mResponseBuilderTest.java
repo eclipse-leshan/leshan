@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.transport.californium.server.request;
 
+import static org.eclipse.leshan.core.util.TestToolBox.uriHandler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -27,6 +28,7 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.coap.Token;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -44,6 +46,7 @@ public class LwM2mResponseBuilderTest {
 
     private final DummyDecoder decoder = new DummyDecoder();
     private final LwM2mLinkParser linkParser = new DefaultLwM2mLinkParser();
+    private final EndpointUri endpointUri = uriHandler.createUri("coap://localhost:5683");
 
     @Test
     public void visit_observe_request() {
@@ -62,7 +65,7 @@ public class LwM2mResponseBuilderTest {
         coapResponse.getOptions().setObserve(1);
 
         LwM2mResponseBuilder<ObserveResponse> responseBuilder = new LwM2mResponseBuilder<>(coapRequest, coapResponse,
-                null, null, null, decoder, linkParser);
+                null, null, null, endpointUri, decoder, linkParser);
         // when
         responseBuilder.visit(observeRequest);
 
@@ -93,7 +96,7 @@ public class LwM2mResponseBuilderTest {
         coapResponse.getOptions().setObserve(1);
 
         LwM2mResponseBuilder<ObserveCompositeResponse> responseBuilder = new LwM2mResponseBuilder<>(coapRequest,
-                coapResponse, null, null, null, decoder, linkParser);
+                coapResponse, null, null, null, endpointUri, decoder, linkParser);
         // when
         responseBuilder.visit(observeRequest);
 

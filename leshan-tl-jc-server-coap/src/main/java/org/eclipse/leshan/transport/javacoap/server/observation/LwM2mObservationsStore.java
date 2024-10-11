@@ -22,6 +22,7 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.ObservationIdentifier;
 import org.eclipse.leshan.core.peer.LwM2mIdentity;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
+import org.eclipse.leshan.server.endpoint.EffectiveEndpointUriProvider;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
@@ -39,12 +40,14 @@ public class LwM2mObservationsStore implements ObservationsStore {
     private final RegistrationStore store;
     private final LwM2mNotificationReceiver notificationReceiver;
     private final IdentityHandler identityHandler;
+    private final EffectiveEndpointUriProvider endpointUriProvider;
 
     public LwM2mObservationsStore(RegistrationStore store, LwM2mNotificationReceiver notificationReceiver,
-            IdentityHandler identityHandler) {
+            IdentityHandler identityHandler, EffectiveEndpointUriProvider endpointUriProvider) {
         this.store = store;
         this.notificationReceiver = notificationReceiver;
         this.identityHandler = identityHandler;
+        this.endpointUriProvider = endpointUriProvider;
     }
 
     @Override
@@ -85,7 +88,8 @@ public class LwM2mObservationsStore implements ObservationsStore {
     public Optional<String> resolveUriPath(SeparateResponse obs) {
 
         // Try to find observation for given token
-        ObservationIdentifier observationIdentifier = new ObservationIdentifier(obs.getToken().getBytes());
+        ObservationIdentifier observationIdentifier = new ObservationIdentifier(endpointUriProvider.getEndpointUri(),
+                obs.getToken().getBytes());
         LOG.debug("Search observation for  identifier {} ", observationIdentifier);
         Observation observation = store.getObservation(observationIdentifier);
         // TODO should we use PeerIdentity in ObservationIdentifier.
@@ -114,7 +118,8 @@ public class LwM2mObservationsStore implements ObservationsStore {
     @Override
     public void remove(SeparateResponse obs) {
         // Try to find observation for given token
-        ObservationIdentifier observationIdentifier = new ObservationIdentifier(obs.getToken().getBytes());
+        ObservationIdentifier observationIdentifier = new ObservationIdentifier(endpointUriProvider.getEndpointUri(),
+                obs.getToken().getBytes());
         Observation observation = store.getObservation(observationIdentifier);
 
         if (observation != null) {
