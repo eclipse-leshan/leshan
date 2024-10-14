@@ -209,9 +209,9 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
     }
 
     protected ServerProtocolProvider getCaliforniumProtocolProvider(Protocol protocol) {
-        if (protocolToUse.equals(Protocol.COAP)) {
+        if (protocol.equals(Protocol.COAP)) {
             return new CoapServerProtocolProvider();
-        } else if (protocolToUse.equals(Protocol.COAPS)) {
+        } else if (protocol.equals(Protocol.COAPS)) {
             return new CoapsServerProtocolProvider(dtlsConfig -> {
                 if (!keyPairs.isEmpty()) {
                     dtlsConfig.setCertificateIdentityProvider(new MapBasedRawPublicKeyProvider(keyPairs));
@@ -238,7 +238,7 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
     }
 
     private ServerProtocolProvider getCaliforniumProtocolProviderSupportingOscore(Protocol protocol) {
-        if (protocolToUse.equals(Protocol.COAP)) {
+        if (protocol.equals(Protocol.COAP)) {
             return new CoapServerProtocolProvider() {
                 @Override
                 public CaliforniumServerEndpointFactory createDefaultEndpointFactory(EndpointUri uri,
@@ -252,11 +252,11 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
     }
 
     protected LwM2mServerEndpointsProvider getJavaCoapProtocolProvider(Protocol protocol) {
-        if (protocolToUse.equals(Protocol.COAP)) {
+        if (protocol.equals(Protocol.COAP)) {
             return new JavaCoapServerEndpointsProvider(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        } else if (protocolToUse.equals(Protocol.COAP_TCP)) {
+        } else if (protocol.equals(Protocol.COAP_TCP)) {
             return new JavaCoapTcpServerEndpointsProvider(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-        } else if (protocolToUse.equals(Protocol.COAPS_TCP)) {
+        } else if (protocol.equals(Protocol.COAPS_TCP)) {
             return new JavaCoapsTcpServerEndpointsProvider(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         }
         throw new IllegalStateException(String.format("No Californium Protocol Provider for protocol %s", protocol));

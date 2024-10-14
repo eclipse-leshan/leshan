@@ -182,9 +182,9 @@ public class LeshanTestBootstrapServerBuilder extends LeshanBootstrapServerBuild
     }
 
     private BootstrapServerProtocolProvider getCaliforniumProtocolProvider(Protocol protocol) {
-        if (protocolToUse.equals(Protocol.COAP)) {
+        if (protocol.equals(Protocol.COAP)) {
             return new CoapBootstrapServerProtocolProvider();
-        } else if (protocolToUse.equals(Protocol.COAPS)) {
+        } else if (protocol.equals(Protocol.COAPS)) {
             return new CoapsBootstrapServerProtocolProvider(dtlsConfig -> {
                 if (!CertPairs.isEmpty()) {
                     dtlsConfig.setCertificateIdentityProvider(new MapBasedCertificateProvider(CertPairs));
@@ -206,7 +206,7 @@ public class LeshanTestBootstrapServerBuilder extends LeshanBootstrapServerBuild
     }
 
     private BootstrapServerProtocolProvider getCaliforniumProtocolProviderSupportingOscore(Protocol protocol) {
-        if (protocolToUse.equals(Protocol.COAP)) {
+        if (protocol.equals(Protocol.COAP)) {
             return new CoapBootstrapServerProtocolProvider() {
                 @Override
                 public CaliforniumBootstrapServerEndpointFactory createDefaultEndpointFactory(EndpointUri uri,
