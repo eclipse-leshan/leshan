@@ -18,6 +18,7 @@ package org.eclipse.leshan.integration.tests.util;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.leshan.core.util.TestToolBox.uriHandler;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertArg;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.ArgumentMatchers.notNull;
@@ -140,10 +141,10 @@ public class LeshanTestClient extends LeshanClient {
 
     public void waitForRegistrationTo(LeshanTestServer server, long timeout, TimeUnit unit) {
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onRegistrationStarted(assertArg( //
-                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
+                s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
                 isNotNull());
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onRegistrationSuccess(assertArg( //
-                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
+                s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
                 isNotNull(), isNotNull());
         inOrder.verifyNoMoreInteractions();
     }
@@ -157,10 +158,10 @@ public class LeshanTestClient extends LeshanClient {
         final ArgumentCaptor<ResponseCode> cCode = ArgumentCaptor.forClass(ResponseCode.class);
 
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onRegistrationStarted(assertArg( //
-                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
+                s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
                 isNotNull());
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onRegistrationFailure(assertArg( //
-                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
+                s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
                 notNull(), cCode.capture(), any(), cExp.capture());
         inOrder.verifyNoMoreInteractions();
 
@@ -169,10 +170,10 @@ public class LeshanTestClient extends LeshanClient {
 
     public void waitForUpdateTo(LeshanTestServer server, long timeout, TimeUnit unit) {
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onUpdateStarted(assertArg( //
-                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
+                s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
                 notNull());
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onUpdateSuccess(assertArg( //
-                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
+                s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
                 notNull());
         inOrder.verifyNoMoreInteractions();
     }
@@ -183,10 +184,10 @@ public class LeshanTestClient extends LeshanClient {
 
     public void waitForDeregistrationTo(LeshanTestServer server, long timeout, TimeUnit unit) {
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onDeregistrationStarted(assertArg( //
-                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
+                s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
                 isNotNull());
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onDeregistrationSuccess(assertArg( //
-                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
+                s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
                 isNotNull());
         inOrder.verifyNoMoreInteractions();
     }
@@ -197,11 +198,11 @@ public class LeshanTestClient extends LeshanClient {
 
     public void waitForUpdateTimeoutTo(LeshanTestServer server, long timeout, TimeUnit unit) {
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onUpdateStarted(assertArg( //
-                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
+                s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
                 notNull());
 
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onUpdateTimeout(assertArg( //
-                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
+                s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
                 notNull());
         // if client update timeout, it will retry again then try a register so all events can not be consume by inOrder
         // ...
@@ -213,10 +214,10 @@ public class LeshanTestClient extends LeshanClient {
 
     public void waitForUpdateFailureTo(LeshanTestServer server, long timeout, TimeUnit unit) {
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onUpdateStarted(assertArg( //
-                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
+                s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
                 notNull());
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onUpdateFailure(assertArg( //
-                s -> assertThat(isServerIdentifiedByUri(server, s.getUri()))), //
+                s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
                 notNull(), //
                 notNull(), // TODO we should be able to check response code
                 any(), //

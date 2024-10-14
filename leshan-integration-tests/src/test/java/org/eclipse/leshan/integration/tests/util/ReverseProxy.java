@@ -233,11 +233,7 @@ public class ReverseProxy {
      * @return address of server to proxified
      */
     public InetSocketAddress getServerAddress() {
-        try {
-            return (InetSocketAddress) clientToProxyChannel.getLocalAddress();
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
+        return serverAddress;
     }
 
     /**
