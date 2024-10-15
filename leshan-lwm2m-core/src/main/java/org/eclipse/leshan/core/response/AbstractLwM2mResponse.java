@@ -38,6 +38,11 @@ public abstract class AbstractLwM2mResponse implements LwM2mResponse {
     }
 
     @Override
+    public String toString() {
+        return String.format("%s [code=%s, errorMessage=%s]", this.getClass().getSimpleName(), code, errorMessage);
+    }
+
+    @Override
     public final ResponseCode getCode() {
         return this.code;
     }
