@@ -21,6 +21,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,8 +61,11 @@ public class ReverseProxy {
     private static final int BUFFER_SIZE = 2048;
 
     private final InetSocketAddress clientSideProxyAddress;
-    private final InetSocketAddress serverAddress;
+    private InetSocketAddress serverAddress;
     private InetSocketAddress clientAddress;
+
+    private final List<InetSocketAddress> possibleServerAddress;
+    private volatile int currentServerAddressIndex;
 
     private DatagramChannel clientToProxyChannel;
     private DatagramChannel proxyToServerChannel;
@@ -69,10 +75,17 @@ public class ReverseProxy {
     private volatile boolean running = false; // true if reserver proxy is running
     private volatile boolean stop = false; // true if we asked to stop reserve proxy
     private volatile boolean changeServerSideProxyAddress = false; // true if we ask to change server side proxy address
+    private volatile int askedServerAddressIndex; // value of the requested server address index
 
     public ReverseProxy(InetSocketAddress clientSideProxyAddress, InetSocketAddress serverAddress) {
+        this(clientSideProxyAddress, Collections.singletonList(serverAddress));
+    }
+
+    public ReverseProxy(InetSocketAddress clientSideProxyAddress, List<InetSocketAddress> possibleServerAddress) {
         this.clientSideProxyAddress = clientSideProxyAddress;
-        this.serverAddress = serverAddress;
+        this.possibleServerAddress = Collections.unmodifiableList(new ArrayList<>(possibleServerAddress));
+        this.currentServerAddressIndex = 0;
+        this.serverAddress = possibleServerAddress.get(currentServerAddressIndex);
     }
 
     public void start() {
@@ -110,6 +123,12 @@ public class ReverseProxy {
                     // Reassign address if needed
                     if (changeServerSideProxyAddress) {
                         reassignServerSideProxyAddress();
+                    }
+                    // change server address if needed
+                    int addr = askedServerAddressIndex;
+                    if (addr != currentServerAddressIndex) {
+                        serverAddress = possibleServerAddress.get(addr);
+                        currentServerAddressIndex = addr;
                     }
                 }
                 // proxy is stopped
@@ -170,8 +189,8 @@ public class ReverseProxy {
         if (sourceAddress == null) {
             return;
         }
-        if (!sourceAddress.equals(serverAddress)) {
-            logAndRaiseException(String.format("We should only receive data from server %s", serverAddress));
+        if (!possibleServerAddress.contains(sourceAddress)) {
+            logAndRaiseException(String.format("We should only receive data from server %s", possibleServerAddress));
         }
         if (clientAddress == null) {
             logAndRaiseException("Client should send data first before sever send data");
@@ -234,6 +253,27 @@ public class ReverseProxy {
      */
     public InetSocketAddress getServerAddress() {
         return serverAddress;
+    }
+
+    /**
+     * @return address of server to proxified
+     */
+    public void useNextServerAddress() {
+        if (possibleServerAddress.size() == 1) {
+            throw new IllegalStateException("there is only 1 possible server address");
+        }
+
+        askedServerAddressIndex = (askedServerAddressIndex + 1) % possibleServerAddress.size();
+
+        selector.wakeup();
+        // Wait address effectively changed (we wait 10x100 ms max)
+        for (int i = 0; i < 10 && askedServerAddressIndex != currentServerAddressIndex; i++) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                LOGGER.debug("Change Server Side Proxy Address was interrupted", e);
+            }
+        }
     }
 
     /**
