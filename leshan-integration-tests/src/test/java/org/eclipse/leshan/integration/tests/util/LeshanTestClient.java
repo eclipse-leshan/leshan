@@ -168,6 +168,10 @@ public class LeshanTestClient extends LeshanClient {
         return new Failure(cExp.getValue(), cCode.getValue());
     }
 
+    public void waitForUpdateTo(LeshanTestServer server) {
+        waitForUpdateTo(server, 1, TimeUnit.SECONDS);
+    }
+
     public void waitForUpdateTo(LeshanTestServer server, long timeout, TimeUnit unit) {
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onUpdateStarted(assertArg( //
                 s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
@@ -175,20 +179,6 @@ public class LeshanTestClient extends LeshanClient {
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onUpdateSuccess(assertArg( //
                 s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
                 notNull());
-        inOrder.verifyNoMoreInteractions();
-    }
-
-    public void waitForDeregistrationTo(LeshanTestServer server) {
-        waitForDeregistrationTo(server, 1, TimeUnit.SECONDS);
-    }
-
-    public void waitForDeregistrationTo(LeshanTestServer server, long timeout, TimeUnit unit) {
-        inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onDeregistrationStarted(assertArg( //
-                s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
-                isNotNull());
-        inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onDeregistrationSuccess(assertArg( //
-                s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
-                isNotNull());
         inOrder.verifyNoMoreInteractions();
     }
 
@@ -208,27 +198,60 @@ public class LeshanTestClient extends LeshanClient {
         // ...
     }
 
-    public void waitForUpdateFailureTo(LeshanTestServer server) {
-        waitForUpdateFailureTo(server, 1, TimeUnit.SECONDS);
+    public Failure waitForUpdateFailureTo(LeshanTestServer server) {
+        return waitForUpdateFailureTo(server, 1, TimeUnit.SECONDS);
     }
 
-    public void waitForUpdateFailureTo(LeshanTestServer server, long timeout, TimeUnit unit) {
+    public Failure waitForUpdateFailureTo(LeshanTestServer server, long timeout, TimeUnit unit) {
+        final ArgumentCaptor<Exception> cExp = ArgumentCaptor.forClass(Exception.class);
+        final ArgumentCaptor<ResponseCode> cCode = ArgumentCaptor.forClass(ResponseCode.class);
+
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onUpdateStarted(assertArg( //
                 s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
                 notNull());
         inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onUpdateFailure(assertArg( //
                 s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
                 notNull(), //
-                notNull(), // TODO we should be able to check response code
+                cCode.capture(), //
                 any(), //
-                any()); // TODO we should be able to check exception
+                cExp.capture());
         // if client update timeout, it will retry again then try a register so all events can not be consume by inOrder
         // ...
+        return new Failure(cExp.getValue(), cCode.getValue());
     }
 
-    public void waitForBootstrapStarted() {
-        // TODO Auto-generated method stub
+    public void waitForDeregistrationTo(LeshanTestServer server) {
+        waitForDeregistrationTo(server, 1, TimeUnit.SECONDS);
+    }
 
+    public void waitForDeregistrationTo(LeshanTestServer server, long timeout, TimeUnit unit) {
+        inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onDeregistrationStarted(assertArg( //
+                s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
+                isNotNull());
+        inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onDeregistrationSuccess(assertArg( //
+                s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
+                isNotNull());
+        inOrder.verifyNoMoreInteractions();
+    }
+
+    public Failure waitForDeregistrationFailureTo(LeshanTestServer server) {
+        return waitForDeregistrationFailureTo(server, 1, TimeUnit.SECONDS);
+    }
+
+    public Failure waitForDeregistrationFailureTo(LeshanTestServer server, long timeout, TimeUnit unit) {
+        final ArgumentCaptor<Exception> cExp = ArgumentCaptor.forClass(Exception.class);
+        final ArgumentCaptor<ResponseCode> cCode = ArgumentCaptor.forClass(ResponseCode.class);
+        inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onDeregistrationStarted(assertArg( //
+                s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
+                isNotNull());
+        inOrder.verify(clientObserver, timeout(unit.toMillis(timeout)).times(1)).onDeregistrationFailure(assertArg( //
+                s -> assertTrue(isServerIdentifiedByUri(server, s.getUri()))), //
+                isNotNull(), //
+                cCode.capture(), //
+                any(), //
+                cExp.capture());
+        inOrder.verifyNoMoreInteractions();
+        return new Failure(cExp.getValue(), cCode.getValue());
     }
 
     public void waitForBootstrapSuccess(LeshanBootstrapServer server, long timeout, TimeUnit unit) {
