@@ -156,7 +156,7 @@ public class LeshanServer {
         this.securityStore = securityStore;
         this.modelProvider = modelProvider;
         this.observationService = createObservationService(registrationStore, updateRegistrationOnNotification,
-                endpointsProvider);
+                endpointsProvider, authorizer);
         if (noQueueMode) {
             presenceService = null;
         } else {
@@ -184,10 +184,11 @@ public class LeshanServer {
     }
 
     protected ObservationServiceImpl createObservationService(RegistrationStore registrationStore,
-            boolean updateRegistrationOnNotification, LwM2mServerEndpointsProvider endpointsProvider) {
+            boolean updateRegistrationOnNotification, LwM2mServerEndpointsProvider endpointsProvider,
+            Authorizer authorizer) {
 
         ObservationServiceImpl observationService = new ObservationServiceImpl(registrationStore, endpointsProvider,
-                updateRegistrationOnNotification);
+                updateRegistrationOnNotification, authorizer);
         return observationService;
     }
 

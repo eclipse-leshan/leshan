@@ -56,6 +56,7 @@ import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.request.LowerLayerConfig;
 import org.eclipse.leshan.server.request.UplinkDeviceManagementRequestReceiver;
+import org.eclipse.leshan.server.security.DefaultAuthorizer;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -168,7 +169,8 @@ public class ObservationServiceTest {
     }
 
     private void createDefaultObservationService() {
-        observationService = new ObservationServiceImpl(store, new DummyEndpointsProvider());
+        observationService = new ObservationServiceImpl(store, new DummyEndpointsProvider(),
+                new DefaultAuthorizer(null));
     }
 
     private Observation givenAnObservation(String registrationId, LwM2mPath target) {

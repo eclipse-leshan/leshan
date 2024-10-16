@@ -29,6 +29,8 @@ import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
+import org.eclipse.leshan.core.request.UpdateRequest;
+import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
@@ -38,6 +40,8 @@ import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
 import org.eclipse.leshan.server.registration.UpdatedRegistration;
+import org.eclipse.leshan.server.security.Authorizer;
+import org.eclipse.leshan.servers.security.Authorization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,14 +58,16 @@ public class ObservationServiceImpl implements ObservationService, LwM2mNotifica
     private final RegistrationStore registrationStore;
     private final LwM2mServerEndpointsProvider endpointProvider;
     private final boolean updateRegistrationOnNotification;
+    private final Authorizer authorizer;
 
     private final List<ObservationListener> listeners = new CopyOnWriteArrayList<>();;
 
     /**
      * Creates an instance of {@link ObservationServiceImpl}
      */
-    public ObservationServiceImpl(RegistrationStore store, LwM2mServerEndpointsProvider endpointProvider) {
-        this(store, endpointProvider, false);
+    public ObservationServiceImpl(RegistrationStore store, LwM2mServerEndpointsProvider endpointProvider,
+            Authorizer authorizer) {
+        this(store, endpointProvider, false, authorizer);
     }
 
     /**
@@ -72,10 +78,11 @@ public class ObservationServiceImpl implements ObservationService, LwM2mNotifica
      * @since 1.1
      */
     public ObservationServiceImpl(RegistrationStore store, LwM2mServerEndpointsProvider endpointProvider,
-            boolean updateRegistrationOnNotification) {
+            boolean updateRegistrationOnNotification, Authorizer authorizer) {
         this.registrationStore = store;
         this.updateRegistrationOnNotification = updateRegistrationOnNotification;
         this.endpointProvider = endpointProvider;
+        this.authorizer = authorizer;
     }
 
     @Override
@@ -200,22 +207,39 @@ public class ObservationServiceImpl implements ObservationService, LwM2mNotifica
         listeners.remove(listener);
     }
 
-    private Registration updateRegistrationOnRegistration(Observation observation, LwM2mPeer sender,
-            ClientProfile profile) {
-        if (updateRegistrationOnNotification) {
-            RegistrationUpdate regUpdate = new RegistrationUpdate(observation.getRegistrationId(), sender, null, null,
-                    null, null, null, null, null, null, null, null);
-            UpdatedRegistration updatedRegistration = registrationStore.updateRegistration(regUpdate);
-            if (updatedRegistration == null || updatedRegistration.getUpdatedRegistration() == null) {
-                String errorMsg = String.format(
-                        "Unexpected error: There is no registration with id %s for this observation %s",
-                        observation.getRegistrationId(), observation);
-                LOG.error(errorMsg);
-                throw new IllegalStateException(errorMsg);
-            }
-            return updatedRegistration.getUpdatedRegistration();
+    protected Registration updateRegistrationOnRegistration(Observation observation, LwM2mPeer sender,
+            ClientProfile profile, LwM2mResponse observeResponse) {
+        if (!updateRegistrationOnNotification) {
+            // mode is not activate so we don't update registration
+            return profile.getRegistration();
         }
-        return profile.getRegistration();
+
+        // check if update is allowed
+        Registration registration = profile.getRegistration();
+        // HACK we create and Update request,
+        // it can be identified because we pass the OBSERVE notification as under-layer object.
+        UpdateRequest updateRequest = new UpdateRequest(registration.getId(), null, null, null, null, null,
+                observeResponse);
+        Authorization authorized = authorizer.isAuthorized(updateRequest, registration, sender,
+                observation.getId().getEndpointUri());
+        if (authorized.isDeclined()) {
+            // we didn't do the update
+            // TODO should we raise an exception instead of just ignore the update
+            return profile.getRegistration();
+        }
+
+        // update registration
+        RegistrationUpdate regUpdate = new RegistrationUpdate(observation.getRegistrationId(), sender, null, null, null,
+                null, null, null, null, null, null, null);
+        UpdatedRegistration updatedRegistration = registrationStore.updateRegistration(regUpdate);
+        if (updatedRegistration == null || updatedRegistration.getUpdatedRegistration() == null) {
+            String errorMsg = String.format(
+                    "Unexpected error: There is no registration with id %s for this observation %s",
+                    observation.getRegistrationId(), observation);
+            LOG.error(errorMsg);
+            throw new IllegalStateException(errorMsg);
+        }
+        return updatedRegistration.getUpdatedRegistration();
     }
 
     // ********** NotificationListener interface **********//
@@ -223,7 +247,7 @@ public class ObservationServiceImpl implements ObservationService, LwM2mNotifica
     public void onNotification(SingleObservation observation, LwM2mPeer sender, ClientProfile profile,
             ObserveResponse response) {
         try {
-            Registration updatedRegistration = updateRegistrationOnRegistration(observation, sender, profile);
+            Registration updatedRegistration = updateRegistrationOnRegistration(observation, sender, profile, response);
             for (ObservationListener listener : listeners) {
                 listener.onResponse(observation, updatedRegistration, response);
             }
@@ -238,7 +262,7 @@ public class ObservationServiceImpl implements ObservationService, LwM2mNotifica
     public void onNotification(CompositeObservation observation, LwM2mPeer sender, ClientProfile profile,
             ObserveCompositeResponse response) {
         try {
-            Registration updatedRegistration = updateRegistrationOnRegistration(observation, sender, profile);
+            Registration updatedRegistration = updateRegistrationOnRegistration(observation, sender, profile, response);
             for (ObservationListener listener : listeners) {
                 listener.onResponse(observation, updatedRegistration, response);
             }
