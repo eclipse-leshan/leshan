@@ -21,7 +21,9 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -40,6 +42,7 @@ import org.eclipse.leshan.integration.tests.util.cf.CertPair;
 import org.eclipse.leshan.integration.tests.util.cf.MapBasedCertificateProvider;
 import org.eclipse.leshan.integration.tests.util.cf.MapBasedRawPublicKeyProvider;
 import org.eclipse.leshan.server.LeshanServerBuilder;
+import org.eclipse.leshan.server.endpoint.DefaultCompositeServerEndpointsProvider;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.VersionedModelProvider;
@@ -66,7 +69,7 @@ import org.eclipse.leshan.transport.javacoap.server.endpoint.JavaCoapServerEndpo
 public class LeshanTestServerBuilder extends LeshanServerBuilder {
 
     private Protocol protocolToUse;
-    private String endpointProviderName;
+    private final List<String> endpointProviderNames = new ArrayList<>();
     private boolean serverOnly = false;
     private boolean useSNI = false;
     private final Map<String, KeyPair> keyPairs = new HashMap<>();
@@ -100,26 +103,33 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
 
         // create endpoint provider.
         if (endpointsProvider == null) {
-            CaliforniumServerEndpointsProvider.Builder builder;
-            switch (endpointProviderName) {
-            case "Californium":
-                builder = new CaliforniumServerEndpointsProvider.Builder(getCaliforniumProtocolProvider(protocolToUse));
-                builder.addEndpoint(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), protocolToUse);
-                endpointsProvider = builder.build();
-                break;
-            case "Californium-OSCORE":
-                builder = new CaliforniumServerEndpointsProvider.Builder(
-                        getCaliforniumProtocolProviderSupportingOscore(protocolToUse));
-                builder.addEndpoint(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), protocolToUse);
-                endpointsProvider = builder.build();
-                break;
-            case "java-coap":
-                endpointsProvider = getJavaCoapProtocolProvider(protocolToUse);
-                break;
-            default:
-                throw new IllegalStateException(
-                        String.format("Unknown endpoint provider : [%s]", endpointProviderName));
+            List<LwM2mServerEndpointsProvider> providers = new ArrayList<>();
+
+            for (String endpointProviderName : endpointProviderNames) {
+                CaliforniumServerEndpointsProvider.Builder builder;
+                switch (endpointProviderName) {
+                case "Californium":
+                    builder = new CaliforniumServerEndpointsProvider.Builder(
+                            getCaliforniumProtocolProvider(protocolToUse));
+                    builder.addEndpoint(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), protocolToUse);
+                    endpointsProvider = builder.build();
+                    break;
+                case "Californium-OSCORE":
+                    builder = new CaliforniumServerEndpointsProvider.Builder(
+                            getCaliforniumProtocolProviderSupportingOscore(protocolToUse));
+                    builder.addEndpoint(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), protocolToUse);
+                    endpointsProvider = builder.build();
+                    break;
+                case "java-coap":
+                    endpointsProvider = getJavaCoapProtocolProvider(protocolToUse);
+                    break;
+                default:
+                    throw new IllegalStateException(
+                            String.format("Unknown endpoint provider : [%s]", endpointProviderName));
+                }
+                providers.add(endpointsProvider);
             }
+            endpointsProvider = new DefaultCompositeServerEndpointsProvider(providers);
         }
         return new LeshanTestServer(endpointsProvider, registrationStore, securityStore, authorizer, modelProvider,
                 encoder, decoder, noQueueMode, awakeTimeProvider, registrationIdProvider, registrationDataExtractor,
@@ -135,8 +145,10 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
         return new LeshanTestServerBuilder();
     }
 
-    public LeshanTestServerBuilder with(String endpointProvider) {
-        this.endpointProviderName = endpointProvider;
+    public LeshanTestServerBuilder with(String... endpointProviders) {
+        for (String endpointProvider : endpointProviders) {
+            this.endpointProviderNames.add(endpointProvider);
+        }
         return this;
     }
 
