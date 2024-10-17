@@ -16,6 +16,7 @@
 package org.eclipse.leshan.integration.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.eclipse.leshan.core.ResponseCode.CONTENT;
 import static org.eclipse.leshan.integration.tests.util.LeshanProxyBuilder.givenReverseProxyFor;
 import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
 import static org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder.givenServerUsing;
@@ -25,13 +26,21 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.LinkParseException;
+import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.core.request.ObserveRequest;
+import org.eclipse.leshan.core.request.WriteRequest;
+import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.core.response.SendResponse;
 import org.eclipse.leshan.integration.tests.util.Failure;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
@@ -228,5 +237,79 @@ public class MultiEndpointsTest {
         assertThat(response).hasCode(ResponseCode.BAD_REQUEST);
         Registration registrationAfterSend = server.getRegistrationFor(client);
         assertThat(registrationAfterSend).isEqualTo(registrationBeforeSend);
+    }
+
+    @TestAllTransportLayer
+    public void observe_then_send_notification_on_different_endpoint(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws LinkParseException, InterruptedException {
+
+        observe_then_send_notification_on_different_endpoint(//
+                givenServerWithTwoEndpoint(givenProtocol, givenServerEndpointProvider), //
+                givenProtocol, //
+                givenClientEndpointProvider);
+    }
+
+    @TestAllTransportLayer
+    public void observe_then_send_notification_on_different_endpoint_with_update_on_notification(Protocol givenProtocol,
+            String givenClientEndpointProvider, String givenServerEndpointProvider)
+            throws LinkParseException, InterruptedException {
+
+        observe_then_send_notification_on_different_endpoint(//
+                givenServerWithTwoEndpoint(givenProtocol, givenServerEndpointProvider).withUpdateOnNotification(), //
+                givenProtocol, //
+                givenClientEndpointProvider);
+    }
+
+    protected void observe_then_send_notification_on_different_endpoint(LeshanTestServerBuilder givenServer,
+            Protocol givenProtocol, String givenClientEndpointProvider)
+            throws LinkParseException, InterruptedException {
+
+        // set-up test
+        setupTestFor(//
+                givenServer, //
+                givenProtocol, //
+                givenClientEndpointProvider);
+
+        // Start it and wait for registration
+        client.start();
+        server.waitForNewRegistrationOf(client);
+        client.waitForRegistrationTo(server);
+
+        // Check client is well registered
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
+
+        // observe device timezone
+        ObserveResponse observeResponse = server.send(registration, new ObserveRequest(3, 0, 15));
+        assertThat(observeResponse) //
+                .hasCode(CONTENT);
+
+        // an observation response should have been sent
+        SingleObservation observation = observeResponse.getObservation();
+        assertThat(observation.getPath()).asString().isEqualTo("/3/0/15");
+        assertThat(observation.getRegistrationId()).isEqualTo(registration.getId());
+        Set<Observation> observations = server.getObservationService().getObservations(registration);
+        assertThat(observations).containsExactly(observation);
+
+        // change value to trigger new notification
+        client.getObjectTree().getObjectEnabler(3).write(LwM2mServer.SYSTEM,
+                new WriteRequest(3, 0, 15, "Europe/London"));
+
+        // verify result
+        server.waitForNewObservation(observation);
+        ObserveResponse response = server.waitForNotificationOf(observation);
+        assertThat(response.getContent()).isEqualTo(LwM2mSingleResource.newStringResource(15, "Europe/London"));
+
+        // Send request from client to another server endpoint.
+        proxy.useNextServerAddress();
+
+        // change value to trigger new notification
+        Registration registrationBeforeNotification = server.getRegistrationFor(client);
+        client.getObjectTree().getObjectEnabler(3).write(LwM2mServer.SYSTEM,
+                new WriteRequest(3, 0, 15, "Europe/Paris"));
+        server.ensureNoNotification(observation, 1, TimeUnit.SECONDS);
+        Registration registrationAfterNotification = server.getRegistrationFor(client);
+        assertThat(registrationAfterNotification).isEqualTo(registrationBeforeNotification);
     }
 }
