@@ -128,7 +128,7 @@ public class RegistrationUpdate {
         Date lastUpdate = new Date();
 
         Registration.Builder builder = new Registration.Builder(registration.getId(), registration.getEndpoint(),
-                transportData, registration.getLastEndpointUsed());
+                transportData, registration.getEndpointUri());
 
         builder.registrationDate(lastUpdate)
                 // unmodifiable data
