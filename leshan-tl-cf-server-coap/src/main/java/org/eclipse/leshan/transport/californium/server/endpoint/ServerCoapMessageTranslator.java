@@ -71,7 +71,7 @@ public class ServerCoapMessageTranslator {
 
         LwM2mResponseBuilder<T> builder = new LwM2mResponseBuilder<T>(coapRequest, coapResponse,
                 clientProfile.getEndpoint(), clientProfile.getRootPath(), clientProfile.getModel(),
-                toolbox.getDecoder(), toolbox.getLinkParser());
+                clientProfile.getRegistration().getEndpointUri(), toolbox.getDecoder(), toolbox.getLinkParser());
         lwm2mRequest.accept(builder);
         return builder.getResponse();
     }

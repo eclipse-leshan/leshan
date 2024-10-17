@@ -22,6 +22,8 @@ import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.SendRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.UplinkRequest;
+import org.eclipse.leshan.core.response.ObserveCompositeResponse;
+import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.servers.security.Authorization;
 import org.eclipse.leshan.servers.security.SecurityChecker;
@@ -88,7 +90,11 @@ public class DefaultAuthorizer implements Authorizer {
             // We use HACK to know if those mode are used
 
             // means updateRegistrationOnSend is used (because trigger by given SEND request)
-            request.getCoapRequest() instanceof SendRequest) //
+            request.getCoapRequest() instanceof SendRequest ||
+
+            // means updateRegistrationOnNotification is used (because trigger by those OBSERVE notification)
+                    request.getCoapRequest() instanceof ObserveResponse
+                    || request.getCoapRequest() instanceof ObserveCompositeResponse) //
             {
                 return Authorization.approved();
             }

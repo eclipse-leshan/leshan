@@ -69,6 +69,7 @@ import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.request.exception.TimeoutException.Type;
 import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 import org.eclipse.leshan.server.LeshanServer;
+import org.eclipse.leshan.server.endpoint.EffectiveEndpointUriProvider;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.servers.security.EditableSecurityStore;
 import org.eclipse.leshan.servers.security.SecurityInfo;
@@ -157,7 +158,8 @@ public class CoapsServerEndpointFactory implements CaliforniumServerEndpointFact
 
     @Override
     public CoapEndpoint createCoapEndpoint(Configuration defaultConfiguration, ServerSecurityInfo serverSecurityInfo,
-            LwM2mNotificationReceiver notificationReceiver, LeshanServer server) {
+            LwM2mNotificationReceiver notificationReceiver, LeshanServer server,
+            EffectiveEndpointUriProvider endpointUriProvider) {
 
         // we do no create coaps endpoint if server does have security store
         if (server.getSecurityStore() == null) {
@@ -186,7 +188,8 @@ public class CoapsServerEndpointFactory implements CaliforniumServerEndpointFact
         }
 
         // create LWM2M Observation Store
-        LwM2mObservationStore observationStore = createObservationStore(server, notificationReceiver);
+        LwM2mObservationStore observationStore = createObservationStore(server, notificationReceiver,
+                endpointUriProvider);
 
         // create CoAP endpoint
         CoapEndpoint endpoint = createEndpointBuilder(dtlsConfig, configurationToUse, observationStore).build();
@@ -280,8 +283,8 @@ public class CoapsServerEndpointFactory implements CaliforniumServerEndpointFact
     }
 
     protected LwM2mObservationStore createObservationStore(LeshanServer server,
-            LwM2mNotificationReceiver notificationReceiver) {
-        return new LwM2mObservationStore(server.getRegistrationStore(), notificationReceiver,
+            LwM2mNotificationReceiver notificationReceiver, EffectiveEndpointUriProvider endpointUriProvider) {
+        return new LwM2mObservationStore(endpointUriProvider, server.getRegistrationStore(), notificationReceiver,
                 new ObservationSerDes(new UdpDataParser(), new UdpDataSerializer()));
     }
 

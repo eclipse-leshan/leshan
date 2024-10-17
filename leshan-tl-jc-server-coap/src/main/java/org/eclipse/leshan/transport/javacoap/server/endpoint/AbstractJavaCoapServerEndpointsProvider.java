@@ -24,6 +24,7 @@ import java.util.List;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.server.LeshanServer;
+import org.eclipse.leshan.server.endpoint.EffectiveEndpointUriProvider;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
 import org.eclipse.leshan.server.endpoint.ServerEndpointToolbox;
@@ -67,8 +68,7 @@ public abstract class AbstractJavaCoapServerEndpointsProvider implements LwM2mSe
             final LwM2mNotificationReceiver notificationReceiver, final ServerEndpointToolbox toolbox,
             ServerSecurityInfo serverSecurityInfo, LeshanServer server) {
 
-        // TODO: HACK to be able to get local URI in resource, need to discuss about it with java-coap.
-        EndpointUriProvider endpointUriProvider = new EndpointUriProvider(toolbox.getUriHandler(), supportedProtocol);
+        EffectiveEndpointUriProvider endpointUriProvider = new EffectiveEndpointUriProvider();
 
         // Create Resources / Routes
         RegistrationResource registerResource = new RegistrationResource(requestReceiver, toolbox.getLinkParser(),
@@ -87,13 +87,15 @@ public abstract class AbstractJavaCoapServerEndpointsProvider implements LwM2mSe
                 server.getSecurityStore(), //
                 resources, //
                 new CoapNotificationReceiver(coapServer, notificationReceiver, server.getRegistrationStore(),
-                        server.getModelProvider(), toolbox.getDecoder()), //
-                new LwM2mObservationsStore(server.getRegistrationStore(), notificationReceiver, identityHandler) //
+                        server.getModelProvider(), toolbox.getDecoder(), endpointUriProvider), //
+                new LwM2mObservationsStore(server.getRegistrationStore(), notificationReceiver, identityHandler,
+                        endpointUriProvider) //
         );
-        endpointUriProvider.setCoapServer(coapServer);
 
         lwm2mEndpoint = new JavaCoapServerEndpoint(supportedProtocol, endpointDescription, coapServer,
                 new ServerCoapMessageTranslator(identityHandler), toolbox);
+
+        endpointUriProvider.setEndpoint(lwm2mEndpoint);
     }
 
     protected abstract CoapServer createCoapServer(InetSocketAddress localAddress,

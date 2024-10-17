@@ -28,6 +28,7 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.leshan.core.ResponseCode;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
@@ -93,16 +94,18 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkDe
     private final String clientEndpoint;
     private final String rootPath;
     private final LwM2mModel model;
+    private final EndpointUri endpointUri;
     private final LwM2mDecoder decoder;
     private final LwM2mLinkParser linkParser;
 
     public LwM2mResponseBuilder(Request coapRequest, Response coapResponse, String clientEndpoint, String rootPath,
-            LwM2mModel model, LwM2mDecoder decoder, LwM2mLinkParser linkParser) {
+            LwM2mModel model, EndpointUri endpointUri, LwM2mDecoder decoder, LwM2mLinkParser linkParser) {
         this.coapRequest = coapRequest;
         this.coapResponse = coapResponse;
         this.clientEndpoint = clientEndpoint;
         this.rootPath = rootPath;
         this.model = model;
+        this.endpointUri = endpointUri;
         this.decoder = decoder;
         this.linkParser = linkParser;
     }
@@ -264,7 +267,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkDe
                 }
 
                 // observe request successful
-                observation = ObserveUtil.createLwM2mObservation(coapRequest);
+                observation = ObserveUtil.createLwM2mObservation(endpointUri, coapRequest);
             }
             lwM2mresponse = new ObserveResponse(toLwM2mResponseCode(coapResponse.getCode()), null, timestampedNode,
                     null, observation, null, coapResponse);
@@ -326,7 +329,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkDe
             CompositeObservation observation = null;
             if (coapResponse.getOptions().hasObserve()) {
                 // observe request successful
-                observation = ObserveUtil.createLwM2mCompositeObservation(coapRequest);
+                observation = ObserveUtil.createLwM2mCompositeObservation(endpointUri, coapRequest);
             }
             lwM2mresponse = new ObserveCompositeResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
                     timestampedNodes, null, observation, null, coapResponse);

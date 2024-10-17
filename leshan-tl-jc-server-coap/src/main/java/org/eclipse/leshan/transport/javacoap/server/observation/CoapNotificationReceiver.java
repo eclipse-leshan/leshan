@@ -35,6 +35,7 @@ import org.eclipse.leshan.core.request.exception.InvalidResponseException;
 import org.eclipse.leshan.core.response.AbstractLwM2mResponse;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
+import org.eclipse.leshan.server.endpoint.EffectiveEndpointUriProvider;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.profile.ClientProfile;
@@ -55,15 +56,18 @@ public class CoapNotificationReceiver implements NotificationsReceiver {
     private final RegistrationStore registrationStore;
     private final LwM2mModelProvider modelProvider;
     private final LwM2mDecoder decoder;
+    private final EffectiveEndpointUriProvider endpointUriProvider;
 
     public CoapNotificationReceiver(CoapServer coapServer, LwM2mNotificationReceiver notificationReceiver,
-            RegistrationStore registrationStore, LwM2mModelProvider modelProvider, LwM2mDecoder decoder) {
+            RegistrationStore registrationStore, LwM2mModelProvider modelProvider, LwM2mDecoder decoder,
+            EffectiveEndpointUriProvider endpointUriProvider) {
         super();
         this.coapServer = coapServer;
         this.notificationReceiver = notificationReceiver;
         this.registrationStore = registrationStore;
         this.modelProvider = modelProvider;
         this.decoder = decoder;
+        this.endpointUriProvider = endpointUriProvider;
     }
 
     @Override
@@ -73,7 +77,8 @@ public class CoapNotificationReceiver implements NotificationsReceiver {
         IpPeer sender = new IpPeer(peerAddress);
 
         // Search if there is an observation for this resource.
-        ObservationIdentifier observationId = new ObservationIdentifier(coapResponse.getToken().getBytes());
+        ObservationIdentifier observationId = new ObservationIdentifier(endpointUriProvider.getEndpointUri(),
+                coapResponse.getToken().getBytes());
         final Observation observation = registrationStore.getObservation(observationId);
         if (observation == null)
             return false;

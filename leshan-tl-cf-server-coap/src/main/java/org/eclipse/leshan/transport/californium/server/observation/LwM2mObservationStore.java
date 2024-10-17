@@ -24,6 +24,7 @@ import org.eclipse.californium.core.observe.Observation;
 import org.eclipse.californium.core.observe.ObservationStore;
 import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.leshan.core.observation.ObservationIdentifier;
+import org.eclipse.leshan.server.endpoint.EffectiveEndpointUriProvider;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.transport.californium.ObserveUtil;
@@ -33,12 +34,14 @@ public class LwM2mObservationStore implements ObservationStore {
     private final RegistrationStore registrationStore;
     private final LwM2mNotificationReceiver notificationListener;
     private final ObservationSerDes observationSerDes;
+    private final EffectiveEndpointUriProvider uriProvider;
 
-    public LwM2mObservationStore(RegistrationStore registrationStore, LwM2mNotificationReceiver notificationListener,
-            ObservationSerDes observationSerDes) {
+    public LwM2mObservationStore(EffectiveEndpointUriProvider uriProvider, RegistrationStore registrationStore,
+            LwM2mNotificationReceiver notificationListener, ObservationSerDes observationSerDes) {
         this.registrationStore = registrationStore;
         this.notificationListener = notificationListener;
         this.observationSerDes = observationSerDes;
+        this.uriProvider = uriProvider;
     }
 
     @Override
@@ -87,12 +90,13 @@ public class LwM2mObservationStore implements ObservationStore {
     public void remove(Token token) {
         // try to find observation for given token
         org.eclipse.leshan.core.observation.Observation observation = registrationStore
-                .getObservation(new ObservationIdentifier(token.getBytes()));
+                .getObservation(new ObservationIdentifier(uriProvider.getEndpointUri(), token.getBytes()));
 
         if (observation != null) {
             // try to remove observation
-            org.eclipse.leshan.core.observation.Observation removedObservation = registrationStore
-                    .removeObservation(observation.getRegistrationId(), new ObservationIdentifier(token.getBytes()));
+            org.eclipse.leshan.core.observation.Observation removedObservation = registrationStore.removeObservation(
+                    observation.getRegistrationId(),
+                    new ObservationIdentifier(uriProvider.getEndpointUri(), token.getBytes()));
             if (removedObservation != null) {
                 notificationListener.cancelled(removedObservation);
             }
@@ -102,7 +106,7 @@ public class LwM2mObservationStore implements ObservationStore {
     @Override
     public Observation get(Token token) {
         org.eclipse.leshan.core.observation.Observation observation = registrationStore
-                .getObservation(new ObservationIdentifier(token.getBytes()));
+                .getObservation(new ObservationIdentifier(uriProvider.getEndpointUri(), token.getBytes()));
         if (observation == null) {
             return null;
         } else {
@@ -132,7 +136,7 @@ public class LwM2mObservationStore implements ObservationStore {
 
     private org.eclipse.leshan.core.observation.Observation buildLwM2mObservation(Observation observation) {
         String obs = observationSerDes.serialize(observation);
-        return ObserveUtil.createLwM2mObservation(observation, obs);
+        return ObserveUtil.createLwM2mObservation(uriProvider.getEndpointUri(), observation, obs);
     }
 
     private Observation buildCoapObservation(org.eclipse.leshan.core.observation.Observation observation) {

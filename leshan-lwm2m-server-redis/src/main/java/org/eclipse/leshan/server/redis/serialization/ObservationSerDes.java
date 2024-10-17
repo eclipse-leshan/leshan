@@ -24,6 +24,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.leshan.core.endpoint.DefaultEndPointUriHandler;
+import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
+import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
@@ -45,6 +48,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class ObservationSerDes {
 
     private static final String OBS_ID = "id";
+    private static final String OBS_EP_URI = "epUri";
     private static final String OBS_REGID = "regid";
     private static final String OBS_USER_CONTEXT = "userContext";
     private static final String OBS_PROTOCOL_DATA = "protocolData";
@@ -60,9 +64,20 @@ public class ObservationSerDes {
     private static final String KIND_SINGLE = "single";
     private static final String KIND_COMPOSITE = "composite";
 
+    private final EndPointUriHandler uriHandler;
+
+    public ObservationSerDes() {
+        this(new DefaultEndPointUriHandler());
+    }
+
+    public ObservationSerDes(EndPointUriHandler uriHandler) {
+        this.uriHandler = uriHandler;
+    }
+
     public byte[] serialize(Observation obs) {
         ObjectNode n = JsonNodeFactory.instance.objectNode();
         n.put(OBS_ID, obs.getId().getAsHexString());
+        n.put(OBS_EP_URI, obs.getId().getEndpointUri().toString());
         n.put(OBS_REGID, obs.getRegistrationId());
 
         ObjectNode userContext = JsonNodeFactory.instance.objectNode();
@@ -111,7 +126,8 @@ public class ObservationSerDes {
         try {
             JsonNode n = new ObjectMapper().readTree(json);
             String id = n.get(OBS_ID).asText();
-            ObservationIdentifier obsId = new ObservationIdentifier(Hex.decodeHex(id.toCharArray()));
+            EndpointUri endpointUri = uriHandler.createUri(n.get(OBS_EP_URI).asText());
+            ObservationIdentifier obsId = new ObservationIdentifier(endpointUri, Hex.decodeHex(id.toCharArray()));
             String regid = n.get(OBS_REGID).asText();
             String kind = n.get(OBS_KIND).asText();
 
