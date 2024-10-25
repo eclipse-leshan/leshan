@@ -38,7 +38,10 @@ pipeline {
         // check for vulnerabilities
         // "find" to search file
         // xargs to get correct exit code (find always return 0) 
-        sh ''' find . -type f -path '*/target/bom.json' -print0 | xargs -0 -I {} sh -c 'echo "Scanning "{}""; trivy -q --exit-code 1 sbom "{}"' '''  
+        
+        // HACK because of : https://gitlab.eclipse.org/eclipsefdn/helpdesk/-/issues/5198
+        sh ''' find . -type f -path '*/target/bom.json' -print0 | xargs -0 -I {} sh -c 'echo "Scanning "{}""; trivy -q --exit-code 1 sbom "{}" --db-repository "ghcr.io/aquasecurity/trivy-db:2","public.ecr.aws/aquasecurity/trivy-db","aquasec/trivy-db:2" --java-db-repository "ghcr.io/aquasecurity/trivy-java-db:1","public.ecr.aws/aquasecurity/trivy-java-db:1","aquasec/trivy-java-db:1"' '''
+        // sh ''' find . -type f -path '*/target/bom.json' -print0 | xargs -0 -I {} sh -c 'echo "Scanning "{}""; trivy -q --exit-code 1 sbom "{}"' '''  
 
         // check licenses
         // TODO add dash-licenses check when cycloneDx will be supported : https://github.com/eclipse/dash-licenses/issues/191     
