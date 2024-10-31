@@ -49,7 +49,6 @@ public class WriteCompositeRequest extends AbstractLwM2mRequest<WriteCompositeRe
 
     /**
      * Create WriteComposite Request.
-     * <p>
      *
      * @param values The values to write as a the Map of string path to value. Value can not be <code>null</code>. And
      *        must be {@link Boolean} or {@link String} or a byte array or {@link Date} or {@link Long} or

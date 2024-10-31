@@ -105,7 +105,6 @@ public interface LwM2mDecoder {
 
     /**
      * Deserializes a binary content into a {@link TimestampedLwM2mNodes}.
-     * <p>
      *
      * @param content the content
      * @param format the content format

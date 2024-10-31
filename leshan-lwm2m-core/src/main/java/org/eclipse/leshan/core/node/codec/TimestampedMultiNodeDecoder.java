@@ -32,7 +32,6 @@ import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 public interface TimestampedMultiNodeDecoder {
     /**
      * Deserializes a binary content into a {@link TimestampedLwM2mNodes}.
-     * <p>
      *
      * @param content the content
      * @param rootPath the expected rootPath also known as alternatePath of LWM2M client.

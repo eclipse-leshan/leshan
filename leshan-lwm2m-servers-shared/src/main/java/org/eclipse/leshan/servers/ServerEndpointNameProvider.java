@@ -20,7 +20,6 @@ import org.eclipse.leshan.core.peer.LwM2mIdentity;
 /**
  * Since LWM2M v1.1, endpoint name is optional in REGISTER and BOOTSTRAP request. An {@link ServerEndpointNameProvider}
  * is responsible to find the right Endpoint Name from the client identity.
- * <p>
  *
  * @see <a href="https://github.com/eclipse-leshan/leshan/issues/1457"></a>
  * @see DefaultServerEndpointNameProvider

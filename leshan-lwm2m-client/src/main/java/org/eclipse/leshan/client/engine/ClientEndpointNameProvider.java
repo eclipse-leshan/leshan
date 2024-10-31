@@ -21,7 +21,6 @@ import org.eclipse.leshan.core.request.UplinkRequest;
 /**
  * Since LWM2M v1.1, endpoint name is optional in REGISTER and BOOTSTRAP request. An {@link ClientEndpointNameProvider}
  * is determine the endpoint name value which should be used in Register/BootstrapRequest.
- * <p>
  *
  * @see <a href="https://github.com/eclipse-leshan/leshan/issues/1457"></a>
  * @see DefaultClientEndpointNameProvider

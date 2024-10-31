@@ -197,7 +197,6 @@ public class ObjectLoader {
      * Load object definition from DDF resources following rules of {@link Class#getResourceAsStream(String)}.
      * <p>
      * It should be used to load DDF embedded with your application bundle (e.g. jar, war, ...)
-     * <p>
      *
      * @param path directory path to the DDF files
      * @param filenames names of all the DDF files
@@ -247,7 +246,6 @@ public class ObjectLoader {
      * Load object definition from DDF resources following rules of {@link Class#getResourceAsStream(String)}.
      * <p>
      * It should be used to load DDF embedded with your application bundle (e.g. jar, war, ...)
-     * <p>
      *
      * @param paths An array of paths to DDF files.
      * @param validate true if you want model validation. Validation is not free and it could make sense to not validate
@@ -265,7 +263,6 @@ public class ObjectLoader {
      * Load object definition from DDF resources following rules of {@link Class#getResourceAsStream(String)}.
      * <p>
      * It should be used to load DDF embedded with your application bundle (e.g. jar, war, ...)
-     * <p>
      *
      * @param paths An array of paths to DDF files.
      * @param ddfFileParser a ddfFileParser which could do validation optionally.

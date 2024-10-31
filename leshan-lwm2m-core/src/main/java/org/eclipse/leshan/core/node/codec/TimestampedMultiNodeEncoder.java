@@ -26,7 +26,6 @@ import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 public interface TimestampedMultiNodeEncoder {
     /**
      * Serializes a {@link TimestampedLwM2mNodes} object into a byte array.
-     * <p>
      *
      * @param rootPath to use by LWM2M client (also known as alternate path)
      * @param timestampedNodes timestamped nodes to be serialized
