@@ -21,10 +21,8 @@ import java.util.Date;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.eclipse.jetty.servlets.EventSource;
-import org.eclipse.jetty.servlets.EventSourceServlet;
+import org.eclipse.jetty.ee9.servlets.EventSource;
+import org.eclipse.jetty.ee9.servlets.EventSourceServlet;
 import org.eclipse.leshan.bsserver.BootstrapFailureCause;
 import org.eclipse.leshan.bsserver.BootstrapSession;
 import org.eclipse.leshan.bsserver.BootstrapSessionListener;
@@ -43,6 +41,8 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 public class EventServlet extends EventSourceServlet {
     private static final long serialVersionUID = 1L;

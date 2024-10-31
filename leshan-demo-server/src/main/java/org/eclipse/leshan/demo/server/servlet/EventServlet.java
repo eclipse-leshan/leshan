@@ -25,10 +25,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.eclipse.jetty.servlets.EventSource;
-import org.eclipse.jetty.servlets.EventSourceServlet;
+import org.eclipse.jetty.ee9.servlets.EventSource;
+import org.eclipse.jetty.ee9.servlets.EventSourceServlet;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mNode;
@@ -66,6 +64,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jline.internal.Log;
 
 public class EventServlet extends EventSourceServlet {
