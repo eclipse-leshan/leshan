@@ -24,7 +24,7 @@ pipeline {
   }
   tools {
     maven 'apache-maven-latest'
-    jdk 'temurin-jdk11-latest'
+    jdk 'temurin-jdk17-latest'
   }
   options {
     timeout (time: 30, unit: 'MINUTES')
