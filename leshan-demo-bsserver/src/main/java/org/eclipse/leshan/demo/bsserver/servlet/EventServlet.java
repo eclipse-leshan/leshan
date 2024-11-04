@@ -21,8 +21,8 @@ import java.util.Date;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.eclipse.jetty.ee9.servlets.EventSource;
-import org.eclipse.jetty.ee9.servlets.EventSourceServlet;
+import org.eclipse.jetty.ee10.servlets.EventSource;
+import org.eclipse.jetty.ee10.servlets.EventSourceServlet;
 import org.eclipse.leshan.bsserver.BootstrapFailureCause;
 import org.eclipse.leshan.bsserver.BootstrapSession;
 import org.eclipse.leshan.bsserver.BootstrapSessionListener;

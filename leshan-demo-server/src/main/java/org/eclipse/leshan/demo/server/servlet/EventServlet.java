@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.eclipse.jetty.ee9.servlets.EventSource;
-import org.eclipse.jetty.ee9.servlets.EventSourceServlet;
+import org.eclipse.jetty.ee10.servlets.EventSource;
+import org.eclipse.jetty.ee10.servlets.EventSourceServlet;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mNode;

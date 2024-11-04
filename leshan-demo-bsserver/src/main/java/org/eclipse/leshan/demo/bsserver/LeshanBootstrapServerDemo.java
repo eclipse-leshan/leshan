@@ -27,9 +27,9 @@ import java.util.List;
 import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.scandium.config.DtlsConfig;
-import org.eclipse.jetty.ee9.servlet.DefaultServlet;
-import org.eclipse.jetty.ee9.servlet.ServletContextHandler;
-import org.eclipse.jetty.ee9.servlet.ServletHolder;
+import org.eclipse.jetty.ee10.servlet.DefaultServlet;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.leshan.bsserver.EditableBootstrapConfigStore;
 import org.eclipse.leshan.bsserver.LeshanBootstrapServer;
@@ -217,7 +217,7 @@ public class LeshanBootstrapServerDemo {
             jettyAddr = new InetSocketAddress(cli.main.webhost, cli.main.webPort);
         }
         Server server = new Server(jettyAddr);
-        ServletContextHandler root = new ServletContextHandler(null, "/", true, false);
+        ServletContextHandler root = new ServletContextHandler("/", true, false);
         server.setHandler(root);
 
         // Create static Servlet

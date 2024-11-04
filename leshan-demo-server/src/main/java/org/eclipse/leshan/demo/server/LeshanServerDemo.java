@@ -33,9 +33,9 @@ import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.util.CertPathUtil;
 import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
-import org.eclipse.jetty.ee9.servlet.DefaultServlet;
-import org.eclipse.jetty.ee9.servlet.ServletContextHandler;
-import org.eclipse.jetty.ee9.servlet.ServletHolder;
+import org.eclipse.jetty.ee10.servlet.DefaultServlet;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.leshan.core.endpoint.DefaultEndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
@@ -290,7 +290,7 @@ public class LeshanServerDemo {
             jettyAddr = new InetSocketAddress(cli.main.webhost, cli.main.webPort);
         }
         Server server = new Server(jettyAddr);
-        ServletContextHandler root = new ServletContextHandler(null, "/", true, false);
+        ServletContextHandler root = new ServletContextHandler("/", true, false);
         server.setHandler(root);
 
         // Create static Servlet
