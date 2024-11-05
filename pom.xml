@@ -530,7 +530,7 @@ Contributors:
                         <requireUpperBoundDeps/>
                         <dependencyConvergence/>
                         <requireJavaVersion>
-                           <version>1.11</version>
+                           <version>11</version>
                         </requireJavaVersion>
                         <requireMavenVersion>
                             <version>3.5.0</version>
