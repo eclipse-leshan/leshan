@@ -18,8 +18,8 @@ For more details, please look at :
 Only Leshan library is concerned. The demos are not covered.
 
 | Version | Supported          |
-| ------- | ------------------ | --- |
-| 2.x     | :heavy_check_mark: |     |
+| ------- | ------------------ |
+| 2.x     | :heavy_check_mark: |
 | 1.x     | :heavy_check_mark: |
 
 Note: ℹ️ **1.x** version depends on californium 2.x version where support is not clear.  
@@ -29,10 +29,11 @@ See : https://github.com/eclipse/californium/security/policy
 
 As said previously **Leshan demos are not covered by Security Policy**.
 
-It is strongly discouraged to use Leshan demos v1.x on public server because they are using no longer maintained javascript library like :
+It is strongly discouraged to use Leshan demos v1.x on public server because they are using no longer maintained javascript/java library like :
 
 - **bootstrap.js** (pkg:javascript/bootstrap@3.4.1) : Bootstrap before 4.0.0 is end-of-life and no longer maintained.
 - **jquery-2.2.4.js** (pkg:javascript/jquery@2.2.4) : CVE-2015-9251, CVE-2019-11358, CVE-2020-11022, CVE-2020-11023, jQuery 1.x and 2.x are End-of-Life and no longer receiving security updates
+- [**Jetty 9.x**](https://github.com/jetty/jetty.project/issues/7958) : Jetty 9.4 reach End-of-Life and no longer receiving security updates at January 2025.
 
 Concerning Leshan demos v2.x, some minimal efforts are made to update dependencies when vulnerabilities are detected but keep in mind that demos are not production ready tools.
 
