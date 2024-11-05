@@ -296,12 +296,11 @@ public class LeshanServerDemo {
         // Create static Servlet
         DefaultServlet staticServelt = new DefaultServlet();
         ServletHolder staticHolder = new ServletHolder(staticServelt);
-        staticHolder.setInitParameter("resourceBase",
+        staticHolder.setInitParameter("baseResource",
                 LeshanServerDemo.class.getClassLoader().getResource("webapp").toExternalForm());
-        staticHolder.setInitParameter("pathInfoOnly", "true");
         staticHolder.setInitParameter("gzip", "true");
         staticHolder.setInitParameter("cacheControl", "public, max-age=31536000");
-        root.addServlet(staticHolder, "/*");
+        root.addServlet(staticHolder, "/");
 
         // Create REST API Servlets
         EventServlet eventServlet = new EventServlet(lwServer);
