@@ -62,14 +62,15 @@ npm run lint
 
 #### Update direct dependencies
 
-Regularly we need to update direct dependencies, this can be done with : 
+Regularly we need to update direct dependencies. 
+This can be done with [npm-check-updates](https://www.npmjs.com/package/npm-check-updates)
 
 ```
-npm outdated
+npx npm-check-updates -i --format group -t minor
 ```
 (we should test https://www.npmjs.com/package/npm-check-updates)
 
-#### Update indirect depndencies
+#### Update indirect dependencies
 
 Sometime it is needed to upgrade indirect dependencies especially for security issues. (e.g. [dependabot alert](https://github.com/eclipse/leshan/security/dependabot)) 
 

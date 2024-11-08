@@ -29,6 +29,7 @@
     "browserslist-to-esbuild": "^1.2.0",
     "eslint": "^8.0.0",
     "eslint-plugin-vue": "^8.0.0",
+    "npm-check-updates": "^17.1.10",
     "rollup-plugin-visualizer": "^5.9.3",
     "sass": "~1.32.0",
     "unplugin-vue-components": "^0.25.2",
