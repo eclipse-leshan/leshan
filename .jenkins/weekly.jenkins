@@ -31,7 +31,7 @@ pipeline {
       
         // Build (optional)
         sh ''' mvn -B com.github.ekryd.sortpom:sortpom-maven-plugin:verify -PallPom ''' 
-        // This ssh agent is needed to cache yarn/node to download.eclipse.org when using -PeclipseJenkins
+        // This ssh agent is needed to cache npm/node to download.eclipse.org when using -PeclipseJenkins
         // see : https://github.com/eclipse-leshan/leshan/pull/1484
         sshagent ( ['projects-storage.eclipse.org-bot-ssh']) {
           sh ''' mvn -B clean install javadoc:javadoc -PeclipseJenkins -DskipTests'''
@@ -40,10 +40,8 @@ pipeline {
         // Generate SBOM for maven 
         sh ''' mvn org.cyclonedx:cyclonedx-maven-plugin:makeBom '''
         
-        // Generate SBOM for yarn with trivy
-        // Ideally we would like to use a specific integrated tools like : https://github.com/CycloneDX/cyclonedx-node-yarn
-        // But project is not really active and is searching for contributor : https://github.com/CycloneDX/cyclonedx-node-yarn/issues/12
-        // OR maybe we should move from Yarn To NPM : https://github.com/eclipse-leshan/leshan/issues/1550#issuecomment-1878802371
+        // Generate SBOM for npm with trivy
+        // We should generate sbom with cyclonedx-npm see : https://github.com/eclipse-leshan/leshan/issues/1550#issuecomment-1878802371
         sh ''' trivy fs leshan-demo-server/webapp --format cyclonedx --output leshan-demo-server/target/bom-frontend.json  --include-dev-deps '''
         sh ''' trivy fs leshan-demo-bsserver/webapp --format cyclonedx --output leshan-demo-bsserver/target/bom-frontend.json  --include-dev-deps '''
         

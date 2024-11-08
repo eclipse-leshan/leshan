@@ -67,7 +67,7 @@ pipeline {
         // Update to release version and build artifacts 
         sh '''mvn -B versions:set -PallPom -DnewVersion=${RELEASE_VERSION}'''
         sh '''mvn -B com.github.ekryd.sortpom:sortpom-maven-plugin:verify -PallPom'''
-        // This ssh agent is needed to cache yarn/node to download.eclipse.org when using -PeclipseJenkins
+        // This ssh agent is needed to cache npm/node to download.eclipse.org when using -PeclipseJenkins
         // see : https://github.com/eclipse-leshan/leshan/pull/1484
         sshagent ( ['projects-storage.eclipse.org-bot-ssh']) {
             sh '''mvn -B clean install javadoc:javadoc -PeclipseJenkins'''
@@ -92,7 +92,7 @@ pipeline {
     stage('Deploy') {
       steps {
         // deploy then update to post release version
-        sh '''mvn -B deploy -Prelease -DskipTests -Dskip.yarn -DskipStagingRepositoryClose=${DRY_RUN}'''
+        sh '''mvn -B deploy -Prelease -DskipTests -Dskip.npm -DskipStagingRepositoryClose=${DRY_RUN}'''
         sh '''mvn -B versions:set -PallPom -DnewVersion=${NEXT_VERSION}'''
         
         // Commit post release version change and push if not dry-run
