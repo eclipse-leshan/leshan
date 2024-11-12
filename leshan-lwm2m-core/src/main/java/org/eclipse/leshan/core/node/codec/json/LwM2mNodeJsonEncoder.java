@@ -263,19 +263,18 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
         private JsonArrayEntry createJsonArrayEntry(String name, BigDecimal timestampInSeconds, Type type,
                 Type expectedType, Object value) {
             // Create resource element
-            JsonArrayEntry jsonResourceElt = new JsonArrayEntry();
-            jsonResourceElt.setName(name);
-            jsonResourceElt.setTime(timestampInSeconds);
+            JsonArrayEntry jsonResourceElt = new JsonArrayEntry(name, null, null, null, null, timestampInSeconds);
 
             // Convert value using expected type
             LwM2mPath lwM2mResourcePath = name != null ? new LwM2mPath(name) : null;
             Object convertedValue = converter.convertValue(value, type, expectedType, lwM2mResourcePath);
-            this.setResourceValue(convertedValue, expectedType, jsonResourceElt, lwM2mResourcePath);
+            jsonResourceElt = this.setResourceValue(convertedValue, expectedType, jsonResourceElt, lwM2mResourcePath);
 
             return jsonResourceElt;
         }
 
-        private void setResourceValue(Object value, Type type, JsonArrayEntry jsonResource, LwM2mPath resourcePath) {
+        private JsonArrayEntry setResourceValue(Object value, Type type, JsonArrayEntry jsonResource,
+                LwM2mPath resourcePath) {
             LOG.trace("Encoding value {} in JSON", value);
 
             if (type == null || type == Type.NONE) {
@@ -283,41 +282,49 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
                         "Unable to encode value for resource {} without type(probably a executable one)", resourcePath);
             }
 
+            String name = jsonResource.getName();
+            BigDecimal time = jsonResource.getTime();
+            Number floatValue = jsonResource.getFloatValue();
+            Boolean booleanValue = jsonResource.getBooleanValue();
+            String stringValue = jsonResource.getStringValue();
+            String objectLinkValue = jsonResource.getObjectLinkValue();
+
             // Following table 20 in the Specs
             switch (type) {
             case STRING:
-                jsonResource.setStringValue((String) value);
+                stringValue = (String) value;
                 break;
             case INTEGER:
             case UNSIGNED_INTEGER:
             case FLOAT:
-                jsonResource.setFloatValue((Number) value);
+                floatValue = (Number) value;
                 break;
             case BOOLEAN:
-                jsonResource.setBooleanValue((Boolean) value);
+                booleanValue = (Boolean) value;
                 break;
             case TIME:
                 // Specs device object example page 44, rec 13 is Time
                 // represented as float?
-                jsonResource.setFloatValue((((Date) value).getTime() / 1000L));
+                floatValue = BigDecimal.valueOf((((Date) value).getTime() / 1000L));
                 break;
             case OPAQUE:
-                jsonResource.setStringValue(base64Encoder.encode((byte[]) value));
+                stringValue = base64Encoder.encode((byte[]) value);
                 break;
             case OBJLNK:
                 try {
-                    jsonResource.setStringValue(((ObjectLink) value).encodeToString());
+                    stringValue = ((ObjectLink) value).encodeToString();
                 } catch (IllegalArgumentException e) {
                     throw new CodecException(e, "Invalid value [%s] for objectLink resource [%s] ", value,
                             resourcePath);
                 }
                 break;
             case CORELINK:
-                jsonResource.setStringValue(linkSerializer.serializeCoreLinkFormat((Link[]) value));
+                stringValue = linkSerializer.serializeCoreLinkFormat((Link[]) value);
                 break;
             default:
                 throw new CodecException("Invalid value type %s for %s", type, resourcePath);
             }
+            return (new JsonArrayEntry(name, floatValue, booleanValue, objectLinkValue, stringValue, time));
         }
     }
 }
