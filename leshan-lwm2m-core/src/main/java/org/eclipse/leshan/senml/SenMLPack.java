@@ -26,32 +26,22 @@ import java.util.Objects;
  */
 public class SenMLPack {
 
-    private List<SenMLRecord> records;
+    private final List<SenMLRecord> records;
 
     public SenMLPack() {
+        records = new ArrayList<>();
     }
 
     public SenMLPack(List<SenMLRecord> records) {
-        this.records = records;
+        this.records = Collections.unmodifiableList(new ArrayList<>(records));
     }
 
     public void addRecord(SenMLRecord record) {
-        if (records == null) {
-            records = new ArrayList<>();
-        }
-
         records.add(record);
     }
 
     public void addRecords(List<SenMLRecord> records) {
-        if (this.records == null) {
-            this.records = new ArrayList<>();
-        }
         this.records.addAll(records);
-    }
-
-    public void setRecords(List<SenMLRecord> records) {
-        this.records = records;
     }
 
     public List<SenMLRecord> getRecords() {
