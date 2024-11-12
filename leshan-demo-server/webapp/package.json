@@ -8,7 +8,8 @@
     "build": "vite build --emptyOutDir",
     "preview": "vite preview",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src",
-    "report": "REPORT=true vite build --emptyOutDir"
+    "report": "REPORT=true vite build --emptyOutDir",
+    "sbom": "cyclonedx-npm --output-format json --output-file ../target/sbom-frontend.json"
   },
   "dependencies": {
     "@fontsource/roboto": "^4.5.0",
@@ -23,6 +24,7 @@
     "vuetify-dialog": "^2.0.0"
   },
   "devDependencies": {
+    "@cyclonedx/cyclonedx-npm": "^1.19.3",
     "@mdi/js": "^6.6.96",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@vitejs/plugin-vue2": "^2.2.0",
