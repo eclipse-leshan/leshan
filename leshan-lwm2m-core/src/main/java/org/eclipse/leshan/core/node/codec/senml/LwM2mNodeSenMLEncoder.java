@@ -82,8 +82,7 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
         internalEncoder.converter = converter;
         node.accept(internalEncoder);
 
-        SenMLPack pack = new SenMLPack();
-        pack.setRecords(internalEncoder.records);
+        SenMLPack pack = new SenMLPack(internalEncoder.records);
 
         try {
             return encoder.toSenML(pack);
