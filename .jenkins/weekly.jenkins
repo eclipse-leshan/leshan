@@ -37,13 +37,8 @@ pipeline {
           sh ''' mvn -B clean install javadoc:javadoc -PeclipseJenkins -DskipTests'''
         }
         
-        // Generate SBOM for maven 
+        // Generate SBOM for maven (SBOM for frontend are automatically created during default build) 
         sh ''' mvn org.cyclonedx:cyclonedx-maven-plugin:makeBom '''
-        
-        // Generate SBOM for npm with trivy
-        // We should generate sbom with cyclonedx-npm see : https://github.com/eclipse-leshan/leshan/issues/1550#issuecomment-1878802371
-        sh ''' trivy fs leshan-demo-server/webapp --format cyclonedx --output leshan-demo-server/target/bom-frontend.json  --include-dev-deps '''
-        sh ''' trivy fs leshan-demo-bsserver/webapp --format cyclonedx --output leshan-demo-bsserver/target/bom-frontend.json  --include-dev-deps '''
         
         // check for vulnerabilities
         // "find" to search file

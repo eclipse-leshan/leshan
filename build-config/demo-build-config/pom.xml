@@ -99,6 +99,22 @@ Contributors:
                 <arguments>run build</arguments>
               </configuration>
             </execution>
+            <execution>
+              <?m2e ignore?>
+              <id>npm sbom</id>
+              <goals>
+                <goal>npm</goal>
+              </goals>
+              <configuration>
+                <environmentVariables>
+                  <!-- this variable will be used by package.json -->
+                  <OUTPUT_FORMAT>json</OUTPUT_FORMAT>
+                  <OUTPUT_BOM_NAME>bom-frontend</OUTPUT_BOM_NAME>
+                  <OUTPUT_BOM_DIRECTORY>${project.build.directory}</OUTPUT_BOM_DIRECTORY>
+                </environmentVariables>
+                <arguments>run sbom_maven</arguments>
+              </configuration>
+            </execution>
           </executions>
         </plugin>
       </plugins>

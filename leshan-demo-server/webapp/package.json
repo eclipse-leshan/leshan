@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src",
     "report": "REPORT=true vite build --emptyOutDir",
-    "sbom": "cyclonedx-npm --output-format json --output-file ../target/sbom-frontend.json"
+    "sbom": "cyclonedx-npm --output-format json --output-file ../target/sbom-frontend.json",
+    "sbom_maven": "cyclonedx-npm --output-format ${OUTPUT_FORMAT} --output-file ${OUTPUT_BOM_DIRECTORY}/${OUTPUT_BOM_NAME}.${OUTPUT_FORMAT}"
   },
   "dependencies": {
     "@fontsource/roboto": "^4.5.0",
