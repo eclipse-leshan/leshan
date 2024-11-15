@@ -66,8 +66,7 @@ public class JsonSerializerTest {
         JsonArrayEntry elt15 = new JsonArrayEntry("15", null, null, null, "U", null);
         elements.add(elt15);
 
-        JsonRootObject element = new JsonRootObject();
-        element.setResourceList(elements);
+        JsonRootObject element = new JsonRootObject(null, elements, null);
         String json = LWM2M_JSON_ENCODER_DECODER.toJsonLwM2m(element);
         LOG.debug(" JSON String: " + json);
 

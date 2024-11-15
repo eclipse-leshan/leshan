@@ -87,9 +87,7 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
         internalEncoder.requestPath = path;
         internalEncoder.converter = converter;
         node.accept(internalEncoder);
-        JsonRootObject jsonObject = new JsonRootObject();
-        jsonObject.setResourceList(internalEncoder.resourceList);
-        jsonObject.setBaseName(internalEncoder.baseName);
+        JsonRootObject jsonObject = new JsonRootObject(internalEncoder.baseName, internalEncoder.resourceList, null);
         try {
             return encoder.toJsonLwM2m(jsonObject).getBytes();
         } catch (LwM2mJsonException e) {
@@ -126,9 +124,7 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
                 baseName = internalEncoder.baseName;
             }
         }
-        JsonRootObject jsonObject = new JsonRootObject();
-        jsonObject.setResourceList(entries);
-        jsonObject.setBaseName(internalEncoder.baseName);
+        JsonRootObject jsonObject = new JsonRootObject(internalEncoder.baseName, entries, null);
         try {
             return encoder.toJsonLwM2m(jsonObject).getBytes();
         } catch (LwM2mJsonException e) {
