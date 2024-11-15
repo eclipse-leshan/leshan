@@ -27,33 +27,24 @@ import java.util.Objects;
  */
 public class JsonRootObject {
 
-    private String baseName = null;
+    private final String baseName;
 
-    private List<JsonArrayEntry> jsonArray;
+    private final List<JsonArrayEntry> jsonArray;
 
-    private BigDecimal baseTime;
+    private final BigDecimal baseTime;
 
-    public JsonRootObject() {
+    public JsonRootObject(String baseName, List<JsonArrayEntry> jsonArray, BigDecimal baseTime) {
+        this.baseName = baseName;
+        this.jsonArray = jsonArray;
+        this.baseTime = baseTime;
     }
 
     public String getBaseName() {
         return baseName;
     }
 
-    public void setBaseName(String baseName) {
-        this.baseName = baseName;
-    }
-
     public BigDecimal getBaseTime() {
         return baseTime;
-    }
-
-    public void setBaseTime(BigDecimal baseTime) {
-        this.baseTime = baseTime;
-    }
-
-    public void setResourceList(List<JsonArrayEntry> jsonArray) {
-        this.jsonArray = jsonArray;
     }
 
     public List<JsonArrayEntry> getResourceList() {
