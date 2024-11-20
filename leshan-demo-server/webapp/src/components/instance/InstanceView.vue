@@ -26,7 +26,7 @@
 
         <v-icon
           class="mr-3"
-          small
+          size="small"
           v-show="state.observed[instancePath]"
           :title="'Instance ' + instancePath + ' observed'"
           >{{ $icons.mdiEyeOutline }}</v-icon
@@ -35,7 +35,7 @@
     </h4>
 
     <v-expansion-panels
-      accordion
+      variant="accordion"
       multiple
       dense
       tile

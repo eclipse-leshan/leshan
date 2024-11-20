@@ -12,13 +12,19 @@
  *******************************************************************************/
 
 import "@fontsource/roboto";
-import Vue from "vue";
-import Vuetify from "vuetify/lib/framework";
+import 'vuetify/styles'
+import { createVuetify } from 'vuetify'
+import { aliases, mdi } from 'vuetify/iconsets/mdi-svg'
 
-Vue.use(Vuetify);
-
-export default new Vuetify({
+export default createVuetify({
+  theme: {
+    defaultTheme: 'light',
+  },
   icons: {
-    iconfont: "mdiSvg", // 'mdi' || 'mdiSvg' || 'md' || 'fa' || 'fa4' || 'faSvg'
+    defaultSet: 'mdi',
+    aliases,
+    sets: {
+      mdi,
+    },
   },
 });

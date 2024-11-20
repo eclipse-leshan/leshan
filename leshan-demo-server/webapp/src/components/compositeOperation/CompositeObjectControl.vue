@@ -19,10 +19,12 @@
       @on-click="stopPassiveObserve"
       title="Passive Cancel Obverse"
     >
-      <v-icon dense small>{{ $icons.mdiEyeOffOutline }}</v-icon></request-button
+      <v-icon size="small">{{
+        $icons.mdiEyeOffOutline
+      }}</v-icon></request-button
     >
     <request-button @on-click="stopActiveObserve" title="Active Cancel Obverse">
-      <v-icon dense small>{{
+      <v-icon size="small">{{
         $icons.mdiEyeRemoveOutline
       }}</v-icon></request-button
     >
@@ -37,18 +39,17 @@
       @write="write($event)"
     />
     <composite-operation-setting-menu>
-      <template v-slot:activator="{ on, attrs }">
+      <template v-slot:activator="{ props }">
         <v-btn
+          v-bind="props"
           class="ma-1"
-          small
+          size="small"
           tile
           min-width="0"
           elevation="0"
-          v-bind="attrs"
-          v-on="on"
           title="Composite Operation Settings"
         >
-          <v-icon small> {{ $icons.mdiTune }}</v-icon>
+          <v-icon size="small"> {{ $icons.mdiTune }}</v-icon>
         </v-btn>
       </template>
     </composite-operation-setting-menu>
@@ -56,18 +57,9 @@
 </template>
 <script>
 import RequestButton from "../RequestButton.vue";
-import { preference } from "vue-preferences";
 import CompositeOperationSettingMenu from "./CompositeOperationSettingMenu.vue";
 import CompositeObjectWriteDialog from "./CompositeObjectWriteDialog.vue";
 import { singleValueToREST } from "../../js/restutils";
-
-const timeout = preference("timeout", { defaultValue: 5 });
-const compositePathFormat = preference("CompositePathFormat", {
-  defaultValue: "SENML_CBOR",
-});
-const compositeNodeFormat = preference("CompositeNodeFormat", {
-  defaultValue: "SENML_CBOR",
-});
 
 /**
  * List of Action button to execute operation (Read/Write/Observe ...) on a LWM2M Object Instance.
@@ -104,7 +96,7 @@ export default {
       return `api/clients/${encodeURIComponent(this.endpoint)}/composite`;
     },
     requestOption() {
-      return `?timeout=${timeout.get()}&pathformat=${compositePathFormat.get()}&nodeformat=${compositeNodeFormat.get()}`;
+      return `?timeout=${this.$pref.timeout}&pathformat=${this.$pref.compositePathFormat}&nodeformat=${this.$pref.compositeNodeFormat}`;
     },
     updateState(content, requestButton) {
       if ("valid" in content || "success" in content) {
@@ -179,7 +171,7 @@ export default {
         .delete(
           `${this.requestPath()}/observe?paths=${this.compositeObject.paths.join(
             ","
-          )}&active&timeout=${timeout.get()}`
+          )}&active&timeout=${this.$pref.timeout}`
         )
         .then((response) => {
           this.updateState(response.data, requestButton);

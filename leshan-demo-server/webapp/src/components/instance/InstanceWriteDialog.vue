@@ -13,20 +13,20 @@
 <template>
   <v-dialog
     v-model="show"
-    hide-overlay
+    :scrim="false"
     fullscreen
     transition="dialog-bottom-transition"
   >
     <v-card>
       <!-- dialog title -->
-      <v-card-title class="headline grey lighten-2">
+      <v-card-title class="text-h5 bg-grey-lighten-2">
         Write Instance "{{ id }}" for Object {{ objectdef.name }} ({{
           objectdef.id
         }})
       </v-card-title>
 
       <v-card-text>
-        <v-form ref="form" @submit.prevent="write">
+        <v-form ref="form" @submit.prevent="update">
           <v-container fluid>
             <!-- resources fields -->
             <resource-input
@@ -41,15 +41,9 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <!-- dialog buttons-->
-        <v-btn text @click="update">
-          Update
-        </v-btn>
-        <v-btn text @click="replace">
-          Replace
-        </v-btn>
-        <v-btn text @click="show = false">
-          Cancel
-        </v-btn>
+        <v-btn variant="text" @click="update"> Update </v-btn>
+        <v-btn variant="text" @click="replace"> Replace </v-btn>
+        <v-btn variant="text" @click="show = false"> Cancel </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -63,7 +57,7 @@ import ResourceInput from "../resources/input/LabelledResourceInput.vue";
 export default {
   components: { ResourceInput },
   props: {
-    value: Boolean, // control if the dialog is displayed (v-model)
+    modelValue: Boolean, // control if the dialog is displayed (v-model)
     objectdef: Object, // the model of the object
     id: Number, // ID of the Object Instance
   },
@@ -73,7 +67,7 @@ export default {
     };
   },
   watch: {
-    value(v) {
+    modelValue(v) {
       // reset local state when dialog is open
       if (v) this.instanceValue = {};
     },
@@ -81,10 +75,10 @@ export default {
   computed: {
     show: {
       get() {
-        return this.value;
+        return this.modelValue;
       },
       set(value) {
-        this.$emit("input", value);
+        this.$emit("update:model-value", value);
       },
     },
     writableResourceDef() {
