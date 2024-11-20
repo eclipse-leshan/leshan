@@ -28,13 +28,12 @@
 <script>
 import { isInteger } from "../../../js/utils.js";
 
-
 /**
  * An input for TIME single value LWM2M node ("Single Instance Resource" or "Resource Instance")
  */
 export default {
   props: {
-    value: null, // the input value for this LWM2M Node (v-model) : timestamp in milliseconds
+    modelValue: null, // the input value for this LWM2M Node (v-model) : timestamp in milliseconds
     resourcedef: Object, // the model of the resource
   },
   data() {
@@ -43,7 +42,7 @@ export default {
     };
   },
   watch: {
-    value(v) {
+    modelValue(v) {
       if (this.isValidTimestamp(v)) {
         this.localValue = Math.floor(parseInt(v) / 1000);
       } else {
@@ -64,7 +63,10 @@ export default {
         return this.localValue;
       },
       set(v) {
-        this.$emit("input", this.isValidTimestamp(v) ? v * 1000 : v);
+        this.$emit(
+          "update:model-value",
+          this.isValidTimestamp(v) ? v * 1000 : v
+        );
       },
     },
   },

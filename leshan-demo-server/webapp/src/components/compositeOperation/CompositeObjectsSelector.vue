@@ -11,58 +11,54 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
   ----------------------------------------------------------------------------->
 <template>
-  <v-sheet color="grey lighten-5" class="pa-4" width="100%" height="100%">
+  <v-sheet color="grey-lighten-5" class="pa-4" width="100%" height="100%">
     <v-card>
       <v-card-actions class="justify-center">
-        <v-btn small @click="openNewCompositeObject()">
+        <v-btn size="small" @click="openNewCompositeObject()">
           Add Composite Object
         </v-btn>
       </v-card-actions>
-      <v-list dense>
-        <v-list-item-group>
-          <v-list-item
-            v-for="(compositeObject, index) in compositeObjects"
-            :key="index"
-            :to="
-              '/clients/' +
-              $route.params.endpoint +
-              '/composite/' +
-              compositeObject.name
-            "
-          >
-            <v-list-item-icon>
-              <composite-object-icons :compositeObject="compositeObject" />
-            </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title> {{ compositeObject.name }}</v-list-item-title>
-              <v-list-item-subtitle>
-                {{ pathsAsString(compositeObject) }}</v-list-item-subtitle
-              >
-            </v-list-item-content>
-            <v-list-item-action>
-              <v-btn
-                icon
-                @click.prevent="openEditCompositeObject(compositeObject)"
-              >
-                <v-icon small>
-                  {{ $icons.mdiPencil }}
-                </v-icon>
-              </v-btn>
-            </v-list-item-action>
-            <v-list-item-action>
-              <v-btn icon @click.prevent="removeCompositeObject(index)">
-                <v-icon>{{ $icons.mdiDelete }}</v-icon>
-              </v-btn>
-            </v-list-item-action>
+      <v-list density="compact">
+        <v-list-item
+          v-for="(compositeObject, index) in $pref.compositeObjects"
+          :key="index"
+          :to="
+            '/clients/' +
+            $route.params.endpoint +
+            '/composite/' +
+            compositeObject.name
+          "
+        >
+          <v-list-item>
+            <composite-object-icons :compositeObject="compositeObject" />
           </v-list-item>
-        </v-list-item-group>
+
+          <v-list-item-title> {{ compositeObject.name }}</v-list-item-title>
+          <v-list-item-subtitle>
+            {{ pathsAsString(compositeObject) }}</v-list-item-subtitle
+          >
+          <template v-slot:append>
+            <v-btn
+              @click.prevent="openEditCompositeObject(compositeObject)"
+              :icon="$icons.mdiPencil"
+              size="x-small"
+            >
+            </v-btn>
+            <v-btn
+              @click.prevent="removeCompositeObject(index)"
+              :icon="$icons.mdiDelete"
+              size="x-small"
+            >
+            </v-btn>
+          </template>
+        </v-list-item>
       </v-list>
 
       <!-- composite object dialog -->
       <composite-object-dialog
         v-model="showDialog"
         :initialValue="editedCompositeObject"
-        :alreadyUsedName="compositeObjects.map((o) => o.name)"
+        :alreadyUsedName="$pref.compositeObjects.map((o) => o.name)"
         @new="addNewCompositeObject($event)"
         @edit="editCompositeObject($event)"
       />
@@ -70,7 +66,6 @@
   </v-sheet>
 </template>
 <script>
-import { preference } from "vue-preferences";
 import CompositeObjectIcons from "./CompositeObjectIcons.vue";
 import CompositeObjectDialog from "./CompositeObjectDialog.vue";
 
@@ -94,11 +89,6 @@ export default {
         this.dialog = value;
       },
     },
-    compositeObjects: preference("compositeObjects", {
-      defaultValue: [
-        { name: "myCompositeObject", paths: ["/3/0/1", "/3/0/2"] },
-      ],
-    }),
   },
   methods: {
     pathsAsString(compositObject) {
@@ -113,19 +103,20 @@ export default {
       this.showDialog = true;
     },
     addNewCompositeObject(compositeObject) {
-      this.compositeObjects = [...this.compositeObjects, compositeObject];
+      this.$pref.compositeObjects = [
+        ...this.$pref.compositeObjects,
+        compositeObject,
+      ];
       this.showDialog = false;
     },
     editCompositeObject(compositeObject) {
-      this.compositeObjects = this.compositeObjects.map((co) =>
+      this.$pref.compositeObjects = this.$pref.compositeObjects.map((co) =>
         co.name == compositeObject.name ? compositeObject : co
       );
       this.showDialog = false;
     },
     removeCompositeObject(index) {
-      this.compositeObjects.splice(index, 1);
-      // HACK to force reactivity, maybe a bug in vue-preference ?
-      this.compositeObjects = [...this.compositeObjects];
+      this.$pref.compositeObjects.splice(index, 1);
     },
   },
 };

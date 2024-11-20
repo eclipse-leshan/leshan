@@ -21,12 +21,16 @@
         This wizard is pretty limitted, the Leshan library allow you much more.
       </p>
     </v-card-text>
-    <v-form ref="form" :value="valid" @input="$emit('update:valid', $event)">
+    <v-form
+      ref="form"
+      :model-value="valid"
+      @update:model-value="$emit('update:valid', $event)"
+    >
       <v-text-field
-        :value="value"
+        :model-value="modelValue"
         :rules="[(v) => !!v || 'Endpoint is required']"
         label="Your Client Endpoint Name"
-        @input="$emit('input', $event)"
+        @update:model-value="$emit('update:modelValue', $event)"
         required
         autofocus
       ></v-text-field>
@@ -36,7 +40,7 @@
 <script>
 export default {
   props: {
-    value: String, // endpoint name
+    modelValue: String, // endpoint name
     valid: Boolean, // validation state of the form
   },
   methods: {

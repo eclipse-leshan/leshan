@@ -17,8 +17,10 @@
         single-line
         label="Object Id"
         :rules="[(v) => !v || isValidId(v) || 'Invalid object id']"
-        :value="objectId"
-        @input="$emit('input', objectIdChanged($event))"
+        :model-value="objectId"
+        @update:model-value="
+          $emit('update:model-value', objectIdChanged($event))
+        "
         clearable
       />
     </v-col>
@@ -27,8 +29,10 @@
         single-line
         label="Object Instance Id"
         :rules="[(v) => !v || isValidId(v) || 'Invalid object instance id']"
-        :value="objectInstanceId"
-        @input="$emit('input', objectInstanceIdChanged($event))"
+        :model-value="objectInstanceId"
+        @update:model-value="
+          $emit('update:model-value', objectInstanceIdChanged($event))
+        "
         clearable
       />
     </v-col>
@@ -42,7 +46,7 @@ import { isInteger } from "../../../js/utils.js";
  */
 export default {
   props: {
-    value: null, // the input value for this LWM2M Node (v-model)
+    modelValue: null, // the input value for this LWM2M Node (v-model)
     resourcedef: Object, // the model of the resource
   },
   data() {
@@ -52,17 +56,17 @@ export default {
     };
   },
   watch: {
-    value(v) {
+    modelValue(v) {
       this.objectId = v.objectId;
       this.objectInstanceId = v.objectInstanceId;
     },
   },
 
   methods: {
-    convertToNumber(v){
-      if (isInteger(v)){
-        return Number(v)
-      }else{
+    convertToNumber(v) {
+      if (isInteger(v)) {
+        return Number(v);
+      } else {
         return v;
       }
     },
@@ -85,7 +89,7 @@ export default {
       } else {
         return {
           objectId: this.objectId,
-          objectInstanceId: this.convertToNumber(v)
+          objectInstanceId: this.convertToNumber(v),
         };
       }
     },

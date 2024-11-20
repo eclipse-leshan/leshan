@@ -26,19 +26,19 @@
     </v-card-text>
     <v-form
       ref="form"
-      :value="valid"
-      @input="$emit('update:valid', !addServer || $event)"
+      :model-value="valid"
+      @update:model-value="$emit('update:valid', !addServer || $event)"
     >
       <v-switch
         class="pl-5"
         v-model="addServer"
         label="Add a DM Server"
-        @change="updateAddServer($event)"
+        @update:model-value="updateAddServer($event)"
       ></v-switch>
-      <server-input
+      <bs-server-input
         v-show="addServer"
-        :value="internalServer"
-        @input="$emit('input', $event)"
+        :model-value="internalServer"
+        @update:model-value="$emit('update:model-value', $event)"
         :defaultNoSecValue="defaultNoSecValue"
         :defaultSecureValue="defaultSecureValue"
       />
@@ -46,11 +46,11 @@
   </v-card>
 </template>
 <script>
-import ServerInput from "../bsconfig/ServerInput.vue";
+import BsServerInput from "../bsconfig/BsServerInput.vue";
 export default {
-  components: { ServerInput },
+  components: { BsServerInput },
   props: {
-    value: Object, // ServerConfig
+    modelValue: Object, // ServerConfig
     valid: Boolean, // validation state of the form
     defaultNoSecValue: String, // default url for nosec endpoint
     defaultSecureValue: String, // default url for secured endpoint
@@ -62,7 +62,7 @@ export default {
     };
   },
   watch: {
-    value(v) {
+    modelValue(v) {
       if (!v) {
         this.addServer = false;
         this.internalServer = { security: { mode: "no_sec" } };
@@ -75,11 +75,11 @@ export default {
   methods: {
     updateAddServer(addServer) {
       if (addServer) {
-        this.$emit("input", this.internalServer);
+        this.$emit("update:model-value", this.internalServer);
         this.resetValidation();
         this.$emit("update:valid", true);
       } else {
-        this.$emit("input", null);
+        this.$emit("update:model-value", null);
         this.$emit("update:valid", true);
       }
     },

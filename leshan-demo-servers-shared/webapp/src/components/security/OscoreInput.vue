@@ -14,7 +14,7 @@
   <div>
     <!-- Sender ID field -->
     <v-textarea
-      filled
+      variant="filled"
       label="Sender ID"
       rows="2"
       v-model="oscore.sid"
@@ -22,13 +22,13 @@
         (v) => !!v || 'Sender ID is required',
         (v) => /^[0-9a-fA-F]+$/.test(v) || 'Hexadecimal format is expected',
       ]"
-      @input="$emit('input', oscore)"
+      @update:model-value="$emit('update:modelValue', oscore)"
       hint="Hexadecimal format"
       spellcheck="false"
     ></v-textarea>
     <!-- Master Secret field -->
     <v-textarea
-      filled
+      variant="filled"
       label="Master Secret"
       rows="2"
       v-model="oscore.msec"
@@ -36,13 +36,13 @@
         (v) => !!v || 'Master Secret is required',
         (v) => /^[0-9a-fA-F]+$/.test(v) || 'Hexadecimal format is expected',
       ]"
-      @input="$emit('input', oscore)"
+      @update:model-value="$emit('update:modelValue', oscore)"
       hint="Hexadecimal format"
       spellcheck="false"
     ></v-textarea>
     <!-- Recipient ID field -->
     <v-textarea
-      filled
+      variant="filled"
       label="Recipient ID"
       rows="2"
       v-model="oscore.rid"
@@ -50,7 +50,7 @@
         (v) => !!v || 'Recipient ID is required',
         (v) => /^[0-9a-fA-F]+$/.test(v) || 'Hexadecimal format is expected',
       ]"
-      @input="$emit('input', oscore)"
+      @update:model-value="$emit('update:modelValue', oscore)"
       hint="Hexadecimal format"
       spellcheck="false"
     ></v-textarea>
@@ -58,15 +58,15 @@
 </template>
 <script>
 export default {
-  props: { value: Object },
+  props: { modelValue: Object },
   data() {
     return {
-      oscore: this.value,
+      oscore: this.modelValue,
     };
   },
 
   watch: {
-    value(v) {
+    modelValue(v) {
       this.oscore = v;
     },
   },

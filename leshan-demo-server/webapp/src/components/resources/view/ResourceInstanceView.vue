@@ -11,7 +11,7 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
   ----------------------------------------------------------------------------->
 <template>
-  <v-row color="grey lighten-5">
+  <v-row color="grey-lighten-5">
     <v-col cols="12" lg="6" xl="5">
       <resource-definition-view :resourcedef="resourcedef" />
     </v-col>
@@ -30,7 +30,7 @@
         <v-card-text
           class="font-weight-bold"
           :class="{
-            'text--primary': resourceInstance && !resourceInstance.supposed,
+            'text-primary': resourceInstance && !resourceInstance.supposed,
           }"
         >
           {{ resourceInstanceValueAsString }}
@@ -57,13 +57,13 @@ export default {
   props: {
     endpoint: String, // the endpoint of the client
     resourcedef: Object, // the model of the resource
-    resourcePath:String, // resource path
+    resourcePath: String, // resource path
     resourceInstance: Object, // the resource data as defined in store.js
     resourceInstanceId: Number, // the id of the resource instance to watch
   },
 
   computed: {
-    resourceInstanceValueAsString: function() {
+    resourceInstanceValueAsString: function () {
       if (!this.resourceInstance) {
         return "";
       } else {

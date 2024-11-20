@@ -14,49 +14,54 @@
   <boolean-value-input
     v-if="resourcedef.type == 'boolean'"
     :resourcedef="resourcedef"
-    :value="value"
-    @input="$emit('input', $event)"
+    :model-value="modelValue"
+    @update:model-value="$emit('update:model-value', $event)"
   />
   <opaque-value-input
     v-else-if="resourcedef.type == 'opaque'"
     :resourcedef="resourcedef"
-    :value="value"
-    @input="$emit('input', $event)"
+    :model-value="modelValue"
+    @update:model-value="$emit('update:model-value', $event)"
   />
   <date-time-value-input
     v-else-if="resourcedef.type == 'time'"
     :resourcedef="resourcedef"
-    :value="value"
-    @input="$emit('input', $event)"
+    :model-value="modelValue"
+    @update:model-value="$emit('update:model-value', $event)"
   />
   <obj-link-value-input
     v-else-if="resourcedef.type == 'objlnk'"
     :resourcedef="resourcedef"
-    :value="value"
-    @input="$emit('input', $event)"
+    :model-value="modelValue"
+    @update:model-value="$emit('update:model-value', $event)"
   />
   <v-text-field
     v-else
     :label="resourcedef.type"
     :hint="hint"
     :suffix="resourcedef.units"
-    :value="value"
-    @input="$emit('input', $event)"
+    :model-value="modelValue"
+    @update:model-value="$emit('update:model-value', $event)"
   />
 </template>
 <script>
 import BooleanValueInput from "./BooleanValueInput.vue";
 import DateTimeValueInput from "./DateTimeValueInput.vue";
 import OpaqueValueInput from "./OpaqueValueInput.vue";
-import ObjLinkValueInput from './ObjLinkValueInput.vue';
+import ObjLinkValueInput from "./ObjLinkValueInput.vue";
 
 /**
  * An input for single value LWM2M node ("Single Instance Resource" or "Resource Instance")
  */
 export default {
-  components: { BooleanValueInput, OpaqueValueInput, DateTimeValueInput, ObjLinkValueInput },
+  components: {
+    BooleanValueInput,
+    OpaqueValueInput,
+    DateTimeValueInput,
+    ObjLinkValueInput,
+  },
   props: {
-    value: null, // the input value for this LWM2M Node (v-model)
+    modelValue: null, // the input value for this LWM2M Node (v-model)
     resourcedef: Object, // the model of the resource
     hint: { type: String, default: null }, // hint displayed on `?` tooltip. If `null`, the "?" icon is not displayed"
   },

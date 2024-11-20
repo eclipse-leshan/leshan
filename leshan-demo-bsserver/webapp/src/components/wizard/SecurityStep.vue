@@ -22,12 +22,16 @@
         a demo.
       </p>
     </v-card-text>
-    <v-form ref="form" :value="valid" @input="$emit('update:valid', $event)">
+    <v-form
+      ref="form"
+      :model-value="valid"
+      @update:model-value="$emit('update:valid', $event)"
+    >
       <security-info-input
-        :tls.sync="internalSecurityInfo.tls"
-        :oscore.sync="internalSecurityInfo.oscore"
-        @update:tls="$emit('input', internalSecurityInfo)"
-        @update:oscore="$emit('input', internalSecurityInfo)"
+        v-model:tls="internalSecurityInfo.tls"
+        v-model:oscore="internalSecurityInfo.oscore"
+        @update:tls="$emit('update:modelValue', internalSecurityInfo)"
+        @update:oscore="$emit('update:modelValue', internalSecurityInfo)"
       />
     </v-form>
   </v-card>
@@ -37,7 +41,7 @@ import SecurityInfoInput from "@leshan-demo-servers-shared/components/security/S
 export default {
   components: { SecurityInfoInput },
   props: {
-    value: Object, // Security Info
+    modelValue: Object, // Security Info
     valid: Boolean, // validation state of the form
   },
   data() {
@@ -46,7 +50,7 @@ export default {
     };
   },
   watch: {
-    value(v) {
+    modelValue(v) {
       if (!v) {
         this.internalSecurityInfo = {};
       } else {

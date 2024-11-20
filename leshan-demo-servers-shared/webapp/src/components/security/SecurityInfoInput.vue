@@ -15,21 +15,21 @@
     <!-- (D)TLS security info -->
     <v-switch
       v-model="useDTLS"
-      @change="useDTLSChanged($event)"
+      @update:model-value="useDTLSChanged($event)"
       label="Using (D)TLS"
     ></v-switch>
 
     <tls-input
       v-if="useDTLS && tlsInfo"
-      :mode.sync="tlsInfo.mode"
-      :details.sync="tlsInfo.details"
+      v-model:mode="tlsInfo.mode"
+      v-model:details="tlsInfo.details"
       @update:details="$emit('update:tls', tlsInfo)"
       @update:mode="$emit('update:tls', tlsInfo)"
     />
     <!-- OSCORE security info -->
     <v-switch
       v-model="useOSCORE"
-      @change="useOSCOREChanged($event)"
+      @update:model-value="useOSCOREChanged($event)"
       label="Using OSCORE (Experimental - for now can not be used with DTLS)"
     ></v-switch>
     <oscore-input
@@ -100,7 +100,10 @@ export default {
     },
     exclusifTlsOrOSCORE() {
       if (this.useDTLS) {
-        this.$emit("update:tls", { mode: "psk", details: {} });
+        this.$emit("update:tls", {
+          mode: "psk",
+          details: {},
+        });
         this.$emit("update:oscore", undefined);
       } else if (this.useOSCORE) {
         this.$emit("update:tls", undefined);

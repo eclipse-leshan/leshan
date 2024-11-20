@@ -12,31 +12,31 @@
   ----------------------------------------------------------------------------->
 <template>
   <div>
-    <!--Client Certificate field -->
+    <!--Client Public Key field -->
     <v-textarea
-      filled
-      label="Client Certificate"
-      v-model="x509.client_certificate"
+      variant="filled"
+      label="Client Public Key"
+      v-model="rpk.client_pub_key"
       :rules="[
         (v) =>
-          !!defaultvalue.client_certificate ||
+          !!defaultvalue.client_pub_key ||
           !!v ||
-          'Client Certificate is required',
+          'Client Public Key is required',
         (v) =>
           !v || /^[0-9a-fA-F]*$/.test(v) || 'Hexadecimal format is expected',
       ]"
-      hint="x509v3 der encoded in Hexadecimal"
-      @input="$emit('input', x509)"
+      hint="SubjectPublicKeyInfo der encoded in Hexadecimal"
+      @update:model-value="$emit('input', rpk)"
       spellcheck="false"
-      rows="3"
-      :placeholder="defaultvalue.client_certificate"
+      :placeholder="defaultvalue.client_pub_key"
       persistent-placeholder
+      rows="2"
     ></v-textarea>
     <!--Client Private Key field -->
     <v-textarea
-      filled
+      variant="filled"
       label="Client Private Key"
-      v-model="x509.client_pri_key"
+      v-model="rpk.client_pri_key"
       :rules="[
         (v) =>
           !!defaultvalue.client_pri_key ||
@@ -46,63 +46,47 @@
           !v || /^[0-9a-fA-F]*$/.test(v) || 'Hexadecimal format is expected',
       ]"
       hint="PKCS8 format der encoded in Hexadecimal"
-      @input="$emit('input', x509)"
+      @update:model-value="$emit('update:model-value', rpk)"
       spellcheck="false"
-      rows="1"
       :placeholder="defaultvalue.client_pri_key"
       persistent-placeholder
+      rows="2"
     ></v-textarea>
-    <!--Server Certificate  field -->
+    <!--Server Public Key field -->
     <v-textarea
-      filled
-      label="Server Certificate"
-      v-model="x509.server_certificate"
+      variant="filled"
+      label="Server Public Key"
+      v-model="rpk.server_pub_key"
       :rules="[
         (v) =>
-          !!defaultvalue.server_certificate ||
+          !!defaultvalue.server_pub_key ||
           !!v ||
-          'Server Certificate is required',
+          'Server Public Key is required',
         (v) =>
           !v || /^[0-9a-fA-F]*$/.test(v) || 'Hexadecimal format is expected',
       ]"
-      hint="x509v3 der encoded in Hexadecimal"
-      @input="$emit('input', x509)"
+      hint="SubjectPublicKeyInfo der encoded in Hexadecimal"
+      @update:model-value="$emit('update:model-value', rpk)"
       spellcheck="false"
-      rows="3"
-      :placeholder="defaultvalue.server_certificate"
+      rows="2"
+      :placeholder="defaultvalue.server_pub_key"
       persistent-placeholder
     ></v-textarea>
-    <!--Certificate Usagefield -->
-    <v-select
-      :items="usages"
-      item-text="label"
-      item-value="id"
-      label="Certificate Usage"
-      v-model="x509.certificate_usage"
-      @input="$emit('input', x509)"
-    ></v-select>
   </div>
 </template>
 <script>
 export default {
-  props: { value: Object, defaultvalue: Object },
+  props: { modelValue: Object, defaultvalue: Object },
   data() {
     return {
-      x509: { certificate_usage: 3 },
-      usages: [
-        { id: 0, label: "CA constraint" },
-        { id: 1, label: "service certificate constraint" },
-        { id: 2, label: "trust anchor assertion" },
-        { id: 3, label: "domain-issued certificate" },
-      ],
+      rpk: {},
     };
   },
-
   watch: {
     value(v) {
       // on init create local copy
       if (v) {
-        this.x509 = this.value;
+        this.rpk = this.modelValue;
       }
     },
   },

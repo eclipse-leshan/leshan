@@ -19,13 +19,15 @@
       @on-click="stopPassiveObserve"
       :title="'Passive Cancel Obverse ' + path"
     >
-      <v-icon dense small>{{ $icons.mdiEyeOffOutline }}</v-icon></request-button
+      <v-icon size="small">{{
+        $icons.mdiEyeOffOutline
+      }}</v-icon></request-button
     >
     <request-button
       @on-click="stopActiveObserve"
       :title="'Active Cancel Obverse ' + path"
     >
-      <v-icon dense small>{{
+      <v-icon size="small">{{
         $icons.mdiEyeRemoveOutline
       }}</v-icon></request-button
     >
@@ -48,11 +50,7 @@
 <script>
 import RequestButton from "../RequestButton.vue";
 import InstanceWriteDialog from "../instance/InstanceWriteDialog.vue";
-import { preference } from "vue-preferences";
 import { instanceToREST } from "../../js/restutils";
-
-const timeout = preference("timeout", { defaultValue: 5 });
-const format = preference("multiformat", { defaultValue: "TLV" });
 
 /**
  * List of Action button to execute operation (Read/Write/Observe ...) on a LWM2M Object Instance.
@@ -86,7 +84,7 @@ export default {
       return `api/clients/${encodeURIComponent(this.endpoint)}${this.path}`;
     },
     requestOption() {
-      return `?timeout=${timeout.get()}&format=${format.get()}`;
+      return `?timeout=${this.$pref.timeout}&format=${this.$pref.multiFormat}`;
     },
     updateState(content, requestButton) {
       if ("valid" in content || "success" in content) {
@@ -148,7 +146,9 @@ export default {
     },
     stopActiveObserve(requestButton) {
       this.axios
-        .delete(this.requestPath() + `/observe?active&timeout=${timeout.get()}`)
+        .delete(
+          this.requestPath() + `/observe?active&timeout=${this.$pref.timeout}`
+        )
         .then((response) => {
           this.updateState(response.data, requestButton);
           if (response.data.success) {
@@ -193,7 +193,7 @@ export default {
     },
     del(requestButton) {
       this.axios
-        .delete(`${this.requestPath()}?timeout=${timeout.get()}`)
+        .delete(`${this.requestPath()}?timeout=${this.$pref.timeout}`)
         .then((response) => {
           this.updateState(response.data, requestButton);
           if (response.data.success) {

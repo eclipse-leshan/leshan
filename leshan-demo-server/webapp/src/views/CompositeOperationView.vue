@@ -19,7 +19,7 @@
   ></router-view>
   <!-- all composite object view -->
   <div v-else>
-    <v-sheet color="grey lighten-5" class="pa-4" width="100%">
+    <v-sheet color="grey-lighten-5" class="pa-4" width="100%">
       <div>
         <h3>
           <v-icon>{{ $icons.mdiFormatListCheckbox }}</v-icon> Composite
@@ -30,7 +30,7 @@
           Composite Operation on it like Read-Composite, Write-Composite or
           Observe-Composite request.
         </p>
-        <p class="subtitle-2">
+        <p class="text-subtitle-2">
           Note that "Composite Object" is not a LWM2M concept but just a UI way
           to expose Composite Operation.
         </p>

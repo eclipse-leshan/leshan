@@ -13,9 +13,11 @@
 <template>
   <span>
     <!-- info icon -->
-    <v-tooltip :left="tooltipleft" :bottom="tooltipbottom">
-      <template v-slot:activator="{ on }">
-        <v-icon v-on="on" :small="small">
+    <v-tooltip
+      :location="tooltipleft ? 'left' : tooltipbottom ? 'bottom' : undefined"
+    >
+      <template v-slot:activator="{ props }">
+        <v-icon v-bind="props" :small="small">
           {{ $icons.mdiInformation }}
         </v-icon>
       </template>
@@ -39,18 +41,30 @@
       </span>
     </v-tooltip>
     <!-- secure icon -->
-    <v-tooltip :left="tooltipleft" :bottom="tooltipbottom">
-      <template v-slot:activator="{ on }">
-        <v-icon v-on="on" :small="small" v-visible="registration.secure">
+    <v-tooltip
+      :location="tooltipleft ? 'left' : tooltipbottom ? 'bottom' : undefined"
+    >
+      <template v-slot:activator="{ props }">
+        <v-icon
+          :size="small ? 'x-small' : 'small'"
+          v-bind="props"
+          v-visible="registration.secure"
+        >
           {{ $icons.mdiLock }}
         </v-icon>
       </template>
       Communication over DTLS
     </v-tooltip>
     <!-- secure icon -->
-    <v-tooltip :left="tooltipleft" :bottom="tooltipbottom">
-      <template v-slot:activator="{ on }">
-        <v-icon v-on="on" :small="small" v-visible="registration.sleeping">
+    <v-tooltip
+      :location="tooltipleft ? 'left' : tooltipbottom ? 'bottom' : undefined"
+    >
+      <template v-slot:activator="{ props }">
+        <v-icon
+          v-bind="props"
+          :size="small ? 'x-small' : 'small'"
+          v-visible="registration.sleeping"
+        >
           {{ $icons.mdiSleep }}
         </v-icon>
       </template>

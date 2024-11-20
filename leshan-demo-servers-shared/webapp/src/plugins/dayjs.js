@@ -10,13 +10,10 @@
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  *******************************************************************************/
-import Vue from "vue";
 import dayjs from "dayjs";
 
-Object.defineProperties(Vue.prototype, {
-  $date: {
-    get() {
-      return dayjs;
-    },
-  },
-});
+export default {
+  install: (app) => {
+    app.config.globalProperties.$date = dayjs;
+  }
+}

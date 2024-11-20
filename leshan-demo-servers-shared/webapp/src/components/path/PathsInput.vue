@@ -11,14 +11,14 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
   ----------------------------------------------------------------------------->
 <template>
-  <div class="grey lighten-4 pa-4 mb-1">
+  <div class="bg-grey-lighten-4 pa-4 mb-1">
     <span class="pa-2">
-      <v-btn small @click="addPath"> {{ addButtonText }} </v-btn>
+      <v-btn size="small" @click="addPath"> {{ addButtonText }} </v-btn>
     </span>
-    <v-btn small @click="removeAllPath"> Remove All </v-btn>
-    <div v-for="(path, index) in value" :key="index">
+    <v-btn size="small" @click="removeAllPath"> Remove All </v-btn>
+    <div v-for="(path, index) in modelValue" :key="index">
       <v-text-field
-        :value="path"
+        :model-value="path"
         :rules="[
           (v) => !!v || 'path can not be empty required',
           (v) =>
@@ -28,10 +28,10 @@
         ]"
         placeholder="a path to a LWM2M node (e.g. /3/0/1 or /3/0/11/0)"
         required
-        dense
-        @input="updatePath(index, $event)"
-        :append-outer-icon="$icons.mdiDelete"
-        @click:append-outer="removePath(index)"
+        density="compact"
+        @update:model-value="updatePath(index, $event)"
+        :append-icon="$icons.mdiDelete"
+        @click:append="removePath(index)"
       ></v-text-field>
     </div>
   </div>
@@ -39,7 +39,7 @@
 <script>
 export default {
   props: {
-    value: Array, // path to edit
+    modelValue: Array, // path to edit
     addButtonText: {
       default: "Add Path",
       type: String,
@@ -47,20 +47,20 @@ export default {
   },
   methods: {
     addPath() {
-      this.$emit("input", [...this.value, ""]);
+      this.$emit("update:model-value", [...this.modelValue, ""]);
     },
     removeAllPath() {
-      this.$emit("input", []);
+      this.$emit("update:model-value", []);
     },
     updatePath(index, path) {
-      let res = [...this.value];
+      let res = [...this.modelValue];
       res.splice(index, 1, path);
-      this.$emit("input", res);
+      this.$emit("update:model-value", res);
     },
     removePath(index) {
-      let res = [...this.value];
+      let res = [...this.modelValue];
       res.splice(index, 1);
-      this.$emit("input", res);
+      this.$emit("update:model-value", res);
     },
   },
 };

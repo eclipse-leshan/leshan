@@ -13,13 +13,13 @@
 <template>
   <v-dialog
     v-model="show"
-    hide-overlay
+    :scrim="false"
     fullscreen
     transition="dialog-bottom-transition"
   >
     <v-card>
       <!-- Title -->
-      <v-card-title class="headline grey lighten-2">
+      <v-card-title class="text-h5 bg-grey-lighten-2">
         <span>{{
           editMode ? "Edit Security Information" : "Add Security Information"
         }}</span>
@@ -37,8 +37,8 @@
             :disabled="editMode"
           ></v-text-field>
           <security-info-input
-            :tls.sync="securityInfo.tls"
-            :oscore.sync="securityInfo.oscore"
+            v-model:tls="securityInfo.tls"
+            v-model:oscore="securityInfo.oscore"
           />
         </v-form>
       </v-card-text>
@@ -46,13 +46,13 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn
-          text
+          variant="text"
           @click="$emit(editMode ? 'edit' : 'new', securityInfo)"
           :disabled="!isValid"
         >
           {{ editMode ? "Save" : "Add" }}
         </v-btn>
-        <v-btn text @click="show = false"> Cancel </v-btn>
+        <v-btn variant="text" @click="show = false"> Cancel </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -61,7 +61,7 @@
 import SecurityInfoInput from "./SecurityInfoInput.vue";
 export default {
   components: { SecurityInfoInput },
-  props: { value: Boolean /*open/close dialog*/, initialValue: Object },
+  props: { modelValue: Boolean /*open/close dialog*/, initialValue: Object },
   data() {
     return {
       securityInfo: {}, // local state for current value to edit
@@ -72,10 +72,10 @@ export default {
   computed: {
     show: {
       get() {
-        return this.value;
+        return this.modelValue;
       },
       set(value) {
-        this.$emit("input", value);
+        this.$emit("update:model-value", value);
       },
     },
     isValid: {
@@ -89,7 +89,7 @@ export default {
     },
   },
   watch: {
-    value(v) {
+    modelValue(v) {
       if (v) {
         // reset validation and set initial value when dialog opens
         if (this.$refs.form) this.$refs.form.resetValidation();

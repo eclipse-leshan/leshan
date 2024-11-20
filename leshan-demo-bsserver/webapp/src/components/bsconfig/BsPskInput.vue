@@ -14,18 +14,18 @@
   <div>
     <!-- identity field -->
     <v-textarea
-      filled
+      variant="filled"
       label="Identity"
       v-model="psk.identity"
       :rules="[(v) => !!v || 'Identity is required']"
-      @input="$emit('input', psk)"
+      @update:model-value="$emit('update:model-value', psk)"
       spellcheck="false"
       rows="1"
     ></v-textarea>
 
     <!-- key field -->
     <v-textarea
-      filled
+      variant="filled"
       label="Key"
       v-model="psk.key"
       hint="Hexadecimal format"
@@ -33,7 +33,7 @@
         (v) => !!v || 'Key is required',
         (v) => /^[0-9a-fA-F]+$/.test(v) || 'Hexadecimal format is expected',
       ]"
-      @input="$emit('input', psk)"
+      @update:model-value="$emit('update:model-value', psk)"
       spellcheck="false"
       rows="1"
     ></v-textarea>
@@ -41,15 +41,15 @@
 </template>
 <script>
 export default {
-  props: { value: Object },
+  props: { modelValue: Object },
   data() {
     return {
-      psk: this.value,
+      psk: this.modelValue,
     };
   },
 
   watch: {
-    value(v) {
+    modelValue(v) {
       this.psk = v;
     },
   },

@@ -14,7 +14,7 @@
   <div>
     <!-- Public Key field -->
     <v-textarea
-      filled
+      variant="filled"
       label="Client Public Key"
       v-model="rpk.key"
       :rules="[
@@ -22,25 +22,25 @@
         (v) => /^[0-9a-fA-F]+$/.test(v) || 'Hexadecimal format is expected',
       ]"
       hint="SubjectPublicKeyInfo der encoded in Hexadecimal"
-      @input="$emit('input', rpk)"
+      @update:model-value="$emit('update:modelValue', rpk)"
       spellcheck="false"
     ></v-textarea>
   </div>
 </template>
 <script>
 export default {
-  props: { value: Object },
+  props: { modelValue: Object },
   data() {
     return {
-      rpk: this.value,
+      rpk: this.modelValue,
     };
   },
 
   watch: {
-    value(v) {
+    modelValue(v) {
       // on init create local copy
       if (v) {
-        this.rpk = this.value;
+        this.rpk = v;
       }
     },
   },

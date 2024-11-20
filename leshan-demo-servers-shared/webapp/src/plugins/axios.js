@@ -13,7 +13,6 @@
 
 "use strict";
 
-import Vue from "vue";
 import axios from "axios";
 
 // Full config:  https://github.com/axios/axios#request-config
@@ -31,17 +30,18 @@ let config = {
 // HACK waiting we get a solution for : https://github.com/yariksav/vuetify-dialog/issues/110#issuecomment-1145981361
 // and unfortenately there is not standard way to do that ... : https://stackoverflow.com/questions/40263803/native-javascript-or-es6-way-to-encode-and-decode-html-entities
 const escapeHTML = (str) =>
-  str.replace(
-    /[&<>'"]/g,
-    (tag) =>
-      ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        "'": "&#39;",
-        '"': "&quot;",
-      }[tag])
-  );
+  str;
+// str.replace(
+//   /[&<>'"]/g,
+//   (tag) =>
+//   ({
+//     "&": "&amp;",
+//     "<": "&lt;",
+//     ">": "&gt;",
+//     "'": "&#39;",
+//     '"': "&quot;",
+//   }[tag])
+//);
 
 const _axios = axios.create(config);
 
@@ -63,8 +63,8 @@ _axios.interceptors.response.use(
     if (response.data && response.data.failure) {
       let msg = `Device response : ${response.data.status}`;
       if (response.data.errormessage) msg += ` - ${response.data.errormessage}`;
-      Vue.prototype.$dialog.notify.warning(escapeHTML(msg), {
-        position: "bottom-right",
+      _axios.$notify.warn(escapeHTML(msg), {
+        location: "bottom right",
         timeout: 5000,
       });
     }
@@ -77,11 +77,11 @@ _axios.interceptors.response.use(
         `${error.message}[${error.response.status}], full error :`,
         error
       );
-      if (typeof error.response.data == "string") {
+      if (typeof error.response.data == "string" && error.response.data !== "") {
         message = error.response.data;
       } else if (
         typeof error.response.data == "object" &&
-        typeof error.response.data.message == "string"
+        typeof error.response.data.message == "string" && error.response.data.message !== ""
       ) {
         message = error.response.data.message;
       } else {
@@ -90,40 +90,27 @@ _axios.interceptors.response.use(
     } else if (error.request) {
       console.log(`${error.message}:, full error :`, error);
       message =
-        typeof error.request.data == "string"
+        typeof error.request.data == "string" && error.request.data !== ""
           ? error.request.data
           : error.message;
     } else {
       console.log(`${error.message}:, full error :`, error);
       message = error.message;
     }
-    Vue.prototype.$dialog.notify.error(escapeHTML(message), {
-      position: "bottom-right",
+    console.log(message)
+    _axios.$notify.error(message, {
+      location: "bottom right",
       timeout: 5000,
     });
     return Promise.reject(error);
   }
 );
 
-let axiosPlugin = {}
-axiosPlugin.install = function (Vue) {
-  Vue.axios = _axios;
-  window.axios = _axios;
-  Object.defineProperties(Vue.prototype, {
-    axios: {
-      get() {
-        return _axios;
-      },
-    },
-    $axios: {
-      get() {
-        return _axios;
-      },
-    },
-  });
-};
 
-
-Vue.use(axiosPlugin);
-
-export default axiosPlugin;
+export default {
+  install: (app) => {
+    _axios.$notify = app.config.globalProperties.$notify;
+    app.config.globalProperties.axios = _axios;
+    app.config.globalProperties.$axios = _axios;
+  }
+}

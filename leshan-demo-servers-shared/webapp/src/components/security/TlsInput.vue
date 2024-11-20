@@ -16,17 +16,17 @@
       :items="modes"
       label="Security Mode"
       v-model="internalMode"
-      @input="modeChanged()"
+      @update:model-value="modeChanged()"
     ></v-select>
     <psk-input
       v-if="internalMode == 'psk'"
       v-model="pskValue"
-      @input="$emit('update:details', pskValue)"
+      @update:model-value="$emit('update:details', pskValue)"
     />
     <rpk-input
       v-if="internalMode == 'rpk'"
       v-model="rpkValue"
-      @input="$emit('update:details', rpkValue)"
+      @update:model-value="$emit('update:details', rpkValue)"
     />
     <x-509-input v-if="internalMode == 'x509'" />
   </div>

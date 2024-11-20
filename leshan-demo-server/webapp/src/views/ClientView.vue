@@ -16,7 +16,7 @@
       <div style="height: 100px"></div>
       <v-card elevation="0" class="text-center">
         <v-card-text class="fill-height">
-          <v-icon x-large> {{ $icons.mdiExitRun }}</v-icon>
+          <v-icon size="x-large"> {{ $icons.mdiExitRun }}</v-icon>
           <v-card-title class="justify-center">
             {{ $route.params.endpoint }} is deregistered.
           </v-card-title>
@@ -31,7 +31,7 @@
       style="background-color: #fafafa"
     >
       <!-- registration info -->
-      <v-sheet color="grey lighten-5" class="pa-4" width="100%">
+      <v-sheet color="grey-lighten-5" class="pa-4" width="100%">
         <h3>
           {{ $route.params.endpoint }}
           <client-info :registration="registration" small tooltipbottom />
@@ -57,19 +57,22 @@
 
       <!-- Composite Operations-->
       <span>
-        <v-list dense v-if="registration && registration.lwM2mVersion != '1.0'">
-          <v-list-item-group>
-            <v-list-item
-              :to="'/clients/' + $route.params.endpoint + '/composite'"
+        <v-list
+          density="compact"
+          v-if="registration && registration.lwM2mVersion != '1.0'"
+        >
+          <v-list-item
+            density="compact"
+            class="pa-1"
+            :to="'/clients/' + $route.params.endpoint + '/composite'"
+          >
+            <template v-slot:prepend>
+              <v-icon>{{ $icons.mdiFormatListCheckbox }}</v-icon>
+            </template>
+            <v-list-item-title density="compact"
+              >Composite Operations</v-list-item-title
             >
-              <v-list-item-icon class="me-2">
-                <v-icon>{{ $icons.mdiFormatListCheckbox }}</v-icon>
-              </v-list-item-icon>
-              <v-list-item-content>
-                <v-list-item-title>Composite Operations</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list-item-group>
+          </v-list-item>
         </v-list>
         <v-divider />
       </span>
@@ -108,7 +111,6 @@ import ObjectSelector from "../components/object/ObjectSelector.vue";
 // get models for this endpoint
 export default {
   components: { ObjectSelector, ClientSetting, ClientInfo },
-  name: "Client",
   data: () => ({
     deregister: false,
     registration: null,
@@ -268,7 +270,7 @@ export default {
         this.deregister = true;
       });
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.sse.disconnect();
   },
 };

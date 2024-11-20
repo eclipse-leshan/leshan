@@ -13,13 +13,13 @@
 <template>
   <v-dialog
     v-model="show"
-    hide-overlay
+    :scrim="false"
     fullscreen
     transition="dialog-bottom-transition"
   >
     <v-card>
       <!-- dialog title -->
-      <v-card-title class="headline grey lighten-2">
+      <v-card-title class="text-h5 bg-grey-lighten-2">
         Write Composite Object "{{ compositeObject.name }}".
       </v-card-title>
       <v-card-text>
@@ -52,12 +52,8 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <!-- dialog buttons-->
-        <v-btn text @click="write">
-          Write
-        </v-btn>
-        <v-btn text @click="show = false">
-          Cancel
-        </v-btn>
+        <v-btn variant="text" @click="write"> Write </v-btn>
+        <v-btn variant="text" @click="show = false"> Cancel </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -72,7 +68,7 @@ import LabelledResourceInstanceInput from "../resources/input/LabelledResourceIn
 export default {
   components: { LabelledResourceInput, LabelledResourceInstanceInput },
   props: {
-    value: Boolean, // control if the dialog is displayed (v-model)
+    modelValue: Boolean, // control if the dialog is displayed (v-model)
     compositeObject: Object, // the composite Object
     nodes: Object, // LWM2M Nodes indexed by path
   },
@@ -83,7 +79,7 @@ export default {
     };
   },
   watch: {
-    value(v) {
+    modelValue(v) {
       // reset local state when dialog is open
       if (v) this.nodesValue = {};
     },
@@ -91,10 +87,10 @@ export default {
   computed: {
     show: {
       get() {
-        return this.value;
+        return this.modelValue;
       },
       set(value) {
-        this.$emit("input", value);
+        this.$emit("update:model-value", value);
       },
     },
     ignoredeNodes() {
@@ -103,11 +99,19 @@ export default {
         .map((n) => n.path.toString());
     },
     writableNodes() {
+      console.log(this.nodes);
       return Object.values(this.nodes).filter((n) => this.isSupported(n));
     },
   },
   methods: {
     isSupported(node) {
+      console.log(node);
+      console.log(
+        (node.path.type == "resourceinstance" ||
+          (node.path.type == "resource" &&
+            node.resource.def.instancetype == "single")) &&
+          node.resource.def.operations.includes("W")
+      );
       return (
         (node.path.type == "resourceinstance" ||
           (node.path.type == "resource" &&
@@ -117,7 +121,6 @@ export default {
     },
     write() {
       this.show = false;
-      console.log(this.nodesValue);
       this.$emit("write", this.nodesValue);
     },
   },

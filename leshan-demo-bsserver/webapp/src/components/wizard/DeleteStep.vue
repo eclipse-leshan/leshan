@@ -42,16 +42,20 @@
         know which Security instance ID is used for the Bootstrap Server.
       </p>
     </v-card-text>
-    <v-form ref="form" :value="valid" @input="$emit('update:valid', $event)">
+    <v-form
+      ref="form"
+      :model-value="valid"
+      @update:model-value="$emit('update:valid', $event)"
+    >
       <v-switch
         class="pl-5"
         label="Auto ID For Security Object"
-        :value="autoId"
-        @change="$emit('update:autoId', $event)"
+        :model-value="autoId"
+        @update:model-value="$emit('update:autoId', $event)"
       />
       <paths-input
-        :value="pathToDelete"
-        @input="$emit('update:pathToDelete', $event)"
+        :model-value="pathToDelete"
+        @update:model-value="$emit('update:pathToDelete', $event)"
         addButtonText="Add Path to Delete"
       />
     </v-form>

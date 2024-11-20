@@ -22,16 +22,16 @@
     </v-card-text>
     <v-form
       ref="form"
-      :value="valid"
-      @input="$emit('update:valid', !addServer || $event)"
+      :model-value="valid"
+      @update:model-value="$emit('update:valid', !addServer || $event)"
     >
       <v-switch
         class="pl-5"
         v-model="addServer"
         label="Add a Bootstrap Server"
-        @change="updateAddServer($event)"
+        @update:model-value="updateAddServer($event)"
       ></v-switch>
-      <server-input
+      <bs-server-input
         v-show="addServer"
         :value="internalServer"
         @input="$emit('input', $event)"
@@ -44,9 +44,9 @@
   </v-card>
 </template>
 <script>
-import ServerInput from "../bsconfig/ServerInput.vue";
+import BsServerInput from "../bsconfig/BsServerInput.vue";
 export default {
-  components: { ServerInput },
+  components: { BsServerInput },
   props: {
     value: Object, // Bootstrap Server config
     valid: Boolean, // validation state of the form

@@ -13,24 +13,24 @@
 <template>
   <v-dialog
     v-model="show"
-    hide-overlay
+    :scrim="false"
     fullscreen
     transition="dialog-bottom-transition"
   >
     <v-card>
       <!-- Title -->
-      <v-card-title class="headline grey lighten-2">
+      <v-card-title class="text-h5 bg-grey-lighten-2">
         <span>{{
           editMode ? "Edit Composite Object" : "Add Composite Object"
         }}</span>
       </v-card-title>
       <!-- Form -->
       <v-card-text>
-        <p class="subtitle-1">
+        <p class="text-subtitle-1">
           A Composite Object has a name and a list of path to LWM2M node
           (Object, Object Instance, Resource, Resource Instance).
         </p>
-        <p class="subtitle-1">
+        <p class="text-subtitle-1">
           Root path is not yet supported. <br />
           Overlapped path will not work. (e.g. /3/0 with /3/0/1 is not valid)
         </p>
@@ -65,13 +65,13 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn
-          text
+          variant="text"
           @click="$emit(editMode ? 'edit' : 'new', compositeObject)"
           :disabled="!valid"
         >
           {{ editMode ? "Save" : "Add" }}
         </v-btn>
-        <v-btn text @click="show = false"> Cancel </v-btn>
+        <v-btn variant="text" @click="show = false"> Cancel </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -82,7 +82,7 @@ import PathsInput from "@leshan-demo-servers-shared/components/path/PathsInput.v
 export default {
   components: { PathsInput },
   props: {
-    value: Boolean /*open/close dialog*/,
+    modelValue: Boolean /*open/close dialog*/,
     initialValue: Object, // initial value : for edit mode.
     alreadyUsedName: { type: Array, default: () => [] }, // already used name to avoid to create 2 composite Object with same name
   },
@@ -110,15 +110,15 @@ export default {
   computed: {
     show: {
       get() {
-        return this.value;
+        return this.modelValue;
       },
       set(value) {
-        this.$emit("input", value);
+        this.$emit("update:model-value", value);
       },
     },
   },
   watch: {
-    value(v) {
+    modelValue(v) {
       if (v) {
         // reset validation and set initial value when dialog opens
         if (this.$refs.form) this.$refs.form.resetValidation();

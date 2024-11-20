@@ -13,16 +13,16 @@
 <template>
   <v-dialog
     v-model="show"
-    hide-overlay
+    :scrim="false"
     fullscreen
     transition="dialog-bottom-transition"
   >
     <v-card>
-      <v-card-title class="headline grey lighten-2">
+      <v-card-title class="text-h5 bg-grey-lighten-2">
         Write "{{ resourcedef.name }}" Resource
       </v-card-title>
       <v-card-text>
-        <div class="subtitle-1">Resource {{ path }}</div>
+        <div class="text-subtitle-1">Resource {{ path }}</div>
         <div v-if="resourcedef['type']">
           Type : <span class="text-capitalize">{{ resourcedef["type"] }}</span>
         </div>
@@ -36,12 +36,8 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn text @click="write">
-          Write
-        </v-btn>
-        <v-btn text @click="show = false">
-          Cancel
-        </v-btn>
+        <v-btn variant="text" @click="write"> Write </v-btn>
+        <v-btn variant="text" @click="show = false"> Cancel </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -56,7 +52,7 @@ import ResourceInput from "./input/ResourceInput.vue";
 export default {
   components: { ResourceInput },
   props: {
-    value: Boolean, // control if the dialog is displayed (v-model)
+    modelValue: Boolean, // control if the dialog is displayed (v-model)
     resourcedef: Object, // the model of the resource
     path: String, // the path of the resource
   },
@@ -68,15 +64,15 @@ export default {
   computed: {
     show: {
       get() {
-        return this.value;
+        return this.modelValue;
       },
       set(value) {
-        this.$emit("input", value);
+        this.$emit("update:model-value", value);
       },
     },
   },
   watch: {
-    value(v) {
+    modelValue(v) {
       // reset local state when dialog is open
       if (v) this.resourceValue = null;
     },

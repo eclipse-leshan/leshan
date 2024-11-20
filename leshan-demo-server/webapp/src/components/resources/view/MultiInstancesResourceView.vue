@@ -11,7 +11,7 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
   ----------------------------------------------------------------------------->
 <template>
-  <v-simple-table dense v-if="resource">
+  <v-table dense v-if="resource">
     <template v-slot:default>
       <thead>
         <tr>
@@ -27,11 +27,11 @@
           :key="id"
           style="background-color: transparent !important"
         >
-          <td class="px-2 text--disabled">{{ id }}</td>
+          <td class="px-2 text-disabled">{{ id }}</td>
           <td class="px-2">
             <v-icon
               class="pa-0"
-              x-small
+              size="x-small"
               v-show="state.observed[instancePath(id)]"
               :title="'Instance ' + instancePath(id) + ' observed'"
               >{{ $icons.mdiEyeOutline }}</v-icon
@@ -45,13 +45,13 @@
               :instanceId="Number(id)"
             />
           </td>
-          <td :class="{ 'text--disabled': value.supposed }">
+          <td :class="{ 'text-disabled': value.supposed }">
             {{ valueAsString(value.val) }}
           </td>
         </tr>
       </tbody>
     </template>
-  </v-simple-table>
+  </v-table>
 </template>
 <script>
 import { valueToString } from "../../../js/valueutils.js";

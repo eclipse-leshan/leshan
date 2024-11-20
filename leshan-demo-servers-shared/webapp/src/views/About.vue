@@ -15,15 +15,14 @@
     <v-row class="text-center pa-5">
       <v-col cols="12">
         <v-img
-          :src="require('../assets/image/multicolor-leshan.png')"
+          src="../assets/image/multicolor-leshan.png"
           class="my-3"
-          contain
           height="200"
         />
       </v-col>
 
       <v-col class="mb-4" cols="12">
-        <h1 class="display-1 font-weight-bold mb-3">
+        <h1 class="text-h4 font-weight-bold mb-3">
           {{ appName }}
         </h1>
 

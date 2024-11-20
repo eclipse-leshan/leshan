@@ -11,20 +11,21 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
   ----------------------------------------------------------------------------->
 <template>
-  <v-app-bar dark flat dense max-height="48">
-    <v-toolbar-title v-if="$vuetify.breakpoint.smAndUp">
+  <v-app-bar theme="dark" flat density="compact">
+    <v-app-bar-title>
       <v-img
-        :src="require('../assets/image/logo.png')"
+        position="left"
+        src="../assets/image/logo.png"
         max-height="32"
-        contain
+        v-if="$vuetify.display.smAndUp"
       ></v-img>
-    </v-toolbar-title>
-
+    </v-app-bar-title>
+    <v-spacer></v-spacer>
     <!-- See more details about why we hide-slider and replace it by custom css (active-class="active") :
          https://github.com/eclipse/leshan/issues/1134 -->
     <v-tabs
-      :right="$vuetify.breakpoint.smAndUp"
-      :grow="!$vuetify.breakpoint.smAndUp"
+      :align-tabs="$vuetify.display.smAndUp ? 'end' : undefined"
+      :grow="!$vuetify.display.smAndUp"
       hide-slider
     >
       <v-tab
@@ -32,11 +33,11 @@
         :key="page.title"
         fixed-tabs
         :to="page.route"
-        active-class="active"
+        selected-class="active"
         :aria-label="page.title"
       >
-        <v-icon>{{ page.icon }}</v-icon
-        ><span class="pl-2" v-if="$vuetify.breakpoint.smAndUp">
+        <v-icon :icon="page.icon"></v-icon
+        ><span class="pl-2" v-if="$vuetify.display.smAndUp">
           {{ page.title }}
         </span></v-tab
       >
