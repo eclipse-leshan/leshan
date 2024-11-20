@@ -76,14 +76,15 @@ public class ReadCompositeResponse extends AbstractLwM2mResponse {
             }
         } else {
             // handle if content (not timestamped) value is passed
-
-            // check content is not null
-            if (content == null) {
-                throw new IllegalArgumentException("content OR timestampedValue should be not null");
-            }
-
             this.timestampedValues = null;
             this.content = content;
+        }
+
+        if (ResponseCode.CONTENT.equals(code)) {
+            // check content is not null
+            if (this.content == null) {
+                throw new IllegalArgumentException("content OR timestampedValue should be not null");
+            }
         }
     }
 

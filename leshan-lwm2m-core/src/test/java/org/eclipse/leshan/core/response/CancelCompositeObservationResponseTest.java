@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021 Orange.
+ * Copyright (c) 2024 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -15,39 +15,18 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.response;
 
-import static org.eclipse.leshan.core.ResponseCode.CONTENT;
-import static org.eclipse.leshan.core.node.LwM2mSingleResource.newResource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.leshan.core.ResponseCode;
-import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.node.LwM2mPath;
 import org.junit.jupiter.api.Test;
 
-public class ObserveCompositeResponseTest {
-
-    @Test
-    public void should_create_response_with_content() {
-        // given
-        Map<LwM2mPath, LwM2mNode> exampleContent = new HashMap<>();
-        exampleContent.put(new LwM2mPath("/1/2/3"), newResource(15, "example 1"));
-        exampleContent.put(new LwM2mPath("/2/3/4"), newResource(16, "example 2"));
-
-        // when
-        ObserveCompositeResponse response = new ObserveCompositeResponse(CONTENT, exampleContent, null, null, null,
-                null, null);
-
-        // then
-        assertEquals(exampleContent, response.getContent());
-    }
+public class CancelCompositeObservationResponseTest {
 
     @Test
     public void create_failure_reponse() {
-        ObserveCompositeResponse response = ObserveCompositeResponse.notFound();
+        CancelCompositeObservationResponse response = new CancelCompositeObservationResponse(ResponseCode.NOT_FOUND,
+                null, null, null, null, null);
         assertEquals(response.getCode(), ResponseCode.NOT_FOUND);
         assertNull(response.getContent());
     }
