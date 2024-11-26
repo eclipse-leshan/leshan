@@ -20,9 +20,7 @@ import org.eclipse.leshan.senml.SenMLRecord;
 public abstract class AbstractSenMLTest {
 
     private void givenResourceWithFloatValue(SenMLPack pack, String n, Number value) {
-        SenMLRecord elt = new SenMLRecord();
-        elt.setName(n);
-        elt.setNumberValue(value);
+        SenMLRecord elt = new SenMLRecord(null, null, n, null, value, null, null, null, null);
         pack.addRecord(elt);
     }
 
@@ -31,13 +29,11 @@ public abstract class AbstractSenMLTest {
     }
 
     private void givenResourceWithStringValue(SenMLPack pack, String bn, String n, String value) {
-        SenMLRecord elt = new SenMLRecord();
+        String baseName = null;
         if (bn != null) {
-            elt.setBaseName(bn);
+            baseName = bn;
         }
-
-        elt.setName(n);
-        elt.setStringValue(value);
+        SenMLRecord elt = new SenMLRecord(baseName, null, n, null, null, null, null, value, null);
         pack.addRecord(elt);
     }
 
@@ -105,9 +101,7 @@ public abstract class AbstractSenMLTest {
     protected SenMLPack getPackWithSingleOpaqueValue(String path, byte[] value) {
         SenMLPack pack = new SenMLPack();
 
-        SenMLRecord r = new SenMLRecord();
-        r.setBaseName(path);
-        r.setOpaqueValue(value);
+        SenMLRecord r = new SenMLRecord(path, null, null, null, null, null, null, null, value);
         pack.addRecord(r);
 
         return pack;

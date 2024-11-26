@@ -31,17 +31,30 @@ public class SenMLRecord {
         STRING, NUMBER, BOOLEAN, OPAQUE, OBJLNK
     }
 
-    private String baseName = null;
-    private BigDecimal baseTime;
+    private final String baseName;
+    private final BigDecimal baseTime;
 
-    private String name;
-    private BigDecimal time;
+    private final String name;
+    private final BigDecimal time;
 
-    private Number numberValue;
-    private Boolean booleanValue;
-    private String objectLinkValue;
-    private String stringValue;
-    private byte[] opaqueValue;
+    private final Number numberValue;
+    private final Boolean booleanValue;
+    private final String objectLinkValue;
+    private final String stringValue;
+    private final byte[] opaqueValue;
+
+    public SenMLRecord(String baseName, BigDecimal baseTime, String name, BigDecimal time, Number numberValue,
+            Boolean booleanValue, String objectLinkValue, String stringValue, byte[] opaqueValue) {
+        this.baseName = baseName;
+        this.baseTime = baseTime;
+        this.name = name;
+        this.time = time;
+        this.numberValue = numberValue;
+        this.booleanValue = booleanValue;
+        this.objectLinkValue = objectLinkValue;
+        this.stringValue = stringValue;
+        this.opaqueValue = opaqueValue;
+    }
 
     public Type getType() {
         if (booleanValue != null) {
@@ -62,10 +75,6 @@ public class SenMLRecord {
         return null;
     }
 
-    public void setTime(BigDecimal time) {
-        this.time = time;
-    }
-
     public BigDecimal getTime() {
         return time;
     }
@@ -74,44 +83,20 @@ public class SenMLRecord {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public Number getNumberValue() {
         return numberValue;
-    }
-
-    public void setNumberValue(Number numberValue) {
-        this.numberValue = numberValue;
     }
 
     public Boolean getBooleanValue() {
         return booleanValue;
     }
 
-    public void setBooleanValue(Boolean booleanValue) {
-        this.booleanValue = booleanValue;
-    }
-
     public String getObjectLinkValue() {
         return objectLinkValue;
     }
 
-    public void setObjectLinkValue(String objectLinkValue) {
-        this.objectLinkValue = objectLinkValue;
-    }
-
     public String getStringValue() {
         return stringValue;
-    }
-
-    public void setStringValue(String stringValue) {
-        this.stringValue = stringValue;
-    }
-
-    public void setOpaqueValue(byte[] opaqueValue) {
-        this.opaqueValue = opaqueValue;
     }
 
     public byte[] getOpaqueValue() {
@@ -122,16 +107,8 @@ public class SenMLRecord {
         return baseName;
     }
 
-    public void setBaseName(String baseName) {
-        this.baseName = baseName;
-    }
-
     public BigDecimal getBaseTime() {
         return baseTime;
-    }
-
-    public void setBaseTime(BigDecimal baseTime) {
-        this.baseTime = baseTime;
     }
 
     public Object getResourceValue() {
