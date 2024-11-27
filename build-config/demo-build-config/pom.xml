@@ -31,7 +31,6 @@ Contributors:
 
   <properties>
     <node-version>v18.13.0</node-version>
-    <yarn-version>v1.22.19</yarn-version>
   </properties>
 
   <build>
@@ -67,28 +66,27 @@ Contributors:
           <configuration>
             <workingDirectory>webapp</workingDirectory>
             <nodeVersion>${node-version}</nodeVersion>
-            <yarnVersion>${yarn-version}</yarnVersion>
           </configuration>
           <executions>
             <execution>
               <?m2e ignore?>
-              <id>install node and yarn</id>
+              <id>install node and npm</id>
               <goals>
-                <goal>install-node-and-yarn</goal>
+                <goal>install-node-and-npm</goal>
               </goals>
             </execution>
             <execution>
               <?m2e ignore?>
-              <id>yarn install</id>
+              <id>npm install</id>
               <goals>
-                <goal>yarn</goal>
+                <goal>npm</goal>
               </goals>
             </execution>
             <execution>
               <?m2e ignore?>
-              <id>yarn build</id>
+              <id>npm build</id>
               <goals>
-                <goal>yarn</goal>
+                <goal>npm</goal>
               </goals>
               <configuration>
                 <environmentVariables>
@@ -98,7 +96,7 @@ Contributors:
                   <VITE_APP_COMMIT_ID>${buildNumber}</VITE_APP_COMMIT_ID>
                   <VITE_APP_VERSION>${project.version}</VITE_APP_VERSION>
                 </environmentVariables>
-                <arguments>build</arguments>
+                <arguments>run build</arguments>
               </configuration>
             </execution>
           </executions>
@@ -113,13 +111,10 @@ Contributors:
       <properties>
         <download-eclipse-path>/home/data/httpd/download.eclipse.org/leshan/</download-eclipse-path>
         <download-remote-publish-path>genie.leshan@projects-storage.eclipse.org:${download-eclipse-path}</download-remote-publish-path>
-        <node-yarn-mirror-folder>build/mirror/</node-yarn-mirror-folder>
-        <node-folder>${node-yarn-mirror-folder}node/</node-folder>
-        <yarn-folder>${node-yarn-mirror-folder}yarn/</yarn-folder>
+        <mirror-folder>build/mirror/</mirror-folder>
+        <node-folder>${mirror-folder}node/</node-folder>
         <node-download-root>https://nodejs.org/dist/</node-download-root>
-        <yarn-download-root>https://sourceforge.net/projects/yarn.mirror/files/</yarn-download-root>
         <node-source-url>${node-download-root}${node-version}/node-${node-version}-linux-x64.tar.gz</node-source-url>
-        <yarn-source-url>${yarn-download-root}${yarn-version}/yarn-${yarn-version}.tar.gz</yarn-source-url>
         <download-eclipse-url>https://download.eclipse.org/leshan/</download-eclipse-url>
       </properties>
       <build>
@@ -140,8 +135,6 @@ Contributors:
                     <commands>
                       <command>mkdir -p ${download-eclipse-path}${node-folder}${node-version}</command>
                       <command>wget -nc ${node-source-url} -P ${download-eclipse-path}${node-folder}${node-version}</command>
-                      <command>mkdir -p ${download-eclipse-path}${yarn-folder}${yarn-version}</command>
-                      <command>wget -nc ${yarn-source-url} -P ${download-eclipse-path}${yarn-folder}${yarn-version}</command>
                     </commands>
                     <displayCommandOutputs>true</displayCommandOutputs>
                   </configuration>
@@ -156,8 +149,7 @@ Contributors:
                      https://gitlab.eclipse.org/eclipsefdn/helpdesk/-/issues/1032
                      https://gitlab.eclipse.org/eclipsefdn/helpdesk/-/issues/3429#note_1184525
                 -->
-                <nodeDownloadRoot>${download-eclipse-url}${node-folder}</nodeDownloadRoot>
-                <yarnDownloadRoot>${download-eclipse-url}${yarn-folder}</yarnDownloadRoot>
+                <downloadRoot>${download-eclipse-url}${node-folder}</downloadRoot>
               </configuration>
             </plugin>
           </plugins>

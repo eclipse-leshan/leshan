@@ -13,7 +13,7 @@ runs:
   - name: Run Integration Tests 
     id: main
     shell: bash
-    run: mvn -B surefire:test '-Dtest=!org.eclipse.leshan.integration.tests.**' -Dsurefire.failIfNoSpecifiedTests=false -Dskip.yarn
+    run: mvn -B surefire:test '-Dtest=!org.eclipse.leshan.integration.tests.**' -Dsurefire.failIfNoSpecifiedTests=false -Dskip.npm
 
     # Store Step status in Build Status Properties file
   - name: Store Step Status

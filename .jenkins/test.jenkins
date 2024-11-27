@@ -43,7 +43,7 @@ pipeline {
       
         // Build 
         sh ''' mvn -B com.github.ekryd.sortpom:sortpom-maven-plugin:verify -PallPom ''' 
-        // This ssh agent is needed to cache yarn/node to download.eclipse.org when using -PeclipseJenkins
+        // This ssh agent is needed to cache npm/node to download.eclipse.org when using -PeclipseJenkins
         // see : https://github.com/eclipse-leshan/leshan/pull/1484
         sshagent ( ['projects-storage.eclipse.org-bot-ssh']) {
           sh ''' mvn -B clean install javadoc:javadoc -PeclipseJenkins -DskipTests'''
@@ -57,12 +57,12 @@ pipeline {
         sh ''' 
             if [[ $TEST_WITH_TOOLCHAIN == true ]]; then
                 if [[ -n $JDK_TOOLCHAIN_VERSION ]]; then
-                    mvn -B test -PuseToolchain  -Dskip.yarn -Dtoolchain.version="${JDK_TOOLCHAIN_VERSION}"
+                    mvn -B test -PuseToolchain  -Dskip.npm -Dtoolchain.version="${JDK_TOOLCHAIN_VERSION}"
                 else
-                    mvn -B test -PuseToolchain -Dskip.yarn
+                    mvn -B test -PuseToolchain -Dskip.npm
                 fi
             else
-                mvn -B test -Dskip.yarn
+                mvn -B test -Dskip.npm
             fi
         '''
         
