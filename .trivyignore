@@ -6,8 +6,12 @@
 # ------------
 # No affected by this vulnerability : we don't use parseHTML and close tag correctly. 
 # See : https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-9506
-# could be remove after : 
+# could be remove after : https://github.com/eclipse-leshan/leshan/issues/1665
 CVE-2024-9506
+
+# We need to wait for : https://github.com/CycloneDX/cyclonedx-javascript-library/issues/1079
+CVE-2024-34394
+CVE-2024-34393
 
 # =========================
 # About Leshan Libraries
