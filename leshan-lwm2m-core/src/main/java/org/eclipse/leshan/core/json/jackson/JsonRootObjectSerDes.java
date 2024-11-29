@@ -16,7 +16,9 @@
 package org.eclipse.leshan.core.json.jackson;
 
 import java.math.BigDecimal;
+import java.util.List;
 
+import org.eclipse.leshan.core.json.JsonArrayEntry;
 import org.eclipse.leshan.core.json.JsonRootObject;
 import org.eclipse.leshan.core.util.json.JacksonJsonSerDes;
 import org.eclipse.leshan.core.util.json.JsonException;
@@ -52,22 +54,24 @@ public class JsonRootObjectSerDes extends JacksonJsonSerDes<JsonRootObject> {
         if (jsonNode == null)
             return null;
 
-        JsonRootObject jro = new JsonRootObject();
+        List<JsonArrayEntry> ResourceList;
+        String baseName = null;
+        BigDecimal baseTime = null;
 
         JsonNode e = jsonNode.get("e");
         if (e != null && e.isArray())
-            jro.setResourceList(serDes.deserialize(e.elements()));
+            ResourceList = serDes.deserialize(e.elements());
         else
             throw new JsonException("'e' field is missing for %s", jsonNode.toString());
 
         JsonNode bn = jsonNode.get("bn");
         if (bn != null && bn.isTextual())
-            jro.setBaseName(bn.asText());
+            baseName = bn.asText();
 
         JsonNode bt = jsonNode.get("bt");
         if (bt != null && bt.isNumber())
-            jro.setBaseTime(new BigDecimal(bt.asText()));
+            baseTime = new BigDecimal(bt.asText());
 
-        return jro;
+        return new JsonRootObject(baseName, ResourceList, baseTime);
     }
 }
