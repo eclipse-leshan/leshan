@@ -11,10 +11,18 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  *******************************************************************************/
 
-import VueSSE from 'vue-sse';
-import Vue from "vue";
+import VueSSE from "vue-sse";
 
+export default {
+  install(app, config = {}) {
+    const leshanDefaultConfig = {
+      format: 'json',
+    };
 
-Vue.use(VueSSE, {
-    format: 'json',
-  });
+    // Merge both config
+    const finalConfig = { ...leshanDefaultConfig, ...config };
+
+    // Install plugin with given config
+    app.use(VueSSE, finalConfig);
+  }
+};

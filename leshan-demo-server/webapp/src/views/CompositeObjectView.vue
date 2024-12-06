@@ -11,7 +11,7 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
   ----------------------------------------------------------------------------->
 <template>
-  <v-sheet color="grey lighten-5" class="pa-4" width="100%">
+  <v-sheet color="grey-lighten-5" class="pa-4" width="100%">
     <div>
       <h3 class="text-capitalize">
         <composite-object-icons :compositeObject="compositeObject" />{{
@@ -24,7 +24,7 @@
         />
         <v-icon
           class="mr-3"
-          small
+          size="small"
           v-show="state.compositeObserved[compositeObservationKey]"
           :title="compositeObservationKey + ' observed'"
           >{{ $icons.mdiEyeOutline }}</v-icon
@@ -42,7 +42,7 @@
         {{ path }}
         <span
           v-if="node.instanceNotAvailable"
-          class="subtitle-2 grey--text text--darken-1"
+          class="text-subtitle-2 text-grey-darken-1"
         >
           - Instance {{ node.path.objectinstanceid }} was not reported as
           available by the client
@@ -65,7 +65,7 @@
       <span v-else-if="node.path.type == 'object'">
         <div v-for="instance in node.instances" :key="instance.path">
           <h5 class="pa-1">Instance {{ instance.id }}</h5>
-          <v-expansion-panels accordion multiple dense tile>
+          <v-expansion-panels variant="accordion" multiple dense tile>
             <resource-expansion-panel
               v-for="resource in instance.resources"
               :key="resource.path"
@@ -77,7 +77,7 @@
       </span>
       <!-- object instance-->
       <div v-else-if="node.path.type == 'objectinstance'">
-        <v-expansion-panels accordion multiple dense tile>
+        <v-expansion-panels variant="accordion" multiple dense tile>
           <resource-expansion-panel
             v-for="resource in node.resources"
             :key="resource.path"
@@ -88,7 +88,7 @@
       </div>
       <!-- object instance-->
       <div v-else-if="node.path.type == 'resource'">
-        <v-expansion-panels accordion multiple dense tile>
+        <v-expansion-panels variant="accordion" multiple dense tile>
           <resource-expansion-panel
             :resource="node.resource"
             :endpoint="endpoint"
@@ -97,7 +97,7 @@
       </div>
       <!-- resource instance case -->
       <div v-else-if="node.path.type == 'resourceinstance'">
-        <v-expansion-panels accordion multiple dense tile>
+        <v-expansion-panels variant="accordion" multiple dense tile>
           <resource-instance-expansion-panel
             :resource="node.resource"
             :resourceInstanceId="node.resourceInstanceId"
@@ -119,7 +119,6 @@
 <script>
 import ResourceExpansionPanel from "../components/resources/view/ResourceExpansionPanel.vue";
 import ResourceInstanceExpansionPanel from "../components/resources/view/ResourceInstanceExpansionPanel.vue";
-import { preference } from "vue-preferences";
 import { LwM2mPath } from "../js/lwm2mpath.js";
 import CompositeObjectIcons from "../components/compositeOperation/CompositeObjectIcons.vue";
 import CompositeObjectControl from "../components/compositeOperation/CompositeObjectControl.vue";
@@ -148,12 +147,10 @@ export default {
   },
   methods: {
     fetchData() {
-      let compositeObjects = preference("compositeObjects", {
-        defaultValue: [],
-      });
-      this.compositeObject = compositeObjects
-        .get()
-        .find((o) => o.name == this.$route.params.compositeObjectName);
+      let compositeObjects = this.$pref.compositeObjects;
+      this.compositeObject = compositeObjects.find(
+        (o) => o.name == this.$route.params.compositeObjectName
+      );
     },
     createResources(objectdef, instanceid) {
       if (objectdef)

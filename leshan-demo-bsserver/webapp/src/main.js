@@ -11,21 +11,37 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  *******************************************************************************/
 
-import Vue from "vue";
-import "@leshan-demo-servers-shared/plugins/axios";
-import "./plugins/icons";
-import "@leshan-demo-servers-shared/plugins/dialog";
-import "@leshan-demo-servers-shared/plugins/dayjs";
-import "@leshan-demo-servers-shared//plugins/sse";
-import "@leshan-demo-servers-shared/plugins/preferences";
-import App from "./App.vue";
-import vuetify from "@leshan-demo-servers-shared/plugins/vuetify";
-import router from "./router";
+// import Vue from "vue";
+// import "@leshan-demo-servers-shared/plugins/axios";
+// import "./plugins/icons";
+// import "@leshan-demo-servers-shared/plugins/dialog";
+// import "@leshan-demo-servers-shared/plugins/dayjs";
+// import "@leshan-demo-servers-shared//plugins/sse";
+// import "@leshan-demo-servers-shared/plugins/preferences";
+// import App from "./App.vue";
+// import vuetify from "@leshan-demo-servers-shared/plugins/vuetify";
+// import router from "./router";
 
-Vue.config.productionTip = false;
+// Vue.config.productionTip = false;
 
-new Vue({
-  vuetify,
-  router,
-  render: (h) => h(App),
-}).$mount("#app");
+// new Vue({
+//   vuetify,
+//   router,
+//   render: (h) => h(App),
+// }).$mount("#app");
+
+
+// Plugins
+import { registerPlugins } from '@/plugins'
+
+// Components
+import App from './App.vue'
+
+// Composables
+import { createApp } from 'vue'
+
+const app = createApp(App)
+
+registerPlugins(app)
+
+app.mount('#app')

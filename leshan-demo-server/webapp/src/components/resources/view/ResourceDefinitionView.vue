@@ -11,13 +11,13 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
   ----------------------------------------------------------------------------->
 <template>
-  <v-card elevation="0" class="grey lighten-4">
+  <v-card elevation="0" class="bg-grey-lighten-4">
     <!-- Model -->
     <v-card-subtitle class="pb-0 text-decoration-underline">
       Model :
     </v-card-subtitle>
     <v-card-text>
-      <v-simple-table dense>
+      <v-table dense>
         <template v-slot:default>
           <thead>
             <tr>
@@ -52,7 +52,7 @@
             </tr>
           </tbody>
         </template>
-      </v-simple-table>
+      </v-table>
     </v-card-text>
     <!-- description -->
     <v-card-subtitle class="pb-0 text-decoration-underline">

@@ -11,14 +11,12 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  *******************************************************************************/
 
-import Vue from "vue";
-import VueRouter from "vue-router";
-const Bootstrap = () => import("../views/Bootstrap.vue");
-const About = () => import("@leshan-demo-servers-shared/views/About.vue");
-const Client = () => import("../views/Client.vue");
-const Server = () => import("@leshan-demo-servers-shared/views/Server.vue");
+import { createWebHashHistory, createRouter } from 'vue-router'
 
-Vue.use(VueRouter);
+const Bootstrap = () => import("../views/BootstrapView.vue");
+const About = () => import("@leshan-demo-servers-shared/views/About.vue");
+const Client = () => import("../views/ClientView.vue");
+const Server = () => import("@leshan-demo-servers-shared/views/Server.vue");
 
 const routes = [
   {
@@ -53,8 +51,10 @@ const routes = [
   },
 ];
 
-const router = new VueRouter({
+
+const router = createRouter({
+  history: createWebHashHistory(),
   routes,
-});
+})
 
 export default router;

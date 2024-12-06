@@ -12,7 +12,7 @@
   ----------------------------------------------------------------------------->
 <template>
   <v-expansion-panel>
-    <v-expansion-panel-header style="min-height: 32px" class="pa-3">
+    <v-expansion-panel-title style="min-height: 32px" class="pa-3">
       <template v-slot:default="{ open }">
         <!-- min-width is needed for avoid shift about truncated text 
           see : https://stackoverflow.com/a/36247448/5088764
@@ -36,7 +36,7 @@
               class="pa-2 text--disabled"
             >
               <v-icon
-                x-small
+                size="x-small"
                 v-show="state.observed[resourceInstancePath]"
                 :title="
                   'Resource Instance' + resourceInstancePath + ' observed'
@@ -79,8 +79,8 @@
           </v-row>
         </v-container>
       </template>
-    </v-expansion-panel-header>
-    <v-expansion-panel-content>
+    </v-expansion-panel-title>
+    <v-expansion-panel-text>
       <resource-instance-view
         :endpoint="endpoint"
         :resourceInstance="resourceInstanceValue"
@@ -88,7 +88,7 @@
         :resourcePath="resource.path"
         :resourceInstanceId="resourceInstanceId"
       />
-    </v-expansion-panel-content>
+    </v-expansion-panel-text>
   </v-expansion-panel>
 </template>
 <script>

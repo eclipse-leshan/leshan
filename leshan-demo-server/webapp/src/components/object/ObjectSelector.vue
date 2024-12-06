@@ -11,33 +11,30 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
   ----------------------------------------------------------------------------->
 <template>
-  <v-list dense>
-    <v-list-item-group>
-      <v-list-item
-        v-for="object in objects"
-        :key="object.id"
-        :to="'/clients/' + $route.params.endpoint + '/' + object.id"
+  <v-list density="compact">
+    <v-list-item
+      v-for="object in objects"
+      :key="object.id"
+      :to="'/clients/' + $route.params.endpoint + '/' + object.id"
+    >
+      <template v-slot:append>
+        <object-icon :objectId="object.id" class="me-2" />
+      </template>
+
+      <v-list-item-title>
+        {{ object.name }}
+        <v-icon
+          v-if="shouldBeHidden(object)"
+          size="small"
+          color="red"
+          :title="`The Object ${object.name} ID:${object.id} MUST NOT be part of Update Objects and Object Instances list in Register Request.`"
+          >{{ $mdiAlertCircle }}</v-icon
+        ></v-list-item-title
       >
-        <v-list-item-icon class="me-2">
-          <object-icon :objectId="object.id" />
-        </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title>
-            {{ object.name }}
-            <v-icon
-              v-if="shouldBeHidden(object)"
-              small
-              color="red"
-              :title="`The Object ${object.name} ID:${object.id} MUST NOT be part of Update Objects and Object Instances list in Register Request.`"
-              >{{ $mdiAlertCircle }}</v-icon
-            ></v-list-item-title
-          >
-          <v-list-item-subtitle>
-            {{ "/" + object.id }}
-          </v-list-item-subtitle>
-        </v-list-item-content>
-      </v-list-item>
-    </v-list-item-group>
+      <v-list-item-subtitle>
+        {{ "/" + object.id }}
+      </v-list-item-subtitle>
+    </v-list-item>
   </v-list>
 </template>
 <script>

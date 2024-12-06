@@ -44,7 +44,7 @@
  */
 export default {
   props: {
-    value: null, // the input value for this LWM2M Node (v-model)
+    modelValue: null, // the input value for this LWM2M Node (v-model)
     resourcedef: Object, // the model of the resource
   },
   data() {
@@ -54,7 +54,7 @@ export default {
     };
   },
   watch: {
-    value(v) {
+    modelValue(v) {
       if (v == null) {
         this.localFile = null;
         this.localOpaqueValue = null;
@@ -68,7 +68,7 @@ export default {
       },
       set(v) {
         this.localOpaqueValue = v;
-        this.$emit("input", this.localOpaqueValue);
+        this.$emit("update:model-value", this.localOpaqueValue);
       },
     },
     file: {
@@ -78,9 +78,11 @@ export default {
       set(v) {
         this.localFile = v;
         if (v) {
-          this.toByteArray(this.localFile).then((p) => this.$emit("input", p));
+          this.toByteArray(this.localFile).then((p) =>
+            this.$emit("update:model-value", p)
+          );
         } else {
-          this.$emit("input", v);
+          this.$emit("update:model-value", v);
         }
       },
     },
@@ -90,7 +92,7 @@ export default {
     toByteArray(file) {
       return new Promise((resolve) => {
         var reader = new FileReader();
-        reader.onload = function() {
+        reader.onload = function () {
           var u = new Uint8Array(this.result),
             a = new Array(u.length),
             i = u.length;

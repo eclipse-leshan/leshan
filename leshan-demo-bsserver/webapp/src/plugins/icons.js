@@ -11,7 +11,6 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  *******************************************************************************/
 
-import Vue from "vue";
 import {
   mdiAccessPointNetwork,
   mdiAccountCancelOutline,
@@ -24,6 +23,7 @@ import {
   mdiDatabaseRemove,
   mdiDelete,
   mdiDeleteOutline,
+  mdiDeleteSweepOutline,
   mdiDevices,
   mdiDownload,
   mdiExclamationThick,
@@ -59,6 +59,7 @@ const _icons = {
   mdiDatabaseRemove,
   mdiDelete,
   mdiDeleteOutline,
+  mdiDeleteSweepOutline,
   mdiDevices,
   mdiDownload,
   mdiExclamationThick,
@@ -73,17 +74,8 @@ const _icons = {
   mdiServerSecurity,
 };
 
-let IconsPlugin = {};
-IconsPlugin.install = function (Vue) {
-  Object.defineProperties(Vue.prototype, {
-    $icons: {
-      get() {
-        return _icons;
-      },
-    },
-  });
-};
-
-Vue.use(IconsPlugin);
-
-export default IconsPlugin;
+export default {
+  install: (app) => {
+    app.config.globalProperties.$icons = _icons;
+  }
+}

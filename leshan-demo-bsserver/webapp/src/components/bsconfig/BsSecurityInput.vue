@@ -14,43 +14,43 @@
   <div>
     <v-select
       :items="modes"
-      item-text="label"
+      item-title="label"
       item-value="id"
       label="Security Mode"
       v-model="internalMode"
-      @input="modeChanged()"
+      @update:model-value="modeChanged()"
     ></v-select>
-    <psk-input
+    <bs-psk-input
       v-if="internalMode == 'psk'"
       v-model="pskValue"
-      @input="$emit('update:details', pskValue)"
+      @update:model-value="$emit('update:details', pskValue)"
     />
-    <rpk-input
+    <bs-rpk-input
       v-if="internalMode == 'rpk'"
       v-model="rpkValue"
       :defaultvalue="defaultrpk"
-      @input="$emit('update:details', rpkValue)"
+      @update:model-value="$emit('update:details', rpkValue)"
     />
-    <x-509-input
+    <bs-x-509-input
       v-if="internalMode == 'x509'"
       v-model="x509Value"
       :defaultvalue="defaultx509"
-      @input="$emit('update:details', x509Value)"
+      @update:model-value="$emit('update:details', x509Value)"
     />
   </div>
 </template>
 <script>
-import PskInput from "./PskInput.vue";
-import RpkInput from "./RpkInput.vue";
-import X509Input from "./X509Input.vue";
+import BsPskInput from "./BsPskInput.vue";
+import BsRpkInput from "./BsRpkInput.vue";
+import BsX509Input from "./BsX509Input.vue";
 
 export default {
-  components: { PskInput, RpkInput, X509Input },
-  props: { mode: String, details: Object, defaultrpk:{}, defaultx509:{}},
+  components: { BsPskInput, BsRpkInput, BsX509Input },
+  props: { mode: String, details: Object, defaultrpk: {}, defaultx509: {} },
   data() {
     return {
       modes: [
-        { id:"no_sec", label: "No Security" },
+        { id: "no_sec", label: "No Security" },
         { id: "psk", label: "Pre-shared Key" },
         { id: "rpk", label: "Raw Public Key" },
         { id: "x509", label: "x509 Certificate" },

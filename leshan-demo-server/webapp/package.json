@@ -7,71 +7,41 @@
     "serve": "vite",
     "build": "vite build --emptyOutDir",
     "preview": "vite preview",
-    "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src",
+    "lint": "eslint src",
     "report": "REPORT=true vite build --emptyOutDir",
     "sbom": "cyclonedx-npm --output-format json --output-file ../target/sbom-frontend.json",
     "sbom_maven": "cyclonedx-npm --output-format ${OUTPUT_FORMAT} --output-file ${OUTPUT_BOM_DIRECTORY}/${OUTPUT_BOM_NAME}.${OUTPUT_FORMAT}"
   },
   "dependencies": {
     "@fontsource/roboto": "^4.5.0",
+    "@vueuse/core": "^12.0.0",
     "axios": "^1.6.0",
     "dayjs": "^1.11.10",
     "file-saver": "^2.0.5",
-    "vue": "^2.7.0",
-    "vue-preferences": "^3.0.0",
-    "vue-router": "^3.2.0",
+    "vue": "^3.5.12",
+    "vue-router": "^4.4.5",
     "vue-sse": "^2.2.0",
-    "vuetify": "^2.5.0",
-    "vuetify-dialog": "^2.0.0"
+    "vuetify": "^3.7.4",
+    "vuetify3-dialog": "^1.5.4"
   },
   "devDependencies": {
     "@cyclonedx/cyclonedx-npm": "^1.19.3",
     "@mdi/js": "^6.6.96",
     "@rollup/plugin-node-resolve": "^15.2.3",
-    "@vitejs/plugin-vue2": "^2.2.0",
-    "browserslist-to-esbuild": "^1.2.0",
-    "eslint": "^8.0.0",
-    "eslint-plugin-vue": "^8.0.0",
+    "@vitejs/plugin-legacy": "^5.4.3",
+    "@vitejs/plugin-vue": "^5.2.0",
+    "eslint": "^9.0.0",
+    "eslint-plugin-vue": "^9.0.0",
+    "eslint-plugin-vuetify": "^2.5.1",
     "npm-check-updates": "^17.1.10",
     "rollup-plugin-visualizer": "^5.9.3",
     "sass": "~1.32.0",
+    "unplugin-auto-import": "^0.17.6",
+    "unplugin-fonts": "^1.1.1",
     "unplugin-vue-components": "^0.25.2",
+    "unplugin-vue-router": "^0.10.0",
     "vite": "^5.0.0",
-    "vite-plugin-compression": "^0.5.1"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true,
-      "es2022": true
-    },
-    "extends": [
-      "plugin:vue/essential",
-      "eslint:recommended"
-    ],
-    "rules": {
-      "vue/valid-v-slot": [
-        "error",
-        {
-          "allowModifiers": true
-        }
-      ],
-      "vue/multi-word-component-names": [
-        "error",
-        {
-          "ignores": [
-            "About",
-            "Client",
-            "Clients",
-            "Security"
-          ]
-        }
-      ]
-    }
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not dead"
-  ]
+    "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-vuetify": "^2.0.3"
+  }
 }

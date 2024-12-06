@@ -14,7 +14,7 @@
   <div>
     <v-text-field
       v-model="server.url"
-      @input="$emit('input', server)"
+      @update:model-value="$emit('update:model-value', server)"
       :label="
         server.mode == 'no_sec'
           ? 'Server URL (default :' + defaultNoSecValue + ')'
@@ -26,37 +26,37 @@
       "
       class="examplePatch"
     ></v-text-field>
-    <security-input
+    <bs-security-input
       v-if="server"
-      :mode.sync="server.security.mode"
-      @update:mode="$emit('input', server)"
-      :details.sync="server.security.details"
-      @update:details="$emit('input', server)"
+      v-model:mode="server.security.mode"
+      v-model:details="server.security.details"
+      @update:mode="$emit('update:model-value', server)"
+      @update:details="$emit('update:model-value', server)"
       :defaultrpk="defaultrpk"
       :defaultx509="defaultx509"
     />
     <!-- OSCORE Object -->
     <v-switch
       v-model="useOSCORE"
-      @change="useOSCOREChanged($event)"
+      @update:model-value="useOSCOREChanged($event)"
       label="Using OSCORE (Experimental - for now can not be used with DTLS)"
     ></v-switch>
     <oscore-input
       v-if="useOSCORE"
       v-model="server.oscore"
-      @input="$emit('input', server)"
+      @update:model-value="$emit('update:model-value', server)"
     >
     </oscore-input>
   </div>
 </template>
 <script>
-import securityInput from "./SecurityInput.vue";
+import BsSecurityInput from "./BsSecurityInput.vue";
 import OscoreInput from "@leshan-demo-servers-shared/components/security/OscoreInput.vue";
 
 export default {
-  components: { securityInput, OscoreInput },
+  components: { BsSecurityInput, OscoreInput },
   props: {
-    value: Object,
+    modelValue: Object,
     defaultNoSecValue: String,
     defaultSecureValue: String,
     defaultrpk: {
@@ -79,10 +79,10 @@ export default {
     };
   },
   beforeMount() {
-    this.initValue(this.value);
+    this.initValue(this.modelValue);
   },
   watch: {
-    value(v) {
+    modelValue(v) {
       this.initValue(v);
     },
   },
@@ -102,7 +102,7 @@ export default {
       } else {
         this.server.oscore = undefined;
       }
-      this.$emit("input", this.server);
+      this.$emit("update:model-value", this.server);
     },
     /*exclusifTlsOrOSCORE() {
       if (this.useDTLS) {

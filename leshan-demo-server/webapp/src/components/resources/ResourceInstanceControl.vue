@@ -23,14 +23,16 @@
       v-if="readable"
       :title="'Passive Cancel Obverse ' + path"
     >
-      <v-icon dense small>{{ $icons.mdiEyeOffOutline }}</v-icon></request-button
+      <v-icon size="small">{{
+        $icons.mdiEyeOffOutline
+      }}</v-icon></request-button
     >
     <request-button
       @on-click="stopActiveObserve"
       v-if="readable"
       :title="'Active Cancel Obverse ' + path"
     >
-      <v-icon dense small>{{
+      <v-icon size="small">{{
         $icons.mdiEyeRemoveOutline
       }}</v-icon></request-button
     >
@@ -57,11 +59,7 @@
 <script>
 import RequestButton from "../RequestButton.vue";
 import ResourceInstanceWriteDialog from "./ResourceInstanceWriteDialog.vue";
-import { preference } from "vue-preferences";
 import { resourceInstanceToREST } from "../../js/restutils";
-
-const timeout = preference("timeout", { defaultValue: 5 });
-const singleFormat = preference("singleformat", { defaultValue: "TLV" });
 
 export default {
   components: { RequestButton, ResourceInstanceWriteDialog },
@@ -101,7 +99,7 @@ export default {
       return `api/clients/${encodeURIComponent(this.endpoint)}${this.path}`;
     },
     requestOption() {
-      return `?timeout=${timeout.get()}&format=${singleFormat.get()}`;
+      return `?timeout=${this.$pref.timeout}&format=${this.$pref.singleFormat}`;
     },
 
     updateState(content, requestButton) {
@@ -165,7 +163,9 @@ export default {
     },
     stopActiveObserve(requestButton) {
       this.axios
-        .delete(this.requestPath() + `/observe?active&timeout=${timeout.get()}`)
+        .delete(
+          this.requestPath() + `/observe?active&timeout=${this.$pref.timeout}`
+        )
         .then((response) => {
           this.updateState(response.data, requestButton);
           if (response.data.success) {

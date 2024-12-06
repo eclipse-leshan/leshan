@@ -1,13 +1,20 @@
-import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue2";
+
+// Plugins
+import Components from 'unplugin-vue-components/vite'
+import Vue from '@vitejs/plugin-vue'
+import legacy from '@vitejs/plugin-legacy'
+import Vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
+import ViteFonts from 'unplugin-fonts/vite'
+import VueRouter from 'unplugin-vue-router/vite'
+
+// Utilities
+import { defineConfig } from 'vite'
+import { fileURLToPath, URL } from 'node:url'
+
 import { nodeResolve } from "@rollup/plugin-node-resolve";
-import { VuetifyResolver } from "unplugin-vue-components/resolvers";
-import Components from "unplugin-vue-components/vite";
 import browserslistToEsbuild from "browserslist-to-esbuild";
 import viteCompression from "vite-plugin-compression";
 import { visualizer } from "rollup-plugin-visualizer";
-
-import path from "path";
 
 const outputDir = process.env.MAVEN_OUTPUT_DIR
   ? process.env.MAVEN_OUTPUT_DIR
@@ -15,28 +22,37 @@ const outputDir = process.env.MAVEN_OUTPUT_DIR
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: "./",
+  //base: "./", // should be deleted ?
   plugins: [
-    vue(),
-    Components({
-      resolvers: [
-        // Vuetify
-        VuetifyResolver(),
-      ],
-      // Vue version of project.
-      version: 2.7,
+    VueRouter(),
+    Vue({
+      template: { transformAssetUrls }
     }),
+    // https://github.com/vuetifyjs/vuetify-loader/tree/master/packages/vite-plugin#readme
+    Vuetify({
+      autoImport: true,
+    }),
+    Components(),
+    ViteFonts({
+      google: {
+        families: [{
+          name: 'Roboto',
+          styles: 'wght@100;300;400;500;700;900',
+        }],
+      },
+    }),
+    legacy({ targets: ['defaults', 'not IE 11'] }),
     nodeResolve({
-      modulePaths: [path.resolve("./node_modules")],
+      modulePaths: [fileURLToPath(new URL('./node_modules', import.meta.url))],
     }),
     !process.env.REPORT ? viteCompression() : null,
     process.env.REPORT
       ? visualizer({
-          template: "treemap", //"sunburst",
-          filename: outputDir + "/stats.html",
-          open: true,
-          gzipSize: true,
-        })
+        template: "treemap", //"sunburst",
+        filename: outputDir + "/stats.html",
+        open: true,
+        gzipSize: true,
+      })
       : null,
   ],
   build: {
@@ -61,11 +77,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
-      "@leshan-demo-servers-shared": path.join(
-        __dirname,
-        "../../leshan-demo-servers-shared/webapp/src"
-      ),
+      "@": fileURLToPath(new URL('./src', import.meta.url)),
+      "@leshan-demo-servers-shared": fileURLToPath(new URL('../../leshan-demo-servers-shared/webapp/src', import.meta.url)),
     },
     extensions: [".js", ".vue"],
   },

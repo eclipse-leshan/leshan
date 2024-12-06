@@ -18,7 +18,7 @@
         :indeterminate="state !== ''"
         :key="state"
         :indeterminate-icon="icon"
-        :off-icon="$icons.mdiCloseBoxOutline"
+        :false-icon="$icons.mdiCloseBoxOutline"
       ></v-checkbox>
     </v-col>
     <v-col>
@@ -39,7 +39,7 @@
  */
 export default {
   props: {
-    value: null, // the input value for this LWM2M Node (v-model)
+    modelValue: null, // the input value for this LWM2M Node (v-model)
     resourcedef: Object, // the model of the resource
   },
   data() {
@@ -48,7 +48,7 @@ export default {
     };
   },
   watch: {
-    value(v) {
+    modelValue(v) {
       this.localValue = v; // string or boolean value
     },
   },
@@ -70,7 +70,7 @@ export default {
         return this.localValue;
       },
       set(v) {
-        this.$emit("input", this.toBoolean(v));
+        this.$emit("update:model-value", this.toBoolean(v));
       },
     },
     state() {

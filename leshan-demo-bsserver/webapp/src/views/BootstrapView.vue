@@ -16,26 +16,26 @@
       :headers="headers"
       :items="clientConfigs"
       item-key="endpoint"
-      sort-by="endpoint"
+      :sort-by="[{ key: 'endpoint', order: 'asc' }]"
       class="elevation-0"
       @click:row="openLink"
-      dense
+      density="compact"
       :search="search"
     >
       <template v-slot:top>
-        <v-toolbar flat>
-          <v-toolbar-title v-if="$vuetify.breakpoint.smAndUp"
+        <v-toolbar flat density="compact" color="white">
+          <v-toolbar-title v-if="$vuetify.display.smAndUp"
             >Clients Configuration</v-toolbar-title
           >
           <v-divider
-            v-if="$vuetify.breakpoint.smAndUp"
+            v-if="$vuetify.display.smAndUp"
             class="mx-4"
             inset
             vertical
           ></v-divider>
           <v-text-field
             v-model="search"
-            :append-icon="$icons.mdiMagnify"
+            :append-inner-icon="$icons.mdiMagnify"
             label="Search"
             single-line
             hide-details
@@ -44,11 +44,14 @@
           ></v-text-field>
 
           <!-- add clients configuration button-->
-          <v-btn dark class="mb-2" @click.stop="dialogOpened = true">
-            {{
-              $vuetify.breakpoint.smAndDown ? "" : "Add Clients Configuration"
-            }}
-            <v-icon :right="!$vuetify.breakpoint.smAndDown" dark>
+          <v-btn
+            class="mb-2"
+            @click.stop="dialogOpened = true"
+            color="black"
+            variant="elevated"
+          >
+            {{ $vuetify.display.smAndDown ? "" : "Add Clients Configuration" }}
+            <v-icon :end="!$vuetify.display.smAndDown">
               {{ $icons.mdiKeyPlus }}
             </v-icon>
           </v-btn>
@@ -81,8 +84,8 @@
             Add Server: <code>{{ server.security.uri }}</code>
             <span v-if="server.security.securityMode.toLowerCase() != 'no_sec'">
               using
-              <v-chip small>
-                <v-icon left small>
+              <v-chip size="small">
+                <v-icon start size="small">
                   {{ modeIcon(server.security.securityMode.toLowerCase()) }}
                 </v-icon>
                 {{ server.security.securityMode.toLowerCase() }}
@@ -90,8 +93,8 @@
             </span>
             <span v-if="server.oscore">
               with
-              <v-chip small>
-                <v-icon left small>
+              <v-chip size="small">
+                <v-icon start size="small">
                   {{ oscoreIcon() }}
                 </v-icon>
                 OSCORE
@@ -104,8 +107,8 @@
             Add Bootstrap Server: <code>{{ server.security.uri }}</code>
             <span v-if="server.security.securityMode.toLowerCase() != 'no_sec'">
               using
-              <v-chip small>
-                <v-icon left small>
+              <v-chip size="small">
+                <v-icon start size="small">
                   {{ modeIcon(server.security.securityMode.toLowerCase()) }}
                 </v-icon>
                 {{ server.security.securityMode.toLowerCase() }}
@@ -113,8 +116,8 @@
             </span>
             <span v-if="server.oscore">
               with
-              <v-chip small>
-                <v-icon left small>
+              <v-chip size="small">
+                <v-icon start size="small">
                   {{ oscoreIcon() }}
                 </v-icon>
                 OSCORE
@@ -125,7 +128,7 @@
       </template>
       <!--custom display for "actions" column-->
       <template v-slot:item.actions="{ item }">
-        <v-icon small @click.stop="onDelete(item)">
+        <v-icon size="small" @click.stop="onDelete(item)">
           {{ $icons.mdiDelete }}
         </v-icon>
       </template>
@@ -150,15 +153,15 @@ export default {
   data: () => ({
     dialogOpened: false,
     headers: [
-      { text: "Endpoint", value: "endpoint", width: "15%" },
-      { text: "Credentials", value: "security", width: "15%", sortable: false },
+      { title: "Endpoint", key: "endpoint", width: "15%" },
+      { title: "Credentials", key: "security", width: "15%", sortable: false },
       {
-        text: "Bootstrap Config",
-        value: "config",
+        title: "Bootstrap Config",
+        key: "config",
         width: "70%",
         sortable: false,
       },
-      { text: "Actions", value: "actions", sortable: false },
+      { title: "Actions", key: "actions", sortable: false },
     ],
     search: "",
     clientConfigs: [],
@@ -201,8 +204,8 @@ export default {
   },
 
   methods: {
-    openLink(bs) {
-      this.$router.push(`/bootstrap/${bs.endpoint}`);
+    openLink(event, { item }) {
+      this.$router.push(`/bootstrap/${item.endpoint}`);
     },
     modeIcon(securitymode) {
       return getModeIcon(securitymode);

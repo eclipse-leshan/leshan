@@ -12,8 +12,8 @@
   ----------------------------------------------------------------------------->
 <template>
   <v-expansion-panel>
-    <v-expansion-panel-header style="min-height: 32px" class="pa-3">
-      <template v-slot:default="{ open }">
+    <v-expansion-panel-title style="min-height: 32px" class="pa-3">
+      <template v-slot:default="{ expanded }">
         <!-- min-width is needed for avoid shift about truncated text 
           see : https://stackoverflow.com/a/36247448/5088764
           -->
@@ -36,7 +36,7 @@
               class="pa-2 text--disabled"
             >
               <v-icon
-                x-small
+                size="x-small"
                 v-show="state.observed[resource.path]"
                 :title="'Resource ' + resource.path + ' observed'"
                 >{{ $icons.mdiEyeOutline }}</v-icon
@@ -46,7 +46,7 @@
             <v-col cols="7" lg="3" align-self="center" class="pa-0">
               <v-fade-transition leave-absolute>
                 <resource-control
-                  v-show="!open"
+                  v-show="!expanded"
                   :resourcedef="resource.def"
                   :endpoint="endpoint"
                   :path="resource.path"
@@ -67,7 +67,7 @@
               <v-fade-transition leave-absolute>
                 <simple-resource-view
                   class="pr-3 text-truncate"
-                  v-show="!open"
+                  v-show="!expanded"
                   :resource="state.data[resource.path]"
                   :resourcedef="resource.def"
                 />
@@ -76,15 +76,15 @@
           </v-row>
         </v-container>
       </template>
-    </v-expansion-panel-header>
-    <v-expansion-panel-content>
+    </v-expansion-panel-title>
+    <v-expansion-panel-text>
       <resource-view
         :endpoint="endpoint"
         :resource="state.data[resource.path]"
         :resourcedef="resource.def"
         :path="resource.path"
       />
-    </v-expansion-panel-content>
+    </v-expansion-panel-text>
   </v-expansion-panel>
 </template>
 <script>
