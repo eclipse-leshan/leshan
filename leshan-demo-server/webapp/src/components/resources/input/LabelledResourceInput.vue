@@ -13,23 +13,23 @@
 <template>
   <v-row dense>
     <v-col cols="12" md="2">
-      <v-subheader v-if="resourcedef.mandatory"
-        ><strong>{{ resourcedef.name }} *</strong></v-subheader
+      <span class="text-subtitle-2" v-if="resourcedef.mandatory"
+        ><strong>{{ resourcedef.name }} *</strong></span
       >
-      <v-subheader v-else>{{ resourcedef.name }} </v-subheader>
+      <span class="text-subtitle-2" v-else>{{ resourcedef.name }} </span>
     </v-col>
     <v-col cols="11" md="9">
       <resource-input
         :resourcedef="resourcedef"
         :hint="hint(resourcedef)"
-        :value="value"
-        @input="$emit('input', $event)"
+        :model-value="modelValue"
+        @update:model-value="$emit('update:model-value', $event)"
       />
     </v-col>
     <v-col cols="1" md="1">
-      <v-tooltip left>
-        <template v-slot:activator="{ on }">
-          <v-icon v-on="on">
+      <v-tooltip location="left">
+        <template v-slot:activator="{ props }">
+          <v-icon v-bind="props">
             {{ $icons.mdiHelpCircleOutline }}
           </v-icon>
         </template>
@@ -47,7 +47,7 @@ import ResourceInput from "./ResourceInput.vue";
 export default {
   components: { ResourceInput },
   props: {
-    value: null, // the input value for this resource (v-model)
+    modelValue: null, // the input value for this resource (v-model)
     resourcedef: Object, // the model of the resource
   },
   methods: {

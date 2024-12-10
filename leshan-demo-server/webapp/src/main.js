@@ -11,45 +11,62 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  *******************************************************************************/
 
-import Vue from "vue";
-import "@leshan-demo-servers-shared/plugins/axios";
-import "./plugins/store";
-import "./plugins/icons";
-import "@leshan-demo-servers-shared/plugins/sse";
-import "@leshan-demo-servers-shared/plugins/dayjs";
-import "@leshan-demo-servers-shared/plugins/preferences";
-import "@leshan-demo-servers-shared/plugins/dialog";
-import App from "./App.vue";
-import vuetify from "@leshan-demo-servers-shared/plugins/vuetify";
-import router from "./router";
+// import Vue from "vue";
+// import "@leshan-demo-servers-shared/plugins/axios";
+// import "./plugins/store";
+// import "./plugins/icons";
+// import "@leshan-demo-servers-shared/plugins/sse";
+// import "@leshan-demo-servers-shared/plugins/dayjs";
+// import "@leshan-demo-servers-shared/plugins/preferences";
+// import "@leshan-demo-servers-shared/plugins/dialog";
+// import App from "./App.vue";
+// import vuetify from "@leshan-demo-servers-shared/plugins/vuetify";
+// import router from "./router";
 
-Vue.config.productionTip = false;
+// Vue.config.productionTip = false;
 
-/**
- * directive to hide content without changing layout unlike v-show or v-if
- */
-Vue.directive("visible", function (el, binding) {
-  el.style.visibility = binding.value ? "visible" : "hidden";
-});
 
-let v = new Vue({
-  vuetify,
-  router,
-  render: (h) => h(App),
-}).$mount("#app");
 
-/** Add Leshan Server Demo specific axios interceptor */
-v.$axios.interceptors.response.use(function (response) {
-  if (response.data.delayed) {
-    // show request will be delayed
-    let msg = `<strong>Device is not awake</strong>
-         </br>Request will be delayed until device is awake again.
-         </br><strong>Leshan Server Demo</strong> is only able to delayed the last request.`;
+// let v = new Vue({
+//   vuetify,
+//   router,
+//   render: (h) => h(App),
+// }).$mount("#app");
 
-    Vue.prototype.$dialog.notify.info(msg, {
-      position: "bottom-right",
-      timeout: 5000,
-    });
-  }
-  return response;
-});
+// /** Add Leshan Server Demo specific axios interceptor */
+// v.$axios.interceptors.response.use(function (response) {
+//   if (response.data.delayed) {
+//     // show request will be delayed
+//     let msg = `<strong>Device is not awake</strong>
+//          </br>Request will be delayed until device is awake again.
+//          </br><strong>Leshan Server Demo</strong> is only able to delayed the last request.`;
+
+//     Vue.prototype.$dialog.notify.info(msg, {
+//       position: "bottom-right",
+//       timeout: 5000,
+//     });
+//   }
+//   return response;
+// });
+
+
+// Plugins
+import { registerPlugins } from '@/plugins'
+
+// Components
+import App from './App.vue'
+
+// Composables
+import { createApp } from 'vue'
+
+const app = createApp(App)
+
+registerPlugins(app)
+
+// register directive
+app.directive('visible', (el, binding) => {
+    // directive to hide content without changing layout unlike v-show or v-if
+    el.style.visibility = binding.value ? "visible" : "hidden";
+})
+
+app.mount('#app')

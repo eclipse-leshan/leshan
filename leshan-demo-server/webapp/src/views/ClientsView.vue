@@ -13,32 +13,31 @@
 <template>
   <div>
     <v-data-table
-      dense
       v-if="!loading"
       :headers="headers"
       :items="registrations"
       item-key="endpoint"
       :items-per-page="10"
+      :sort-by="[{ key: 'registrationDate', order: 'des' }]"
       class="elevation-0 fill-height ma-3"
       @click:row="openLink"
+      density="compact"
       :search="search"
-      sort-by="registrationDate"
-      sort-desc
     >
       <template v-slot:top>
-        <v-toolbar flat>
-          <v-toolbar-title v-if="$vuetify.breakpoint.smAndUp"
+        <v-toolbar flat color="white" density="compact">
+          <v-toolbar-title v-if="$vuetify.display.smAndUp"
             >Registered Clients</v-toolbar-title
           >
           <v-divider
-            v-if="$vuetify.breakpoint.smAndUp"
+            v-if="$vuetify.display.smAndUp"
             class="mx-4"
             inset
             vertical
           ></v-divider>
           <v-text-field
             v-model="search"
-            :append-icon="$icons.mdiMagnify"
+            :append-inner-icon="$icons.mdiMagnify"
             label="Search"
             single-line
             hide-details
@@ -67,22 +66,21 @@ import ClientInfo from "../components/ClientInfo.vue";
 export default {
   components: { ClientInfo },
   useSSE: true,
-  name: "Clients",
   data: () => ({
     loading: true,
     registrations: [],
     headers: [
-      { text: "Client Endpoint", value: "endpoint" },
-      { text: "Registration ID", value: "registrationId" },
-      { text: "Registration Date", value: "registrationDate" },
-      { text: "Last Update", value: "lastUpdate" },
-      { text: "", value: "infos", sortable: false, align: "end" },
+      { title: "Client Endpoint", key: "endpoint" },
+      { title: "Registration ID", key: "registrationId" },
+      { title: "Registration Date", key: "registrationDate" },
+      { title: "Last Update", key: "lastUpdate" },
+      { title: "", key: "infos", sortable: false, align: "end" },
     ],
     search: "",
   }),
   methods: {
-    openLink(reg) {
-      this.$router.push(`/clients/${reg.endpoint}/3`);
+    openLink(event, { item }) {
+      this.$router.push(`/clients/${item.endpoint}/3`);
     },
   },
   mounted() {
@@ -128,7 +126,7 @@ export default {
         )
       );
   },
-  beforeDestroy() {
+  beforeUnmount() {
     // close eventsource on destroy
     this.sse.disconnect();
   },

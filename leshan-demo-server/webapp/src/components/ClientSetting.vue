@@ -15,42 +15,43 @@
     <div title="Timeout used to send request">
       <v-select
         single-line
-        dense
+        density="compact"
+        variant="plain"
         hide-details
-        :prefix="$vuetify.breakpoint.mdOnly ? null : 'Timeout :'"
+        :prefix="$vuetify.display.mdOnly ? null : 'Timeout :'"
         :items="timeoutList"
         item-value="val"
-        item-text="txt"
-        v-model="timeout"
-        :append-outer-icon="$vuetify.icons.values.account"
-        @click:append-outer="openTimeoutHelps"
+        item-title="txt"
+        v-model="$pref.timeout"
+        :append-icon="$icons.mdiHelpCircleOutline"
+        @click:append="openTimeoutHelps"
       ></v-select>
     </div>
     <div title="Content Format used to send request handling single value">
       <v-select
         single-line
-        dense
-        :prefix="$vuetify.breakpoint.mdOnly ? null : 'Single Value :'"
+        density="compact"
+        variant="plain"
+        :prefix="$vuetify.display.mdOnly ? null : 'Single Value :'"
         hide-details
         :items="singleFormatList"
-        v-model="singleformat"
+        v-model="$pref.singleFormat"
       ></v-select>
     </div>
     <div title="Content Format used to send request handling multiple values">
       <v-select
         single-line
-        dense
+        density="compact"
+        variant="plain"
         hide-details
-        :prefix="$vuetify.breakpoint.mdOnly ? null : 'Multi Value :'"
+        :prefix="$vuetify.display.mdOnly ? null : 'Multi Value :'"
         :items="multiFormatList"
-        v-model="multiformat"
+        v-model="$pref.multiFormat"
       ></v-select>
     </div>
   </div>
 </template>
 <script>
-import { preference } from "vue-preferences";
-
 export default {
   data() {
     return {
@@ -72,11 +73,6 @@ export default {
       ],
       multiFormatList: ["TLV", "SENML_JSON", "SENML_CBOR", "JSON"],
     };
-  },
-  computed: {
-    timeout: preference("timeout", { defaultValue: 5 }),
-    singleformat: preference("singleformat", { defaultValue: "TLV" }),
-    multiformat: preference("multiformat", { defaultValue: "TLV" }),
   },
   methods: {
     openTimeoutHelps() {

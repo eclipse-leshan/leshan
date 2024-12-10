@@ -13,26 +13,30 @@
 <template>
   <v-card elevation="0">
     <v-card-text>
-      <v-card-title class="justify-center">
+      <v-card-title class="text-center">
         Client "{{ $route.params.endpoint }}"
       </v-card-title>
 
       <v-card-subtitle class="text-center">
         Watch your client bootstrap session.
 
-        <v-btn icon title="Clear timeline" @click="events = []">
+        <v-btn
+          icon
+          title="Clear timeline"
+          @click="events = []"
+          density="comfortable"
+          variant="outlined"
+        >
           <v-icon>{{ $icons.mdiDeleteSweepOutline }}</v-icon>
         </v-btn>
       </v-card-subtitle>
 
-      <v-timeline align-top>
+      <v-timeline side="end" justify="center">
         <v-timeline-item
           v-for="event in events"
           :key="event.id"
-          :color="event.color"
-          small
-          :large="event.large"
-          right
+          :dot-color="event.color"
+          :size="event.large ? 'large' : 'small'"
           :icon="event.icon"
         >
           <template v-slot:opposite>
@@ -46,7 +50,7 @@
           </div>
         </v-timeline-item>
       </v-timeline>
-      <div ref="end"></div>
+      <div id="timeline-end"></div>
     </v-card-text>
   </v-card>
 </template>
@@ -67,7 +71,7 @@ export default {
   mounted() {
     this.sse = this.$sse
       .create({
-        url: "api/event",
+        url: "api/event?ep=" + encodeURIComponent(this.$route.params.endpoint),
       })
       .on("BSSESSION", (event) => {
         event.id = this.nonce++;
@@ -76,7 +80,8 @@ export default {
         event.color = this.getColor(event);
         this.events.push(event);
         this.$nextTick(function () {
-          this.$vuetify.goTo(this.$refs.end);
+          const element = document.getElementById("timeline-end");
+          element.scrollIntoView({ block: "end" });
         });
       })
       .on("error", (err) => {
@@ -114,9 +119,14 @@ export default {
 
     getColor(event) {
       let colors = {
+        "new session": "blue",
         "no config": "red",
         unauthorized: "red",
         authorized: "green",
+        "send request": "blue",
+        "send write": "blue",
+        "send delete": "blue",
+        "send discover": "blue",
         "receive success response": "green",
         "receive error response": "orange",
         "request failure": "red",

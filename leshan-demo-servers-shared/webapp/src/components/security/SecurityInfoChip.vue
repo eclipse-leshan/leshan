@@ -12,20 +12,20 @@
   ----------------------------------------------------------------------------->
 <template>
   <div v-if="securityInfo && (securityInfo.tls || securityInfo.oscore)">
-    <v-chip small v-if="securityInfo.tls">
-      <v-icon left small>
+    <v-chip size="small" v-if="securityInfo.tls">
+      <v-icon start size="small">
         {{ modeIcon }}
       </v-icon>
       {{ securityInfo.tls.mode }}
     </v-chip>
-    <v-chip small v-if="securityInfo.oscore">
-      <v-icon left small> {{ oscoreIcon }} </v-icon>
+    <v-chip size="small" v-if="securityInfo.oscore">
+      <v-icon start size="small"> {{ oscoreIcon }} </v-icon>
       oscore
     </v-chip>
   </div>
   <div v-else>
-    <v-chip small>
-      <v-icon left small> {{ noSecIcon }} </v-icon>
+    <v-chip size="small">
+      <v-icon start size="small"> {{ noSecIcon }} </v-icon>
       Nothing
     </v-chip>
   </div>

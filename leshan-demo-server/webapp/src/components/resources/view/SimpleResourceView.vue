@@ -28,7 +28,7 @@ export default {
   },
 
   computed: {
-    resourceValueAsString: function() {
+    resourceValueAsString: function () {
       if (!this.resource) {
         return "";
       } else {

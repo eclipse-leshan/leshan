@@ -13,83 +13,94 @@
 <template>
   <v-dialog
     v-model="show"
-    hide-overlay
+    :scrim="false"
     fullscreen
     transition="dialog-bottom-transition"
   >
     <v-card>
       <!-- Title -->
-      <v-card-title class="headline grey lighten-2">
+      <v-card-title class="text-h5 bg-grey-lighten-2">
         <span>Add Client Configuration</span>
       </v-card-title>
+
       <!-- Form -->
       <v-stepper v-model="currentStep">
         <v-stepper-header>
-          <v-stepper-step :complete="currentStep > 1" step="1">
-            Endpoint Name
-          </v-stepper-step>
+          <v-stepper-item
+            :complete="currentStep > 1"
+            :value="1"
+            title="Endpoint Name"
+          />
           <v-divider></v-divider>
-          <v-stepper-step :complete="currentStep > 2" step="2">
-            Credentials
-          </v-stepper-step>
+          <v-stepper-item
+            :complete="currentStep > 2"
+            :value="2"
+            title="Credentials"
+          />
           <v-divider></v-divider>
-          <v-stepper-step :complete="currentStep > 3" step="3">
-            Paths to delete
-          </v-stepper-step>
+          <v-stepper-item
+            :complete="currentStep > 3"
+            :value="3"
+            title="Paths to delete"
+          />
           <v-divider></v-divider>
-          <v-stepper-step :complete="currentStep > 4" step="4">
-            LWM2M Server Configuration
-          </v-stepper-step>
+          <v-stepper-item
+            :complete="currentStep > 4"
+            :value="4"
+            title="LWM2M Server Configuration"
+          />
           <v-divider></v-divider>
-          <v-stepper-step :complete="currentStep > 5" step="5">
-            LWM2M Bootstrap Server Configuration
-          </v-stepper-step>
+          <v-stepper-item
+            :complete="currentStep > 5"
+            :value="5"
+            title="LWM2M Bootstrap Server Configuration"
+          />
         </v-stepper-header>
 
-        <v-stepper-items>
-          <v-stepper-content step="1">
+        <v-stepper-window v-model="currentStep">
+          <v-stepper-window-item :value="1">
             <endpoint-step
               ref="step1"
-              :valid.sync="valid[1]"
+              v-model:valid="valid[1]"
               v-model="config.endpoint"
             />
-          </v-stepper-content>
-          <v-stepper-content step="2">
+          </v-stepper-window-item>
+          <v-stepper-window-item :value="2">
             <security-step
               ref="step2"
-              :valid.sync="valid[2]"
+              v-model:valid="valid[2]"
               v-model="config.security"
             />
-          </v-stepper-content>
-          <v-stepper-content step="3">
+          </v-stepper-window-item>
+          <v-stepper-window-item :value="3">
             <delete-step
               ref="step3"
-              :valid.sync="valid[3]"
-              :pathToDelete.sync="config.toDelete"
-              :autoId.sync="config.autoIdForSecurityObject"
+              v-model:valid="valid[3]"
+              v-model:pathToDelete="config.toDelete"
+              v-model:autoId="config.autoIdForSecurityObject"
             />
-          </v-stepper-content>
-          <v-stepper-content step="4">
+          </v-stepper-window-item>
+          <v-stepper-window-item :value="4">
             <server-step
               ref="step4"
-              :valid.sync="valid[4]"
+              v-model:valid="valid[4]"
               v-model="config.dm"
               :defaultNoSecValue="defval.dm.url.nosec"
               :defaultSecureValue="defval.dm.url.sec"
             />
-          </v-stepper-content>
-          <v-stepper-content step="5">
+          </v-stepper-window-item>
+          <v-stepper-window-item :value="5">
             <bootstrap-server-step
               ref="step5"
-              :valid.sync="valid[5]"
+              v-model:valid="valid[5]"
               v-model="config.bs"
               :defaultNoSecValue="defval.bs.url.nosec"
               :defaultSecureValue="defval.bs.url.sec"
               :defaultx509="defaultx509"
               :defaultrpk="defaultrpk"
             />
-          </v-stepper-content>
-        </v-stepper-items>
+          </v-stepper-window-item>
+        </v-stepper-window>
       </v-stepper>
       <!-- Buttons -->
       <v-card-actions>
@@ -109,13 +120,13 @@
           Add
         </v-btn>
         <v-btn
-          text
+          variant="text"
           @click="currentStep = currentStep - 1"
           :disabled="currentStep == 1"
         >
           Previous
         </v-btn>
-        <v-btn text @click="close"> Cancel </v-btn>
+        <v-btn variant="text" @click="close"> Cancel </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -139,7 +150,7 @@ export default {
     BootstrapServerStep,
     DeleteStep,
   },
-  props: { value: Boolean /*open/close dialog*/ },
+  props: { modelValue: Boolean /*open/close dialog*/ },
   data() {
     return {
       nbSteps: 5,
@@ -157,10 +168,10 @@ export default {
   computed: {
     show: {
       get() {
-        return this.value;
+        return this.modelValue;
       },
       set(value) {
-        this.$emit("input", value);
+        this.$emit("update:modelValue", value);
       },
     },
   },
@@ -188,7 +199,7 @@ export default {
     });
   },
   watch: {
-    value(v) {
+    modelValue(v) {
       if (v) {
         // reset validation and set initial value when dialog opens
         this.config = {

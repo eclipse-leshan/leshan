@@ -10,8 +10,7 @@
  * and the Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.html.
  *******************************************************************************/
-
-import Vue from "vue";
+import { reactive } from 'vue'
 
 class Store {
   /*
@@ -33,21 +32,17 @@ class Store {
     };  
    */
 
-  state = {};
+  state = null;
   constructor() {
-    // HACK to make state reactive
-    // see https://forum.vuejs.org/t/how-to-make-a-simple-reactive-object-that-can-be-shared-between-components/13199/3
-    // maybe we should use Vuex instead of this home made store ?
-    var tmpVm = new Vue({ data: { state: {} } });
-    this.state = tmpVm.state;
+    this.state = reactive({});
   }
 
   initState(endpoint) {
-    Vue.set(this.state, endpoint, {
+    this.state[endpoint] = {
       data: {},
       observed: {},
       compositeObserved: {},
-    });
+    };
   }
 
   data(endpoint, path) {
@@ -83,7 +78,8 @@ class Store {
     // create & add data if not exist OR is not single resource.
     if (!d || !d.single) {
       d = { val: val, supposed: supposed, isSingle: true };
-      Vue.set(this.state[endpoint].data, path, d);
+      //Vue.set(this.state[endpoint].data, path, d);
+      this.state[endpoint].data[path] = d;
     } else {
       // else just modify it
       d.val = val;
@@ -107,7 +103,8 @@ class Store {
     }
     d.supposed = supposed;
     d.isSingle = false;
-    Vue.set(this.state[endpoint].data, path, d);
+    //Vue.set(this.state[endpoint].data, path, d);
+    this.state[endpoint].data[path] = d;
   }
 
   /**
@@ -148,12 +145,14 @@ class Store {
       d.vals[instanceID].supposed = supposed;
       d.supposed = supposed;
       d.isSingle = false;
-      Vue.set(this.state[endpoint].data, path, d);
+      //Vue.set(this.state[endpoint].data, path, d);
+      this.state[endpoint].data[path] = d;
     } else {
       // else just modify it
       if (!d.vals[instanceID]) {
         let i = { val: val, supposed: supposed };
-        Vue.set(d.vals, instanceID, i);
+        //Vue.set(d.vals, instanceID, i);
+        this.d.vals[instanceID] = i;
       } else {
         d.vals[instanceID].val = val;
         d.vals[instanceID].supposed = supposed;
@@ -284,7 +283,8 @@ class Store {
   setObserved(endpoint, path, observed) {
     let o = this.state[endpoint].observed[path];
     if (!o) {
-      Vue.set(this.state[endpoint].observed, path, observed);
+      //Vue.set(this.state[endpoint].observed, path, observed);
+      this.state[endpoint].observed[path] = observed;
     } else {
       this.state[endpoint].observed[path] = observed;
     }
@@ -299,7 +299,8 @@ class Store {
     let key = paths.join(",");
     let o = this.state[endpoint].compositeObserved[key];
     if (!o) {
-      Vue.set(this.state[endpoint].compositeObserved, key, observed);
+      //Vue.set(this.state[endpoint].compositeObserved, key, observed);
+      this.state[endpoint].compositeObserved[key] = observed;
     } else {
       this.state[endpoint].compositeObserved[key] = observed;
     }
@@ -326,17 +327,9 @@ class Store {
 // create plugin which make data accessible on all vues
 const _store = new Store();
 
-let StorePlugin = {};
-StorePlugin.install = function (Vue) {
-  Object.defineProperties(Vue.prototype, {
-    $store: {
-      get() {
-        return _store;
-      },
-    },
-  });
-};
 
-Vue.use(StorePlugin);
-
-export default StorePlugin;
+export default {
+  install: (app) => {
+    app.config.globalProperties.$store = _store;
+  }
+}

@@ -14,7 +14,9 @@
   <div class="pa-5">
     <v-card elevation="0">
       <v-card-text>
-        <v-card-title class="justify-center"> Server Information </v-card-title>
+        <v-card-title class="d-flex justify-center">
+          Server Information
+        </v-card-title>
 
         <v-card-subtitle class="text-center">
           Here some information about this server.
@@ -23,58 +25,59 @@
     </v-card>
     <v-row>
       <v-col md="12" cols="12" v-if="endpoints">
-        <v-card outlined>
-          <v-list-item three-line>
-            <v-list-item-content>
-              <div class="text-overline mb-4">CoAP Endpoint</div>
-              <v-list-item-title class="text-h5 mb-1">
-                Server URL
-              </v-list-item-title>
-              <v-list-item-subtitle
-                >Available endpoints for this server:
-              </v-list-item-subtitle>
-            </v-list-item-content>
-            <v-icon>{{ $icons.mdiAccessPointNetwork }}</v-icon>
-          </v-list-item>
-          <v-card-text>
-            <ul>
-              <li v-for="endpoint in endpoints" :key="endpoint.full">
-                <code
-                  ><strong
-                    >{{ endpoint.uri.scheme }}://{{ hostname() }}:{{
+        <v-card border>
+          <v-list-item lines="three">
+            <div class="text-overline mb-4">CoAP Endpoint</div>
+            <v-list-item-title class="text-h5 mb-1">
+              Server URL
+            </v-list-item-title>
+            <v-list-item-subtitle
+              >Available endpoints for this server:
+            </v-list-item-subtitle>
+
+            <v-card-text>
+              <ul>
+                <li v-for="endpoint in endpoints" :key="endpoint.full">
+                  <v-code>
+                    {{ endpoint.uri.scheme }}://{{ hostname() }}:{{
                       endpoint.uri.port
-                    }}</strong
-                  > </code
-                >: <span v-html="endpoint.description" />.
-              </li>
-            </ul>
-          </v-card-text>
+                    }}
+                  </v-code>
+                  : <span v-html="endpoint.description" />.
+                </li>
+              </ul>
+            </v-card-text>
+
+            <template v-slot:append>
+              <v-icon>{{ $icons.mdiAccessPointNetwork }}</v-icon>
+            </template>
+          </v-list-item>
         </v-card>
       </v-col>
       <v-col md="6" cols="12" v-if="pubkey">
-        <v-card outlined>
-          <v-list-item three-line>
-            <v-list-item-content>
-              <div class="text-overline mb-4">RPK</div>
-              <v-list-item-title class="text-h5 mb-1">
-                Server Public Key
-              </v-list-item-title>
-              <v-list-item-subtitle class="font-italic">
-                SubjectPublicKeyInfo der encoded
-              </v-list-item-subtitle>
-            </v-list-item-content>
-            <v-icon>{{ $icons.mdiKey }}</v-icon>
-            <v-card-actions>
-              <v-btn
-                icon
-                title="Download Public Key"
-                @click="saveFile(pubkeyFileName, pubkey.bytesDer)"
-              >
-                <v-icon>{{ $icons.mdiDownload }}</v-icon>
-              </v-btn>
-            </v-card-actions>
-          </v-list-item>
+        <v-card border>
+          <v-list-item lines="three">
+            <div class="text-overline mb-4">RPK</div>
+            <v-list-item-title class="text-h5 mb-1">
+              Server Public Key
+            </v-list-item-title>
+            <v-list-item-subtitle class="font-italic">
+              SubjectPublicKeyInfo der encoded
+            </v-list-item-subtitle>
 
+            <template v-slot:append>
+              <v-icon>{{ $icons.mdiKey }}</v-icon>
+              <v-card-actions>
+                <v-btn
+                  icon
+                  title="Download Public Key"
+                  @click="saveFile(pubkeyFileName, pubkey.bytesDer)"
+                >
+                  <v-icon>{{ $icons.mdiDownload }}</v-icon>
+                </v-btn>
+              </v-card-actions>
+            </template>
+          </v-list-item>
           <v-card-text>
             <p>
               If you want to connect a client using DTLS with Raw Public
@@ -83,15 +86,15 @@
             </p>
             <u>Elliptic Curve parameters :</u>
             <div>
-              <code>{{ pubkey.params }}</code>
+              <v-code>{{ pubkey.params }}</v-code>
             </div>
             <u>Public x coord :</u>
             <div>
-              <code>{{ pubkey.x }}</code>
+              <v-code>{{ pubkey.x }}</v-code>
             </div>
             <u>Public y coord :</u>
             <div>
-              <code>{{ pubkey.y }}</code>
+              <v-code>{{ pubkey.y }}</v-code>
             </div>
             <p>
               <u>Hex : </u>
@@ -109,27 +112,28 @@
         </v-card>
       </v-col>
       <v-col md="6" cols="12" v-if="certificate">
-        <v-card outlined>
-          <v-list-item three-line>
-            <v-list-item-content>
-              <div class="text-overline mb-4">x509</div>
-              <v-list-item-title class="text-h5 mb-1">
-                Server Certificate
-              </v-list-item-title>
-              <v-list-item-subtitle class="font-italic">
-                x509v3 der encoded
-              </v-list-item-subtitle>
-            </v-list-item-content>
-            <v-icon>{{ $icons.mdiCertificate }}</v-icon>
-            <v-card-actions>
-              <v-btn
-                icon
-                title="Download Certificate"
-                @click="saveFile(certFileName, certificate.bytesDer)"
-              >
-                <v-icon>{{ $icons.mdiDownload }}</v-icon>
-              </v-btn>
-            </v-card-actions>
+        <v-card border>
+          <v-list-item lines="three">
+            <div class="text-overline mb-4">x509</div>
+            <v-list-item-title class="text-h5 mb-1">
+              Server Certificate
+            </v-list-item-title>
+            <v-list-item-subtitle class="font-italic">
+              x509v3 der encoded
+            </v-list-item-subtitle>
+
+            <template v-slot:append>
+              <v-icon>{{ $icons.mdiCertificate }}</v-icon>
+              <v-card-actions>
+                <v-btn
+                  icon
+                  title="Download Certificate"
+                  @click="saveFile(certFileName, certificate.bytesDer)"
+                >
+                  <v-icon>{{ $icons.mdiDownload }}</v-icon>
+                </v-btn>
+              </v-card-actions>
+            </template>
           </v-list-item>
           <v-card-text>
             <p>
@@ -197,13 +201,13 @@ export default {
         keywords.forEach((keyword) => {
           ep.description = ep.description.replace(
             keyword,
-            `<span  class="text--primary font-weight-bold">${keyword}</span>`
+            `<span  class="font-weight-bold">${keyword}</span>`
           );
         });
         strongKeywords.forEach((keyword) => {
           ep.description = ep.description.replace(
             keyword,
-            `<span  class="text--primary font-weight-black text-decoration-underline"><strong>${keyword}</strong></span>`
+            `<span  class="font-weight-black text-decoration-underline"><strong>${keyword}</strong></span>`
           );
         });
       });

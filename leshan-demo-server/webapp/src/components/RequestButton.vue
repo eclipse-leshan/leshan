@@ -11,27 +11,36 @@
  *    http://www.eclipse.org/org/documents/edl-v10.html.
   ----------------------------------------------------------------------------->
 <template>
-  <v-badge :color="state" dot bottom overlap :title="details" :value="state">
-    <v-btn
-      class="ma-1"
-      small
-      tile
-      min-width="0"
-      elevation="0"
-      :title="title"
-      :loading="loading"
-      :disabled="loading"
-      @click.stop="onClick"
+  <v-btn
+    class="ma-1"
+    size="small"
+    tile
+    slim
+    min-width="0"
+    elevation="0"
+    :title="title"
+    :loading="loading"
+    :disabled="loading"
+    @click.stop="onClick"
+    color="grey-lighten-4"
+  >
+    <v-badge
+      dot
+      color="success"
+      floating
+      :title="details"
+      :model-value="state ? true : false"
     >
       <slot></slot>
-    </v-btn>
-  </v-badge>
+    </v-badge>
+  </v-btn>
 </template>
 <script>
 export default {
   props: {
     title: String,
   },
+  emits: ["on-click"],
   data() {
     return {
       loading: false,
