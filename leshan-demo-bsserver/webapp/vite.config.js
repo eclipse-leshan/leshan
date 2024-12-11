@@ -22,7 +22,7 @@ const outputDir = process.env.MAVEN_OUTPUT_DIR
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  //base: "./", // should be deleted ?
+  base: "./",
   plugins: [
     VueRouter(),
     Vue({
