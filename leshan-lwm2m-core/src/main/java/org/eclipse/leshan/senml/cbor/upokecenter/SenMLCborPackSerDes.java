@@ -68,98 +68,120 @@ public class SenMLCborPackSerDes {
     }
 
     protected SenMLRecord deserializeRecord(CBORObject o) throws SenMLException {
-        SenMLRecord record = new SenMLRecord();
 
-        deserializeBaseName(o, record);
-        deserializeBaseTime(o, record);
-        deserializeName(o, record);
-        deserializeTime(o, record);
-        boolean hasValue = deserializeValue(o, record);
-        hasValue |= deserializeBooleanValue(o, record);
-        hasValue |= deserializeStringValue(o, record);
-        hasValue |= deserializeObjectLinkValue(o, record);
-        hasValue |= deserializeOpaqueValue(o, record);
+        String recordBaseName = null;
+        BigDecimal recordBaseTime = null;
+        String recordName = null;
+        BigDecimal recordTime = null;
+        Number recordNumberValue = null;
+        Boolean recordBooleanValue = null;
+        String recordStringValue = null;
+        String recordObjectLinkValue = null;
+        byte[] recordOpaqueValue = null;
 
-        if (!allowNoValue && !hasValue) {
+        recordBaseName = deserializeBaseName(o);
+        recordBaseTime = deserializeBaseTime(o);
+        recordName = deserializeName(o);
+        recordTime = deserializeTime(o);
+        recordNumberValue = deserializeValue(o);
+        recordBooleanValue = deserializeBooleanValue(o);
+        recordStringValue = deserializeStringValue(o);
+        recordObjectLinkValue = deserializeObjectLinkValue(o);
+        recordOpaqueValue = deserializeOpaqueValue(o);
+
+        if (!allowNoValue && !(recordNumberValue != null || recordBooleanValue != null || recordStringValue != null
+                || recordObjectLinkValue != null || recordOpaqueValue != null)) {
             throw new SenMLException(
                     "Invalid SenML record: record must have a value, meaning one of those field must be present v(number:2), vb(number:4), vlo(string:vlo) ,vd(number:8) or vs(number:3): %s",
                     o);
         }
 
-        return record;
+        return new SenMLRecord(recordBaseName, recordBaseTime, recordName, recordTime, recordNumberValue,
+                recordBooleanValue, recordObjectLinkValue, recordStringValue, recordOpaqueValue);
     }
 
-    protected void deserializeBaseName(CBORObject o, SenMLRecord record) throws SenMLException {
+    protected String deserializeBaseName(CBORObject o) throws SenMLException {
         CBORObject bn = o.get(-2);
+        String recordBaseName = null;
         if (bn != null) {
-            record.setBaseName(deserializeString(bn, "bn"));
+            recordBaseName = deserializeString(bn, "bn");
         }
+        return recordBaseName;
     }
 
-    protected void deserializeBaseTime(CBORObject o, SenMLRecord record) throws SenMLException {
+    protected BigDecimal deserializeBaseTime(CBORObject o) throws SenMLException {
         CBORObject bt = o.get(-3);
+        BigDecimal recordBaseTime = null;
         if (bt != null) {
-            record.setBaseTime(deserializeTime(bt, "bt"));
+            recordBaseTime = deserializeTime(bt, "bt");
         }
+        return recordBaseTime;
     }
 
-    protected void deserializeName(CBORObject o, SenMLRecord record) throws SenMLException {
+    protected String deserializeName(CBORObject o) throws SenMLException {
         CBORObject n = o.get(0);
+        String recordName = null;
         if (n != null) {
-            record.setName(deserializeString(n, "n"));
+            recordName = deserializeString(n, "n");
         }
+        return recordName;
     }
 
-    protected void deserializeTime(CBORObject o, SenMLRecord record) throws SenMLException {
+    protected BigDecimal deserializeTime(CBORObject o) throws SenMLException {
         CBORObject t = o.get(6);
+        BigDecimal recordTime = null;
         if (t != null) {
-            record.setTime(deserializeTime(t, "t"));
+            recordTime = deserializeTime(t, "t");
         }
+        return recordTime;
     }
 
-    protected boolean deserializeValue(CBORObject o, SenMLRecord record) throws SenMLException {
+    protected Number deserializeValue(CBORObject o) throws SenMLException {
         CBORObject v = o.get(2);
+        Number recordNumberValue = null;
         if (v != null) {
-            record.setNumberValue(deserializeNumber(v, "v"));
-            return true;
+            recordNumberValue = deserializeNumber(v, "v");
         }
-        return false;
+        return recordNumberValue;
 
     }
 
-    protected boolean deserializeBooleanValue(CBORObject o, SenMLRecord record) throws SenMLException {
+    protected Boolean deserializeBooleanValue(CBORObject o) throws SenMLException {
         CBORObject vb = o.get(4);
+        Boolean recordBooleanValue;
         if (vb != null) {
             if (!(vb.getType() == CBORType.Boolean)) {
                 throw new SenMLException(
                         "Invalid SenML record : 'boolean' type was expected but was '%s' for 'vb' field",
                         o.getType().toString());
             }
-            record.setBooleanValue(vb.AsBoolean());
-            return true;
+            recordBooleanValue = vb.AsBoolean();
+            return recordBooleanValue;
         }
-        return false;
+        return null;
     }
 
-    protected boolean deserializeStringValue(CBORObject o, SenMLRecord record) throws SenMLException {
+    protected String deserializeStringValue(CBORObject o) throws SenMLException {
         CBORObject vs = o.get(3);
+        String recordStringValue;
         if (vs != null) {
-            record.setStringValue(deserializeString(vs, "vs"));
-            return true;
+            recordStringValue = deserializeString(vs, "vs");
+            return recordStringValue;
         }
-        return false;
+        return null;
     }
 
-    protected boolean deserializeObjectLinkValue(CBORObject o, SenMLRecord record) throws SenMLException {
+    protected String deserializeObjectLinkValue(CBORObject o) throws SenMLException {
         CBORObject vlo = o.get("vlo");
+        String recordObjectLinkValue;
         if (vlo != null) {
-            record.setObjectLinkValue(deserializeString(vlo, "vlo"));
-            return true;
+            recordObjectLinkValue = deserializeString(vlo, "vlo");
+            return recordObjectLinkValue;
         }
-        return false;
+        return null;
     }
 
-    protected boolean deserializeOpaqueValue(CBORObject o, SenMLRecord record) throws SenMLException {
+    protected byte[] deserializeOpaqueValue(CBORObject o) throws SenMLException {
         // The RFC says : https://datatracker.ietf.org/doc/html/rfc8428#section-6
         //
         // > Octets in the Data Value are encoded using
@@ -168,16 +190,17 @@ public class SenMLCborPackSerDes {
         // So we should check this but there is no way to check this with current cbor library.
         // https://github.com/peteroupc/CBOR-Java/issues/28
         CBORObject vd = o.get(8);
+        byte[] recordOpaqueValue;
         if (vd != null) {
             if (!(vd.getType() == CBORType.ByteString)) {
                 throw new SenMLException(
                         "Invalid SenML record : 'byteString' type was expected but was '%s' for 'vd' field",
                         o.getType().toString());
             }
-            record.setOpaqueValue(vd.GetByteString());
-            return true;
+            recordOpaqueValue = vd.GetByteString();
+            return recordOpaqueValue;
         }
-        return false;
+        return null;
     }
 
     protected String deserializeString(CBORObject o, String fieldname) throws SenMLException {
