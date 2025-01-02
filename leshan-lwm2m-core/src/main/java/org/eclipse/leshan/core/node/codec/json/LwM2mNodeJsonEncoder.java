@@ -301,7 +301,7 @@ public class LwM2mNodeJsonEncoder implements TimestampedNodeEncoder {
             case TIME:
                 // Specs device object example page 44, rec 13 is Time
                 // represented as float?
-                floatValue = BigDecimal.valueOf((((Date) value).getTime() / 1000L));
+                floatValue = (((Date) value).getTime() / 1000L);
                 break;
             case OPAQUE:
                 stringValue = base64Encoder.encode((byte[]) value);

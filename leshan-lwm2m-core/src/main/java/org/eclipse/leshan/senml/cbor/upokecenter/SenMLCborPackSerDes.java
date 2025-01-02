@@ -69,28 +69,20 @@ public class SenMLCborPackSerDes {
 
     protected SenMLRecord deserializeRecord(CBORObject o) throws SenMLException {
 
-        String recordBaseName = null;
-        BigDecimal recordBaseTime = null;
-        String recordName = null;
-        BigDecimal recordTime = null;
-        Number recordNumberValue = null;
-        Boolean recordBooleanValue = null;
-        String recordStringValue = null;
-        String recordObjectLinkValue = null;
-        byte[] recordOpaqueValue = null;
+        String recordBaseName = deserializeBaseName(o);
+        BigDecimal recordBaseTime = deserializeBaseTime(o);
+        String recordName = deserializeName(o);
+        BigDecimal recordTime = deserializeTime(o);
+        Number recordNumberValue = deserializeValue(o);
+        Boolean recordBooleanValue = deserializeBooleanValue(o);
+        String recordStringValue = deserializeStringValue(o);
+        String recordObjectLinkValue = deserializeObjectLinkValue(o);
+        byte[] recordOpaqueValue = deserializeOpaqueValue(o);
 
-        recordBaseName = deserializeBaseName(o);
-        recordBaseTime = deserializeBaseTime(o);
-        recordName = deserializeName(o);
-        recordTime = deserializeTime(o);
-        recordNumberValue = deserializeValue(o);
-        recordBooleanValue = deserializeBooleanValue(o);
-        recordStringValue = deserializeStringValue(o);
-        recordObjectLinkValue = deserializeObjectLinkValue(o);
-        recordOpaqueValue = deserializeOpaqueValue(o);
+        boolean hasValue = (recordNumberValue != null || recordBooleanValue != null || recordStringValue != null
+                || recordObjectLinkValue != null || recordOpaqueValue != null);
 
-        if (!allowNoValue && !(recordNumberValue != null || recordBooleanValue != null || recordStringValue != null
-                || recordObjectLinkValue != null || recordOpaqueValue != null)) {
+        if (!allowNoValue && !hasValue) {
             throw new SenMLException(
                     "Invalid SenML record: record must have a value, meaning one of those field must be present v(number:2), vb(number:4), vlo(string:vlo) ,vd(number:8) or vs(number:3): %s",
                     o);
@@ -102,81 +94,70 @@ public class SenMLCborPackSerDes {
 
     protected String deserializeBaseName(CBORObject o) throws SenMLException {
         CBORObject bn = o.get(-2);
-        String recordBaseName = null;
         if (bn != null) {
-            recordBaseName = deserializeString(bn, "bn");
+            return deserializeString(bn, "bn");
         }
-        return recordBaseName;
+        return null;
     }
 
     protected BigDecimal deserializeBaseTime(CBORObject o) throws SenMLException {
         CBORObject bt = o.get(-3);
-        BigDecimal recordBaseTime = null;
         if (bt != null) {
-            recordBaseTime = deserializeTime(bt, "bt");
+            return deserializeTime(bt, "bt");
         }
-        return recordBaseTime;
+        return null;
     }
 
     protected String deserializeName(CBORObject o) throws SenMLException {
         CBORObject n = o.get(0);
-        String recordName = null;
         if (n != null) {
-            recordName = deserializeString(n, "n");
+            return deserializeString(n, "n");
         }
-        return recordName;
+        return null;
     }
 
     protected BigDecimal deserializeTime(CBORObject o) throws SenMLException {
         CBORObject t = o.get(6);
-        BigDecimal recordTime = null;
         if (t != null) {
-            recordTime = deserializeTime(t, "t");
+            return deserializeTime(t, "t");
         }
-        return recordTime;
+        return null;
     }
 
     protected Number deserializeValue(CBORObject o) throws SenMLException {
         CBORObject v = o.get(2);
-        Number recordNumberValue = null;
         if (v != null) {
-            recordNumberValue = deserializeNumber(v, "v");
+            return deserializeNumber(v, "v");
         }
-        return recordNumberValue;
+        return null;
 
     }
 
     protected Boolean deserializeBooleanValue(CBORObject o) throws SenMLException {
         CBORObject vb = o.get(4);
-        Boolean recordBooleanValue;
         if (vb != null) {
             if (!(vb.getType() == CBORType.Boolean)) {
                 throw new SenMLException(
                         "Invalid SenML record : 'boolean' type was expected but was '%s' for 'vb' field",
                         o.getType().toString());
             }
-            recordBooleanValue = vb.AsBoolean();
-            return recordBooleanValue;
+            return vb.AsBoolean();
         }
         return null;
     }
 
     protected String deserializeStringValue(CBORObject o) throws SenMLException {
         CBORObject vs = o.get(3);
-        String recordStringValue;
         if (vs != null) {
-            recordStringValue = deserializeString(vs, "vs");
-            return recordStringValue;
+            return deserializeString(vs, "vs");
         }
         return null;
     }
 
     protected String deserializeObjectLinkValue(CBORObject o) throws SenMLException {
         CBORObject vlo = o.get("vlo");
-        String recordObjectLinkValue;
         if (vlo != null) {
-            recordObjectLinkValue = deserializeString(vlo, "vlo");
-            return recordObjectLinkValue;
+            return deserializeString(vlo, "vlo");
         }
         return null;
     }
@@ -190,15 +171,13 @@ public class SenMLCborPackSerDes {
         // So we should check this but there is no way to check this with current cbor library.
         // https://github.com/peteroupc/CBOR-Java/issues/28
         CBORObject vd = o.get(8);
-        byte[] recordOpaqueValue;
         if (vd != null) {
             if (!(vd.getType() == CBORType.ByteString)) {
                 throw new SenMLException(
                         "Invalid SenML record : 'byteString' type was expected but was '%s' for 'vd' field",
                         o.getType().toString());
             }
-            recordOpaqueValue = vd.GetByteString();
-            return recordOpaqueValue;
+            return vd.GetByteString();
         }
         return null;
     }
