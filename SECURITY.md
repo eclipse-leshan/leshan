@@ -34,6 +34,8 @@ It is strongly discouraged to use Leshan demos v1.x on public server because the
 - **bootstrap.js** (pkg:javascript/bootstrap@3.4.1) : Bootstrap before 4.0.0 is end-of-life and no longer maintained.
 - **jquery-2.2.4.js** (pkg:javascript/jquery@2.2.4) : CVE-2015-9251, CVE-2019-11358, CVE-2020-11022, CVE-2020-11023, jQuery 1.x and 2.x are End-of-Life and no longer receiving security updates
 - [**Jetty 9.x**](https://github.com/jetty/jetty.project/issues/7958) : Jetty 9.4 reach End-of-Life and no longer receiving security updates at January 2025.
+- [**logback 1.2.x**](https://logback.qos.ch/download.html) : The 1.2.x series has been deprecated for several years and is no longer maintained. As such, use of the 1.2.x series is discouraged. (CVE-2024-12798, CVE-2024-12801)
+
 
 Concerning Leshan demos v2.x, some minimal efforts are made to update dependencies when vulnerabilities are detected but keep in mind that demos are not production ready tools.
 
