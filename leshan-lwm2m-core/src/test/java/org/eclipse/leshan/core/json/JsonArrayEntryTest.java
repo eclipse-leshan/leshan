@@ -19,11 +19,10 @@ package org.eclipse.leshan.core.json;
 import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
 
 class JsonArrayEntryTest {
     @Test
     public void assertEqualsHashcode() {
-        EqualsVerifier.forClass(JsonArrayEntry.class).suppress(Warning.NONFINAL_FIELDS).verify();
+        EqualsVerifier.forClass(JsonArrayEntry.class).verify();
     }
 }

@@ -18,12 +18,11 @@ package org.eclipse.leshan.senml;
 import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
 
 class SenMLRecordTest {
     @Test
     public void assertEqualsHashcode() {
-        EqualsVerifier.forClass(SenMLRecord.class).suppress(Warning.NONFINAL_FIELDS).verify();
+        EqualsVerifier.forClass(SenMLRecord.class).verify();
     }
 
 }
