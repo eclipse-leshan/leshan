@@ -35,7 +35,7 @@ public class JsonRootObject {
 
     public JsonRootObject(String baseName, List<JsonArrayEntry> jsonArray, BigDecimal baseTime) {
         this.baseName = baseName;
-        this.jsonArray = jsonArray;
+        this.jsonArray = Collections.unmodifiableList(jsonArray);
         this.baseTime = baseTime;
     }
 

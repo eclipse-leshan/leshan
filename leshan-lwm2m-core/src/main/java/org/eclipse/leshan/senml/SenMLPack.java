@@ -33,7 +33,7 @@ public class SenMLPack {
     }
 
     public SenMLPack(List<SenMLRecord> records) {
-        this.records = records;
+        this.records = Collections.unmodifiableList(records);
     }
 
     public void addRecord(SenMLRecord record) {
@@ -47,7 +47,7 @@ public class SenMLPack {
     public List<SenMLRecord> getRecords() {
         if (records == null)
             return Collections.emptyList();
-        return records;
+        return Collections.unmodifiableList(records);
     }
 
     @Override
