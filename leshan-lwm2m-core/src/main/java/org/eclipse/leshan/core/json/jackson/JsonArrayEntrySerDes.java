@@ -88,30 +88,38 @@ public class JsonArrayEntrySerDes extends JacksonJsonSerDes<JsonArrayEntry> {
         if (o == null)
             return null;
 
-        JsonArrayEntry jae = new JsonArrayEntry();
+        String name = null;
+        BigDecimal time = null;
+        Number floatValue = null;
+        Boolean booleanValue = null;
+        String stringValue = null;
+        String objectLinkValue = null;
+
         JsonNode n = o.get("n");
         if (n != null && n.isTextual())
-            jae.setName(n.asText());
+            name = n.asText();
 
         JsonNode t = o.get("t");
         if (t != null && t.isNumber())
-            jae.setTime(new BigDecimal(t.asText()));
+            time = new BigDecimal(t.asText());
 
         JsonNode v = o.get("v");
         if (v != null && v.isNumber())
-            jae.setFloatValue(v.numberValue());
+            floatValue = v.numberValue();
 
         JsonNode bv = o.get("bv");
         if (bv != null && bv.isBoolean())
-            jae.setBooleanValue(bv.asBoolean());
+            booleanValue = bv.asBoolean();
 
         JsonNode sv = o.get("sv");
         if (sv != null && sv.isTextual())
-            jae.setStringValue(sv.asText());
+            stringValue = sv.asText();
 
         JsonNode ov = o.get("ov");
         if (ov != null && ov.isTextual())
-            jae.setObjectLinkValue(ov.asText());
+            objectLinkValue = ov.asText();
+
+        JsonArrayEntry jae = new JsonArrayEntry(name, floatValue, booleanValue, objectLinkValue, stringValue, time);
 
         if (jae.getType() == null) {
             throw new JsonException("Missing value(v,bv,ov,sv) field for entry %s", o.toString());

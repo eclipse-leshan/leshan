@@ -25,17 +25,27 @@ import org.eclipse.leshan.core.model.ResourceModel.Type;
 
 public class JsonArrayEntry {
 
-    private String name;
+    private final String name;
 
-    private Number floatValue;
+    private final Number floatValue;
 
-    private Boolean booleanValue;
+    private final Boolean booleanValue;
 
-    private String objectLinkValue;
+    private final String objectLinkValue;
 
-    private String stringValue;
+    private final String stringValue;
 
-    private BigDecimal time;
+    private final BigDecimal time;
+
+    public JsonArrayEntry(String name, Number floatValue, Boolean booleanValue, String objectLinkValue,
+            String stringValue, BigDecimal time) {
+        this.name = name;
+        this.floatValue = floatValue;
+        this.booleanValue = booleanValue;
+        this.objectLinkValue = objectLinkValue;
+        this.stringValue = stringValue;
+        this.time = time;
+    }
 
     public ResourceModel.Type getType() {
         if (booleanValue != null) {
@@ -57,48 +67,24 @@ public class JsonArrayEntry {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public BigDecimal getTime() {
         return time;
-    }
-
-    public void setTime(BigDecimal time) {
-        this.time = time;
     }
 
     public Number getFloatValue() {
         return floatValue;
     }
 
-    public void setFloatValue(Number floatValue) {
-        this.floatValue = floatValue;
-    }
-
     public Boolean getBooleanValue() {
         return booleanValue;
-    }
-
-    public void setBooleanValue(Boolean booleanValue) {
-        this.booleanValue = booleanValue;
     }
 
     public String getObjectLinkValue() {
         return objectLinkValue;
     }
 
-    public void setObjectLinkValue(String objectLinkValue) {
-        this.objectLinkValue = objectLinkValue;
-    }
-
     public String getStringValue() {
         return stringValue;
-    }
-
-    public void setStringValue(String stringValue) {
-        this.stringValue = stringValue;
     }
 
     public Object getResourceValue() {
