@@ -28,7 +28,6 @@
     "@cyclonedx/cyclonedx-npm": "^1.19.3",
     "@mdi/js": "^6.9.96",
     "@rollup/plugin-node-resolve": "^15.3.0",
-    "@vitejs/plugin-legacy": "^5.4.3",
     "@vitejs/plugin-vue": "^5.2.1",
     "eslint": "^9.16.0",
     "eslint-plugin-vue": "^9.32.0",

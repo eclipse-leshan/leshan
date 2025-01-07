@@ -2,7 +2,6 @@
 // Plugins
 import Components from 'unplugin-vue-components/vite'
 import Vue from '@vitejs/plugin-vue'
-import legacy from '@vitejs/plugin-legacy'
 import Vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 import ViteFonts from 'unplugin-fonts/vite'
 import VueRouter from 'unplugin-vue-router/vite'
@@ -12,7 +11,6 @@ import { defineConfig } from 'vite'
 import { fileURLToPath, URL } from 'node:url'
 
 import { nodeResolve } from "@rollup/plugin-node-resolve";
-import browserslistToEsbuild from "browserslist-to-esbuild";
 import viteCompression from "vite-plugin-compression";
 import { visualizer } from "rollup-plugin-visualizer";
 
@@ -41,7 +39,6 @@ export default defineConfig({
         }],
       },
     }),
-    legacy({ targets: ['defaults', 'not IE 11'] }),
     nodeResolve({
       modulePaths: [fileURLToPath(new URL('./node_modules', import.meta.url))],
     }),
@@ -57,7 +54,6 @@ export default defineConfig({
   ],
   build: {
     outDir: outputDir,
-    target: browserslistToEsbuild(),
   },
   preview: {
     port: 8088,
