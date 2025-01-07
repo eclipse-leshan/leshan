@@ -3,7 +3,7 @@
 import Components from 'unplugin-vue-components/vite'
 import Vue from '@vitejs/plugin-vue'
 import Vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
-import ViteFonts from 'unplugin-fonts/vite'
+import webfontDownload from 'vite-plugin-webfont-dl';
 import VueRouter from 'unplugin-vue-router/vite'
 
 // Utilities
@@ -31,13 +31,12 @@ export default defineConfig({
       autoImport: true,
     }),
     Components(),
-    ViteFonts({
-      google: {
-        families: [{
-          name: 'Roboto',
-          styles: 'wght@100;300;400;500;700;900',
-        }],
-      },
+    webfontDownload(
+      [
+        'https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap',
+      ], {
+      async: false,
+      injectAsStyleTag: false,
     }),
     nodeResolve({
       modulePaths: [fileURLToPath(new URL('./node_modules', import.meta.url))],
