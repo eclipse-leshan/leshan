@@ -33,7 +33,7 @@ public class SenMLPack {
     }
 
     public SenMLPack(List<SenMLRecord> records) {
-        this.records = records;
+        this.records = Collections.unmodifiableList(new ArrayList<>(records));
     }
 
     public void addRecord(SenMLRecord record) {

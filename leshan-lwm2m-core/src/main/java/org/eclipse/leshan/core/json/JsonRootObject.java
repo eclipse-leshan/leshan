@@ -18,6 +18,7 @@
 package org.eclipse.leshan.core.json;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -35,7 +36,7 @@ public class JsonRootObject {
 
     public JsonRootObject(String baseName, List<JsonArrayEntry> jsonArray, BigDecimal baseTime) {
         this.baseName = baseName;
-        this.jsonArray = jsonArray;
+        this.jsonArray = Collections.unmodifiableList(new ArrayList<>(jsonArray));
         this.baseTime = baseTime;
     }
 
