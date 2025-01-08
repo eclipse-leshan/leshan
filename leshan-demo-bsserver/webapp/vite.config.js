@@ -13,6 +13,8 @@ import { fileURLToPath, URL } from 'node:url'
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import viteCompression from "vite-plugin-compression";
 import { visualizer } from "rollup-plugin-visualizer";
+import csp from "vite-plugin-csp-guard";
+
 
 const outputDir = process.env.MAVEN_OUTPUT_DIR
   ? process.env.MAVEN_OUTPUT_DIR
@@ -31,6 +33,20 @@ export default defineConfig({
       autoImport: true,
     }),
     Components(),
+    csp({
+      dev: {
+        run: false, outlierSupport: ["vue"]
+      },
+      policy: {
+        "font-src": ["'self' data:"],
+        "img-src": ["'self'", "data:"],
+        // we can not remove unsafe-inline because of vuetify
+        // See :
+        // - https://github.com/vuetifyjs/vuetify/issues/15973
+        // - https://github.com/eclipse-leshan/leshan/issues/1682
+        "style-src-elem": ["'self'", "'unsafe-inline'"],
+      }
+    }),
     webfontDownload(
       [
         'https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap',
