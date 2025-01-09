@@ -177,10 +177,21 @@ export default {
   },
   beforeMount() {
     this.axios.get("api/server/endpoint").then((response) => {
+      // Search bootstrap coap(s) ports.
+      let coapPort, coapsPort;
+      for (const ep of response.data) {
+        if (!coapPort && ep.uri.scheme == "coap") {
+          coapPort = ep.uri.port;
+        }
+        if (!coapsPort && ep.uri.scheme == "coaps") {
+          coapsPort = ep.uri.port;
+        }
+      }
+
       this.defval.dm.url.nosec = `coap://${location.hostname}:5683`;
       this.defval.dm.url.sec = `coaps://${location.hostname}:5684`;
-      this.defval.bs.url.nosec = `coap://${location.hostname}:${response.data.unsecuredEndpointPort}`;
-      this.defval.bs.url.sec = `coaps://${location.hostname}:${response.data.securedEndpointPort}`;
+      this.defval.bs.url.nosec = `coap://${location.hostname}:${coapPort}`;
+      this.defval.bs.url.sec = `coaps://${location.hostname}:${coapsPort}`;
     });
 
     this.axios.get("api/server/security").then((response) => {
