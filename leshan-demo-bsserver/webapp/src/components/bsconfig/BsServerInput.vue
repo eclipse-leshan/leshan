@@ -16,7 +16,7 @@
       v-model="server.url"
       @update:model-value="$emit('update:model-value', server)"
       :label="
-        server.mode == 'no_sec'
+        server.security.mode == 'no_sec'
           ? 'Server URL (default :' + defaultNoSecValue + ')'
           : 'Server URL (default :' + defaultSecureValue + ')'
       "
