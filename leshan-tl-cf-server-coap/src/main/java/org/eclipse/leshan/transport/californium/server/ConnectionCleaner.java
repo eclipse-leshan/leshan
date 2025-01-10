@@ -17,13 +17,13 @@ package org.eclipse.leshan.transport.californium.server;
 
 import java.security.Principal;
 import java.security.PublicKey;
+import java.util.function.Predicate;
 
 import javax.security.auth.x500.X500Principal;
 
 import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
 import org.eclipse.californium.elements.auth.X509CertPath;
-import org.eclipse.californium.elements.util.Filter;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 import org.eclipse.leshan.servers.security.SecurityInfo;
@@ -40,9 +40,9 @@ public class ConnectionCleaner {
     }
 
     public void cleanConnectionFor(final SecurityInfo... infos) {
-        connector.startTerminateConnectionsForPrincipal(new Filter<Principal>() {
+        connector.startTerminateConnectionsForPrincipal(new Predicate<Principal>() {
             @Override
-            public boolean accept(Principal principal) {
+            public boolean test(Principal principal) {
                 if (principal != null) {
                     for (SecurityInfo info : infos) {
                         if (info != null) {
