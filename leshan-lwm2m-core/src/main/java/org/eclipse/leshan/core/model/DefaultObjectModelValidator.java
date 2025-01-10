@@ -141,13 +141,6 @@ public class DefaultObjectModelValidator implements ObjectModelValidator {
     }
 
     protected void validateURN(String urn, ObjectModel object, String modelName) throws InvalidModelException {
-        String urnCategory = URN.getUrnKind(object.id);
-        if (urnCategory == URN.TEST_LABEL) {
-            // skip validation for Test category.
-            // See : https://github.com/OpenMobileAlliance/lwm2m-registry/issues/737
-            return;
-        }
-
         // Validate URN for other category
         if (!urn.startsWith("urn:oma:lwm2m:")) {
             throw new InvalidModelException(
@@ -167,7 +160,7 @@ public class DefaultObjectModelValidator implements ObjectModelValidator {
                     object.name, object.id, modelName, urn);
         }
         String kind = urnParts[3];
-        String expectedKind = urnCategory;
+        String expectedKind = URN.getUrnKind(object.id);
         if (!expectedKind.equals(kind)) {
             throw new InvalidModelException(
                     "Model for Object %s(%d) in %s is invalid : URN (%s) kind MUST be %s instead of %s", object.name,
