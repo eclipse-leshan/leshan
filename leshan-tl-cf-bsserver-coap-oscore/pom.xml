@@ -27,7 +27,7 @@ Contributors:
   </parent>
   <artifactId>leshan-tl-cf-bsserver-coap-oscore</artifactId>
   <packaging>bundle</packaging>
-  <name>leshan-transport-californium-bsserver-coap oscore</name>
+  <name>Leshan transport Californium bs server coap oscore</name>
   <description>A transport implementation for leshan bootstrap server based on Californium for CoAP protocol supporting OSCORE</description>
 
   <dependencies>

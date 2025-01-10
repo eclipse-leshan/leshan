@@ -24,7 +24,7 @@ Contributors:
   <version>2.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>leshan</name>
+  <name>Leshan</name>
   <description>An OMA Lightweight M2M (LWM2M) implementation in Java</description>
   <url>http://eclipse.org/leshan</url>
   <licenses>

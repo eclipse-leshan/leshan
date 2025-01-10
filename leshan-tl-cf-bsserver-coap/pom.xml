@@ -27,7 +27,7 @@ Contributors:
   </parent>
   <artifactId>leshan-tl-cf-bsserver-coap</artifactId>
   <packaging>bundle</packaging>
-  <name>leshan-transport-californium-bsserver-coap</name>
+  <name>Leshan transport Californium bs server coap</name>
   <description>A transport implementation for leshan bootstrap server based on Californium for CoAP protocol</description>
 
   <dependencies>

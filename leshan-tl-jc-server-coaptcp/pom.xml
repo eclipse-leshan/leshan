@@ -26,7 +26,7 @@ Contributors:
   </parent>
   <artifactId>leshan-tl-jc-server-coaptcp</artifactId>
   <packaging>bundle</packaging>
-  <name>leshan-transport-javacoap-server-coap+tcp</name>
+  <name>Leshan transport javacoap server coap+tcp</name>
   <description>A transport implementation for leshan server based on java-coap for CoAP over TCP protocol</description>
 
   <dependencies>
