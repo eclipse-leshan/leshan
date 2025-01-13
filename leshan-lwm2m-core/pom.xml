@@ -28,7 +28,7 @@ Contributors:
   </parent>
   <artifactId>leshan-lwm2m-core</artifactId>
   <packaging>bundle</packaging>
-  <name>leshan-core</name>
+  <name>Leshan core</name>
   <description>Core classes for implementing Lightweight M2M</description>
 
   <dependencies>
