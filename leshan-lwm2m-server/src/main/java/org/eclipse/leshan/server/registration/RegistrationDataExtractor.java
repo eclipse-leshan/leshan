@@ -29,6 +29,9 @@ import org.eclipse.leshan.core.request.ContentFormat;
  */
 public interface RegistrationDataExtractor {
 
+    /**
+     * @return extracted {@link RegistrationData} or <code>null</code> if {@link LwM2mVersion} is not supported
+     */
     RegistrationData extractDataFromObjectLinks(Link[] objectLinks, LwM2mVersion lwM2mVersion);
 
     public class RegistrationData {

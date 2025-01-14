@@ -77,6 +77,9 @@ public class RegistrationHandler {
         LwM2mVersion lwM2mVersion = LwM2mVersion.get(registerRequest.getLwVersion());
         RegistrationData objLinksData = dataExtractor.extractDataFromObjectLinks(registerRequest.getObjectLinks(),
                 lwM2mVersion);
+        if (objLinksData == null) {
+            return new SendableResponse<>(RegisterResponse.preconditionFailed("unsupported lwm2m version"));
+        }
 
         // Create Registration from RegisterRequest
         Registration.Builder builder = new Registration.Builder(

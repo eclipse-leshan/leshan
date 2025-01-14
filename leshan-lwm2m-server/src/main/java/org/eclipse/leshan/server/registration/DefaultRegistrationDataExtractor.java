@@ -39,6 +39,10 @@ public class DefaultRegistrationDataExtractor implements RegistrationDataExtract
 
     @Override
     public RegistrationData extractDataFromObjectLinks(Link[] objectLinks, LwM2mVersion lwM2mVersion) {
+        if (!lwM2mVersion.isSupported()) {
+            return null;
+        }
+
         RegistrationData data = new RegistrationData();
         if (objectLinks != null) {
 
