@@ -16,6 +16,7 @@
 package org.eclipse.leshan.server.registration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -23,6 +24,8 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
+import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.link.DefaultLinkParser;
 import org.eclipse.leshan.core.link.LinkParseException;
@@ -32,6 +35,8 @@ import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.RegisterRequest;
 import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.UplinkRequest;
+import org.eclipse.leshan.core.response.RegisterResponse;
+import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.servers.DefaultServerEndpointNameProvider;
 import org.eclipse.leshan.servers.security.Authorization;
@@ -114,6 +119,18 @@ public class RegistrationHandlerTest {
         assertEquals(appData, registration.getApplicationData());
     }
 
+    @Test
+    public void test_unsupported_lwm2m_version() {
+        // handle REGISTER request
+        SendableResponse<RegisterResponse> response = registrationHandler.register(givenIdentity(),
+                givenRegisterRequestWithEndpoint("myEndpoint", LwM2mVersion.get("1.2")), givenServerEndpointUri());
+        assertEquals(response.getResponse().getCode(), ResponseCode.PRECONDITION_FAILED);
+
+        // check result
+        Registration registration = registrationStore.getRegistrationByEndpoint("myEndpoint");
+        assertNull(registration);
+    }
+
     private IpPeer givenIdentity() {
         return new IpPeer(new InetSocketAddress(0));
     }
@@ -123,8 +140,12 @@ public class RegistrationHandlerTest {
     }
 
     private RegisterRequest givenRegisterRequestWithEndpoint(String endpoint) {
+        return givenRegisterRequestWithEndpoint(endpoint, LwM2mVersion.V1_1);
+    }
+
+    private RegisterRequest givenRegisterRequestWithEndpoint(String endpoint, LwM2mVersion version) {
         try {
-            return new RegisterRequest(endpoint, 3600l, "1.1", EnumSet.of(BindingMode.U), false, null,
+            return new RegisterRequest(endpoint, 3600l, version.toString(), EnumSet.of(BindingMode.U), false, null,
                     new DefaultLinkParser().parseCoreLinkFormat("</1/0/1>,</2/1>,</3>".getBytes()), null);
         } catch (LinkParseException e) {
             throw new IllegalStateException(e);
