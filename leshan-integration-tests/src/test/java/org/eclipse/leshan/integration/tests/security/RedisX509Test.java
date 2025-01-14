@@ -17,25 +17,11 @@ package org.eclipse.leshan.integration.tests.security;
 
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
-import org.eclipse.leshan.integration.tests.util.RedisTestUtil;
-import org.eclipse.leshan.server.redis.RedisSecurityStore;
-
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.util.Pool;
 
 public class RedisX509Test extends X509Test {
 
     @Override
     protected LeshanTestServerBuilder givenServerUsing(Protocol givenProtocol) {
-        LeshanTestServerBuilder builder = super.givenServerUsing(givenProtocol);
-
-        // Create redis store
-        Pool<Jedis> jedis = RedisTestUtil.createJedisPool();
-        // TODO use custom key when https://github.com/eclipse/leshan/issues/1249 will be available
-
-        // TODO should we also use RedisRegistrationStore ?
-        // builder.setRegistrationStore(new RedisRegistrationStore(jedis));
-        builder.setSecurityStore(new RedisSecurityStore(jedis));
-        return builder;
+        return super.givenServerUsing(givenProtocol).withRedisRegistrationStore();
     }
 }
