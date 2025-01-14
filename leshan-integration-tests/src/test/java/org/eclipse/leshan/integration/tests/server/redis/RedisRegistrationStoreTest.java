@@ -55,7 +55,6 @@ import org.eclipse.leshan.integration.tests.util.RedisTestUtil;
 import org.eclipse.leshan.server.endpoint.EffectiveEndpointUriProvider;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.profile.ClientProfile;
-import org.eclipse.leshan.server.redis.RedisRegistrationStore;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.transport.californium.ObserveUtil;
@@ -86,7 +85,7 @@ public class RedisRegistrationStoreTest {
     @BeforeEach
     public void setUp() throws UnknownHostException {
         address = InetAddress.getLocalHost();
-        store = new RedisRegistrationStore(RedisTestUtil.createJedisPool());
+        store = RedisTestUtil.createRedisRegistrationStore();
         observationStore = new LwM2mObservationStore(new EffectiveEndpointUriProvider() {
             @Override
             public EndpointUri getEndpointUri() {

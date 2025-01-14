@@ -220,6 +220,11 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
         return this;
     }
 
+    public LeshanTestServerBuilder withRedisRegistrationStore() {
+        setRegistrationStore(RedisTestUtil.createRedisRegistrationStore());
+        return this;
+    }
+
     protected ServerProtocolProvider getCaliforniumProtocolProvider(Protocol protocol) {
         if (protocol.equals(Protocol.COAP)) {
             return new CoapServerProtocolProvider();

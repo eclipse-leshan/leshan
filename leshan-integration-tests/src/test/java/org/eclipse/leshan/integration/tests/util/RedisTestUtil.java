@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.util;
 
+import org.eclipse.leshan.server.redis.RedisRegistrationStore;
+
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.util.Pool;
@@ -27,5 +29,11 @@ public class RedisTestUtil {
         } else {
             return new JedisPool();
         }
+    }
+
+    public static RedisRegistrationStore createRedisRegistrationStore() {
+        return new RedisRegistrationStore.Builder(RedisTestUtil.createJedisPool()) //
+                .setPrefix("LESHAN_TEST_REGSTORE#") //
+                .build();
     }
 }
