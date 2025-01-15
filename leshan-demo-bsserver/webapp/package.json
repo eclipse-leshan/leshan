@@ -10,7 +10,7 @@
     "lint": "eslint src",
     "report": "REPORT=true vite build --emptyOutDir",
     "sbom": "cyclonedx-npm --output-format json --output-file ../target/sbom-frontend.json",
-    "sbom_maven": "cyclonedx-npm --output-format ${OUTPUT_FORMAT} --output-file ${OUTPUT_BOM_DIRECTORY}/${OUTPUT_BOM_NAME}.${OUTPUT_FORMAT}"
+    "sbom_maven": "cross-env-shell cyclonedx-npm --output-format ${OUTPUT_FORMAT} --output-file ${OUTPUT_BOM_DIRECTORY}/${OUTPUT_BOM_NAME}.${OUTPUT_FORMAT}"
   },
   "dependencies": {
     "@fontsource/roboto": "^5.1.1",
@@ -25,6 +25,7 @@
     "vuetify3-dialog": "^1.5.4"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "@cyclonedx/cyclonedx-npm": "^1.19.3",
     "@mdi/js": "^7.4.47",
     "@rollup/plugin-node-resolve": "^16.0.0",
