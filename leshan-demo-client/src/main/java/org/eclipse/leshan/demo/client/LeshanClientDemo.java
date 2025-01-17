@@ -58,6 +58,7 @@ import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.ObjectModel;
+import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
@@ -350,9 +351,28 @@ public class LeshanClientDemo {
                     // get resource from string resource value
                     LwM2mSingleResource resource = textDecoder.decode(resourceValue.getBytes(), null, resourcePath,
                             repository.getLwM2mModel(), LwM2mSingleResource.class);
+
+                    // create dummy object enabler if object is not supported
+                    int objId = resourcePath.getObjectId();
+                    LwM2mObjectEnabler objectEnabler = client.getObjectTree().getObjectEnabler(objId);
+                    if (objectEnabler == null) {
+                        // get model
+                        ObjectModel objectModel = repository.getObjectModel(objId);
+                        if (objectModel == null) {
+                            throw new IllegalStateException(
+                                    String.format("Unable to enable Object %d : there no model for this object.%n",
+                                            resourcePath.getObjectId()));
+                        }
+                        // create and add enabler
+                        ObjectsInitializer objectsInitializer = new ObjectsInitializer(new StaticModel(objectModel));
+                        objectsInitializer.setDummyInstancesForObject(objId);
+                        objectEnabler = objectsInitializer.create(objId);
+                        client.getObjectTree().addObjectEnabler(objectEnabler);
+                    }
+
                     // try to write this resource
-                    response = client.getObjectTree().getObjectEnabler(resourcePath.getObjectId()).write(
-                            LwM2mServer.SYSTEM, new BootstrapWriteRequest(resourcePath, resource, ContentFormat.TEXT));
+                    response = objectEnabler.write(LwM2mServer.SYSTEM,
+                            new BootstrapWriteRequest(resourcePath, resource, ContentFormat.TEXT));
                 } catch (RuntimeException e) {
                     // catch any error
                     throw new IllegalStateException(
