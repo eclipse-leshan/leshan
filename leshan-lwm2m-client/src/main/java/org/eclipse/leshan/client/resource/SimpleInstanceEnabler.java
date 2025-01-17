@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.leshan.client.servers.LwM2mServer;
+import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
@@ -33,10 +34,12 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.request.argument.Arguments;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.eclipse.leshan.core.util.datatype.ULong;
 
 /**
  * A simple implementation of {@link LwM2mInstanceEnabler} where all supported readable or writable LWM2M resource are
@@ -255,6 +258,15 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
             case OPAQUE:
                 return LwM2mSingleResource.newBinaryResource(resourceModel.id,
                         createDefaultOpaqueValueFor(objectModel, resourceModel));
+            case UNSIGNED_INTEGER:
+                return LwM2mSingleResource.newUnsignedIntegerResource(resourceModel.id,
+                        createDefaultUnsignedIntegerValueFor(objectModel, resourceModel));
+            case OBJLNK:
+                return LwM2mSingleResource.newObjectLinkResource(resourceModel.id,
+                        createDefaultObjectLinkValueFor(objectModel, resourceModel));
+            case CORELINK:
+                return LwM2mSingleResource.newCoreLinkResource(resourceModel.id,
+                        createDefaultCoreLinkValueFor(objectModel, resourceModel));
             default:
                 // this should not happened
                 return null;
@@ -306,5 +318,17 @@ public class SimpleInstanceEnabler extends BaseInstanceEnabler {
 
     protected byte[] createDefaultOpaqueValueFor(ObjectModel objectModel, ResourceModel resourceModel) {
         return new byte[0];
+    }
+
+    protected ULong createDefaultUnsignedIntegerValueFor(ObjectModel objectModel, ResourceModel resourceModel) {
+        return ULong.valueOf(0);
+    }
+
+    protected ObjectLink createDefaultObjectLinkValueFor(ObjectModel objectModel, ResourceModel resourceModel) {
+        return new ObjectLink();
+    }
+
+    protected Link[] createDefaultCoreLinkValueFor(ObjectModel objectModel, ResourceModel resourceModel) {
+        return new Link[0];
     }
 }

@@ -23,15 +23,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.leshan.client.servers.LwM2mServer;
+import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.attributes.ResourceTypeAttribute;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
+import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.request.argument.Arguments;
 import org.eclipse.leshan.core.response.ExecuteResponse;
 import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.core.response.WriteResponse;
+import org.eclipse.leshan.core.util.datatype.ULong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,12 +114,21 @@ public class DummyInstanceEnabler extends SimpleInstanceEnabler {
         case FLOAT:
             values.put(0, createDefaultFloatValueFor(objectModel, resourceModel));
             values.put(1, createDefaultFloatValueFor(objectModel, resourceModel));
-            break;
         case TIME:
             values.put(0, createDefaultDateValueFor(objectModel, resourceModel));
             break;
         case OPAQUE:
             values.put(0, createDefaultOpaqueValueFor(objectModel, resourceModel));
+            break;
+        case UNSIGNED_INTEGER:
+            values.put(0, createDefaultUnsignedIntegerValueFor(objectModel, resourceModel));
+            values.put(1, createDefaultUnsignedIntegerValueFor(objectModel, resourceModel));
+            break;
+        case OBJLNK:
+            values.put(0, createDefaultObjectLinkValueFor(objectModel, resourceModel));
+            break;
+        case CORELINK:
+            values.put(0, createDefaultCoreLinkValueFor(objectModel, resourceModel));
             break;
         default:
             // this should not happened
@@ -135,12 +148,13 @@ public class DummyInstanceEnabler extends SimpleInstanceEnabler {
 
     @Override
     protected long createDefaultIntegerValueFor(ObjectModel objectModel, ResourceModel resourceModel) {
-        return (long) (Math.random() * 100 % 101);
+        // generate a long between -100 and 100
+        return (long) (Math.random() * 201l) - 100l;
     }
 
     @Override
     protected boolean createDefaultBooleanValueFor(ObjectModel objectModel, ResourceModel resourceModel) {
-        return Math.random() * 100 % 2 == 0;
+        return Math.random() < 0.5;
     }
 
     @Override
@@ -150,11 +164,30 @@ public class DummyInstanceEnabler extends SimpleInstanceEnabler {
 
     @Override
     protected double createDefaultFloatValueFor(ObjectModel objectModel, ResourceModel resourceModel) {
-        return Math.random() * 100;
+        // generate a float between -100.00 and 100.00
+        return (long) (Math.random() * 20001l - 10000l) / 100d;
     }
 
     @Override
     protected byte[] createDefaultOpaqueValueFor(ObjectModel objectModel, ResourceModel resourceModel) {
         return ("Default " + resourceModel.name).getBytes();
+    }
+
+    @Override
+    protected ULong createDefaultUnsignedIntegerValueFor(ObjectModel objectModel, ResourceModel resourceModel) {
+        // generate a ulong between 0 and 100
+        return ULong.valueOf((long) (Math.random() * 101l));
+    }
+
+    @Override
+    protected ObjectLink createDefaultObjectLinkValueFor(ObjectModel objectModel, ResourceModel resourceModel) {
+        return new ObjectLink(3, 0);
+    }
+
+    @Override
+    protected Link[] createDefaultCoreLinkValueFor(ObjectModel objectModel, ResourceModel resourceModel) {
+        return new Link[] { //
+                new Link("/", new ResourceTypeAttribute("oma.lwm2m")), //
+                new Link("/3/0"), };
     }
 }
