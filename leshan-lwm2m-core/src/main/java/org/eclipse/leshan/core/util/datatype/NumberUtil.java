@@ -23,6 +23,20 @@ import com.upokecenter.numbers.EInteger;
 public class NumberUtil {
 
     /**
+     * Minimal Long that can be safely in double (without precision loss)
+     *
+     * Because Double precision floating point format only has 52 bits to represent the mantissa
+     */
+    private static final long MIN_SAFE_DOUBLE_INTEGER = -(1L << 53) + 1;
+
+    /**
+     * Maximum Long that can be safely in double (without precision loss)
+     *
+     * Because Double precision floating point format only has 52 bits to represent the mantissa
+     */
+    private static final long MAX_SAFE_DOUBLE_INTEGER = (1L << 53) - 1;
+
+    /**
      * Convert the given number to long without loss allowing Floating-point number conversion
      *
      * @param number the number to turn in long
@@ -46,7 +60,10 @@ public class NumberUtil {
      */
     public static Long numberToLong(Number number, boolean permissiveNumberConversion) throws IllegalArgumentException {
         // handle INTEGER
-        if (number instanceof Byte || number instanceof Short || number instanceof Integer || number instanceof Long) {
+        if (number instanceof Long) {
+            return (Long) number;
+        }
+        if (number instanceof Byte || number instanceof Short || number instanceof Integer) {
             return number.longValue();
         }
         if (number instanceof BigInteger) {
@@ -54,7 +71,8 @@ public class NumberUtil {
             BigInteger bigInt = (BigInteger) number;
             if (bigInt.compareTo(BigInteger.valueOf(Long.MIN_VALUE)) < 0
                     || bigInt.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) > 0) {
-                throw new IllegalArgumentException(String.format("%s  : can not be store in a long", bigInt));
+                throw new IllegalArgumentException(
+                        String.format("BigInteger %s  : can not be store in a long", bigInt));
             }
             return bigInt.longValue();
         }
@@ -71,7 +89,8 @@ public class NumberUtil {
                 try {
                     return bigDec.longValueExact();
                 } catch (ArithmeticException e) {
-                    throw new IllegalArgumentException(String.format("%s  : can not be store in a long", bigDec));
+                    throw new IllegalArgumentException(
+                            String.format("BigDecimal %s  : can not be store in a long", bigDec));
                 }
             }
         }
@@ -81,7 +100,7 @@ public class NumberUtil {
             long longValue = number.longValue();
             // if long value is negative this means that this is a too long unsigned long
             if (longValue < 0) {
-                throw new IllegalArgumentException(String.format("%s  : can not be store in a long", number));
+                throw new IllegalArgumentException(String.format("ULong %s  : can not be store in a long", number));
             }
             return longValue;
         }
@@ -126,7 +145,8 @@ public class NumberUtil {
             // check big integer is not too big for a long
             BigInteger bigInt = (BigInteger) number;
             if (bigInt.signum() == -1 || bigInt.compareTo(ULong.MAX_VALUE) > 0) {
-                throw new IllegalArgumentException(String.format("%s  : can not be store in an unsigned long", bigInt));
+                throw new IllegalArgumentException(
+                        String.format("BigInteger %s  : can not be store in an unsigned long", bigInt));
             }
             return ULong.valueOf(bigInt);
         }
@@ -141,18 +161,19 @@ public class NumberUtil {
             }
             if (bigDec != null) {
                 if (bigDec.signum() == -1) {
-                    throw new IllegalArgumentException(
-                            String.format("%s  : can not be store in an unsigned long", bigDec));
+                    throw new IllegalArgumentException(String
+                            .format("BigDecimal %s  : can not convert negative number to an unsigned long", bigDec));
                 } else {
                     try {
                         BigInteger bigInt = bigDec.toBigIntegerExact();
                         if (bigInt.compareTo(ULong.MAX_VALUE) > 0) {
                             throw new IllegalArgumentException(
-                                    String.format("%s  : can not be store in an unsigned long", bigInt));
+                                    String.format("BigDecimal %s  : can not be store in an unsigned long", bigInt));
                         }
                         return ULong.valueOf(bigInt);
                     } catch (ArithmeticException e) {
-                        throw new IllegalArgumentException(String.format("%s  : can not be store in a long", bigDec));
+                        throw new IllegalArgumentException(
+                                String.format("BigDecimal %s  : can not be store in a long", bigDec));
                     }
                 }
             }
@@ -185,12 +206,76 @@ public class NumberUtil {
      * @throws IllegalArgumentException if the number can not be store in a long.
      */
     public static Double numberToDouble(Number number, boolean permissiveNumberConversion) {
-        if (permissiveNumberConversion)
-            return number.doubleValue();
+        if (permissiveNumberConversion) {
+            if (number instanceof Byte || number instanceof Short || number instanceof Integer) {
+                return number.doubleValue();
+            }
+            if (number instanceof Long) {
+                // check if long can be safely converted
+                if (MIN_SAFE_DOUBLE_INTEGER <= (Long) number && (Long) number <= MAX_SAFE_DOUBLE_INTEGER) {
+                    // this is safe zone where all integer can be store without precision loss in double
+                    return number.doubleValue();
+                } else {
+                    // Convert long to double
+                    double convertedDouble = number.doubleValue();
 
-        if (number instanceof Float || number instanceof Double || number instanceof BigDecimal)
-            return number.doubleValue();
+                    // Check if the double accurately represents the long
+                    if ((long) convertedDouble != number.longValue()) {
+                        throw new IllegalArgumentException(
+                                String.format("Can not convert Long %s to double safely", number.toString()));
+                    }
+                    return convertedDouble;
+                }
 
+            }
+            if (number instanceof BigInteger) {
+                // check if big integer can be safely converted
+                BigInteger bigInt = (BigInteger) number;
+                if (bigInt.compareTo(BigInteger.valueOf(MIN_SAFE_DOUBLE_INTEGER)) >= 0
+                        && bigInt.compareTo(BigInteger.valueOf(MAX_SAFE_DOUBLE_INTEGER)) <= 0) {
+                    // this is safe zone where all integer can be store without precision loss in double
+                    return number.doubleValue();
+                } else {
+                    // Convert BigInteger to double
+                    double convertedDouble = number.doubleValue();
+
+                    // Convert the double back to BigInteger exact representation
+                    try {
+                        BigInteger reconstructedValue = new BigDecimal(convertedDouble).toBigIntegerExact();
+                        if (!number.equals(reconstructedValue)) {
+                            throw new IllegalArgumentException(
+                                    String.format("Can not convert BigInteger %s to double safely", bigInt));
+                        }
+                    } catch (ArithmeticException e) {
+                        throw new IllegalArgumentException(
+                                String.format("Can not convert BigInteger %s to double safely", number));
+                    }
+                    return convertedDouble;
+                }
+            }
+        }
+
+        if (number instanceof Double) {
+            return (Double) number;
+        }
+        if (number instanceof Float) {
+            return number.doubleValue();
+        }
+        if (number instanceof BigDecimal) {
+            // We can not really ensure that BigDecimal fit safely in a double.
+            // Even for very simple decimal number, the internal numeric value could differ.
+            // Eg. : 0.1 Bigdecimal value can not exactly fit in double but it will be encoded as
+            // 0.099999999999999...
+            // (see https://observablehq.com/@benaubin/floating-point)
+
+            // So the best we can do is to be sure big decimal is not out of range.
+            Double result = number.doubleValue();
+            if (result == Double.POSITIVE_INFINITY || result == Double.NEGATIVE_INFINITY) {
+                throw new IllegalArgumentException(
+                        String.format("Can not convert Bigdecimal %s to double safely (out of range)", number));
+            }
+            return result;
+        }
         throw new IllegalArgumentException(String.format("Floating-point number expected but was %s (%s)", number,
                 number.getClass().getCanonicalName()));
     }
