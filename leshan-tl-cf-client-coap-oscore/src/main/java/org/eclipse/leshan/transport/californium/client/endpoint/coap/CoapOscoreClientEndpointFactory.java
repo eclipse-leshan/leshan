@@ -110,6 +110,7 @@ public class CoapOscoreClientEndpointFactory extends CoapClientEndpointFactory {
                     hkdfAlg, masterSalt);
 
             InMemoryOscoreContextDB oscoreCtxDB = new InMemoryOscoreContextDB(new StaticOscoreStore(oscoreParameters));
+            oscoreCtxDB.setClientRole(true);
             builder.setCustomCoapStackArgument(oscoreCtxDB).setCoapStackFactory(new OSCoreCoapStackFactory());
         }
 

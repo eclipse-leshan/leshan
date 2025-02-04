@@ -197,4 +197,53 @@ public class OscoreTest {
         client.triggerRegistrationUpdate();
         client.waitForUpdateFailureTo(server, 3, TimeUnit.SECONDS);
     }
+
+    @Test
+    public void registered_device_with_oscore_to_server_with_oscore_then_stop_device_then_register_again()
+            throws NonUniqueSecurityInfoException, InterruptedException {
+
+        // This should trigger Appendix B.2 procedure from OSCORE RFC.
+
+        // Create OSCORE Client
+        client = givenClient.connectingTo(server)//
+                .using(getClientOscoreSetting()).build();
+
+        // Add client credentials to the server
+        server.getSecurityStore().add(SecurityInfo.newOscoreInfo(client.getEndpointName(), getServerOscoreSetting()));
+
+        // Check client is not registered
+        assertThat(client).isNotRegisteredAt(server);
+
+        // Start it and wait for registration
+        client.start();
+        server.waitForNewRegistrationOf(client);
+
+        // Check client is well registered
+        assertThat(client).isRegisteredAt(server);
+        Registration registration = server.getRegistrationFor(client);
+
+        // check we can send request to client.
+        ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
+        assertThat(response.isSuccess()).isTrue();
+
+        // Stop client without sending deregister request
+        client.stop(false);
+
+        // Start it and wait for registration
+        client.start();
+        // TODO to remove
+        // Uncomment to see the failure
+//        Failure failure = client.waitForRegistrationFailureTo(server);
+//        System.out.println(failure);
+
+        server.waitForNewRegistrationOf(client);
+
+        // Check client is well registered
+        assertThat(client).isRegisteredAt(server);
+        registration = server.getRegistrationFor(client);
+
+        // check we can send request to client.
+        response = server.send(registration, new ReadRequest(3, 0, 1), 500);
+        assertThat(response.isSuccess()).isTrue();
+    }
 }
