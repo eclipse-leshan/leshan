@@ -236,7 +236,7 @@ public class OscoreTest {
 //        Failure failure = client.waitForRegistrationFailureTo(server);
 //        System.out.println(failure);
 
-        server.waitForNewRegistrationOf(client);
+        server.waitForReRegistrationOf(registration);
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);

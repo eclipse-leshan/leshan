@@ -67,7 +67,11 @@ public class OscoreContextCleaner implements RegistrationListener, SecurityStore
     public void securityInfoRemoved(boolean infosAreCompromised, SecurityInfo... infos) {
         for (SecurityInfo securityInfo : infos) {
             if (securityInfo.useOSCORE()) {
-                removeContext(securityInfo.getOscoreSetting().getRecipientId());
+                if (infosAreCompromised) {
+                    removeContextCompromised(securityInfo.getOscoreSetting().getRecipientId());
+                } else {
+                    removeContext(securityInfo.getOscoreSetting().getRecipientId());
+                }
             }
         }
     }
@@ -75,6 +79,13 @@ public class OscoreContextCleaner implements RegistrationListener, SecurityStore
     private void removeContext(byte[] rid) {
         OSCoreCtx context = oscoreCtxDB.getContext(rid);
         if (context != null)
-            oscoreCtxDB.removeContext(context);
+            if (!oscoreCtxDB.getContext(rid).getContextRederivationEnabled()) {
+                oscoreCtxDB.removeContext(context);
+            }
+    }
+
+    private void removeContextCompromised(byte[] rid) {
+        OSCoreCtx context = oscoreCtxDB.getContext(rid);
+        oscoreCtxDB.removeContext(context);
     }
 }
