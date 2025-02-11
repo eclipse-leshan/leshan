@@ -58,7 +58,7 @@ public class OscoreContextCleaner implements RegistrationListener, SecurityStore
     @Override
     public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
             Registration newReg) {
-        if (registration.getClientTransportData().getIdentity() instanceof OscoreIdentity) {
+        if (registration.getClientTransportData().getIdentity() instanceof OscoreIdentity && newReg == null) {
             removeContext(((OscoreIdentity) registration.getClientTransportData().getIdentity()).getRecipientId());
         }
     }
@@ -67,11 +67,7 @@ public class OscoreContextCleaner implements RegistrationListener, SecurityStore
     public void securityInfoRemoved(boolean infosAreCompromised, SecurityInfo... infos) {
         for (SecurityInfo securityInfo : infos) {
             if (securityInfo.useOSCORE()) {
-                if (infosAreCompromised) {
-                    removeContextCompromised(securityInfo.getOscoreSetting().getRecipientId());
-                } else {
-                    removeContext(securityInfo.getOscoreSetting().getRecipientId());
-                }
+                removeContext(securityInfo.getOscoreSetting().getRecipientId());
             }
         }
     }
@@ -79,13 +75,6 @@ public class OscoreContextCleaner implements RegistrationListener, SecurityStore
     private void removeContext(byte[] rid) {
         OSCoreCtx context = oscoreCtxDB.getContext(rid);
         if (context != null)
-            if (!oscoreCtxDB.getContext(rid).getContextRederivationEnabled()) {
-                oscoreCtxDB.removeContext(context);
-            }
-    }
-
-    private void removeContextCompromised(byte[] rid) {
-        OSCoreCtx context = oscoreCtxDB.getContext(rid);
-        oscoreCtxDB.removeContext(context);
+            oscoreCtxDB.removeContext(context);
     }
 }
