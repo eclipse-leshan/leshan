@@ -39,7 +39,12 @@ public class InMemoryOscoreContextDB extends HashMapCtxDB {
     public boolean clientRole = false;
 
     public InMemoryOscoreContextDB(OscoreStore oscoreStore) {
+        this(oscoreStore, false);
+    }
+
+    public InMemoryOscoreContextDB(OscoreStore oscoreStore, boolean clientRole) {
         this.store = oscoreStore;
+        this.clientRole = clientRole;
     }
 
     @Override
@@ -133,9 +138,5 @@ public class InMemoryOscoreContextDB extends HashMapCtxDB {
             LOG.error("Unable to derive context from {}", oscoreParameters, e);
             return null;
         }
-    }
-
-    public void setClientRole(boolean clientRole) {
-        this.clientRole = clientRole;
     }
 }
