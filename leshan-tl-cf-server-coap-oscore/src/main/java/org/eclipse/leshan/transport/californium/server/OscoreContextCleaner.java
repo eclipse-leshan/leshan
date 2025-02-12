@@ -20,6 +20,7 @@ import java.util.Collection;
 import org.eclipse.californium.oscore.OSCoreCtx;
 import org.eclipse.californium.oscore.OSCoreCtxDB;
 import org.eclipse.leshan.core.observation.Observation;
+import org.eclipse.leshan.core.peer.LwM2mIdentity;
 import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationListener;
@@ -58,9 +59,19 @@ public class OscoreContextCleaner implements RegistrationListener, SecurityStore
     @Override
     public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
             Registration newReg) {
-        if (registration.getClientTransportData().getIdentity() instanceof OscoreIdentity && newReg == null) {
-            removeContext(((OscoreIdentity) registration.getClientTransportData().getIdentity()).getRecipientId());
+        LwM2mIdentity unregisteredIdentity = registration.getClientTransportData().getIdentity();
+
+        // Not an OSCORE identity : nothing to clear
+        if (!(unregisteredIdentity instanceof OscoreIdentity))
+            return;
+
+        // This is a Re-Registration and client use same OSCORE Identity : nothing to clear
+        if (newReg != null && unregisteredIdentity.equals(newReg.getClientTransportData().getIdentity())) {
+            return;
         }
+
+        // else
+        removeContext(((OscoreIdentity) unregisteredIdentity).getRecipientId());
     }
 
     @Override
