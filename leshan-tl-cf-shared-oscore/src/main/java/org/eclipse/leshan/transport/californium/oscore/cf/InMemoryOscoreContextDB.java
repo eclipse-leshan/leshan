@@ -36,7 +36,7 @@ public class InMemoryOscoreContextDB extends HashMapCtxDB {
 
     private final OscoreStore store;
 
-    public boolean clientRole = false;
+    private final boolean clientRole;
 
     public InMemoryOscoreContextDB(OscoreStore oscoreStore) {
         this(oscoreStore, false);
