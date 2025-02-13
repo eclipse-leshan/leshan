@@ -231,10 +231,6 @@ public class OscoreTest {
 
         // Start it and wait for registration
         client.start();
-        // TODO to remove
-        // Uncomment to see the failure
-//        Failure failure = client.waitForRegistrationFailureTo(server);
-//        System.out.println(failure);
 
         server.waitForReRegistrationOf(registration);
 
