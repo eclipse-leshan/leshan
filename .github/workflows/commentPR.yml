@@ -32,7 +32,7 @@ jobs:
       # Get Build Status produced by "Check Pull Request" (main.yml) workflow.
       # See : https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
       - name: Download Build Status Archive
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: ${{env.build_status_filename}}
           run-id: ${{ github.event.workflow_run.id }}
