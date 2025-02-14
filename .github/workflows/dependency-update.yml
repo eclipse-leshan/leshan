@@ -8,14 +8,15 @@ on:
       - 'master'
   workflow_dispatch:
 
-permissions:
-  contents: write
+permissions: read-all
 
 jobs:
   dependency:
     # don't run this workflow in forks
     if: github.repository == 'eclipse-leshan/leshan'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
