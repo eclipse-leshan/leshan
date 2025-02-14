@@ -28,7 +28,7 @@ env:
 jobs:
   build:
     # don't run this workflow in forks
-    if: github.repository == 'eclipse-leshan/leshan' && github.event.pull_request.draft == false
+    #if: github.repository == 'eclipse-leshan/leshan' && github.event.pull_request.draft == false
     name : Code Check
     runs-on: ubuntu-latest
 
