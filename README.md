@@ -21,7 +21,12 @@ The Leshan Documentation  is available in our [wiki :blue_book:](https://github.
 
 Contact
 -------
+If you have any **questions**, **feedback** or **bugs** to report, please use [github issue](https://github.com/eclipse-leshan/leshan/issues).  
+For **vulnerabilities**, have a look at our [Security Policy](https://github.com/eclipse-leshan/leshan/security/policy).  
+If you want to **contribute**, take a look at our [Contribution Guide](https://github.com/eclipse-leshan/leshan/blob/master/CONTRIBUTING.md).
 
+
+We also have a mail list but it is not so much used :
 Join the project mailing list : [subscribe](https://dev.eclipse.org/mailman/listinfo/leshan-dev).  
 Mail address: leshan-dev@eclipse.org.  
 Access to [leshan-dev archives](https://dev.eclipse.org/mhonarc/lists/leshan-dev/).  
