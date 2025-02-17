@@ -748,6 +748,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                     || numberValue instanceof BigDecimal) {
                 return Type.FLOAT;
             }
+            // return null;
         default:
             return null;
         }

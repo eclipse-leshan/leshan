@@ -15,9 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.senml.cbor.upokecenter;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
@@ -253,7 +250,7 @@ public class SenMLCborPackSerDes {
     }
 
     public byte[] serializeToCbor(SenMLPack pack) throws SenMLException {
-        try (OutputStream stream = new ByteArrayOutputStream()) {
+        try {
             CBORObject cborArray = CBORObject.NewArray();
             for (SenMLRecord record : pack.getRecords()) {
                 CBORObject cborRecord = newMap();
@@ -326,7 +323,7 @@ public class SenMLCborPackSerDes {
                 cborArray.Add(cborRecord);
             }
             return cborArray.EncodeToBytes();
-        } catch (IllegalArgumentException | IllegalStateException | IOException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             throw new SenMLException(e, "Unable to serialize SenML in CBOR");
         }
     }

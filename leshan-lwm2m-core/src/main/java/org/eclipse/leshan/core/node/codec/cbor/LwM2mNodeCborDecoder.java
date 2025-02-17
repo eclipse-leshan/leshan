@@ -163,6 +163,7 @@ public class LwM2mNodeCborDecoder implements NodeDecoder {
                 if (cborObject.getType() == CBORType.Boolean) {
                     return cborObject.AsBoolean();
                 }
+                break;
             case FLOAT:
                 if (cborObject.getType() == CBORType.FloatingPoint) {
                     return cborObject.AsDoubleValue();
@@ -174,10 +175,12 @@ public class LwM2mNodeCborDecoder implements NodeDecoder {
                 if (cborObject.getType() == CBORType.TextString) {
                     return ObjectLink.decodeFromString(cborObject.AsString());
                 }
+                break;
             case CORELINK:
                 if (cborObject.getType() == CBORType.TextString) {
                     return linkParser.parseCoreLinkFormat(cborObject.AsString().getBytes());
                 }
+                break;
             case OPAQUE:
                 if (cborObject.getType() == CBORType.ByteString) {
                     return cborObject.GetByteString();

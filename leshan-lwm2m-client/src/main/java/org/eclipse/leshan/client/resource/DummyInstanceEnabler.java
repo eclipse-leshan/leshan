@@ -114,6 +114,7 @@ public class DummyInstanceEnabler extends SimpleInstanceEnabler {
         case FLOAT:
             values.put(0, createDefaultFloatValueFor(objectModel, resourceModel));
             values.put(1, createDefaultFloatValueFor(objectModel, resourceModel));
+            break;
         case TIME:
             values.put(0, createDefaultDateValueFor(objectModel, resourceModel));
             break;
