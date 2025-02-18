@@ -1,6 +1,15 @@
-![Leshan](https://eclipse.org/leshan/img/multicolor-leshan.png)
+<h1 align="center">
 
-[Eclipse Leshan™](https://eclipse.org/leshan) is an OMA Lightweight M2M server and client Java implementation.
+<a href="[https://otterdog.eclipse.org](https://eclipse.dev/leshan/)">
+  <img src="https://eclipse.org/leshan/img/multicolor-leshan.png">
+</a>
+</h1>
+<p align="center">
+  <a href="https://scorecard.dev/viewer/?uri=github.com/eclipse-leshan/leshan"><img alt="OpenSSF Scorecard" src="https://api.securityscorecards.dev/projects/github.com/eclipse-leshan/leshan/badge" /></a>
+  <a href="https://www.bestpractices.dev/projects/10034"><img alt="OpenSSF Best Practices" src="https://www.bestpractices.dev/projects/10034/badge" /></a>
+</p>
+
+[Eclipse Leshan™](https://eclipse.dev/leshan/) is an OMA Lightweight M2M server and client Java implementation.
 
 [What is OMA LWM2M ?](https://omaspecworks.org/what-is-oma-specworks/iot/lightweight-m2m-lwm2m/)  
 [LWM2M Specifications](https://github.com/eclipse/leshan/wiki/Lightweight-M2M-Specification).  
