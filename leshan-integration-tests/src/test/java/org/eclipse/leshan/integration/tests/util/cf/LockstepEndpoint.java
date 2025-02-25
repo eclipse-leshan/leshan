@@ -43,7 +43,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.californium.core.Utils;
-import org.eclipse.californium.core.coap.BlockOption;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
@@ -54,6 +53,8 @@ import org.eclipse.californium.core.coap.Option;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.coap.Token;
+import org.eclipse.californium.core.coap.option.BlockOption;
+import org.eclipse.californium.core.coap.option.OpaqueOption;
 import org.eclipse.californium.core.coap.option.OptionDefinition;
 import org.eclipse.californium.core.coap.option.StandardOptionRegistry;
 import org.eclipse.californium.core.network.serialization.DataParser;
@@ -615,7 +616,7 @@ public class LockstepEndpoint {
 
                 @Override
                 public String toString() {
-                    BlockOption option = new BlockOption(BlockOption.size2Szx(size), m, num);
+                    BlockOption option = StandardOptionRegistry.BLOCK1.create(BlockOption.size2Szx(size), m, num);
                     return "Expected Block1 option: " + option;
                 }
             });
@@ -637,7 +638,7 @@ public class LockstepEndpoint {
 
                 @Override
                 public String toString() {
-                    BlockOption option = new BlockOption(BlockOption.size2Szx(size), m, num);
+                    BlockOption option = StandardOptionRegistry.BLOCK2.create(BlockOption.size2Szx(size), m, num);
                     return "Expected Block2 option: " + option;
                 }
             });
@@ -682,11 +683,13 @@ public class LockstepEndpoint {
 
         public MessageExpectation hasEtag(final byte[] etag) {
 
+            final OpaqueOption etagOption = StandardOptionRegistry.ETAG.create(etag);
+
             expectations.add(new Expectation<Message>() {
 
                 @Override
                 public void check(final Message message) {
-                    assertThat(message.getOptions().getETags(), hasItem(etag));
+                    assertThat(message.getOptions().getETags(), hasItem(etagOption));
                 }
 
                 @Override

@@ -33,12 +33,12 @@ import org.eclipse.californium.scandium.dtls.CertificateVerificationResult;
 import org.eclipse.californium.scandium.dtls.ConnectionId;
 import org.eclipse.californium.scandium.dtls.HandshakeException;
 import org.eclipse.californium.scandium.dtls.HandshakeResultHandler;
-import org.eclipse.californium.scandium.dtls.x509.NewAdvancedCertificateVerifier;
+import org.eclipse.californium.scandium.dtls.x509.CertificateVerifier;
 import org.eclipse.californium.scandium.util.ServerNames;
 import org.eclipse.leshan.core.security.certificate.verifier.X509CertificateVerifier;
 import org.eclipse.leshan.core.security.certificate.verifier.X509CertificateVerifier.Role;
 
-public class LwM2mCertificateVerifier implements NewAdvancedCertificateVerifier {
+public class LwM2mCertificateVerifier implements CertificateVerifier {
 
     private final List<CertificateType> supportedCertificateType = Arrays.asList(CertificateType.X_509);
 
@@ -75,7 +75,7 @@ public class LwM2mCertificateVerifier implements NewAdvancedCertificateVerifier 
             return new CertificateVerificationResult(cid, message.getCertificateChain(), null);
         } catch (CertificateException exception) {
             return new CertificateVerificationResult(cid, new HandshakeException("Unable to verify Certificate",
-                    new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE), exception), null);
+                    new AlertMessage(AlertLevel.FATAL, AlertDescription.BAD_CERTIFICATE), exception));
         }
     }
 

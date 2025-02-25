@@ -50,10 +50,10 @@ import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.dtls.DtlsHandshakeTimeoutException;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
-import org.eclipse.californium.scandium.dtls.pskstore.AdvancedSinglePskStore;
-import org.eclipse.californium.scandium.dtls.x509.NewAdvancedCertificateVerifier;
+import org.eclipse.californium.scandium.dtls.pskstore.SinglePskStore;
+import org.eclipse.californium.scandium.dtls.x509.CertificateVerifier;
 import org.eclipse.californium.scandium.dtls.x509.SingleCertificateProvider;
-import org.eclipse.californium.scandium.dtls.x509.StaticNewAdvancedCertificateVerifier;
+import org.eclipse.californium.scandium.dtls.x509.StaticCertificateVerifier;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
 import org.eclipse.leshan.client.security.CertificateVerifierFactory;
 import org.eclipse.leshan.client.servers.LwM2mServer;
@@ -158,8 +158,8 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
 
             // Support PSK
             if (serverInfo.secureMode == SecurityMode.PSK) {
-                AdvancedSinglePskStore staticPskStore = new AdvancedSinglePskStore(serverInfo.pskId, serverInfo.pskKey);
-                effectiveBuilder.setAdvancedPskStore(staticPskStore);
+                SinglePskStore staticPskStore = new SinglePskStore(serverInfo.pskId, serverInfo.pskKey);
+                effectiveBuilder.setPskStore(staticPskStore);
                 filterCipherSuites(effectiveBuilder, incompleteConfig.getSupportedCipherSuites(), true, false);
             } else if (serverInfo.secureMode == SecurityMode.RPK) {
                 // set identity
@@ -170,9 +170,9 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
                 effectiveBuilder.setCertificateIdentityProvider(singleCertificateProvider);
                 // set RPK truststore
                 final PublicKey expectedKey = serverInfo.serverPublicKey;
-                NewAdvancedCertificateVerifier rpkVerifier = new StaticNewAdvancedCertificateVerifier.Builder()
+                CertificateVerifier rpkVerifier = new StaticCertificateVerifier.Builder()
                         .setTrustedRPKs(new RawPublicKeyIdentity(expectedKey)).build();
-                effectiveBuilder.setAdvancedCertificateVerifier(rpkVerifier);
+                effectiveBuilder.setCertificateVerifier(rpkVerifier);
                 filterCipherSuites(effectiveBuilder, incompleteConfig.getSupportedCipherSuites(), false, true);
             } else if (serverInfo.secureMode == SecurityMode.X509) {
                 // set identity
@@ -184,7 +184,7 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
 
                 // set certificate verifier
                 X509CertificateVerifier certificateVerifier = certificateVerifierFactory.create(serverInfo, trustStore);
-                effectiveBuilder.setAdvancedCertificateVerifier(new LwM2mCertificateVerifier(certificateVerifier));
+                effectiveBuilder.setCertificateVerifier(new LwM2mCertificateVerifier(certificateVerifier));
 
                 // TODO We set CN with '*' as we are not able to know the CN for some certificate usage and so this is
                 // not used anymore to identify a server with x509.

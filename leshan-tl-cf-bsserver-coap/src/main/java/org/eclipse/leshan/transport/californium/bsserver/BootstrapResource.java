@@ -72,7 +72,7 @@ public class BootstrapResource extends LwM2mCoapResource {
         ContentFormat preferredContentFomart = null;
         Map<String, String> additionalParams = new HashMap<>();
         // TODO maybe we should use LwM2mAttributeParser ?
-        for (String param : request.getOptions().getUriQuery()) {
+        for (String param : request.getOptions().getUriQueryStrings()) {
             String[] p = param.split("=", 2);
             String paramName = p[0];
             if (paramName.equals(QUERY_PARAM_ENDPOINT)) {

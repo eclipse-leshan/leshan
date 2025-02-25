@@ -22,7 +22,7 @@ import javax.crypto.SecretKey;
 import org.eclipse.californium.scandium.dtls.ConnectionId;
 import org.eclipse.californium.scandium.dtls.PskPublicInformation;
 import org.eclipse.californium.scandium.dtls.PskSecretResult;
-import org.eclipse.californium.scandium.dtls.pskstore.AdvancedPskStore;
+import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
 import org.eclipse.californium.scandium.util.SecretUtil;
 import org.eclipse.californium.scandium.util.ServerNames;
 import org.eclipse.leshan.server.registration.Registration;
@@ -31,12 +31,12 @@ import org.eclipse.leshan.servers.security.SecurityInfo;
 import org.eclipse.leshan.servers.security.SecurityStore;
 
 /**
- * A {@link AdvancedPskStore} which retrieve PSK information from Leshan {@link SecurityStore}.
+ * A {@link PskStore} which retrieve PSK information from Leshan {@link SecurityStore}.
  */
-public class LwM2mPskStore implements AdvancedPskStore {
+public class LwM2mPskStore implements PskStore {
 
-    private SecurityStore securityStore;
-    private RegistrationStore registrationStore;
+    private final SecurityStore securityStore;
+    private final RegistrationStore registrationStore;
 
     public LwM2mPskStore(SecurityStore securityStore) {
         this(securityStore, null);

@@ -48,7 +48,7 @@ import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig.Builder;
 import org.eclipse.californium.scandium.dtls.ConnectionId;
 import org.eclipse.californium.scandium.dtls.PskPublicInformation;
-import org.eclipse.californium.scandium.dtls.pskstore.AdvancedPskStore;
+import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.Protocol;
@@ -132,14 +132,14 @@ public class ServerOnlySecurityTest {
 
                         // tricks to be able to change psk information on the fly
                         // DtlsConnectorConfig.Builder newBuilder = DtlsConnectorConfig.builder(dtlsConfig);
-                        AdvancedPskStore pskStore = dtlsConfigBuilder.getIncompleteConfig().getAdvancedPskStore();
+                        PskStore pskStore = dtlsConfigBuilder.getIncompleteConfig().getPskStore();
                         if (pskStore != null) {
                             PskPublicInformation identity = pskStore.getIdentity(null, null);
                             SecretKey key = pskStore
                                     .requestPskSecretResult(ConnectionId.EMPTY, null, identity, null, null, null, false)
                                     .getSecret();
                             singlePSKStore = new SinglePSKStore(identity, key);
-                            dtlsConfigBuilder.setAdvancedPskStore(singlePSKStore);
+                            dtlsConfigBuilder.setPskStore(singlePSKStore);
                         }
                         return dtlsConfigBuilder;
                     }

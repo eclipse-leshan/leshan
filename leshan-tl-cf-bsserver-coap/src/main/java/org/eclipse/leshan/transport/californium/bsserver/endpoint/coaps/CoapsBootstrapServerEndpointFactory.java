@@ -53,7 +53,7 @@ import org.eclipse.californium.scandium.dtls.CertificateType;
 import org.eclipse.californium.scandium.dtls.DtlsHandshakeTimeoutException;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.californium.scandium.dtls.x509.SingleCertificateProvider;
-import org.eclipse.californium.scandium.dtls.x509.StaticNewAdvancedCertificateVerifier;
+import org.eclipse.californium.scandium.dtls.x509.StaticCertificateVerifier;
 import org.eclipse.leshan.bsserver.LeshanBootstrapServer;
 import org.eclipse.leshan.core.endpoint.DefaultEndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
@@ -191,13 +191,13 @@ public class CoapsBootstrapServerEndpointFactory implements CaliforniumBootstrap
         DtlsConnectorConfig incompleteConfig = dtlsConfigBuilder.getIncompleteConfig();
 
         // Handle PSK Store
-        if (incompleteConfig.getAdvancedPskStore() != null) {
+        if (incompleteConfig.getPskStore() != null) {
             LOG.warn("PskStore should be automatically set by Leshan. Using a custom implementation is not advised.");
         } else if (server.getSecurityStore() != null) {
             List<CipherSuite> ciphers = incompleteConfig.getConfiguration().get(DtlsConfig.DTLS_CIPHER_SUITES);
             if (ciphers == null // if null ciphers will be chosen automatically by Scandium
                     || CipherSuite.containsPskBasedCipherSuite(ciphers)) {
-                dtlsConfigBuilder.setAdvancedPskStore(new LwM2mBootstrapPskStore(server.getSecurityStore()));
+                dtlsConfigBuilder.setPskStore(new LwM2mBootstrapPskStore(server.getSecurityStore()));
             }
         }
 
@@ -241,20 +241,19 @@ public class CoapsBootstrapServerEndpointFactory implements CaliforniumBootstrap
         }
 
         // handle trusted certificates or RPK
-        if (incompleteConfig.getAdvancedCertificateVerifier() != null) {
+        if (incompleteConfig.getCertificateVerifier() != null) {
             if (serverSecurityInfo.getTrustedCertificates() != null) {
                 throw new IllegalStateException(
                         "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder: if a AdvancedCertificateVerifier is set, trustedCertificates must not be set.");
             }
         } else if (incompleteConfig.getCertificateIdentityProvider() != null) {
-            StaticNewAdvancedCertificateVerifier.Builder verifierBuilder = StaticNewAdvancedCertificateVerifier
-                    .builder();
+            StaticCertificateVerifier.Builder verifierBuilder = StaticCertificateVerifier.builder();
             // by default trust all RPK
             verifierBuilder.setTrustAllRPKs();
             if (serverSecurityInfo.getTrustedCertificates() != null) {
                 verifierBuilder.setTrustedCertificates(serverSecurityInfo.getTrustedCertificates());
             }
-            dtlsConfigBuilder.setAdvancedCertificateVerifier(verifierBuilder.build());
+            dtlsConfigBuilder.setCertificateVerifier(verifierBuilder.build());
         }
     }
 

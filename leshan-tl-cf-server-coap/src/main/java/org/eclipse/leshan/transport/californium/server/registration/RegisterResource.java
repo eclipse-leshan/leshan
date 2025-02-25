@@ -26,6 +26,7 @@ import java.util.Map;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.option.StringOption;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
@@ -98,8 +99,8 @@ public class RegisterResource extends LwM2mCoapResource {
             return;
         }
 
-        List<String> uri = exchange.getRequestOptions().getUriPath();
-        if (uri == null || uri.size() == 0 || !RESOURCE_NAME.equals(uri.get(0))) {
+        List<StringOption> uri = exchange.getRequestOptions().getUriPath();
+        if (uri == null || uri.isEmpty() || !RESOURCE_NAME.equals(uri.get(0).getStringValue())) {
             handleInvalidRequest(exchange, "Bad URI");
             return;
         }
@@ -108,7 +109,7 @@ public class RegisterResource extends LwM2mCoapResource {
             handleRegister(exchange, request);
             return;
         } else if (uri.size() == 2) {
-            handleUpdate(exchange, request, uri.get(1));
+            handleUpdate(exchange, request, uri.get(1).getStringValue());
             return;
         } else {
             handleInvalidRequest(exchange, "Bad URI");
@@ -120,10 +121,10 @@ public class RegisterResource extends LwM2mCoapResource {
     public void handleDELETE(CoapExchange exchange) {
         LOG.trace("DELETE received : {}", exchange.advanced().getRequest());
 
-        List<String> uri = exchange.getRequestOptions().getUriPath();
+        List<StringOption> uri = exchange.getRequestOptions().getUriPath();
 
-        if (uri != null && uri.size() == 2 && RESOURCE_NAME.equals(uri.get(0))) {
-            handleDeregister(exchange, uri.get(1));
+        if (uri != null && uri.size() == 2 && RESOURCE_NAME.equals(uri.get(0).getStringValue())) {
+            handleDeregister(exchange, uri.get(1).getStringValue());
         } else {
             handleInvalidRequest(exchange, "Bad URI");
         }
@@ -157,7 +158,7 @@ public class RegisterResource extends LwM2mCoapResource {
 
         // Get parameters
         // TODO maybe we should use LwM2mAttributeParser ?
-        for (String param : request.getOptions().getUriQuery()) {
+        for (String param : request.getOptions().getUriQueryStrings()) {
             String[] p = param.split("=", 2);
             String paramName = p[0];
             if (paramName.equals(QUERY_PARAM_ENDPOINT)) {
@@ -238,7 +239,7 @@ public class RegisterResource extends LwM2mCoapResource {
         Link[] objectLinks = null;
         Map<String, String> additionalParams = new HashMap<>();
 
-        for (String param : request.getOptions().getUriQuery()) {
+        for (String param : request.getOptions().getUriQueryStrings()) {
             String[] p = param.split("=", 2);
             String paramName = p[0];
             if (paramName.equals(QUERY_PARAM_LIFETIME)) {

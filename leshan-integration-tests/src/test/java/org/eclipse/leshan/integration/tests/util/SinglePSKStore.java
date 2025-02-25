@@ -22,11 +22,11 @@ import javax.crypto.SecretKey;
 import org.eclipse.californium.scandium.dtls.ConnectionId;
 import org.eclipse.californium.scandium.dtls.PskPublicInformation;
 import org.eclipse.californium.scandium.dtls.PskSecretResult;
-import org.eclipse.californium.scandium.dtls.pskstore.AdvancedPskStore;
+import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
 import org.eclipse.californium.scandium.util.SecretUtil;
 import org.eclipse.californium.scandium.util.ServerNames;
 
-public class SinglePSKStore implements AdvancedPskStore {
+public class SinglePSKStore implements PskStore {
 
     private PskPublicInformation identity;
     private SecretKey key;

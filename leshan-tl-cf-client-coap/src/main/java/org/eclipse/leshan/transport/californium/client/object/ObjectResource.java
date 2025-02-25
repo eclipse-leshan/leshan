@@ -321,7 +321,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
         // get Observe Spec
         LwM2mAttributeSet attributes = null;
         if (coapRequest.getOptions().getURIQueryCount() != 0) {
-            List<String> uriQueries = coapRequest.getOptions().getUriQuery();
+            List<String> uriQueries = coapRequest.getOptions().getUriQueryStrings();
             try {
                 attributes = new LwM2mAttributeSet(toolbox.getAttributeParser().parseQueryParams(uriQueries));
             } catch (InvalidAttributeException e) {

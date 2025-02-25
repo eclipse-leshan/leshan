@@ -22,7 +22,7 @@ import javax.crypto.SecretKey;
 import org.eclipse.californium.scandium.dtls.ConnectionId;
 import org.eclipse.californium.scandium.dtls.PskPublicInformation;
 import org.eclipse.californium.scandium.dtls.PskSecretResult;
-import org.eclipse.californium.scandium.dtls.pskstore.AdvancedPskStore;
+import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
 import org.eclipse.californium.scandium.util.SecretUtil;
 import org.eclipse.californium.scandium.util.ServerNames;
 import org.eclipse.leshan.bsserver.security.BootstrapSecurityStore;
@@ -34,9 +34,9 @@ import org.eclipse.leshan.servers.security.SecurityInfo;
  * Only supports getting the PSK key for a given identity. (Getting identity from IP only makes sense when we initiate
  * DTLS Connection) side.)
  */
-public class LwM2mBootstrapPskStore implements AdvancedPskStore {
+public class LwM2mBootstrapPskStore implements PskStore {
 
-    private BootstrapSecurityStore bsSecurityStore;
+    private final BootstrapSecurityStore bsSecurityStore;
 
     public LwM2mBootstrapPskStore(BootstrapSecurityStore bsSecurityStore) {
         this.bsSecurityStore = bsSecurityStore;
