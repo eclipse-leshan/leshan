@@ -16,16 +16,10 @@
 package org.eclipse.leshan.transport.californium.server.endpoint.coaps;
 
 import java.net.InetSocketAddress;
-import java.security.Principal;
-import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
-import javax.security.auth.x500.X500Principal;
-
-import org.eclipse.californium.core.coap.Message;
-import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.core.config.CoapConfig.TrackerMode;
 import org.eclipse.californium.core.network.CoapEndpoint;
@@ -33,16 +27,9 @@ import org.eclipse.californium.core.network.CoapEndpoint.Builder;
 import org.eclipse.californium.core.network.serialization.UdpDataParser;
 import org.eclipse.californium.core.network.serialization.UdpDataSerializer;
 import org.eclipse.californium.core.observe.ObservationStore;
-import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.DtlsEndpointContext;
-import org.eclipse.californium.elements.EndpointContext;
 import org.eclipse.californium.elements.EndpointContextMatcher;
-import org.eclipse.californium.elements.MapBasedEndpointContext;
-import org.eclipse.californium.elements.MapBasedEndpointContext.Attributes;
-import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
-import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
-import org.eclipse.californium.elements.auth.X509CertPath;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
 import org.eclipse.californium.elements.config.SystemConfig;
@@ -52,7 +39,6 @@ import org.eclipse.californium.scandium.config.DtlsConfig;
 import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.dtls.CertificateType;
-import org.eclipse.californium.scandium.dtls.DtlsHandshakeTimeoutException;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
 import org.eclipse.californium.scandium.dtls.x509.SingleCertificateProvider;
 import org.eclipse.californium.scandium.dtls.x509.StaticCertificateVerifier;
@@ -60,25 +46,16 @@ import org.eclipse.leshan.core.endpoint.DefaultEndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.Protocol;
-import org.eclipse.leshan.core.peer.IpPeer;
-import org.eclipse.leshan.core.peer.LwM2mPeer;
-import org.eclipse.leshan.core.peer.PskIdentity;
-import org.eclipse.leshan.core.peer.RpkIdentity;
-import org.eclipse.leshan.core.peer.X509Identity;
-import org.eclipse.leshan.core.request.exception.TimeoutException;
-import org.eclipse.leshan.core.request.exception.TimeoutException.Type;
-import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.endpoint.EffectiveEndpointUriProvider;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.servers.security.EditableSecurityStore;
-import org.eclipse.leshan.servers.security.SecurityInfo;
 import org.eclipse.leshan.servers.security.SecurityStore;
-import org.eclipse.leshan.servers.security.SecurityStoreListener;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
-import org.eclipse.leshan.transport.californium.DefaultExceptionTranslator;
+import org.eclipse.leshan.transport.californium.DefaultCoapsExceptionTranslator;
 import org.eclipse.leshan.transport.californium.ExceptionTranslator;
 import org.eclipse.leshan.transport.californium.Lwm2mEndpointContextMatcher;
+import org.eclipse.leshan.transport.californium.identity.DefaultCoapsIdentityHandler;
 import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
 import org.eclipse.leshan.transport.californium.server.ConnectionCleaner;
 import org.eclipse.leshan.transport.californium.server.LwM2mPskStore;
@@ -183,7 +160,7 @@ public class CoapsServerEndpointFactory implements CaliforniumServerEndpointFact
         try {
             dtlsConfig = dtlsConfigBuilder.build();
         } catch (IllegalStateException e) {
-            LOG.warn("Unable to create DTLS config for endpont {}.", endpointUri.toString(), e);
+            LOG.warn("Unable to create DTLS config for endpont {}.", endpointUri, e);
             return null;
         }
 
@@ -236,16 +213,16 @@ public class CoapsServerEndpointFactory implements CaliforniumServerEndpointFact
         // check conflict in configuration
         if (incompleteConfig.getCertificateIdentityProvider() != null) {
             if (serverSecurityInfo.getPrivateKey() != null) {
-                throw new IllegalStateException(String.format(
-                        "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for private key"));
+                throw new IllegalStateException(
+                        "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for private key");
             }
             if (serverSecurityInfo.getPublicKey() != null) {
-                throw new IllegalStateException(String.format(
-                        "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for public key"));
+                throw new IllegalStateException(
+                        "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for public key");
             }
             if (serverSecurityInfo.getCertificateChain() != null) {
-                throw new IllegalStateException(String.format(
-                        "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for certificate chain"));
+                throw new IllegalStateException(
+                        "Configuration conflict between LeshanBuilder and DtlsConnectorConfig.Builder for certificate chain");
             }
         } else if (serverSecurityInfo.getPrivateKey() != null) {
             // if in raw key mode and not in X.509 set the raw keys
@@ -317,59 +294,7 @@ public class CoapsServerEndpointFactory implements CaliforniumServerEndpointFact
 
     @Override
     public IdentityHandler createIdentityHandler() {
-        return new IdentityHandler() {
-
-            @Override
-            public LwM2mPeer getIdentity(Message receivedMessage) {
-                EndpointContext context = receivedMessage.getSourceContext();
-                InetSocketAddress peerAddress = context.getPeerAddress();
-
-                Principal senderIdentity = context.getPeerIdentity();
-                if (senderIdentity != null) {
-                    if (senderIdentity instanceof PreSharedKeyIdentity) {
-                        return new IpPeer(peerAddress,
-                                new PskIdentity(((PreSharedKeyIdentity) senderIdentity).getIdentity()));
-                    } else if (senderIdentity instanceof RawPublicKeyIdentity) {
-                        PublicKey publicKey = ((RawPublicKeyIdentity) senderIdentity).getKey();
-                        return new IpPeer(peerAddress, new RpkIdentity(publicKey));
-                    } else if (senderIdentity instanceof X500Principal || senderIdentity instanceof X509CertPath) {
-                        // Extract common name
-                        String x509CommonName = X509CertUtil.extractCN(senderIdentity.getName());
-                        return new IpPeer(peerAddress, new X509Identity(x509CommonName));
-                    }
-                    throw new IllegalStateException(
-                            String.format("Unable to extract sender identity : unexpected type of Principal %s [%s]",
-                                    senderIdentity.getClass(), senderIdentity.toString()));
-                }
-                return null;
-            }
-
-            @Override
-            public EndpointContext createEndpointContext(LwM2mPeer client, boolean allowConnectionInitiation) {
-                Principal peerIdentity = null;
-                if (client.getIdentity() instanceof PskIdentity) {
-                    peerIdentity = new PreSharedKeyIdentity(((PskIdentity) client.getIdentity()).getPskIdentity());
-                } else if (client.getIdentity() instanceof RpkIdentity) {
-                    peerIdentity = new RawPublicKeyIdentity(((RpkIdentity) client.getIdentity()).getPublicKey());
-                } else if (client.getIdentity() instanceof X509Identity) {
-                    /* simplify distinguished name to CN= part */
-                    peerIdentity = new X500Principal("CN=" + ((X509Identity) client.getIdentity()).getX509CommonName());
-                } else {
-                    throw new IllegalStateException(String.format("Unsupported Identity : %s", client.getIdentity()));
-                }
-                if (client instanceof IpPeer) {
-                    IpPeer ipClient = (IpPeer) client;
-                    if (peerIdentity != null && allowConnectionInitiation) {
-                        return new MapBasedEndpointContext(ipClient.getSocketAddress(), peerIdentity, new Attributes()
-                                .add(DtlsEndpointContext.KEY_HANDSHAKE_MODE, DtlsEndpointContext.HANDSHAKE_MODE_AUTO));
-                    }
-                    return new AddressEndpointContext(ipClient.getSocketAddress(), peerIdentity);
-                } else {
-                    throw new IllegalStateException(String.format("Unsupported peer : %s", client));
-                }
-            }
-        };
-
+        return new DefaultCoapsIdentityHandler();
     }
 
     /**
@@ -391,12 +316,9 @@ public class CoapsServerEndpointFactory implements CaliforniumServerEndpointFact
             final ConnectionCleaner connectionCleaner = new ConnectionCleaner(
                     (DTLSConnector) securedEndpoint.getConnector());
 
-            ((EditableSecurityStore) securityStore).addListener(new SecurityStoreListener() {
-                @Override
-                public void securityInfoRemoved(boolean infosAreCompromised, SecurityInfo... infos) {
-                    if (infosAreCompromised) {
-                        connectionCleaner.cleanConnectionFor(infos);
-                    }
+            ((EditableSecurityStore) securityStore).addListener((infosAreCompromised, infos) -> {
+                if (infosAreCompromised) {
+                    connectionCleaner.cleanConnectionFor(infos);
                 }
             });
         }
@@ -404,16 +326,6 @@ public class CoapsServerEndpointFactory implements CaliforniumServerEndpointFact
 
     @Override
     public ExceptionTranslator createExceptionTranslator() {
-        return new DefaultExceptionTranslator() {
-            @Override
-            public Exception translate(Request coapRequest, Throwable error) {
-                if (error instanceof DtlsHandshakeTimeoutException) {
-                    return new TimeoutException(Type.DTLS_HANDSHAKE_TIMEOUT, error,
-                            "Request %s timeout : dtls handshake timeout", coapRequest.getURI());
-                } else {
-                    return super.translate(coapRequest, error);
-                }
-            }
-        };
+        return new DefaultCoapsExceptionTranslator();
     }
 }
