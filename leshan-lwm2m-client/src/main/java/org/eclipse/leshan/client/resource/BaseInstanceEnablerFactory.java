@@ -39,7 +39,7 @@ public abstract class BaseInstanceEnablerFactory implements LwM2mInstanceEnabler
             instance.setId(id);
         } else {
             // check id is well set
-            if (instance.getId() != id) {
+            if (!instance.getId().equals(id)) {
                 throw new IllegalStateException(
                         String.format("instance id should be %d but was %d", id, instance.getId()));
             }

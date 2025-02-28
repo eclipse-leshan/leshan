@@ -40,8 +40,8 @@ import redis.clients.jedis.params.SetParams;
 public class SingleInstanceJedisLock implements JedisLock {
     private static final Logger LOG = LoggerFactory.getLogger(SingleInstanceJedisLock.class);
 
-    protected final int DEFAULT_RANDOM_SIZE = 10;
-    protected final int DEFAULT_VALUE_SIZE = DEFAULT_RANDOM_SIZE + Long.SIZE / 8;
+    private static final int DEFAULT_RANDOM_SIZE = 10;
+    private static final int DEFAULT_VALUE_SIZE = DEFAULT_RANDOM_SIZE + Long.SIZE / 8;
 
     private final Random random = new Random();
     private final int expiration; // in ms
@@ -93,6 +93,7 @@ public class SingleInstanceJedisLock implements JedisLock {
             try {
                 Thread.sleep(iterationTime);
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
         return randomLockValue;
@@ -118,7 +119,7 @@ public class SingleInstanceJedisLock implements JedisLock {
                 Transaction transaction = j.multi();
                 transaction.del(lockKey);
                 boolean succeed = transaction.exec() != null;
-                if (!succeed) {
+                if (!succeed && LOG.isWarnEnabled()) {
                     LOG.warn(
                             "Failed to release lock for key {}/{}, meaning the key probably expired because of acquiring the lock for too long {}ms (expiration at {}ms)",
                             new String(lockKey), Hex.encodeHexString(lockValue),
@@ -126,14 +127,18 @@ public class SingleInstanceJedisLock implements JedisLock {
                 }
             } else {
                 // the key must not be deleted.
-                LOG.warn(
-                        "Nothing to release for key {}/{}, meaning the key probably expired because of acquiring the lock for too long {}ms (expiration at {}ms)",
-                        new String(lockKey), Hex.encodeHexString(lockValue),
-                        System.currentTimeMillis() - extractTime(lockValue), expiration);
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn(
+                            "Nothing to release for key {}/{}, meaning the key probably expired because of acquiring the lock for too long {}ms (expiration at {}ms)",
+                            new String(lockKey), Hex.encodeHexString(lockValue),
+                            System.currentTimeMillis() - extractTime(lockValue), expiration);
+                }
                 j.unwatch();
             }
         } else {
-            LOG.warn("Trying to release a lock for {} with a null value", new String(lockKey));
+            if (LOG.isWarnEnabled()) {
+                LOG.warn("Trying to release a lock for {} with a null value", new String(lockKey));
+            }
         }
     }
 

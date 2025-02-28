@@ -121,6 +121,7 @@ public class MyDevice extends BaseInstanceEnabler implements Destroyable {
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                     }
                     getLwM2mClient().start();
                 }
@@ -149,31 +150,31 @@ public class MyDevice extends BaseInstanceEnabler implements Destroyable {
         }
     }
 
-    private String getManufacturer() {
+    protected String getManufacturer() {
         return "Leshan Demo Device";
     }
 
-    private String getModelNumber() {
+    protected String getModelNumber() {
         return "Model 500";
     }
 
-    private String getSerialNumber() {
+    protected String getSerialNumber() {
         return "LT-500-000-0001";
     }
 
-    private String getFirmwareVersion() {
+    protected String getFirmwareVersion() {
         return "1.0.0";
     }
 
-    private long getErrorCode() {
+    protected long getErrorCode() {
         return 0;
     }
 
-    private int getBatteryLevel() {
+    protected int getBatteryLevel() {
         return RANDOM.nextInt(101);
     }
 
-    private long getMemoryFree() {
+    protected long getMemoryFree() {
         return Runtime.getRuntime().freeMemory() / 1024;
     }
 
@@ -183,45 +184,45 @@ public class MyDevice extends BaseInstanceEnabler implements Destroyable {
 
     private String utcOffset = new SimpleDateFormat("X").format(Calendar.getInstance().getTime());
 
-    private String getUtcOffset() {
+    protected String getUtcOffset() {
         return utcOffset;
     }
 
-    private void setUtcOffset(String t) {
+    protected void setUtcOffset(String t) {
         utcOffset = t;
     }
 
     private String timeZone = TimeZone.getDefault().getID();
 
-    private String getTimezone() {
+    protected String getTimezone() {
         return timeZone;
     }
 
-    private void setTimezone(String t) {
+    protected void setTimezone(String t) {
         timeZone = t;
     }
 
-    private String getSupportedBinding() {
+    protected String getSupportedBinding() {
         return BindingMode.toString(EnumSet.of(BindingMode.U, BindingMode.T));
     }
 
-    private String getDeviceType() {
+    protected String getDeviceType() {
         return "Demo";
     }
 
-    private String getHardwareVersion() {
+    protected String getHardwareVersion() {
         return "1.0.1";
     }
 
-    private String getSoftwareVersion() {
+    protected String getSoftwareVersion() {
         return "1.0.2";
     }
 
-    private int getBatteryStatus() {
+    protected int getBatteryStatus() {
         return RANDOM.nextInt(7);
     }
 
-    private long getMemoryTotal() {
+    protected long getMemoryTotal() {
         return Runtime.getRuntime().totalMemory() / 1024;
     }
 

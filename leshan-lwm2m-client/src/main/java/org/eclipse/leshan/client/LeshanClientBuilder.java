@@ -344,7 +344,7 @@ public class LeshanClientBuilder {
 
             initializer.setInstancesForObject(LwM2mId.SECURITY, Security.noSec(defaultServerUri, 12345));
             initializer.setInstancesForObject(LwM2mId.SERVER,
-                    new Server(12345, 5 * 60, EnumSet.of(serverBindingMode), false, serverBindingMode));
+                    new Server(12345, 5l * 60, EnumSet.of(serverBindingMode), false, serverBindingMode));
             initializer.setInstancesForObject(LwM2mId.DEVICE,
                     new Device("Eclipse Leshan", "model12345", "12345", EnumSet.of(serverBindingMode)));
             objectEnablers = initializer.createAll();

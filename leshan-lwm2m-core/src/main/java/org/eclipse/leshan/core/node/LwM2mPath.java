@@ -38,7 +38,7 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
     private final Integer resourceId;
     private final Integer resourceInstanceId;
 
-    public final static LwM2mPath ROOTPATH = new LwM2mPath();
+    public static final LwM2mPath ROOTPATH = new LwM2mPath();
 
     private LwM2mPath() {
         this(null, null, null, null);
@@ -115,7 +115,7 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
             path = path.substring(0, path.length() - 1);
         }
         String[] p = path.split("/");
-        if (0 > p.length || p.length > 4) {
+        if (p.length > 4) {
             throw new InvalidLwM2mPathException("Invalid length for path %s", path);
         }
         try {

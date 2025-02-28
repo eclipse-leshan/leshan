@@ -30,8 +30,8 @@ public class FloatChecker implements CriteriaBasedOnValueChecker {
     @Override
     public boolean shouldTriggerNotificationBasedOnValueChange(LwM2mAttributeSet attributes, Object lastSentValue,
             Object newValue) {
-        BigDecimal lastSentDouble = new BigDecimal((Double) lastSentValue);
-        BigDecimal newDouble = new BigDecimal((Double) newValue);
+        BigDecimal lastSentDouble = BigDecimal.valueOf((Double) lastSentValue);
+        BigDecimal newDouble = BigDecimal.valueOf((Double) newValue);
         boolean hasNumericalAttributes = false;
 
         if (attributes.contains(LwM2mAttributes.STEP)) {

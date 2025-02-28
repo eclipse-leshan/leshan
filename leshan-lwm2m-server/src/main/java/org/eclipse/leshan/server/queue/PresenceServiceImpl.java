@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * binding.
  */
 public final class PresenceServiceImpl implements PresenceService, Destroyable {
-    private final Logger LOG = LoggerFactory.getLogger(PresenceServiceImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PresenceServiceImpl.class);
 
     private final ConcurrentMap<String /* endpoint */, AtomicReference<ScheduledFuture<?>>> clientPresences = new ConcurrentHashMap<>();
     private final List<PresenceListener> listeners = new CopyOnWriteArrayList<>();
@@ -90,15 +90,12 @@ public final class PresenceServiceImpl implements PresenceService, Destroyable {
             // Every time we set the clientAwakeTime, in case it changes dynamically
             int clientAwakeTime = awakeTimeProvider.getClientAwakeTime(reg);
             if (clientAwakeTime != 0) {
-                timerFuture.set(clientTimersExecutor.schedule(new Runnable() {
-                    @Override
-                    public void run() {
-                        boolean removed = clientPresences.remove(reg.getEndpoint(), timerFuture);
-                        if (removed) {
-                            // success remove means we go in sleeping mode.
-                            for (PresenceListener listener : listeners) {
-                                listener.onSleeping(reg);
-                            }
+                timerFuture.set(clientTimersExecutor.schedule(() -> {
+                    boolean removed = clientPresences.remove(reg.getEndpoint(), timerFuture);
+                    if (removed) {
+                        // success remove means we go in sleeping mode.
+                        for (PresenceListener listener : listeners) {
+                            listener.onSleeping(reg);
                         }
                     }
                 }, clientAwakeTime, TimeUnit.MILLISECONDS));
@@ -162,6 +159,7 @@ public final class PresenceServiceImpl implements PresenceService, Destroyable {
             clientTimersExecutor.awaitTermination(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             LOG.warn("Destroying presence service was interrupted.", e);
+            Thread.currentThread().interrupt();
         }
     }
 }

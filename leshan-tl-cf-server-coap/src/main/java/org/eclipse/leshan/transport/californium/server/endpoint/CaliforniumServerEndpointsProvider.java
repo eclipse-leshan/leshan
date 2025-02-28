@@ -28,10 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.eclipse.californium.core.CoapServer;
-import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.CoapEndpoint;
-import org.eclipse.californium.core.observe.NotificationListener;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
@@ -70,7 +67,7 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
 
     // TODO TL : provide a COAP/Californium API ? like previous LeshanServer.coapAPI()
 
-    private final Logger LOG = LoggerFactory.getLogger(CaliforniumServerEndpointsProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CaliforniumServerEndpointsProvider.class);
 
     private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1,
             new NamedThreadFactory("Leshan Async Request timeout"));
@@ -88,7 +85,7 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
     protected CaliforniumServerEndpointsProvider(Builder builder) {
         this.serverConfig = builder.serverConfiguration;
         this.endpointsFactory = builder.endpointsFactory;
-        this.endpoints = new ArrayList<CaliforniumServerEndpoint>();
+        this.endpoints = new ArrayList<>();
     }
 
     public CoapServer getCoapServer() {
@@ -113,7 +110,7 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
     public void createEndpoints(UplinkDeviceManagementRequestReceiver requestReceiver,
             LwM2mNotificationReceiver notificatonReceiver, ServerEndpointToolbox toolbox,
             ServerSecurityInfo serverSecurityInfo, LeshanServer server) {
-        // create server;
+        // create server
         coapServer = new CoapServer(serverConfig) {
             @Override
             protected Resource createRoot() {
@@ -139,7 +136,7 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
                 final IdentityHandler identityHandler = endpointFactory.createIdentityHandler();
                 identityHandlerProvider.addIdentityHandler(coapEndpoint, identityHandler);
 
-                // create exception translator;
+                // create exception translator
                 ExceptionTranslator exceptionTranslator = endpointFactory.createExceptionTranslator();
 
                 // create LWM2M endpoint
@@ -153,47 +150,42 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
                 coapServer.addEndpoint(coapEndpoint);
 
                 // add NotificationListener
-                coapEndpoint.addNotificationListener(new NotificationListener() {
+                coapEndpoint.addNotificationListener((coapRequest, coapResponse) -> {
+                    // Get Observation
+                    String regid = coapRequest.getUserContext().get(ObserveUtil.CTX_REGID);
+                    Observation observation = server.getRegistrationStore().getObservation(regid,
+                            new ObservationIdentifier(lwm2mEndpoint.getURI(), coapResponse.getToken().getBytes()));
+                    if (observation == null) {
+                        LOG.warn("Unexpected error: Unable to find observation with token {} for registration {}",
+                                coapResponse.getToken(), regid);
+                        // We just log it because, this is probably caused by bad device behavior :
+                        // https://github.com/eclipse-leshan/leshan/issues/1634
+                        return;
+                    }
+                    // Get profile
+                    LwM2mPeer client = identityHandler.getIdentity(coapResponse);
+                    ClientProfile profile = toolbox.getProfileProvider().getProfile(client.getIdentity());
+                    if (profile == null) {
+                        LOG.warn("Unexpected error: Unable to find registration with id {} for observation {}", regid,
+                                coapResponse.getToken());
+                        // We just log it because, this is probably caused by bad device behavior :
+                        // https://github.com/eclipse-leshan/leshan/issues/1634
+                        return;
+                    }
 
-                    @Override
-                    public void onNotification(Request coapRequest, Response coapResponse) {
-                        // Get Observation
-                        String regid = coapRequest.getUserContext().get(ObserveUtil.CTX_REGID);
-                        Observation observation = server.getRegistrationStore().getObservation(regid,
-                                new ObservationIdentifier(lwm2mEndpoint.getURI(), coapResponse.getToken().getBytes()));
-                        if (observation == null) {
-                            LOG.warn("Unexpected error: Unable to find observation with token {} for registration {}",
-                                    coapResponse.getToken(), regid);
-                            // We just log it because, this is probably caused by bad device behavior :
-                            // https://github.com/eclipse-leshan/leshan/issues/1634
-                            return;
+                    // create Observe Response
+                    try {
+                        AbstractLwM2mResponse response = messagetranslator.createObserveResponse(observation,
+                                coapResponse, toolbox, profile);
+                        if (observation instanceof SingleObservation) {
+                            notificatonReceiver.onNotification((SingleObservation) observation, client, profile,
+                                    (ObserveResponse) response);
+                        } else if (observation instanceof CompositeObservation) {
+                            notificatonReceiver.onNotification((CompositeObservation) observation, client, profile,
+                                    (ObserveCompositeResponse) response);
                         }
-                        // Get profile
-                        LwM2mPeer client = identityHandler.getIdentity(coapResponse);
-                        ClientProfile profile = toolbox.getProfileProvider().getProfile(client.getIdentity());
-                        if (profile == null) {
-                            LOG.warn("Unexpected error: Unable to find registration with id {} for observation {}",
-                                    regid, coapResponse.getToken());
-                            // We just log it because, this is probably caused by bad device behavior :
-                            // https://github.com/eclipse-leshan/leshan/issues/1634
-                            return;
-                        }
-
-                        // create Observe Response
-                        try {
-                            AbstractLwM2mResponse response = messagetranslator.createObserveResponse(observation,
-                                    coapResponse, toolbox, profile);
-                            if (observation instanceof SingleObservation) {
-                                notificatonReceiver.onNotification((SingleObservation) observation, client, profile,
-                                        (ObserveResponse) response);
-                            } else if (observation instanceof CompositeObservation) {
-                                notificatonReceiver.onNotification((CompositeObservation) observation, client, profile,
-                                        (ObserveCompositeResponse) response);
-                            }
-                        } catch (Exception e) {
-                            notificatonReceiver.onError(observation, client, profile, e);
-                        }
-
+                    } catch (Exception e) {
+                        notificatonReceiver.onError(observation, client, profile, e);
                     }
                 });
             }
@@ -223,6 +215,7 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
             executor.awaitTermination(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             LOG.warn("Destroying RequestSender was interrupted.", e);
+            Thread.currentThread().interrupt();
         }
         coapServer.destroy();
     }
@@ -240,7 +233,7 @@ public class CaliforniumServerEndpointsProvider implements LwM2mServerEndpointsP
 
         public Builder(EndPointUriHandler uriHandler, ServerProtocolProvider... protocolProviders) {
             // TODO TL : handle duplicate ?
-            this.protocolProviders = new ArrayList<ServerProtocolProvider>();
+            this.protocolProviders = new ArrayList<>();
             if (protocolProviders.length == 0) {
                 this.protocolProviders.add(new CoapServerProtocolProvider());
             } else {

@@ -89,9 +89,8 @@ public class DefaultEndPointUriHandler implements EndPointUriHandler {
      * prefixed by <code>%25</code>
      */
     protected static String toUriHostName(InetSocketAddress socketAddr) {
-        if (socketAddr == null) {
-            Validate.notNull(socketAddr);
-        }
+        Validate.notNull(socketAddr);
+
         InetAddress addr = socketAddr.getAddress();
         String host = addr.getHostAddress();
         if (addr instanceof Inet6Address) {

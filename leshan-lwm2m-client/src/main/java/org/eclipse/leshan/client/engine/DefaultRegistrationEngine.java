@@ -98,7 +98,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     // True if client use queueMode : for now this just add Q parameter on register request.
     private final boolean queueMode;
 
-    private static enum Status {
+    private enum Status {
         SUCCESS, FAILURE, TIMEOUT
     }
 
@@ -205,97 +205,6 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         return queueMode;
     }
 
-    private LwM2mServer clientInitiatedBootstrap() throws InterruptedException {
-        ServerInfo bootstrapServerInfo = ServersInfoExtractor.getBootstrapServerInfo(objectEnablers);
-
-        if (bootstrapServerInfo == null) {
-            LOG.error("Trying to bootstrap device but there is no bootstrap server config.");
-            return null;
-        }
-
-        if (bootstrapHandler.tryToInitSession()) {
-            LOG.info("Trying to start bootstrap session to {} ...", bootstrapServerInfo.getFullUri());
-
-            // Clear all registered server, cancel all current task and recreate all endpoints
-            registeredServers.clear();
-            cancelRegistrationTask();
-            cancelUpdateTask(true);
-            LwM2mServer bootstrapServer = endpointsManager.createEndpoint(bootstrapServerInfo, true);
-            if (bootstrapServer != null) {
-                currentBootstrapServer.set(bootstrapServer);
-            }
-
-            // Send bootstrap request
-            BootstrapRequest request = null;
-            try {
-                request = new BootstrapRequest(
-                        endpointNameProvider.getEndpointNameFor(bootstrapServerInfo, BootstrapRequest.class),
-                        preferredContentFormat, bsAdditionalAttributes);
-                if (observer != null) {
-                    observer.onBootstrapStarted(bootstrapServer, request);
-                }
-                BootstrapResponse response = sender.send(bootstrapServer, request, requestTimeoutInMs);
-                if (response == null) {
-                    LOG.info("Unable to start bootstrap session: Timeout.");
-                    if (observer != null) {
-                        observer.onBootstrapTimeout(bootstrapServer, request);
-                    }
-                    return null;
-                } else if (response.isSuccess()) {
-                    LOG.info("Bootstrap started");
-                    // Wait until it is finished (or too late)
-                    try {
-                        boolean timeout = !bootstrapHandler.waitBootstrapFinished(bootstrapSessionTimeoutInSec);
-                        if (timeout) {
-                            LOG.info("Bootstrap sequence aborted: Timeout.");
-                            if (observer != null) {
-                                observer.onBootstrapTimeout(bootstrapServer, request);
-                            }
-                            return null;
-                        } else {
-                            LOG.info("Bootstrap finished {}.", bootstrapServer.getUri());
-                            ServerInfo serverInfo = selectServer(
-                                    ServersInfoExtractor.getInfo(objectEnablers).deviceManagements);
-                            LwM2mServer dmServer = null;
-                            if (serverInfo != null) {
-                                dmServer = endpointsManager.createEndpoint(serverInfo, isClientInitiatedOnly());
-                            }
-                            if (observer != null) {
-                                observer.onBootstrapSuccess(bootstrapServer, request);
-                            }
-                            return dmServer;
-                        }
-                    } catch (InvalidStateException e) {
-                        LOG.info("Bootstrap finished with failure because of consistency check failure.", e);
-                        if (observer != null) {
-                            observer.onBootstrapFailure(bootstrapServer, request, null, null, e);
-                        }
-                        return null;
-                    }
-                } else {
-                    LOG.info("Bootstrap failed: {} {}.", response.getCode(), response.getErrorMessage());
-                    if (observer != null) {
-                        observer.onBootstrapFailure(bootstrapServer, request, response.getCode(),
-                                response.getErrorMessage(), null);
-                    }
-                    return null;
-                }
-            } catch (RuntimeException e) {
-                logExceptionOnSendRequest("Unable to send Bootstrap request", e);
-                if (observer != null) {
-                    observer.onBootstrapFailure(bootstrapServer, request, null, null, e);
-                }
-                return null;
-            } finally {
-                currentBootstrapServer.set(null);
-                bootstrapHandler.closeSession();
-            }
-        } else {
-            LOG.warn("Bootstrap sequence already started.");
-            return null;
-        }
-    }
-
     private boolean registerWithRetry(LwM2mServer server) throws InterruptedException {
         Status registerStatus = register(server);
         if (registerStatus == Status.TIMEOUT) {
@@ -387,7 +296,6 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             }
             DeregisterResponse response = sender.send(server, request, deregistrationTimeoutInMs);
             if (response == null) {
-                registrationID = null;
                 LOG.info("Deregistration failed: Timeout.");
                 if (observer != null) {
                     observer.onDeregistrationTimeout(server, request);
@@ -395,7 +303,6 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 return false;
             } else if (response.isSuccess() || response.getCode() == ResponseCode.NOT_FOUND) {
                 registeredServers.remove(registrationID);
-                registrationID = null;
                 cancelUpdateTask(true);
                 LOG.info("De-register response {} {}.", response.getCode(), response.getErrorMessage());
                 if (observer != null) {
@@ -421,74 +328,6 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 observer.onDeregistrationFailure(server, request, null, null, e);
             }
             return false;
-        }
-    }
-
-    private boolean updateWithRetry(LwM2mServer server, String registrationId, RegistrationUpdate registrationUpdate)
-            throws InterruptedException {
-
-        Status updateStatus = update(server, registrationId, registrationUpdate);
-        if (updateStatus == Status.TIMEOUT) {
-            // if register timeout maybe server lost the session,
-            // so we reconnect (new handshake) and retry
-            endpointsManager.forceReconnection(server, resumeOnConnect);
-            updateStatus = update(server, registrationId, registrationUpdate);
-        }
-        return updateStatus == Status.SUCCESS;
-    }
-
-    private Status update(LwM2mServer server, String registrationID, RegistrationUpdate registrationUpdate)
-            throws InterruptedException {
-        DmServerInfo dmInfo = ServersInfoExtractor.getDMServerInfo(objectEnablers, server.getId());
-        if (dmInfo == null) {
-            LOG.info("Trying to update registration but there is no LWM2M server config.");
-            return Status.FAILURE;
-        }
-
-        // Send update
-        LOG.info("Trying to update registration to {} (response timeout {}ms)...", server.getUri(), requestTimeoutInMs);
-        UpdateRequest request = null;
-        try {
-            request = new UpdateRequest(registrationID, registrationUpdate.getLifeTimeInSec(),
-                    registrationUpdate.getSmsNumber(), registrationUpdate.getBindingMode(),
-                    registrationUpdate.getObjectLinks(), registrationUpdate.getAdditionalAttributes());
-            if (observer != null) {
-                observer.onUpdateStarted(server, request);
-            }
-            if (reconnectOnUpdate) {
-                endpointsManager.forceReconnection(server, resumeOnConnect);
-            }
-            UpdateResponse response = sender.send(server, request, requestTimeoutInMs);
-            if (response == null) {
-                registrationID = null;
-                LOG.info("Registration update failed: Timeout.");
-                if (observer != null) {
-                    observer.onUpdateTimeout(server, request);
-                }
-                return Status.TIMEOUT;
-            } else if (response.getCode() == ResponseCode.CHANGED) {
-                // Update successful, so we reschedule new update
-                LOG.info("Registration update succeed.");
-                long delay = calculateNextUpdate(server, dmInfo.lifetime);
-                scheduleUpdate(server, registrationID, new RegistrationUpdate(), delay);
-                if (observer != null) {
-                    observer.onUpdateSuccess(server, request);
-                }
-                return Status.SUCCESS;
-            } else {
-                LOG.info("Registration update failed: {} {}.", response.getCode(), response.getErrorMessage());
-                if (observer != null) {
-                    observer.onUpdateFailure(server, request, response.getCode(), response.getErrorMessage(), null);
-                }
-                registeredServers.remove(registrationID);
-                return Status.FAILURE;
-            }
-        } catch (RuntimeException e) {
-            logExceptionOnSendRequest("Unable to send update request", e);
-            if (observer != null) {
-                observer.onUpdateFailure(server, request, null, null, e);
-            }
-            return Status.FAILURE;
         }
     }
 
@@ -543,10 +382,108 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                     }
                 } catch (InterruptedException e) {
                     LOG.info("Bootstrap task interrupted. ");
+                    Thread.currentThread().interrupt();
                 } catch (RuntimeException e) {
                     LOG.error("Unexpected exception during bootstrap task", e);
                     observer.onUnexpectedError(e);
                 }
+            }
+        }
+
+        private LwM2mServer clientInitiatedBootstrap() throws InterruptedException {
+            ServerInfo bootstrapServerInfo = ServersInfoExtractor.getBootstrapServerInfo(objectEnablers);
+
+            if (bootstrapServerInfo == null) {
+                LOG.error("Trying to bootstrap device but there is no bootstrap server config.");
+                return null;
+            }
+
+            if (bootstrapHandler.tryToInitSession()) {
+                LOG.info("Trying to start bootstrap session to {} ...", bootstrapServerInfo.getFullUri());
+
+                // Clear all registered server, cancel all current task and recreate all endpoints
+                registeredServers.clear();
+                cancelRegistrationTask();
+                cancelUpdateTask(true);
+                LwM2mServer bootstrapServer = endpointsManager.createEndpoint(bootstrapServerInfo, true);
+                if (bootstrapServer != null) {
+                    currentBootstrapServer.set(bootstrapServer);
+                } else {
+                    LOG.info("Bootstrap failed: unable to create endpoint for server {}.",
+                            bootstrapServerInfo.getFullUri());
+                    currentBootstrapServer.set(null);
+                    bootstrapHandler.closeSession();
+                    return null;
+                }
+
+                // Send bootstrap request
+                BootstrapRequest request = null;
+                try {
+                    request = new BootstrapRequest(
+                            endpointNameProvider.getEndpointNameFor(bootstrapServerInfo, BootstrapRequest.class),
+                            preferredContentFormat, bsAdditionalAttributes);
+                    if (observer != null) {
+                        observer.onBootstrapStarted(bootstrapServer, request);
+                    }
+                    BootstrapResponse response = sender.send(bootstrapServer, request, requestTimeoutInMs);
+                    if (response == null) {
+                        LOG.info("Unable to start bootstrap session: Timeout.");
+                        if (observer != null) {
+                            observer.onBootstrapTimeout(bootstrapServer, request);
+                        }
+                        return null;
+                    } else if (response.isSuccess()) {
+                        LOG.info("Bootstrap started");
+                        // Wait until it is finished (or too late)
+                        try {
+                            boolean timeout = !bootstrapHandler.waitBootstrapFinished(bootstrapSessionTimeoutInSec);
+                            if (timeout) {
+                                LOG.info("Bootstrap sequence aborted: Timeout.");
+                                if (observer != null) {
+                                    observer.onBootstrapTimeout(bootstrapServer, request);
+                                }
+                                return null;
+                            } else {
+                                LOG.info("Bootstrap finished {}.", bootstrapServer.getUri());
+                                ServerInfo serverInfo = selectServer(
+                                        ServersInfoExtractor.getInfo(objectEnablers).deviceManagements);
+                                LwM2mServer dmServer = null;
+                                if (serverInfo != null) {
+                                    dmServer = endpointsManager.createEndpoint(serverInfo, isClientInitiatedOnly());
+                                }
+                                if (observer != null) {
+                                    observer.onBootstrapSuccess(bootstrapServer, request);
+                                }
+                                return dmServer;
+                            }
+                        } catch (InvalidStateException e) {
+                            LOG.info("Bootstrap finished with failure because of consistency check failure.", e);
+                            if (observer != null) {
+                                observer.onBootstrapFailure(bootstrapServer, request, null, null, e);
+                            }
+                            return null;
+                        }
+                    } else {
+                        LOG.info("Bootstrap failed: {} {}.", response.getCode(), response.getErrorMessage());
+                        if (observer != null) {
+                            observer.onBootstrapFailure(bootstrapServer, request, response.getCode(),
+                                    response.getErrorMessage(), null);
+                        }
+                        return null;
+                    }
+                } catch (RuntimeException e) {
+                    logExceptionOnSendRequest("Unable to send Bootstrap request", e);
+                    if (observer != null) {
+                        observer.onBootstrapFailure(bootstrapServer, request, null, null, e);
+                    }
+                    return null;
+                } finally {
+                    currentBootstrapServer.set(null);
+                    bootstrapHandler.closeSession();
+                }
+            } else {
+                LOG.warn("Bootstrap sequence already started.");
+                return null;
             }
         }
     }
@@ -561,7 +498,6 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         } else {
             registerFuture = schedExecutor.submit(new RegistrationTask(dmServer));
         }
-        return;
     }
 
     private class RegistrationTask implements Runnable {
@@ -575,13 +511,13 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         public void run() {
             synchronized (taskLock) {
                 try {
-                    if (!registerWithRetry(server)) {
-                        if (!scheduleClientInitiatedBootstrap(NOW)) {
-                            scheduleRegistrationTask(server, retryWaitingTimeInMs);
-                        }
+                    if (!registerWithRetry(server) //
+                            && !scheduleClientInitiatedBootstrap(NOW)) {
+                        scheduleRegistrationTask(server, retryWaitingTimeInMs);
                     }
                 } catch (InterruptedException e) {
                     LOG.info("Registration task interrupted. ");
+                    Thread.currentThread().interrupt();
                 } catch (RuntimeException e) {
                     LOG.error("Unexpected exception during registration task", e);
                     observer.onUnexpectedError(e);
@@ -622,21 +558,89 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         public void run() {
             synchronized (taskLock) {
                 try {
-                    if (!updateWithRetry(server, registrationId, registrationUpdate)) {
-                        if (!registerWithRetry(server)) {
-                            if (!scheduleClientInitiatedBootstrap(NOW)) {
-                                scheduleRegistrationTask(server, retryWaitingTimeInMs);
-                            }
-                        }
+                    if (!updateWithRetry(server, registrationId, registrationUpdate) //
+                            && !registerWithRetry(server) //
+                            && !scheduleClientInitiatedBootstrap(NOW)) {
+                        scheduleRegistrationTask(server, retryWaitingTimeInMs);
                     }
                 } catch (InterruptedException e) {
                     LOG.info("Registration update task interrupted.");
+                    Thread.currentThread().interrupt();
                 } catch (RuntimeException e) {
                     LOG.error("Unexpected exception during update registration task", e);
                     observer.onUnexpectedError(e);
                 }
             }
         }
+
+        private boolean updateWithRetry(LwM2mServer server, String registrationId,
+                RegistrationUpdate registrationUpdate) throws InterruptedException {
+
+            Status updateStatus = update(server, registrationId, registrationUpdate);
+            if (updateStatus == Status.TIMEOUT) {
+                // if register timeout maybe server lost the session,
+                // so we reconnect (new handshake) and retry
+                endpointsManager.forceReconnection(server, resumeOnConnect);
+                updateStatus = update(server, registrationId, registrationUpdate);
+            }
+            return updateStatus == Status.SUCCESS;
+        }
+
+        private Status update(LwM2mServer server, String registrationID, RegistrationUpdate registrationUpdate)
+                throws InterruptedException {
+            DmServerInfo dmInfo = ServersInfoExtractor.getDMServerInfo(objectEnablers, server.getId());
+            if (dmInfo == null) {
+                LOG.info("Trying to update registration but there is no LWM2M server config.");
+                return Status.FAILURE;
+            }
+
+            // Send update
+            LOG.info("Trying to update registration to {} (response timeout {}ms)...", server.getUri(),
+                    requestTimeoutInMs);
+            UpdateRequest request = null;
+            try {
+                request = new UpdateRequest(registrationID, registrationUpdate.getLifeTimeInSec(),
+                        registrationUpdate.getSmsNumber(), registrationUpdate.getBindingMode(),
+                        registrationUpdate.getObjectLinks(), registrationUpdate.getAdditionalAttributes());
+                if (observer != null) {
+                    observer.onUpdateStarted(server, request);
+                }
+                if (reconnectOnUpdate) {
+                    endpointsManager.forceReconnection(server, resumeOnConnect);
+                }
+                UpdateResponse response = sender.send(server, request, requestTimeoutInMs);
+                if (response == null) {
+                    LOG.info("Registration update failed: Timeout.");
+                    if (observer != null) {
+                        observer.onUpdateTimeout(server, request);
+                    }
+                    return Status.TIMEOUT;
+                } else if (response.getCode() == ResponseCode.CHANGED) {
+                    // Update successful, so we reschedule new update
+                    LOG.info("Registration update succeed.");
+                    long delay = calculateNextUpdate(server, dmInfo.lifetime);
+                    scheduleUpdate(server, registrationID, new RegistrationUpdate(), delay);
+                    if (observer != null) {
+                        observer.onUpdateSuccess(server, request);
+                    }
+                    return Status.SUCCESS;
+                } else {
+                    LOG.info("Registration update failed: {} {}.", response.getCode(), response.getErrorMessage());
+                    if (observer != null) {
+                        observer.onUpdateFailure(server, request, response.getCode(), response.getErrorMessage(), null);
+                    }
+                    registeredServers.remove(registrationID);
+                    return Status.FAILURE;
+                }
+            } catch (RuntimeException e) {
+                logExceptionOnSendRequest("Unable to send update request", e);
+                if (observer != null) {
+                    observer.onUpdateFailure(server, request, null, null, e);
+                }
+                return Status.FAILURE;
+            }
+        }
+
     }
 
     private void cancelUpdateTask(boolean mayinterrupt) {
@@ -669,14 +673,13 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             cancelBootstrapTask();
         }
         try {
-            if (deregister) {
-                if (!registeredServers.isEmpty()) {
-                    for (Entry<String, LwM2mServer> registeredServer : registeredServers.entrySet()) {
-                        deregister(registeredServer.getValue(), registeredServer.getKey());
-                    }
+            if (deregister && !registeredServers.isEmpty()) {
+                for (Entry<String, LwM2mServer> registeredServer : registeredServers.entrySet()) {
+                    deregister(registeredServer.getValue(), registeredServer.getKey());
                 }
             }
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -698,14 +701,13 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 // TODO we should manage the case where we stop in the middle of a bootstrap session ...
                 cancelBootstrapTask();
             }
-            if (wasStarted && deregister) {
-                if (!registeredServers.isEmpty()) {
-                    for (Entry<String, LwM2mServer> registeredServer : registeredServers.entrySet()) {
-                        deregister(registeredServer.getValue(), registeredServer.getKey());
-                    }
+            if (wasStarted && deregister && !registeredServers.isEmpty()) {
+                for (Entry<String, LwM2mServer> registeredServer : registeredServers.entrySet()) {
+                    deregister(registeredServer.getValue(), registeredServer.getKey());
                 }
             }
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -797,25 +799,20 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 // TODO we should manage the case where we stop in the middle of a bootstrap session ...
                 cancelBootstrapTask();
 
-                schedExecutor.submit(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        try {
-                            // deregister if needed
-                            if (deregister) {
-                                if (!registeredServers.isEmpty()) {
-                                    for (Entry<String, LwM2mServer> registeredServer : registeredServers.entrySet()) {
-                                        deregister(registeredServer.getValue(), registeredServer.getKey());
-                                    }
-                                }
+                schedExecutor.submit(() -> {
+                    try {
+                        // deregister if needed
+                        if (deregister && !registeredServers.isEmpty()) {
+                            for (Entry<String, LwM2mServer> registeredServer : registeredServers.entrySet()) {
+                                deregister(registeredServer.getValue(), registeredServer.getKey());
                             }
-                        } catch (InterruptedException e) {
                         }
-
-                        // schedule a new bootstrap.
-                        scheduleClientInitiatedBootstrap(NOW);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                     }
+
+                    // schedule a new bootstrap.
+                    scheduleClientInitiatedBootstrap(NOW);
                 });
             }
         }
@@ -827,11 +824,10 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             LOG.warn(message, e);
             return;
         }
-        if (e instanceof SendFailedException) {
-            if (e.getCause() != null && e.getMessage() != null) {
-                LOG.info("{} : {}", message, e.getCause().getMessage());
-                return;
-            }
+        if (e instanceof SendFailedException //
+                && e.getCause() != null && e.getMessage() != null) {
+            LOG.info("{} : {}", message, e.getCause().getMessage());
+            return;
         }
         LOG.info("{} : {}", message, e.getMessage());
     }

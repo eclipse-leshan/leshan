@@ -32,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
-import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.elements.config.Configuration;
 import org.eclipse.californium.elements.config.Configuration.ModuleDefinitionsProvider;
@@ -62,7 +61,7 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
 
     // TODO TL : provide a COAP/Californium API ? like previous LeshanClient.coapAPI()
 
-    private final Logger LOG = LoggerFactory.getLogger(CaliforniumClientEndpointsProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CaliforniumClientEndpointsProvider.class);
 
     private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1,
             new NamedThreadFactory("Leshan Async Request timeout"));
@@ -96,52 +95,46 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
         identityHandlerProvider = new IdentityHandlerProvider();
 
         // create identity extractor
-        identityExtrator = new ServerIdentityExtractor() {
+        identityExtrator = (exchange, foreignPeer) -> {
+            // TODO support multi server
+            Endpoint currentCoapEndpoint = endpoint.getCoapEndpoint();
 
-            @Override
-            public LwM2mServer extractIdentity(Exchange exchange, IpPeer foreignPeer) {
-                // TODO support multi server
-                Endpoint currentCoapEndpoint = endpoint.getCoapEndpoint();
+            // get coap endpoint used for this exchanged :
+            Endpoint coapEndpoint = exchange.getEndpoint();
 
-                // get coap endpoint used for this exchanged :
-                Endpoint coapEndpoint = exchange.getEndpoint();
-
-                // knowing used CoAP endpoint we should be able to know the server identity because :
-                // - we create 1 CoAP endpoint by server.
-                // - the lower layer should ensure that only 1 server with expected credential is able to talk.
-                // (see https://github.com/eclipse/leshan/issues/992 for more details)
-                if (coapEndpoint != null && coapEndpoint.equals(currentCoapEndpoint)
-                        && currentCoapEndpoint.isStarted()) {
-                    // For UDP (not secure) endpoint we also check socket address as anybody send data to this kind of
-                    // endpoint.
-                    if (endpoint.getProtocol().equals(Protocol.COAP)) {
-                        if (currentServer.getTransportData() instanceof IpPeer) {
-                            IpPeer currentIpServer = (IpPeer) currentServer.getTransportData();
-                            if (!(currentIpServer.getSocketAddress().equals(foreignPeer.getSocketAddress()))) {
-                                return null;
-                            }
-                        } else {
-                            throw new IllegalStateException(
-                                    String.format("%s is not a LwM2mPeer supported by this class",
-                                            currentServer.getTransportData().getClass().getSimpleName()));
-                        }
-                    }
-                    // For OSCORE, be sure OSCORE is used.
-                    if (currentServer.getTransportData().getIdentity() instanceof OscoreIdentity) {
-                        if (!(foreignPeer.getIdentity() instanceof OscoreIdentity) //
-                                // we also check OscoreIdentity but this is probably not useful
-                                // because we are using static OSCOREstore which holds only 1 OscoreParameter,
-                                // so if the request was successfully decrypted and OSCORE is used, this MUST be the
-                                // right
-                                // server.
-                                || !foreignPeer.getIdentity().equals(currentServer.getTransportData().getIdentity())) {
+            // knowing used CoAP endpoint we should be able to know the server identity because :
+            // - we create 1 CoAP endpoint by server.
+            // - the lower layer should ensure that only 1 server with expected credential is able to talk.
+            // (see https://github.com/eclipse/leshan/issues/992 for more details)
+            if (coapEndpoint != null && coapEndpoint.equals(currentCoapEndpoint) && currentCoapEndpoint.isStarted()) {
+                // For UDP (not secure) endpoint we also check socket address as anybody send data to this kind of
+                // endpoint.
+                if (endpoint.getProtocol().equals(Protocol.COAP)) {
+                    if (currentServer.getTransportData() instanceof IpPeer) {
+                        IpPeer currentIpServer = (IpPeer) currentServer.getTransportData();
+                        if (!(currentIpServer.getSocketAddress().equals(foreignPeer.getSocketAddress()))) {
                             return null;
                         }
+                    } else {
+                        throw new IllegalStateException(String.format("%s is not a LwM2mPeer supported by this class",
+                                currentServer.getTransportData().getClass().getSimpleName()));
                     }
-                    return currentServer;
                 }
-                return null;
+                // For OSCORE, be sure OSCORE is used.
+                if (currentServer.getTransportData().getIdentity() instanceof OscoreIdentity) {
+                    if (!(foreignPeer.getIdentity() instanceof OscoreIdentity) //
+                            // we also check OscoreIdentity but this is probably not useful
+                            // because we are using static OSCOREstore which holds only 1 OscoreParameter,
+                            // so if the request was successfully decrypted and OSCORE is used, this MUST be the
+                            // right
+                            // server.
+                            || !foreignPeer.getIdentity().equals(currentServer.getTransportData().getIdentity())) {
+                        return null;
+                    }
+                }
+                return currentServer;
             }
+            return null;
         };
     }
 
@@ -197,7 +190,7 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
                         try {
                             coapEndpoint.start();
                         } catch (IOException e) {
-                            throw new RuntimeException("Unable to start endpoint", e);
+                            throw new IllegalStateException("Unable to start endpoint", e);
                         }
                     }
 
@@ -223,7 +216,7 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
                 // See : https://github.com/eclipse/leshan/issues/992
                 transportData = new IpPeer(serverInfo.getAddress(), serverInfo.sni, new X509Identity("*"));
             } else {
-                throw new RuntimeException("Unable to create connector : unsupported security mode");
+                throw new IllegalStateException("Unable to create connector : unsupported security mode");
             }
         } else if (serverInfo.useOscore) {
             // Build server identity for OSCORE
@@ -250,9 +243,9 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
     @Override
     public void destroyEndpoints() {
         identityHandlerProvider.clear();
-        for (Endpoint endpoint : coapServer.getEndpoints()) {
-            coapServer.getEndpoints().remove(endpoint);
-            endpoint.destroy();
+        for (Endpoint e : coapServer.getEndpoints()) {
+            coapServer.getEndpoints().remove(e);
+            e.destroy();
         }
     }
 
@@ -309,6 +302,7 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
             executor.awaitTermination(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             LOG.warn("Destroying RequestSender was interrupted.", e);
+            Thread.currentThread().interrupt();
         }
 
         coapServer.destroy();
@@ -323,7 +317,7 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
 
         public Builder(ClientProtocolProvider... protocolProviders) {
             // TODO TL : handle duplicate ?
-            this.protocolProviders = new ArrayList<ClientProtocolProvider>();
+            this.protocolProviders = new ArrayList<>();
             if (protocolProviders.length == 0) {
                 this.protocolProviders.add(new CoapClientProtocolProvider());
             } else {
@@ -344,15 +338,15 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
             }
 
             // create Californium Configuration
-            Configuration configuration = new Configuration(
+            Configuration config = new Configuration(
                     moduleProviders.toArray(new ModuleDefinitionsProvider[moduleProviders.size()]));
 
             // apply default value
             for (ClientProtocolProvider protocolProvider : protocolProviders) {
-                protocolProvider.applyDefaultValue(configuration);
+                protocolProvider.applyDefaultValue(config);
             }
 
-            return configuration;
+            return config;
         }
 
         /**

@@ -37,7 +37,6 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.response.SendableResponse;
 import org.eclipse.leshan.core.util.Validate;
-import org.eclipse.leshan.servers.DefaultServerEndpointNameProvider;
 import org.eclipse.leshan.servers.ServerEndpointNameProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +69,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
     public DefaultBootstrapHandler(BootstrapDownlinkRequestSender sender, BootstrapSessionManager sessionManager,
             ServerEndpointNameProvider endpointNameProvider, BootstrapSessionListener listener) {
-        this(sender, sessionManager, new DefaultServerEndpointNameProvider(), listener, DEFAULT_TIMEOUT);
+        this(sender, sessionManager, endpointNameProvider, listener, DEFAULT_TIMEOUT);
     }
 
     public DefaultBootstrapHandler(BootstrapDownlinkRequestSender sender, BootstrapSessionManager sessionManager,
@@ -130,15 +129,13 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
             }
 
             // Start bootstrap once response is sent.
-            Runnable onSent = new Runnable() {
-                @Override
-                public void run() {
-                    startBootstrap(session);
-                }
-            };
+            Runnable onSent = () -> startBootstrap(session);
+
             return new SendableResponse<>(BootstrapResponse.success(), onSent);
 
-        } catch (RuntimeException e) {
+        } catch (
+
+        RuntimeException e) {
             LOG.warn("Unexpected error at bootstrap start-up for {}", session, e);
             stopSession(session, INTERNAL_SERVER_ERROR);
             return new SendableResponse<>(BootstrapResponse.internalServerError(e.getMessage()));
@@ -150,13 +147,14 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
     }
 
     protected void stopSession(BootstrapSession session, BootstrapFailureCause cause) {
-        if (!onGoingSession.remove(session.getEndpoint(), session)) {
-            if (!session.isCancelled()) {
-                LOG.warn("{} was already removed", session);
-            }
+        if (!onGoingSession.remove(session.getEndpoint(), session) //
+                && !session.isCancelled()) {
+            LOG.warn("{} was already removed", session);
         }
         // if there is no cause of failure, this is a success
-        if (cause == null) {
+        if (cause == null)
+
+        {
             sessionManager.end(session);
             listener.end(session);
         } else {
@@ -232,7 +230,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
         private final BootstrapSession session;
 
-        public SafeResponseCallback(BootstrapSession session) {
+        protected SafeResponseCallback(BootstrapSession session) {
             this.session = session;
         }
 
@@ -253,7 +251,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
 
         private final BootstrapSession session;
 
-        public SafeErrorCallback(BootstrapSession session) {
+        protected SafeErrorCallback(BootstrapSession session) {
             this.session = session;
         }
 

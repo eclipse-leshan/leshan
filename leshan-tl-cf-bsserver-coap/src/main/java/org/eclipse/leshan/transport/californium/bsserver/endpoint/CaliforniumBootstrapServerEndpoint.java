@@ -182,11 +182,6 @@ public class CaliforniumBootstrapServerEndpoint implements LwM2mBootstrapServerE
         }
     }
 
-    private void removeOngoingRequest(String key, Request coapRequest) {
-        Validate.notNull(key);
-        ongoingRequests.remove(key, coapRequest);
-    }
-
     private final AtomicLong idGenerator = new AtomicLong(0l);
 
     private class CleanerMessageObserver extends MessageObserverAdapter {
@@ -206,6 +201,7 @@ public class CaliforniumBootstrapServerEndpoint implements LwM2mBootstrapServerE
 
         @Override
         public void onRetransmission() {
+            // nothing to do on retransmission
         }
 
         @Override
@@ -215,6 +211,7 @@ public class CaliforniumBootstrapServerEndpoint implements LwM2mBootstrapServerE
 
         @Override
         public void onAcknowledgement() {
+            // nothing to do on acknowledgement
         }
 
         @Override
@@ -226,5 +223,11 @@ public class CaliforniumBootstrapServerEndpoint implements LwM2mBootstrapServerE
         public void onCancel() {
             removeOngoingRequest(requestKey, coapRequest);
         }
+
+        private void removeOngoingRequest(String key, Request coapRequest) {
+            Validate.notNull(key);
+            ongoingRequests.remove(key, coapRequest);
+        }
+
     }
 }

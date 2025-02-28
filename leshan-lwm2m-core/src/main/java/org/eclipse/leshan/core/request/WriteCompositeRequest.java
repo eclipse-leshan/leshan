@@ -66,7 +66,8 @@ public class WriteCompositeRequest extends AbstractLwM2mRequest<WriteCompositeRe
             } else if (path.isResourceInstance()) {
                 internalNodes.put(path, LwM2mResourceInstance.newInstance(path.getResourceId(), entry.getValue()));
             } else {
-                new InvalidRequestException("Invalid value : path (%s) should target a resource or resource instance");
+                throw new InvalidRequestException(
+                        "Invalid value : path (%s) should target a resource or resource instance");
             }
         }
         this.nodes = internalNodes;
