@@ -44,9 +44,9 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.demo.bsserver.cli.LeshanBsServerDemoCLI;
 import org.eclipse.leshan.demo.bsserver.servlet.BootstrapServlet;
 import org.eclipse.leshan.demo.bsserver.servlet.EventServlet;
-import org.eclipse.leshan.demo.bsserver.servlet.ServerServlet;
 import org.eclipse.leshan.demo.cli.ShortErrorMessageHandler;
 import org.eclipse.leshan.demo.servers.json.servlet.SecurityServlet;
+import org.eclipse.leshan.demo.servers.json.servlet.ServerServlet;
 import org.eclipse.leshan.servers.security.EditableSecurityStore;
 import org.eclipse.leshan.servers.security.FileSecurityStore;
 import org.eclipse.leshan.transport.californium.PrincipalMdcConnectionListener;
@@ -235,9 +235,11 @@ public class LeshanBootstrapServerDemo {
 
         ServletHolder serverServletHolder;
         if (cli.identity.isRPK()) {
-            serverServletHolder = new ServletHolder(new ServerServlet(bsServer, cli.identity.getPublicKey()));
+            serverServletHolder = new ServletHolder(
+                    new ServerServlet(bsServer.getEndpoints(), cli.identity.getPublicKey()));
         } else {
-            serverServletHolder = new ServletHolder(new ServerServlet(bsServer, cli.identity.getCertChain()[0]));
+            serverServletHolder = new ServletHolder(
+                    new ServerServlet(bsServer.getEndpoints(), cli.identity.getCertChain()[0]));
         }
         root.addServlet(serverServletHolder, "/api/server/*");
 

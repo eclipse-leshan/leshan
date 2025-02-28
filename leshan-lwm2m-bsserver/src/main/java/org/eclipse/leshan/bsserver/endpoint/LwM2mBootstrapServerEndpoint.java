@@ -16,20 +16,13 @@
 package org.eclipse.leshan.bsserver.endpoint;
 
 import org.eclipse.leshan.bsserver.BootstrapSession;
-import org.eclipse.leshan.core.endpoint.EndpointUri;
-import org.eclipse.leshan.core.endpoint.Protocol;
+import org.eclipse.leshan.core.endpoint.LwM2mEndpoint;
 import org.eclipse.leshan.core.request.DownlinkBootstrapRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 
-public interface LwM2mBootstrapServerEndpoint {
-
-    Protocol getProtocol();
-
-    EndpointUri getURI();
-
-    String getDescription();
+public interface LwM2mBootstrapServerEndpoint extends LwM2mEndpoint {
 
     <T extends LwM2mResponse> T send(BootstrapSession destination, DownlinkBootstrapRequest<T> request,
             long timeoutInMs) throws InterruptedException;

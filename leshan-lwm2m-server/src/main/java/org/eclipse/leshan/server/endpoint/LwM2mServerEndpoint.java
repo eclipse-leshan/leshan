@@ -15,8 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.endpoint;
 
-import org.eclipse.leshan.core.endpoint.EndpointUri;
-import org.eclipse.leshan.core.endpoint.Protocol;
+import org.eclipse.leshan.core.endpoint.LwM2mEndpoint;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.DownlinkDeviceManagementRequest;
 import org.eclipse.leshan.core.response.ErrorCallback;
@@ -25,13 +24,7 @@ import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.profile.ClientProfile;
 import org.eclipse.leshan.server.request.LowerLayerConfig;
 
-public interface LwM2mServerEndpoint {
-
-    Protocol getProtocol();
-
-    EndpointUri getURI();
-
-    String getDescription();
+public interface LwM2mServerEndpoint extends LwM2mEndpoint {
 
     <T extends LwM2mResponse> T send(ClientProfile destination, DownlinkDeviceManagementRequest<T> request,
             LowerLayerConfig lowerLayerConfig, long timeoutInMs) throws InterruptedException;
