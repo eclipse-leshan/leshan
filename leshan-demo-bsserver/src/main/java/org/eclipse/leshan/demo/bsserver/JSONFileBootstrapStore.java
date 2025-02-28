@@ -105,7 +105,7 @@ public class JSONFileBootstrapStore extends InMemoryBootstrapConfigStore {
     }
 
     @Override
-    public void add(String endpoint, BootstrapConfig config) throws InvalidConfigurationException {
+    public synchronized void add(String endpoint, BootstrapConfig config) throws InvalidConfigurationException {
         writeLock.lock();
         try {
             addToStore(endpoint, config);
@@ -116,7 +116,7 @@ public class JSONFileBootstrapStore extends InMemoryBootstrapConfigStore {
     }
 
     @Override
-    public BootstrapConfig remove(String enpoint) {
+    public synchronized BootstrapConfig remove(String enpoint) {
         writeLock.lock();
         try {
             BootstrapConfig res = super.remove(enpoint);
@@ -156,7 +156,9 @@ public class JSONFileBootstrapStore extends InMemoryBootstrapConfigStore {
                 if (parent != null) {
                     parent.mkdirs();
                 }
-                file.createNewFile();
+                if (!file.createNewFile()) {
+                    LOG.error("Can not create file {} to save Boostrap config store", filename);
+                }
             }
 
             // Write file

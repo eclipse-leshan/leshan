@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
  * It does not support Observe-Composite.
  */
 public class NotificationManager {
-    private final Logger LOG = LoggerFactory.getLogger(NotificationManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NotificationManager.class);
 
     private final DownlinkRequestReceiver receiver;
     private final NotificationDataStore store;
@@ -106,7 +106,7 @@ public class NotificationManager {
         if (attributes == null || attributes.isEmpty())
             return;
 
-        LOG.debug("Handle observe relation for {} / {}", server, request);
+        LOG.debug("Handle observe relation for {} / {}", server, request);
 
         // Store needed data for this observe relation.
         updateNotificationData(true, server, request, attributes, node, sender);
@@ -114,7 +114,7 @@ public class NotificationManager {
 
     public synchronized void notificationTriggered(LwM2mServer server, ObserveRequest request,
             NotificationSender sender) {
-        LOG.trace("Notification triggered for observe relation of {} / {}", server, request);
+        LOG.trace("Notification triggered for observe relation of {} / {}", server, request);
 
         // Get Notification Data for given server / request
         NotificationData notificationData = store.getNotificationData(server, request);
@@ -136,7 +136,7 @@ public class NotificationManager {
         if (notificationData.usePmax()) {
             Long pmin = strategy.getAttributeValue(attributes, request.getPath(), LwM2mAttributes.MINIMUM_PERIOD);
             Long pmax = strategy.getAttributeValue(attributes, request.getPath(), LwM2mAttributes.MAXIMUM_PERIOD);
-            if (pmax == pmin) {
+            if (pmax.equals(pmin)) {
                 // we only send notification when pmax timer is reached.
                 return;
             }
@@ -159,7 +159,7 @@ public class NotificationManager {
 
         // If PMIN is used check if we need to delay this notification.
         if (notificationData.usePmin()) {
-            LOG.trace("handle pmin for observe relation of {} / {}", server, request);
+            LOG.trace("handle pmin for observe relation of {} / {}", server, request);
 
             if (notificationData.pminTaskScheduled()) {
                 // nothing to do if a task is already scheduled
@@ -213,7 +213,7 @@ public class NotificationManager {
             lastSendingTime = System.nanoTime();
         }
 
-        // Store last value sent if needed;
+        // Store last value sent if needed
         LwM2mNode lastValue = null;
         if (strategy.hasCriteriaBasedOnValue(attributes, path)) {
             lastValue = newValue;

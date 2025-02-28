@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
  * An in memory store for registration and observation.
  */
 public class InMemoryRegistrationStore implements RegistrationStore, Startable, Stoppable, Destroyable {
-    private final Logger LOG = LoggerFactory.getLogger(InMemoryRegistrationStore.class);
+    private static final Logger LOG = LoggerFactory.getLogger(InMemoryRegistrationStore.class);
 
     // Data structure
     private final Map<String /* end-point */, Registration> regsByEp = new HashMap<>();
@@ -244,7 +244,7 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
                 previousObservation = obsByToken.put(id, observation);
             }
             if (!tokensByRegId.containsKey(registrationId)) {
-                tokensByRegId.put(registrationId, new HashSet<ObservationIdentifier>());
+                tokensByRegId.put(registrationId, new HashSet<>());
             }
             tokensByRegId.get(registrationId).add(id);
 
@@ -345,8 +345,7 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
     /* *************** Observation utility functions **************** */
 
     private Observation unsafeGetObservation(ObservationIdentifier token) {
-        Observation obs = obsByToken.get(token);
-        return obs;
+        return obsByToken.get(token);
     }
 
     private void unsafeRemoveObservation(ObservationIdentifier observationId) {
@@ -433,6 +432,7 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
             schedExecutor.awaitTermination(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             LOG.warn("Destroying InMemoryRegistrationStore was interrupted.", e);
+            Thread.currentThread().interrupt();
         }
     }
 

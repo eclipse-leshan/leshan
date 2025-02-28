@@ -18,8 +18,8 @@ package org.eclipse.leshan.core.link.lwm2m.attributes;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
-import java.util.Map;
 
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
@@ -29,6 +29,9 @@ import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mPath;
 
 public final class LwM2mAttributes {
+
+    private LwM2mAttributes() {
+    }
 
     // dim
     public static final LwM2mAttributeModel<Long> DIMENSION = new PositiveLongAttributeModel(//
@@ -42,7 +45,7 @@ public final class LwM2mAttributes {
                 return "'Dimension' attribute value must be between [0-255]";
             }
             return null;
-        };
+        }
 
         @Override
         public String getApplicabilityError(LwM2mPath path, ObjectModel model) {
@@ -58,7 +61,7 @@ public final class LwM2mAttributes {
                 }
             }
             return null;
-        };
+        }
     };
     // ssid
     public static final LwM2mAttributeModel<Long> SHORT_SERVER_ID = new PositiveLongAttributeModel(//
@@ -72,7 +75,7 @@ public final class LwM2mAttributes {
                 return "'Short Server ID' attribute value must be between [1-65534]";
             }
             return null;
-        };
+        }
 
         @Override
         public String getApplicabilityError(LwM2mPath path, ObjectModel model) {
@@ -92,7 +95,7 @@ public final class LwM2mAttributes {
                 return "'Short Server ID' attribute is only applicable to Security (ID:0), Server(ID:1) object.";
             }
             return null;
-        };
+        }
     };
     // uri
     public static final LwM2mAttributeModel<String> SERVER_URI = new StringAttributeModel(//
@@ -112,7 +115,7 @@ public final class LwM2mAttributes {
                 return "'Server URI' attribute is only applicable to Security(ID:0)";
             }
             return null;
-        };
+        }
     };
     // ver
     public static final LwM2mAttributeModel<Version> OBJECT_VERSION = new ObjectVersionAttributeModel();
@@ -143,7 +146,7 @@ public final class LwM2mAttributes {
                 }
             }
             return null;
-        };
+        }
     };
     // pmax
     // TODO : wait for confirmation before to move to PositiveDouble
@@ -170,7 +173,7 @@ public final class LwM2mAttributes {
                 }
             }
             return null;
-        };
+        }
     };
     // gt
     // LWM2M v1.1.1 doesn't allow negative value but this is a bug in the specification
@@ -202,7 +205,7 @@ public final class LwM2mAttributes {
                 }
             }
             return null;
-        };
+        }
     };
     // lt
     // LWM2M v1.1.1 doesn't allow negative value but this is a bug in the specification
@@ -234,7 +237,7 @@ public final class LwM2mAttributes {
                 }
             }
             return null;
-        };
+        }
     };
     // st
     public static final LwM2mAttributeModel<BigDecimal> STEP = new PositiveBigDecimalAttributeModel(//
@@ -264,7 +267,7 @@ public final class LwM2mAttributes {
                 }
             }
             return null;
-        };
+        }
     };
     // epmin
     // TODO : wait for confirmation before to move to PositiveDouble
@@ -291,7 +294,7 @@ public final class LwM2mAttributes {
                 }
             }
             return null;
-        };
+        }
     };
     // epmax
     // TODO : wait for confirmation before to move to PositiveDouble
@@ -318,16 +321,15 @@ public final class LwM2mAttributes {
                 }
             }
             return null;
-        };
+        }
     };
-    public static Map<String, LwM2mAttributeModel<?>> modelMap;
 
     /**
      * All LWM2M attributes known by Leshan.
      */
-    public static final Collection<LwM2mAttributeModel<?>> ALL = Arrays.asList(DIMENSION, SHORT_SERVER_ID, SERVER_URI,
-            OBJECT_VERSION, ENABLER_VERSION, MINIMUM_PERIOD, MAXIMUM_PERIOD, GREATER_THAN, LESSER_THAN, STEP,
-            EVALUATE_MINIMUM_PERIOD, EVALUATE_MAXIMUM_PERIOD);
+    public static final Collection<LwM2mAttributeModel<?>> ALL = Collections.unmodifiableList(
+            Arrays.asList(DIMENSION, SHORT_SERVER_ID, SERVER_URI, OBJECT_VERSION, ENABLER_VERSION, MINIMUM_PERIOD,
+                    MAXIMUM_PERIOD, GREATER_THAN, LESSER_THAN, STEP, EVALUATE_MINIMUM_PERIOD, EVALUATE_MAXIMUM_PERIOD));
 
     public static <T> LwM2mAttribute<T> create(LwM2mAttributeModel<T> model, T value) {
         return new LwM2mAttribute<>(model, value);

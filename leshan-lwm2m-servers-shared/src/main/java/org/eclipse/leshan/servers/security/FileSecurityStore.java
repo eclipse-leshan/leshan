@@ -113,7 +113,9 @@ public class FileSecurityStore extends InMemorySecurityStore {
                 if (parent != null) {
                     parent.mkdirs();
                 }
-                file.createNewFile();
+                if (!file.createNewFile()) {
+                    LOG.error("Can not create file {} for SecurityStore", filename);
+                }
             }
             try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename));) {
                 out.writeObject(this.getAll().toArray(new SecurityInfo[0]));
