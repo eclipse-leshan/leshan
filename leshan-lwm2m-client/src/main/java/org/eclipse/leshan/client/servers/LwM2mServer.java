@@ -28,7 +28,7 @@ public class LwM2mServer {
     /**
      * Server for system calls.
      */
-    public final static LwM2mServer SYSTEM = new LwM2mServer(null, null, Role.SYSTEM, null);
+    public static final LwM2mServer SYSTEM = new LwM2mServer(null, null, Role.SYSTEM, null);
 
     @Override
     public final boolean equals(Object o) {
@@ -139,7 +139,7 @@ public class LwM2mServer {
         } else if (isLwm2mServer()) {
             return String.format("%s[%s %d]", getUri(), getRole(), getId());
         }
-        return null;
+        return "unknown";
     }
 
 }

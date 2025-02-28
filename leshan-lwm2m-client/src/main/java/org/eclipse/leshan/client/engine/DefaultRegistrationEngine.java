@@ -98,7 +98,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     // True if client use queueMode : for now this just add Q parameter on register request.
     private final boolean queueMode;
 
-    private static enum Status {
+    private enum Status {
         SUCCESS, FAILURE, TIMEOUT
     }
 
@@ -387,7 +387,6 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             }
             DeregisterResponse response = sender.send(server, request, deregistrationTimeoutInMs);
             if (response == null) {
-                registrationID = null;
                 LOG.info("Deregistration failed: Timeout.");
                 if (observer != null) {
                     observer.onDeregistrationTimeout(server, request);
@@ -395,7 +394,6 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 return false;
             } else if (response.isSuccess() || response.getCode() == ResponseCode.NOT_FOUND) {
                 registeredServers.remove(registrationID);
-                registrationID = null;
                 cancelUpdateTask(true);
                 LOG.info("De-register response {} {}.", response.getCode(), response.getErrorMessage());
                 if (observer != null) {
@@ -424,19 +422,6 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         }
     }
 
-    private boolean updateWithRetry(LwM2mServer server, String registrationId, RegistrationUpdate registrationUpdate)
-            throws InterruptedException {
-
-        Status updateStatus = update(server, registrationId, registrationUpdate);
-        if (updateStatus == Status.TIMEOUT) {
-            // if register timeout maybe server lost the session,
-            // so we reconnect (new handshake) and retry
-            endpointsManager.forceReconnection(server, resumeOnConnect);
-            updateStatus = update(server, registrationId, registrationUpdate);
-        }
-        return updateStatus == Status.SUCCESS;
-    }
-
     private Status update(LwM2mServer server, String registrationID, RegistrationUpdate registrationUpdate)
             throws InterruptedException {
         DmServerInfo dmInfo = ServersInfoExtractor.getDMServerInfo(objectEnablers, server.getId());
@@ -460,7 +445,6 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             }
             UpdateResponse response = sender.send(server, request, requestTimeoutInMs);
             if (response == null) {
-                registrationID = null;
                 LOG.info("Registration update failed: Timeout.");
                 if (observer != null) {
                     observer.onUpdateTimeout(server, request);
@@ -543,6 +527,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                     }
                 } catch (InterruptedException e) {
                     LOG.info("Bootstrap task interrupted. ");
+                    Thread.currentThread().interrupt();
                 } catch (RuntimeException e) {
                     LOG.error("Unexpected exception during bootstrap task", e);
                     observer.onUnexpectedError(e);
@@ -561,7 +546,6 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         } else {
             registerFuture = schedExecutor.submit(new RegistrationTask(dmServer));
         }
-        return;
     }
 
     private class RegistrationTask implements Runnable {
@@ -575,13 +559,13 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         public void run() {
             synchronized (taskLock) {
                 try {
-                    if (!registerWithRetry(server)) {
-                        if (!scheduleClientInitiatedBootstrap(NOW)) {
-                            scheduleRegistrationTask(server, retryWaitingTimeInMs);
-                        }
+                    if (!registerWithRetry(server) //
+                            && !scheduleClientInitiatedBootstrap(NOW)) {
+                        scheduleRegistrationTask(server, retryWaitingTimeInMs);
                     }
                 } catch (InterruptedException e) {
                     LOG.info("Registration task interrupted. ");
+                    Thread.currentThread().interrupt();
                 } catch (RuntimeException e) {
                     LOG.error("Unexpected exception during registration task", e);
                     observer.onUnexpectedError(e);
@@ -622,21 +606,34 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         public void run() {
             synchronized (taskLock) {
                 try {
-                    if (!updateWithRetry(server, registrationId, registrationUpdate)) {
-                        if (!registerWithRetry(server)) {
-                            if (!scheduleClientInitiatedBootstrap(NOW)) {
-                                scheduleRegistrationTask(server, retryWaitingTimeInMs);
-                            }
-                        }
+                    if (!updateWithRetry(server, registrationId, registrationUpdate) //
+                            && !registerWithRetry(server) //
+                            && !scheduleClientInitiatedBootstrap(NOW)) {
+                        scheduleRegistrationTask(server, retryWaitingTimeInMs);
                     }
                 } catch (InterruptedException e) {
                     LOG.info("Registration update task interrupted.");
+                    Thread.currentThread().interrupt();
                 } catch (RuntimeException e) {
                     LOG.error("Unexpected exception during update registration task", e);
                     observer.onUnexpectedError(e);
                 }
             }
         }
+
+        private boolean updateWithRetry(LwM2mServer server, String registrationId,
+                RegistrationUpdate registrationUpdate) throws InterruptedException {
+
+            Status updateStatus = update(server, registrationId, registrationUpdate);
+            if (updateStatus == Status.TIMEOUT) {
+                // if register timeout maybe server lost the session,
+                // so we reconnect (new handshake) and retry
+                endpointsManager.forceReconnection(server, resumeOnConnect);
+                updateStatus = update(server, registrationId, registrationUpdate);
+            }
+            return updateStatus == Status.SUCCESS;
+        }
+
     }
 
     private void cancelUpdateTask(boolean mayinterrupt) {
@@ -669,14 +666,13 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             cancelBootstrapTask();
         }
         try {
-            if (deregister) {
-                if (!registeredServers.isEmpty()) {
-                    for (Entry<String, LwM2mServer> registeredServer : registeredServers.entrySet()) {
-                        deregister(registeredServer.getValue(), registeredServer.getKey());
-                    }
+            if (deregister && !registeredServers.isEmpty()) {
+                for (Entry<String, LwM2mServer> registeredServer : registeredServers.entrySet()) {
+                    deregister(registeredServer.getValue(), registeredServer.getKey());
                 }
             }
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -698,14 +694,13 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 // TODO we should manage the case where we stop in the middle of a bootstrap session ...
                 cancelBootstrapTask();
             }
-            if (wasStarted && deregister) {
-                if (!registeredServers.isEmpty()) {
-                    for (Entry<String, LwM2mServer> registeredServer : registeredServers.entrySet()) {
-                        deregister(registeredServer.getValue(), registeredServer.getKey());
-                    }
+            if (wasStarted && deregister && !registeredServers.isEmpty()) {
+                for (Entry<String, LwM2mServer> registeredServer : registeredServers.entrySet()) {
+                    deregister(registeredServer.getValue(), registeredServer.getKey());
                 }
             }
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -797,25 +792,20 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                 // TODO we should manage the case where we stop in the middle of a bootstrap session ...
                 cancelBootstrapTask();
 
-                schedExecutor.submit(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        try {
-                            // deregister if needed
-                            if (deregister) {
-                                if (!registeredServers.isEmpty()) {
-                                    for (Entry<String, LwM2mServer> registeredServer : registeredServers.entrySet()) {
-                                        deregister(registeredServer.getValue(), registeredServer.getKey());
-                                    }
-                                }
+                schedExecutor.submit(() -> {
+                    try {
+                        // deregister if needed
+                        if (deregister && !registeredServers.isEmpty()) {
+                            for (Entry<String, LwM2mServer> registeredServer : registeredServers.entrySet()) {
+                                deregister(registeredServer.getValue(), registeredServer.getKey());
                             }
-                        } catch (InterruptedException e) {
                         }
-
-                        // schedule a new bootstrap.
-                        scheduleClientInitiatedBootstrap(NOW);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                     }
+
+                    // schedule a new bootstrap.
+                    scheduleClientInitiatedBootstrap(NOW);
                 });
             }
         }
@@ -827,11 +817,10 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             LOG.warn(message, e);
             return;
         }
-        if (e instanceof SendFailedException) {
-            if (e.getCause() != null && e.getMessage() != null) {
-                LOG.info("{} : {}", message, e.getCause().getMessage());
-                return;
-            }
+        if (e instanceof SendFailedException //
+                && e.getCause() != null && e.getMessage() != null) {
+            LOG.info("{} : {}", message, e.getCause().getMessage());
+            return;
         }
         LOG.info("{} : {}", message, e.getMessage());
     }

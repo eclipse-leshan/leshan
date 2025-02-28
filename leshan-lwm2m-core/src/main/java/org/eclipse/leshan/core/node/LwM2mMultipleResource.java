@@ -54,7 +54,7 @@ public class LwM2mMultipleResource implements LwM2mResource {
         Map<Integer, LwM2mResourceInstance> instancesMap = new HashMap<>(instances.size());
         for (LwM2mResourceInstance instance : instances) {
             if (type != instance.getType())
-                new LwM2mNodeException("Invalid resource instance %d, type is %s but resource is %s.", id,
+                throw new LwM2mNodeException("Invalid resource instance %d, type is %s but resource is %s.", id,
                         instance.getType(), type);
             instancesMap.put(instance.getId(), instance);
         }

@@ -29,6 +29,7 @@ import org.eclipse.leshan.bsserver.InvalidConfigurationException;
 import org.eclipse.leshan.demo.bsserver.json.ByteArraySerializer;
 import org.eclipse.leshan.demo.bsserver.json.EnumSetDeserializer;
 import org.eclipse.leshan.demo.bsserver.json.EnumSetSerializer;
+import org.eclipse.leshan.demo.servers.json.servlet.LeshanDemoServlet;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -38,19 +39,18 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.CollectionType;
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Servlet for REST API in charge of adding bootstrap information to the bootstrap server.
  */
-public class BootstrapServlet extends HttpServlet {
+public class BootstrapServlet extends LeshanDemoServlet {
 
     private static final long serialVersionUID = 1L;
-    private final ObjectMapper mapper;
 
-    private final EditableBootstrapConfigStore bsStore;
+    private final transient ObjectMapper mapper;
+    private final transient EditableBootstrapConfigStore bsStore;
 
     public BootstrapServlet(EditableBootstrapConfigStore bsStore) {
         this.bsStore = bsStore;
@@ -71,26 +71,19 @@ public class BootstrapServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (req.getPathInfo() != null) {
-            sendError(resp, HttpServletResponse.SC_NOT_FOUND, "bad URL");
+            safelySendError(req, resp, HttpServletResponse.SC_NOT_FOUND, "bad URL");
             return;
         }
 
-        resp.setStatus(HttpServletResponse.SC_OK);
-        resp.setContentType("application/json");
-
-        try {
-            resp.getOutputStream().write(mapper.writeValueAsString(bsStore.getAll()).getBytes(StandardCharsets.UTF_8));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        sendBootstrapConfig(req, resp);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (req.getPathInfo() == null) {
             // we need the endpoint in the URL
-            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "endpoint name should be specified in the URL");
+            safelySendError(req, resp, HttpServletResponse.SC_BAD_REQUEST,
+                    "endpoint name should be specified in the URL");
             return;
         }
 
@@ -98,33 +91,22 @@ public class BootstrapServlet extends HttpServlet {
 
         // endPoint
         if (path.length != 1) {
-            sendError(resp, HttpServletResponse.SC_BAD_REQUEST,
+            safelySendError(req, resp, HttpServletResponse.SC_BAD_REQUEST,
                     "endpoint name should be specified in the URL, nothing more");
             return;
         }
 
         String endpoint = path[0];
 
-        try {
-            BootstrapConfig cfg = mapper.readValue(new InputStreamReader(req.getInputStream()), BootstrapConfig.class);
-
-            if (cfg == null) {
-                sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "no content");
-            } else {
-                // Add bootstrap config
-                bsStore.add(endpoint, cfg);
-                resp.setStatus(HttpServletResponse.SC_OK);
-            }
-        } catch (JsonParseException | InvalidConfigurationException e) {
-            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-        }
+        addBootstrapConfig(req, resp, endpoint);
     }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (req.getPathInfo() == null) {
             // we need the endpoint in the URL
-            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "endpoint name should be specified in the URL");
+            safelySendError(req, resp, HttpServletResponse.SC_BAD_REQUEST,
+                    "endpoint name should be specified in the URL");
             return;
         }
 
@@ -132,7 +114,7 @@ public class BootstrapServlet extends HttpServlet {
 
         // endPoint
         if (path.length != 1) {
-            sendError(resp, HttpServletResponse.SC_BAD_REQUEST,
+            safelySendError(req, resp, HttpServletResponse.SC_BAD_REQUEST,
                     "endpoint name should be specified in the URL, nothing more");
             return;
         }
@@ -140,17 +122,43 @@ public class BootstrapServlet extends HttpServlet {
         String endpoint = path[0];
 
         // try to remove from bootstrap config store
-        if (bsStore.remove(endpoint) != null) {
-            resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
-        } else {
-            sendError(resp, HttpServletResponse.SC_NOT_FOUND, "no config for " + endpoint);
-        }
+        deleteBootstrapConfig(req, resp, endpoint);
     }
 
-    private void sendError(HttpServletResponse resp, int statusCode, String errorMessage) throws IOException {
-        resp.setStatus(statusCode);
-        resp.setContentType("text/plain; charset=UTF-8");
-        if (errorMessage != null)
-            resp.getOutputStream().write(errorMessage.getBytes(StandardCharsets.UTF_8));
+    private void sendBootstrapConfig(HttpServletRequest req, HttpServletResponse resp) {
+        executeSafely(req, resp, () -> {
+            resp.setStatus(HttpServletResponse.SC_OK);
+            resp.setContentType("application/json");
+            resp.getOutputStream().write(mapper.writeValueAsString(bsStore.getAll()).getBytes(StandardCharsets.UTF_8));
+        });
+    }
+
+    private void addBootstrapConfig(HttpServletRequest req, HttpServletResponse resp, String endpoint) {
+        executeSafely(req, resp, () -> {
+            try {
+                BootstrapConfig cfg = mapper.readValue(new InputStreamReader(req.getInputStream()),
+                        BootstrapConfig.class);
+
+                if (cfg == null) {
+                    safelySendError(req, resp, HttpServletResponse.SC_BAD_REQUEST, "no content");
+                } else {
+                    // Add bootstrap config
+                    bsStore.add(endpoint, cfg);
+                    resp.setStatus(HttpServletResponse.SC_OK);
+                }
+            } catch (JsonParseException | InvalidConfigurationException e) {
+                safelySendError(req, resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            }
+        });
+    }
+
+    private void deleteBootstrapConfig(HttpServletRequest req, HttpServletResponse resp, String endpoint) {
+        executeSafely(req, resp, () -> {
+            if (bsStore.remove(endpoint) != null) {
+                resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            } else {
+                safelySendError(req, resp, HttpServletResponse.SC_NOT_FOUND, "no config for " + endpoint);
+            }
+        });
     }
 }

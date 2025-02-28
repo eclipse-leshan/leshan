@@ -173,12 +173,12 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
                 byte[] old = j.getSet(k, serializeReg(registration));
 
                 // add registration: secondary indexes
-                byte[] regid_idx = toRegIdKey(registration.getId());
-                j.set(regid_idx, registration.getEndpoint().getBytes(UTF_8));
-                byte[] addr_idx = toRegAddrKey(registration.getSocketAddress());
-                j.set(addr_idx, registration.getEndpoint().getBytes(UTF_8));
-                byte[] identity_idx = toRegIdentityKey(registration.getClientTransportData().getIdentity());
-                j.set(identity_idx, registration.getEndpoint().getBytes(UTF_8));
+                byte[] regidIdx = toRegIdKey(registration.getId());
+                j.set(regidIdx, registration.getEndpoint().getBytes(UTF_8));
+                byte[] addrIdx = toRegAddrKey(registration.getSocketAddress());
+                j.set(addrIdx, registration.getEndpoint().getBytes(UTF_8));
+                byte[] identityIdx = toRegIdentityKey(registration.getClientTransportData().getIdentity());
+                j.set(identityIdx, registration.getEndpoint().getBytes(UTF_8));
 
                 // Add or update expiration
                 addOrUpdateExpiration(j, registration);
@@ -242,14 +242,14 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
                 // Update secondary index :
                 // If registration is already associated to this address we don't care as we only want to keep the most
                 // recent binding.
-                byte[] addr_idx = toRegAddrKey(updatedRegistration.getSocketAddress());
-                j.set(addr_idx, updatedRegistration.getEndpoint().getBytes(UTF_8));
+                byte[] addrIdx = toRegAddrKey(updatedRegistration.getSocketAddress());
+                j.set(addrIdx, updatedRegistration.getEndpoint().getBytes(UTF_8));
                 if (!r.getSocketAddress().equals(updatedRegistration.getSocketAddress())) {
                     removeAddrIndex(j, r);
                 }
                 // update secondary index :
-                byte[] identity_idx = toRegIdentityKey(updatedRegistration.getClientTransportData().getIdentity());
-                j.set(identity_idx, updatedRegistration.getEndpoint().getBytes(UTF_8));
+                byte[] identityIdx = toRegIdentityKey(updatedRegistration.getClientTransportData().getIdentity());
+                j.set(identityIdx, updatedRegistration.getEndpoint().getBytes(UTF_8));
                 if (!r.getClientTransportData().getIdentity()
                         .equals(updatedRegistration.getClientTransportData().getIdentity())) {
                     removeIdentityIndex(j, r);
@@ -753,6 +753,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
             schedExecutor.awaitTermination(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             LOG.warn("Destroying RedisRegistrationStore was interrupted.", e);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -1087,9 +1088,9 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
                     this.observationByIdPrefix, this.observationIdsByRegistrationIdPrefix, this.endpointExpirationKey };
             Set<String> uniquePrefixes = new HashSet<>();
 
-            for (String prefix : prefixes) {
-                if (!uniquePrefixes.add(prefix)) {
-                    throw new IllegalArgumentException(String.format("prefix name %s is taken already", prefix));
+            for (String p : prefixes) {
+                if (!uniquePrefixes.add(p)) {
+                    throw new IllegalArgumentException(String.format("prefix name %s is taken already", p));
                 }
             }
 
