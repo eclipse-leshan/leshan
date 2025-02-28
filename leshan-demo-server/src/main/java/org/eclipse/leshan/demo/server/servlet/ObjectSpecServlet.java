@@ -18,31 +18,28 @@ package org.eclipse.leshan.demo.server.servlet;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
-import org.eclipse.leshan.core.util.json.JsonException;
 import org.eclipse.leshan.demo.server.model.ObjectModelSerDes;
+import org.eclipse.leshan.demo.servers.json.servlet.LeshanDemoServlet;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationService;
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class ObjectSpecServlet extends HttpServlet {
+public class ObjectSpecServlet extends LeshanDemoServlet {
 
     private static final long serialVersionUID = 1L;
 
-    private final ObjectModelSerDes serializer;
-
-    private final LwM2mModelProvider modelProvider;
-    private final RegistrationService registrationService;
+    private final transient ObjectModelSerDes serializer;
+    private final transient LwM2mModelProvider modelProvider;
+    private final transient RegistrationService registrationService;
 
     public ObjectSpecServlet(LwM2mModelProvider modelProvider, RegistrationService registrationService) {
         // use the provider from the server and return a model by client
@@ -53,44 +50,41 @@ public class ObjectSpecServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
         // Validate path : it must be /clientEndpoint
         if (req.getPathInfo() == null) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
-            return;
-        }
-        String[] path = StringUtils.split(req.getPathInfo(), '/');
-        if (path.length != 1) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
+            // we need the endpoint in the URL
+            safelySendError(req, resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
             return;
         }
 
         // Get registration
+        String[] path = StringUtils.split(req.getPathInfo(), '/');
+        if (path.length != 1) {
+            safelySendError(req, resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
+            return;
+        }
         String clientEndpoint = path[0];
         Registration registration = registrationService.getByEndpoint(clientEndpoint);
         if (registration == null) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            resp.getWriter().format("no registered client with id '%s'", clientEndpoint).flush();
+            safelySendError(req, resp, HttpServletResponse.SC_BAD_REQUEST,
+                    String.format("no registered client with id '%s'", clientEndpoint));
         }
 
         // Get Model for this registration
-        try {
+        sendModel(req, resp, registration);
+    }
+
+    private void sendModel(HttpServletRequest req, HttpServletResponse resp, Registration registration) {
+        executeSafely(req, resp, () -> {
             LwM2mModel model = modelProvider.getObjectModel(registration);
             resp.setContentType("application/json");
             List<ObjectModel> objectModels = new ArrayList<>(model.getObjectModels());
-            Collections.sort(objectModels, new Comparator<ObjectModel>() {
-                @Override
-                public int compare(ObjectModel o1, ObjectModel o2) {
-                    return Integer.compare(o1.id, o2.id);
-                }
+            Collections.sort(objectModels, (o1, o2) -> {
+                return Integer.compare(o1.id, o2.id);
             });
 
             resp.getOutputStream().write(serializer.bSerialize(objectModels));
             resp.setStatus(HttpServletResponse.SC_OK);
-        } catch (JsonException e) {
-            throw new ServletException(e);
-        }
-        return;
-
+        });
     }
 }

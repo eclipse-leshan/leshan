@@ -16,6 +16,7 @@
 package org.eclipse.leshan.demo.bsserver.servlet;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
@@ -39,29 +40,34 @@ import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 public class EventServlet extends EventSourceServlet {
+
     private static final long serialVersionUID = 1L;
+
+    private static final Logger LOG = LoggerFactory.getLogger(EventServlet.class);
+
+    private static final String BOOTSTRAP_EVENT_JSON_SERIALIZATION_FAILED = "Bootstrap Event JSON serialization failed";
 
     private static final String EVENT_BOOTSTRAP_SESSION = "BSSESSION";
     private static final String QUERY_PARAM_ENDPOINT = "ep";
 
-    private static final Logger LOG = LoggerFactory.getLogger(EventServlet.class);
-
-    private final ObjectMapper objectMapper;
-    private final Set<LeshanEventSource> eventSources = Collections
+    private final transient ObjectMapper objectMapper;
+    private final transient Set<LeshanEventSource> eventSources = Collections
             .newSetFromMap(new ConcurrentHashMap<LeshanEventSource, Boolean>());
 
     @SuppressWarnings("unused")
+    @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     private class BootstrapEvent {
-        public String name;
-        public String endpoint;
-        public Date time;
-        public String message;
+        private final String name;
+        private final String endpoint;
+        private final Date time;
+        private final String message;
 
         public BootstrapEvent(String name, String endpoint, String message) {
             this.name = name;
@@ -71,7 +77,7 @@ public class EventServlet extends EventSourceServlet {
         }
     }
 
-    private final BootstrapSessionListener sessionListener = new BootstrapSessionListener() {
+    private final transient BootstrapSessionListener sessionListener = new BootstrapSessionListener() {
 
         @Override
         public void sessionInitiated(BootstrapRequest request, LwM2mPeer client) {
@@ -95,7 +101,7 @@ public class EventServlet extends EventSourceServlet {
                         objectMapper.writeValueAsString(new BootstrapEvent("new session", endpointName, b.toString())),
                         endpointName);
             } catch (JsonProcessingException e) {
-                LOG.error("Bootstrap Event JSON serialization failed", e);
+                LOG.error(BOOTSTRAP_EVENT_JSON_SERIALIZATION_FAILED, e);
             }
         }
 
@@ -113,7 +119,7 @@ public class EventServlet extends EventSourceServlet {
                         objectMapper.writeValueAsString(new BootstrapEvent("unauthorized", endpointName, b.toString())),
                         endpointName);
             } catch (JsonProcessingException e) {
-                LOG.error("Bootstrap Event JSON serialization failed", e);
+                LOG.error(BOOTSTRAP_EVENT_JSON_SERIALIZATION_FAILED, e);
             }
         }
 
@@ -129,7 +135,7 @@ public class EventServlet extends EventSourceServlet {
                         objectMapper.writeValueAsString(new BootstrapEvent("authorized", endpointName, b.toString())),
                         endpointName);
             } catch (JsonProcessingException e) {
-                LOG.error("Bootstrap Event JSON serialization failed", e);
+                LOG.error(BOOTSTRAP_EVENT_JSON_SERIALIZATION_FAILED, e);
             }
         }
 
@@ -187,7 +193,7 @@ public class EventServlet extends EventSourceServlet {
                 }
 
             } catch (JsonProcessingException e) {
-                LOG.error("Bootstrap Event JSON serialization failed", e);
+                LOG.error(BOOTSTRAP_EVENT_JSON_SERIALIZATION_FAILED, e);
             }
         }
 
@@ -200,7 +206,7 @@ public class EventServlet extends EventSourceServlet {
                     StringBuilder b = new StringBuilder();
                     b.append("Receive DISCOVER reponse\n");
                     b.append(response.getCode().toString());
-                    b.append(((BootstrapDiscoverResponse) request).getObjectLinks().toString());
+                    b.append(Arrays.toString(((BootstrapDiscoverResponse) request).getObjectLinks()));
                     sendEvent(EVENT_BOOTSTRAP_SESSION,
                             objectMapper.writeValueAsString(
                                     new BootstrapEvent("receive success response", endpointName, b.toString())),
@@ -216,7 +222,7 @@ public class EventServlet extends EventSourceServlet {
                             endpointName);
                 }
             } catch (JsonProcessingException e) {
-                LOG.error("Bootstrap Event JSON serialization failed", e);
+                LOG.error(BOOTSTRAP_EVENT_JSON_SERIALIZATION_FAILED, e);
             }
         }
 
@@ -237,7 +243,7 @@ public class EventServlet extends EventSourceServlet {
                                 new BootstrapEvent("receive error response", endpointName, b.toString())),
                         endpointName);
             } catch (JsonProcessingException e) {
-                LOG.error("Bootstrap Event JSON serialization failed", e);
+                LOG.error(BOOTSTRAP_EVENT_JSON_SERIALIZATION_FAILED, e);
             }
         }
 
@@ -252,7 +258,7 @@ public class EventServlet extends EventSourceServlet {
                 sendEvent(EVENT_BOOTSTRAP_SESSION, objectMapper.writeValueAsString(
                         new BootstrapEvent("request failure", endpointName, b.toString())), endpointName);
             } catch (JsonProcessingException e) {
-                LOG.error("Bootstrap Event JSON serialization failed", e);
+                LOG.error(BOOTSTRAP_EVENT_JSON_SERIALIZATION_FAILED, e);
             }
         }
 
@@ -279,7 +285,7 @@ public class EventServlet extends EventSourceServlet {
                         objectMapper.writeValueAsString(new BootstrapEvent("finished", endpointName, b.toString())),
                         endpointName);
             } catch (JsonProcessingException e) {
-                LOG.error("Bootstrap Event JSON serialization failed", e);
+                LOG.error(BOOTSTRAP_EVENT_JSON_SERIALIZATION_FAILED, e);
             }
         }
 
@@ -295,27 +301,26 @@ public class EventServlet extends EventSourceServlet {
                         objectMapper.writeValueAsString(new BootstrapEvent("failed", endpointName, b.toString())),
                         endpointName);
             } catch (JsonProcessingException e) {
-                LOG.error("Bootstrap Event JSON serialization failed", e);
+                LOG.error(BOOTSTRAP_EVENT_JSON_SERIALIZATION_FAILED, e);
             }
         }
 
+        private synchronized void sendEvent(String event, String data, String endpoint) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Dispatching {} event from endpoint {}", event, endpoint);
+            }
+
+            for (LeshanEventSource eventSource : eventSources) {
+                if (eventSource.getEndpoint() == null || eventSource.getEndpoint().equals(endpoint)) {
+                    eventSource.sentEvent(event, data);
+                }
+            }
+        }
     };
 
     public EventServlet(LeshanBootstrapServer server) {
         server.addListener(sessionListener);
         objectMapper = new ObjectMapper();
-    }
-
-    private synchronized void sendEvent(String event, String data, String endpoint) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Dispatching {} event from endpoint {}", event, endpoint);
-        }
-
-        for (LeshanEventSource eventSource : eventSources) {
-            if (eventSource.getEndpoint() == null || eventSource.getEndpoint().equals(endpoint)) {
-                eventSource.sentEvent(event, data);
-            }
-        }
     }
 
     @Override
@@ -348,7 +353,7 @@ public class EventServlet extends EventSourceServlet {
             try {
                 emitter.event(event, data);
             } catch (IOException e) {
-                e.printStackTrace();
+                LOG.warn("Unable to send event {}", event, e);
                 onClose();
             }
         }

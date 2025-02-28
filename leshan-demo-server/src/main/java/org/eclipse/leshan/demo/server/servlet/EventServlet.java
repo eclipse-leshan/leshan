@@ -58,6 +58,7 @@ import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServe
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -69,36 +70,26 @@ import jline.internal.Log;
 
 public class EventServlet extends EventSourceServlet {
 
-    private static final String EVENT_DEREGISTRATION = "DEREGISTRATION";
-
-    private static final String EVENT_UPDATED = "UPDATED";
-
-    private static final String EVENT_REGISTRATION = "REGISTRATION";
-
-    private static final String EVENT_AWAKE = "AWAKE";
-
-    private static final String EVENT_SLEEPING = "SLEEPING";
-
-    private static final String EVENT_NOTIFICATION = "NOTIFICATION";
-
-    private static final String EVENT_SEND = "SEND";
-
-    private static final String EVENT_COAP_LOG = "COAPLOG";
-
-    private static final String QUERY_PARAM_ENDPOINT = "ep";
-
     private static final long serialVersionUID = 1L;
 
     private static final Logger LOG = LoggerFactory.getLogger(EventServlet.class);
 
-    private final ObjectMapper mapper;
+    private static final String EVENT_DEREGISTRATION = "DEREGISTRATION";
+    private static final String EVENT_UPDATED = "UPDATED";
+    private static final String EVENT_REGISTRATION = "REGISTRATION";
+    private static final String EVENT_AWAKE = "AWAKE";
+    private static final String EVENT_SLEEPING = "SLEEPING";
+    private static final String EVENT_NOTIFICATION = "NOTIFICATION";
+    private static final String EVENT_SEND = "SEND";
+    private static final String EVENT_COAP_LOG = "COAPLOG";
 
-    private final CoapMessageTracer coapMessageTracer;
+    private static final String QUERY_PARAM_ENDPOINT = "ep";
 
-    private final Set<LeshanEventSource> eventSources = Collections
+    private final transient ObjectMapper mapper;
+    private final transient CoapMessageTracer coapMessageTracer;
+    private final transient Set<LeshanEventSource> eventSources = Collections
             .newSetFromMap(new ConcurrentHashMap<LeshanEventSource, Boolean>());
-
-    private final RegistrationListener registrationListener = new RegistrationListener() {
+    private final transient RegistrationListener registrationListener = new RegistrationListener() {
 
         @Override
         public void registered(Registration registration, Registration previousReg,
@@ -107,7 +98,7 @@ public class EventServlet extends EventSourceServlet {
             try {
                 jReg = EventServlet.this.mapper.writeValueAsString(registration);
             } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
             sendEvent(EVENT_REGISTRATION, jReg, registration.getEndpoint());
         }
@@ -122,7 +113,7 @@ public class EventServlet extends EventSourceServlet {
             try {
                 jReg = EventServlet.this.mapper.writeValueAsString(regUpdate);
             } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
             sendEvent(EVENT_UPDATED, jReg, updatedRegistration.getEndpoint());
         }
@@ -134,14 +125,14 @@ public class EventServlet extends EventSourceServlet {
             try {
                 jReg = EventServlet.this.mapper.writeValueAsString(registration);
             } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
             sendEvent(EVENT_DEREGISTRATION, jReg, registration.getEndpoint());
         }
 
     };
 
-    public final PresenceListener presenceListener = new PresenceListener() {
+    public final transient PresenceListener presenceListener = new PresenceListener() {
 
         @Override
         public void onSleeping(Registration registration) {
@@ -157,10 +148,11 @@ public class EventServlet extends EventSourceServlet {
         }
     };
 
-    private final ObservationListener observationListener = new ObservationListener() {
+    private final transient ObservationListener observationListener = new ObservationListener() {
 
         @Override
         public void cancelled(Observation observation) {
+            // no event sent on cancelled observation for now
         }
 
         @Override
@@ -174,7 +166,7 @@ public class EventServlet extends EventSourceServlet {
             try {
                 jsonContent = mapper.writeValueAsString(response.getContent());
             } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
 
             if (registration != null) {
@@ -195,19 +187,20 @@ public class EventServlet extends EventSourceServlet {
         public void onResponse(CompositeObservation observation, Registration registration,
                 ObserveCompositeResponse response) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Received composite notificationfrom [{}] containing value [{}]", response.getContent());
+                LOG.debug("Received composite notificationfrom [{}] containing value [{}]", registration,
+                        response.getContent());
             }
             String jsonContent = null;
             String jsonListOfPath = null;
             try {
                 jsonContent = mapper.writeValueAsString(response.getContent());
-                List<String> paths = new ArrayList<String>();
+                List<String> paths = new ArrayList<>();
                 for (LwM2mPath path : response.getObservation().getPaths()) {
                     paths.add(path.toString());
                 }
                 jsonListOfPath = mapper.writeValueAsString(paths);
             } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
 
             if (registration != null) {
@@ -235,16 +228,27 @@ public class EventServlet extends EventSourceServlet {
 
         @Override
         public void newObservation(Observation observation, Registration registration) {
+            // no event sent on new observation for now
+        }
+
+        private String getObservationPaths(final Observation observation) {
+            String path = null;
+            if (observation instanceof SingleObservation) {
+                path = ((SingleObservation) observation).getPath().toString();
+            } else if (observation instanceof CompositeObservation) {
+                path = ((CompositeObservation) observation).getPaths().toString();
+            }
+            return path;
         }
     };
 
-    private final SendListener sendListener = new SendListener() {
+    private final transient SendListener sendListener = new SendListener() {
 
         @Override
         public void dataReceived(Registration registration, TimestampedLwM2mNodes data, SendRequest request) {
 
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Received Send request from [{}] containing value [{}]", registration, data.toString());
+                LOG.debug("Received Send request from [{}] containing value [{}]", registration, data);
             }
 
             if (registration != null) {
@@ -260,7 +264,7 @@ public class EventServlet extends EventSourceServlet {
 
                     sendEvent(EVENT_SEND, eventData, registration.getEndpoint());
                 } catch (JsonProcessingException e) {
-                    Log.warn(String.format("Error while processing json [%s] : [%s]", data.toString(), e.getMessage()));
+                    Log.warn(String.format("Error while processing json [%s] : [%s]", data, e.getMessage()));
                 }
             }
         }
@@ -273,16 +277,6 @@ public class EventServlet extends EventSourceServlet {
             }
         }
     };
-
-    private String getObservationPaths(final Observation observation) {
-        String path = null;
-        if (observation instanceof SingleObservation) {
-            path = ((SingleObservation) observation).getPath().toString();
-        } else if (observation instanceof CompositeObservation) {
-            path = ((CompositeObservation) observation).getPaths().toString();
-        }
-        return path;
-    }
 
     public EventServlet(LeshanServer server) {
         server.getRegistrationService().addListener(this.registrationListener);
@@ -297,16 +291,16 @@ public class EventServlet extends EventSourceServlet {
                 ((CaliforniumServerEndpoint) endpoint).getCoapEndpoint().addInterceptor(coapMessageTracer);
         }
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         SimpleModule module = new SimpleModule();
         module.addSerializer(Link.class, new JacksonLinkSerializer());
         module.addSerializer(Registration.class, new JacksonRegistrationSerializer(server.getPresenceService()));
         module.addSerializer(RegistrationUpdate.class, new JacksonRegistrationUpdateSerializer());
         module.addSerializer(LwM2mNode.class, new JacksonLwM2mNodeSerializer());
         module.addSerializer(Version.class, new JacksonVersionSerializer());
-        mapper.registerModule(module);
-        this.mapper = mapper;
+        objectMapper.registerModule(module);
+        this.mapper = objectMapper;
     }
 
     public synchronized void sendEvent(String event, String data, String endpoint) {
@@ -341,16 +335,6 @@ public class EventServlet extends EventSourceServlet {
             }
         }
 
-    }
-
-    private void cleanCoapListener(String endpoint) {
-        // remove the listener if there is no more eventSources for this endpoint
-        for (LeshanEventSource eventSource : eventSources) {
-            if (eventSource.getEndpoint() == null || eventSource.getEndpoint().equals(endpoint)) {
-                return;
-            }
-        }
-        coapMessageTracer.removeListener(endpoint);
     }
 
     @Override
@@ -389,7 +373,7 @@ public class EventServlet extends EventSourceServlet {
             try {
                 emitter.event(event, data);
             } catch (IOException e) {
-                e.printStackTrace();
+                LOG.warn("Unable to send event {}", event, e);
                 onClose();
             }
         }
@@ -397,11 +381,22 @@ public class EventServlet extends EventSourceServlet {
         public String getEndpoint() {
             return endpoint;
         }
+
+        private void cleanCoapListener(String endpoint) {
+            // remove the listener if there is no more eventSources for this endpoint
+            for (LeshanEventSource eventSource : eventSources) {
+                if (eventSource.getEndpoint() == null || eventSource.getEndpoint().equals(endpoint)) {
+                    return;
+                }
+            }
+            coapMessageTracer.removeListener(endpoint);
+        }
     }
 
     @SuppressWarnings("unused")
+    @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     private class RegUpdate {
-        public Registration registration;
-        public RegistrationUpdate update;
+        private Registration registration;
+        private RegistrationUpdate update;
     }
 }
