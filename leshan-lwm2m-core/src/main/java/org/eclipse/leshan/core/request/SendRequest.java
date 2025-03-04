@@ -16,11 +16,13 @@
 package org.eclipse.leshan.core.request;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mNodeUtil;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -96,17 +98,19 @@ public class SendRequest extends AbstractLwM2mRequest<SendResponse>
                             path);
                 }
 
-                if (path.isObject() && node instanceof LwM2mObject)
-                    return;
-                if (path.isObjectInstance() && node instanceof LwM2mObjectInstance)
-                    return;
-                if (path.isResource() && node instanceof LwM2mSingleResource)
-                    return;
-                if (path.isResourceInstance() && node instanceof LwM2mResourceInstance)
-                    return;
+                // check node are supported by this operation
+                String unsupportedNodeCause = LwM2mNodeUtil.getUnsupportedNodeCause(node,
+                        Arrays.asList(LwM2mObject.class, LwM2mObjectInstance.class, LwM2mSingleResource.class,
+                                LwM2mResourceInstance.class));
+                if (unsupportedNodeCause != null) {
+                    throw new InvalidRequestException(unsupportedNodeCause);
+                }
 
-                throw new InvalidRequestException("Invalid value : path (%s) should not refer to a %s value", path,
-                        node.getClass().getSimpleName());
+                // check path match node
+                String invalidPath = LwM2mNodeUtil.getInvalidPathForNodeCause(node, path);
+                if (invalidPath != null) {
+                    throw new InvalidRequestException(invalidPath);
+                }
             }
         }
     }

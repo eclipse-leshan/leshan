@@ -182,6 +182,7 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
      * @param start start of the path
      * @return true if the current path start with the given path
      */
+    @SuppressWarnings("java:S1126")
     public boolean startWith(LwM2mPath start) {
         // object id
         if (start.getObjectId() == null)
@@ -403,6 +404,7 @@ public class LwM2mPath implements Comparable<LwM2mPath> {
         return compareInteger(this.resourceInstanceId, o.resourceInstanceId);
     }
 
+    @SuppressWarnings("java:S4973")
     private int compareInteger(Integer i1, Integer i2) {
         if (i1 == i2) {
             return 0;

@@ -16,6 +16,7 @@
 package org.eclipse.leshan.core.request;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.Map.Entry;
 
 import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mNodeUtil;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
@@ -96,18 +98,28 @@ public class WriteCompositeRequest extends AbstractLwM2mRequest<WriteCompositeRe
     private void validateNodes(Map<LwM2mPath, LwM2mNode> nodes) {
         Validate.notEmpty(nodes);
         for (Entry<LwM2mPath, LwM2mNode> entry : nodes.entrySet()) {
+            // check key pair not null
             LwM2mPath path = entry.getKey();
             LwM2mNode node = entry.getValue();
-            Validate.notNull(path);
-            Validate.notNull(node);
+            if (path == null) {
+                throw new InvalidRequestException("Invalid key for entry (null, %s) : path MUST NOT be null", node);
+            }
+            if (node == null) {
+                throw new InvalidRequestException("Invalid value for entry (%s, null) :  node MUST NOT be null ", path);
+            }
 
-            if (path.isResource() && node instanceof LwM2mSingleResource)
-                return;
-            if (path.isResourceInstance() && node instanceof LwM2mResourceInstance)
-                return;
+            // check node are supported by this operation
+            String unsupportedNodeCause = LwM2mNodeUtil.getUnsupportedNodeCause(node,
+                    Arrays.asList(LwM2mSingleResource.class, LwM2mResourceInstance.class));
+            if (unsupportedNodeCause != null) {
+                throw new InvalidRequestException(unsupportedNodeCause);
+            }
 
-            throw new InvalidRequestException("Invalid value : path (%s) should not refer to a %s value", path,
-                    node.getClass().getSimpleName());
+            // check path match node
+            String invalidPath = LwM2mNodeUtil.getInvalidPathForNodeCause(node, path);
+            if (invalidPath != null) {
+                throw new InvalidRequestException(invalidPath);
+            }
         }
     }
 
