@@ -22,7 +22,7 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 
 class LinkTest {
     @Test
-    public void assertEqualsHashcode() {
+    void assertEqualsHashcode() {
         EqualsVerifier.forClass(Link.class).withRedefinedSubclass(MixedLwM2mLink.class).verify();
     }
 }

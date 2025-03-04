@@ -38,25 +38,15 @@ public class LongAttributeModel extends LwM2mAttributeModel<Long> {
     public <E extends Throwable> LwM2mAttribute<Long> consumeAttributeValue(StringParser<E> parser) throws E {
         // parse Value
         int start = parser.getPosition();
-        if (parser.nextCharIs('-')) {
-            parser.consumeNextChar();
-        }
-        parser.consumeDIGIT();
-        while (parser.nextCharIsDIGIT()) {
-            parser.consumeNextChar();
-        }
+        AttributeParserUtil.consumeIntegerNumber(parser);
         int end = parser.getPosition();
 
         // create attribute
         String strValue = parser.substring(start, end);
         try {
-            return new LwM2mAttribute<Long>(this, Long.parseLong(strValue));
-        } catch (NumberFormatException e) {
-            parser.raiseException(e, "%s value '%s' is not a valid long in %s", getName(), strValue,
-                    parser.getStringToParse());
-            return null;
+            return new LwM2mAttribute<>(this, Long.parseLong(strValue));
         } catch (IllegalArgumentException e) {
-            parser.raiseException(e, "%s value '%s' is not a valid long in %s", getName(), strValue,
+            parser.raiseException(e, "%s value '%s' is not a valid Long in %s", getName(), strValue,
                     parser.getStringToParse());
             return null;
         }
@@ -64,6 +54,6 @@ public class LongAttributeModel extends LwM2mAttributeModel<Long> {
 
     @Override
     public LwM2mAttribute<Long> createEmptyAttribute() {
-        return new LwM2mAttribute<Long>(this);
+        return new LwM2mAttribute<>(this);
     }
 }

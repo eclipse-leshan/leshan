@@ -18,14 +18,14 @@ package org.eclipse.leshan.core.parser;
 import org.eclipse.leshan.core.util.Validate;
 
 /**
- * An String Parser Utility specially helpfull to parse to ABNF grammar defined at IETF.
+ * An String Parser Utility specially helpful to parse to ABNF grammar defined at IETF.
  */
 public abstract class StringParser<T extends Throwable> {
 
     private final String strToParse;
     private int cursor;
 
-    public StringParser(String stringToParse) {
+    protected StringParser(String stringToParse) {
         Validate.notNull(stringToParse);
         strToParse = stringToParse;
         cursor = 0;
@@ -140,6 +140,19 @@ public abstract class StringParser<T extends Throwable> {
      */
     public void consumeNextChar() {
         cursor++;
+    }
+
+    /**
+     * Optionally consume next char if it is equals to <code>character</code> argument, if not just do nothing.
+     *
+     * @return <code>true</code> if the char is consumed
+     */
+    public boolean optionallyConsumeChar(char character) throws T {
+        if (hasMoreChar() && getNextChar() == character) {
+            consumeNextChar();
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -401,7 +414,7 @@ public abstract class StringParser<T extends Throwable> {
      */
     public void raiseException(String message, Object... args) throws T {
         raiseException(null, message, args);
-    };
+    }
 
     /**
      * @see String#format(String, Object...)

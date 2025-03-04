@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Stream;
 
 import org.eclipse.leshan.core.link.attributes.AttributeSet;
 import org.eclipse.leshan.core.link.attributes.ContentFormatAttribute;
@@ -28,13 +29,16 @@ import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
 import org.eclipse.leshan.core.link.attributes.ValuelessAttribute;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-public class DefaultLinkParserTest {
+class DefaultLinkParserTest {
 
     private final LinkParser parser = new DefaultLinkParser();
 
     @Test
-    public void parse_example_uri_references() throws LinkParseException {
+    void parse_example_uri_references() throws LinkParseException {
         Link[] parsed;
 
         parsed = parser.parseCoreLinkFormat("</uri>".getBytes());
@@ -54,7 +58,7 @@ public class DefaultLinkParserTest {
     }
 
     @Test
-    public void allow_less_and_greater_sign_as_attributes() throws LinkParseException {
+    void allow_less_and_greater_sign_as_attributes() throws LinkParseException {
         Link[] parsed = parser.parseCoreLinkFormat("</foo>;param=<,</bar>;param2=>".getBytes());
         assertEquals("/foo", parsed[0].getUriReference());
         assertTrue(parsed[0].getAttributes().contains("param"));
@@ -66,7 +70,7 @@ public class DefaultLinkParserTest {
     }
 
     @Test
-    public void allow_slash_as_attributes() throws LinkParseException {
+    void allow_slash_as_attributes() throws LinkParseException {
         Link[] parsed = parser.parseCoreLinkFormat("</foo>;param=/".getBytes());
 
         assertEquals("/foo", parsed[0].getUriReference());
@@ -74,96 +78,32 @@ public class DefaultLinkParserTest {
         assertEquals("/", parsed[0].getAttributes().get("param").getValue());
     }
 
-    @Test
-    public void allow_escaped_characters() throws LinkParseException {
-        Link[] parsed = parser.parseCoreLinkFormat("</foo>;param=\",\",</bar>".getBytes());
+    private static Stream<Arguments> allEscapedValues() {
+        return Stream.of(Arguments.of(",", ","), //
+                Arguments.of(" \\\\ ", " \\\\ "), //
+                Arguments.of(" \\\" \\\" ", " \" \" "), //
+                Arguments.of(" \\x ", " \\x "), //
+                Arguments.of(" \\ą ", " \\ą "), //
+                Arguments.of(";", ";"), //
+                Arguments.of("<", "<"), //
+                Arguments.of(">", ">"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("allEscapedValues")
+    void allow_escaped_characters(String escapedValue, String unescapedValue) throws LinkParseException {
+        Link[] parsed = parser.parseCoreLinkFormat(
+                String.format("</foo>;param=\"%s\",</bar>", escapedValue).getBytes(StandardCharsets.UTF_8));
 
         assertEquals("/foo", parsed[0].getUriReference());
-        AttributeSet attResult = new AttributeSet(new QuotedStringAttribute("param", ","));
+        AttributeSet attResult = new AttributeSet(new QuotedStringAttribute("param", unescapedValue));
         assertEquals(attResult, parsed[0].getAttributes());
 
         assertEquals("/bar", parsed[1].getUriReference());
     }
 
     @Test
-    public void allow_escaped_characters2a() throws LinkParseException {
-        Link[] parsed = parser.parseCoreLinkFormat("</foo>;param=\" \\\\ \",</bar>".getBytes());
-
-        assertEquals("/foo", parsed[0].getUriReference());
-        AttributeSet attResult = new AttributeSet(new QuotedStringAttribute("param", " \\\\ "));
-        assertEquals(attResult, parsed[0].getAttributes());
-
-        assertEquals("/bar", parsed[1].getUriReference());
-    }
-
-    @Test
-    public void allow_escaped_characters2b() throws LinkParseException {
-        Link[] parsed = parser.parseCoreLinkFormat("</foo>;param=\" \\\" \\\" \",</bar>".getBytes());
-
-        assertEquals("/foo", parsed[0].getUriReference());
-        AttributeSet attResult = new AttributeSet(new QuotedStringAttribute("param", " \" \" "));
-        assertEquals(attResult, parsed[0].getAttributes());
-
-        assertEquals("/bar", parsed[1].getUriReference());
-    }
-
-    @Test
-    public void allow_escaped_characters2c() throws LinkParseException {
-        Link[] parsed = parser.parseCoreLinkFormat("</foo>;param=\" \\x \",</bar>".getBytes());
-
-        assertEquals("/foo", parsed[0].getUriReference());
-        AttributeSet attResult = new AttributeSet(new QuotedStringAttribute("param", " \\x "));
-        assertEquals(attResult, parsed[0].getAttributes());
-
-        assertEquals("/bar", parsed[1].getUriReference());
-    }
-
-    @Test
-    public void dont_escape_non_ascii_chars() throws LinkParseException {
-        Link[] parsed = parser.parseCoreLinkFormat("</foo>;param=\" \\ą \",</bar>".getBytes(StandardCharsets.UTF_8));
-
-        assertEquals("/foo", parsed[0].getUriReference());
-        AttributeSet attResult = new AttributeSet(new QuotedStringAttribute("param", " \\ą "));
-        assertEquals(attResult, parsed[0].getAttributes());
-
-        assertEquals("/bar", parsed[1].getUriReference());
-    }
-
-    @Test
-    public void allow_escaped_characters3() throws LinkParseException {
-        Link[] parsed = parser.parseCoreLinkFormat("</foo>;param=\";\",</bar>".getBytes());
-        assertEquals("/foo", parsed[0].getUriReference());
-
-        AttributeSet attResult = new AttributeSet(new QuotedStringAttribute("param", ";"));
-        assertEquals(attResult, parsed[0].getAttributes());
-
-        assertEquals("/bar", parsed[1].getUriReference());
-    }
-
-    @Test
-    public void allow_escaped_characters4a() throws LinkParseException {
-        Link[] parsed = parser.parseCoreLinkFormat("</foo>;param=\"<\",</bar>".getBytes());
-
-        assertEquals("/foo", parsed[0].getUriReference());
-        AttributeSet attResult = new AttributeSet(new QuotedStringAttribute("param", "<"));
-        assertEquals(attResult, parsed[0].getAttributes());
-
-        assertEquals("/bar", parsed[1].getUriReference());
-    }
-
-    @Test
-    public void allow_escaped_characters4b() throws LinkParseException {
-        Link[] parsed = parser.parseCoreLinkFormat("</foo>;param=\">\",</bar>".getBytes());
-
-        assertEquals("/foo", parsed[0].getUriReference());
-        AttributeSet attResult = new AttributeSet(new QuotedStringAttribute("param", ">"));
-        assertEquals(attResult, parsed[0].getAttributes());
-
-        assertEquals("/bar", parsed[1].getUriReference());
-    }
-
-    @Test
-    public void allow_escaped_characters5() throws LinkParseException {
+    void allow_escaped_characters5() throws LinkParseException {
         Link[] parsed = parser.parseCoreLinkFormat("</foo>;param=\"=\"".getBytes());
 
         assertEquals("/foo", parsed[0].getUriReference());
@@ -172,7 +112,7 @@ public class DefaultLinkParserTest {
     }
 
     @Test
-    public void allow_ptoken() throws LinkParseException {
+    void allow_ptoken() throws LinkParseException {
         Link[] parsed = parser.parseCoreLinkFormat("</foo>;param=!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9".getBytes());
         assertEquals("/foo", parsed[0].getUriReference());
 
@@ -182,7 +122,7 @@ public class DefaultLinkParserTest {
     }
 
     @Test
-    public void allow_mixed_attributes() throws LinkParseException {
+    void allow_mixed_attributes() throws LinkParseException {
         Link[] parsed = parser.parseCoreLinkFormat(
                 "</foo>;param=!#$%&'()*+-.:<=>?@[]^_`{|}~a1z9;param2=\"foo\";param3,</bar>".getBytes());
 
@@ -197,7 +137,7 @@ public class DefaultLinkParserTest {
     }
 
     @Test
-    public void parse_with_some_attributes() throws LinkParseException {
+    void parse_with_some_attributes() throws LinkParseException {
         Link[] parse = parser.parseCoreLinkFormat(
                 "</>;rt=\"oma.lwm2m\";ct=100;qs=\"quoted_string\";us=unquoted_string,</1/101>,</1/102>,</2/0>,</2/1>;empty"
                         .getBytes());
@@ -225,14 +165,14 @@ public class DefaultLinkParserTest {
     }
 
     @Test
-    public void parse_quoted_ver_attributes() throws LinkParseException {
+    void parse_quoted_ver_attributes() throws LinkParseException {
         String input = "</1>;ver=\"2.2\"";
         Link[] objs = parser.parseCoreLinkFormat(input.getBytes());
         assertEquals(objs[0].getAttributes().get("ver"), new QuotedStringAttribute("ver", "2.2"));
     }
 
     @Test
-    public void parse_unquoted_ver_attributes() throws LinkParseException {
+    void parse_unquoted_ver_attributes() throws LinkParseException {
         String input = "</1>;ver=2.2";
         Link[] objs = parser.parseCoreLinkFormat(input.getBytes());
         assertEquals(objs[0].getAttributes().get("ver"), new UnquotedStringAttribute("ver", "2.2"));

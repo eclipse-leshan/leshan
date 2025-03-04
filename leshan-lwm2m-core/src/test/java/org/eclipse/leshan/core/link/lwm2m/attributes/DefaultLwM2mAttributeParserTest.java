@@ -27,11 +27,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class DefaultLwM2mAttributeParserTest {
+class DefaultLwM2mAttributeParserTest {
 
     private final DefaultLwM2mAttributeParser parser = new DefaultLwM2mAttributeParser();
 
-    private static Stream<Arguments> validAttributes() throws InvalidAttributeException {
+    private static Stream<Arguments> validAttributes() {
         return Stream.of(//
                 Arguments.of("pmin", LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD)), //
                 Arguments.of("pmin=30", LwM2mAttributes.create(LwM2mAttributes.MINIMUM_PERIOD, 30l)), //
@@ -60,8 +60,8 @@ public class DefaultLwM2mAttributeParserTest {
 
     @ParameterizedTest(name = "Tests {index} : {0}")
     @MethodSource("validAttributes")
-    public void check_one_valid_attribute(String attributeAsString, LwM2mAttribute<?> expectedValue)
-            throws LinkParseException, InvalidAttributeException {
+    void check_one_valid_attribute(String attributeAsString, LwM2mAttribute<?> expectedValue)
+            throws InvalidAttributeException {
         LwM2mAttributeSet parsed = new LwM2mAttributeSet(parser.parseUriQuery(attributeAsString));
         LwM2mAttributeSet attResult = new LwM2mAttributeSet(expectedValue);
         assertEquals(parsed, attResult);
@@ -123,14 +123,14 @@ public class DefaultLwM2mAttributeParserTest {
 
     @ParameterizedTest(name = "Test {index} : {0}")
     @MethodSource("invalidAttributes")
-    public void check_invalid_attributes(String invalidAttributesAsString) {
+    void check_invalid_attributes(String invalidAttributesAsString) {
         assertThrows(InvalidAttributeException.class,
                 () -> new LwM2mAttributeSet(parser.parseUriQuery(invalidAttributesAsString)));
 
     }
 
     @Test
-    public void check_multiple_valid_attributes() throws LinkParseException, InvalidAttributeException {
+    void check_multiple_valid_attributes() throws LinkParseException, InvalidAttributeException {
 
         LwM2mAttributeSet parsed = new LwM2mAttributeSet(parser.parseUriQuery("pmin&pmax=60&gt=2"));
         LwM2mAttributeSet attResult = new LwM2mAttributeSet( //

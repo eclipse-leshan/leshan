@@ -38,7 +38,46 @@ import org.eclipse.leshan.core.node.LwM2mPath;
  */
 public class MixedLwM2mAttributeSet extends AttributeSet {
 
-    private Iterable<LwM2mAttribute<?>> lwm2mAttributes;
+    private final Iterable<LwM2mAttribute<?>> lwm2mAttributes = () -> {
+        final Iterator<? extends Attribute> it = asCollection().iterator();
+
+        return new Iterator<LwM2mAttribute<?>>() {
+            private LwM2mAttribute<?> lastAttribute;
+
+            @Override
+            public boolean hasNext() {
+                while (it.hasNext()) {
+                    Attribute next = it.next();
+                    if (next instanceof LwM2mAttribute) {
+                        lastAttribute = (LwM2mAttribute<?>) next;
+                        return true;
+                    } // else we ignore it and continue to check
+                }
+                return false;
+            }
+
+            @Override
+            public LwM2mAttribute<?> next() {
+                if (lastAttribute != null) {
+                    LwM2mAttribute<?> res = lastAttribute;
+                    lastAttribute = null;
+                    return res;
+                } else {
+                    Attribute next = it.next();
+                    if (next instanceof LwM2mAttribute) {
+                        return (LwM2mAttribute<?>) next;
+                    } else {
+                        return this.next();
+                    }
+                }
+            }
+
+            @Override
+            public void remove() {
+                it.remove();
+            }
+        };
+    };
 
     public MixedLwM2mAttributeSet(Attribute... attributes) {
         this(Arrays.asList(attributes));
@@ -46,46 +85,6 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
 
     public MixedLwM2mAttributeSet(Collection<? extends Attribute> attributes) {
         super(attributes);
-        this.lwm2mAttributes = () -> {
-            final Iterator<? extends Attribute> it = asCollection().iterator();
-
-            return new Iterator<LwM2mAttribute<?>>() {
-                private LwM2mAttribute<?> lastAttribute;
-
-                @Override
-                public boolean hasNext() {
-                    while (it.hasNext()) {
-                        Attribute next = it.next();
-                        if (next instanceof LwM2mAttribute) {
-                            lastAttribute = (LwM2mAttribute<?>) next;
-                            return true;
-                        } // else we ignore it and continue to check
-                    }
-                    return false;
-                }
-
-                @Override
-                public LwM2mAttribute<?> next() {
-                    if (lastAttribute != null) {
-                        LwM2mAttribute<?> res = lastAttribute;
-                        lastAttribute = null;
-                        return res;
-                    } else {
-                        Attribute next = it.next();
-                        if (next instanceof LwM2mAttribute) {
-                            return (LwM2mAttribute<?>) next;
-                        } else {
-                            return this.next();
-                        }
-                    }
-                }
-
-                @Override
-                public void remove() {
-                    it.remove();
-                }
-            };
-        };
     }
 
     public void validate() throws InvalidAttributesException {
@@ -166,8 +165,6 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
             for (LwM2mAttribute<?> attr : attributes.getLwM2mAttributes()) {
                 if (attr.hasValue()) {
                     merged.put(attr.getName(), attr);
-                } else {
-                    merged.remove(attr.getName());
                 }
             }
         }
@@ -235,12 +232,12 @@ public class MixedLwM2mAttributeSet extends AttributeSet {
     @SuppressWarnings("unchecked")
     public <T> LwM2mAttribute<T> getLwM2mAttribute(LwM2mAttributeModel<T> model) {
         Attribute attribute = get(model.getName());
-        if (attribute instanceof LwM2mAttribute) {
-            if (((LwM2mAttribute<?>) attribute).getModel().equals(model)) {
-                return (LwM2mAttribute<T>) attribute;
-            }
+        if ((attribute instanceof LwM2mAttribute) //
+                && (((LwM2mAttribute<?>) attribute).getModel().equals(model))) {
+            return (LwM2mAttribute<T>) attribute;
         }
         return null;
+
     }
 
     public String[] toQueryParams() {

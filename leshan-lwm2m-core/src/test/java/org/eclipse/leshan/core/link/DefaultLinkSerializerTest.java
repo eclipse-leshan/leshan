@@ -27,13 +27,13 @@ import org.eclipse.leshan.core.link.attributes.UnquotedStringAttribute;
 import org.eclipse.leshan.core.link.attributes.ValuelessAttribute;
 import org.junit.jupiter.api.Test;
 
-public class DefaultLinkSerializerTest {
+class DefaultLinkSerializerTest {
 
     private final LinkParser parser = new DefaultLinkParser();
     private final LinkSerializer serializer = new DefaultLinkSerializer();
 
     @Test
-    public void serialise_without_attribute() {
+    void serialise_without_attribute() {
         Link obj1 = new Link("/1/0/1");
         Link obj2 = new Link("/2/1");
         Link obj3 = new Link("/3");
@@ -45,7 +45,7 @@ public class DefaultLinkSerializerTest {
     }
 
     @Test
-    public void serialise_with_attributes() {
+    void serialise_with_attributes() {
         Link obj1 = new Link("/1/0/1", new UnquotedStringAttribute("number", "12"));
         Link obj2 = new Link("/2/1", new QuotedStringAttribute("string", "stringval"));
         Link obj3 = new Link("/3", new ValuelessAttribute("empty"));
@@ -56,7 +56,7 @@ public class DefaultLinkSerializerTest {
     }
 
     @Test
-    public void serialise_with_root_url() {
+    void serialise_with_root_url() {
         Link obj1 = new Link("/", new UnquotedStringAttribute("number", "12"));
 
         String res = serializer.serializeCoreLinkFormat(obj1);
@@ -65,7 +65,7 @@ public class DefaultLinkSerializerTest {
     }
 
     @Test
-    public void serialise_then_parse_with_severals_attributes() throws LinkParseException {
+    void serialise_then_parse_with_severals_attributes() throws LinkParseException {
         AttributeSet attributes = new AttributeSet( //
                 new UnquotedStringAttribute("number1", "1"), //
                 new UnquotedStringAttribute("number2", "1"), //
@@ -81,7 +81,7 @@ public class DefaultLinkSerializerTest {
     }
 
     @Test
-    public void parse_then_serialise_with_rt_attribute() throws LinkParseException {
+    void parse_then_serialise_with_rt_attribute() throws LinkParseException {
         String input = "</lwm2m>;rt=\"oma.lwm2m\",</lwm2m/1/101>,</lwm2m/1/102>,</lwm2m/2/0>";
         Link[] objs = parser.parseCoreLinkFormat(input.getBytes());
         String output = serializer.serializeCoreLinkFormat(objs);
@@ -90,7 +90,7 @@ public class DefaultLinkSerializerTest {
     }
 
     @Test
-    public void serialise_ver_attributes_without_quote() {
+    void serialise_ver_attributes_without_quote() {
         Map<String, String> att = new HashMap<>();
         att.put("ver", "2.2");
         Link link = new Link("/1", new UnquotedStringAttribute("ver", "2.2"));

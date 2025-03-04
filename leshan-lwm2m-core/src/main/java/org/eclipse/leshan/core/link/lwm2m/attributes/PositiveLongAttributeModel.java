@@ -22,7 +22,7 @@ import org.eclipse.leshan.core.parser.StringParser;
 /**
  * A Generic Attribute of type Long (for positive value only).
  */
-public class PositiveLongAttributeModel extends LwM2mAttributeModel<Long> {
+public class PositiveLongAttributeModel extends LongAttributeModel {
 
     public PositiveLongAttributeModel(String coRELinkParam, Set<Attachment> attachment, AccessMode accessMode,
             AttributeClass attributeClass) {
@@ -46,29 +46,17 @@ public class PositiveLongAttributeModel extends LwM2mAttributeModel<Long> {
     public <E extends Throwable> LwM2mAttribute<Long> consumeAttributeValue(StringParser<E> parser) throws E {
         // parse Value
         int start = parser.getPosition();
-        parser.consumeDIGIT();
-        while (parser.nextCharIsDIGIT()) {
-            parser.consumeNextChar();
-        }
+        AttributeParserUtil.consumePositiveIntegerNumber(parser);
         int end = parser.getPosition();
 
         // create attribute
         String strValue = parser.substring(start, end);
         try {
-            return new LwM2mAttribute<Long>(this, Long.parseLong(strValue));
-        } catch (NumberFormatException e) {
-            parser.raiseException(e, "%s value '%s' is not a valid positive long in %s", getName(), strValue,
-                    parser.getStringToParse());
-            return null;
+            return new LwM2mAttribute<>(this, Long.parseLong(strValue));
         } catch (IllegalArgumentException e) {
-            parser.raiseException(e, "%s value '%s' is not a value positive long in %s", getName(), strValue,
+            parser.raiseException(e, "%s value '%s' is not a valid positive Long in %s", getName(), strValue,
                     parser.getStringToParse());
             return null;
         }
-    }
-
-    @Override
-    public LwM2mAttribute<Long> createEmptyAttribute() {
-        return new LwM2mAttribute<Long>(this);
     }
 }

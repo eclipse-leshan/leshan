@@ -25,12 +25,12 @@ import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributes;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.junit.jupiter.api.Test;
 
-public class DefaultLwM2mLinkParserTest {
+class DefaultLwM2mLinkParserTest {
 
     private final LwM2mLinkParser parser = new DefaultLwM2mLinkParser();
 
     @Test
-    public void check_invalid_values() throws LinkParseException {
+    void check_invalid_values() throws LinkParseException {
         // first check it's OK with valid value
         LwM2mLink[] parsed = parser.parseLwM2mLinkFromCoreLinkFormat("</3/0/11>;dim=255".getBytes(), null);
         assertEquals(new LwM2mPath(3, 0, 11), parsed[0].getPath());
@@ -57,7 +57,7 @@ public class DefaultLwM2mLinkParserTest {
     }
 
     @Test
-    public void check_attribute_with_no_value_failed() throws LinkParseException {
+    void check_attribute_with_no_value_failed() throws LinkParseException {
         // first check it's OK with value
         LwM2mLink[] parsed = parser.parseLwM2mLinkFromCoreLinkFormat("</3/0/11>;pmin=200".getBytes(), null);
         assertEquals(new LwM2mPath(3, 0, 11), parsed[0].getPath());

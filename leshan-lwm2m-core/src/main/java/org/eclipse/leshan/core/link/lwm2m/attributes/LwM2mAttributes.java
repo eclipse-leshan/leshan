@@ -336,7 +336,7 @@ public final class LwM2mAttributes {
     }
 
     public static LwM2mAttribute<BigDecimal> create(LwM2mAttributeModel<BigDecimal> model, double value) {
-        return new LwM2mAttribute<>(model, new BigDecimal(value));
+        return new LwM2mAttribute<>(model, BigDecimal.valueOf(value));
     }
 
     public static LwM2mAttribute<BigDecimal> create(LwM2mAttributeModel<BigDecimal> model, long value) {

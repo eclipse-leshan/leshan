@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-public class LinkParserValidationTest {
+class LinkParserValidationTest {
 
     private final LinkParser parser = new DefaultLinkParser();
 
@@ -57,7 +57,7 @@ public class LinkParserValidationTest {
             " </>,</>", //
             "</>,</> " //
     })
-    public void parse_invalid_formats(String linkValueList) {
+    void parse_invalid_formats(String linkValueList) {
         assertThrowsExactly(LinkParseException.class, () -> {
             parser.parseCoreLinkFormat(linkValueList.getBytes(StandardCharsets.UTF_8));
         });

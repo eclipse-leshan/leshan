@@ -15,9 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.link.lwm2m.attributes;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 import java.util.Set;
 
 import org.eclipse.leshan.core.parser.StringParser;
@@ -25,20 +22,11 @@ import org.eclipse.leshan.core.parser.StringParser;
 /**
  * A Generic Attribute of type Double (for positive value only).
  */
-public class PositiveDoubleAttributeModel extends LwM2mAttributeModel<Double> {
+public class PositiveDoubleAttributeModel extends DoubleAttributeModel {
 
     public PositiveDoubleAttributeModel(String coRELinkParam, Set<Attachment> attachment, AccessMode accessMode,
             AttributeClass attributeClass) {
         super(coRELinkParam, attachment, accessMode, attributeClass);
-    }
-
-    @Override
-    public String toCoreLinkValue(LwM2mAttribute<Double> attr) {
-        // We can not use default ToString() because we don't want to use scientific notation.
-        // see more details : https://stackoverflow.com/a/25307973/5088764
-        DecimalFormat df = new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-        df.setMaximumFractionDigits(340);
-        return df.format(attr.getValue());
     }
 
     @Override
@@ -58,36 +46,17 @@ public class PositiveDoubleAttributeModel extends LwM2mAttributeModel<Double> {
     public <E extends Throwable> LwM2mAttribute<Double> consumeAttributeValue(StringParser<E> parser) throws E {
         // parse Value
         int start = parser.getPosition();
-        parser.consumeDIGIT();
-        while (parser.nextCharIsDIGIT()) {
-            parser.consumeNextChar();
-        }
-        if (parser.nextCharIs('.')) {
-            parser.consumeNextChar();
-            parser.consumeDIGIT();
-            while (parser.nextCharIsDIGIT()) {
-                parser.consumeNextChar();
-            }
-        }
+        AttributeParserUtil.consumePositiveDecimalNumber(parser);
         int end = parser.getPosition();
 
         // create attribute
         String strValue = parser.substring(start, end);
         try {
-            return new LwM2mAttribute<Double>(this, Double.parseDouble(strValue));
-        } catch (NumberFormatException e) {
-            parser.raiseException(e, "%s value '%s' is not a valid positive double in %s", getName(), strValue,
-                    parser.getStringToParse());
-            return null;
+            return new LwM2mAttribute<>(this, Double.parseDouble(strValue));
         } catch (IllegalArgumentException e) {
-            parser.raiseException(e, "%s value '%s' is not a valid positive double in %s", getName(), strValue,
+            parser.raiseException(e, "%s value '%s' is not a valid Positive Double in %s", getName(), strValue,
                     parser.getStringToParse());
             return null;
         }
-    }
-
-    @Override
-    public LwM2mAttribute<Double> createEmptyAttribute() {
-        return new LwM2mAttribute<Double>(this);
     }
 }

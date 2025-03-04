@@ -50,30 +50,13 @@ public class DoubleAttributeModel extends LwM2mAttributeModel<Double> {
     public <E extends Throwable> LwM2mAttribute<Double> consumeAttributeValue(StringParser<E> parser) throws E {
         // parse Value
         int start = parser.getPosition();
-        if (parser.nextCharIs('-')) {
-            parser.consumeNextChar();
-        }
-        parser.consumeDIGIT();
-        while (parser.nextCharIsDIGIT()) {
-            parser.consumeNextChar();
-        }
-        if (parser.nextCharIs('.')) {
-            parser.consumeNextChar();
-            parser.consumeDIGIT();
-            while (parser.nextCharIsDIGIT()) {
-                parser.consumeNextChar();
-            }
-        }
+        AttributeParserUtil.consumeDecimalNumber(parser);
         int end = parser.getPosition();
 
         // create attribute
         String strValue = parser.substring(start, end);
         try {
-            return new LwM2mAttribute<Double>(this, Double.parseDouble(strValue));
-        } catch (NumberFormatException e) {
-            parser.raiseException(e, "%s value '%s' is not a valid Double in %s", getName(), strValue,
-                    parser.getStringToParse());
-            return null;
+            return new LwM2mAttribute<>(this, Double.parseDouble(strValue));
         } catch (IllegalArgumentException e) {
             parser.raiseException(e, "%s value '%s' is not a valid Double in %s", getName(), strValue,
                     parser.getStringToParse());
@@ -83,6 +66,6 @@ public class DoubleAttributeModel extends LwM2mAttributeModel<Double> {
 
     @Override
     public LwM2mAttribute<Double> createEmptyAttribute() {
-        return new LwM2mAttribute<Double>(this);
+        return new LwM2mAttribute<>(this);
     }
 }

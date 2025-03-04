@@ -26,10 +26,10 @@ import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
-public class MixedLwM2mLinkTest {
+class MixedLwM2mLinkTest {
 
     @Test
-    public void check_uri_reference() {
+    void check_uri_reference() {
         Link link = new MixedLwM2mLink("/root", LwM2mPath.ROOTPATH, new ResourceTypeAttribute("oma.lwm2m"));
         assertEquals("/root", link.getUriReference());
 
@@ -47,7 +47,7 @@ public class MixedLwM2mLinkTest {
     }
 
     private class ExtendedMixedLwM2mLink extends MixedLwM2mLink {
-        public ExtendedMixedLwM2mLink(String rootPath, LwM2mPath path, Attribute... attributes) {
+        ExtendedMixedLwM2mLink(String rootPath, LwM2mPath path, Attribute... attributes) {
             super(rootPath, path, new MixedLwM2mAttributeSet(attributes));
         }
 
@@ -58,7 +58,7 @@ public class MixedLwM2mLinkTest {
     }
 
     @Test
-    public void assertEqualsHashcode() {
+    void assertEqualsHashcode() {
         EqualsVerifier.forClass(MixedLwM2mLink.class).withRedefinedSuperclass()
                 .withRedefinedSubclass(ExtendedMixedLwM2mLink.class).verify();
     }

@@ -53,32 +53,15 @@ public class BigDecimalAttributeModel extends LwM2mAttributeModel<BigDecimal> {
     public <E extends Throwable> LwM2mAttribute<BigDecimal> consumeAttributeValue(StringParser<E> parser) throws E {
         // parse Value
         int start = parser.getPosition();
-        if (parser.nextCharIs('-')) {
-            parser.consumeNextChar();
-        }
-        parser.consumeDIGIT();
-        while (parser.nextCharIsDIGIT()) {
-            parser.consumeNextChar();
-        }
-        if (parser.nextCharIs('.')) {
-            parser.consumeNextChar();
-            parser.consumeDIGIT();
-            while (parser.nextCharIsDIGIT()) {
-                parser.consumeNextChar();
-            }
-        }
+        AttributeParserUtil.consumeDecimalNumber(parser);
         int end = parser.getPosition();
 
         // create attribute
         String strValue = parser.substring(start, end);
         try {
-            return new LwM2mAttribute<BigDecimal>(this, new BigDecimal(strValue));
-        } catch (NumberFormatException e) {
-            parser.raiseException(e, "%s value '%s' is not a valid Double in %s", getName(), strValue,
-                    parser.getStringToParse());
-            return null;
+            return new LwM2mAttribute<>(this, new BigDecimal(strValue));
         } catch (IllegalArgumentException e) {
-            parser.raiseException(e, "%s value '%s' is not a valid Double in %s", getName(), strValue,
+            parser.raiseException(e, "%s value '%s' is not a valid BigDecimal in %s", getName(), strValue,
                     parser.getStringToParse());
             return null;
         }
@@ -86,6 +69,6 @@ public class BigDecimalAttributeModel extends LwM2mAttributeModel<BigDecimal> {
 
     @Override
     public LwM2mAttribute<BigDecimal> createEmptyAttribute() {
-        return new LwM2mAttribute<BigDecimal>(this);
+        return new LwM2mAttribute<>(this);
     }
 }

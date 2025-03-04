@@ -22,14 +22,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.stream.Stream;
 
-import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class LwM2mAttributesTest {
+class LwM2mAttributesTest {
 
-    private static Stream<Arguments> supportNullAttributes() throws InvalidAttributeException {
+    private static Stream<Arguments> supportNullAttributes() {
         return Stream.of(//
                 Arguments.of(LwM2mAttributes.MINIMUM_PERIOD), //
                 Arguments.of(LwM2mAttributes.MAXIMUM_PERIOD), //
@@ -43,8 +42,7 @@ public class LwM2mAttributesTest {
 
     @ParameterizedTest(name = "Tests {index} : {0}")
     @MethodSource("supportNullAttributes")
-    public void check_attribute_can_be_created_with_null_value(LwM2mAttributeModel<?> model)
-            throws InvalidAttributeException {
+    void check_attribute_can_be_created_with_null_value(LwM2mAttributeModel<?> model) {
         LwM2mAttribute<?> attribute = LwM2mAttributes.create(model);
         assertNotNull(attribute);
         assertFalse(attribute.hasValue());
@@ -55,7 +53,7 @@ public class LwM2mAttributesTest {
         assertNull(attribute.getValue());
     }
 
-    private static Stream<Arguments> doesntSupportNullAttributes() throws InvalidAttributeException {
+    private static Stream<Arguments> doesntSupportNullAttributes() {
         return Stream.of(//
                 Arguments.of(LwM2mAttributes.DIMENSION), //
                 Arguments.of(LwM2mAttributes.ENABLER_VERSION), //
@@ -67,7 +65,7 @@ public class LwM2mAttributesTest {
 
     @ParameterizedTest(name = "Tests {index} : {0}")
     @MethodSource("doesntSupportNullAttributes")
-    public void check_attribute_can_not_be_created_with_null_value(LwM2mAttributeModel<?> model) {
+    void check_attribute_can_not_be_created_with_null_value(LwM2mAttributeModel<?> model) {
         assertThrows(IllegalArgumentException.class, () -> LwM2mAttributes.create(model));
         assertThrows(IllegalArgumentException.class, () -> LwM2mAttributes.create(model, null));
     }
