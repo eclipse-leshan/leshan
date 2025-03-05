@@ -22,6 +22,10 @@ import com.upokecenter.numbers.EInteger;
 
 public class NumberUtil {
 
+    private NumberUtil() {
+
+    }
+
     /**
      * Minimal Long that can be safely in double (without precision loss)
      *
@@ -81,7 +85,7 @@ public class NumberUtil {
         if (permissiveNumberConversion) {
             BigDecimal bigDec = null;
             if (number instanceof Float || number instanceof Double) {
-                bigDec = new BigDecimal(number.doubleValue());
+                bigDec = new BigDecimal(number.doubleValue()); // NOSONAR java:S2111
             } else if (number instanceof BigDecimal) {
                 bigDec = (BigDecimal) number;
             }
@@ -155,7 +159,7 @@ public class NumberUtil {
         if (permissiveNumberConversion) {
             BigDecimal bigDec = null;
             if (number instanceof Float || number instanceof Double) {
-                bigDec = new BigDecimal(number.doubleValue());
+                bigDec = new BigDecimal(number.doubleValue()); // NOSONAR java:S2111
             } else if (number instanceof BigDecimal) {
                 bigDec = (BigDecimal) number;
             }
@@ -241,6 +245,7 @@ public class NumberUtil {
 
                     // Convert the double back to BigInteger exact representation
                     try {
+                        @SuppressWarnings("java:S2111")
                         BigInteger reconstructedValue = new BigDecimal(convertedDouble).toBigIntegerExact();
                         if (!number.equals(reconstructedValue)) {
                             throw new IllegalArgumentException(

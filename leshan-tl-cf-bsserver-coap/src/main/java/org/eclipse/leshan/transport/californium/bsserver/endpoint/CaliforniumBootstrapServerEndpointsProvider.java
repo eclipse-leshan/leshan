@@ -54,7 +54,7 @@ public class CaliforniumBootstrapServerEndpointsProvider implements LwM2mBootstr
 
     // TODO TL : provide a COAP/Californium API ? like previous LeshanServer.coapAPI()
 
-    private final Logger LOG = LoggerFactory.getLogger(CaliforniumBootstrapServerEndpointsProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CaliforniumBootstrapServerEndpointsProvider.class);
 
     private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1,
             new NamedThreadFactory("Leshan Async Request timeout"));
@@ -72,7 +72,7 @@ public class CaliforniumBootstrapServerEndpointsProvider implements LwM2mBootstr
     protected CaliforniumBootstrapServerEndpointsProvider(Builder builder) {
         this.serverConfig = builder.serverConfiguration;
         this.endpointsFactory = builder.endpointsFactory;
-        this.endpoints = new ArrayList<CaliforniumBootstrapServerEndpoint>();
+        this.endpoints = new ArrayList<>();
     }
 
     public CoapServer getCoapServer() {
@@ -96,7 +96,7 @@ public class CaliforniumBootstrapServerEndpointsProvider implements LwM2mBootstr
     @Override
     public void createEndpoints(BootstrapUplinkRequestReceiver requestReceiver, BootstrapServerEndpointToolbox toolbox,
             ServerSecurityInfo serverSecurityInfo, LeshanBootstrapServer server) {
-        // create server;
+        // create server
         coapServer = new CoapServer(serverConfig) {
             @Override
             protected Resource createRoot() {
@@ -118,7 +118,7 @@ public class CaliforniumBootstrapServerEndpointsProvider implements LwM2mBootstr
                 final IdentityHandler identityHandler = endpointFactory.createIdentityHandler();
                 identityHandlerProvider.addIdentityHandler(coapEndpoint, identityHandler);
 
-                // create exception translator;
+                // create exception translator
                 ExceptionTranslator exceptionTranslator = endpointFactory.createExceptionTranslator();
 
                 // create LWM2M endpoint
@@ -157,6 +157,7 @@ public class CaliforniumBootstrapServerEndpointsProvider implements LwM2mBootstr
             executor.awaitTermination(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             LOG.warn("Destroying RequestSender was interrupted.", e);
+            Thread.currentThread().interrupt();
         }
         coapServer.destroy();
     }
@@ -174,7 +175,7 @@ public class CaliforniumBootstrapServerEndpointsProvider implements LwM2mBootstr
 
         public Builder(EndPointUriHandler uriHandler, BootstrapServerProtocolProvider... protocolProviders) {
             // TODO TL : handle duplicate ?
-            this.protocolProviders = new ArrayList<BootstrapServerProtocolProvider>();
+            this.protocolProviders = new ArrayList<>();
             if (protocolProviders.length == 0) {
                 this.protocolProviders.add(new CoapBootstrapServerProtocolProvider());
             } else {

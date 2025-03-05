@@ -215,6 +215,7 @@ public class DefaultBootstrapHandler implements BootstrapHandler {
         }
     }
 
+    @SuppressWarnings("java:S2445")
     protected <T extends LwM2mResponse> void send(BootstrapSession session, DownlinkBootstrapRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         synchronized (session) {
