@@ -26,8 +26,8 @@ import java.util.Map;
  */
 public class Authorization {
 
-    private static Authorization APPROVED = new Authorization(true, null);
-    private static Authorization DECLINED = new Authorization(false, null);
+    private static final Authorization APPROVED_AUTHORIZATION = new Authorization(true, null);
+    private static final Authorization DECLINED_AUTHORIZATION = new Authorization(false, null);
 
     private final boolean approved;
     private final Map<String, String> customData;
@@ -46,7 +46,7 @@ public class Authorization {
     }
 
     public static Authorization approved() {
-        return APPROVED;
+        return APPROVED_AUTHORIZATION;
     }
 
     public static Authorization approved(Map<String, String> applicationData) {
@@ -54,7 +54,7 @@ public class Authorization {
     }
 
     public static Authorization declined() {
-        return DECLINED;
+        return DECLINED_AUTHORIZATION;
     }
 
     public boolean isApproved() {

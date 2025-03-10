@@ -40,12 +40,12 @@ import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationDataExtractor.RegistrationData;
 import org.junit.jupiter.api.Test;
 
-public class RegistrationSerDesTest {
+class RegistrationSerDesTest {
 
     private final RegistrationSerDes registrationSerDes = new RegistrationSerDes();
 
     @Test
-    public void ser_and_des_are_equals() {
+    void ser_and_des_are_equals() {
         Link[] objs = new Link[2];
         AttributeSet attrs = new AttributeSet( //
                 new UnquotedStringAttribute("us", "12"), //
@@ -79,7 +79,7 @@ public class RegistrationSerDesTest {
     }
 
     @Test
-    public void ser_and_des_are_equals_with_app_data() {
+    void ser_and_des_are_equals_with_app_data() {
         Link[] objs = new Link[2];
         AttributeSet attrs = new AttributeSet( //
                 new UnquotedStringAttribute("us", "12"), //

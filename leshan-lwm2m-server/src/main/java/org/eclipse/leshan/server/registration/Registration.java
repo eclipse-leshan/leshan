@@ -21,7 +21,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -189,40 +188,35 @@ public class Registration {
 
         Link[] res = Arrays.copyOf(objectLinks, objectLinks.length);
 
-        Arrays.sort(res, new Comparator<Link>() {
+        Arrays.sort(res, (o1, o2) -> {
+            if (o1 == null && o2 == null)
+                return 0;
+            if (o1 == null)
+                return -1;
+            if (o2 == null)
+                return 1;
+            // by URL
+            String[] url1 = o1.getUriReference().split("/");
+            String[] url2 = o2.getUriReference().split("/");
 
-            /* sort by path */
-            @Override
-            public int compare(Link o1, Link o2) {
-                if (o1 == null && o2 == null)
-                    return 0;
-                if (o1 == null)
-                    return -1;
-                if (o2 == null)
-                    return 1;
-                // by URL
-                String[] url1 = o1.getUriReference().split("/");
-                String[] url2 = o2.getUriReference().split("/");
+            for (int i = 0; i < url1.length && i < url2.length; i++) {
+                // is it two numbers?
+                if (isNumber(url1[i]) && isNumber(url2[i])) {
+                    int cmp = Integer.parseInt(url1[i]) - Integer.parseInt(url2[i]);
+                    if (cmp != 0) {
+                        return cmp;
+                    }
+                } else {
 
-                for (int i = 0; i < url1.length && i < url2.length; i++) {
-                    // is it two numbers?
-                    if (isNumber(url1[i]) && isNumber(url2[i])) {
-                        int cmp = Integer.parseInt(url1[i]) - Integer.parseInt(url2[i]);
-                        if (cmp != 0) {
-                            return cmp;
-                        }
-                    } else {
+                    int v = url1[i].compareTo(url2[i]);
 
-                        int v = url1[i].compareTo(url2[i]);
-
-                        if (v != 0) {
-                            return v;
-                        }
+                    if (v != 0) {
+                        return v;
                     }
                 }
-
-                return url1.length - url2.length;
             }
+
+            return url1.length - url2.length;
         });
 
         return res;

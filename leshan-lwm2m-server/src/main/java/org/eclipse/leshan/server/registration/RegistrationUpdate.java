@@ -217,7 +217,7 @@ public class RegistrationUpdate {
 
     private Map<String, String> updateAdditionalAttributes(Map<String, String> oldAdditionalAttributes) {
         // putAll method updates already present key values or add them if not present.
-        Map<String, String> aux = new HashMap<String, String>();
+        Map<String, String> aux = new HashMap<>();
         aux.putAll(oldAdditionalAttributes);
         aux.putAll(this.additionalAttributes);
         return aux;

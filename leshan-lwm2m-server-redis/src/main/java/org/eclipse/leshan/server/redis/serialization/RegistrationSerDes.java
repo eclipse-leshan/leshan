@@ -65,7 +65,7 @@ public class RegistrationSerDes {
 
     public RegistrationSerDes(LwM2mPeerSerDes peerSerDes) {
         // Define all supported Attributes
-        Collection<AttributeModel<?>> suppportedAttributes = new ArrayList<AttributeModel<?>>();
+        Collection<AttributeModel<?>> suppportedAttributes = new ArrayList<>();
         suppportedAttributes.addAll(Attributes.ALL);
         suppportedAttributes.addAll(LwM2mAttributes.ALL);
 
@@ -93,8 +93,6 @@ public class RegistrationSerDes {
     public JsonNode jSerialize(Registration r) {
         ObjectNode o = JsonNodeFactory.instance.objectNode();
         o.put("regDate", r.getRegistrationDate().getTime());
-        // TODO handle backward compatibility ?
-        // o.set("identity", IdentitySerDes.serialize(r.getIdentity()));
         o.set("transportdata", peerSerDes.serialize(r.getClientTransportData()));
         o.put("lt", r.getLifeTimeInSec());
         if (r.getSmsNumber() != null) {

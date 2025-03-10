@@ -19,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,14 +42,14 @@ import org.eclipse.leshan.servers.security.Authorization;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class RegistrationHandlerTest {
+class RegistrationHandlerTest {
 
     private RegistrationHandler registrationHandler;
     private RegistrationStore registrationStore;
     private TestAuthorizer authorizer;
 
     @BeforeEach
-    public void setUp() throws UnknownHostException {
+    void setUp() {
         authorizer = new TestAuthorizer();
         registrationStore = new InMemoryRegistrationStore();
         registrationHandler = new RegistrationHandler(new RegistrationServiceImpl(registrationStore), authorizer,
@@ -59,7 +58,7 @@ public class RegistrationHandlerTest {
     }
 
     @Test
-    public void test_application_data_from_authorizer() {
+    void test_application_data_from_authorizer() {
 
         // Prepare authorizer
         Map<String, String> appData = new HashMap<>();
@@ -91,7 +90,7 @@ public class RegistrationHandlerTest {
     }
 
     @Test
-    public void test_update_without_application_data_from_authorizer() {
+    void test_update_without_application_data_from_authorizer() {
 
         // Prepare authorizer
         Map<String, String> appData = new HashMap<>();
@@ -120,11 +119,11 @@ public class RegistrationHandlerTest {
     }
 
     @Test
-    public void test_unsupported_lwm2m_version() {
+    void test_unsupported_lwm2m_version() {
         // handle REGISTER request
         SendableResponse<RegisterResponse> response = registrationHandler.register(givenIdentity(),
                 givenRegisterRequestWithEndpoint("myEndpoint", LwM2mVersion.get("1.2")), givenServerEndpointUri());
-        assertEquals(response.getResponse().getCode(), ResponseCode.PRECONDITION_FAILED);
+        assertEquals(ResponseCode.PRECONDITION_FAILED, response.getResponse().getCode());
 
         // check result
         Registration registration = registrationStore.getRegistrationByEndpoint("myEndpoint");
@@ -160,7 +159,7 @@ public class RegistrationHandlerTest {
 
         private Authorization autorization;
 
-        public void willReturn(Authorization authorization) {
+        private void willReturn(Authorization authorization) {
             this.autorization = authorization;
         }
 

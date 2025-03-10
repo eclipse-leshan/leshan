@@ -34,10 +34,10 @@ import nl.jqno.equalsverifier.EqualsVerifier;
  * tests the implementation of {@link PresenceService}
  *
  */
-public class RegistrationUpdateTest {
+class RegistrationUpdateTest {
 
     @Test
-    public void testAdditionalAttributesUpdate() throws Exception {
+    void testAdditionalAttributesUpdate() throws Exception {
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
                 new IpPeer(new InetSocketAddress(Inet4Address.getLocalHost(), 1)),
                 uriHandler.createUri("coap://localhost:5683"));
@@ -71,7 +71,7 @@ public class RegistrationUpdateTest {
     }
 
     @Test
-    public void testApplicationDataUpdate() throws Exception {
+    void testApplicationDataUpdate() throws Exception {
 
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
                 new IpPeer(new InetSocketAddress(Inet4Address.getLocalHost(), 1)),
@@ -96,7 +96,7 @@ public class RegistrationUpdateTest {
     }
 
     @Test
-    public void assertEqualsHashcode() {
+    void assertEqualsHashcode() {
         EqualsVerifier.forClass(RegistrationUpdate.class).verify();
     }
 }

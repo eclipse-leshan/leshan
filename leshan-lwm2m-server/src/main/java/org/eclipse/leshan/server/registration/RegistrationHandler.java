@@ -121,17 +121,14 @@ public class RegistrationHandler {
 
         // Create callback to notify new registration and de-registration
         LOG.debug("New registration: {}", approvedRegistration);
-        Runnable whenSent = new Runnable() {
-            @Override
-            public void run() {
-                if (deregistration != null) {
-                    registrationService.fireUnregistered(deregistration.getRegistration(),
-                            deregistration.getObservations(), approvedRegistration);
-                    registrationService.fireRegistered(approvedRegistration, deregistration.registration,
-                            deregistration.observations);
-                } else {
-                    registrationService.fireRegistered(approvedRegistration, null, null);
-                }
+        Runnable whenSent = () -> {
+            if (deregistration != null) {
+                registrationService.fireUnregistered(deregistration.getRegistration(), deregistration.getObservations(),
+                        approvedRegistration);
+                registrationService.fireRegistered(approvedRegistration, deregistration.registration,
+                        deregistration.observations);
+            } else {
+                registrationService.fireRegistered(approvedRegistration, null, null);
             }
         };
 
@@ -177,13 +174,8 @@ public class RegistrationHandler {
         } else {
             LOG.debug("Updated registration {} by {}", updatedRegistration, update);
             // Create callback to notify registration update
-            Runnable whenSent = new Runnable() {
-                @Override
-                public void run() {
-                    registrationService.fireUpdated(update, updatedRegistration.getUpdatedRegistration(),
-                            updatedRegistration.getPreviousRegistration());
-                };
-            };
+            Runnable whenSent = () -> registrationService.fireUpdated(update,
+                    updatedRegistration.getUpdatedRegistration(), updatedRegistration.getPreviousRegistration());
             return new SendableResponse<>(UpdateResponse.success(), whenSent);
         }
     }
@@ -210,13 +202,9 @@ public class RegistrationHandler {
         if (deregistration != null) {
             LOG.debug("Deregistered client: {}", deregistration.getRegistration());
             // Create callback to notify new de-registration
-            Runnable whenSent = new Runnable() {
-                @Override
-                public void run() {
-                    registrationService.fireUnregistered(deregistration.getRegistration(),
-                            deregistration.getObservations(), null);
-                };
-            };
+            Runnable whenSent = () -> registrationService.fireUnregistered(deregistration.getRegistration(),
+                    deregistration.getObservations(), null);
+
             return new SendableResponse<>(DeregisterResponse.success(), whenSent);
         } else {
             LOG.debug("Invalid deregistration :  registration {} not found", currentRegistration.getId());
