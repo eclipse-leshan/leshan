@@ -88,7 +88,7 @@ public class Registration {
 
     private final Date lastUpdate;
 
-    private final Map<String, String> applicationData;
+    private final Map<String, String> customRegistrationData;
 
     // URI of endpoint used for this registration.
     private final EndpointUri endpointUri;
@@ -118,7 +118,7 @@ public class Registration {
         smsNumber = builder.smsNumber;
         additionalRegistrationAttributes = builder.additionalRegistrationAttributes;
 
-        applicationData = builder.applicationData;
+        customRegistrationData = builder.customRegistrationData;
     }
 
     public String getId() {
@@ -348,10 +348,10 @@ public class Registration {
     }
 
     /**
-     * @return Some application data which could have been added at Registration by the {@link Authorizer}
+     * @return Some custom registration data which could have been added at Registration by the {@link Authorizer}
      */
-    public Map<String, String> getApplicationData() {
-        return applicationData;
+    public Map<String, String> getCustomRegistrationData() {
+        return customRegistrationData;
     }
 
     /**
@@ -364,10 +364,10 @@ public class Registration {
     @Override
     public String toString() {
         return String.format(
-                "Registration [registrationDate=%s, clientTransportData=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, queueMode=%s, endpoint=%s, id=%s, objectLinks=%s, additionalRegistrationAttributes=%s, rootPath=%s, supportedContentFormats=%s, supportedObjects=%s, availableInstances=%s, lastUpdate=%s, applicationData=%s, endpointUri=%s]",
+                "Registration [registrationDate=%s, clientTransportData=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, queueMode=%s, endpoint=%s, id=%s, objectLinks=%s, additionalRegistrationAttributes=%s, rootPath=%s, supportedContentFormats=%s, supportedObjects=%s, availableInstances=%s, lastUpdate=%s, customRegistrationData=%s, endpointUri=%s]",
                 registrationDate, clientTransportData, lifeTimeInSec, smsNumber, lwM2mVersion, bindingMode, queueMode,
                 endpoint, id, Arrays.toString(objectLinks), additionalRegistrationAttributes, rootPath,
-                supportedContentFormats, supportedObjects, availableInstances, lastUpdate, applicationData,
+                supportedContentFormats, supportedObjects, availableInstances, lastUpdate, customRegistrationData,
                 endpointUri);
     }
 
@@ -389,7 +389,8 @@ public class Registration {
                 && Objects.equals(supportedContentFormats, that.supportedContentFormats)
                 && Objects.equals(supportedObjects, that.supportedObjects)
                 && Objects.equals(availableInstances, that.availableInstances)
-                && Objects.equals(lastUpdate, that.lastUpdate) && Objects.equals(applicationData, that.applicationData)
+                && Objects.equals(lastUpdate, that.lastUpdate)
+                && Objects.equals(customRegistrationData, that.customRegistrationData)
                 && Objects.equals(endpointUri, that.endpointUri);
     }
 
@@ -397,7 +398,7 @@ public class Registration {
     public final int hashCode() {
         return Objects.hash(registrationDate, clientTransportData, lifeTimeInSec, smsNumber, lwM2mVersion, bindingMode,
                 queueMode, endpoint, id, Arrays.hashCode(objectLinks), additionalRegistrationAttributes, rootPath,
-                supportedContentFormats, supportedObjects, availableInstances, lastUpdate, applicationData,
+                supportedContentFormats, supportedObjects, availableInstances, lastUpdate, customRegistrationData,
                 endpointUri);
     }
 
@@ -420,7 +421,7 @@ public class Registration {
         private Map<Integer, Version> supportedObjects;
         private Set<LwM2mPath> availableInstances;
         private Map<String, String> additionalRegistrationAttributes;
-        private Map<String, String> applicationData;
+        private Map<String, String> customRegistrationData;
 
         public Builder(Registration registration) {
 
@@ -447,7 +448,7 @@ public class Registration {
             smsNumber = registration.smsNumber;
             additionalRegistrationAttributes = registration.additionalRegistrationAttributes;
 
-            applicationData = registration.applicationData;
+            customRegistrationData = registration.customRegistrationData;
         }
 
         public Builder(String registrationId, String endpoint, LwM2mPeer clientTransportData, EndpointUri endpointUri) {
@@ -536,8 +537,8 @@ public class Registration {
             return this;
         }
 
-        public Builder applicationData(Map<String, String> applicationData) {
-            this.applicationData = applicationData;
+        public Builder customRegistrationData(Map<String, String> customRegistrationData) {
+            this.customRegistrationData = customRegistrationData;
             return this;
         }
 
@@ -574,10 +575,10 @@ public class Registration {
                 additionalRegistrationAttributes = Collections
                         .unmodifiableMap(new HashMap<>(additionalRegistrationAttributes));
             }
-            if (applicationData == null || applicationData.isEmpty()) {
-                applicationData = Collections.emptyMap();
+            if (customRegistrationData == null || customRegistrationData.isEmpty()) {
+                customRegistrationData = Collections.emptyMap();
             } else {
-                applicationData = Collections.unmodifiableMap(new HashMap<>(applicationData));
+                customRegistrationData = Collections.unmodifiableMap(new HashMap<>(customRegistrationData));
             }
 
             // Create Registration

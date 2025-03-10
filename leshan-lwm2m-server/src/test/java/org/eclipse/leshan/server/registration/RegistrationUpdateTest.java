@@ -76,11 +76,11 @@ public class RegistrationUpdateTest {
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
                 new IpPeer(new InetSocketAddress(Inet4Address.getLocalHost(), 1)),
                 uriHandler.createUri("coap://localhost:5683"));
-        Map<String, String> appData = new HashMap<String, String>();
-        appData.put("x", "1");
-        appData.put("y", "10");
-        appData.put("z", "100");
-        builder.applicationData(appData);
+        Map<String, String> customData = new HashMap<String, String>();
+        customData.put("x", "1");
+        customData.put("y", "10");
+        customData.put("z", "100");
+        builder.customRegistrationData(customData);
         Registration r = builder.build();
 
         RegistrationUpdate updateReg = new RegistrationUpdate(r.getId(), r.getClientTransportData(), null, null, null,
@@ -88,11 +88,11 @@ public class RegistrationUpdateTest {
 
         r = updateReg.update(r);
 
-        Map<String, String> updatedAppData = r.getApplicationData();
+        Map<String, String> updatedCustomData = r.getCustomRegistrationData();
 
-        assertEquals("1", updatedAppData.get("x"));
-        assertEquals("10", updatedAppData.get("y"));
-        assertEquals("100", updatedAppData.get("z"));
+        assertEquals("1", updatedCustomData.get("x"));
+        assertEquals("10", updatedCustomData.get("y"));
+        assertEquals("100", updatedCustomData.get("z"));
     }
 
     @Test

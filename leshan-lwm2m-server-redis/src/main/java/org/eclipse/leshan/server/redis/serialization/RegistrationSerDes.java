@@ -156,11 +156,11 @@ public class RegistrationSerDes {
         o.set("objInstances", ai);
 
         // handle application data
-        ObjectNode ad = JsonNodeFactory.instance.objectNode();
-        for (Entry<String, String> appData : r.getApplicationData().entrySet()) {
-            ad.put(appData.getKey(), appData.getValue());
+        ObjectNode cd = JsonNodeFactory.instance.objectNode();
+        for (Entry<String, String> customData : r.getCustomRegistrationData().entrySet()) {
+            cd.put(customData.getKey(), customData.getValue());
         }
-        o.set("appdata", ad);
+        o.set("customData", cd);
         return o;
     }
 
@@ -297,7 +297,12 @@ public class RegistrationSerDes {
 
         // parse app data
         Map<String, String> appData = new HashMap<>();
-        ObjectNode oap = (ObjectNode) jObj.get("appdata");
+        ObjectNode oap = (ObjectNode) jObj.get("customData");
+        // TODO backward compatibility should be removed
+        if (oap == null) {
+            oap = (ObjectNode) jObj.get("appdata");
+        }
+
         for (Iterator<String> it = oap.fieldNames(); it.hasNext();) {
             String key = it.next();
             JsonNode jv = oap.get(key);
@@ -307,7 +312,7 @@ public class RegistrationSerDes {
                 appData.put(key, jv.asText());
             }
         }
-        b.applicationData(appData);
+        b.customRegistrationData(appData);
 
         return b.build();
     }

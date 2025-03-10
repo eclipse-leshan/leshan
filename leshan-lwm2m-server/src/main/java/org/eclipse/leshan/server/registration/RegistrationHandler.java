@@ -107,11 +107,11 @@ public class RegistrationHandler {
             return new SendableResponse<>(RegisterResponse.forbidden(null));
         }
 
-        // Add Authorization Application Data to Registration if needed
+        // Add Authorization Custom Data to Registration if needed
         final Registration approvedRegistration;
-        if (authorization.hasApplicationData()) {
+        if (authorization.hasCustomData()) {
             approvedRegistration = new Registration.Builder(registrationToApproved)
-                    .applicationData(authorization.getApplicationData()).build();
+                    .customRegistrationData(authorization.getCustomData()).build();
         } else {
             approvedRegistration = registrationToApproved;
         }
@@ -167,7 +167,7 @@ public class RegistrationHandler {
                 updateRequest.getObjectLinks(), objLinksData.getAlternatePath(),
                 objLinksData.getSupportedContentFormats(), objLinksData.getSupportedObjects(),
                 objLinksData.getAvailableInstances(), updateRequest.getAdditionalAttributes(),
-                authorization.getApplicationData());
+                authorization.getCustomData());
 
         // update registration
         final UpdatedRegistration updatedRegistration = registrationService.getStore().updateRegistration(update);

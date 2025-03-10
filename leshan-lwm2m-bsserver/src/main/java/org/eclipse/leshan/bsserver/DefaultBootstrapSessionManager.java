@@ -78,7 +78,7 @@ public class DefaultBootstrapSessionManager implements BootstrapSessionManager {
             EndpointUri endpointUsed) {
         Authorization authorization = authorizer.isAuthorized(endpointName, request, client);
         DefaultBootstrapSession session = new DefaultBootstrapSession(endpointName, request, client,
-                authorization.isApproved(), authorization.getApplicationData(), endpointUsed);
+                authorization.isApproved(), authorization.getCustomData(), endpointUsed);
         LOG.trace("Bootstrap session started : {}", session);
 
         return session;

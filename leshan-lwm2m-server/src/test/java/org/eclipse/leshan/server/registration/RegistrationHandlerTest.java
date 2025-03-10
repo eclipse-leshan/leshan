@@ -73,7 +73,7 @@ public class RegistrationHandlerTest {
 
         // check result
         Registration registration = registrationStore.getRegistrationByEndpoint("myEndpoint");
-        assertEquals(appData, registration.getApplicationData());
+        assertEquals(appData, registration.getCustomRegistrationData());
 
         // Prepare authorizer
         Map<String, String> updatedAppData = new HashMap<>();
@@ -86,7 +86,7 @@ public class RegistrationHandlerTest {
 
         // check result
         registration = registrationStore.getRegistrationByEndpoint("myEndpoint");
-        assertEquals(updatedAppData, registration.getApplicationData());
+        assertEquals(updatedAppData, registration.getCustomRegistrationData());
 
     }
 
@@ -105,7 +105,7 @@ public class RegistrationHandlerTest {
 
         // check result
         Registration registration = registrationStore.getRegistrationByEndpoint("myEndpoint");
-        assertEquals(appData, registration.getApplicationData());
+        assertEquals(appData, registration.getCustomRegistrationData());
 
         // Prepare authorizer
         authorizer.willReturn(Authorization.approved());
@@ -116,7 +116,7 @@ public class RegistrationHandlerTest {
 
         // check result
         registration = registrationStore.getRegistrationByEndpoint("myEndpoint");
-        assertEquals(appData, registration.getApplicationData());
+        assertEquals(appData, registration.getCustomRegistrationData());
     }
 
     @Test

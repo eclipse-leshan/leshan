@@ -97,7 +97,7 @@ public class RegistrationSerDesTest {
         Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
                 new IpPeer(new InetSocketAddress(Inet4Address.getLoopbackAddress(), 1)),
                 uriHandler.createUri("coap://localhost:5683")).objectLinks(objs).rootPath("/")
-                        .supportedContentFormats(ContentFormat.TLV, ContentFormat.TEXT).applicationData(appData);
+                        .supportedContentFormats(ContentFormat.TLV, ContentFormat.TEXT).customRegistrationData(appData);
 
         builder.registrationDate(new Date(100L));
         builder.lastUpdate(new Date(101L));

@@ -32,10 +32,10 @@ public interface Authorizer {
      * declined{@link Authorization} is returned the LWM2M server will stop to handle this request and will respond with
      * a {@link ResponseCode#FORBIDDEN} or {@link ResponseCode#BAD_REQUEST}.
      * <p>
-     * Some Application Data could be attached to on approved {@link Authorization} using :
+     * Some Custom Data could be attached to on approved {@link Authorization} using :
      *
      * <pre>
-     * return Authorization.approved(myAppData);
+     * return Authorization.approved(myCustomData);
      * </pre>
      *
      * @param request the request received

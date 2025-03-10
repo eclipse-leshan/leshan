@@ -57,13 +57,13 @@ public class RegistrationUpdate {
     // All available instances
     private final Set<LwM2mPath> availableInstances;
     private final Map<String, String> additionalAttributes;
-    private final Map<String, String> applicationData;
+    private final Map<String, String> customRegistrationData;
 
     public RegistrationUpdate(String registrationId, LwM2mPeer clientTransportData, Long lifeTimeInSec,
             String smsNumber, EnumSet<BindingMode> bindingMode, Link[] objectLinks, String alternatePath,
             Set<ContentFormat> supportedContentFormats, Map<Integer, Version> supportedObjects,
             Set<LwM2mPath> availableInstances, Map<String, String> additionalAttributes,
-            Map<String, String> applicationData) {
+            Map<String, String> customRegistrationData) {
 
         // mandatory params
         Validate.notNull(registrationId);
@@ -88,10 +88,10 @@ public class RegistrationUpdate {
             this.additionalAttributes = Collections.emptyMap();
         else
             this.additionalAttributes = Collections.unmodifiableMap(new HashMap<>(additionalAttributes));
-        if (applicationData == null)
-            this.applicationData = Collections.emptyMap();
+        if (customRegistrationData == null)
+            this.customRegistrationData = Collections.emptyMap();
         else
-            this.applicationData = Collections.unmodifiableMap(new HashMap<>(applicationData));
+            this.customRegistrationData = Collections.unmodifiableMap(new HashMap<>(customRegistrationData));
     }
 
     /**
@@ -120,8 +120,9 @@ public class RegistrationUpdate {
                 ? registration.getAdditionalRegistrationAttributes()
                 : updateAdditionalAttributes(registration.getAdditionalRegistrationAttributes());
 
-        Map<String, String> applicationData = this.applicationData.isEmpty() ? registration.getApplicationData()
-                : this.applicationData;
+        Map<String, String> customRegistrationData = this.customRegistrationData.isEmpty()
+                ? registration.getCustomRegistrationData()
+                : this.customRegistrationData;
 
         // this needs to be done in any case, even if no properties have changed, in order
         // to extend the client registration time-to-live period ...
@@ -147,7 +148,7 @@ public class RegistrationUpdate {
                 .availableInstances(availableInstances) //
                 // out of spec data
                 .additionalRegistrationAttributes(additionalAttributes) //
-                .applicationData(applicationData);
+                .customRegistrationData(customRegistrationData);
 
         return builder.build();
     }
@@ -195,7 +196,7 @@ public class RegistrationUpdate {
     }
 
     public Map<String, String> getApplicationData() {
-        return applicationData;
+        return customRegistrationData;
     }
 
     public String getAlternatePath() {
@@ -228,7 +229,7 @@ public class RegistrationUpdate {
                 "RegistrationUpdate [registrationId=%s, clientTransportData=%s, lifeTimeInSec=%s, smsNumber=%s, bindingMode=%s, objectLinks=%s, alternatePath=%s, supportedContentFormats=%s, supportedObjects=%s, availableInstances=%s, additionalAttributes=%s, applicationData=%s]",
                 registrationId, clientTransportData, lifeTimeInSec, smsNumber, bindingMode,
                 Arrays.toString(objectLinks), alternatePath, supportedContentFormats, supportedObjects,
-                availableInstances, additionalAttributes, applicationData);
+                availableInstances, additionalAttributes, customRegistrationData);
     }
 
     @Override
@@ -247,13 +248,13 @@ public class RegistrationUpdate {
                 && Objects.equals(supportedObjects, that.supportedObjects)
                 && Objects.equals(availableInstances, that.availableInstances)
                 && Objects.equals(additionalAttributes, that.additionalAttributes)
-                && Objects.equals(applicationData, that.applicationData);
+                && Objects.equals(customRegistrationData, that.customRegistrationData);
     }
 
     @Override
     public final int hashCode() {
         return Objects.hash(registrationId, clientTransportData, lifeTimeInSec, smsNumber, bindingMode,
                 Arrays.hashCode(objectLinks), alternatePath, supportedContentFormats, supportedObjects,
-                availableInstances, additionalAttributes, applicationData);
+                availableInstances, additionalAttributes, customRegistrationData);
     }
 }

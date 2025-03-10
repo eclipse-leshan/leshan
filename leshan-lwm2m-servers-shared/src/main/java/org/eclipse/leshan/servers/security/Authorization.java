@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  * {@link Authorization} provided by authorizer.
  * <p>
- * Some Application Data get be attached and will be used to create the Registration or BootstrapSession.
+ * Some Custom Data can be attached and will be attached to the Registration or BootstrapSession.
  */
 public class Authorization {
 
@@ -30,17 +30,17 @@ public class Authorization {
     private static Authorization DECLINED = new Authorization(false, null);
 
     private final boolean approved;
-    private final Map<String, String> applicationData;
+    private final Map<String, String> customData;
 
-    protected Authorization(boolean approved, Map<String, String> applicationData) {
-        if (!approved && applicationData != null) {
-            throw new IllegalStateException("application data can not be attached to 'declined' Authorization");
+    protected Authorization(boolean approved, Map<String, String> customData) {
+        if (!approved && customData != null) {
+            throw new IllegalStateException("custom data can not be attached to 'declined' Authorization");
         }
         this.approved = approved;
-        if (applicationData == null) {
-            this.applicationData = Collections.emptyMap();
+        if (customData == null) {
+            this.customData = Collections.emptyMap();
         } else {
-            this.applicationData = Collections.unmodifiableMap(new HashMap<>(applicationData));
+            this.customData = Collections.unmodifiableMap(new HashMap<>(customData));
         }
 
     }
@@ -65,11 +65,11 @@ public class Authorization {
         return !approved;
     }
 
-    public Map<String, String> getApplicationData() {
-        return applicationData;
+    public Map<String, String> getCustomData() {
+        return customData;
     }
 
-    public boolean hasApplicationData() {
-        return !applicationData.isEmpty();
+    public boolean hasCustomData() {
+        return !customData.isEmpty();
     }
 }
