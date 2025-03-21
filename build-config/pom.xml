@@ -41,8 +41,9 @@ Contributors:
           <configuration>
             <release>8</release>
             <!--compilerArgument>-Xlint:all</compilerArgument-->
-            <!-- We need to skipe -removal warning because of https://saker.build/blog/java_target_older_releases/#how-does-it-work_ -->
-            <compilerArgument>-Xlint:-removal</compilerArgument>
+            <!-- We need to skip -removal warning because of https://saker.build/blog/java_target_older_releases/#how-does-it-work_ -->
+            <!-- We need to skip -options to remove warning because we target "release 8" which is considered as obsolete by maven -->
+            <compilerArgument>-Xlint:-removal,-options</compilerArgument>
             <showWarnings>true</showWarnings>
             <showDeprecation>true</showDeprecation>
             <failOnWarning>true</failOnWarning>
