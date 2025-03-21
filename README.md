@@ -4,9 +4,11 @@
   <img src="https://eclipse.org/leshan/img/multicolor-leshan.png">
 </a>
 </h1>
-<p align="center">
-  <a href="https://scorecard.dev/viewer/?uri=github.com/eclipse-leshan/leshan"><img alt="OpenSSF Scorecard" src="https://api.securityscorecards.dev/projects/github.com/eclipse-leshan/leshan/badge" /></a>
-  <a href="https://www.bestpractices.dev/projects/10034"><img alt="OpenSSF Best Practices" src="https://www.bestpractices.dev/projects/10034/badge" /></a>
+<a href="https://scorecard.dev/viewer/?uri=github.com/eclipse-leshan/leshan"><img alt="OpenSSF Scorecard" src="https://api.securityscorecards.dev/projects/github.com/eclipse-leshan/leshan/badge" /></a>
+<a href="https://www.bestpractices.dev/projects/10034"><img alt="OpenSSF Best Practices" src="https://www.bestpractices.dev/projects/10034/badge" /></a>
+<a href="https://sonarcloud.io/summary/new_code?id=eclipse-leshan_leshan"><img alt="Quality Gate Status" src="https://sonarcloud.io/api/project_badges/measure?project=eclipse-leshan_leshan&metric=alert_status"></a>
+
+  
 </p>
 
 [Eclipse Leshan™](https://eclipse.dev/leshan/) is an OMA Lightweight M2M server and client Java implementation.
