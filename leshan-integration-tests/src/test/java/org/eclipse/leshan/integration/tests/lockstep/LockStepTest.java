@@ -162,13 +162,13 @@ public class LockStepTest {
     LeshanTestServer server;
 
     @BeforeEach
-    public void start(String givenServerEndpointProvider) {
+    void start(String givenServerEndpointProvider) {
         server = givenServer().using(Protocol.COAP).with(givenServerEndpointProvider).build();
         server.start();
     }
 
     @AfterEach
-    public void stop() throws InterruptedException {
+    void stop() {
         if (server != null)
             server.destroy();
     }
@@ -310,6 +310,7 @@ public class LockStepTest {
     }
 
     @TestAllTransportLayer
+    @SuppressWarnings("java:S2925") // Thread.sleep usage is justified
     public void sync_send_with_acknowleged_request_without_response(String givenServerEndpointProvider)
             throws Exception {
         // Register client
@@ -368,6 +369,7 @@ public class LockStepTest {
     }
 
     @TestAllTransportLayer
+    @SuppressWarnings("java:S2925") // Thread.sleep usage is justified
     public void async_send_with_acknowleged_request_without_response(String givenServerEndpointProvider)
             throws Exception {
         // register client
@@ -441,7 +443,7 @@ public class LockStepTest {
 
         // ensure we don't get answer and there is no observation in store.
         verifyNoMoreInteractions(responseCallback, errorCallback);
-        assertThat(server.getRegistrationService().getAllRegistrations().hasNext() == false);
+        assertFalse(server.getRegistrationService().getAllRegistrations().hasNext());
         Set<Observation> observations = server.getObservationService().getObservations(registration);
         assertThat(observations).isEmpty();
     }

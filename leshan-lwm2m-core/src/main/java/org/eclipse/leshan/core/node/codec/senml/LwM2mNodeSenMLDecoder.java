@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -63,6 +62,8 @@ import org.slf4j.LoggerFactory;
 
 public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeDecoder, TimestampedMultiNodeDecoder {
 
+    private static final String INVALID_PATH_IT_SHOULD_BE_A_RESOURCE_OR_A_RESOURCE_INSTANCE_PATH = "Invalid path [%s] for resource, it should be a resource or a resource instance path";
+
     private static final Logger LOG = LoggerFactory.getLogger(LwM2mNodeSenMLDecoder.class);
 
     private final SenMLDecoder decoder;
@@ -92,13 +93,12 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
             // Resolve records
             LwM2mSenMLResolver resolver = new LwM2mSenMLResolver();
             Collection<LwM2mResolvedSenMLRecord> resolvedRecords = new ArrayList<>(records.size());
-            for (SenMLRecord record : records) {
-                LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(record);
+            for (SenMLRecord senMLRecord : records) {
+                LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(senMLRecord);
                 // Validate SenML resolved name
                 validateRootPath(resolvedRecord, rootPath);
                 if (!resolvedRecord.getPath().isResourceInstance() && !resolvedRecord.getPath().isResource()) {
-                    throw new CodecException(
-                            "Invalid path [%s] for resource, it should be a resource or a resource instance path",
+                    throw new CodecException(INVALID_PATH_IT_SHOULD_BE_A_RESOURCE_OR_A_RESOURCE_INSTANCE_PATH,
                             resolvedRecord.getName());
                 }
                 if (!resolvedRecord.getPath().startWith(path)) {
@@ -151,8 +151,8 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                 // Paths are not given so we given so we can not regroup by path
                 // let's assume that each path refer to a single resource or single resource instances.
                 LwM2mSenMLResolver resolver = new LwM2mSenMLResolver();
-                for (SenMLRecord record : pack.getRecords()) {
-                    LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(record);
+                for (SenMLRecord senMLRecord : pack.getRecords()) {
+                    LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(senMLRecord);
                     validateRootPath(resolvedRecord, rootPath);
                     validateNoTimestampedRecord(resolvedRecord);
 
@@ -265,8 +265,8 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
             } else {
                 nodes = TimestampedLwM2mNodes.builder();
                 LwM2mSenMLResolver resolver = new LwM2mSenMLResolver();
-                for (SenMLRecord record : pack.getRecords()) {
-                    LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(record);
+                for (SenMLRecord senMLRecord : pack.getRecords()) {
+                    LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(senMLRecord);
                     validateRootPath(resolvedRecord, rootPath);
                     LwM2mPath path = resolvedRecord.getPath();
                     LwM2mNode node = parseRecords(Arrays.asList(resolvedRecord), path, model,
@@ -414,13 +414,13 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
         // Prepare map result
         Map<LwM2mPath, Collection<LwM2mResolvedSenMLRecord>> result = new HashMap<>(paths.size());
         for (LwM2mPath path : paths) {
-            result.put(path, new ArrayList<LwM2mResolvedSenMLRecord>());
+            result.put(path, new ArrayList<>());
         }
 
         // Resolve record and add it to the map
         LwM2mSenMLResolver resolver = new LwM2mSenMLResolver();
-        for (SenMLRecord record : records) {
-            LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(record);
+        for (SenMLRecord senMLRecord : records) {
+            LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(senMLRecord);
             validateRootPath(resolvedRecord, rootPath);
 
             // Find the corresponding path for this record.
@@ -439,12 +439,12 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
      * Group Resolved Record by LwM2mPath
      */
     private Map<LwM2mPath, Collection<LwM2mResolvedSenMLRecord>> groupResolvedRecordByPath(
-            Collection<LwM2mResolvedSenMLRecord> records, List<LwM2mPath> paths) throws SenMLException {
+            Collection<LwM2mResolvedSenMLRecord> records, List<LwM2mPath> paths) {
 
         // Prepare map result
         Map<LwM2mPath, Collection<LwM2mResolvedSenMLRecord>> result = new HashMap<>(paths.size());
         for (LwM2mPath path : paths) {
-            result.put(path, new ArrayList<LwM2mResolvedSenMLRecord>());
+            result.put(path, new ArrayList<>());
         }
 
         // Add it to the map
@@ -486,31 +486,26 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
      */
     private SortedMap<BigDecimal, Collection<LwM2mResolvedSenMLRecord>> groupRecordByTimestamp(
             List<SenMLRecord> records, LwM2mPath requestPath, String rootPath) throws SenMLException {
-        SortedMap<BigDecimal, Collection<LwM2mResolvedSenMLRecord>> result = new TreeMap<>(
-                new Comparator<BigDecimal>() {
-                    @Override
-                    public int compare(BigDecimal o1, BigDecimal o2) {
-                        // null at first place
-                        if (o1 == null) {
-                            return o2 == null ? 0 : -1;
-                        } else if (o2 == null) {
-                            return 1;
-                        } else {
-                            return o2.compareTo(o1);
-                        }
-                    }
-                });
+        SortedMap<BigDecimal, Collection<LwM2mResolvedSenMLRecord>> result = new TreeMap<>((o1, o2) -> {
+            // null at first place
+            if (o1 == null) {
+                return o2 == null ? 0 : -1;
+            } else if (o2 == null) {
+                return 1;
+            } else {
+                return o2.compareTo(o1);
+            }
+        });
 
         LwM2mSenMLResolver resolver = new LwM2mSenMLResolver();
-        for (SenMLRecord record : records) {
-            LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(record);
+        for (SenMLRecord senMLRecord : records) {
+            LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(senMLRecord);
 
             // Validate SenML resolved name
             validateRootPath(resolvedRecord, rootPath);
 
             if (!resolvedRecord.getPath().isResourceInstance() && !resolvedRecord.getPath().isResource()) {
-                throw new CodecException(
-                        "Invalid path [%s] for resource, it should be a resource or a resource instance path",
+                throw new CodecException(INVALID_PATH_IT_SHOULD_BE_A_RESOURCE_OR_A_RESOURCE_INSTANCE_PATH,
                         resolvedRecord.getName());
             }
             if (requestPath != null && !resolvedRecord.getPath().startWith(requestPath)) {
@@ -544,16 +539,17 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
     private Map<Integer, Collection<LwM2mResolvedSenMLRecord>> groupRecordsByInstanceId(
             Collection<LwM2mResolvedSenMLRecord> records) throws CodecException {
         Map<Integer, Collection<LwM2mResolvedSenMLRecord>> result = new HashMap<>();
-        for (LwM2mResolvedSenMLRecord record : records) {
+        for (LwM2mResolvedSenMLRecord senMLRecord : records) {
             // Get SenML records for this instance
-            Collection<LwM2mResolvedSenMLRecord> recordForInstance = result.get(record.getPath().getObjectInstanceId());
+            Collection<LwM2mResolvedSenMLRecord> recordForInstance = result
+                    .get(senMLRecord.getPath().getObjectInstanceId());
             if (recordForInstance == null) {
                 recordForInstance = new ArrayList<>();
-                result.put(record.getPath().getObjectInstanceId(), recordForInstance);
+                result.put(senMLRecord.getPath().getObjectInstanceId(), recordForInstance);
             }
 
             // Add it to the list
-            recordForInstance.add(record);
+            recordForInstance.add(senMLRecord);
         }
         return result;
     }
@@ -566,16 +562,16 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
     private Map<Integer, Collection<LwM2mResolvedSenMLRecord>> groupRecordsByObjectId(
             Collection<LwM2mResolvedSenMLRecord> records) throws CodecException {
         Map<Integer, Collection<LwM2mResolvedSenMLRecord>> result = new HashMap<>();
-        for (LwM2mResolvedSenMLRecord record : records) {
+        for (LwM2mResolvedSenMLRecord senMLRecord : records) {
             // Get SenML records for this object
-            Collection<LwM2mResolvedSenMLRecord> recordForObject = result.get(record.getPath().getObjectId());
+            Collection<LwM2mResolvedSenMLRecord> recordForObject = result.get(senMLRecord.getPath().getObjectId());
             if (recordForObject == null) {
                 recordForObject = new ArrayList<>();
-                result.put(record.getPath().getObjectId(), recordForObject);
+                result.put(senMLRecord.getPath().getObjectId(), recordForObject);
             }
 
             // Add it to the list
-            recordForObject.add(record);
+            recordForObject.add(senMLRecord);
         }
         return result;
     }
@@ -592,7 +588,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
         for (LwM2mResolvedSenMLRecord resolvedRecord : records) {
             // Build resource path
             LwM2mPath nodePath = resolvedRecord.getPath();
-            SenMLRecord record = resolvedRecord.getRecord();
+            SenMLRecord senMLRecord = resolvedRecord.getRecord();
 
             // handle LWM2M resources
             if (nodePath.isResourceInstance()) {
@@ -606,16 +602,16 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                     multiResource = new HashMap<>();
                     multiResourceMap.put(resourcePath, multiResource);
                 }
-                SenMLRecord previousResInstance = multiResource.put(nodePath.getResourceInstanceId(), record);
+                SenMLRecord previousResInstance = multiResource.put(nodePath.getResourceInstanceId(), senMLRecord);
                 if (previousResInstance != null) {
                     throw new CodecException(
                             "2 RESOURCE_INSTANCE nodes (%s,%s) with the same identifier %d for path %s",
-                            previousResInstance, record, nodePath.getResourceInstanceId(), nodePath);
+                            previousResInstance, senMLRecord, nodePath.getResourceInstanceId(), nodePath);
                 }
             } else if (nodePath.isResource()) {
                 // Single resource
-                Type expectedType = getResourceType(nodePath, model, record);
-                Object resourceValue = parseResourceValue(record.getResourceValue(), expectedType, nodePath);
+                Type expectedType = getResourceType(nodePath, model, senMLRecord);
+                Object resourceValue = parseResourceValue(senMLRecord.getResourceValue(), expectedType, nodePath);
                 LwM2mResource res = LwM2mSingleResource.newResource(nodePath.getResourceId(), resourceValue,
                         expectedType);
                 LwM2mResource previousRes = lwM2mResourceMap.put(nodePath.getResourceId(), res);
@@ -624,9 +620,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                             previousRes, res, res.getId(), nodePath);
                 }
             } else {
-                throw new CodecException(
-                        "Invalid path [%s] for resource, it should be a resource or a resource instance path",
-                        nodePath);
+                throw new CodecException(INVALID_PATH_IT_SHOULD_BE_A_RESOURCE_OR_A_RESOURCE_INSTANCE_PATH, nodePath);
             }
         }
 
@@ -660,8 +654,8 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
             // We create it only if this respect the model
             if (resourceModel == null || resourceModel.multiple) {
                 Type resourceType = getResourceType(requestPath, model, null);
-                lwM2mResourceMap.put(requestPath.getResourceId(), LwM2mMultipleResource
-                        .newResource(requestPath.getResourceId(), new HashMap<Integer, Object>(), resourceType));
+                lwM2mResourceMap.put(requestPath.getResourceId(),
+                        LwM2mMultipleResource.newResource(requestPath.getResourceId(), new HashMap<>(), resourceType));
             }
         }
 
@@ -699,7 +693,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
         }
     }
 
-    private Type getResourceType(LwM2mPath rscPath, LwM2mModel model, SenMLRecord record) {
+    private Type getResourceType(LwM2mPath rscPath, LwM2mModel model, SenMLRecord senMLRecord) {
         // Use model type in priority
         ResourceModel rscDesc = model.getResourceModel(rscPath.getObjectId(), rscPath.getResourceId());
         if (rscDesc != null && rscDesc.type != null)
@@ -708,8 +702,8 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
         // TODO not sure that guessing type is a good idea...
 
         // Then senml type
-        if (record != null) {
-            Type type = guessTypeFromRecord(record);
+        if (senMLRecord != null) {
+            Type type = guessTypeFromRecord(senMLRecord);
             if (type != null)
                 return type;
         }
@@ -719,8 +713,8 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
         return Type.STRING;
     }
 
-    private Type guessTypeFromRecord(SenMLRecord record) {
-        SenMLRecord.Type type = record.getType();
+    private Type guessTypeFromRecord(SenMLRecord senMLRecord) {
+        SenMLRecord.Type type = senMLRecord.getType();
 
         switch (type) {
         case STRING:
@@ -732,7 +726,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
         case OBJLNK:
             return Type.OBJLNK;
         case NUMBER:
-            Number numberValue = record.getNumberValue();
+            Number numberValue = senMLRecord.getNumberValue();
             if (numberValue instanceof ULong) {
                 return Type.UNSIGNED_INTEGER;
             } else if (numberValue instanceof BigInteger) {
@@ -748,7 +742,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                     || numberValue instanceof BigDecimal) {
                 return Type.FLOAT;
             }
-            // return null;
+            return null;
         default:
             return null;
         }

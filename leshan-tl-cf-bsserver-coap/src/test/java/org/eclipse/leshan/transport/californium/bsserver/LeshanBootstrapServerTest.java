@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.transport.californium.bsserver;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.InetSocketAddress;
@@ -40,7 +41,7 @@ import org.eclipse.leshan.servers.ServerEndpointNameProvider;
 import org.eclipse.leshan.transport.californium.bsserver.endpoint.CaliforniumBootstrapServerEndpointsProvider;
 import org.junit.jupiter.api.Test;
 
-public class LeshanBootstrapServerTest {
+class LeshanBootstrapServerTest {
 
     private BootstrapHandler bsHandler;
 
@@ -71,18 +72,22 @@ public class LeshanBootstrapServerTest {
     }
 
     @Test
-    public void testStartStopStart() throws InterruptedException {
-        LeshanBootstrapServer server = createBootstrapServer();
+    @SuppressWarnings("java:S2925") // Thread.sleep usage is justified
+    void testStartStopStart() {
+        assertDoesNotThrow(() -> {
+            LeshanBootstrapServer server = createBootstrapServer();
 
-        server.start();
-        Thread.sleep(100);
-        server.stop();
-        Thread.sleep(100);
-        server.start();
+            server.start();
+            Thread.sleep(100);
+            server.stop();
+            Thread.sleep(100);
+            server.start();
+        });
     }
 
     @Test
-    public void testStartDestroy() throws InterruptedException {
+    @SuppressWarnings("java:S2925") // Thread.sleep usage is justified
+    void testStartDestroy() throws InterruptedException {
         // look at nb active thread before.
         int numberOfThreadbefore = Thread.activeCount();
 
@@ -100,7 +105,8 @@ public class LeshanBootstrapServerTest {
     }
 
     @Test
-    public void testStartStopDestroy() throws InterruptedException {
+    @SuppressWarnings("java:S2925") // Thread.sleep usage is justified
+    void testStartStopDestroy() throws InterruptedException {
         // look at nb active thread before.
         int numberOfThreadbefore = Thread.activeCount();
 

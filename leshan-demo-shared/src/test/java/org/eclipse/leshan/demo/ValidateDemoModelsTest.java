@@ -15,17 +15,15 @@
  *******************************************************************************/
 package org.eclipse.leshan.demo;
 
-import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-import org.eclipse.leshan.core.model.InvalidDDFFileException;
-import org.eclipse.leshan.core.model.InvalidModelException;
 import org.eclipse.leshan.core.model.ObjectLoader;
 import org.junit.jupiter.api.Test;
 
-public class ValidateDemoModelsTest {
+class ValidateDemoModelsTest {
 
     @Test
-    public void validate_embedded_models() throws InvalidModelException, InvalidDDFFileException, IOException {
-        ObjectLoader.loadDdfResources("/models/", LwM2mDemoConstant.modelPaths, true);
+    void validate_embedded_models() {
+        assertDoesNotThrow(() -> ObjectLoader.loadDdfResources("/models/", LwM2mDemoConstant.modelPaths, true));
     }
 }

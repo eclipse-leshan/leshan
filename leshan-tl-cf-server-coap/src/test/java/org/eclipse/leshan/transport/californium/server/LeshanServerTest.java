@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.transport.californium.server;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.InetSocketAddress;
@@ -24,9 +25,6 @@ import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ReadRequest;
-import org.eclipse.leshan.core.response.ErrorCallback;
-import org.eclipse.leshan.core.response.ReadResponse;
-import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.LeshanServerBuilder;
 import org.eclipse.leshan.server.queue.PresenceServiceImpl;
@@ -35,29 +33,34 @@ import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServe
 import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServerEndpointsProvider.Builder;
 import org.junit.jupiter.api.Test;
 
-public class LeshanServerTest {
+class LeshanServerTest {
 
     @Test
-    public void testStartStopStart() throws InterruptedException {
-        Builder EndpointProviderbuilder = new CaliforniumServerEndpointsProvider.Builder();
-        EndpointProviderbuilder.addEndpoint(new InetSocketAddress(0), Protocol.COAP);
-        LeshanServer server = new LeshanServerBuilder().setEndpointsProviders(EndpointProviderbuilder.build()).build();
+    @SuppressWarnings("java:S2925") // Thread.sleep usage is justified
+    void testStartStopStart() {
+        assertDoesNotThrow(() -> {
+            Builder endpointProviderbuilder = new CaliforniumServerEndpointsProvider.Builder();
+            endpointProviderbuilder.addEndpoint(new InetSocketAddress(0), Protocol.COAP);
+            LeshanServer server = new LeshanServerBuilder().setEndpointsProviders(endpointProviderbuilder.build())
+                    .build();
 
-        server.start();
-        Thread.sleep(100);
-        server.stop();
-        Thread.sleep(100);
-        server.start();
+            server.start();
+            Thread.sleep(100);
+            server.stop();
+            Thread.sleep(100);
+            server.start();
+        });
     }
 
     @Test
-    public void testStartDestroy() throws InterruptedException {
+    @SuppressWarnings("java:S2925") // Thread.sleep usage is justified
+    void testStartDestroy() throws InterruptedException {
         // look at nb active thread before.
         int numberOfThreadbefore = Thread.activeCount();
 
-        Builder EndpointProviderbuilder = new CaliforniumServerEndpointsProvider.Builder();
-        EndpointProviderbuilder.addEndpoint(new InetSocketAddress(0), Protocol.COAP);
-        LeshanServer server = new LeshanServerBuilder().setEndpointsProviders(EndpointProviderbuilder.build()).build();
+        Builder endpointProviderbuilder = new CaliforniumServerEndpointsProvider.Builder();
+        endpointProviderbuilder.addEndpoint(new InetSocketAddress(0), Protocol.COAP);
+        LeshanServer server = new LeshanServerBuilder().setEndpointsProviders(endpointProviderbuilder.build()).build();
 
         server.start();
         Thread.sleep(100);
@@ -72,13 +75,14 @@ public class LeshanServerTest {
     }
 
     @Test
-    public void testStartStopDestroy() throws InterruptedException {
+    @SuppressWarnings("java:S2925") // Thread.sleep usage is justified
+    void testStartStopDestroy() throws InterruptedException {
         // look at nb active thread before.
         int numberOfThreadbefore = Thread.activeCount();
 
-        Builder EndpointProviderbuilder = new CaliforniumServerEndpointsProvider.Builder();
-        EndpointProviderbuilder.addEndpoint(new InetSocketAddress(0), Protocol.COAP);
-        LeshanServer server = new LeshanServerBuilder().setEndpointsProviders(EndpointProviderbuilder.build()).build();
+        Builder endpointProviderbuilder = new CaliforniumServerEndpointsProvider.Builder();
+        endpointProviderbuilder.addEndpoint(new InetSocketAddress(0), Protocol.COAP);
+        LeshanServer server = new LeshanServerBuilder().setEndpointsProviders(endpointProviderbuilder.build()).build();
 
         server.start();
         Thread.sleep(100);
@@ -95,13 +99,14 @@ public class LeshanServerTest {
     }
 
     @Test
-    public void testStartStopDestroyQueueModeDisabled() throws InterruptedException {
+    @SuppressWarnings("java:S2925") // Thread.sleep usage is justified
+    void testStartStopDestroyQueueModeDisabled() throws InterruptedException {
         // look at nb active thread before.
         int numberOfThreadbefore = Thread.activeCount();
 
-        Builder EndpointProviderbuilder = new CaliforniumServerEndpointsProvider.Builder();
-        EndpointProviderbuilder.addEndpoint(new InetSocketAddress(0), Protocol.COAP);
-        LeshanServer server = new LeshanServerBuilder().setEndpointsProviders(EndpointProviderbuilder.build())
+        Builder endpointProviderbuilder = new CaliforniumServerEndpointsProvider.Builder();
+        endpointProviderbuilder.addEndpoint(new InetSocketAddress(0), Protocol.COAP);
+        LeshanServer server = new LeshanServerBuilder().setEndpointsProviders(endpointProviderbuilder.build())
                 .disableQueueModeSupport().build();
         server.start();
         Thread.sleep(100);
@@ -126,14 +131,8 @@ public class LeshanServerTest {
             ((PresenceServiceImpl) server.getPresenceService()).setAwake(reg);
         }
         // Force time thread creation of CoapAsyncRequestObserver
-        server.send(reg, new ReadRequest(3), new ResponseCallback<ReadResponse>() {
-            @Override
-            public void onResponse(ReadResponse response) {
-            }
-        }, new ErrorCallback() {
-            @Override
-            public void onError(Exception e) {
-            }
+        server.send(reg, new ReadRequest(3), r -> {
+        }, e -> {
         });
     }
 }
