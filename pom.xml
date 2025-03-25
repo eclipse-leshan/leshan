@@ -659,6 +659,14 @@ Contributors:
                 <groupId>org.eclipse.californium</groupId>
                 <artifactId>californium-core</artifactId>
                 <version>${californium.version}</version>
+                <exclusions>
+                    <!-- vulnerable dependencies only needed when java11 or lower is used -->
+                    <!-- see for more details : https://github.com/aquasecurity/trivy/discussions/8606 -->
+	                <exclusion>
+	                    <groupId>net.i2p.crypto</groupId>
+	                    <artifactId>eddsa</artifactId>
+	                </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.californium</groupId>
