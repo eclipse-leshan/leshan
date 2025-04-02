@@ -201,7 +201,7 @@ public class ServersInfoExtractor {
                 info.serverPublicKey = getServerPublicKey(security);
                 info.sni = getSNI(security);
             } else if (info.secureMode == SecurityMode.X509) {
-                info.clientCertificate = getClientCertificate(security);
+                info.clientCertificates = getClientCertificates(security);
                 info.serverCertificate = getServerCertificate(security);
                 info.privateKey = getPrivateKey(security);
                 info.certificateUsage = getCertificateUsage(security);
@@ -385,15 +385,15 @@ public class ServersInfoExtractor {
         }
     }
 
-    private static Certificate getClientCertificate(LwM2mObjectInstance securityInstance) {
+    private static Certificate[] getClientCertificates(LwM2mObjectInstance securityInstance) {
         byte[] encodedCert = (byte[]) securityInstance.getResource(SEC_PUBKEY_IDENTITY).getValue();
         try {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             try (ByteArrayInputStream in = new ByteArrayInputStream(encodedCert)) {
-                return cf.generateCertificate(in);
+                return cf.generateCertificates(in).toArray(new Certificate[] {});
             }
         } catch (CertificateException | IOException e) {
-            throw new IllegalArgumentException("Failed to decode X.509 certificate", e);
+            throw new IllegalArgumentException("Failed to decode X.509 certificates", e);
         }
     }
 

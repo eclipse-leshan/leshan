@@ -110,7 +110,9 @@ public class DefaultClientEndpointNameProvider implements ClientEndpointNameProv
             case PSK:
                 return serverInfo.pskId;
             case X509:
-                return X509CertUtil.extractCN(((X509Certificate) serverInfo.clientCertificate).getIssuerDN().getName());
+                // the first certificate in a chain is a device certificate
+                return X509CertUtil
+                        .extractCN(((X509Certificate) serverInfo.clientCertificates[0]).getIssuerDN().getName());
             default:
                 return null;
             }
