@@ -153,7 +153,7 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
             } else if (serverInfo.secureMode == SecurityMode.X509) {
                 // set identity
                 SingleCertificateProvider singleCertificateProvider = new SingleCertificateProvider(
-                        serverInfo.privateKey, new Certificate[] { serverInfo.clientCertificate });
+                        serverInfo.privateKey, serverInfo.clientCertificates);
                 // we don't want to check Key Pair here, if we do it this should be done in BootstrapConsistencyChecker
                 singleCertificateProvider.setVerifyKeyPair(false);
                 effectiveBuilder.setCertificateIdentityProvider(singleCertificateProvider);
@@ -193,7 +193,8 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
             if (incompleteConfig.getConfiguration().get(DtlsConfig.DTLS_ROLE) == DtlsRole.BOTH) {
                 // Ensure that BOTH mode can be used or fallback to CLIENT_ONLY
                 if (serverInfo.secureMode == SecurityMode.X509) {
-                    X509Certificate certificate = (X509Certificate) serverInfo.clientCertificate;
+                    // the first certificate in a chain is a device certificate
+                    X509Certificate certificate = (X509Certificate) serverInfo.clientCertificates[0];
                     if (CertPathUtil.canBeUsedForAuthentication(certificate, true)) {
                         if (!CertPathUtil.canBeUsedForAuthentication(certificate, false)) {
                             effectiveBuilder.set(DtlsConfig.DTLS_ROLE, DtlsRole.CLIENT_ONLY);

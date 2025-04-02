@@ -46,7 +46,8 @@ public class DefaultBootstrapConsistencyChecker extends BaseBootstrapConsistency
 
     private void checkCertificateIsValid(ServerInfo serverInfo, List<String> errors) {
         if (serverInfo.secureMode == SecurityMode.X509) {
-            if (!X509CertUtil.canBeUsedForAuthentication((X509Certificate) serverInfo.clientCertificate, true)) {
+            // the first certificate in a chain is a device certificate
+            if (!X509CertUtil.canBeUsedForAuthentication((X509Certificate) serverInfo.clientCertificates[0], true)) {
                 errors.add(String.format("Client certificate for %s server can not be used for authenticate a client",
                         serverInfo.bootstrap ? "bootstrap" : serverInfo.serverId));
             }
