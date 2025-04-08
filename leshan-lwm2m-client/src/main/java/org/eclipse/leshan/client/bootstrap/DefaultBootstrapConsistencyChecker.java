@@ -44,17 +44,21 @@ public class DefaultBootstrapConsistencyChecker extends BaseBootstrapConsistency
         checkOscoreIsValid(serverInfo, errors);
     }
 
-    private void checkCertificateIsValid(ServerInfo serverInfo, List<String> errors) {
+    protected void checkCertificateIsValid(ServerInfo serverInfo, List<String> errors) {
         if (serverInfo.secureMode == SecurityMode.X509) {
             // the first certificate in a chain is a device certificate
             if (!X509CertUtil.canBeUsedForAuthentication((X509Certificate) serverInfo.clientCertificates[0], true)) {
                 errors.add(String.format("Client certificate for %s server can not be used for authenticate a client",
                         serverInfo.bootstrap ? "bootstrap" : serverInfo.serverId));
             }
+            // by default don't support chains!
+            if (serverInfo.clientCertificates.length > 1) {
+                errors.add("Client certificate chain for is not supported");
+            }
         }
     }
 
-    private void checkOscoreIsValid(ServerInfo serverInfo, List<String> errors) {
+    protected void checkOscoreIsValid(ServerInfo serverInfo, List<String> errors) {
         if (serverInfo.useOscore) {
             try {
                 oscoreValidator.validateOscoreSetting(serverInfo.oscoreSetting);

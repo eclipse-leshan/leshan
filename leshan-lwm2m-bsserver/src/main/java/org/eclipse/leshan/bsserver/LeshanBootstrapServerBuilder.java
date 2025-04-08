@@ -358,7 +358,7 @@ public class LeshanBootstrapServerBuilder {
             // Handle class depending of Task Provider
             if (taskProvider == null) {
                 if (configStore == null) {
-                    configStore = new InMemoryBootstrapConfigStore();
+                    configStore = new InMemoryBootstrapConfigStore(new DefaultConfigurationChecker());
                 }
                 taskProvider = new BootstrapConfigStoreTaskProvider(configStore);
             } else {

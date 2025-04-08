@@ -29,6 +29,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.eclipse.leshan.bsserver.BootstrapConfig;
+import org.eclipse.leshan.bsserver.ConfigurationChecker;
+import org.eclipse.leshan.bsserver.DefaultConfigurationChecker;
 import org.eclipse.leshan.bsserver.EditableBootstrapConfigStore;
 import org.eclipse.leshan.bsserver.InMemoryBootstrapConfigStore;
 import org.eclipse.leshan.bsserver.InvalidConfigurationException;
@@ -69,9 +71,25 @@ public class JSONFileBootstrapStore extends InMemoryBootstrapConfigStore {
     }
 
     /**
+     * @param configChecker custom configuration checker implementation
+     */
+    public JSONFileBootstrapStore(ConfigurationChecker configChecker) {
+        this(DEFAULT_FILE, configChecker);
+    }
+
+    /**
      * @param filename the file path to persist the registry
      */
     public JSONFileBootstrapStore(String filename) {
+        this(filename, new DefaultConfigurationChecker());
+    }
+
+    /**
+     * @param filename the file path to persist the registry
+     * @param configChecker custom configuration checker implementation
+     */
+    public JSONFileBootstrapStore(String filename, ConfigurationChecker configChecker) {
+        super(configChecker);
         Validate.notEmpty(filename);
 
         mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
