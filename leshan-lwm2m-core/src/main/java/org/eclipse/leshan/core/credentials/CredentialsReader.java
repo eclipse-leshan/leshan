@@ -15,10 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.credentials;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.security.GeneralSecurityException;
 
@@ -45,8 +45,14 @@ public abstract class CredentialsReader<T> {
      * @see java.lang.ClassLoader#getResourceAsStream(String)
      */
     public T readFromResource(String resourcePath) throws IOException, GeneralSecurityException {
-        try (InputStream in = ClassLoader.getSystemResourceAsStream(resourcePath)) {
-            return decode(in);
+        try (BufferedInputStream in = new BufferedInputStream(ClassLoader.getSystemResourceAsStream(resourcePath))) {
+            T decodedValue = decode(in);
+
+            if (in.available() != 0) {
+                throw new GeneralSecurityException(
+                        String.format("%d unexpected bytes at the end of the file", in.available()));
+            }
+            return decodedValue;
         }
     }
 
@@ -54,15 +60,21 @@ public abstract class CredentialsReader<T> {
      * Decode credential from byte array.
      */
     public T decode(byte[] bytes) throws IOException, GeneralSecurityException {
-        try (ByteArrayInputStream in = new ByteArrayInputStream(bytes)) {
-            return decode(in);
+        try (BufferedInputStream in = new BufferedInputStream(new ByteArrayInputStream(bytes))) {
+            T decodedValue = decode(in);
+
+            if (in.available() != 0) {
+                throw new GeneralSecurityException(
+                        String.format("%d unexpected bytes at the end of the array", in.available()));
+            }
+            return decodedValue;
         }
     }
 
     /**
      * Decode credential from an InputStream.
      */
-    public T decode(InputStream in) throws IOException, GeneralSecurityException {
+    public T decode(BufferedInputStream in) throws IOException, GeneralSecurityException {
         try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
             int nRead;
             byte[] data = new byte[1024];

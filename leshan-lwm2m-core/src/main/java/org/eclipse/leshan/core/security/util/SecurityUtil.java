@@ -15,7 +15,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.security.util;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -28,7 +32,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.leshan.core.credentials.CredentialsReader;
 
@@ -52,54 +56,98 @@ public class SecurityUtil {
         }
     };
 
+    public static CredentialsReader<X509Certificate> derCertificate = new CredentialsReader<X509Certificate>() {
+        @Override
+        public X509Certificate decode(BufferedInputStream inputStream) throws CertificateException {
+            assertDerEncoding(inputStream);
+            return readCertificate(inputStream);
+        }
+    };
+
+    public static CredentialsReader<X509Certificate> pemCertificate = new CredentialsReader<X509Certificate>() {
+        @Override
+        public X509Certificate decode(BufferedInputStream inputStream) throws CertificateException {
+            assertPemEncoding(inputStream);
+            return readCertificate(inputStream);
+        }
+    };
+
     public static CredentialsReader<X509Certificate> certificate = new CredentialsReader<X509Certificate>() {
         @Override
-        public X509Certificate decode(InputStream inputStream) throws CertificateException {
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            Certificate certificate = cf.generateCertificate(inputStream);
-
-            // we support only EC algorithm
-            if (!"EC".equals(certificate.getPublicKey().getAlgorithm())) {
-                throw new CertificateException(
-                        String.format("%s algorithm is not supported, Only EC algorithm is supported",
-                                certificate.getPublicKey().getAlgorithm()));
-            }
-
-            // we support only X509 certificate
-            if (!(certificate instanceof X509Certificate)) {
-                throw new CertificateException(
-                        String.format("%s certificate format is not supported, Only X.509 certificate is supported",
-                                certificate.getType()));
-            } else {
-                return (X509Certificate) certificate;
-            }
+        public X509Certificate decode(BufferedInputStream inputStream) throws CertificateException {
+            return readCertificate(inputStream);
         }
     };
 
     public static CredentialsReader<X509Certificate[]> certificateChain = new CredentialsReader<X509Certificate[]>() {
         @Override
-        public X509Certificate[] decode(InputStream inputStream) throws CertificateException {
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            Collection<? extends Certificate> certificates = cf.generateCertificates(inputStream);
-            ArrayList<X509Certificate> x509Certificates = new ArrayList<>();
+        public X509Certificate[] decode(BufferedInputStream inputStream) throws CertificateException {
+            try {
 
-            for (Certificate cert : certificates) {
-                if (!(cert instanceof X509Certificate)) {
-                    throw new CertificateException(
-                            String.format("%s certificate format is not supported, Only X.509 certificate is supported",
-                                    cert.getType()));
+                List<X509Certificate> chain = new ArrayList<>();
+                X509Certificate cert;
+                while (inputStream.available() != 0) {
+                    cert = readCertificate(inputStream);
+                    chain.add(cert);
                 }
-                x509Certificates.add((X509Certificate) cert);
+                return chain.toArray(new X509Certificate[chain.size()]);
+            } catch (IOException e) {
+                throw new CertificateException("Unexpected IOException while loading certificate chain", e);
             }
-
-            // we support only EC algorithm
-            if (!"EC".equals(x509Certificates.get(0).getPublicKey().getAlgorithm())) {
-                throw new CertificateException(
-                        String.format("%s algorithm is not supported, Only EC algorithm is supported",
-                                x509Certificates.get(0).getPublicKey().getAlgorithm()));
-            }
-
-            return x509Certificates.toArray(new X509Certificate[0]);
         }
     };
+
+    private static void assertDerEncoding(BufferedInputStream bis) throws CertificateException {
+        try {
+            bis.mark(10); // mark position with read limit (10 bytes is enough to peek at DER)
+            int firstByte = bis.read();
+            boolean foundDerStart = firstByte == 0x30; // ASN.1 SEQUENCE tag
+            bis.reset(); // rewind back to beginning
+
+            if (!foundDerStart) {
+                throw new CertificateException("The certificate is not DER-encoded. Only DER format is supported.");
+            }
+        } catch (IOException e) {
+            throw new CertificateException("Unexpected IOException while checking if certificate is DER encoded", e);
+        }
+    }
+
+    private static void assertPemEncoding(BufferedInputStream bis) throws CertificateException {
+        try {
+            bis.mark(1024); // enough to scan first few lines
+            BufferedReader reader = new BufferedReader(new InputStreamReader(bis));
+
+            String firstLine = reader.readLine();
+            boolean foundPemStart = firstLine != null && firstLine.contains("-----BEGIN CERTIFICATE-----");
+            bis.reset(); // rewind for actual parsing
+
+            if (!foundPemStart) {
+                throw new CertificateException("The certificate is not PEM-encoded. Only PEM format is supported.");
+            }
+        } catch (IOException e) {
+            throw new CertificateException("Unexpected IOException while checking if certificate is PEM encoded", e);
+        }
+    }
+
+    private static X509Certificate readCertificate(InputStream inputStream) throws CertificateException {
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        Certificate certificate = cf.generateCertificate(inputStream);
+
+        // we support only EC algorithm
+        if (!"EC".equals(certificate.getPublicKey().getAlgorithm())) {
+            throw new CertificateException(
+                    String.format("%s algorithm is not supported, Only EC algorithm is supported",
+                            certificate.getPublicKey().getAlgorithm()));
+        }
+
+        // we support only X509 certificate
+        if (!(certificate instanceof X509Certificate)) {
+            throw new CertificateException(
+                    String.format("%s certificate format is not supported, Only X.509 certificate is supported",
+                            certificate.getType()));
+        } else {
+            return (X509Certificate) certificate;
+        }
+    }
+
 }
