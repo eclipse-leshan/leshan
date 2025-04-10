@@ -39,6 +39,16 @@ cat client_cert.pem root_cert.pem> client_chain.pem
 # Cert chain in DER encoding
 cat client_cert.der root_cert.der > client_chain.der
 
+###############################
+### create self-signed server certificate
+###############################
+openssl ecparam -out server_keys.pem -name prime256v1 -genkey 
+openssl pkcs8 -topk8 -inform PEM -outform DER -in server_keys.pem -out server_prik.der -nocrypt
+openssl req -x509 -new -key server_keys.pem -sha256 -days 36500 \
+                       -subj '/CN=YOUR_COMMON_NAME/C=FR' \
+                       -addext "keyUsage = digitalSignature,keyAgreement" \
+                       -addext "extendedKeyUsage = serverAuth, clientAuth" \
+                       -outform DER -out server_cert.der
 
 ################################################################
 ###             create crappy files with garbage data        ### 

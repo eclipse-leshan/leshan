@@ -54,6 +54,9 @@ public class TestCredentialsUtil {
     public static final Credential CLIENT_CHAIN_WITH_GARBAGE_DATA_BETWEEN_PEM = new Credential(
             "client_chain_with_garbage_between", PEM);
 
+    public static final Credential SERVER_PRIVATE_KEY_DER = new Credential("server_prik", DER);
+    public static final Credential SERVER_CERT_DER = new Credential("server_cert", DER);
+
     public static class Credential {
         private final String filename;
         private final String extention;

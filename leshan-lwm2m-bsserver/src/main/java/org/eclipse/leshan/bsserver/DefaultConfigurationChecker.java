@@ -219,7 +219,7 @@ public class DefaultConfigurationChecker implements ConfigurationChecker {
 
     protected Certificate decodeCertificate(byte[] encodedCert) throws InvalidConfigurationException {
         try {
-            return SecurityUtil.certificate.decode(encodedCert);
+            return SecurityUtil.derCertificate.decode(encodedCert);
         } catch (IOException | GeneralSecurityException e) {
             throw new InvalidConfigurationException("Failed to decode X.509 certificate", e);
         }
