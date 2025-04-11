@@ -87,11 +87,11 @@ public class ServersInfoExtractor {
     private static final Logger LOG = LoggerFactory.getLogger(ServersInfoExtractor.class);
     private static LwM2mObject oscores = null;
 
-    public static ServersInfo getInfo(Map<Integer, LwM2mObjectEnabler> objectEnablers) {
+    public ServersInfo getInfo(Map<Integer, LwM2mObjectEnabler> objectEnablers) {
         return getInfo(objectEnablers, false);
     }
 
-    public static ServersInfo getInfo(Map<Integer, LwM2mObjectEnabler> objectEnablers, boolean raiseException)
+    public ServersInfo getInfo(Map<Integer, LwM2mObjectEnabler> objectEnablers, boolean raiseException)
             throws IllegalStateException {
 
         LwM2mObjectEnabler securityEnabler = objectEnablers.get(SECURITY);
@@ -148,7 +148,7 @@ public class ServersInfoExtractor {
         return infos;
     }
 
-    private static void populateServerInfo(ServerInfo info, LwM2mObjectInstance security) {
+    private void populateServerInfo(ServerInfo info, LwM2mObjectInstance security) {
         try {
             LwM2mResource serverIdResource = security.getResource(SEC_SERVER_ID);
             if (serverIdResource != null && serverIdResource.getValue() != null)
@@ -212,7 +212,7 @@ public class ServersInfoExtractor {
         }
     }
 
-    private static DmServerInfo createDMServerInfo(LwM2mObjectInstance security, LwM2mObject servers) {
+    private DmServerInfo createDMServerInfo(LwM2mObjectInstance security, LwM2mObject servers) {
         DmServerInfo info = new DmServerInfo();
         info.bootstrap = false;
         populateServerInfo(info, security);
@@ -232,7 +232,7 @@ public class ServersInfoExtractor {
         return null;
     }
 
-    public static DmServerInfo getDMServerInfo(Map<Integer, LwM2mObjectEnabler> objectEnablers, Long shortID) {
+    public DmServerInfo getDMServerInfo(Map<Integer, LwM2mObjectEnabler> objectEnablers, Long shortID) {
         ServersInfo info = getInfo(objectEnablers);
         if (info == null)
             return null;
@@ -240,7 +240,7 @@ public class ServersInfoExtractor {
         return info.deviceManagements.get(shortID);
     }
 
-    public static LwM2mObjectInstance getBootstrapSecurityInstance(LwM2mObjectEnabler securityEnabler) {
+    public LwM2mObjectInstance getBootstrapSecurityInstance(LwM2mObjectEnabler securityEnabler) {
         LwM2mObject securities = (LwM2mObject) securityEnabler.read(SYSTEM, new ReadRequest(SECURITY)).getContent();
         if (securities != null) {
             for (LwM2mObjectInstance instance : securities.getInstances().values()) {
@@ -253,7 +253,7 @@ public class ServersInfoExtractor {
         return null;
     }
 
-    public static ServerInfo getBootstrapServerInfo(Map<Integer, LwM2mObjectEnabler> objectEnablers) {
+    public ServerInfo getBootstrapServerInfo(Map<Integer, LwM2mObjectEnabler> objectEnablers) {
         ServersInfo info = getInfo(objectEnablers);
         if (info == null)
             return null;
@@ -261,7 +261,7 @@ public class ServersInfoExtractor {
         return info.bootstrap;
     }
 
-    public static Long getLifeTime(LwM2mObjectEnabler serverEnabler, int instanceId) {
+    public Long getLifeTime(LwM2mObjectEnabler serverEnabler, int instanceId) {
         ReadResponse response = serverEnabler.read(LwM2mServer.SYSTEM,
                 new ReadRequest(SERVER, instanceId, SRV_LIFETIME));
         if (response.isSuccess()) {
@@ -271,7 +271,7 @@ public class ServersInfoExtractor {
         }
     }
 
-    public static EnumSet<BindingMode> getServerBindingMode(LwM2mObjectEnabler serverEnabler, int instanceId) {
+    public EnumSet<BindingMode> getServerBindingMode(LwM2mObjectEnabler serverEnabler, int instanceId) {
         ReadResponse response = serverEnabler.read(LwM2mServer.SYSTEM,
                 new ReadRequest(SERVER, instanceId, SRV_BINDING));
         if (response.isSuccess()) {
@@ -281,7 +281,7 @@ public class ServersInfoExtractor {
         }
     }
 
-    public static EnumSet<BindingMode> getDeviceSupportedBindingMode(LwM2mObjectEnabler deviceEnabler, int instanceId) {
+    public EnumSet<BindingMode> getDeviceSupportedBindingMode(LwM2mObjectEnabler deviceEnabler, int instanceId) {
         ReadResponse response = deviceEnabler.read(LwM2mServer.SYSTEM,
                 new ReadRequest(DEVICE, instanceId, DVC_SUPPORTED_BINDING));
         if (response.isSuccess()) {
@@ -291,7 +291,7 @@ public class ServersInfoExtractor {
         }
     }
 
-    public static Boolean isBootstrapServer(LwM2mObjectEnabler objectEnabler, int instanceId) {
+    public Boolean isBootstrapServer(LwM2mObjectEnabler objectEnabler, int instanceId) {
         ReadResponse response = objectEnabler.read(LwM2mServer.SYSTEM,
                 new ReadRequest(SECURITY, instanceId, SEC_BOOTSTRAP));
         if (response != null && response.isSuccess()) {
@@ -301,7 +301,7 @@ public class ServersInfoExtractor {
         }
     }
 
-    public static Long getServerId(LwM2mObjectEnabler objectEnabler, int instanceId) {
+    public Long getServerId(LwM2mObjectEnabler objectEnabler, int instanceId) {
         ReadResponse response = null;
         if (objectEnabler.getId() == SERVER) {
             response = objectEnabler.read(LwM2mServer.SYSTEM, new ReadRequest(SERVER, instanceId, SRV_SERVER_ID));
@@ -315,7 +315,7 @@ public class ServersInfoExtractor {
         }
     }
 
-    public static String getServerURI(LwM2mObjectEnabler objectEnabler, int instanceId) {
+    public String getServerURI(LwM2mObjectEnabler objectEnabler, int instanceId) {
         ReadResponse response = null;
         if (objectEnabler.getId() == SECURITY) {
             response = objectEnabler.read(LwM2mServer.SYSTEM, new ReadRequest(SECURITY, instanceId, SEC_SERVER_URI));
@@ -327,24 +327,24 @@ public class ServersInfoExtractor {
         }
     }
 
-    public static SecurityMode getSecurityMode(LwM2mObjectInstance securityInstance) {
+    public SecurityMode getSecurityMode(LwM2mObjectInstance securityInstance) {
         return SecurityMode.fromCode((long) securityInstance.getResource(SEC_SECURITY_MODE).getValue());
     }
 
-    public static CertificateUsage getCertificateUsage(LwM2mObjectInstance securityInstance) {
+    public CertificateUsage getCertificateUsage(LwM2mObjectInstance securityInstance) {
         return CertificateUsage.fromCode((ULong) securityInstance.getResource(SEC_CERTIFICATE_USAGE).getValue());
     }
 
-    public static String getPskIdentity(LwM2mObjectInstance securityInstance) {
+    public String getPskIdentity(LwM2mObjectInstance securityInstance) {
         byte[] pubKey = (byte[]) securityInstance.getResource(SEC_PUBKEY_IDENTITY).getValue();
         return new String(pubKey);
     }
 
-    public static byte[] getPskKey(LwM2mObjectInstance securityInstance) {
+    public byte[] getPskKey(LwM2mObjectInstance securityInstance) {
         return (byte[]) securityInstance.getResource(SEC_SECRET_KEY).getValue();
     }
 
-    private static PublicKey getPublicKey(LwM2mObjectInstance securityInstance) {
+    private PublicKey getPublicKey(LwM2mObjectInstance securityInstance) {
         byte[] encodedKey = (byte[]) securityInstance.getResource(SEC_PUBKEY_IDENTITY).getValue();
         X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encodedKey);
         String algorithm = "EC";
@@ -358,7 +358,7 @@ public class ServersInfoExtractor {
         }
     }
 
-    private static PrivateKey getPrivateKey(LwM2mObjectInstance securityInstance) {
+    private PrivateKey getPrivateKey(LwM2mObjectInstance securityInstance) {
         byte[] encodedKey = (byte[]) securityInstance.getResource(SEC_SECRET_KEY).getValue();
         try {
             return SecurityUtil.privateKey.decode(encodedKey);
@@ -367,7 +367,7 @@ public class ServersInfoExtractor {
         }
     }
 
-    private static PublicKey getServerPublicKey(LwM2mObjectInstance securityInstance) {
+    private PublicKey getServerPublicKey(LwM2mObjectInstance securityInstance) {
         byte[] encodedKey = (byte[]) securityInstance.getResource(SEC_SERVER_PUBKEY).getValue();
         try {
             return SecurityUtil.publicKey.decode(encodedKey);
@@ -385,7 +385,7 @@ public class ServersInfoExtractor {
         }
     }
 
-    private static Certificate[] getClientCertificates(LwM2mObjectInstance securityInstance) {
+    private Certificate[] getClientCertificates(LwM2mObjectInstance securityInstance) {
         byte[] encodedCert = (byte[]) securityInstance.getResource(SEC_PUBKEY_IDENTITY).getValue();
         try {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
@@ -397,7 +397,7 @@ public class ServersInfoExtractor {
         }
     }
 
-    private static String getSNI(LwM2mObjectInstance securityInstance) {
+    private String getSNI(LwM2mObjectInstance securityInstance) {
         LwM2mResource resource = securityInstance.getResource(SEC_SNI);
         if (resource == null) {
             return null;
@@ -406,7 +406,7 @@ public class ServersInfoExtractor {
         }
     }
 
-    public static boolean isBootstrapServer(LwM2mInstanceEnabler instance) {
+    public boolean isBootstrapServer(LwM2mInstanceEnabler instance) {
         ReadResponse response = instance.read(LwM2mServer.SYSTEM, LwM2mId.SEC_BOOTSTRAP);
         if (response == null || response.isFailure()) {
             return false;
@@ -416,7 +416,7 @@ public class ServersInfoExtractor {
         return (Boolean) isBootstrap.getValue();
     }
 
-    public static boolean isBootstrapServer(LwM2mObjectInstance instance) {
+    public boolean isBootstrapServer(LwM2mObjectInstance instance) {
         LwM2mResource resource = instance.getResource(SEC_BOOTSTRAP);
         if (resource == null) {
             return false;
@@ -426,26 +426,26 @@ public class ServersInfoExtractor {
 
     // OSCORE related methods below
 
-    public static Integer getOscoreSecurityMode(LwM2mObjectInstance securityInstance) {
+    public Integer getOscoreSecurityMode(LwM2mObjectInstance securityInstance) {
         LwM2mResource resource = securityInstance.getResource(LwM2mId.SEC_OSCORE_SECURITY_MODE);
         if (resource != null)
             return ((ObjectLink) resource.getValue()).getObjectInstanceId();
         return null;
     }
 
-    public static byte[] getMasterSecret(LwM2mObjectInstance oscoreInstance) {
+    public byte[] getMasterSecret(LwM2mObjectInstance oscoreInstance) {
         return (byte[]) oscoreInstance.getResource(OSCORE_MASTER_SECRET).getValue();
     }
 
-    public static byte[] getSenderId(LwM2mObjectInstance oscoreInstance) {
+    public byte[] getSenderId(LwM2mObjectInstance oscoreInstance) {
         return (byte[]) oscoreInstance.getResource(OSCORE_SENDER_ID).getValue();
     }
 
-    public static byte[] getRecipientId(LwM2mObjectInstance oscoreInstance) {
+    public byte[] getRecipientId(LwM2mObjectInstance oscoreInstance) {
         return (byte[]) oscoreInstance.getResource(OSCORE_RECIPIENT_ID).getValue();
     }
 
-    public static long getAeadAlgorithm(LwM2mObjectInstance oscoreInstance) {
+    public long getAeadAlgorithm(LwM2mObjectInstance oscoreInstance) {
         LwM2mResource resource = oscoreInstance.getResource(OSCORE_AEAD_ALGORITHM);
         if (resource != null)
             return (long) resource.getValue();
@@ -453,7 +453,7 @@ public class ServersInfoExtractor {
         return AeadAlgorithm.AES_CCM_16_64_128.getValue();
     }
 
-    public static long getHkdfAlgorithm(LwM2mObjectInstance oscoreInstance) {
+    public long getHkdfAlgorithm(LwM2mObjectInstance oscoreInstance) {
         LwM2mResource resource = oscoreInstance.getResource(OSCORE_HMAC_ALGORITHM);
         if (resource != null)
             return (long) resource.getValue();
@@ -461,7 +461,7 @@ public class ServersInfoExtractor {
         return HkdfAlgorithm.HKDF_HMAC_SHA_256.getValue();
     }
 
-    public static byte[] getMasterSalt(LwM2mObjectInstance oscoreInstance) {
+    public byte[] getMasterSalt(LwM2mObjectInstance oscoreInstance) {
         LwM2mResource resource = oscoreInstance.getResource(OSCORE_MASTER_SALT);
         if (resource == null)
             return null;

@@ -395,7 +395,7 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
                 int[] instanceIds = new int[instances.size()];
                 int i = 0;
                 for (Entry<Integer, LwM2mInstanceEnabler> instance : instances.entrySet()) {
-                    if (ServersInfoExtractor.isBootstrapServer(instance.getValue())) {
+                    if (getServersInfoExtractor().isBootstrapServer(instance.getValue())) {
                         bootstrapServerAccount = instance;
                     } else {
                         // Store instance ids
@@ -417,11 +417,11 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
                 // For OSCORE object, we clean everything except OSCORE object link to bootstrap Server account.
 
                 // Get bootstrap account
-                LwM2mObjectInstance bootstrapInstance = ServersInfoExtractor.getBootstrapSecurityInstance(
+                LwM2mObjectInstance bootstrapInstance = getServersInfoExtractor().getBootstrapSecurityInstance(
                         getLwm2mClient().getObjectTree().getObjectEnabler(LwM2mId.SECURITY));
                 // Get OSCORE instance ID associated to it
                 Integer bootstrapOscoreInstanceId = bootstrapInstance != null
-                        ? ServersInfoExtractor.getOscoreSecurityMode(bootstrapInstance)
+                        ? getServersInfoExtractor().getOscoreSecurityMode(bootstrapInstance)
                         : null;
 
                 // if bootstrap server use OSCORE,
@@ -472,18 +472,18 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
                 if (instance == null) {
                     return BootstrapDeleteResponse
                             .badRequest(String.format("Instance %s not found", request.getPath()));
-                } else if (ServersInfoExtractor.isBootstrapServer(instance)) {
+                } else if (getServersInfoExtractor().isBootstrapServer(instance)) {
                     return BootstrapDeleteResponse.badRequest("bootstrap server can not be deleted");
                 }
             } else if (id == LwM2mId.OSCORE) {
                 // For OSCORE object, deleting instance linked to Bootstrap account is not allowed
 
                 // Get bootstrap instance
-                LwM2mObjectInstance bootstrapInstance = ServersInfoExtractor.getBootstrapSecurityInstance(
+                LwM2mObjectInstance bootstrapInstance = getServersInfoExtractor().getBootstrapSecurityInstance(
                         getLwm2mClient().getObjectTree().getObjectEnabler(LwM2mId.SECURITY));
                 // Get OSCORE instance ID associated to it
                 Integer bootstrapOscoreInstanceId = bootstrapInstance != null
-                        ? ServersInfoExtractor.getOscoreSecurityMode(bootstrapInstance)
+                        ? getServersInfoExtractor().getOscoreSecurityMode(bootstrapInstance)
                         : null;
 
                 if (bootstrapOscoreInstanceId != null
@@ -538,8 +538,8 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
     }
 
     @Override
-    public void init(LwM2mClient client, LinkFormatHelper linkFormatHelper) {
-        super.init(client, linkFormatHelper);
+    public void init(LwM2mClient client, LinkFormatHelper linkFormatHelper, ServersInfoExtractor serverInfoExtractor) {
+        super.init(client, linkFormatHelper, serverInfoExtractor);
         for (LwM2mInstanceEnabler instanceEnabler : instances.values()) {
             instanceEnabler.setLwM2mClient(client);
         }

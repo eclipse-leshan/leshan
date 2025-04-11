@@ -41,6 +41,12 @@ public abstract class BaseBootstrapConsistencyChecker implements BootstrapConsis
 
     private static final Logger LOG = LoggerFactory.getLogger(BaseBootstrapConsistencyChecker.class);
 
+    protected ServersInfoExtractor serversInfoExtractor;
+
+    BaseBootstrapConsistencyChecker(ServersInfoExtractor serversInfoExtractor) {
+        this.serversInfoExtractor = serversInfoExtractor;
+    }
+
     @Override
     public List<String> checkconfig(Map<Integer, LwM2mObjectEnabler> objectEnablers) {
         List<String> errors = new ArrayList<>();
@@ -95,7 +101,7 @@ public abstract class BaseBootstrapConsistencyChecker implements BootstrapConsis
         } else if (!deviceObjectEnabler.getAvailableResourceIds(0).contains(DVC_SUPPORTED_BINDING)) {
             errors.add("'Device' object MUST support mandatory ressource 'Supported Binding' (ID:16)");
         } else {
-            EnumSet<BindingMode> deviceSupportedBindingMode = ServersInfoExtractor
+            EnumSet<BindingMode> deviceSupportedBindingMode = serversInfoExtractor
                     .getDeviceSupportedBindingMode(deviceObjectEnabler, 0);
             if (deviceSupportedBindingMode == null) {
                 errors.add("'Supported Binding' (ID:16) resource from 'Device' object (ID:3) MUST have value");
@@ -108,7 +114,7 @@ public abstract class BaseBootstrapConsistencyChecker implements BootstrapConsis
      */
     protected void checkBootstrapConfig(Map<Integer, LwM2mObjectEnabler> objectEnablers, List<String> errors) {
         try {
-            ServersInfo info = ServersInfoExtractor.getInfo(objectEnablers, true);
+            ServersInfo info = serversInfoExtractor.getInfo(objectEnablers, true);
 
             if (info.bootstrap != null) {
                 checkBootstrapServerInfo(info.bootstrap, errors);

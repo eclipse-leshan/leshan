@@ -38,12 +38,14 @@ public class RegistrationUpdateHandler {
     private final RegistrationEngine engine;
     private final BootstrapHandler bsHandler;
     private final LinkFormatHelper linkFormatHelper;
+    private final ServersInfoExtractor serversInfoExtractor;
 
     public RegistrationUpdateHandler(RegistrationEngine engine, BootstrapHandler bsHandler,
-            LinkFormatHelper linkFormatHelper) {
+            LinkFormatHelper linkFormatHelper, ServersInfoExtractor serversInfoExtractor) {
         this.engine = engine;
         this.bsHandler = bsHandler;
         this.linkFormatHelper = linkFormatHelper;
+        this.serversInfoExtractor = serversInfoExtractor;
     }
 
     public void listen(final LwM2mObjectTree objecTree) {
@@ -89,9 +91,9 @@ public class RegistrationUpdateHandler {
                                 if (path.getResourceId() == LwM2mId.SRV_LIFETIME) {
                                     LwM2mObjectEnabler enabler = objecTree.getObjectEnabler(LwM2mId.SERVER);
                                     if (enabler != null) {
-                                        Long lifetime = ServersInfoExtractor.getLifeTime(enabler,
+                                        Long lifetime = serversInfoExtractor.getLifeTime(enabler,
                                                 path.getObjectInstanceId());
-                                        Long serverId = ServersInfoExtractor.getServerId(enabler,
+                                        Long serverId = serversInfoExtractor.getServerId(enabler,
                                                 path.getObjectInstanceId());
                                         if (lifetime != null && serverId != null) {
                                             LwM2mServer server = engine.getRegisteredServer(serverId);
@@ -109,7 +111,7 @@ public class RegistrationUpdateHandler {
                                 if (path.getResourceId() == LwM2mId.DVC_SUPPORTED_BINDING) {
                                     LwM2mObjectEnabler enabler = objecTree.getObjectEnabler(LwM2mId.DEVICE);
                                     if (enabler != null) {
-                                        bindingMode = ServersInfoExtractor.getDeviceSupportedBindingMode(enabler,
+                                        bindingMode = serversInfoExtractor.getDeviceSupportedBindingMode(enabler,
                                                 path.getObjectInstanceId());
                                     }
                                 }

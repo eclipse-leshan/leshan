@@ -119,6 +119,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     private final LwM2mClientObserver observer;
     private final LinkFormatHelper linkFormatHelper;
     private final ClientEndpointNameProvider endpointNameProvider;
+    private final ServersInfoExtractor serversInfoExtractor;
 
     // tasks stuff
     private boolean started = false;
@@ -136,12 +137,13 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             long deregistrationTimeoutInMs, int bootstrapSessionTimeoutInSec, int retryWaitingTimeInMs,
             Integer communicationPeriodInMs, boolean reconnectOnUpdate, boolean resumeOnConnect, boolean useQueueMode,
             ContentFormat preferredContentFormat, Set<ContentFormat> supportedContentFormats,
-            LinkFormatHelper linkFormatHelper) {
+            LinkFormatHelper linkFormatHelper, ServersInfoExtractor serversInfoExtractor) {
         this.endpointNameProvider = endpointNameProvider;
         this.objectEnablers = objectTree.getObjectEnablers();
         this.bootstrapHandler = bootstrapState;
         this.endpointsManager = endpointsManager;
         this.linkFormatHelper = linkFormatHelper;
+        this.serversInfoExtractor = serversInfoExtractor;
         this.observer = observer;
         this.additionalAttributes = additionalAttributes;
         this.bsAdditionalAttributes = bsAdditionalAttributes;
@@ -194,7 +196,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     }
 
     private LwM2mServer factoryBootstrap() {
-        ServerInfo serverInfo = selectServer(ServersInfoExtractor.getInfo(objectEnablers).deviceManagements);
+        ServerInfo serverInfo = selectServer(serversInfoExtractor.getInfo(objectEnablers).deviceManagements);
         if (serverInfo != null) {
             return endpointsManager.createEndpoint(serverInfo, isClientInitiatedOnly());
         }
@@ -217,7 +219,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     }
 
     private Status register(LwM2mServer server) throws InterruptedException {
-        DmServerInfo dmInfo = ServersInfoExtractor.getDMServerInfo(objectEnablers, server.getId());
+        DmServerInfo dmInfo = serversInfoExtractor.getDMServerInfo(objectEnablers, server.getId());
 
         if (dmInfo == null) {
             LOG.info("Trying to register device but there is no LWM2M server config.");
@@ -229,7 +231,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         RegisterRequest request = null;
         try {
             LwM2mVersion lwM2mVersion = LwM2mVersion.lastSupported();
-            EnumSet<BindingMode> supportedBindingMode = ServersInfoExtractor
+            EnumSet<BindingMode> supportedBindingMode = serversInfoExtractor
                     .getDeviceSupportedBindingMode(objectEnablers.get(LwM2mId.DEVICE), 0);
             Link[] links = linkFormatHelper.getClientDescription(objectEnablers.values(), null,
                     ContentFormat.getOptionalContentFormatForClient(supportedContentFormats, lwM2mVersion));
@@ -344,7 +346,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         if (!started)
             return false;
 
-        ServerInfo bootstrapServerInfo = ServersInfoExtractor.getBootstrapServerInfo(objectEnablers);
+        ServerInfo bootstrapServerInfo = serversInfoExtractor.getBootstrapServerInfo(objectEnablers);
         if (bootstrapServerInfo == null) {
             // It seems we have no bootstrap server available in this case we can't schedule a new bootstraps
             return false;
@@ -391,7 +393,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         }
 
         private LwM2mServer clientInitiatedBootstrap() throws InterruptedException {
-            ServerInfo bootstrapServerInfo = ServersInfoExtractor.getBootstrapServerInfo(objectEnablers);
+            ServerInfo bootstrapServerInfo = serversInfoExtractor.getBootstrapServerInfo(objectEnablers);
 
             if (bootstrapServerInfo == null) {
                 LOG.error("Trying to bootstrap device but there is no bootstrap server config.");
@@ -446,7 +448,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                             } else {
                                 LOG.info("Bootstrap finished {}.", bootstrapServer.getUri());
                                 ServerInfo serverInfo = selectServer(
-                                        ServersInfoExtractor.getInfo(objectEnablers).deviceManagements);
+                                        serversInfoExtractor.getInfo(objectEnablers).deviceManagements);
                                 LwM2mServer dmServer = null;
                                 if (serverInfo != null) {
                                     dmServer = endpointsManager.createEndpoint(serverInfo, isClientInitiatedOnly());
@@ -588,7 +590,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
 
         private Status update(LwM2mServer server, String registrationID, RegistrationUpdate registrationUpdate)
                 throws InterruptedException {
-            DmServerInfo dmInfo = ServersInfoExtractor.getDMServerInfo(objectEnablers, server.getId());
+            DmServerInfo dmInfo = serversInfoExtractor.getDMServerInfo(objectEnablers, server.getId());
             if (dmInfo == null) {
                 LOG.info("Trying to update registration but there is no LWM2M server config.");
                 return Status.FAILURE;
@@ -788,7 +790,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
             if (started) {
 
                 // check if we have a bootstrap server
-                ServerInfo bootstrapServerInfo = ServersInfoExtractor.getBootstrapServerInfo(objectEnablers);
+                ServerInfo bootstrapServerInfo = serversInfoExtractor.getBootstrapServerInfo(objectEnablers);
                 if (bootstrapServerInfo == null) {
                     return false;
                 }

@@ -25,6 +25,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.resource.listener.ObjectsListener;
+import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
@@ -47,12 +48,13 @@ public class LwM2mObjectTree implements Startable, Stoppable, Destroyable {
     protected final ConcurrentHashMap<Integer, LwM2mObjectEnabler> objectEnablers = new ConcurrentHashMap<>();
     protected final LwM2mModel model;
 
-    public LwM2mObjectTree(LwM2mClient client, LinkFormatHelper linkFormatHelper, LwM2mObjectEnabler... enablers) {
-        this(client, linkFormatHelper, Arrays.asList(enablers));
+    public LwM2mObjectTree(LwM2mClient client, LinkFormatHelper linkFormatHelper,
+            ServersInfoExtractor serversInfoExtractor, LwM2mObjectEnabler... enablers) {
+        this(client, linkFormatHelper, serversInfoExtractor, Arrays.asList(enablers));
     }
 
     public LwM2mObjectTree(LwM2mClient client, LinkFormatHelper linkFormatHelper,
-            Collection<? extends LwM2mObjectEnabler> enablers) {
+            ServersInfoExtractor serversInfoExtractor, Collection<? extends LwM2mObjectEnabler> enablers) {
         for (LwM2mObjectEnabler enabler : enablers) {
             LwM2mObjectEnabler previousEnabler = objectEnablers.putIfAbsent(enabler.getId(), enabler);
             if (previousEnabler != null) {
@@ -62,7 +64,7 @@ public class LwM2mObjectTree implements Startable, Stoppable, Destroyable {
         }
         for (LwM2mObjectEnabler enabler : enablers) {
             enabler.addListener(dispatcher);
-            enabler.init(client, linkFormatHelper);
+            enabler.init(client, linkFormatHelper, serversInfoExtractor);
         }
 
         this.model = new LwM2mModel() {
