@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.eclipse.leshan.client.servers.DmServerInfo;
 import org.eclipse.leshan.client.servers.ServerInfo;
+import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.oscore.InvalidOscoreSettingException;
 import org.eclipse.leshan.core.oscore.OscoreValidator;
@@ -31,6 +32,10 @@ import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 public class DefaultBootstrapConsistencyChecker extends BaseBootstrapConsistencyChecker {
 
     private final OscoreValidator oscoreValidator = new OscoreValidator();
+
+    public DefaultBootstrapConsistencyChecker(ServersInfoExtractor serversInfoExtractor) {
+        super(serversInfoExtractor);
+    }
 
     @Override
     protected void checkBootstrapServerInfo(ServerInfo bootstrapServerInfo, List<String> errors) {

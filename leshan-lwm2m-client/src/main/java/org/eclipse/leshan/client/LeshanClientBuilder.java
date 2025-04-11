@@ -40,6 +40,7 @@ import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.send.DataSender;
+import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2mId;
@@ -89,6 +90,8 @@ public class LeshanClientBuilder {
     private LwM2mClientEndpointsProvider endpointsProvider;
 
     private LinkFormatHelper linkFormatHelper;
+
+    private ServersInfoExtractor serversInfoExtractor;
 
     private EndPointUriHandler uriHandler;
 
@@ -209,6 +212,14 @@ public class LeshanClientBuilder {
      */
     public LeshanClientBuilder setLinkFormatHelper(LinkFormatHelper linkFormatHelper) {
         this.linkFormatHelper = linkFormatHelper;
+        return this;
+    }
+
+    /**
+     * Set the Servers Info Extractor. An Helper to extract data from client Object Tree.
+     */
+    public LeshanClientBuilder setServersInfoExtractor(ServersInfoExtractor serversInfoExtractor) {
+        this.serversInfoExtractor = serversInfoExtractor;
         return this;
     }
 
@@ -357,15 +368,17 @@ public class LeshanClientBuilder {
             decoder = new DefaultLwM2mDecoder();
         if (linkSerializer == null)
             linkSerializer = new DefaultLinkSerializer();
+        if (serversInfoExtractor == null)
+            serversInfoExtractor = new ServersInfoExtractor();
         if (linkFormatHelper == null)
-            linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_1);
+            linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_1, serversInfoExtractor);
         if (attributeParser == null)
             attributeParser = new DefaultLwM2mAttributeParser();
         if (engineFactory == null) {
             engineFactory = new DefaultRegistrationEngineFactory();
         }
         if (bootstrapConsistencyChecker == null) {
-            bootstrapConsistencyChecker = new DefaultBootstrapConsistencyChecker();
+            bootstrapConsistencyChecker = new DefaultBootstrapConsistencyChecker(serversInfoExtractor);
         }
         if (uriHandler == null) {
             uriHandler = new DefaultEndPointUriHandler();
@@ -373,7 +386,7 @@ public class LeshanClientBuilder {
 
         return createLeshanClient(endpointNameProvider, objectEnablers, dataSenders, this.trustStore, engineFactory,
                 bootstrapConsistencyChecker, additionalAttributes, bsAdditionalAttributes, encoder, decoder, executor,
-                linkSerializer, linkFormatHelper, attributeParser, uriHandler, endpointsProvider);
+                linkSerializer, linkFormatHelper, serversInfoExtractor, attributeParser, uriHandler, endpointsProvider);
     }
 
     /**
@@ -396,6 +409,7 @@ public class LeshanClientBuilder {
      * @param sharedExecutor an optional shared executor.
      * @param linkSerializer a serializer {@link LinkSerializer} used to serialize a CoRE Link.
      * @param linkFormatHelper a helper used to create Link Object from ObjectTree.
+     * @param serversInfoExtractor used to extract server infos from client ObjectTree.
      * @param attributeParser a {@link LwM2mAttributeParser} used to parse {@link LwM2mAttribute} from
      *        {@link WriteAttributesRequest}.
      *
@@ -406,10 +420,11 @@ public class LeshanClientBuilder {
             List<Certificate> trustStore, RegistrationEngineFactory engineFactory, BootstrapConsistencyChecker checker,
             Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder,
             LwM2mDecoder decoder, ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer,
-            LinkFormatHelper linkFormatHelper, LwM2mAttributeParser attributeParser, EndPointUriHandler uriHandler,
+            LinkFormatHelper linkFormatHelper, ServersInfoExtractor serversInfoExtractor,
+            LwM2mAttributeParser attributeParser, EndPointUriHandler uriHandler,
             LwM2mClientEndpointsProvider endpointsProvider) {
         return new LeshanClient(endpointNameProvider, objectEnablers, dataSenders, trustStore, engineFactory, checker,
                 additionalAttributes, bsAdditionalAttributes, encoder, decoder, sharedExecutor, linkSerializer,
-                linkFormatHelper, attributeParser, uriHandler, endpointsProvider);
+                linkFormatHelper, serversInfoExtractor, attributeParser, uriHandler, endpointsProvider);
     }
 }

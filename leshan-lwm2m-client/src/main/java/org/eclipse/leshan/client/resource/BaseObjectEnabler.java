@@ -32,6 +32,7 @@ import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.resource.listener.ObjectsListenerAdapter;
 import org.eclipse.leshan.client.servers.LwM2mServer;
+import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
@@ -83,6 +84,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     private LwM2mClient lwm2mClient;
     private LinkFormatHelper linkFormatHelper;
+    private ServersInfoExtractor serverInfoExtractor;
 
     private final NotificationAttributeTree assignedAttributes = new NotificationAttributeTree();
 
@@ -606,13 +608,18 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     }
 
     @Override
-    public void init(LwM2mClient client, LinkFormatHelper linkFormatHelper) {
+    public void init(LwM2mClient client, LinkFormatHelper linkFormatHelper, ServersInfoExtractor serverInfoExtractor) {
         this.lwm2mClient = client;
         this.linkFormatHelper = linkFormatHelper;
+        this.serverInfoExtractor = serverInfoExtractor;
     }
 
     public LwM2mClient getLwm2mClient() {
         return lwm2mClient;
+    }
+
+    public ServersInfoExtractor getServersInfoExtractor() {
+        return serverInfoExtractor;
     }
 
     protected void fireInstancesAdded(int... instanceIds) {

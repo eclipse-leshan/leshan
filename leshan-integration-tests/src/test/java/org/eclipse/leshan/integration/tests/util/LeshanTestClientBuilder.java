@@ -59,6 +59,7 @@ import org.eclipse.leshan.client.resource.SimpleInstanceEnabler;
 import org.eclipse.leshan.client.send.DataSender;
 import org.eclipse.leshan.client.send.ManualDataSender;
 import org.eclipse.leshan.client.servers.LwM2mServer;
+import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.LwM2mId;
@@ -234,7 +235,8 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
             List<Certificate> trustStore, RegistrationEngineFactory engineFactory, BootstrapConsistencyChecker checker,
             Map<String, String> additionalAttributes, Map<String, String> bsAdditionalAttributes, LwM2mEncoder encoder,
             LwM2mDecoder decoder, ScheduledExecutorService sharedExecutor, LinkSerializer linkSerializer,
-            LinkFormatHelper linkFormatHelper, LwM2mAttributeParser attributeParser, EndPointUriHandler uriHandler,
+            LinkFormatHelper linkFormatHelper, ServersInfoExtractor serversInfoExtractor,
+            LwM2mAttributeParser attributeParser, EndPointUriHandler uriHandler,
             LwM2mClientEndpointsProvider endpointsProvider) {
 
         // custom behavior for endpoint name provider
@@ -252,7 +254,7 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
 
         return new LeshanTestClient(testEndpointNameProvider, objectEnablers, dataSenders, trustStore, engineFactory,
                 checker, additionalAttributes, bsAdditionalAttributes, encoder, decoder, sharedExecutor, linkSerializer,
-                linkFormatHelper, attributeParser, uriHandler, endpointsProvider, proxy);
+                linkFormatHelper, serversInfoExtractor, attributeParser, uriHandler, endpointsProvider, proxy);
     }
 
     public static LeshanTestClientBuilder givenClientUsing(Protocol protocol) {

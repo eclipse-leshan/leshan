@@ -24,6 +24,7 @@ import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.request.UplinkRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
+import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.request.ContentFormat;
 
@@ -52,12 +53,13 @@ public class DefaultRegistrationEngineFactory implements RegistrationEngineFacto
             LwM2mObjectTree objectTree, EndpointsManager endpointsManager, UplinkRequestSender requestSender,
             BootstrapHandler bootstrapState, LwM2mClientObserver observer, Map<String, String> additionalAttributes,
             Map<String, String> bsAdditionalAttributes, Set<ContentFormat> supportedContentFormat,
-            ScheduledExecutorService sharedExecutor, LinkFormatHelper linkFormatHelper) {
+            ScheduledExecutorService sharedExecutor, LinkFormatHelper linkFormatHelper,
+            ServersInfoExtractor serversInfoExtractor) {
         return new DefaultRegistrationEngine(endpointNameProvider, objectTree, endpointsManager, requestSender,
                 bootstrapState, observer, additionalAttributes, bsAdditionalAttributes, sharedExecutor,
                 requestTimeoutInMs, deregistrationTimeoutInMs, bootstrapSessionTimeoutInSec, retryWaitingTimeInMs,
                 communicationPeriodInMs, reconnectOnUpdate, resumeOnConnect, queueMode, preferredContentFormat,
-                supportedContentFormat, linkFormatHelper);
+                supportedContentFormat, linkFormatHelper, serversInfoExtractor);
     }
 
     /**
