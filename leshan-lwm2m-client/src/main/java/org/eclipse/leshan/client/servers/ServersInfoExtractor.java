@@ -43,7 +43,6 @@ import static org.eclipse.leshan.core.LwM2mId.SRV_BINDING;
 import static org.eclipse.leshan.core.LwM2mId.SRV_LIFETIME;
 import static org.eclipse.leshan.core.LwM2mId.SRV_SERVER_ID;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -53,8 +52,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.EnumSet;
@@ -379,7 +376,7 @@ public class ServersInfoExtractor {
     private static Certificate getServerCertificate(LwM2mObjectInstance securityInstance) {
         byte[] encodedCert = (byte[]) securityInstance.getResource(SEC_SERVER_PUBKEY).getValue();
         try {
-            return SecurityUtil.certificate.decode(encodedCert);
+            return SecurityUtil.derCertificate.decode(encodedCert);
         } catch (IOException | GeneralSecurityException e) {
             throw new IllegalArgumentException("Failed to decode X.509 certificate", e);
         }
@@ -388,12 +385,9 @@ public class ServersInfoExtractor {
     private Certificate[] getClientCertificates(LwM2mObjectInstance securityInstance) {
         byte[] encodedCert = (byte[]) securityInstance.getResource(SEC_PUBKEY_IDENTITY).getValue();
         try {
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            try (ByteArrayInputStream in = new ByteArrayInputStream(encodedCert)) {
-                return cf.generateCertificates(in).toArray(new Certificate[] {});
-            }
-        } catch (CertificateException | IOException e) {
-            throw new IllegalArgumentException("Failed to decode X.509 certificates", e);
+            return new Certificate[] { SecurityUtil.derCertificate.decode(encodedCert) };
+        } catch (IOException | GeneralSecurityException e) {
+            throw new IllegalArgumentException("Failed to decode X.509 certificate", e);
         }
     }
 
