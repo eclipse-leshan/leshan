@@ -83,7 +83,7 @@ public class JavaCoapsTcpClientEndpointsProvider extends AbstractJavaCoapClientE
             throw new IllegalArgumentException("Unable to create tls endpoint point", e);
         }
 
-        return TcpCoapServer.builder() ///
+        return TcpCoapServer.builder()
                 .transport(new SSLSocketClientTransport(serverInfo.getAddress(), tlsContext.getSocketFactory(), true) {
 
                     @Override
@@ -93,7 +93,7 @@ public class JavaCoapsTcpClientEndpointsProvider extends AbstractJavaCoapClientE
                             packet.setTransportContext(getTransportContext(getSslSocket()));
                             return packet;
                         });
-                    };
+                    }
                 })//
                 .blockSize(BlockSize.S_1024_BERT) //
                 .outboundFilter(TokenGeneratorFilter.RANDOM)//

@@ -98,10 +98,8 @@ public class InMemoryBootstrapConfigStore implements EditableBootstrapConfigStor
 
     protected PskByServer getBootstrapPskIdentity(BootstrapConfig config) {
         for (ServerSecurity security : config.security.values()) {
-            if (security.bootstrapServer) {
-                if (security.securityMode == SecurityMode.PSK) {
-                    return new PskByServer(security.uri, new String(security.publicKeyOrId));
-                }
+            if (security.bootstrapServer && security.securityMode == SecurityMode.PSK) {
+                return new PskByServer(security.uri, new String(security.publicKeyOrId));
             }
         }
         return null;

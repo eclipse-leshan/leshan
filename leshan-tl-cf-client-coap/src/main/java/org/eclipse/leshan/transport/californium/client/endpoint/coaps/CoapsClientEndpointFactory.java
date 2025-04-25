@@ -162,7 +162,7 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
                 X509CertificateVerifier certificateVerifier = certificateVerifierFactory.create(serverInfo, trustStore);
                 effectiveBuilder.setCertificateVerifier(new LwM2mCertificateVerifier(certificateVerifier));
 
-                // TODO We set CN with '*' as we are not able to know the CN for some certificate usage and so this is
+                // We set CN with '*' as we are not able to know the CN for some certificate usage and so this is
                 // not used anymore to identify a server with x509.
                 // See : https://github.com/eclipse/leshan/issues/992
                 filterCipherSuites(effectiveBuilder, incompleteConfig.getSupportedCipherSuites(), false, true);
@@ -190,19 +190,20 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
                 }
             }
 
-            if (incompleteConfig.getConfiguration().get(DtlsConfig.DTLS_ROLE) == DtlsRole.BOTH) {
-                // Ensure that BOTH mode can be used or fallback to CLIENT_ONLY
-                if (serverInfo.secureMode == SecurityMode.X509) {
-                    // the first certificate in a chain is a device certificate
-                    X509Certificate certificate = (X509Certificate) serverInfo.clientCertificates[0];
-                    if (CertPathUtil.canBeUsedForAuthentication(certificate, true)) {
-                        if (!CertPathUtil.canBeUsedForAuthentication(certificate, false)) {
-                            effectiveBuilder.set(DtlsConfig.DTLS_ROLE, DtlsRole.CLIENT_ONLY);
-                            LOG.warn("Client certificate does not allow Server Authentication usage."
-                                    + "\nThis will prevent a LWM2M server to initiate DTLS connection to this client."
-                                    + "\nSee : https://github.com/eclipse/leshan/wiki/Server-Failover#about-connections");
-                        }
-                    }
+            // When using X509,
+            // ensure that BOTH mode can be used with given certificate or fallback to CLIENT_ONLY
+            if (serverInfo.secureMode == SecurityMode.X509
+                    && incompleteConfig.getConfiguration().get(DtlsConfig.DTLS_ROLE) == DtlsRole.BOTH) {
+                // the first certificate in a chain is a device certificate
+                X509Certificate clientCertificate = (X509Certificate) serverInfo.clientCertificates[0];
+                // check certificate allowed usage
+                if (CertPathUtil.canBeUsedForAuthentication(clientCertificate, true)
+                        && !CertPathUtil.canBeUsedForAuthentication(clientCertificate, false)) {
+                    effectiveBuilder.set(DtlsConfig.DTLS_ROLE, DtlsRole.CLIENT_ONLY);
+                    LOG.warn("Client certificate does not allow Server Authentication usage."
+                            + "\nThis will prevent a LWM2M server to initiate DTLS connection to this client."
+                            + "\nSee : https://github.com/eclipse/leshan/wiki/Server-Failover#about-connections");
+
                 }
             }
             return effectiveBuilder;
@@ -217,9 +218,8 @@ public class CoapsClientEndpointFactory extends CoapClientEndpointFactory {
 
         List<CipherSuite> filteredCiphers = new ArrayList<>();
         for (CipherSuite cipher : ciphers) {
-            if (psk && cipher.isPskBased()) {
-                filteredCiphers.add(cipher);
-            } else if (requireServerCertificateMessage && cipher.requiresServerCertificateMessage()) {
+            if (psk && cipher.isPskBased() //
+                    || requireServerCertificateMessage && cipher.requiresServerCertificateMessage()) {
                 filteredCiphers.add(cipher);
             }
         }

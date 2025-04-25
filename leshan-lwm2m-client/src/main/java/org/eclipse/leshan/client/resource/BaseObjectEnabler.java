@@ -77,6 +77,9 @@ import org.eclipse.leshan.core.response.WriteResponse;
  */
 public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
+    private static final String INVALID_PATH_RESOURCE_IS_NOT_MULTIPLE = "invalid path : resource is not multiple";
+    private static final String NOT_IMPLEMENTED = "not implemented";
+    private static final String MANDATORY_WRITABLE_RESOURCES_MISSING = "mandatory writable resources missing!";
     protected final int id;
     protected final TransactionalObjectListener transactionalListener;
     protected final ObjectModel objectModel;
@@ -85,7 +88,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
     private LinkFormatHelper linkFormatHelper;
     private final NotificationAttributeTree assignedAttributes = new NotificationAttributeTree();
 
-    public BaseObjectEnabler(int id, ObjectModel objectModel) {
+    protected BaseObjectEnabler(int id, ObjectModel objectModel) {
         this.id = id;
         this.objectModel = objectModel;
         this.transactionalListener = createTransactionListener();
@@ -191,12 +194,12 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
             if (request.unknownObjectInstanceId()) {
                 if (missingMandatoryResource(request.getResources())) {
-                    return CreateResponse.badRequest("mandatory writable resources missing!");
+                    return CreateResponse.badRequest(MANDATORY_WRITABLE_RESOURCES_MISSING);
                 }
             } else {
                 for (LwM2mObjectInstance instance : request.getObjectInstances()) {
                     if (missingMandatoryResource(instance.getResources().values())) {
-                        return CreateResponse.badRequest("mandatory writable resources missing!");
+                        return CreateResponse.badRequest(MANDATORY_WRITABLE_RESOURCES_MISSING);
                     }
                 }
             }
@@ -208,9 +211,10 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         }
     }
 
+    @SuppressWarnings("java:S1172")
     protected CreateResponse doCreate(LwM2mServer server, CreateRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
-        return CreateResponse.internalServerError("not implemented");
+        return CreateResponse.internalServerError(NOT_IMPLEMENTED);
     }
 
     @Override
@@ -236,7 +240,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                 } else if (!resourceModel.operations.isReadable()) {
                     return ReadResponse.methodNotAllowed();
                 } else if (path.isResourceInstance() && !resourceModel.multiple) {
-                    return ReadResponse.badRequest("invalid path : resource is not multiple");
+                    return ReadResponse.badRequest(INVALID_PATH_RESOURCE_IS_NOT_MULTIPLE);
                 }
             }
         }
@@ -246,9 +250,10 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         // TODO we could do a validation of response.getContent by comparing with resourceSpec information
     }
 
+    @SuppressWarnings("java:S1172")
     protected ReadResponse doRead(LwM2mServer server, ReadRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
-        return ReadResponse.internalServerError("not implemented");
+        return ReadResponse.internalServerError(NOT_IMPLEMENTED);
     }
 
     @Override
@@ -269,9 +274,10 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         return doRead(server, request);
     }
 
+    @SuppressWarnings("java:S1172")
     protected BootstrapReadResponse doRead(LwM2mServer server, BootstrapReadRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
-        return BootstrapReadResponse.internalServerError("not implemented");
+        return BootstrapReadResponse.internalServerError(NOT_IMPLEMENTED);
     }
 
     @Override
@@ -302,7 +308,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                     } else if (!resourceModel.operations.isWritable()) {
                         return WriteResponse.methodNotAllowed();
                     } else if (path.isResourceInstance() && !resourceModel.multiple) {
-                        return WriteResponse.badRequest("invalid path : resource is not multiple");
+                        return WriteResponse.badRequest(INVALID_PATH_RESOURCE_IS_NOT_MULTIPLE);
                     }
                 }
             } else if (path.isObjectInstance()) {
@@ -321,7 +327,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
                 if (request.isReplaceRequest()) {
                     if (missingMandatoryResource(((LwM2mObjectInstance) request.getNode()).getResources().values())) {
-                        return WriteResponse.badRequest("mandatory writable resources missing!");
+                        return WriteResponse.badRequest(MANDATORY_WRITABLE_RESOURCES_MISSING);
                     }
                 }
             }
@@ -334,9 +340,10 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         }
     }
 
+    @SuppressWarnings("java:S1172")
     protected WriteResponse doWrite(LwM2mServer server, WriteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
-        return WriteResponse.internalServerError("not implemented");
+        return WriteResponse.internalServerError(NOT_IMPLEMENTED);
     }
 
     @Override
@@ -350,9 +357,10 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         return doWrite(server, request);
     }
 
+    @SuppressWarnings("java:S1172")
     protected BootstrapWriteResponse doWrite(LwM2mServer server, BootstrapWriteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
-        return BootstrapWriteResponse.internalServerError("not implemented");
+        return BootstrapWriteResponse.internalServerError(NOT_IMPLEMENTED);
     }
 
     @Override
@@ -374,9 +382,10 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         return doDelete(server, request);
     }
 
+    @SuppressWarnings("java:S1172")
     protected DeleteResponse doDelete(LwM2mServer server, DeleteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
-        return DeleteResponse.internalServerError("not implemented");
+        return DeleteResponse.internalServerError(NOT_IMPLEMENTED);
     }
 
     @Override
@@ -394,7 +403,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     protected BootstrapDeleteResponse doDelete(LwM2mServer server, BootstrapDeleteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
-        return BootstrapDeleteResponse.internalServerError("not implemented");
+        return BootstrapDeleteResponse.internalServerError(NOT_IMPLEMENTED);
     }
 
     @Override
@@ -429,7 +438,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
 
     protected ExecuteResponse doExecute(LwM2mServer server, ExecuteRequest request) {
         // This should be a not implemented error, but this is not defined in the spec.
-        return ExecuteResponse.internalServerError("not implemented");
+        return ExecuteResponse.internalServerError(NOT_IMPLEMENTED);
     }
 
     @Override
@@ -482,8 +491,8 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         LwM2mPath path = request.getPath();
         if (path.isObject()) {
             // Manage discover on object
-            LwM2mLink[] ObjectLinks = linkFormatHelper.getObjectDescription(server, this, null);
-            return DiscoverResponse.success(ObjectLinks);
+            LwM2mLink[] objectLinks = linkFormatHelper.getObjectDescription(server, this, null);
+            return DiscoverResponse.success(objectLinks);
 
         } else if (path.isObjectInstance()) {
             // Manage discover on instance
@@ -523,13 +532,14 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
         return doDiscover(server, request);
     }
 
+    @SuppressWarnings("java:S1172")
     protected BootstrapDiscoverResponse doDiscover(LwM2mServer server, BootstrapDiscoverRequest request) {
 
         LwM2mPath path = request.getPath();
         if (path.isObject()) {
             // Manage discover on object
-            LwM2mLink[] ObjectLinks = linkFormatHelper.getBootstrapObjectDescription(this);
-            return BootstrapDiscoverResponse.success(ObjectLinks);
+            LwM2mLink[] objectLinks = linkFormatHelper.getBootstrapObjectDescription(this);
+            return BootstrapDiscoverResponse.success(objectLinks);
         }
         return BootstrapDiscoverResponse.badRequest("invalid path");
     }
@@ -555,7 +565,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                 } else if (!resourceModel.operations.isReadable()) {
                     return ObserveResponse.methodNotAllowed();
                 } else if (path.isResourceInstance() && !resourceModel.multiple) {
-                    return ObserveResponse.badRequest("invalid path : resource is not multiple");
+                    return ObserveResponse.badRequest(INVALID_PATH_RESOURCE_IS_NOT_MULTIPLE);
                 }
             }
         }
