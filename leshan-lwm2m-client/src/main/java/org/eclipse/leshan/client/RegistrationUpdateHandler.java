@@ -21,9 +21,9 @@ import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
+import org.eclipse.leshan.client.resource.ObjectTreeReader;
 import org.eclipse.leshan.client.resource.listener.ObjectsListener;
 import org.eclipse.leshan.client.servers.LwM2mServer;
-import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -38,14 +38,12 @@ public class RegistrationUpdateHandler {
     private final RegistrationEngine engine;
     private final BootstrapHandler bsHandler;
     private final LinkFormatHelper linkFormatHelper;
-    private final ServersInfoExtractor serversInfoExtractor;
 
     public RegistrationUpdateHandler(RegistrationEngine engine, BootstrapHandler bsHandler,
-            LinkFormatHelper linkFormatHelper, ServersInfoExtractor serversInfoExtractor) {
+            LinkFormatHelper linkFormatHelper) {
         this.engine = engine;
         this.bsHandler = bsHandler;
         this.linkFormatHelper = linkFormatHelper;
-        this.serversInfoExtractor = serversInfoExtractor;
     }
 
     public void listen(final LwM2mObjectTree objecTree) {
@@ -91,9 +89,9 @@ public class RegistrationUpdateHandler {
                                 if (path.getResourceId() == LwM2mId.SRV_LIFETIME) {
                                     LwM2mObjectEnabler enabler = objecTree.getObjectEnabler(LwM2mId.SERVER);
                                     if (enabler != null) {
-                                        Long lifetime = serversInfoExtractor.getLifeTime(enabler,
+                                        Long lifetime = ObjectTreeReader.getLifeTime(enabler,
                                                 path.getObjectInstanceId());
-                                        Long serverId = serversInfoExtractor.getServerId(enabler,
+                                        Long serverId = ObjectTreeReader.getServerId(enabler,
                                                 path.getObjectInstanceId());
                                         if (lifetime != null && serverId != null) {
                                             LwM2mServer server = engine.getRegisteredServer(serverId);
@@ -111,7 +109,7 @@ public class RegistrationUpdateHandler {
                                 if (path.getResourceId() == LwM2mId.DVC_SUPPORTED_BINDING) {
                                     LwM2mObjectEnabler enabler = objecTree.getObjectEnabler(LwM2mId.DEVICE);
                                     if (enabler != null) {
-                                        bindingMode = serversInfoExtractor.getDeviceSupportedBindingMode(enabler,
+                                        bindingMode = ObjectTreeReader.getDeviceSupportedBindingMode(enabler,
                                                 path.getObjectInstanceId());
                                     }
                                 }

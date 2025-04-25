@@ -105,7 +105,7 @@ public class LeshanClient implements LwM2mClient {
         Validate.notEmpty(objectEnablers);
         Validate.notNull(checker);
 
-        objectTree = createObjectTree(objectEnablers, linkFormatHelper, serversInfoExtractor);
+        objectTree = createObjectTree(objectEnablers, linkFormatHelper);
         List<String> errors = checker.checkconfig(objectTree.getObjectEnablers());
         if (errors != null) {
             throw new IllegalArgumentException(
@@ -129,8 +129,7 @@ public class LeshanClient implements LwM2mClient {
 
         DownlinkRequestReceiver requestReceiver = createRequestReceiver(bootstrapHandler, rootEnabler, objectTree,
                 engine);
-        createRegistrationUpdateHandler(engine, endpointsManager, bootstrapHandler, objectTree, linkFormatHelper,
-                serversInfoExtractor);
+        createRegistrationUpdateHandler(engine, endpointsManager, bootstrapHandler, objectTree, linkFormatHelper);
 
         notificationManager = createNotificationManager(objectTree, requestReceiver, sharedExecutor);
         endpointsProvider.init(objectTree, requestReceiver, notificationManager, toolbox);
@@ -162,8 +161,8 @@ public class LeshanClient implements LwM2mClient {
     }
 
     protected LwM2mObjectTree createObjectTree(List<? extends LwM2mObjectEnabler> objectEnablers,
-            LinkFormatHelper linkFormatHelper, ServersInfoExtractor serversInfoExtractor) {
-        return new LwM2mObjectTree(this, linkFormatHelper, serversInfoExtractor, objectEnablers);
+            LinkFormatHelper linkFormatHelper) {
+        return new LwM2mObjectTree(this, linkFormatHelper, objectEnablers);
     }
 
     protected DataSenderManager createDataSenderManager(List<DataSender> dataSenders, LwM2mRootEnabler rootEnabler,
@@ -207,9 +206,9 @@ public class LeshanClient implements LwM2mClient {
 
     protected RegistrationUpdateHandler createRegistrationUpdateHandler(RegistrationEngine engine,
             EndpointsManager endpointsManager, BootstrapHandler bootstrapHandler, LwM2mObjectTree objectTree,
-            LinkFormatHelper linkFormatHelper, ServersInfoExtractor serversInfoExtractor) {
+            LinkFormatHelper linkFormatHelper) {
         RegistrationUpdateHandler registrationUpdateHandler = new RegistrationUpdateHandler(engine, bootstrapHandler,
-                linkFormatHelper, serversInfoExtractor);
+                linkFormatHelper);
         registrationUpdateHandler.listen(objectTree);
         return registrationUpdateHandler;
     }

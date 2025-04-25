@@ -40,6 +40,7 @@ import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
 import org.eclipse.leshan.client.send.DataSender;
+import org.eclipse.leshan.client.servers.DefaultServersInfoExtractor;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
@@ -369,9 +370,9 @@ public class LeshanClientBuilder {
         if (linkSerializer == null)
             linkSerializer = new DefaultLinkSerializer();
         if (serversInfoExtractor == null)
-            serversInfoExtractor = new ServersInfoExtractor();
+            serversInfoExtractor = new DefaultServersInfoExtractor();
         if (linkFormatHelper == null)
-            linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_1, serversInfoExtractor);
+            linkFormatHelper = new LinkFormatHelper(LwM2mVersion.V1_1);
         if (attributeParser == null)
             attributeParser = new DefaultLwM2mAttributeParser();
         if (engineFactory == null) {

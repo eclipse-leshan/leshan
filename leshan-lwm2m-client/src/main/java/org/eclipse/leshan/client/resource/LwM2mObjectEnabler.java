@@ -21,7 +21,6 @@ import java.util.List;
 import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.servers.LwM2mServer;
-import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
@@ -110,7 +109,7 @@ public interface LwM2mObjectEnabler {
 
     void removeListener(ObjectListener listener);
 
-    void init(LwM2mClient client, LinkFormatHelper linkFormatHelper, ServersInfoExtractor serverInfoExtractor);
+    void init(LwM2mClient client, LinkFormatHelper linkFormatHelper);
 
     void beginTransaction(byte level);
 

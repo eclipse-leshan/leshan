@@ -31,7 +31,7 @@ import org.eclipse.leshan.client.object.Security;
 import org.eclipse.leshan.client.object.Server;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.ObjectsInitializer;
-import org.eclipse.leshan.client.servers.ServersInfoExtractor;
+import org.eclipse.leshan.client.servers.DefaultServersInfoExtractor;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.request.BindingMode;
@@ -41,7 +41,7 @@ import org.junit.jupiter.api.Test;
 class DefaultBootstrapConsistencyCheckerTest {
 
     public BootstrapConsistencyChecker configurationChecker = new DefaultBootstrapConsistencyChecker(
-            new ServersInfoExtractor());
+            new DefaultServersInfoExtractor());
 
     @Test
     void test_valid_configuration_using_certificate_with_der_endoding() {

@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.resource.ObjectTreeReader;
 import org.eclipse.leshan.client.servers.LwM2mServer;
-import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.LwM2mId;
@@ -61,15 +61,9 @@ public class LinkFormatHelper {
 
     protected LwM2mCoreObjectVersionRegistry versionRegistry = new LwM2mCoreObjectVersionRegistry();
     protected LwM2mVersion version;
-    private final ServersInfoExtractor serversInfoExtractor;
 
     public LinkFormatHelper(LwM2mVersion version) {
-        this(version, new ServersInfoExtractor());
-    }
-
-    public LinkFormatHelper(LwM2mVersion version, ServersInfoExtractor serversInfoExtractor) {
         this.version = version;
-        this.serversInfoExtractor = serversInfoExtractor;
     }
 
     public Link[] getClientDescription(Collection<LwM2mObjectEnabler> objectEnablers, String rootPath,
@@ -139,15 +133,15 @@ public class LinkFormatHelper {
                 if (response.isSuccess()) {
                     LwM2mObject object = (LwM2mObject) response.getContent();
                     for (LwM2mObjectInstance instance : object.getInstances().values()) {
-                        Integer oscoreSecurityMode = serversInfoExtractor.getOscoreSecurityMode(instance);
+                        Integer oscoreSecurityMode = ObjectTreeReader.getOscoreSecurityMode(instance);
                         if (oscoreSecurityMode != null) {
                             List<LwM2mAttribute<?>> attributes = new ArrayList<>(2);
                             // extract ssid
-                            Long shortServerId = serversInfoExtractor.getServerId(objectEnabler, instance.getId());
+                            Long shortServerId = ObjectTreeReader.getServerId(objectEnabler, instance.getId());
                             if (shortServerId != null)
                                 attributes.add(LwM2mAttributes.create(LwM2mAttributes.SHORT_SERVER_ID, shortServerId));
                             // extract uri
-                            String uri = serversInfoExtractor.getServerURI(objectEnabler, instance.getId());
+                            String uri = ObjectTreeReader.getServerURI(objectEnabler, instance.getId());
                             if (uri != null)
                                 attributes.add(LwM2mAttributes.create(LwM2mAttributes.SERVER_URI, uri));
 
@@ -233,9 +227,9 @@ public class LinkFormatHelper {
                 // get short id
                 if (objectEnabler.getId() == LwM2mId.SECURITY || objectEnabler.getId() == LwM2mId.SERVER) {
                     Boolean isBootstrapServer = objectEnabler.getId() == LwM2mId.SECURITY
-                            && serversInfoExtractor.isBootstrapServer(objectEnabler, instanceId);
+                            && ObjectTreeReader.isBootstrapServer(objectEnabler, instanceId);
                     if (isBootstrapServer != null && !isBootstrapServer) {
-                        Long shortServerId = serversInfoExtractor.getServerId(objectEnabler, instanceId);
+                        Long shortServerId = ObjectTreeReader.getServerId(objectEnabler, instanceId);
                         if (shortServerId != null)
                             objectAttributes
                                     .add(LwM2mAttributes.create(LwM2mAttributes.SHORT_SERVER_ID, shortServerId));
@@ -245,7 +239,7 @@ public class LinkFormatHelper {
 
                 // get uri
                 if (objectEnabler.getId() == LwM2mId.SECURITY) {
-                    String uri = serversInfoExtractor.getServerURI(objectEnabler, instanceId);
+                    String uri = ObjectTreeReader.getServerURI(objectEnabler, instanceId);
                     if (uri != null)
                         objectAttributes.add(LwM2mAttributes.create(LwM2mAttributes.SERVER_URI, uri));
                 }
