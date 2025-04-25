@@ -17,8 +17,8 @@ package org.eclipse.leshan.client.engine;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 
 import org.eclipse.leshan.client.servers.ServerInfo;
@@ -99,7 +99,7 @@ public class DefaultClientEndpointNameProvider implements ClientEndpointNameProv
             byte[] senderId = serverInfo.oscoreSetting.getSenderId();
             // Try to convert byte array in UTF8 String
             try {
-                CharsetDecoder decoder = Charset.forName("UTF-8").newDecoder();
+                CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder();
                 ByteBuffer buf = ByteBuffer.wrap(senderId);
                 return decoder.decode(buf).toString();
             } catch (CharacterCodingException e) {

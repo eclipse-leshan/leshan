@@ -38,7 +38,10 @@ import org.eclipse.leshan.core.credentials.CredentialsReader;
 
 public class SecurityUtil {
 
-    public static CredentialsReader<PrivateKey> privateKey = new CredentialsReader<PrivateKey>() {
+    private SecurityUtil() {
+    }
+
+    public static final CredentialsReader<PrivateKey> privateKey = new CredentialsReader<PrivateKey>() {
         @Override
         public PrivateKey decode(byte[] bytes) throws InvalidKeySpecException, NoSuchAlgorithmException {
             PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(bytes);
@@ -47,7 +50,7 @@ public class SecurityUtil {
         }
     };
 
-    public static CredentialsReader<PublicKey> publicKey = new CredentialsReader<PublicKey>() {
+    public static final CredentialsReader<PublicKey> publicKey = new CredentialsReader<PublicKey>() {
         @Override
         public PublicKey decode(byte[] bytes) throws NoSuchAlgorithmException, InvalidKeySpecException {
             X509EncodedKeySpec spec = new X509EncodedKeySpec(bytes);
@@ -56,7 +59,7 @@ public class SecurityUtil {
         }
     };
 
-    public static CredentialsReader<X509Certificate> derCertificate = new CredentialsReader<X509Certificate>() {
+    public static final CredentialsReader<X509Certificate> derCertificate = new CredentialsReader<X509Certificate>() {
         @Override
         public X509Certificate decode(BufferedInputStream inputStream) throws CertificateException {
             assertDerEncoding(inputStream);
@@ -64,7 +67,7 @@ public class SecurityUtil {
         }
     };
 
-    public static CredentialsReader<X509Certificate> pemCertificate = new CredentialsReader<X509Certificate>() {
+    public static final CredentialsReader<X509Certificate> pemCertificate = new CredentialsReader<X509Certificate>() {
         @Override
         public X509Certificate decode(BufferedInputStream inputStream) throws CertificateException {
             assertPemEncoding(inputStream);
@@ -72,14 +75,14 @@ public class SecurityUtil {
         }
     };
 
-    public static CredentialsReader<X509Certificate> certificate = new CredentialsReader<X509Certificate>() {
+    public static final CredentialsReader<X509Certificate> certificate = new CredentialsReader<X509Certificate>() {
         @Override
         public X509Certificate decode(BufferedInputStream inputStream) throws CertificateException {
             return readCertificate(inputStream);
         }
     };
 
-    public static CredentialsReader<X509Certificate[]> certificateChain = new CredentialsReader<X509Certificate[]>() {
+    public static final CredentialsReader<X509Certificate[]> certificateChain = new CredentialsReader<X509Certificate[]>() {
         @Override
         public X509Certificate[] decode(BufferedInputStream inputStream) throws CertificateException {
             try {

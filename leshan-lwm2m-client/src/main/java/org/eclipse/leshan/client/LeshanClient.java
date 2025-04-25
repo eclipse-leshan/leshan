@@ -101,7 +101,6 @@ public class LeshanClient implements LwM2mClient {
             LwM2mAttributeParser attributeParser, EndPointUriHandler uriHandler,
             LwM2mClientEndpointsProvider endpointsProvider) {
 
-        // Validate.notNull(endpoint);
         Validate.notEmpty(objectEnablers);
         Validate.notNull(checker);
 
@@ -109,7 +108,7 @@ public class LeshanClient implements LwM2mClient {
         List<String> errors = checker.checkconfig(objectTree.getObjectEnablers());
         if (errors != null) {
             throw new IllegalArgumentException(
-                    String.format("Invalid 'ObjectEnabler' Setting : \n - %s", String.join("\n - ", errors)));
+                    String.format("Invalid 'ObjectEnabler' Setting : %n - %s", String.join("\n - ", errors)));
         }
 
         this.endpointsProvider = endpointsProvider;
@@ -129,7 +128,7 @@ public class LeshanClient implements LwM2mClient {
 
         DownlinkRequestReceiver requestReceiver = createRequestReceiver(bootstrapHandler, rootEnabler, objectTree,
                 engine);
-        createRegistrationUpdateHandler(engine, endpointsManager, bootstrapHandler, objectTree, linkFormatHelper);
+        createRegistrationUpdateHandler(engine, bootstrapHandler, objectTree, linkFormatHelper);
 
         notificationManager = createNotificationManager(objectTree, requestReceiver, sharedExecutor);
         endpointsProvider.init(objectTree, requestReceiver, notificationManager, toolbox);
@@ -137,15 +136,15 @@ public class LeshanClient implements LwM2mClient {
 
     protected NotificationManager createNotificationManager(LwM2mObjectTree objectTree,
             DownlinkRequestReceiver requestReceiver, ScheduledExecutorService sharedExecutor) {
-        final NotificationManager notificationManager = new NotificationManager(objectTree, requestReceiver,
+        final NotificationManager notifManager = new NotificationManager(objectTree, requestReceiver,
                 createNotificationStore(), createNotificationStrategy(), sharedExecutor);
         this.addObserver(new LwM2mClientObserverAdapter() {
             @Override
             public void onBootstrapStarted(LwM2mServer bsserver, BootstrapRequest request) {
-                notificationManager.clear();
+                notifManager.clear();
             }
         });
-        return notificationManager;
+        return notifManager;
     }
 
     protected NotificationDataStore createNotificationStore() {
@@ -205,8 +204,7 @@ public class LeshanClient implements LwM2mClient {
     }
 
     protected RegistrationUpdateHandler createRegistrationUpdateHandler(RegistrationEngine engine,
-            EndpointsManager endpointsManager, BootstrapHandler bootstrapHandler, LwM2mObjectTree objectTree,
-            LinkFormatHelper linkFormatHelper) {
+            BootstrapHandler bootstrapHandler, LwM2mObjectTree objectTree, LinkFormatHelper linkFormatHelper) {
         RegistrationUpdateHandler registrationUpdateHandler = new RegistrationUpdateHandler(engine, bootstrapHandler,
                 linkFormatHelper);
         registrationUpdateHandler.listen(objectTree);

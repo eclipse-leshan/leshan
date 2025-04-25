@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.leshan.client.LwM2mClient;
-import org.eclipse.leshan.client.resource.listener.ResourceListener;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.Destroyable;
@@ -74,7 +73,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Startable, Stoppable {
 
-    private static Logger LOG = LoggerFactory.getLogger(DummyInstanceEnabler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ObjectEnabler.class);
 
     protected Map<Integer, LwM2mInstanceEnabler> instances;
     protected LwM2mInstanceEnablerFactory instanceFactory;
@@ -502,20 +501,18 @@ public class ObjectEnabler extends BaseObjectEnabler implements Destroyable, Sta
     }
 
     protected void listenInstance(LwM2mInstanceEnabler instance, final int instanceId) {
-        instance.addResourceListener(new ResourceListener() {
-            @Override
-            public void resourceChanged(LwM2mPath... paths) {
-                for (LwM2mPath path : paths) {
-                    if (!isValid(instanceId, path)) {
-                        LOG.warn("InstanceEnabler ({}) of object ({}) try to raise a change of {} which seems invalid.",
-                                instanceId, getId(), path);
-                    }
+        instance.addResourceListener(paths -> {
+            for (LwM2mPath path : paths) {
+                if (!isValid(instanceId, path)) {
+                    LOG.warn("InstanceEnabler ({}) of object ({}) try to raise a change of {} which seems invalid.",
+                            instanceId, getId(), path);
                 }
-                fireResourcesChanged(paths);
             }
+            fireResourcesChanged(paths);
         });
     }
 
+    @SuppressWarnings("java:S1126")
     protected boolean isValid(int instanceId, LwM2mPath pathToValidate) {
         if (!(pathToValidate.isResource() || pathToValidate.isResourceInstance()))
             return false;

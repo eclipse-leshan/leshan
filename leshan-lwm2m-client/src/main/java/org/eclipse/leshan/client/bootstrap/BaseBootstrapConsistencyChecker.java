@@ -49,6 +49,7 @@ public abstract class BaseBootstrapConsistencyChecker implements BootstrapConsis
     }
 
     @Override
+    @SuppressWarnings("java:S1168")
     public List<String> checkconfig(Map<Integer, LwM2mObjectEnabler> objectEnablers) {
         List<String> errors = new ArrayList<>();
 
@@ -132,7 +133,7 @@ public abstract class BaseBootstrapConsistencyChecker implements BootstrapConsis
     /**
      * Check if bootstrap server info is valid, add error message to <code>errors</code> if any.
      */
-    protected abstract void checkBootstrapServerInfo(ServerInfo BootstrapServerInfo, List<String> errors);
+    protected abstract void checkBootstrapServerInfo(ServerInfo bootstrapServerInfo, List<String> errors);
 
     /**
      * Check if device management server info is valid, add error message to <code>errors</code> if any.

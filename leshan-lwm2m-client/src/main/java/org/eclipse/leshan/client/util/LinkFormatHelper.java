@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +72,7 @@ public class LinkFormatHelper {
         // create links for root
         List<Attribute> attributes = new ArrayList<>();
         attributes.add(new ResourceTypeAttribute("oma.lwm2m"));
-        // serialize contentFormat;
+        // serialize contentFormat
         if (supportedContentFormats != null && !supportedContentFormats.isEmpty()) {
             attributes.add(new ContentFormatAttribute(supportedContentFormats));
         }
@@ -82,12 +81,7 @@ public class LinkFormatHelper {
 
         // sort object
         List<LwM2mObjectEnabler> objEnablerList = new ArrayList<>(objectEnablers);
-        Collections.sort(objEnablerList, new Comparator<LwM2mObjectEnabler>() {
-            @Override
-            public int compare(LwM2mObjectEnabler o1, LwM2mObjectEnabler o2) {
-                return o1.getId() - o2.getId();
-            }
-        });
+        Collections.sort(objEnablerList, (o1, o2) -> o1.getId() - o2.getId());
         for (LwM2mObjectEnabler objectEnabler : objEnablerList) {
             // skip the security and oscore Object
             if (objectEnabler.getId() == LwM2mId.SECURITY || objectEnabler.getId() == LwM2mId.OSCORE)
@@ -197,10 +191,10 @@ public class LinkFormatHelper {
 
         // create link for "object"
         LwM2mLink objectLink;
-        Version version = getVersion(objectEnabler.getObjectModel());
-        if (version != null) {
+        Version objectVersion = getVersion(objectEnabler.getObjectModel());
+        if (objectVersion != null) {
             objectLink = new LwM2mLink("/", new LwM2mPath(objectEnabler.getId()),
-                    LwM2mAttributes.create(LwM2mAttributes.OBJECT_VERSION, version));
+                    LwM2mAttributes.create(LwM2mAttributes.OBJECT_VERSION, objectVersion));
         } else {
             objectLink = new LwM2mLink("/", new LwM2mPath(objectEnabler.getId()));
         }
@@ -325,13 +319,13 @@ public class LinkFormatHelper {
     }
 
     protected LwM2mAttributeSet getObjectAttributes(ObjectModel objectModel) {
-        Version version = getVersion(objectModel);
-        if (version == null) {
+        Version objectVersion = getVersion(objectModel);
+        if (objectVersion == null) {
             return new LwM2mAttributeSet();
         }
 
         List<LwM2mAttribute<?>> attributes = new ArrayList<>();
-        attributes.add(LwM2mAttributes.create(LwM2mAttributes.OBJECT_VERSION, version));
+        attributes.add(LwM2mAttributes.create(LwM2mAttributes.OBJECT_VERSION, objectVersion));
         return new LwM2mAttributeSet(attributes);
     }
 

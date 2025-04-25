@@ -78,7 +78,6 @@ public class LwM2mObjectTree implements Startable, Stoppable, Destroyable {
 
             @Override
             public Collection<ObjectModel> getObjectModels() {
-                // TODO implements this ?
                 throw new UnsupportedOperationException("Not implemented");
             }
 

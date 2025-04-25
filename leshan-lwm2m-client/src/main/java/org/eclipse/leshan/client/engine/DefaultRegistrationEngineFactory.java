@@ -45,9 +45,6 @@ public class DefaultRegistrationEngineFactory implements RegistrationEngineFacto
     private boolean queueMode = false;
     private ContentFormat preferredContentFormat = ContentFormat.SENML_CBOR;
 
-    public DefaultRegistrationEngineFactory() {
-    }
-
     @Override
     public RegistrationEngine createRegistratioEngine(ClientEndpointNameProvider endpointNameProvider,
             LwM2mObjectTree objectTree, EndpointsManager endpointsManager, UplinkRequestSender requestSender,
