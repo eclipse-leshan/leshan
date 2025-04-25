@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.resource.ObjectTreeReader;
 import org.eclipse.leshan.client.servers.DmServerInfo;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.client.servers.ServersInfo;
@@ -101,7 +102,7 @@ public abstract class BaseBootstrapConsistencyChecker implements BootstrapConsis
         } else if (!deviceObjectEnabler.getAvailableResourceIds(0).contains(DVC_SUPPORTED_BINDING)) {
             errors.add("'Device' object MUST support mandatory ressource 'Supported Binding' (ID:16)");
         } else {
-            EnumSet<BindingMode> deviceSupportedBindingMode = serversInfoExtractor
+            EnumSet<BindingMode> deviceSupportedBindingMode = ObjectTreeReader
                     .getDeviceSupportedBindingMode(deviceObjectEnabler, 0);
             if (deviceSupportedBindingMode == null) {
                 errors.add("'Supported Binding' (ID:16) resource from 'Device' object (ID:3) MUST have value");

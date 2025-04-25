@@ -39,6 +39,7 @@ import org.eclipse.leshan.client.observer.LwM2mClientObserver;
 import org.eclipse.leshan.client.request.UplinkRequestSender;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
+import org.eclipse.leshan.client.resource.ObjectTreeReader;
 import org.eclipse.leshan.client.servers.DmServerInfo;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServerInfo;
@@ -231,7 +232,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
         RegisterRequest request = null;
         try {
             LwM2mVersion lwM2mVersion = LwM2mVersion.lastSupported();
-            EnumSet<BindingMode> supportedBindingMode = serversInfoExtractor
+            EnumSet<BindingMode> supportedBindingMode = ObjectTreeReader
                     .getDeviceSupportedBindingMode(objectEnablers.get(LwM2mId.DEVICE), 0);
             Link[] links = linkFormatHelper.getClientDescription(objectEnablers.values(), null,
                     ContentFormat.getOptionalContentFormatForClient(supportedContentFormats, lwM2mVersion));
