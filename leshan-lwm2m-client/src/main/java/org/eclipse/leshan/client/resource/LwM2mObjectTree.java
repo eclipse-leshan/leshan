@@ -21,11 +21,10 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 
-import org.eclipse.leshan.client.LwM2mClient;
 import org.eclipse.leshan.client.resource.listener.ObjectListener;
 import org.eclipse.leshan.client.resource.listener.ObjectsListener;
-import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
@@ -46,13 +45,15 @@ public class LwM2mObjectTree implements Startable, Stoppable, Destroyable {
     protected final CopyOnWriteArrayList<ObjectsListener> listeners = new CopyOnWriteArrayList<>();
     protected final ConcurrentHashMap<Integer, LwM2mObjectEnabler> objectEnablers = new ConcurrentHashMap<>();
     protected final LwM2mModel model;
+    protected final Consumer<LwM2mObjectEnabler> objectEnablerInitializer;
 
-    public LwM2mObjectTree(LwM2mClient client, LinkFormatHelper linkFormatHelper, LwM2mObjectEnabler... enablers) {
-        this(client, linkFormatHelper, Arrays.asList(enablers));
+    public LwM2mObjectTree(Consumer<LwM2mObjectEnabler> objectEnablerInitializer, LwM2mObjectEnabler... enablers) {
+        this(objectEnablerInitializer, Arrays.asList(enablers));
     }
 
-    public LwM2mObjectTree(LwM2mClient client, LinkFormatHelper linkFormatHelper,
+    public LwM2mObjectTree(Consumer<LwM2mObjectEnabler> objectEnablerInitializer,
             Collection<? extends LwM2mObjectEnabler> enablers) {
+        this.objectEnablerInitializer = objectEnablerInitializer;
         for (LwM2mObjectEnabler enabler : enablers) {
             LwM2mObjectEnabler previousEnabler = objectEnablers.putIfAbsent(enabler.getId(), enabler);
             if (previousEnabler != null) {
@@ -61,8 +62,8 @@ public class LwM2mObjectTree implements Startable, Stoppable, Destroyable {
             }
         }
         for (LwM2mObjectEnabler enabler : enablers) {
+            objectEnablerInitializer.accept(enabler);
             enabler.addListener(dispatcher);
-            enabler.init(client, linkFormatHelper);
         }
 
         this.model = new LwM2mModel() {
@@ -113,11 +114,12 @@ public class LwM2mObjectTree implements Startable, Stoppable, Destroyable {
 
     public void addObjectEnabler(LwM2mObjectEnabler enabler) {
         LwM2mObjectEnabler previousEnabler = objectEnablers.putIfAbsent(enabler.getId(), enabler);
-        enabler.addListener(dispatcher);
         if (previousEnabler != null) {
             throw new IllegalArgumentException(
                     String.format("Can not add 2 enablers for the same id %d", enabler.getId()));
         }
+        objectEnablerInitializer.accept(enabler);
+        enabler.addListener(dispatcher);
         for (ObjectsListener listener : listeners) {
             listener.objectAdded(enabler);
         }

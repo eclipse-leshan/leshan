@@ -162,7 +162,7 @@ public class LeshanClient implements LwM2mClient {
 
     protected LwM2mObjectTree createObjectTree(List<? extends LwM2mObjectEnabler> objectEnablers,
             LinkFormatHelper linkFormatHelper) {
-        return new LwM2mObjectTree(this, linkFormatHelper, objectEnablers);
+        return new LwM2mObjectTree(objectEnabler -> objectEnabler.init(this, linkFormatHelper), objectEnablers);
     }
 
     protected DataSenderManager createDataSenderManager(List<DataSender> dataSenders, LwM2mRootEnabler rootEnabler,
