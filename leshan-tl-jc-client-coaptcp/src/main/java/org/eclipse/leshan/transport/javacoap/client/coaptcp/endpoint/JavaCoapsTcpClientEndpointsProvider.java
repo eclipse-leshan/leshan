@@ -19,7 +19,6 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -73,7 +72,7 @@ public class JavaCoapsTcpClientEndpointsProvider extends AbstractJavaCoapClientE
 
             // Configure it
             X509KeyManager keys = new SingleX509KeyManager(serverInfo.privateKey,
-                    new X509Certificate[] { (X509Certificate) serverInfo.clientCertificate });
+                    serverInfo.getX509ClientCertificates());
 
             X509TrustManager trustManger = new LwM2mX509TrustManager(
                     certificateVerifierFactory.create(serverInfo, trustStore));
@@ -84,7 +83,7 @@ public class JavaCoapsTcpClientEndpointsProvider extends AbstractJavaCoapClientE
             throw new IllegalArgumentException("Unable to create tls endpoint point", e);
         }
 
-        return TcpCoapServer.builder() ///
+        return TcpCoapServer.builder()
                 .transport(new SSLSocketClientTransport(serverInfo.getAddress(), tlsContext.getSocketFactory(), true) {
 
                     @Override
@@ -94,7 +93,7 @@ public class JavaCoapsTcpClientEndpointsProvider extends AbstractJavaCoapClientE
                             packet.setTransportContext(getTransportContext(getSslSocket()));
                             return packet;
                         });
-                    };
+                    }
                 })//
                 .blockSize(BlockSize.S_1024_BERT) //
                 .outboundFilter(TokenGeneratorFilter.RANDOM)//

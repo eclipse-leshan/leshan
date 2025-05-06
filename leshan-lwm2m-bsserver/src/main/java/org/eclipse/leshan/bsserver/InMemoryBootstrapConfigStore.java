@@ -30,10 +30,18 @@ import org.eclipse.leshan.core.SecurityMode;
  */
 public class InMemoryBootstrapConfigStore implements EditableBootstrapConfigStore {
 
-    protected final ConfigurationChecker configChecker = new ConfigurationChecker();
+    protected final ConfigurationChecker configChecker;
 
     protected final Map<String /* endpoint */, BootstrapConfig> bootstrapByEndpoint = new ConcurrentHashMap<>();
     protected final ConcurrentHashMap<PskByServer, BootstrapConfig> bootstrapByPskId = new ConcurrentHashMap<>();
+
+    public InMemoryBootstrapConfigStore(ConfigurationChecker configChecker) {
+        this.configChecker = configChecker;
+    }
+
+    public InMemoryBootstrapConfigStore() {
+        this.configChecker = new DefaultConfigurationChecker();
+    }
 
     @Override
     public BootstrapConfig get(BootstrapSession session) {
@@ -90,10 +98,8 @@ public class InMemoryBootstrapConfigStore implements EditableBootstrapConfigStor
 
     protected PskByServer getBootstrapPskIdentity(BootstrapConfig config) {
         for (ServerSecurity security : config.security.values()) {
-            if (security.bootstrapServer) {
-                if (security.securityMode == SecurityMode.PSK) {
-                    return new PskByServer(security.uri, new String(security.publicKeyOrId));
-                }
+            if (security.bootstrapServer && security.securityMode == SecurityMode.PSK) {
+                return new PskByServer(security.uri, new String(security.publicKeyOrId));
             }
         }
         return null;
