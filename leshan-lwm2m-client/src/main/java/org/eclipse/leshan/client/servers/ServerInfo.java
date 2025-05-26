@@ -22,6 +22,9 @@ import java.net.URISyntaxException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.LwM2m;
@@ -51,7 +54,7 @@ public class ServerInfo {
     public PublicKey publicKey;
     public PublicKey serverPublicKey;
 
-    public Certificate clientCertificate;
+    public Certificate[] clientCertificates;
     public Certificate serverCertificate;
     public String sni;
 
@@ -110,5 +113,10 @@ public class ServerInfo {
     public static InetSocketAddress getAddress(URI serverUri) {
         URI fullUri = getFullUri(serverUri);
         return new InetSocketAddress(fullUri.getHost(), fullUri.getPort());
+    }
+
+    public X509Certificate[] getX509ClientCertificates() {
+        return Arrays.stream(clientCertificates).map(c -> (X509Certificate) c).collect(Collectors.toList())
+                .toArray(new X509Certificate[] {});
     }
 }
