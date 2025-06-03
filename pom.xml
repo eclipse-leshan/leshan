@@ -325,6 +325,11 @@ Contributors:
         <artifactId>netty-transport</artifactId>
         <version>${netty.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bctls-jdk18on</artifactId>
+        <version>1.80</version>
+      </dependency>
 
       <!-- Demos, examples and tests dependencies -->
       <dependency>
