@@ -21,9 +21,9 @@ import org.eclipse.leshan.client.bootstrap.BootstrapHandler;
 import org.eclipse.leshan.client.engine.RegistrationEngine;
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
 import org.eclipse.leshan.client.resource.LwM2mObjectTree;
+import org.eclipse.leshan.client.resource.ObjectTreeReader;
 import org.eclipse.leshan.client.resource.listener.ObjectsListener;
 import org.eclipse.leshan.client.servers.LwM2mServer;
-import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.LwM2mId;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -89,9 +89,9 @@ public class RegistrationUpdateHandler {
                                 if (path.getResourceId() == LwM2mId.SRV_LIFETIME) {
                                     LwM2mObjectEnabler enabler = objecTree.getObjectEnabler(LwM2mId.SERVER);
                                     if (enabler != null) {
-                                        Long lifetime = ServersInfoExtractor.getLifeTime(enabler,
+                                        Long lifetime = ObjectTreeReader.getLifeTime(enabler,
                                                 path.getObjectInstanceId());
-                                        Long serverId = ServersInfoExtractor.getServerId(enabler,
+                                        Long serverId = ObjectTreeReader.getServerId(enabler,
                                                 path.getObjectInstanceId());
                                         if (lifetime != null && serverId != null) {
                                             LwM2mServer server = engine.getRegisteredServer(serverId);
@@ -109,7 +109,7 @@ public class RegistrationUpdateHandler {
                                 if (path.getResourceId() == LwM2mId.DVC_SUPPORTED_BINDING) {
                                     LwM2mObjectEnabler enabler = objecTree.getObjectEnabler(LwM2mId.DEVICE);
                                     if (enabler != null) {
-                                        bindingMode = ServersInfoExtractor.getDeviceSupportedBindingMode(enabler,
+                                        bindingMode = ObjectTreeReader.getDeviceSupportedBindingMode(enabler,
                                                 path.getObjectInstanceId());
                                     }
                                 }

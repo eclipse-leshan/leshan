@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.leshan.client.resource.LwM2mObjectEnabler;
+import org.eclipse.leshan.client.resource.ObjectTreeReader;
 import org.eclipse.leshan.client.servers.DmServerInfo;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.client.servers.ServersInfo;
@@ -41,7 +42,14 @@ public abstract class BaseBootstrapConsistencyChecker implements BootstrapConsis
 
     private static final Logger LOG = LoggerFactory.getLogger(BaseBootstrapConsistencyChecker.class);
 
+    protected ServersInfoExtractor serversInfoExtractor;
+
+    BaseBootstrapConsistencyChecker(ServersInfoExtractor serversInfoExtractor) {
+        this.serversInfoExtractor = serversInfoExtractor;
+    }
+
     @Override
+    @SuppressWarnings("java:S1168")
     public List<String> checkconfig(Map<Integer, LwM2mObjectEnabler> objectEnablers) {
         List<String> errors = new ArrayList<>();
 
@@ -95,7 +103,7 @@ public abstract class BaseBootstrapConsistencyChecker implements BootstrapConsis
         } else if (!deviceObjectEnabler.getAvailableResourceIds(0).contains(DVC_SUPPORTED_BINDING)) {
             errors.add("'Device' object MUST support mandatory ressource 'Supported Binding' (ID:16)");
         } else {
-            EnumSet<BindingMode> deviceSupportedBindingMode = ServersInfoExtractor
+            EnumSet<BindingMode> deviceSupportedBindingMode = ObjectTreeReader
                     .getDeviceSupportedBindingMode(deviceObjectEnabler, 0);
             if (deviceSupportedBindingMode == null) {
                 errors.add("'Supported Binding' (ID:16) resource from 'Device' object (ID:3) MUST have value");
@@ -108,7 +116,7 @@ public abstract class BaseBootstrapConsistencyChecker implements BootstrapConsis
      */
     protected void checkBootstrapConfig(Map<Integer, LwM2mObjectEnabler> objectEnablers, List<String> errors) {
         try {
-            ServersInfo info = ServersInfoExtractor.getInfo(objectEnablers, true);
+            ServersInfo info = serversInfoExtractor.getInfo(objectEnablers, true);
 
             if (info.bootstrap != null) {
                 checkBootstrapServerInfo(info.bootstrap, errors);
@@ -125,7 +133,7 @@ public abstract class BaseBootstrapConsistencyChecker implements BootstrapConsis
     /**
      * Check if bootstrap server info is valid, add error message to <code>errors</code> if any.
      */
-    protected abstract void checkBootstrapServerInfo(ServerInfo BootstrapServerInfo, List<String> errors);
+    protected abstract void checkBootstrapServerInfo(ServerInfo bootstrapServerInfo, List<String> errors);
 
     /**
      * Check if device management server info is valid, add error message to <code>errors</code> if any.
