@@ -28,7 +28,7 @@ Contributors:
 		</encoder>
 	</appender>
 
-	<root level="ERROR">
+	<root level="TRACE">
 		<appender-ref ref="STDOUT" />
 	</root>
 

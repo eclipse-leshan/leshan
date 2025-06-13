@@ -74,7 +74,8 @@ public class SniTest {
     static Stream<org.junit.jupiter.params.provider.Arguments> transports() {
         return Stream.of(//
                 // ProtocolUsed - Client Endpoint Provider
-                arguments(Protocol.COAPS, "Californium"));
+                arguments(Protocol.COAPS, "Californium"), //
+                arguments(Protocol.COAPS, "java-coap"));
     }
 
     /*---------------------------------/

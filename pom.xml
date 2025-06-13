@@ -244,6 +244,11 @@ Contributors:
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-tl-jc-client-coaps</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
         <artifactId>leshan-tl-jc-server-coaptcp</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -327,8 +332,8 @@ Contributors:
       </dependency>
       <dependency>
         <groupId>org.bouncycastle</groupId>
-        <artifactId>bctls-jdk18on</artifactId>
-        <version>1.80</version>
+        <artifactId>bctls-debug-jdk18on</artifactId>
+        <version>1.81</version>
       </dependency>
 
       <!-- Demos, examples and tests dependencies -->

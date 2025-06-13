@@ -25,6 +25,7 @@ import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertArg;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -77,7 +78,8 @@ public class PskTest {
     static Stream<org.junit.jupiter.params.provider.Arguments> transports() {
         return Stream.of(//
                 // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider
-                arguments(Protocol.COAPS, "Californium", "Californium"));
+                arguments(Protocol.COAPS, "Californium", "Californium"),
+                arguments(Protocol.COAPS, "java-coap", "Californium"));
     }
 
     /*---------------------------------/
@@ -268,6 +270,10 @@ public class PskTest {
     @TestAllTransportLayer
     public void server_initiates_dtls_handshake(Protocol givenProtocol, String givenClientEndpointProvider,
             String givenServerEndpointProvider) throws NonUniqueSecurityInfoException, InterruptedException {
+
+        // java-coap use bouncy castle which doesn't support server initiated (for now?)
+        assumeTrue(!givenClientEndpointProvider.equals("java-coap"));
+
         // Create PSK server & start it
         server = givenServer.build(); // default server support PSK
         server.start();
