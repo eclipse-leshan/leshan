@@ -80,6 +80,7 @@ public class X509Test {
         return Stream.of(//
                 // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider
                 arguments(Protocol.COAPS, "Californium", "Californium"),
+                arguments(Protocol.COAPS, "java-coap", "Californium"),
                 arguments(Protocol.COAPS_TCP, "java-coap", "java-coap"));
     }
 
@@ -157,7 +158,6 @@ public class X509Test {
         // try to update
         client.triggerRegistrationUpdate();
         client.waitForUpdateFailureTo(server, 2, TimeUnit.SECONDS);
-
     }
 
     @TestAllTransportLayer

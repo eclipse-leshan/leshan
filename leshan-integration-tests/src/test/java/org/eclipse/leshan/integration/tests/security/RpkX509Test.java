@@ -65,7 +65,8 @@ public class RpkX509Test {
     static Stream<org.junit.jupiter.params.provider.Arguments> transports() {
         return Stream.of(//
                 // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider
-                arguments(Protocol.COAPS, "Californium", "Californium"));
+                arguments(Protocol.COAPS, "Californium", "Californium"), //
+                arguments(Protocol.COAPS, "java-coap", "Californium"));
     }
 
     /*---------------------------------/
