@@ -22,6 +22,8 @@ import javax.security.auth.x500.X500Principal;
 
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
+import org.eclipse.leshan.core.peer.PskIdentity;
+import org.eclipse.leshan.core.peer.RpkIdentity;
 import org.eclipse.leshan.core.peer.X509Identity;
 import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 
@@ -52,6 +54,12 @@ public class DefaultTlsIdentityHandler extends DefaultCoapIdentityHandler {
         if (client.getIdentity() instanceof X509Identity) {
             /* simplify distinguished name to CN= part */
             peerIdentity = new X500Principal("CN=" + ((X509Identity) client.getIdentity()).getX509CommonName());
+            return TransportContext.of(TlsTransportContextKeys.PRINCIPAL, peerIdentity);
+        } else if (client.getIdentity() instanceof PskIdentity) {
+            peerIdentity = new PreSharedKeyPrincipal(((PskIdentity) client.getIdentity()).getPskIdentity());
+            return TransportContext.of(TlsTransportContextKeys.PRINCIPAL, peerIdentity);
+        } else if (client.getIdentity() instanceof RpkIdentity) {
+            peerIdentity = new RawPublicKeyPrincipal(((RpkIdentity) client.getIdentity()).getPublicKey());
             return TransportContext.of(TlsTransportContextKeys.PRINCIPAL, peerIdentity);
         } else {
             throw new IllegalStateException(String.format("Unsupported Identity : %s", client.getIdentity()));
