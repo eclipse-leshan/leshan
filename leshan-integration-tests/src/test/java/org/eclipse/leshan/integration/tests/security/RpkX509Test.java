@@ -29,7 +29,6 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.security.cert.CertificateEncodingException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -52,7 +51,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 @ExtendWith(BeforeEachParameterizedResolver.class)
-public class RpkX509Test {
+class RpkX509Test {
     /*---------------------------------/
      *  Parameterized Tests
      * -------------------------------*/
@@ -78,13 +77,13 @@ public class RpkX509Test {
     LeshanTestClient client;
 
     @BeforeEach
-    public void start(Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider) {
+    void start(Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider) {
         givenServer = givenServerUsing(givenProtocol).with(givenServerEndpointProvider);
         givenClient = givenClientUsing(givenProtocol).with(givenClientEndpointProvider);
     }
 
     @AfterEach
-    public void stop() throws InterruptedException {
+    void stop() {
         if (client != null)
             client.destroy(false);
         if (server != null)
@@ -101,7 +100,7 @@ public class RpkX509Test {
     @TestAllTransportLayer
     public void registered_device_with_x509cert_to_server_with_rpk(Protocol givenProtocol,
             String givenClientEndpointProvider, String givenServerEndpointProvider)
-            throws NonUniqueSecurityInfoException, CertificateEncodingException {
+            throws NonUniqueSecurityInfoException {
         server = givenServer.using(serverX509CertSignedByRoot.getPublicKey(), serverPrivateKeyFromCert).build();
         server.start();
 
