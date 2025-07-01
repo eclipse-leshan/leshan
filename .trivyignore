@@ -1,12 +1,7 @@
 # =========================
 # About Servers Demos
 # =========================
-
-# Frontend
-# ------------
-# We need to wait for : https://github.com/CycloneDX/cyclonedx-javascript-library/issues/1079
-CVE-2024-34394
-CVE-2024-34393
+Nothing for now.
 
 # =========================
 # About Leshan Libraries
