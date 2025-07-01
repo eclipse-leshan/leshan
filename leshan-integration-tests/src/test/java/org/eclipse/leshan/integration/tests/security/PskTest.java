@@ -62,7 +62,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 @ExtendWith(BeforeEachParameterizedResolver.class)
-public class PskTest {
+class PskTest {
 
     private static final long SHORT_LIFETIME = 2; // seconds
 
@@ -91,13 +91,13 @@ public class PskTest {
     LeshanTestClient client;
 
     @BeforeEach
-    public void start(Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider) {
+    void start(Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider) {
         givenServer = givenServerUsing(givenProtocol).with(givenServerEndpointProvider);
         givenClient = givenClientUsing(givenProtocol).with(givenClientEndpointProvider);
     }
 
     @AfterEach
-    public void stop() throws InterruptedException {
+    void stop() {
         if (client != null)
             client.destroy(false);
         if (server != null)
@@ -307,7 +307,7 @@ public class PskTest {
 
     @TestAllTransportLayer
     public void server_initiates_dtls_handshake_timeout(Protocol givenProtocol, String givenClientEndpointProvider,
-            String givenServerEndpointProvider) throws NonUniqueSecurityInfoException, InterruptedException {
+            String givenServerEndpointProvider) throws NonUniqueSecurityInfoException {
         // Create PSK server & start it
         server = givenServer.build(); // default server support PSK
         server.start();
@@ -355,7 +355,7 @@ public class PskTest {
     @TestAllTransportLayer
     public void server_does_not_initiate_dtls_handshake_with_queue_mode(Protocol givenProtocol,
             String givenClientEndpointProvider, String givenServerEndpointProvider)
-            throws NonUniqueSecurityInfoException, InterruptedException {
+            throws NonUniqueSecurityInfoException {
 
         // Create PSK server & start it
         server = givenServer.build(); // default server support PSK
@@ -471,7 +471,7 @@ public class PskTest {
     @TestAllTransportLayer
     public void registered_device_with_psk_identity_to_server_with_psk_then_remove_security_info(Protocol givenProtocol,
             String givenClientEndpointProvider, String givenServerEndpointProvider)
-            throws NonUniqueSecurityInfoException, InterruptedException {
+            throws NonUniqueSecurityInfoException {
         // Create PSK server & start it
         server = givenServer.build(); // default server support PSK
         server.start();
