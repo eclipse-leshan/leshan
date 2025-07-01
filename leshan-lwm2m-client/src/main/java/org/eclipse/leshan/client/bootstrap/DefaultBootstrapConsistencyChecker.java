@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.eclipse.leshan.client.servers.DmServerInfo;
 import org.eclipse.leshan.client.servers.ServerInfo;
+import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.core.SecurityMode;
 import org.eclipse.leshan.core.oscore.InvalidOscoreSettingException;
 import org.eclipse.leshan.core.oscore.OscoreValidator;
@@ -31,6 +32,10 @@ import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 public class DefaultBootstrapConsistencyChecker extends BaseBootstrapConsistencyChecker {
 
     private final OscoreValidator oscoreValidator = new OscoreValidator();
+
+    public DefaultBootstrapConsistencyChecker(ServersInfoExtractor serversInfoExtractor) {
+        super(serversInfoExtractor);
+    }
 
     @Override
     protected void checkBootstrapServerInfo(ServerInfo bootstrapServerInfo, List<String> errors) {
@@ -44,16 +49,21 @@ public class DefaultBootstrapConsistencyChecker extends BaseBootstrapConsistency
         checkOscoreIsValid(serverInfo, errors);
     }
 
-    private void checkCertificateIsValid(ServerInfo serverInfo, List<String> errors) {
+    protected void checkCertificateIsValid(ServerInfo serverInfo, List<String> errors) {
         if (serverInfo.secureMode == SecurityMode.X509) {
-            if (!X509CertUtil.canBeUsedForAuthentication((X509Certificate) serverInfo.clientCertificate, true)) {
+            // the first certificate in a chain is a device certificate
+            if (!X509CertUtil.canBeUsedForAuthentication((X509Certificate) serverInfo.clientCertificates[0], true)) {
                 errors.add(String.format("Client certificate for %s server can not be used for authenticate a client",
                         serverInfo.bootstrap ? "bootstrap" : serverInfo.serverId));
+            }
+            // by default don't support chains!
+            if (serverInfo.clientCertificates.length > 1) {
+                errors.add("Client certificate chain for is not supported");
             }
         }
     }
 
-    private void checkOscoreIsValid(ServerInfo serverInfo, List<String> errors) {
+    protected void checkOscoreIsValid(ServerInfo serverInfo, List<String> errors) {
         if (serverInfo.useOscore) {
             try {
                 oscoreValidator.validateOscoreSetting(serverInfo.oscoreSetting);
