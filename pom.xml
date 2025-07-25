@@ -100,6 +100,7 @@ Contributors:
     <!-- transport layer based on java-coap -->
     <module>leshan-tl-jc-shared</module>
     <module>leshan-tl-jc-server-coap</module>
+    <module>leshan-tl-jc-server-coaps</module>
     <module>leshan-tl-jc-client-coap</module>
     <module>leshan-tl-jc-client-coaps</module>
     <module>leshan-tl-jc-server-coaptcp</module>
@@ -236,6 +237,11 @@ Contributors:
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>leshan-tl-jc-server-coap</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-tl-jc-server-coaps</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

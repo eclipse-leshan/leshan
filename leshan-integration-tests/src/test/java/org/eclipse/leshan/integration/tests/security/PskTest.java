@@ -78,8 +78,10 @@ class PskTest {
     static Stream<org.junit.jupiter.params.provider.Arguments> transports() {
         return Stream.of(//
                 // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider
-                arguments(Protocol.COAPS, "Californium", "Californium"),
-                arguments(Protocol.COAPS, "java-coap", "Californium"));
+                arguments(Protocol.COAPS, "Californium", "Californium"), //
+                arguments(Protocol.COAPS, "java-coap", "Californium"), //
+                arguments(Protocol.COAPS, "Californium", "java-coap"), //
+                arguments(Protocol.COAPS, "java-coap", "java-coap"));
     }
 
     /*---------------------------------/
@@ -272,7 +274,8 @@ class PskTest {
             String givenServerEndpointProvider) throws NonUniqueSecurityInfoException, InterruptedException {
 
         // java-coap use bouncy castle which doesn't support server initiated (for now?)
-        assumeTrue(!givenClientEndpointProvider.equals("java-coap"));
+        assumeTrue(!givenClientEndpointProvider.equals("java-coap") //
+                && !givenServerEndpointProvider.equals("java-coap"));
 
         // Create PSK server & start it
         server = givenServer.build(); // default server support PSK
@@ -308,6 +311,11 @@ class PskTest {
     @TestAllTransportLayer
     public void server_initiates_dtls_handshake_timeout(Protocol givenProtocol, String givenClientEndpointProvider,
             String givenServerEndpointProvider) throws NonUniqueSecurityInfoException {
+
+        // java-coap use bouncy castle which doesn't support server initiated (for now?)
+        assumeTrue(!givenClientEndpointProvider.equals("java-coap") //
+                && !givenServerEndpointProvider.equals("java-coap"));
+
         // Create PSK server & start it
         server = givenServer.build(); // default server support PSK
         server.start();
