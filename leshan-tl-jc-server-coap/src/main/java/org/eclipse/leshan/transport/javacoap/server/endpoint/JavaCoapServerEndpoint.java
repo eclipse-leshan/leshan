@@ -36,6 +36,7 @@ import org.eclipse.leshan.core.request.DownlinkDeviceManagementRequest;
 import org.eclipse.leshan.core.request.exception.RequestCanceledException;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.core.request.exception.TimeoutException.Type;
+import org.eclipse.leshan.core.request.exception.UnconnectedPeerException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
@@ -68,13 +69,16 @@ public class JavaCoapServerEndpoint implements LwM2mServerEndpoint {
             String, // sessionId#requestId
             CompletableFuture<? extends LwM2mResponse>> // future of the ongoing Coap Request
     ongoingRequests = new ConcurrentSkipListMap<>();
+    private final ConnectionsManager connectionsManager;
 
     public JavaCoapServerEndpoint(Protocol protocol, String endpointDescription, CoapServer coapServer,
-            ServerCoapMessageTranslator translator, ServerEndpointToolbox toolbox) {
+            ServerCoapMessageTranslator translator, ConnectionsManager connectionsManager,
+            ServerEndpointToolbox toolbox) {
         this.supportedProtocol = protocol;
         this.endpointDescription = endpointDescription;
         this.coapServer = coapServer;
         this.translator = translator;
+        this.connectionsManager = connectionsManager;
         this.toolbox = toolbox;
     }
 
@@ -110,7 +114,12 @@ public class JavaCoapServerEndpoint implements LwM2mServerEndpoint {
                 if (exception.getCause() instanceof CoapTimeoutException) {
                     return null;
                 } else {
-                    throw new SendFailedException("Unable to send request  " + exception.getCause(), exception);
+                    if (exception.getCause() instanceof UnconnectedPeerException) {
+                        throw (UnconnectedPeerException) exception.getCause();
+                    } else {
+                        throw new SendFailedException("Unable to send request  " + exception.getCause(), exception);
+                    }
+
                 }
             }
         } catch (TimeoutException e) {
@@ -140,6 +149,8 @@ public class JavaCoapServerEndpoint implements LwM2mServerEndpoint {
                         && exception.getCause() instanceof CoapTimeoutException) {
                     errorCallback.onError(new org.eclipse.leshan.core.request.exception.TimeoutException(
                             Type.COAP_TIMEOUT, exception.getCause(), "Coap Timeout"));
+                } else if (exception instanceof UnconnectedPeerException) {
+                    errorCallback.onError((Exception) exception);
                 } else {
                     errorCallback.onError(new SendFailedException("Unable to send request " + exception.getCause(),
                             exception.getCause()));
@@ -230,9 +241,7 @@ public class JavaCoapServerEndpoint implements LwM2mServerEndpoint {
         if (sessionID != null) {
             final String key = getKey(sessionID, idGenerator.incrementAndGet());
             ongoingRequests.put(key, coapRequest);
-            coapRequest.whenComplete((r, e) -> {
-                ongoingRequests.remove(key);
-            });
+            coapRequest.whenComplete((r, e) -> ongoingRequests.remove(key));
         }
     }
 
@@ -242,5 +251,9 @@ public class JavaCoapServerEndpoint implements LwM2mServerEndpoint {
         // But with should help to adapt the code : https://github.com/open-coap/java-coap/pull/68
         if (lowerLayerConfig != null)
             lowerLayerConfig.apply(request);
+    }
+
+    public ConnectionsManager getConnectionManager() {
+        return connectionsManager;
     }
 }
