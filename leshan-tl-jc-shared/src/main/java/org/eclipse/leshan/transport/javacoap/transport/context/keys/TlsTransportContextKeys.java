@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 Sierra Wireless and others.
+ * Copyright (c) 2024 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -13,21 +13,15 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.transport.javacoap.identity;
+package org.eclipse.leshan.transport.javacoap.transport.context.keys;
 
-public class IdentityHandlerProvider {
+import java.security.Principal;
 
-//    private final HashMap<Endpoint, IdentityHandler> identityHandlers = new HashMap<>();
-//
-//    public void addIdentityHandler(Endpoint endpoint, IdentityHandler identityHandler) {
-//        identityHandlers.put(endpoint, identityHandler);
-//    }
-//
-//    public void clear() {
-//        identityHandlers.clear();
-//    }
-//
-//    public IdentityHandler getIdentityHandler(Endpoint endpoint) {
-//        return identityHandlers.get(endpoint);
-//    }
+import com.mbed.coap.transport.TransportContext;
+
+public class TlsTransportContextKeys {
+    public static final TransportContext.Key<String> TLS_SESSION_ID = new TransportContext.Key<>(null);
+    public static final TransportContext.Key<String> CIPHER_SUITE = new TransportContext.Key<>(null);
+    public static final TransportContext.Key<Integer> CIPHER_SUITE_ID = new TransportContext.Key<>(null);
+    public static final TransportContext.Key<Principal> PRINCIPAL = new TransportContext.Key<>(null);
 }

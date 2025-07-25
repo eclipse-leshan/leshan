@@ -13,11 +13,13 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.transport.javacoap.server.coaptcp.transport;
+package org.eclipse.leshan.transport.javacoap.transport.context;
 
 import java.util.function.BiFunction;
 
-import org.eclipse.leshan.transport.javacoap.identity.TlsTransportContextKeys;
+import org.eclipse.leshan.transport.javacoap.transport.context.keys.IpTransportContextKeys;
+import org.eclipse.leshan.transport.javacoap.transport.context.keys.TcpTransportContextKeys;
+import org.eclipse.leshan.transport.javacoap.transport.context.keys.TlsTransportContextKeys;
 
 import com.mbed.coap.transport.TransportContext;
 import com.mbed.coap.transport.TransportContext.Key;
@@ -27,9 +29,9 @@ public class DefaultTransportContextMatcher implements BiFunction<TransportConte
     private final Key<?>[] knownKeys;
 
     public DefaultTransportContextMatcher() {
-        this(CoapTcpTransportResolver.REMOTE_ADDRESS, //
-                CoapTcpTransportResolver.CONNECTION_ID, //
-                CoapTcpTransportResolver.CONNECTION_START_TIMESTAMP, //
+        this(IpTransportContextKeys.REMOTE_ADDRESS, //
+                TcpTransportContextKeys.CONNECTION_ID, //
+                TcpTransportContextKeys.CONNECTION_START_TIMESTAMP, //
                 TlsTransportContextKeys.TLS_SESSION_ID, //
                 TlsTransportContextKeys.PRINCIPAL, //
                 TlsTransportContextKeys.CIPHER_SUITE);
