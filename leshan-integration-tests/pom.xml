@@ -64,6 +64,10 @@ Contributors:
     </dependency>
     <dependency>
       <groupId>org.eclipse.leshan</groupId>
+      <artifactId>leshan-tl-jc-server-coaps</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.leshan</groupId>
       <artifactId>leshan-tl-jc-server-coaptcp</artifactId>
     </dependency>
     <dependency>

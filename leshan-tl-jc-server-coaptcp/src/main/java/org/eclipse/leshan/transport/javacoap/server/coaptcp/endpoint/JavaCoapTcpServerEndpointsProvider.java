@@ -22,9 +22,10 @@ import org.eclipse.leshan.servers.security.SecurityStore;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.eclipse.leshan.transport.javacoap.identity.DefaultCoapIdentityHandler;
 import org.eclipse.leshan.transport.javacoap.server.coaptcp.transport.CoapTcpTransportResolver;
-import org.eclipse.leshan.transport.javacoap.server.coaptcp.transport.DefaultTransportContextMatcher;
 import org.eclipse.leshan.transport.javacoap.server.coaptcp.transport.NettyCoapTcpTransport;
 import org.eclipse.leshan.transport.javacoap.server.endpoint.AbstractJavaCoapServerEndpointsProvider;
+import org.eclipse.leshan.transport.javacoap.server.endpoint.ConnectionsManager;
+import org.eclipse.leshan.transport.javacoap.transport.context.DefaultTransportContextMatcher;
 
 import com.mbed.coap.packet.BlockSize;
 import com.mbed.coap.packet.CoapRequest;
@@ -35,6 +36,8 @@ import com.mbed.coap.server.TcpCoapServer;
 import com.mbed.coap.server.filter.TokenGeneratorFilter;
 import com.mbed.coap.server.observe.NotificationsReceiver;
 import com.mbed.coap.server.observe.ObservationsStore;
+import com.mbed.coap.transport.CoapTcpTransport;
+import com.mbed.coap.transport.CoapTransport;
 import com.mbed.coap.utils.Service;
 
 public class JavaCoapTcpServerEndpointsProvider extends AbstractJavaCoapServerEndpointsProvider {
@@ -45,12 +48,17 @@ public class JavaCoapTcpServerEndpointsProvider extends AbstractJavaCoapServerEn
     }
 
     @Override
-    protected CoapServer createCoapServer(InetSocketAddress localAddress, ServerSecurityInfo serverSecurityInfo,
-            SecurityStore securityStore, Service<CoapRequest, CoapResponse> resources,
+    protected CoapTcpTransport createCoapTransport(InetSocketAddress localAddress,
+            ServerSecurityInfo serverSecurityInfo, SecurityStore securityStore) {
+        return new NettyCoapTcpTransport(localAddress, new CoapTcpTransportResolver(),
+                new DefaultTransportContextMatcher(), null);
+    }
+
+    @Override
+    protected CoapServer createCoapServer(CoapTransport transport, Service<CoapRequest, CoapResponse> resources,
             NotificationsReceiver notificationReceiver, ObservationsStore observationsStore) {
-        return createCoapServer() //
-                .transport(new NettyCoapTcpTransport(localAddress, new CoapTcpTransportResolver(),
-                        new DefaultTransportContextMatcher(), null)) //
+        return createCoapTcpBuidlerServer() //
+                .transport((CoapTcpTransport) transport) //
                 .blockSize(BlockSize.S_1024_BERT) //
                 .maxIncomingBlockTransferSize(4000) //
                 .maxMessageSize(2100) //
@@ -60,7 +68,14 @@ public class JavaCoapTcpServerEndpointsProvider extends AbstractJavaCoapServerEn
                 .build();
     }
 
-    protected CoapServerBuilderForTcp createCoapServer() {
+    protected CoapServerBuilderForTcp createCoapTcpBuidlerServer() {
         return TcpCoapServer.builder().outboundFilter(TokenGeneratorFilter.RANDOM);
+    }
+
+    @Override
+    protected ConnectionsManager createConnectionManager(CoapTransport transport) {
+        return () -> {
+            // TODO should we implement that ?
+        };
     }
 }
