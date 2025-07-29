@@ -32,7 +32,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.eclipse.leshan.core.link.lwm2m.attributes.DefaultLwM2mAttributeParser;
@@ -189,7 +190,7 @@ public class ClientServlet extends LeshanDemoServlet {
         }
 
         // /clients/endPoint/LWRequest : do LightWeight M2M read request on a given client.
-        String lwm2mpath = StringUtils.removeStart(req.getPathInfo(), URI_DELIMITER + clientEndpoint);
+        String lwm2mpath = Strings.CS.removeStart(req.getPathInfo(), URI_DELIMITER + clientEndpoint);
         sendReadRequest(req, resp, registration, lwm2mpath);
     }
 
@@ -331,9 +332,9 @@ public class ClientServlet extends LeshanDemoServlet {
             return;
         }
 
-        String lwm2mPath = StringUtils.removeStart(req.getPathInfo(), URI_DELIMITER + clientEndpoint);
+        String lwm2mPath = Strings.CS.removeStart(req.getPathInfo(), URI_DELIMITER + clientEndpoint);
         if (path.length >= 3 && "attributes".equals(path[path.length - 1])) {
-            lwm2mPath = StringUtils.removeEnd(lwm2mPath, path[path.length - 1]);
+            lwm2mPath = Strings.CS.removeEnd(lwm2mPath, path[path.length - 1]);
             sendWriteAttributeRequest(req, resp, registration, lwm2mPath);
         } else {
             sendWriteRequest(req, resp, registration, lwm2mPath);
@@ -442,7 +443,7 @@ public class ClientServlet extends LeshanDemoServlet {
             return;
         }
 
-        String lwm2mPath = StringUtils.removeStart(req.getPathInfo(), URI_DELIMITER + clientEndpoint);
+        String lwm2mPath = Strings.CS.removeStart(req.getPathInfo(), URI_DELIMITER + clientEndpoint);
 
         // /clients/endPoint/LWRequest : do LightWeight M2M execute request on a given client.
         if (path.length == 4) {
@@ -585,7 +586,7 @@ public class ClientServlet extends LeshanDemoServlet {
         }
 
         // /clients/endPoint/LWRequest/ : delete instance
-        String lwm2mPath = StringUtils.removeStart(req.getPathInfo(), URI_DELIMITER + clientEndpoint);
+        String lwm2mPath = Strings.CS.removeStart(req.getPathInfo(), URI_DELIMITER + clientEndpoint);
         sendDeleteInstanceRequest(req, resp, registration, lwm2mPath);
     }
 

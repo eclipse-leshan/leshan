@@ -21,7 +21,7 @@ import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.leshan.core.endpoint.LwM2mEndpoint;
 import org.eclipse.leshan.demo.servers.json.PublicKeySerDes;
 import org.eclipse.leshan.demo.servers.json.X509CertificateSerDes;
