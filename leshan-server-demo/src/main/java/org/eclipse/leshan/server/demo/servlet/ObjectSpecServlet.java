@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.util.json.JsonException;
 import org.eclipse.leshan.server.demo.model.ObjectModelSerDes;

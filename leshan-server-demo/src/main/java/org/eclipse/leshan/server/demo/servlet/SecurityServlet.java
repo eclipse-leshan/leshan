@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.leshan.server.demo.servlet.json.PublicKeySerDes;
 import org.eclipse.leshan.server.demo.servlet.json.SecurityDeserializer;
 import org.eclipse.leshan.server.demo.servlet.json.SecuritySerializer;

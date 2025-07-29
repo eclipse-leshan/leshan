@@ -27,7 +27,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.eclipse.leshan.core.attributes.AttributeSet;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectLoader;
@@ -179,7 +180,7 @@ public class ClientServlet extends HttpServlet {
 
         // /clients/endPoint/LWRequest : do LightWeight M2M read request on a given client.
         try {
-            String target = StringUtils.removeStart(req.getPathInfo(), "/" + clientEndpoint);
+            String target = Strings.CS.removeStart(req.getPathInfo(), "/" + clientEndpoint);
             Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
             if (registration != null) {
                 // get content format
@@ -245,12 +246,12 @@ public class ClientServlet extends HttpServlet {
         }
 
         try {
-            String target = StringUtils.removeStart(req.getPathInfo(), "/" + clientEndpoint);
+            String target = Strings.CS.removeStart(req.getPathInfo(), "/" + clientEndpoint);
             Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
             if (registration != null) {
                 if (path.length >= 3 && "attributes".equals(path[path.length - 1])) {
                     // create & process request WriteAttributes request
-                    target = StringUtils.removeEnd(target, path[path.length - 1]);
+                    target = Strings.CS.removeEnd(target, path[path.length - 1]);
                     AttributeSet attributes = AttributeSet.parse(req.getQueryString());
                     WriteAttributesRequest request = new WriteAttributesRequest(target, attributes);
                     WriteAttributesResponse cResponse = server.send(registration, request, extractTimeout(req));
@@ -318,7 +319,7 @@ public class ClientServlet extends HttpServlet {
             return;
         }
 
-        String target = StringUtils.removeStart(req.getPathInfo(), "/" + clientEndpoint);
+        String target = Strings.CS.removeStart(req.getPathInfo(), "/" + clientEndpoint);
 
         // /clients/endPoint/LWRequest : do LightWeight M2M execute request on a given client.
         if (path.length == 4) {
@@ -405,7 +406,7 @@ public class ClientServlet extends HttpServlet {
 
         // /clients/endPoint/LWRequest/ : delete instance
         try {
-            String target = StringUtils.removeStart(req.getPathInfo(), "/" + clientEndpoint);
+            String target = Strings.CS.removeStart(req.getPathInfo(), "/" + clientEndpoint);
             Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
             if (registration != null) {
                 DeleteRequest request = new DeleteRequest(target);
