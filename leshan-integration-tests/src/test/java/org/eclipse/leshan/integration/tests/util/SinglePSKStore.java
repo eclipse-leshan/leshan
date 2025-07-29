@@ -51,7 +51,7 @@ public class SinglePSKStore implements PskStore {
             PskPublicInformation identity, String hmacAlgorithm, SecretKey otherSecret, byte[] seed,
             boolean useExtendedMasterSecret) {
         SecretKey pskSecret = SecretUtil.create(key);
-        return new PskSecretResult(cid, identity, pskSecret);
+        return new PskSecretResult(cid, identity, pskSecret, false, false);
     }
 
     @Override

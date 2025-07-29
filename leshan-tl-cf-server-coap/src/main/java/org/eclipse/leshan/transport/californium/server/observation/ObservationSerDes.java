@@ -57,7 +57,7 @@ public class ObservationSerDes {
     public String serialize(Observation obs) {
         ObjectNode o = JsonNodeFactory.instance.objectNode();
 
-        o.put("request", Hex.encodeHexString(serializer.serializeRequest(obs.getRequest()).bytes));
+        o.put("request", Hex.encodeHexString(serializer.serializeRequest(obs.getRequest()).getBytes()));
         if (obs.getContext() != null)
             o.set("peer", EndpointContextSerDes.serialize(obs.getContext()));
         else

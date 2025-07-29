@@ -61,10 +61,10 @@ public class LwM2mPskStore implements PskStore {
 
         SecurityInfo info = securityStore.getByIdentity(identity.getPublicInfoAsString());
         if (info == null || info.getPreSharedKey() == null) {
-            return new PskSecretResult(cid, identity, null);
+            return new PskSecretResult(cid, identity);
         } else {
             // defensive copy
-            return new PskSecretResult(cid, identity, SecretUtil.create(info.getPreSharedKey(), "PSK"));
+            return new PskSecretResult(cid, identity, SecretUtil.create(info.getPreSharedKey(), "PSK"), false, false);
         }
     }
 
