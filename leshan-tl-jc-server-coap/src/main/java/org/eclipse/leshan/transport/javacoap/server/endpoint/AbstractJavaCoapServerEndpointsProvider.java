@@ -56,7 +56,7 @@ public abstract class AbstractJavaCoapServerEndpointsProvider implements LwM2mSe
     private JavaCoapServerEndpoint lwm2mEndpoint;
     private final IdentityHandler identityHandler;
 
-    public AbstractJavaCoapServerEndpointsProvider(Protocol protocol, String endpointDescription,
+    protected AbstractJavaCoapServerEndpointsProvider(Protocol protocol, String endpointDescription,
             InetSocketAddress localAddress, IdentityHandler identityHandler) {
         this.supportedProtocol = protocol;
         this.endpointDescription = endpointDescription;
@@ -98,7 +98,7 @@ public abstract class AbstractJavaCoapServerEndpointsProvider implements LwM2mSe
     }
 
     protected abstract CoapTransport createCoapTransport(InetSocketAddress localAddress,
-            ServerSecurityInfo serverSecurityInfo, SecurityStore SecurityStore);
+            ServerSecurityInfo serverSecurityInfo, SecurityStore securityStore);
 
     protected abstract CoapServer createCoapServer(CoapTransport transport,
             Service<CoapRequest, CoapResponse> resources, NotificationsReceiver notificationReceiver,

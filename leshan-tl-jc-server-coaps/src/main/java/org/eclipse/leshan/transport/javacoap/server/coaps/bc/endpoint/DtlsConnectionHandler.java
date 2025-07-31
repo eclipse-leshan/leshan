@@ -200,7 +200,7 @@ public class DtlsConnectionHandler {
             return;
         }
 
-        if (!Boolean.TRUE.equals(transportContextMather.apply(appData.getContext(), transportContext))) {
+        if (!Boolean.TRUE.equals(transportContextMather.test(appData.getContext(), transportContext))) {
             LOG.warn("Drop AppData because expected transport context doesn't match current one for peer {}", remote);
             packetSent.completeExceptionally(new IllegalStateException(
                     String.format("connection at %s is not handle by peer with given transport context %s", remote,
