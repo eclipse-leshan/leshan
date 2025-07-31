@@ -21,6 +21,9 @@ import com.mbed.coap.transport.TransportContext;
 
 public class IpTransportContextKeys {
 
+    private IpTransportContextKeys() {
+    }
+
     public static final TransportContext.Key<InetSocketAddress> REMOTE_ADDRESS = new TransportContext.Key<>(null);
 
 }

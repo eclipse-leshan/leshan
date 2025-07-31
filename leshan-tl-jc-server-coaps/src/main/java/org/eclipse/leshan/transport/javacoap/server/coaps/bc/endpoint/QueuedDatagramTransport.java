@@ -88,5 +88,6 @@ public class QueuedDatagramTransport implements DatagramTransport {
 
     @Override
     public void close() throws IOException {
+        // nothing to close socket is shared.
     }
 }
