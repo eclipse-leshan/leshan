@@ -80,6 +80,8 @@ class X509Test {
                 // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider
                 arguments(Protocol.COAPS, "Californium", "Californium"),
                 arguments(Protocol.COAPS, "java-coap", "Californium"),
+                arguments(Protocol.COAPS, "Californium", "java-coap"),
+                arguments(Protocol.COAPS, "java-coap", "java-coap"),
                 arguments(Protocol.COAPS_TCP, "java-coap", "java-coap"));
     }
 

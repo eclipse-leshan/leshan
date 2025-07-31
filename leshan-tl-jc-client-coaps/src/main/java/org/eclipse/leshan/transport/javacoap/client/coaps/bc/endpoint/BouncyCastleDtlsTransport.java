@@ -132,15 +132,14 @@ public class BouncyCastleDtlsTransport implements CoapTransport {
     }
 
     private CoapPacket blockingReceive(DTLSTransport transport) {
-        byte[] readBuffer = new byte[2048];
+        byte[] readBuffer = new byte[1500];
         CoapPacket packet = null;
         try {
             // wait to receive new data
             int receive = transport.receive(readBuffer, 0, readBuffer.length, 100);
             if (receive > 0) {
                 packet = CoapSerializer.deserialize(destination, readBuffer, receive);
-                LOGGER.trace("coap packet received {}", packet);
-
+                LOGGER.trace("Coap packet received {}", packet);
             }
         } catch (CoapException e) {
             LOGGER.warn(e.toString(), e);

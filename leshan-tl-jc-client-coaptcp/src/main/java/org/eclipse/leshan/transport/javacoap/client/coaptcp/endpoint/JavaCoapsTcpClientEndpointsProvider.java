@@ -40,7 +40,7 @@ import org.eclipse.leshan.transport.javacoap.SingleX509KeyManager;
 import org.eclipse.leshan.transport.javacoap.client.endpoint.AbstractJavaCoapClientEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.client.endpoint.JavaCoapConnectionController;
 import org.eclipse.leshan.transport.javacoap.identity.DefaultTlsIdentityHandler;
-import org.eclipse.leshan.transport.javacoap.identity.TlsTransportContextKeys;
+import org.eclipse.leshan.transport.javacoap.transport.context.keys.TlsTransportContextKeys;
 
 import com.mbed.coap.packet.BlockSize;
 import com.mbed.coap.packet.CoapPacket;
