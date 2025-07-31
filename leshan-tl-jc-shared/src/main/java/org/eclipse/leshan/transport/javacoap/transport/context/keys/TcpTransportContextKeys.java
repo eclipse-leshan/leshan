@@ -21,6 +21,9 @@ import com.mbed.coap.transport.TransportContext;
 
 public class TcpTransportContextKeys {
 
+    private TcpTransportContextKeys() {
+    }
+
     public static final TransportContext.Key<String> CONNECTION_ID = new TransportContext.Key<>(null);
     public static final TransportContext.Key<Instant> CONNECTION_START_TIMESTAMP = new TransportContext.Key<>(null);
 
