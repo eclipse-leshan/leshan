@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.transport.javacoap.transport.context;
 
-import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 
 import org.eclipse.leshan.transport.javacoap.transport.context.keys.IpTransportContextKeys;
 import org.eclipse.leshan.transport.javacoap.transport.context.keys.TcpTransportContextKeys;
@@ -24,7 +24,7 @@ import org.eclipse.leshan.transport.javacoap.transport.context.keys.TlsTransport
 import com.mbed.coap.transport.TransportContext;
 import com.mbed.coap.transport.TransportContext.Key;
 
-public class DefaultTransportContextMatcher implements BiFunction<TransportContext, TransportContext, Boolean> {
+public class DefaultTransportContextMatcher implements BiPredicate<TransportContext, TransportContext> {
 
     private final Key<?>[] knownKeys;
 
@@ -42,7 +42,7 @@ public class DefaultTransportContextMatcher implements BiFunction<TransportConte
     }
 
     @Override
-    public Boolean apply(TransportContext packetTransport, TransportContext channelTransport) {
+    public boolean test(TransportContext packetTransport, TransportContext channelTransport) {
         // TODO we should be able to iterate on all keys ...
         // As we can not workaround is to test all known key
         for (Key<?> key : knownKeys) {
@@ -58,6 +58,7 @@ public class DefaultTransportContextMatcher implements BiFunction<TransportConte
         return true;
     }
 
+    @SuppressWarnings("java:S1172")
     protected boolean matches(Key<?> key, Object packetValue, Object channelValue) {
         return packetValue.equals(channelValue);
     }

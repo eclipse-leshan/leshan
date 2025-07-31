@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.transport.javacoap.server.coaptcp.transport;
 
-import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 
 import com.mbed.coap.packet.CoapPacket;
 import com.mbed.coap.packet.CoapTcpPacketSerializer;
@@ -27,9 +27,9 @@ import io.netty.handler.codec.MessageToByteEncoder;
 
 public class CoapTcpEncoder extends MessageToByteEncoder<CoapPacket> {
 
-    private final BiFunction<TransportContext, TransportContext, Boolean> contextMatcher;
+    private final BiPredicate<TransportContext, TransportContext> contextMatcher;
 
-    public CoapTcpEncoder(BiFunction<TransportContext, TransportContext, Boolean> contextMatcher) {
+    public CoapTcpEncoder(BiPredicate<TransportContext, TransportContext> contextMatcher) {
         this.contextMatcher = contextMatcher;
     }
 
@@ -42,12 +42,11 @@ public class CoapTcpEncoder extends MessageToByteEncoder<CoapPacket> {
 
         // Check if "destination transport context" packet matches transport context of current channel / "connection".
         // TODO java-coap doesn't set context on response.
-        if (msg.getMethod() != null) { // do msg is a request
-            if (!contextMatcher.apply(msg.getTransportContext(), transportContext)) {
-                throw new UnconnectedPeerException(
-                        String.format("transport context expected doesn't match current one at %s",
-                                msg.getRemoteAddress().getHostString()));
-            }
+        if (msg.getMethod() != null && // do msg is a request
+                !contextMatcher.test(msg.getTransportContext(), transportContext)) {
+            throw new UnconnectedPeerException(
+                    String.format("transport context expected doesn't match current one at %s",
+                            msg.getRemoteAddress().getHostString()));
         }
 
         byte[] bytes = CoapTcpPacketSerializer.serialize(msg);
