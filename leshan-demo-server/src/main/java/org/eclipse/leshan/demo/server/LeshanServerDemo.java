@@ -63,6 +63,7 @@ import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServe
 import org.eclipse.leshan.transport.californium.server.endpoint.coap.CoapOscoreServerEndpointFactory;
 import org.eclipse.leshan.transport.californium.server.endpoint.coap.CoapServerProtocolProvider;
 import org.eclipse.leshan.transport.californium.server.endpoint.coaps.CoapsServerProtocolProvider;
+import org.eclipse.leshan.transport.javacoap.server.coaps.bc.endpoint.JavaCoapsServerEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.server.coaptcp.endpoint.JavaCoapTcpServerEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.server.coaptcp.endpoint.JavaCoapsTcpServerEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.server.endpoint.JavaCoapServerEndpointsProvider;
@@ -261,6 +262,12 @@ public class LeshanServerDemo {
                 : new InetSocketAddress(cli.main.jlocalAddress, jcoapPort);
         JavaCoapServerEndpointsProvider javacoapEndpointsProvider = new JavaCoapServerEndpointsProvider(jcoapAddr);
 
+        // Create CoAP over endpoint based on java-coap
+        int jcoapsPort = cli.main.jCoapsLocalPort;
+        InetSocketAddress jcoapsAddr = cli.main.jCoapsLocalAddess == null ? new InetSocketAddress(jcoapsPort)
+                : new InetSocketAddress(cli.main.jlocalAddress, jcoapPort);
+        JavaCoapsServerEndpointsProvider javacoapsEndpointsProvider = new JavaCoapsServerEndpointsProvider(jcoapsAddr);
+
         // Create CoAP over TCP endpoint based on java-coap
         int coapTcpPort = cli.main.jTcpLocalPort;
         InetSocketAddress coapTcpAddr = cli.main.jTcpLocalAddress == null ? new InetSocketAddress(coapTcpPort)
@@ -276,8 +283,8 @@ public class LeshanServerDemo {
                 coapsTcpAddr);
 
         // Create LWM2M server
-        builder.setEndpointsProviders(endpointsBuilder.build(), javacoapEndpointsProvider, javacoapTcpEndpointsProvider,
-                javacoapsTcpEndpointsProvider);
+        builder.setEndpointsProviders(endpointsBuilder.build(), javacoapEndpointsProvider, javacoapsEndpointsProvider,
+                javacoapTcpEndpointsProvider, javacoapsTcpEndpointsProvider);
         return builder.build();
     }
 
