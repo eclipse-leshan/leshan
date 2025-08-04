@@ -69,6 +69,19 @@ public class LeshanServerDemoCLI implements Runnable {
                 converter = PortConverter.class)
         public Integer jlocalPort = 5685;
 
+        @Option(names = { "-jsh", "--java-coaps-host" },
+                description = { //
+                        "Set the local CoAP over DTLS address of endpoint based on java-coap library.", //
+                        "Default: any local address." })
+        public String jCoapsLocalAddess;
+
+        @Option(names = { "-jsp", "--java-coaps-port" },
+                description = { //
+                        "Set the local CoAP over DTLS port of endpoint based on java-coap library.", //
+                        "Default: ${DEFAULT-VALUE}" },
+                converter = PortConverter.class)
+        public Integer jCoapsLocalPort = 5686;
+
         @Option(names = { "-th", "--java-coap-tcp-host" },
                 description = { //
                         "Set the local CoAP over TCP address of endpoint based on java-coap library.", //
