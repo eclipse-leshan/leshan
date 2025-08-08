@@ -26,6 +26,7 @@ import org.eclipse.leshan.core.peer.PskIdentity;
 import org.eclipse.leshan.core.peer.RpkIdentity;
 import org.eclipse.leshan.core.peer.X509Identity;
 import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
+import org.eclipse.leshan.transport.javacoap.transport.context.keys.TlsTransportContextKeys;
 
 import com.mbed.coap.transport.TransportContext;
 
@@ -39,6 +40,12 @@ public class DefaultTlsIdentityHandler extends DefaultCoapIdentityHandler {
                 // Extract common name
                 String x509CommonName = X509CertUtil.extractCN(principal.getName());
                 return new IpPeer(address, new X509Identity(x509CommonName));
+            }
+            if (principal instanceof PreSharedKeyPrincipal) {
+                return new IpPeer(address, new PskIdentity(((PreSharedKeyPrincipal) principal).getIdentity()));
+            }
+            if (principal instanceof RawPublicKeyPrincipal) {
+                return new IpPeer(address, new RpkIdentity(((RawPublicKeyPrincipal) principal).getPublicKey()));
             }
             throw new IllegalStateException(
                     String.format("Unable to extract sender identity : unexpected type of Principal %s [%s]",
