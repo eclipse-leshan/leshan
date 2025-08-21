@@ -31,6 +31,7 @@ import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
 
+import org.eclipse.leshan.core.oscore.OscoreSetting;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.servers.security.SecurityInfo;
 
@@ -81,6 +82,23 @@ public class SecurityInfoSerDes {
             o.put("x509", true);
         }
 
+        if (s.useOSCORE()) {
+
+            ObjectNode oscore = JsonNodeFactory.instance.objectNode();
+            OscoreSetting oscoreObject = s.getOscoreSetting();
+
+            oscore.put("senderId", Hex.encodeHexString(oscoreObject.getSenderId()));
+            oscore.put("recipientId", Hex.encodeHexString(oscoreObject.getRecipientId()));
+            oscore.put("masterSecret", Hex.encodeHexString(oscoreObject.getMasterSecret()));
+            oscore.put("aeadAlgorithm", oscoreObject.getAeadAlgorithm().getValue());
+            oscore.put("hmacAlgorithm", oscoreObject.getHkdfAlgorithm().getValue());
+            byte[] masterSalt = oscoreObject.getMasterSalt();
+            if (masterSalt != null && masterSalt.length > 0) {
+                oscore.put("masterSalt", Hex.encodeHexString(masterSalt));
+            }
+
+            o.set("oscore", oscore);
+        }
         return o.toString().getBytes();
     }
 
@@ -95,6 +113,24 @@ public class SecurityInfoSerDes {
                         Hex.decodeHex(o.get("psk").asText().toCharArray()));
             } else if (o.get("x509") != null) {
                 i = SecurityInfo.newX509CertInfo(ep);
+            } else if (o.get("oscore") != null) {
+                JsonNode oscore = o.get("oscore");
+
+                byte[] senderId = Hex.decodeHex(oscore.get("senderId").asText().toCharArray());
+                byte[] recipientId = Hex.decodeHex(oscore.get("recipientId").asText().toCharArray());
+                byte[] masterSecret = Hex.decodeHex(oscore.get("masterSecret").asText().toCharArray());
+                byte[] masterSalt = null;
+                if (oscore.has("masterSalt")) {
+                    masterSalt = Hex.decodeHex(oscore.get("masterSalt").asText().toCharArray());
+                }
+
+                int aeadAlgId = oscore.get("aeadAlgorithm").asInt();
+                int hmacAlgId = oscore.get("hmacAlgorithm").asInt();
+
+                OscoreSetting oscoreSetting = new OscoreSetting(senderId, recipientId, masterSecret, aeadAlgId,
+                        hmacAlgId, masterSalt);
+                i = SecurityInfo.newOscoreInfo(ep, oscoreSetting);
+
             } else {
                 JsonNode rpk = o.get("rpk");
                 PublicKey key;

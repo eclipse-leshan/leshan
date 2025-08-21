@@ -23,6 +23,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
 import org.eclipse.leshan.core.peer.LwM2mIdentity;
+import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.core.peer.PskIdentity;
 import org.eclipse.leshan.core.peer.RpkIdentity;
 import org.eclipse.leshan.core.peer.SocketIdentity;
@@ -40,12 +41,14 @@ public class LwM2mIdentitySerDes {
     protected static final String KEY_ID = "pskid";
     protected static final String KEY_CN = "cn";
     protected static final String KEY_RPK = "rpk";
+    protected static final String KEY_RID = "rid";
     // identity field key and types
     protected static final String KEY_LWM2MIDENTITY_TYPE = "type";
     protected static final String LWM2MIDENTITY_TYPE_UNSECURE = "unsecure";
     protected static final String LWM2MIDENTITY_TYPE_PSK = "psk";
     protected static final String LWM2MIDENTITY_TYPE_X509 = "x509";
     protected static final String LWM2MIDENTITY_TYPE_RPK = "rpk";
+    protected static final String LWM2MIDENTITY_TYPE_OSCORE = "oscore";
 
     public JsonNode serialize(LwM2mIdentity identity) {
         ObjectNode o = JsonNodeFactory.instance.objectNode();
@@ -64,6 +67,10 @@ public class LwM2mIdentitySerDes {
         } else if (identity.getClass() == X509Identity.class) {
             o.put(KEY_LWM2MIDENTITY_TYPE, LWM2MIDENTITY_TYPE_X509);
             o.put(KEY_CN, ((X509Identity) identity).getX509CommonName());
+        } else if (identity.getClass() == OscoreIdentity.class) {
+            o.put(KEY_LWM2MIDENTITY_TYPE, LWM2MIDENTITY_TYPE_OSCORE);
+            OscoreIdentity oscore = (OscoreIdentity) identity;
+            o.put(KEY_RID, Hex.encodeHexString(oscore.getRecipientId()));
         } else {
             throw new IllegalStateException(String.format("Can not serialize %s", identity.getClass().getSimpleName()));
         }
@@ -113,6 +120,11 @@ public class LwM2mIdentitySerDes {
             } else {
                 throw new IllegalStateException(String.format("Can not deserialize %s", jObj.toPrettyString()));
             }
+        }
+
+        if (jObj.get(KEY_LWM2MIDENTITY_TYPE).asText().equals(LWM2MIDENTITY_TYPE_OSCORE)) {
+            byte[] recipientId = Hex.decodeHex(jObj.get(KEY_RID).asText().toCharArray());
+            return new OscoreIdentity(recipientId);
         }
         throw new IllegalStateException(String.format("Can not deserialize %s", jObj.toPrettyString()));
 

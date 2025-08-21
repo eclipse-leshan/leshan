@@ -18,6 +18,7 @@ package org.eclipse.leshan.server.redis.serialization;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.AlgorithmParameters;
 import java.security.KeyFactory;
 import java.security.spec.ECGenParameterSpec;
@@ -26,6 +27,9 @@ import java.security.spec.ECPoint;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.KeySpec;
 
+import org.eclipse.leshan.core.oscore.AeadAlgorithm;
+import org.eclipse.leshan.core.oscore.HkdfAlgorithm;
+import org.eclipse.leshan.core.oscore.OscoreSetting;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.servers.security.SecurityInfo;
 import org.junit.jupiter.api.Test;
@@ -67,5 +71,26 @@ public class SecurityInfoSerDesTest {
                 "{\"ep\":\"myendpoint\",\"rpk\":{\"x\":\"89c048261979208666f2bfb188be1968fc9021c416ce12828c06f4e314c167b5\",\"y\":\"cbf1eb7587f08e01688d9ada4be859137ca49f79394bad9179326b3090967b68\",\"params\":\"secp256r1\"}}",
                 new String(data));
         assertEquals(si, SecurityInfoSerDes.deserialize(data));
+    }
+
+    @Test
+
+    public void security_info_oscore_ser_des_then_equal() {
+
+        final String OSCORE_MASTER_SECRET = "1234567890";
+        final String OSCORE_MASTER_SALT = "0987654321";
+        final String OSCORE_SENDER_ID = "ABCDEF";
+        final String OSCORE_RECIPIENT_ID = "FEDCBA";
+
+        OscoreSetting oscoreSetting = new OscoreSetting(OSCORE_SENDER_ID.getBytes(StandardCharsets.UTF_8),
+                OSCORE_RECIPIENT_ID.getBytes(StandardCharsets.UTF_8),
+                OSCORE_MASTER_SECRET.getBytes(StandardCharsets.UTF_8), AeadAlgorithm.AES_CCM_16_64_128,
+                HkdfAlgorithm.HKDF_HMAC_SHA_256, OSCORE_MASTER_SALT.getBytes(StandardCharsets.UTF_8));
+
+        SecurityInfo si = SecurityInfo.newOscoreInfo("myendPoint", oscoreSetting);
+        byte[] data = SecurityInfoSerDes.serialize(si);
+
+        assertEquals(si, SecurityInfoSerDes.deserialize(data));
+
     }
 }
