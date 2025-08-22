@@ -123,6 +123,7 @@ public class LwM2mTlsServer extends PSKTlsServer {
             break;
         }
 
+        short serverCertificateType = context.getSecurityParametersHandshake().getServerCertificateType();
         Certificate cert = null;
         PublicKey publicKey = null;
         if (serverSecurityInfo.getPublicKey() != null) {
@@ -130,8 +131,13 @@ public class LwM2mTlsServer extends PSKTlsServer {
             cert = TlsAuthenticationUtil.createRawPublicKeyCertificate(getCrypto(), publicKey);
         } else if (serverSecurityInfo.getCertificateChain() != null
                 && serverSecurityInfo.getCertificateChain().length > 0) {
-            publicKey = serverSecurityInfo.getCertificateChain()[0].getPublicKey();
-            cert = TlsAuthenticationUtil.createCertChain(getCrypto(), serverSecurityInfo.getCertificateChain());
+            if (serverCertificateType == CertificateType.RawPublicKey) {
+                publicKey = serverSecurityInfo.getCertificateChain()[0].getPublicKey();
+                cert = TlsAuthenticationUtil.createRawPublicKeyCertificate(getCrypto(), publicKey);
+            } else {
+                publicKey = serverSecurityInfo.getCertificateChain()[0].getPublicKey();
+                cert = TlsAuthenticationUtil.createCertChain(getCrypto(), serverSecurityInfo.getCertificateChain());
+            }
         }
 
         if (publicKey != null && cert != null) {

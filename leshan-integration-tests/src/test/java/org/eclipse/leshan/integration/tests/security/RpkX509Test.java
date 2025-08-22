@@ -25,7 +25,6 @@ import static org.eclipse.leshan.integration.tests.util.Credentials.serverX509Ce
 import static org.eclipse.leshan.integration.tests.util.Credentials.trustedCertificatesByServer;
 import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.lang.annotation.Retention;
@@ -125,7 +124,7 @@ class RpkX509Test {
             throws NonUniqueSecurityInfoException, InterruptedException {
 
         // java-coap use bouncy castle which can not accept both x509+RPK (clearly a bug)
-        assumeTrue(!givenServerEndpointProvider.equals("java-coap"));
+        // assumeTrue(!givenServerEndpointProvider.equals("java-coap"));
 
         server = givenServer //
                 .actingAsServerOnly()//

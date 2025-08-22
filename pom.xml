@@ -339,8 +339,8 @@ Contributors:
       </dependency>
       <dependency>
         <groupId>org.bouncycastle</groupId>
-        <artifactId>bctls-debug-jdk18on</artifactId>
-        <version>1.81</version>
+        <artifactId>bctls-jdk18on</artifactId>
+        <version>1.82-SNAPSHOT</version>
       </dependency>
 
       <!-- Demos, examples and tests dependencies -->

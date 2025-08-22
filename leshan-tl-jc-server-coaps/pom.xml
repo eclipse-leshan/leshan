@@ -39,7 +39,12 @@ Contributors:
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
-      <artifactId>bctls-debug-jdk18on</artifactId>
+      <artifactId>bctls-jdk18on</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk18on</artifactId>
+      <version>1.82-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>nl.jqno.equalsverifier</groupId>
