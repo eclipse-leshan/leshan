@@ -18,11 +18,11 @@ package org.eclipse.leshan.transport.californium.client.bootstrap;
 
 import static org.eclipse.leshan.transport.californium.ResponseCodeUtil.toCoapResponseCode;
 
+import org.eclipse.californium.core.CoapExchange;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.MessageObserverAdapter;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
-import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.servers.LwM2mServer;

@@ -25,12 +25,12 @@ import static org.eclipse.leshan.transport.californium.ResponseCodeUtil.toCoapRe
 
 import java.util.List;
 
+import org.eclipse.californium.core.CoapExchange;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.observe.ObserveRelation;
-import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.core.server.resources.ResourceObserverAdapter;
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;

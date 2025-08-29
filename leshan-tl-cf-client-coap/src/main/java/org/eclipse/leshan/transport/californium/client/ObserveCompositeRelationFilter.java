@@ -17,18 +17,18 @@ package org.eclipse.leshan.transport.californium.client;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.observe.ObserveRelation;
-import org.eclipse.californium.core.observe.ObserveRelationFilter;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.transport.californium.ObserveUtil;
 
 /**
- * An {@link ObserveRelationFilter} which select {@link ObserveRelation} based on one of resource URIs.
+ * An ObserveRelation filter which select {@link ObserveRelation} based on one of resource URIs.
  */
-public class ObserveCompositeRelationFilter implements ObserveRelationFilter {
+public class ObserveCompositeRelationFilter implements Predicate<ObserveRelation> {
 
     private final List<LwM2mPath> paths;
 
@@ -42,7 +42,7 @@ public class ObserveCompositeRelationFilter implements ObserveRelationFilter {
     }
 
     @Override
-    public boolean accept(ObserveRelation relation) {
+    public boolean test(ObserveRelation relation) {
         Request request = getRequest(relation);
 
         if (!isValidObserveCompositeRequest(request)) {

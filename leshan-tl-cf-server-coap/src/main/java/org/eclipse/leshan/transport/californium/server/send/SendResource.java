@@ -17,9 +17,9 @@ package org.eclipse.leshan.transport.californium.server.send;
 
 import static org.eclipse.leshan.transport.californium.ResponseCodeUtil.toCoapResponseCode;
 
+import org.eclipse.californium.core.CoapExchange;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.CodecException;

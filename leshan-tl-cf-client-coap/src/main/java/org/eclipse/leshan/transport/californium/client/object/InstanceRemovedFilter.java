@@ -15,11 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.transport.californium.client.object;
 
+import java.util.function.Predicate;
+
 import org.eclipse.californium.core.observe.ObserveRelation;
-import org.eclipse.californium.core.observe.ObserveRelationFilter;
 import org.eclipse.leshan.core.node.LwM2mPath;
 
-public class InstanceRemovedFilter implements ObserveRelationFilter {
+public class InstanceRemovedFilter implements Predicate<ObserveRelation> {
 
     protected final LwM2mPath[] objectInstancePaths;
 
@@ -31,7 +32,7 @@ public class InstanceRemovedFilter implements ObserveRelationFilter {
     }
 
     @Override
-    public boolean accept(ObserveRelation relation) {
+    public boolean test(ObserveRelation relation) {
         String relationURI = "/" + relation.getExchange().getRequest().getOptions().getUriPathString();
         LwM2mPath relationPath = new LwM2mPath(relationURI);
         for (LwM2mPath objectInstancePath : objectInstancePaths) {

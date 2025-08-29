@@ -15,9 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.transport.californium.bsserver;
 
+import org.eclipse.californium.core.CoapExchange;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
-import org.eclipse.californium.core.server.resources.CoapExchange;
 
 /**
  * A default root resource.

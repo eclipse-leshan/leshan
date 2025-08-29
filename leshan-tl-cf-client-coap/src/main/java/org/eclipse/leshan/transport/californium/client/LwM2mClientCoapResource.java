@@ -15,11 +15,11 @@
  *******************************************************************************/
 package org.eclipse.leshan.transport.californium.client;
 
+import org.eclipse.californium.core.CoapExchange;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.core.network.Exchange;
-import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.transport.californium.LwM2mCoapResource;

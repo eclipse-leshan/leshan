@@ -20,10 +20,10 @@ import static org.eclipse.leshan.transport.californium.ResponseCodeUtil.toCoapRe
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.californium.core.CoapExchange;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
-import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.leshan.bsserver.request.BootstrapUplinkRequestReceiver;
 import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.peer.IpPeer;
