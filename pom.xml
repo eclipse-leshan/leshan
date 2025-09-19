@@ -100,7 +100,9 @@ Contributors:
     <!-- transport layer based on java-coap -->
     <module>leshan-tl-jc-shared</module>
     <module>leshan-tl-jc-server-coap</module>
+    <module>leshan-tl-jc-server-coaps</module>
     <module>leshan-tl-jc-client-coap</module>
+    <module>leshan-tl-jc-client-coaps</module>
     <module>leshan-tl-jc-server-coaptcp</module>
     <module>leshan-tl-jc-client-coaptcp</module>
 
@@ -239,7 +241,17 @@ Contributors:
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-tl-jc-server-coaps</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
         <artifactId>leshan-tl-jc-client-coap</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>leshan-tl-jc-client-coaps</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -324,6 +336,11 @@ Contributors:
         <groupId>io.netty</groupId>
         <artifactId>netty-transport</artifactId>
         <version>${netty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bctls-debug-jdk18on</artifactId>
+        <version>1.81</version>
       </dependency>
 
       <!-- Demos, examples and tests dependencies -->
