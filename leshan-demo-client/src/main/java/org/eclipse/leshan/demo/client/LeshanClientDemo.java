@@ -79,6 +79,7 @@ import org.eclipse.leshan.transport.californium.client.endpoint.ClientProtocolPr
 import org.eclipse.leshan.transport.californium.client.endpoint.coap.CoapOscoreProtocolProvider;
 import org.eclipse.leshan.transport.californium.client.endpoint.coaps.CoapsClientEndpointFactory;
 import org.eclipse.leshan.transport.californium.client.endpoint.coaps.CoapsClientProtocolProvider;
+import org.eclipse.leshan.transport.javacoap.client.coaps.bc.endpoint.JavaCoapsClientEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.client.coaptcp.endpoint.JavaCoapTcpClientEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.client.coaptcp.endpoint.JavaCoapsTcpClientEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.client.endpoint.JavaCoapClientEndpointsProvider;
@@ -256,71 +257,75 @@ public class LeshanClientDemo {
         engineFactory.setResumeOnConnect(!cli.dtls.forceFullhandshake);
         engineFactory.setQueueMode(cli.main.queueMode);
 
-        // Create Californium Endpoints Provider:
+        // Creates EndpointsProvider
         // --------------------------------------
-        // Define Custom CoAPS protocol provider
-        CoapsClientProtocolProvider customCoapsProtocolProvider = new CoapsClientProtocolProvider() {
-            @Override
-            public CaliforniumClientEndpointFactory createDefaultEndpointFactory() {
-                return new CoapsClientEndpointFactory() {
-
-                    @Override
-                    protected DtlsConnectorConfig.Builder createRootDtlsConnectorConfigBuilder(
-                            Configuration configuration) {
-                        Builder builder = super.createRootDtlsConnectorConfigBuilder(configuration);
-
-                        // Add DTLS Session lifecycle logger
-                        builder.setSessionListener(new DtlsSessionLogger());
-
-                        // Add MDC for connection logs
-                        if (cli.helpsOptions.getVerboseLevel() > 0)
-                            builder.setConnectionListener(new PrincipalMdcConnectionListener());
-                        return builder;
-                    };
-                };
-            }
-        };
-
-        // Create client endpoints Provider
-        List<ClientProtocolProvider> protocolProvider = new ArrayList<>();
-        if (!cli.main.useJavaCoap) {
-            protocolProvider.add(new CoapOscoreProtocolProvider());
-        }
-        protocolProvider.add(customCoapsProtocolProvider);
-        CaliforniumClientEndpointsProvider.Builder endpointsBuilder = new CaliforniumClientEndpointsProvider.Builder(
-                protocolProvider.toArray(new ClientProtocolProvider[protocolProvider.size()]));
-
-        // Create Californium Configuration
-        Configuration clientCoapConfig = endpointsBuilder.createDefaultConfiguration();
-
-        // Set some DTLS stuff
-        // These configuration values are always overwritten by CLI therefore set them to transient.
-        clientCoapConfig.setTransient(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY);
-        clientCoapConfig.setTransient(DtlsConfig.DTLS_CONNECTION_ID_LENGTH);
-        clientCoapConfig.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, !cli.dtls.supportDeprecatedCiphers);
-        clientCoapConfig.set(DtlsConfig.DTLS_CONNECTION_ID_LENGTH, cli.dtls.cid);
-
-        // Persist configuration
-        File configFile = new File(CF_CONFIGURATION_FILENAME);
-        if (configFile.isFile()) {
-            clientCoapConfig.load(configFile);
-        } else {
-            clientCoapConfig.store(configFile, CF_CONFIGURATION_HEADER);
-        }
-        if (cli.dtls.ciphers != null) {
-            clientCoapConfig.set(DtlsConfig.DTLS_CIPHER_SUITES, cli.dtls.ciphers);
-        }
-
-        // Set Californium Configuration
-        endpointsBuilder.setConfiguration(clientCoapConfig);
-        endpointsBuilder.setClientAddress(cli.main.localAddress);
-
-        // creates EndpointsProvider
         List<LwM2mClientEndpointsProvider> endpointsProvider = new ArrayList<>();
-        endpointsProvider.add(endpointsBuilder.build());
-        if (cli.main.useJavaCoap) {
+        if (!cli.main.useJavaCoap) {
+            // Create Californium Endpoints Provider :
+
+            // Define Custom CoAPS protocol provider
+            CoapsClientProtocolProvider customCoapsProtocolProvider = new CoapsClientProtocolProvider() {
+                @Override
+                public CaliforniumClientEndpointFactory createDefaultEndpointFactory() {
+                    return new CoapsClientEndpointFactory() {
+
+                        @Override
+                        protected DtlsConnectorConfig.Builder createRootDtlsConnectorConfigBuilder(
+                                Configuration configuration) {
+                            Builder builder = super.createRootDtlsConnectorConfigBuilder(configuration);
+
+                            // Add DTLS Session lifecycle logger
+                            builder.setSessionListener(new DtlsSessionLogger());
+
+                            // Add MDC for connection logs
+                            if (cli.helpsOptions.getVerboseLevel() > 0)
+                                builder.setConnectionListener(new PrincipalMdcConnectionListener());
+                            return builder;
+                        };
+                    };
+                }
+            };
+
+            // Create client endpoints Provider
+            List<ClientProtocolProvider> protocolProvider = new ArrayList<>();
+            protocolProvider.add(new CoapOscoreProtocolProvider());
+            protocolProvider.add(customCoapsProtocolProvider);
+            CaliforniumClientEndpointsProvider.Builder endpointsBuilder = new CaliforniumClientEndpointsProvider.Builder(
+                    protocolProvider.toArray(new ClientProtocolProvider[protocolProvider.size()]));
+
+            // Create Californium Configuration
+            Configuration clientCoapConfig = endpointsBuilder.createDefaultConfiguration();
+
+            // Set some DTLS stuff
+            // These configuration values are always overwritten by CLI therefore set them to transient.
+            clientCoapConfig.setTransient(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY);
+            clientCoapConfig.setTransient(DtlsConfig.DTLS_CONNECTION_ID_LENGTH);
+            clientCoapConfig.set(DtlsConfig.DTLS_RECOMMENDED_CIPHER_SUITES_ONLY, !cli.dtls.supportDeprecatedCiphers);
+            clientCoapConfig.set(DtlsConfig.DTLS_CONNECTION_ID_LENGTH, cli.dtls.cid);
+
+            // Persist configuration
+            File configFile = new File(CF_CONFIGURATION_FILENAME);
+            if (configFile.isFile()) {
+                clientCoapConfig.load(configFile);
+            } else {
+                clientCoapConfig.store(configFile, CF_CONFIGURATION_HEADER);
+            }
+            if (cli.dtls.ciphers != null) {
+                clientCoapConfig.set(DtlsConfig.DTLS_CIPHER_SUITES, cli.dtls.ciphers);
+            }
+
+            // Set Californium Configuration
+            endpointsBuilder.setConfiguration(clientCoapConfig);
+            endpointsBuilder.setClientAddress(cli.main.localAddress);
+
+            endpointsProvider.add(endpointsBuilder.build());
+        } else {
+            // so cli.main.useJavaCoap is true
             endpointsProvider.add(new JavaCoapClientEndpointsProvider());
+            endpointsProvider.add(new JavaCoapsClientEndpointsProvider());
         }
+
+        // add coap(s)+tcp support
         endpointsProvider.add(new JavaCoapTcpClientEndpointsProvider());
         endpointsProvider.add(new JavaCoapsTcpClientEndpointsProvider());
 
