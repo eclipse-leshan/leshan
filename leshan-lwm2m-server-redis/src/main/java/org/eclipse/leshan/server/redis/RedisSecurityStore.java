@@ -130,44 +130,61 @@ public class RedisSecurityStore implements EditableSecurityStore {
 
     @Override
     public SecurityInfo add(SecurityInfo info) throws NonUniqueSecurityInfoException {
-        byte[] data = serialize(info);
-        try (Jedis j = pool.getResource()) {
-            if (info.getPskIdentity() != null) {
-                // populate the secondary index (security info by PSK id)
-                String oldEndpoint = j.hget(endpointByPskIdKey, info.getPskIdentity());
-                if (oldEndpoint != null && !oldEndpoint.equals(info.getEndpoint())) {
-                    throw new NonUniqueSecurityInfoException(
-                            "PSK Identity " + info.getPskIdentity() + " is already used");
-                }
-                j.hset(endpointByPskIdKey.getBytes(), info.getPskIdentity().getBytes(), info.getEndpoint().getBytes());
-            }
-            if (info.getOscoreSetting() != null && info.getOscoreSetting().getRecipientId() != null) {
-                byte[] recipientId = info.getOscoreSetting().getRecipientId();
-                byte[] endpointKey = endpointByOscoreRecipientIdKey.getBytes(StandardCharsets.UTF_8);
-                byte[] oldEndpointBytes = j.hget(endpointKey, recipientId);
-                if (oldEndpointBytes != null) {
-                    String oldEndpoint = new String(oldEndpointBytes, StandardCharsets.UTF_8);
-                    if (!oldEndpoint.equals(info.getEndpoint())) {
-                        throw new NonUniqueSecurityInfoException("RecipientId " + Hex.encodeHexString(recipientId)
-                                + " is already used by endpoint " + oldEndpoint);
-                    }
-                }
-                j.hset(endpointKey, recipientId, info.getEndpoint().getBytes(StandardCharsets.UTF_8));
 
-            }
+        if (info.getEndpoint() == null) {
+            throw new IllegalArgumentException("Endpoint must not be null");
+        }
+        byte[] data = serialize(info);
+
+        try (Jedis j = pool.getResource()) {
+
+            updatePskIndex(j, info);
+            updateOscoreIndex(j, info);
+
             byte[] previousData = j.getSet((securityInfoByEndpointPrefix + info.getEndpoint()).getBytes(), data);
             SecurityInfo previous = previousData == null ? null : deserialize(previousData);
-            if (previous != null) {
-                if (previous.getPskIdentity() != null) {
-                    j.hdel(endpointByPskIdKey, previous.getPskIdentity());
-                }
-                if (previous.getOscoreSetting() != null) {
-                    byte[] recipientId = previous.getOscoreSetting().getRecipientId();
-                    j.hdel(endpointByOscoreRecipientIdKey.getBytes(), recipientId);
-                }
-            }
+
+            cleanupPreviousIndexes(j, previous);
 
             return previous;
+        }
+    }
+
+    private void updatePskIndex(Jedis j, SecurityInfo info) throws NonUniqueSecurityInfoException {
+        if (info.getPskIdentity() != null) {
+            String oldEndpoint = j.hget(endpointByPskIdKey, info.getPskIdentity());
+            if (oldEndpoint != null && !oldEndpoint.equals(info.getEndpoint())) {
+                throw new NonUniqueSecurityInfoException("PSK Identity " + info.getPskIdentity() + " is already used");
+            }
+            j.hset(endpointByPskIdKey.getBytes(), info.getPskIdentity().getBytes(), info.getEndpoint().getBytes());
+        }
+    }
+
+    private void updateOscoreIndex(Jedis j, SecurityInfo info) throws NonUniqueSecurityInfoException {
+        if (info.getOscoreSetting() != null && info.getOscoreSetting().getRecipientId() != null) {
+            byte[] recipientId = info.getOscoreSetting().getRecipientId();
+            byte[] endpointKey = endpointByOscoreRecipientIdKey.getBytes(StandardCharsets.UTF_8);
+            byte[] oldEndpointBytes = j.hget(endpointKey, recipientId);
+            if (oldEndpointBytes != null) {
+                String oldEndpoint = new String(oldEndpointBytes, StandardCharsets.UTF_8);
+                if (!oldEndpoint.equals(info.getEndpoint())) {
+                    throw new NonUniqueSecurityInfoException("RecipientId " + Hex.encodeHexString(recipientId)
+                            + " is already used by endpoint " + oldEndpoint);
+                }
+            }
+            j.hset(endpointKey, recipientId, info.getEndpoint().getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+    private void cleanupPreviousIndexes(Jedis j, SecurityInfo previous) {
+        if (previous != null) {
+            if (previous.getPskIdentity() != null) {
+                j.hdel(endpointByPskIdKey, previous.getPskIdentity());
+            }
+            if (previous.getOscoreSetting() != null) {
+                byte[] recipientId = previous.getOscoreSetting().getRecipientId();
+                j.hdel(endpointByOscoreRecipientIdKey.getBytes(), recipientId);
+            }
         }
     }
 
