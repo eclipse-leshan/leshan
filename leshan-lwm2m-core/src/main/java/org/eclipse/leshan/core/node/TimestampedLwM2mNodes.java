@@ -26,27 +26,41 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 /**
- * A container for nodes {@link LwM2mNode} with path {@link LwM2mPath} and optional timestamp information.
+ * A container for nodes {@link LwM2mNode} with path {@link PrefixedLwM2mPath} and optional timestamp information.
  */
 public class TimestampedLwM2mNodes {
 
-    private final Map<Instant, Map<LwM2mPath, LwM2mNode>> timestampedPathNodesMap;
+    private final Map<Instant, Map<PrefixedLwM2mPath, LwM2mNode>> timestampedPathNodesMap;
 
-    private TimestampedLwM2mNodes(Map<Instant, Map<LwM2mPath, LwM2mNode>> timestampedPathNodesMap) {
+    private TimestampedLwM2mNodes(Map<Instant, Map<PrefixedLwM2mPath, LwM2mNode>> timestampedPathNodesMap) {
         this.timestampedPathNodesMap = timestampedPathNodesMap;
     }
 
     /**
      * Get nodes for specific timestamp. Null timestamp is allowed.
      *
+     * Prefixed nodes are excluded, meaning if you target a gateway you will not see nodes about end devices behind it.
+     * If you want all value use {@link #getPrefixedNodesAt(Instant)}
+     *
      * @return map of {@link LwM2mPath}-{@link LwM2mNode} or null if there is no value for asked timestamp.
      */
     public Map<LwM2mPath, LwM2mNode> getNodesAt(Instant timestamp) {
-        Map<LwM2mPath, LwM2mNode> map = timestampedPathNodesMap.get(timestamp);
+        return toLwM2mPathMap(getPrefixedNodesAt(timestamp));
+    }
+
+    /**
+     * Get nodes for specific timestamp. Null timestamp is allowed.
+     *
+     * @return map of {@link PrefixedLwM2mPath}-{@link LwM2mNode} or null if there is no value for asked timestamp.
+     */
+    @SuppressWarnings("java:S1168")
+    public Map<PrefixedLwM2mPath, LwM2mNode> getPrefixedNodesAt(Instant timestamp) {
+        Map<PrefixedLwM2mPath, LwM2mNode> map = timestampedPathNodesMap.get(timestamp);
         if (map != null) {
-            return Collections.unmodifiableMap(timestampedPathNodesMap.get(timestamp));
+            return Collections.unmodifiableMap(map);
         }
         return null;
     }
@@ -54,10 +68,22 @@ public class TimestampedLwM2mNodes {
     /**
      * Get all collected nodes as {@link LwM2mPath}-{@link LwM2mNode} map ignoring timestamp information. In case of the
      * same path conflict the most recent one is taken. Null timestamp is considered as most recent one.
+     *
+     * Prefixed nodes are excluded, meaning if you target a gateway you will not see nodes about end devices behind it.
+     * If you want all value use {@link #getPrefixedFlattenNodes(Instant)}
      */
     public Map<LwM2mPath, LwM2mNode> getFlattenNodes() {
-        Map<LwM2mPath, LwM2mNode> result = new HashMap<>();
-        for (Map.Entry<Instant, Map<LwM2mPath, LwM2mNode>> entry : timestampedPathNodesMap.entrySet()) {
+        return toLwM2mPathMap(getPrefixedFlattenNodes());
+    }
+
+    /**
+     * Get all collected nodes as {@link LwM2mPath}-{@link LwM2mNode} map ignoring timestamp information. In case of the
+     * same path conflict the most recent one is taken. Null timestamp is considered as most recent one.
+     *
+     */
+    public Map<PrefixedLwM2mPath, LwM2mNode> getPrefixedFlattenNodes() {
+        Map<PrefixedLwM2mPath, LwM2mNode> result = new HashMap<>();
+        for (Map.Entry<Instant, Map<PrefixedLwM2mPath, LwM2mNode>> entry : timestampedPathNodesMap.entrySet()) {
             result.putAll(entry.getValue());
         }
         return Collections.unmodifiableMap(result);
@@ -66,9 +92,20 @@ public class TimestampedLwM2mNodes {
     /**
      * Get all collected nodes as {@link LwM2mPath}-{@link LwM2mNode} map from the most recent timestamp. Null is
      * considered as most recent one.
+     *
+     * Prefixed nodes are excluded, meaning if you target a gateway you will not see nodes about end devices behind it.
+     * If you want all value use {@link #getPrefixedMostRecentNodes(Instant)}
      */
     public Map<LwM2mPath, LwM2mNode> getMostRecentNodes() {
-        return timestampedPathNodesMap.values().iterator().next();
+        return toLwM2mPathMap(getPrefixedMostRecentNodes());
+    }
+
+    /**
+     * Get all collected nodes as {@link LwM2mPath}-{@link LwM2mNode} map from the most recent timestamp. Null is
+     * considered as most recent one.
+     */
+    public Map<PrefixedLwM2mPath, LwM2mNode> getPrefixedMostRecentNodes() {
+        return Collections.unmodifiableMap(timestampedPathNodesMap.values().iterator().next());
     }
 
     /**
@@ -76,7 +113,7 @@ public class TimestampedLwM2mNodes {
      * Null is considered as most recent one.
      */
     public TimestampedLwM2mNodes getMostRecentTimestampedNodes() {
-        Entry<Instant, Map<LwM2mPath, LwM2mNode>> entry = timestampedPathNodesMap.entrySet().iterator().next();
+        Entry<Instant, Map<PrefixedLwM2mPath, LwM2mNode>> entry = timestampedPathNodesMap.entrySet().iterator().next();
         return new TimestampedLwM2mNodes(Collections.singletonMap(entry.getKey(), entry.getValue()));
     }
 
@@ -120,6 +157,26 @@ public class TimestampedLwM2mNodes {
         return Objects.hashCode(timestampedPathNodesMap);
     }
 
+    /**
+     * Return only nodes under a {@link LwM2mPath} without prefix in an unmodifiable map.
+     */
+    @SuppressWarnings("java:S1168")
+    private Map<LwM2mPath, LwM2mNode> toLwM2mPathMap(Map<PrefixedLwM2mPath, LwM2mNode> prefixedMap) {
+        if (prefixedMap == null) {
+            return null;
+        }
+
+        Map<LwM2mPath, LwM2mNode> withoutPrefixNodes = new HashMap<>();
+        prefixedMap.entrySet().stream()
+                // exclude prefixed path : we keep only entry where there is no prefix
+                .filter(e -> !e.getKey().hasPrefix())
+                // create the new map using LwM2mPath as key instead of PrefixedPath
+                // we can use Collectors.toMap because we want to allow null value.
+                .forEach(e -> withoutPrefixNodes.put(e.getKey().getPath(), e.getValue()));
+
+        return Collections.unmodifiableMap(withoutPrefixNodes);
+    }
+
     public static class Builder {
 
         /**
@@ -158,8 +215,10 @@ public class TimestampedLwM2mNodes {
          * @param paths list of allowed {@link LwM2mPath}
          */
         public Builder(List<LwM2mPath> paths) {
-            this.paths = paths;
+            this.paths = paths.stream().map(PrefixedLwM2mPath::new).collect(Collectors.toList());
         }
+
+        // TODO we need to add to specify list of PrefixedPath
 
         public Builder() {
             this.paths = null;
@@ -167,10 +226,10 @@ public class TimestampedLwM2mNodes {
 
         private static class InternalNode {
             Instant timestamp;
-            LwM2mPath path;
+            PrefixedLwM2mPath path;
             LwM2mNode node;
 
-            public InternalNode(Instant timestamp, LwM2mPath path, LwM2mNode node) {
+            public InternalNode(Instant timestamp, PrefixedLwM2mPath path, LwM2mNode node) {
                 this.timestamp = timestamp;
                 this.path = path;
                 this.node = node;
@@ -179,7 +238,7 @@ public class TimestampedLwM2mNodes {
 
         private final List<InternalNode> nodes = new ArrayList<>();
         private boolean noDuplicate = true;
-        private final List<LwM2mPath> paths;
+        private final List<PrefixedLwM2mPath> paths;
 
         public Builder raiseExceptionOnDuplicate(boolean raiseException) {
             noDuplicate = raiseException;
@@ -188,6 +247,13 @@ public class TimestampedLwM2mNodes {
 
         public Builder addNodes(Map<LwM2mPath, LwM2mNode> pathNodesMap) {
             for (Entry<LwM2mPath, LwM2mNode> node : pathNodesMap.entrySet()) {
+                nodes.add(new InternalNode(null, new PrefixedLwM2mPath(node.getKey()), node.getValue()));
+            }
+            return this;
+        }
+
+        public Builder addPrefixedNodes(Map<PrefixedLwM2mPath, LwM2mNode> pathNodesMap) {
+            for (Entry<PrefixedLwM2mPath, LwM2mNode> node : pathNodesMap.entrySet()) {
                 nodes.add(new InternalNode(null, node.getKey(), node.getValue()));
             }
             return this;
@@ -195,26 +261,41 @@ public class TimestampedLwM2mNodes {
 
         public Builder addNodes(Instant timestamp, Map<LwM2mPath, LwM2mNode> pathNodesMap) {
             for (Entry<LwM2mPath, LwM2mNode> node : pathNodesMap.entrySet()) {
+                nodes.add(new InternalNode(timestamp, new PrefixedLwM2mPath(node.getKey()), node.getValue()));
+            }
+            return this;
+        }
+
+        public Builder addPrefixedNodes(Instant timestamp, Map<PrefixedLwM2mPath, LwM2mNode> pathNodesMap) {
+            for (Entry<PrefixedLwM2mPath, LwM2mNode> node : pathNodesMap.entrySet()) {
                 nodes.add(new InternalNode(timestamp, node.getKey(), node.getValue()));
             }
             return this;
         }
 
-        public Builder put(Instant timestamp, LwM2mPath path, LwM2mNode node) {
+        public Builder put(Instant timestamp, PrefixedLwM2mPath path, LwM2mNode node) {
             nodes.add(new InternalNode(timestamp, path, node));
             return this;
         }
 
+        public Builder put(Instant timestamp, LwM2mPath path, LwM2mNode node) {
+            return put(timestamp, new PrefixedLwM2mPath(path), node);
+        }
+
         public Builder put(LwM2mPath path, LwM2mNode node) {
-            nodes.add(new InternalNode(null, path, node));
-            return this;
+            return put(null, path, node);
+        }
+
+        public Builder put(PrefixedLwM2mPath path, LwM2mNode node) {
+            return put(null, path, node);
         }
 
         public Builder add(TimestampedLwM2mNodes timestampedNodes) {
             for (Instant timestamp : timestampedNodes.getTimestamps()) {
                 Map<LwM2mPath, LwM2mNode> pathNodeMap = timestampedNodes.getNodesAt(timestamp);
                 for (Map.Entry<LwM2mPath, LwM2mNode> pathNodeEntry : pathNodeMap.entrySet()) {
-                    nodes.add(new InternalNode(timestamp, pathNodeEntry.getKey(), pathNodeEntry.getValue()));
+                    nodes.add(new InternalNode(timestamp, new PrefixedLwM2mPath(pathNodeEntry.getKey()),
+                            pathNodeEntry.getValue()));
                 }
             }
             return this;
@@ -225,12 +306,14 @@ public class TimestampedLwM2mNodes {
          * invalid.
          */
         public TimestampedLwM2mNodes build() throws IllegalArgumentException {
-            Map<Instant, Map<LwM2mPath, LwM2mNode>> timestampToPathToNode = new TreeMap<>(getTimestampComparator());
+            Map<Instant, Map<PrefixedLwM2mPath, LwM2mNode>> timestampToPathToNode = new TreeMap<>(
+                    getTimestampComparator());
 
             for (InternalNode internalNode : nodes) {
                 // validate path is consistent with Node
                 if (internalNode.node != null) {
-                    String cause = LwM2mNodeUtil.getInvalidPathForNodeCause(internalNode.node, internalNode.path);
+                    String cause = LwM2mNodeUtil.getInvalidPathForNodeCause(internalNode.node,
+                            internalNode.path.getPath());
                     if (cause != null) {
                         throw new IllegalArgumentException(cause);
                     }
@@ -244,7 +327,7 @@ public class TimestampedLwM2mNodes {
                 }
 
                 // add to the map
-                Map<LwM2mPath, LwM2mNode> pathToNode = timestampToPathToNode.get(internalNode.timestamp);
+                Map<PrefixedLwM2mPath, LwM2mNode> pathToNode = timestampToPathToNode.get(internalNode.timestamp);
                 if (pathToNode == null) {
                     pathToNode = new HashMap<>();
                     timestampToPathToNode.put(internalNode.timestamp, pathToNode);

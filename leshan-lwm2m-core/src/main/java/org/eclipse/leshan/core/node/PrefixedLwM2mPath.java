@@ -36,6 +36,12 @@ public class PrefixedLwM2mPath implements Comparable<PrefixedLwM2mPath> {
         this.path = path;
     }
 
+    public PrefixedLwM2mPath(LwM2mPath path) {
+        Validate.notNull(path);
+        this.prefix = Collections.emptyList();
+        this.path = path;
+    }
+
     public boolean hasPrefix() {
         return !prefix.isEmpty();
     }
