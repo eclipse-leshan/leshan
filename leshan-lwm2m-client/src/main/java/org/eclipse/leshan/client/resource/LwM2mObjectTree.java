@@ -88,6 +88,16 @@ public class LwM2mObjectTree implements Startable, Stoppable, Destroyable {
                     return objectEnabler.getObjectModel();
                 return null;
             }
+
+            @Override
+            public boolean hasChildrenModels() {
+                return false;
+            }
+
+            @Override
+            public LwM2mModel getChildModel(String prefix) {
+                return null;
+            }
         };
     }
 

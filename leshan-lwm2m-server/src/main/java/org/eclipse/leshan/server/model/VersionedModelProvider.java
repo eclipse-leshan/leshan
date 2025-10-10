@@ -33,7 +33,7 @@ import org.eclipse.leshan.server.registration.Registration;
  */
 public class VersionedModelProvider implements LwM2mModelProvider {
 
-    private LwM2mModelRepository repository;
+    private final LwM2mModelRepository repository;
 
     public VersionedModelProvider(Collection<ObjectModel> objectModels) {
         this.repository = new LwM2mModelRepository(objectModels);
@@ -85,6 +85,16 @@ public class VersionedModelProvider implements LwM2mModelProvider {
                     result.add(objectModel);
             }
             return result;
+        }
+
+        @Override
+        public boolean hasChildrenModels() {
+            return false;
+        }
+
+        @Override
+        public LwM2mModel getChildModel(String prefix) {
+            return null;
         }
     }
 }

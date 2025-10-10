@@ -181,6 +181,16 @@ public class LwM2mModelRepository {
             public ObjectModel getObjectModel(int objectId) {
                 return LwM2mModelRepository.this.getObjectModel(objectId);
             }
+
+            @Override
+            public boolean hasChildrenModels() {
+                return false;
+            }
+
+            @Override
+            public LwM2mModel getChildModel(String prefix) {
+                return null;
+            }
         };
     }
 }
