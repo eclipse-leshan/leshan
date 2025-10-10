@@ -83,5 +83,15 @@ public class VersionedBootstrapModelProvider implements LwM2mBootstrapModelProvi
             }
             return result;
         }
+
+        @Override
+        public boolean hasChildrenModels() {
+            return false;
+        }
+
+        @Override
+        public LwM2mModel getChildModel(String prefix) {
+            return null;
+        }
     }
 }

@@ -44,4 +44,17 @@ public interface LwM2mModel {
      */
     Collection<ObjectModel> getObjectModels();
 
+    /**
+     * @return <true> if this model has children models, generally for gateway use cases
+     *
+     * @see #getChildModel(String)
+     */
+    boolean hasChildrenModels();
+
+    /**
+     * @return the model for the given prefix or <null> if there is no children for this prefix.
+     *
+     * @see #hasChildrenModels()
+     */
+    LwM2mModel getChildModel(String prefix);
 }

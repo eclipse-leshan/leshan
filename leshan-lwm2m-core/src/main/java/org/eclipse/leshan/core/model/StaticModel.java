@@ -70,4 +70,14 @@ public class StaticModel implements LwM2mModel {
     public Collection<ObjectModel> getObjectModels() {
         return objects.values();
     }
+
+    @Override
+    public boolean hasChildrenModels() {
+        return false;
+    }
+
+    @Override
+    public LwM2mModel getChildModel(String prefix) {
+        return null;
+    }
 }
