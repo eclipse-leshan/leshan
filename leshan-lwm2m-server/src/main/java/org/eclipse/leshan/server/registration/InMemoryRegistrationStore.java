@@ -170,7 +170,7 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
     }
 
     @Override
-    public Registration getRegistrationByAdress(InetSocketAddress address) {
+    public IRegistration getRegistrationByAdress(InetSocketAddress address) {
         try {
             lock.readLock().lock();
             return regsByAddr.get(address);
@@ -180,7 +180,7 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
     }
 
     @Override
-    public Registration getRegistrationByIdentity(LwM2mIdentity identity) {
+    public IRegistration getRegistrationByIdentity(LwM2mIdentity identity) {
         try {
             lock.readLock().lock();
             return regsByIdentity.get(identity);
@@ -449,7 +449,7 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
                     lock.readLock().unlock();
                 }
 
-                for (Registration reg : allRegs) {
+                for (IRegistration reg : allRegs) {
                     if (!reg.isAlive()) {
                         // force de-registration
                         Deregistration removedRegistration = removeRegistration(reg.getId());

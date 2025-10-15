@@ -36,88 +36,42 @@ import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mPath;
-import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.util.StringUtils;
 import org.eclipse.leshan.core.util.Validate;
 
 /**
  * An immutable structure which represent a LW-M2M client registration on the server
  */
-public class Registration implements IRegistration {
-
-    private static final long DEFAULT_LIFETIME_IN_SEC = 86400L;
-
-    private final Date registrationDate;
-
-    private final LwM2mPeer clientTransportData;
-
-    private final long lifeTimeInSec;
-
-    private final String smsNumber;
-
-    private final LwM2mVersion lwM2mVersion;
-
-    private final EnumSet<BindingMode> bindingMode;
-
-    private final Boolean queueMode; // since LWM2M 1.1
+public class EndDeviceRegistration implements IRegistration {
 
     // The LWM2M Client's unique end point name.
     private final String endpoint;
-
     private final String id;
-
+    private final String prefix;
     private final Link[] objectLinks;
-
-    private final Map<String, String> additionalRegistrationAttributes;
-
-    // The location where LWM2M objects are hosted on the device
-    private final String rootPath;
+    private final Registration parentGateway;
 
     // All ContentFormat supported by the client
     private final Set<ContentFormat> supportedContentFormats;
-
     // All supported object (object id => version)
     private final Map<Integer, Version> supportedObjects;
-
     // All available instances
     private final Set<LwM2mPath> availableInstances;
 
-    private final Date lastUpdate;
-
-    private final Map<String, String> customRegistrationData;
-
-    // URI of endpoint used for this registration.
-    private final EndpointUri endpointUri;
-
-    protected Registration(Builder builder) {
-
+    protected EndDeviceRegistration(Builder builder) {
         // mandatory params
         id = builder.registrationId;
-        clientTransportData = builder.clientTransportData;
         endpoint = builder.endpoint;
-        endpointUri = builder.endpointUri;
+        prefix = builder.prefix;
+        parentGateway = builder.parentGateway;
 
         // object links related params
         objectLinks = builder.objectLinks;
-        rootPath = builder.rootPath;
         supportedContentFormats = builder.supportedContentFormats;
         supportedObjects = builder.supportedObjects;
         availableInstances = builder.availableInstances;
-
-        // other params
-        lifeTimeInSec = builder.lifeTimeInSec;
-        lwM2mVersion = builder.lwM2mVersion;
-        bindingMode = builder.bindingMode;
-        queueMode = builder.queueMode;
-        registrationDate = builder.registrationDate;
-        lastUpdate = builder.lastUpdate;
-        smsNumber = builder.smsNumber;
-        additionalRegistrationAttributes = builder.additionalRegistrationAttributes;
-
-        customRegistrationData = builder.customRegistrationData;
     }
 
     /*
@@ -130,6 +84,10 @@ public class Registration implements IRegistration {
         return id;
     }
 
+    public String getPrefix() {
+        return prefix;
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -137,7 +95,7 @@ public class Registration implements IRegistration {
      */
     @Override
     public Date getRegistrationDate() {
-        return registrationDate;
+        return parentGateway.getRegistrationDate();
     }
 
     /*
@@ -147,7 +105,7 @@ public class Registration implements IRegistration {
      */
     @Override
     public LwM2mPeer getClientTransportData() {
-        return clientTransportData;
+        return parentGateway.getClientTransportData();
     }
 
     /*
@@ -157,10 +115,7 @@ public class Registration implements IRegistration {
      */
     @Override
     public InetSocketAddress getSocketAddress() {
-        if (clientTransportData instanceof IpPeer) {
-            return ((IpPeer) clientTransportData).getSocketAddress();
-        }
-        return null;
+        return parentGateway.getSocketAddress();
     }
 
     /*
@@ -170,10 +125,7 @@ public class Registration implements IRegistration {
      */
     @Override
     public InetAddress getAddress() {
-        if (clientTransportData instanceof IpPeer) {
-            return ((IpPeer) clientTransportData).getSocketAddress().getAddress();
-        }
-        return null;
+        return parentGateway.getAddress();
     }
 
     /*
@@ -183,10 +135,7 @@ public class Registration implements IRegistration {
      */
     @Override
     public Integer getPort() {
-        if (clientTransportData instanceof IpPeer) {
-            return ((IpPeer) clientTransportData).getSocketAddress().getPort();
-        }
-        return null;
+        return parentGateway.getPort();
     }
 
     /*
@@ -199,56 +148,10 @@ public class Registration implements IRegistration {
         return objectLinks;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.leshan.server.registration.IRegistration#getSortedObjectLinks()
-     */
     @Override
     public Link[] getSortedObjectLinks() {
-        // sort the list of objects
-        if (objectLinks == null) {
-            return null;
-        }
-
-        Link[] res = Arrays.copyOf(objectLinks, objectLinks.length);
-
-        Arrays.sort(res, (o1, o2) -> {
-            if (o1 == null && o2 == null)
-                return 0;
-            if (o1 == null)
-                return -1;
-            if (o2 == null)
-                return 1;
-            // by URL
-            String[] url1 = o1.getUriReference().split("/");
-            String[] url2 = o2.getUriReference().split("/");
-
-            for (int i = 0; i < url1.length && i < url2.length; i++) {
-                // is it two numbers?
-                if (isNumber(url1[i]) && isNumber(url2[i])) {
-                    int cmp = Integer.parseInt(url1[i]) - Integer.parseInt(url2[i]);
-                    if (cmp != 0) {
-                        return cmp;
-                    }
-                } else {
-
-                    int v = url1[i].compareTo(url2[i]);
-
-                    if (v != 0) {
-                        return v;
-                    }
-                }
-            }
-
-            return url1.length - url2.length;
-        });
-
-        return res;
-    }
-
-    private static boolean isNumber(String s) {
-        return !StringUtils.isEmpty(s) && StringUtils.isNumeric(s);
+        // TODO should we remove it OR implement it
+        return objectLinks;
     }
 
     /*
@@ -258,7 +161,7 @@ public class Registration implements IRegistration {
      */
     @Override
     public Long getLifeTimeInSec() {
-        return lifeTimeInSec;
+        return parentGateway.getLifeTimeInSec();
     }
 
     /*
@@ -268,7 +171,7 @@ public class Registration implements IRegistration {
      */
     @Override
     public String getSmsNumber() {
-        return smsNumber;
+        return parentGateway.getSmsNumber();
     }
 
     /*
@@ -278,7 +181,7 @@ public class Registration implements IRegistration {
      */
     @Override
     public LwM2mVersion getLwM2mVersion() {
-        return lwM2mVersion;
+        return parentGateway.getLwM2mVersion();
     }
 
     /*
@@ -288,7 +191,7 @@ public class Registration implements IRegistration {
      */
     @Override
     public EnumSet<BindingMode> getBindingMode() {
-        return bindingMode;
+        return parentGateway.getBindingMode();
     }
 
     /*
@@ -298,7 +201,7 @@ public class Registration implements IRegistration {
      */
     @Override
     public Boolean getQueueMode() {
-        return queueMode;
+        return parentGateway.getQueueMode();
     }
 
     /*
@@ -308,7 +211,7 @@ public class Registration implements IRegistration {
      */
     @Override
     public String getRootPath() {
-        return rootPath;
+        return parentGateway.getRootPath();
     }
 
     /*
@@ -348,7 +251,7 @@ public class Registration implements IRegistration {
      */
     @Override
     public Date getLastUpdate() {
-        return lastUpdate;
+        return parentGateway.getLastUpdate();
     }
 
     /*
@@ -368,7 +271,7 @@ public class Registration implements IRegistration {
      */
     @Override
     public long getExpirationTimeStamp(long gracePeriodInSec) {
-        return lastUpdate.getTime() + lifeTimeInSec * 1000 + gracePeriodInSec * 1000;
+        return getLastUpdate().getTime() + getLifeTimeInSec() * 1000 + gracePeriodInSec * 1000;
     }
 
     /*
@@ -410,7 +313,7 @@ public class Registration implements IRegistration {
      */
     @Override
     public Map<String, String> getAdditionalRegistrationAttributes() {
-        return additionalRegistrationAttributes;
+        return Collections.emptyMap();
     }
 
     /*
@@ -420,10 +323,7 @@ public class Registration implements IRegistration {
      */
     @Override
     public boolean usesQueueMode() {
-        if (lwM2mVersion.olderThan(LwM2mVersion.V1_1))
-            return bindingMode.contains(BindingMode.Q);
-        else
-            return queueMode;
+        return parentGateway.usesQueueMode();
     }
 
     /*
@@ -453,7 +353,7 @@ public class Registration implements IRegistration {
      */
     @Override
     public Map<String, String> getCustomRegistrationData() {
-        return customRegistrationData;
+        return Collections.emptyMap();
     }
 
     /*
@@ -463,7 +363,7 @@ public class Registration implements IRegistration {
      */
     @Override
     public EndpointUri getEndpointUri() {
-        return endpointUri;
+        return parentGateway.getEndpointUri();
     }
 
     @Override
@@ -481,156 +381,61 @@ public class Registration implements IRegistration {
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.leshan.server.registration.IRegistration#toString()
-     */
     @Override
     public String toString() {
         return String.format(
-                "Registration [registrationDate=%s, clientTransportData=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, queueMode=%s, endpoint=%s, id=%s, objectLinks=%s, additionalRegistrationAttributes=%s, rootPath=%s, supportedContentFormats=%s, supportedObjects=%s, availableInstances=%s, lastUpdate=%s, customRegistrationData=%s, endpointUri=%s]",
-                registrationDate, clientTransportData, lifeTimeInSec, smsNumber, lwM2mVersion, bindingMode, queueMode,
-                endpoint, id, Arrays.toString(objectLinks), additionalRegistrationAttributes, rootPath,
-                supportedContentFormats, supportedObjects, availableInstances, lastUpdate, customRegistrationData,
-                endpointUri);
+                "EndDeviceRegistration [endpoint=%s, id=%s, prefix=%s, objectLinks=%s, supportedContentFormats=%s, supportedObjects=%s, availableInstances=%s, parentGateway=%s]",
+                endpoint, id, prefix, Arrays.toString(objectLinks), supportedContentFormats, supportedObjects,
+                availableInstances, parentGateway);
     }
 
     @Override
-    public final boolean equals(Object o) {
+    public boolean equals(Object o) {
         if (this == o)
             return true;
-        if (!(o instanceof Registration))
+        if (!(o instanceof EndDeviceRegistration))
             return false;
-        Registration that = (Registration) o;
-        return lifeTimeInSec == that.lifeTimeInSec && Objects.equals(registrationDate, that.registrationDate)
-                && Objects.equals(clientTransportData, that.clientTransportData)
-                && Objects.equals(smsNumber, that.smsNumber) && Objects.equals(lwM2mVersion, that.lwM2mVersion)
-                && Objects.equals(bindingMode, that.bindingMode) && Objects.equals(queueMode, that.queueMode)
-                && Objects.equals(endpoint, that.endpoint) && Objects.equals(id, that.id)
-                && Arrays.equals(objectLinks, that.objectLinks)
-                && Objects.equals(additionalRegistrationAttributes, that.additionalRegistrationAttributes)
-                && Objects.equals(rootPath, that.rootPath)
+        EndDeviceRegistration that = (EndDeviceRegistration) o;
+        return Objects.equals(availableInstances, that.availableInstances) && Objects.equals(endpoint, that.endpoint)
+                && Objects.equals(id, that.id) && Arrays.equals(objectLinks, that.objectLinks)
+                && Objects.equals(parentGateway, that.parentGateway) && Objects.equals(prefix, that.prefix)
                 && Objects.equals(supportedContentFormats, that.supportedContentFormats)
-                && Objects.equals(supportedObjects, that.supportedObjects)
-                && Objects.equals(availableInstances, that.availableInstances)
-                && Objects.equals(lastUpdate, that.lastUpdate)
-                && Objects.equals(customRegistrationData, that.customRegistrationData)
-                && Objects.equals(endpointUri, that.endpointUri);
+                && Objects.equals(supportedObjects, that.supportedObjects);
     }
 
     @Override
-    public final int hashCode() {
-        return Objects.hash(registrationDate, clientTransportData, lifeTimeInSec, smsNumber, lwM2mVersion, bindingMode,
-                queueMode, endpoint, id, Arrays.hashCode(objectLinks), additionalRegistrationAttributes, rootPath,
-                supportedContentFormats, supportedObjects, availableInstances, lastUpdate, customRegistrationData,
-                endpointUri);
+    public int hashCode() {
+        return Objects.hash(availableInstances, endpoint, id, Arrays.hashCode(objectLinks), parentGateway, prefix,
+                supportedContentFormats, supportedObjects);
     }
 
     public static class Builder {
+        private final Registration parentGateway;
         private final String registrationId;
         private final String endpoint;
-        private final LwM2mPeer clientTransportData;
-        private final EndpointUri endpointUri;
-
-        private Date registrationDate;
-        private Date lastUpdate;
-        private Long lifeTimeInSec;
-        private String smsNumber;
-        private EnumSet<BindingMode> bindingMode;
-        private Boolean queueMode;
-        private LwM2mVersion lwM2mVersion = LwM2mVersion.getDefault();
+        private final String prefix;
         private Link[] objectLinks;
-        private String rootPath;
+
         private Set<ContentFormat> supportedContentFormats;
         private Map<Integer, Version> supportedObjects;
         private Set<LwM2mPath> availableInstances;
-        private Map<String, String> additionalRegistrationAttributes;
-        private Map<String, String> customRegistrationData;
 
-        public Builder(Registration registration) {
+        public Builder(IRegistration gateway, String registrationId, String prefix, String endpoint) {
 
-            // mandatory params
-            registrationId = registration.id;
-            clientTransportData = registration.clientTransportData;
-            endpoint = registration.endpoint;
-            endpointUri = registration.endpointUri;
-
-            // object links related params
-            objectLinks = registration.objectLinks;
-            rootPath = registration.rootPath;
-            supportedContentFormats = registration.supportedContentFormats;
-            supportedObjects = registration.supportedObjects;
-            availableInstances = registration.availableInstances;
-
-            // other params
-            lifeTimeInSec = registration.lifeTimeInSec;
-            lwM2mVersion = registration.lwM2mVersion;
-            bindingMode = registration.bindingMode;
-            queueMode = registration.queueMode;
-            registrationDate = registration.registrationDate;
-            lastUpdate = registration.lastUpdate;
-            smsNumber = registration.smsNumber;
-            additionalRegistrationAttributes = registration.additionalRegistrationAttributes;
-
-            customRegistrationData = registration.customRegistrationData;
-        }
-
-        public Builder(String registrationId, String endpoint, LwM2mPeer clientTransportData, EndpointUri endpointUri) {
-
+            Validate.notNull(gateway);
             Validate.notNull(registrationId);
             Validate.notEmpty(endpoint);
-            Validate.notNull(clientTransportData);
-            Validate.notNull(endpointUri);
+            Validate.notEmpty(prefix);
+            Validate.isTrue(gateway.isGateway(), "registration should be a gateway");
 
+            this.parentGateway = (Registration) gateway;
             this.registrationId = registrationId;
             this.endpoint = endpoint;
-            this.clientTransportData = clientTransportData;
-            this.endpointUri = endpointUri;
-        }
-
-        public Builder registrationDate(Date registrationDate) {
-            this.registrationDate = registrationDate;
-            return this;
-        }
-
-        public Builder lastUpdate(Date lastUpdate) {
-            this.lastUpdate = lastUpdate;
-            return this;
-        }
-
-        public Builder lifeTimeInSec(Long lifetimeInSec) {
-            this.lifeTimeInSec = lifetimeInSec;
-            return this;
-        }
-
-        public Builder smsNumber(String smsNumber) {
-            this.smsNumber = smsNumber;
-            return this;
-        }
-
-        public Builder bindingMode(EnumSet<BindingMode> bindingMode) {
-            this.bindingMode = bindingMode;
-            return this;
-        }
-
-        public Builder queueMode(Boolean queueMode) {
-            this.queueMode = queueMode;
-            return this;
-        }
-
-        public Builder lwM2mVersion(LwM2mVersion lwM2mVersion) {
-            this.lwM2mVersion = lwM2mVersion;
-            return this;
+            this.prefix = prefix;
         }
 
         public Builder objectLinks(Link[] objectLinks) {
             this.objectLinks = objectLinks;
-            return this;
-        }
-
-        public Builder rootPath(String rootPath) {
-            this.rootPath = rootPath;
             return this;
         }
 
@@ -657,26 +462,7 @@ public class Registration implements IRegistration {
             return this;
         }
 
-        public Builder additionalRegistrationAttributes(Map<String, String> additionalRegistrationAttributes) {
-            this.additionalRegistrationAttributes = additionalRegistrationAttributes;
-            return this;
-        }
-
-        public Builder customRegistrationData(Map<String, String> customRegistrationData) {
-            this.customRegistrationData = customRegistrationData;
-            return this;
-        }
-
-        public Registration build() {
-            // Define Default value
-            rootPath = rootPath == null ? "/" : rootPath;
-            lifeTimeInSec = lifeTimeInSec == null ? DEFAULT_LIFETIME_IN_SEC : lifeTimeInSec;
-            lwM2mVersion = lwM2mVersion == null ? LwM2mVersion.getDefault() : lwM2mVersion;
-            bindingMode = bindingMode == null ? EnumSet.of(BindingMode.U) : bindingMode;
-            queueMode = queueMode == null && lwM2mVersion.newerThan(LwM2mVersion.V1_0) ? Boolean.FALSE : queueMode;
-            registrationDate = registrationDate == null ? new Date() : registrationDate;
-            lastUpdate = lastUpdate == null ? new Date() : lastUpdate;
-
+        public EndDeviceRegistration build() {
             // Make collection immutable
             // We create a new Collection and make it "unmodifiable".
             if (supportedContentFormats == null || supportedContentFormats.isEmpty()) {
@@ -694,20 +480,8 @@ public class Registration implements IRegistration {
             } else {
                 availableInstances = Collections.unmodifiableSet(new TreeSet<>(availableInstances));
             }
-            if (additionalRegistrationAttributes == null || additionalRegistrationAttributes.isEmpty()) {
-                additionalRegistrationAttributes = Collections.emptyMap();
-            } else {
-                additionalRegistrationAttributes = Collections
-                        .unmodifiableMap(new HashMap<>(additionalRegistrationAttributes));
-            }
-            if (customRegistrationData == null || customRegistrationData.isEmpty()) {
-                customRegistrationData = Collections.emptyMap();
-            } else {
-                customRegistrationData = Collections.unmodifiableMap(new HashMap<>(customRegistrationData));
-            }
-
             // Create Registration
-            return new Registration(this);
+            return new EndDeviceRegistration(this);
         }
     }
 }

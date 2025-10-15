@@ -35,7 +35,7 @@ import org.eclipse.leshan.core.response.ReadResponse;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
 import org.eclipse.leshan.integration.tests.util.junit5.extensions.BeforeEachParameterizedResolver;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -108,7 +108,7 @@ public class QueueModeTest {
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
         assertThat(registration.getObjectLinks()).isLikeLinks(
                 "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1/0>,</2>,</3/0>,</3442/0>");
 
@@ -203,7 +203,7 @@ public class QueueModeTest {
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // Stop the client to ensure that TimeOut exception is thrown
         client.stop(false);
@@ -234,7 +234,7 @@ public class QueueModeTest {
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // Send a response a check that it is received correctly
         response = server.send(registration, new ReadRequest(3, 0, 1));

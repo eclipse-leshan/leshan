@@ -57,32 +57,32 @@ public class RegistrationServiceImpl implements RegistrationService, ExpirationL
     }
 
     @Override
-    public Registration getById(String id) {
+    public IRegistration getById(String id) {
         return store.getRegistration(id);
     }
 
     @Override
-    public void registrationExpired(Registration registration, Collection<Observation> observations) {
+    public void registrationExpired(IRegistration registration, Collection<Observation> observations) {
         for (RegistrationListener l : listeners) {
             l.unregistered(registration, observations, true, null);
         }
     }
 
-    public void fireRegistered(Registration registration, Registration previousReg,
+    public void fireRegistered(IRegistration registration, IRegistration previousReg,
             Collection<Observation> previousObservations) {
         for (RegistrationListener l : listeners) {
             l.registered(registration, previousReg, previousObservations);
         }
     }
 
-    public void fireUnregistered(Registration registration, Collection<Observation> observations, Registration newReg) {
+    public void fireUnregistered(IRegistration registration, Collection<Observation> observations, IRegistration newReg) {
         for (RegistrationListener l : listeners) {
             l.unregistered(registration, observations, false, newReg);
         }
     }
 
-    public void fireUpdated(RegistrationUpdate update, Registration updatedRegistration,
-            Registration previousRegistration) {
+    public void fireUpdated(RegistrationUpdate update, IRegistration updatedRegistration,
+            IRegistration previousRegistration) {
         for (RegistrationListener l : listeners) {
             l.updated(update, updatedRegistration, previousRegistration);
         }

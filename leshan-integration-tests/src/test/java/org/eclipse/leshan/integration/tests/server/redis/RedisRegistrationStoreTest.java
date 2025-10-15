@@ -55,6 +55,7 @@ import org.eclipse.leshan.integration.tests.util.RedisTestUtil;
 import org.eclipse.leshan.server.endpoint.EffectiveEndpointUriProvider;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.profile.ClientProfile;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.transport.californium.ObserveUtil;
@@ -108,7 +109,7 @@ public class RedisRegistrationStoreTest {
             }
 
             @Override
-            public void newObservation(Observation observation, Registration registration) {
+            public void newObservation(Observation observation, IRegistration registration) {
             }
 
             @Override

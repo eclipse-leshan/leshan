@@ -50,7 +50,7 @@ import org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
 import org.eclipse.leshan.integration.tests.util.junit5.extensions.BeforeEachParameterizedResolver;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.servers.security.InMemorySecurityStore;
 import org.eclipse.leshan.servers.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.servers.security.SecurityInfo;
@@ -133,7 +133,7 @@ public class PskTest {
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // check we can send request to client.
         ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
@@ -166,7 +166,7 @@ public class PskTest {
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // check we can send request to client.
         ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
@@ -200,7 +200,7 @@ public class PskTest {
         server.waitForNewRegistrationOf(client);
         client.waitForRegistrationTo(server);
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // Check for update
         client.waitForUpdateTo(server, SHORT_LIFETIME, TimeUnit.SECONDS);
@@ -247,7 +247,7 @@ public class PskTest {
         server.waitForNewRegistrationOf(client);
         client.waitForRegistrationTo(server);
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // Check for update
         client.waitForUpdateTo(server, SHORT_LIFETIME, TimeUnit.SECONDS);
@@ -289,7 +289,7 @@ public class PskTest {
         server.waitForNewRegistrationOf(client);
         client.waitForRegistrationTo(server);
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // Remove Client Security info
         server.clearSecurityContextFor(givenProtocol);
@@ -323,7 +323,7 @@ public class PskTest {
         server.waitForNewRegistrationOf(client);
         client.waitForRegistrationTo(server);
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // Remove Client Security info
         server.clearSecurityContextFor(givenProtocol);
@@ -375,7 +375,7 @@ public class PskTest {
         server.waitForNewRegistrationOf(client);
         client.waitForRegistrationTo(server);
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // Remove Client Security info
         server.clearSecurityContextFor(givenProtocol);

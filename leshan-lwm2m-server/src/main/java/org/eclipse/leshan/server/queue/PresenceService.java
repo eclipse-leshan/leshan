@@ -16,7 +16,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue;
 
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 
 /**
  * Tracks the status of each LWM2M client registered with Queue mode binding. Also ensures that the
@@ -45,5 +45,5 @@ public interface PresenceService {
      * @param registration the client's registration object.
      * @return true if the status is awake.
      */
-    boolean isClientAwake(Registration registration);
+    boolean isClientAwake(IRegistration registration);
 }

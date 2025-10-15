@@ -69,7 +69,7 @@ public class InMemoryRegistrationStoreTest {
 
         assertEquals(registration, updatedRegistration.getPreviousRegistration());
 
-        Registration reg = store.getRegistrationByEndpoint(ep);
+        IRegistration reg = store.getRegistrationByEndpoint(ep);
         assertEquals(lifetime, reg.getLifeTimeInSec());
         assertSame(binding, reg.getBindingMode());
         assertEquals(sms, reg.getSmsNumber());
@@ -94,7 +94,7 @@ public class InMemoryRegistrationStoreTest {
         UpdatedRegistration updatedRegistration = store.updateRegistration(update);
         assertTrue(updatedRegistration.getUpdatedRegistration().isAlive());
 
-        Registration reg = store.getRegistrationByEndpoint(ep);
+        IRegistration reg = store.getRegistrationByEndpoint(ep);
         assertTrue(reg.isAlive());
     }
 

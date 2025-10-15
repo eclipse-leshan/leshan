@@ -30,7 +30,7 @@ import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.SendResponse;
 import org.eclipse.leshan.core.response.SendableResponse;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
 import org.eclipse.leshan.server.registration.UpdatedRegistration;
@@ -70,11 +70,11 @@ public class SendHandler implements SendService {
         listeners.remove(listener);
     }
 
-    public SendableResponse<SendResponse> handleSend(LwM2mPeer sender, Registration registration,
+    public SendableResponse<SendResponse> handleSend(LwM2mPeer sender, IRegistration registration,
             final SendRequest request, EndpointUri serverEndpointUri) {
 
         // Try to update registration if needed
-        final Registration updatedRegistration;
+        final IRegistration updatedRegistration;
         try {
             updatedRegistration = updateRegistration(sender, registration, request, serverEndpointUri);
             if (updatedRegistration == null) {
@@ -123,7 +123,7 @@ public class SendHandler implements SendService {
      *
      * @return the registration or the updated registration or null if not allowed to update.
      */
-    protected Registration updateRegistration(LwM2mPeer sender, final Registration registration,
+    protected IRegistration updateRegistration(LwM2mPeer sender, final IRegistration registration,
             final SendRequest request, EndpointUri endpointUri) {
         if (!updateRegistrationOnSend) {
             // mode is not activate so we don't update registration
@@ -154,19 +154,19 @@ public class SendHandler implements SendService {
         return updatedRegistration.getUpdatedRegistration();
     }
 
-    protected void fireDataReceived(Registration registration, TimestampedLwM2mNodes data, SendRequest request) {
+    protected void fireDataReceived(IRegistration registration, TimestampedLwM2mNodes data, SendRequest request) {
         for (SendListener listener : listeners) {
             listener.dataReceived(registration, data, request);
         }
     }
 
-    public void onError(Registration registration, String errorMessage, Exception error) {
+    public void onError(IRegistration registration, String errorMessage, Exception error) {
         for (SendListener listener : listeners) {
             listener.onError(registration, errorMessage, error);
         }
     }
 
-    protected SendResponse validateSendRequest(Registration registration, SendRequest request) {
+    protected SendResponse validateSendRequest(IRegistration registration, SendRequest request) {
         // check if all data of Send request are registered by LwM2M device.
         // see : https://github.com/eclipse-leshan/leshan/issues/1472
         TimestampedLwM2mNodes timestampedNodes = request.getTimestampedNodes();
@@ -188,7 +188,7 @@ public class SendHandler implements SendService {
         return SendResponse.success();
     }
 
-    protected SendableResponse<SendResponse> errorReponse(Registration registration, ResponseCode code,
+    protected SendableResponse<SendResponse> errorReponse(IRegistration registration, ResponseCode code,
             String errorMessage, Exception e) {
 
         SendableResponse<SendResponse> response = new SendableResponse<>(new SendResponse(code, errorMessage),

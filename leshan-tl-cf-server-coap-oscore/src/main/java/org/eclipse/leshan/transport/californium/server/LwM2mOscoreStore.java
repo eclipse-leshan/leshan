@@ -24,7 +24,7 @@ import org.eclipse.californium.cose.CoseException;
 import org.eclipse.leshan.core.peer.LwM2mIdentity;
 import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.core.util.Validate;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.servers.security.SecurityInfo;
 import org.eclipse.leshan.servers.security.SecurityStore;
@@ -84,7 +84,7 @@ public class LwM2mOscoreStore implements OscoreStore {
             URI foreignPeerUri = new URI(uri);
             InetSocketAddress foreignPeerAddress = new InetSocketAddress(foreignPeerUri.getHost(),
                     foreignPeerUri.getPort());
-            Registration registration = registrationStore.getRegistrationByAdress(foreignPeerAddress);
+            IRegistration registration = registrationStore.getRegistrationByAdress(foreignPeerAddress);
             LwM2mIdentity identity = registration.getClientTransportData().getIdentity();
             if (identity instanceof OscoreIdentity) {
                 return ((OscoreIdentity) identity).getRecipientId();

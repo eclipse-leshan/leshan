@@ -29,6 +29,7 @@ import org.eclipse.leshan.core.request.exception.UnconnectedPeerException;
 import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.Registration;
 
 /**
@@ -61,7 +62,7 @@ public interface DownlinkRequestSender {
      * @throws UnconnectedPeerException if client is not connected (no dtls connection available).
      * @throws ClientSleepingException if client is currently sleeping.
      */
-    <T extends LwM2mResponse> T send(Registration destination, DownlinkDeviceManagementRequest<T> request,
+    <T extends LwM2mResponse> T send(IRegistration destination, DownlinkDeviceManagementRequest<T> request,
             LowerLayerConfig lowerLayerConfig, long timeoutInMs) throws InterruptedException;
 
     /**
@@ -92,7 +93,7 @@ public interface DownlinkRequestSender {
      *        This callback MUST NOT be null.
      * @throws CodecException if request payload can not be encoded.
      */
-    <T extends LwM2mResponse> void send(Registration destination, DownlinkDeviceManagementRequest<T> request,
+    <T extends LwM2mResponse> void send(IRegistration destination, DownlinkDeviceManagementRequest<T> request,
             LowerLayerConfig lowerLayerConfig, long timeoutInMs, ResponseCallback<T> responseCallback,
             ErrorCallback errorCallback);
 
@@ -102,5 +103,5 @@ public interface DownlinkRequestSender {
      *
      * @param registration client registration meta data of a LWM2M client.
      */
-    void cancelOngoingRequests(Registration registration);
+    void cancelOngoingRequests(IRegistration registration);
 }

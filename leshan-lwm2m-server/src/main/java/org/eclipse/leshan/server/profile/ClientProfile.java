@@ -17,14 +17,14 @@ package org.eclipse.leshan.server.profile;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 
 public class ClientProfile {
 
-    private final Registration registration;
+    private final IRegistration registration;
     private final LwM2mModel model;
 
-    public ClientProfile(Registration registration, LwM2mModel model) {
+    public ClientProfile(IRegistration registration, LwM2mModel model) {
         this.registration = registration;
         this.model = model;
     }
@@ -53,7 +53,7 @@ public class ClientProfile {
         return registration.canInitiateConnection();
     }
 
-    public Registration getRegistration() {
+    public IRegistration getRegistration() {
         return registration;
     }
 }

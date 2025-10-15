@@ -25,7 +25,7 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.LwM2mModelRepository;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 
 /**
  * A LwM2mModelProvider which supports object versioning. It returns a LwM2mModel taking into account object version
@@ -44,15 +44,15 @@ public class VersionedModelProvider implements LwM2mModelProvider {
     }
 
     @Override
-    public LwM2mModel getObjectModel(Registration registration) {
+    public LwM2mModel getObjectModel(IRegistration registration) {
         return new DynamicModel(registration);
     }
 
     private class DynamicModel implements LwM2mModel {
 
-        private final Registration registration;
+        private final IRegistration registration;
 
-        public DynamicModel(Registration registration) {
+        public DynamicModel(IRegistration registration) {
             this.registration = registration;
         }
 
@@ -89,12 +89,16 @@ public class VersionedModelProvider implements LwM2mModelProvider {
 
         @Override
         public boolean hasChildrenModels() {
-            return false;
+            return registration.isGateway();
         }
 
         @Override
         public LwM2mModel getChildModel(String prefix) {
-            return null;
+            IRegistration childRegistration = registration.getChildEndDevices(prefix);
+            if (childRegistration == null) {
+                return null;
+            }
+            return new DynamicModel(childRegistration);
         }
     }
 }

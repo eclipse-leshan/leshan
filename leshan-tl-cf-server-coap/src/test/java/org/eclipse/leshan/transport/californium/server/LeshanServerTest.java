@@ -28,6 +28,7 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.LeshanServerBuilder;
 import org.eclipse.leshan.server.queue.PresenceServiceImpl;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServerEndpointsProvider;
 import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServerEndpointsProvider.Builder;
@@ -123,7 +124,7 @@ class LeshanServerTest {
     }
 
     private void forceThreadsCreation(LeshanServer server) {
-        Registration reg = new Registration.Builder("id", "endpoint", new IpPeer(new InetSocketAddress(5555)),
+        IRegistration reg = new Registration.Builder("id", "endpoint", new IpPeer(new InetSocketAddress(5555)),
                 server.getEndpoint(Protocol.COAP).getURI()).bindingMode(EnumSet.of(BindingMode.U, BindingMode.Q))
                         .build();
         // Force timer thread creation of preference service.

@@ -71,7 +71,7 @@ class RegistrationHandlerTest {
                 givenServerEndpointUri());
 
         // check result
-        Registration registration = registrationStore.getRegistrationByEndpoint("myEndpoint");
+        IRegistration registration = registrationStore.getRegistrationByEndpoint("myEndpoint");
         assertEquals(appData, registration.getCustomRegistrationData());
 
         // Prepare authorizer
@@ -103,7 +103,7 @@ class RegistrationHandlerTest {
                 givenServerEndpointUri());
 
         // check result
-        Registration registration = registrationStore.getRegistrationByEndpoint("myEndpoint");
+        IRegistration registration = registrationStore.getRegistrationByEndpoint("myEndpoint");
         assertEquals(appData, registration.getCustomRegistrationData());
 
         // Prepare authorizer
@@ -126,7 +126,7 @@ class RegistrationHandlerTest {
         assertEquals(ResponseCode.PRECONDITION_FAILED, response.getResponse().getCode());
 
         // check result
-        Registration registration = registrationStore.getRegistrationByEndpoint("myEndpoint");
+        IRegistration registration = registrationStore.getRegistrationByEndpoint("myEndpoint");
         assertNull(registration);
     }
 
@@ -164,7 +164,7 @@ class RegistrationHandlerTest {
         }
 
         @Override
-        public Authorization isAuthorized(UplinkRequest<?> request, Registration registration, LwM2mPeer sender,
+        public Authorization isAuthorized(UplinkRequest<?> request, IRegistration registration, LwM2mPeer sender,
                 EndpointUri endpointUri) {
             return autorization;
         }

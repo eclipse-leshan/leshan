@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue;
 
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 
 /**
  * A listener aware of the status of LWM2M Client using queue mode binding.
@@ -30,12 +30,12 @@ public interface PresenceListener {
      *
      * @param registration data of the lwm2m client.
      */
-    void onAwake(Registration registration);
+    void onAwake(IRegistration registration);
 
     /**
      * This method is invoked when the LWM2M client with the given endpoint state changes to sleeping.
      *
      * @param registration data of the lwm2m client.
      */
-    void onSleeping(Registration registration);
+    void onSleeping(IRegistration registration);
 }

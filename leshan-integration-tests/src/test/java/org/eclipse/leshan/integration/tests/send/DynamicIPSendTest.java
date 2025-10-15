@@ -53,6 +53,7 @@ import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
 import org.eclipse.leshan.integration.tests.util.ReverseProxy;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.servers.security.InMemorySecurityStore;
 import org.eclipse.leshan.servers.security.NonUniqueSecurityInfoException;
@@ -180,7 +181,7 @@ public class DynamicIPSendTest {
         client.waitForRegistrationTo(server);
 
         // Send Data should works
-        Registration registrationBeforeSend = server.getRegistrationFor(client);
+        IRegistration registrationBeforeSend = server.getRegistrationFor(client);
         assertSuccessfulSendAfterAddressChanged();
 
         // check that client registration is not updated.
@@ -211,11 +212,11 @@ public class DynamicIPSendTest {
         client.waitForRegistrationTo(server);
 
         // Send Data should works
-        Registration registrationBeforeSend = server.getRegistrationFor(client);
+        IRegistration registrationBeforeSend = server.getRegistrationFor(client);
         assertSuccessfulSendAfterAddressChanged();
 
         // check that client registration is updated.
-        Registration registrationAfterSend = server.getRegistrationFor(client);
+        IRegistration registrationAfterSend = server.getRegistrationFor(client);
         assertThat(registrationAfterSend.getSocketAddress()).isNotEqualTo(registrationBeforeSend.getSocketAddress());
     }
 

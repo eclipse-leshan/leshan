@@ -70,7 +70,7 @@ public interface RegistrationStore {
      * @param address of the client registered.
      * @return the registration or null if there is no client registered with this socket address.
      */
-    Registration getRegistrationByAdress(InetSocketAddress address);
+    IRegistration getRegistrationByAdress(InetSocketAddress address);
 
     /**
      * Get the registration by {@link LwM2mIdentity}.
@@ -78,7 +78,7 @@ public interface RegistrationStore {
      * @param identity of the client registered.
      * @return the registration or null if there is no client registered with this identity.
      */
-    Registration getRegistrationByIdentity(LwM2mIdentity identity);
+    IRegistration getRegistrationByIdentity(LwM2mIdentity identity);
 
     /**
      * Returns an iterator over the registration of this store. There are no guarantees concerning the order in which

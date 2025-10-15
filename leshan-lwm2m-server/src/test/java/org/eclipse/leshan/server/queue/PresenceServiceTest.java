@@ -27,6 +27,7 @@ import java.util.EnumSet;
 
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.BindingMode;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.Registration;
 import org.junit.jupiter.api.Test;
 
@@ -41,16 +42,16 @@ public class PresenceServiceTest {
 
     @Test
     public void testSetOnlineForNonQueueMode() throws Exception {
-        Registration registration = givenASimpleClient();
+        IRegistration registration = givenASimpleClient();
         presenceService.addListener(new PresenceListener() {
 
             @Override
-            public void onAwake(Registration registration) {
+            public void onAwake(IRegistration registration) {
                 fail("No invocation was expected");
             }
 
             @Override
-            public void onSleeping(Registration registration) {
+            public void onSleeping(IRegistration registration) {
                 fail("No invocation was expected");
             }
         });
@@ -59,30 +60,30 @@ public class PresenceServiceTest {
 
     @Test
     public void testIsOnline() throws Exception {
-        Registration queueModeRegistration = givenASimpleClientWithQueueMode();
+        IRegistration queueModeRegistration = givenASimpleClientWithQueueMode();
 
         assertTrue(presenceService.isClientAwake(queueModeRegistration));
         presenceService.setSleeping(queueModeRegistration);
         assertFalse(presenceService.isClientAwake(queueModeRegistration));
     }
 
-    private Registration givenASimpleClient() throws UnknownHostException {
+    private IRegistration givenASimpleClient() throws UnknownHostException {
         Registration.Builder builder = new Registration.Builder("ID", "urn:client",
                 new IpPeer(new InetSocketAddress(Inet4Address.getLoopbackAddress(), 12354)),
                 uriHandler.createUri("coap://localhost:5683"));
 
-        Registration reg = builder.build();
+        IRegistration reg = builder.build();
         presenceService.setAwake(reg);
         return reg;
     }
 
-    private Registration givenASimpleClientWithQueueMode() throws UnknownHostException {
+    private IRegistration givenASimpleClientWithQueueMode() throws UnknownHostException {
 
         Registration.Builder builder = new Registration.Builder("ID", "urn:client",
                 new IpPeer(new InetSocketAddress(Inet4Address.getLoopbackAddress(), 12354)),
                 uriHandler.createUri("coap://localhost:5683"));
 
-        Registration reg = builder.bindingMode(EnumSet.of(BindingMode.U, BindingMode.Q)).build();
+        IRegistration reg = builder.bindingMode(EnumSet.of(BindingMode.U, BindingMode.Q)).build();
         presenceService.setAwake(reg);
         return reg;
     }

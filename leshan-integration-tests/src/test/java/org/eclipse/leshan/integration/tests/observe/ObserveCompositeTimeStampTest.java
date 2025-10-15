@@ -52,7 +52,7 @@ import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
 import org.eclipse.leshan.integration.tests.util.junit5.extensions.ArgumentsUtil;
 import org.eclipse.leshan.integration.tests.util.junit5.extensions.BeforeEachParameterizedResolver;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -93,7 +93,7 @@ public class ObserveCompositeTimeStampTest {
 
     LeshanTestServer server;
     LeshanTestClient client;
-    Registration currentRegistration;
+    IRegistration currentRegistration;
     LwM2mEncoder encoder = new DefaultLwM2mEncoder();
 
     @BeforeEach

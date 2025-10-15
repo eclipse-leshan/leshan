@@ -36,6 +36,7 @@ import org.eclipse.leshan.core.link.attributes.ValuelessAttribute;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.server.registration.DefaultRegistrationDataExtractor;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationDataExtractor.RegistrationData;
 import org.junit.jupiter.api.Test;
@@ -70,10 +71,10 @@ class RegistrationSerDesTest {
         builder.supportedObjects(dataFromObjectLinks.getSupportedObjects());
         builder.availableInstances(dataFromObjectLinks.getAvailableInstances());
 
-        Registration r = builder.build();
+        IRegistration r = builder.build();
 
         byte[] ser = registrationSerDes.bSerialize(r);
-        Registration r2 = registrationSerDes.deserialize(ser);
+        IRegistration r2 = registrationSerDes.deserialize(ser);
 
         assertEquals(r, r2);
     }
@@ -109,10 +110,10 @@ class RegistrationSerDesTest {
         builder.supportedObjects(dataFromObjectLinks.getSupportedObjects());
         builder.availableInstances(dataFromObjectLinks.getAvailableInstances());
 
-        Registration r = builder.build();
+        IRegistration r = builder.build();
 
         byte[] ser = registrationSerDes.bSerialize(r);
-        Registration r2 = registrationSerDes.deserialize(ser);
+        IRegistration r2 = registrationSerDes.deserialize(ser);
 
         assertEquals(r, r2);
     }

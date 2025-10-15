@@ -56,6 +56,7 @@ import org.eclipse.leshan.core.tlv.Tlv;
 import org.eclipse.leshan.core.tlv.Tlv.TlvType;
 import org.eclipse.leshan.core.tlv.TlvDecoder;
 import org.eclipse.leshan.server.registration.DefaultRegistrationDataExtractor;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.Registration.Builder;
 import org.eclipse.leshan.server.registration.RegistrationDataExtractor.RegistrationData;
@@ -80,11 +81,11 @@ public class CoapRequestBuilderTest {
         identityHandler = new DefaultCoapIdentityHandler();
     }
 
-    private Registration newRegistration() throws UnknownHostException {
+    private IRegistration newRegistration() throws UnknownHostException {
         return newRegistration(null);
     }
 
-    private Registration newRegistration(String rootpath) throws UnknownHostException {
+    private IRegistration newRegistration(String rootpath) throws UnknownHostException {
         Builder b = new Registration.Builder("regid", "endpoint",
                 new IpPeer(new InetSocketAddress(Inet4Address.getLoopbackAddress(), 12354)),
                 uriHandler.createUri("coap://localhost:5683"));
@@ -105,7 +106,7 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_read_request() throws Exception {
-        Registration reg = newRegistration();
+        IRegistration reg = newRegistration();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getClientTransportData(), reg.getRootPath(),
@@ -123,7 +124,7 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_read_request_with_non_default_object_path() throws Exception {
-        Registration reg = newRegistration("/lwm2m");
+        IRegistration reg = newRegistration("/lwm2m");
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getClientTransportData(), reg.getRootPath(),
@@ -138,7 +139,7 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_read_request_with_root_path() throws Exception {
-        Registration reg = newRegistration("/");
+        IRegistration reg = newRegistration("/");
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getClientTransportData(), reg.getRootPath(),
@@ -153,7 +154,7 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_discover_request() throws Exception {
-        Registration reg = newRegistration();
+        IRegistration reg = newRegistration();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getClientTransportData(), reg.getRootPath(),
@@ -172,7 +173,7 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_write_request() throws Exception {
-        Registration reg = newRegistration();
+        IRegistration reg = newRegistration();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getClientTransportData(), reg.getRootPath(),
@@ -196,7 +197,7 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_write_request_replace() throws Exception {
-        Registration reg = newRegistration();
+        IRegistration reg = newRegistration();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getClientTransportData(), reg.getRootPath(),
@@ -211,7 +212,7 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_write_attribute_request() throws Exception {
-        Registration reg = newRegistration();
+        IRegistration reg = newRegistration();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getClientTransportData(), reg.getRootPath(),
@@ -232,7 +233,7 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_unset_write_attribute_request() throws Exception {
-        Registration reg = newRegistration();
+        IRegistration reg = newRegistration();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getClientTransportData(), reg.getRootPath(),
@@ -252,7 +253,7 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_execute_request() throws Exception {
-        Registration reg = newRegistration();
+        IRegistration reg = newRegistration();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getClientTransportData(), reg.getRootPath(),
@@ -271,7 +272,7 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_create_request__without_instance_id() throws Exception {
-        Registration reg = newRegistration();
+        IRegistration reg = newRegistration();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getClientTransportData(), reg.getRootPath(),
@@ -294,7 +295,7 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_create_request__with_instance_id() throws Exception {
-        Registration reg = newRegistration();
+        IRegistration reg = newRegistration();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getClientTransportData(), reg.getRootPath(),
@@ -319,7 +320,7 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_delete_request() throws Exception {
-        Registration reg = newRegistration();
+        IRegistration reg = newRegistration();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getClientTransportData(), reg.getRootPath(),
@@ -337,7 +338,7 @@ public class CoapRequestBuilderTest {
 
     @Test
     public void build_observe_request() throws Exception {
-        Registration reg = newRegistration();
+        IRegistration reg = newRegistration();
 
         // test
         CoapRequestBuilder builder = new CoapRequestBuilder(reg.getClientTransportData(), reg.getRootPath(),

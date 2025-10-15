@@ -100,7 +100,7 @@ public class RegistrationUpdate {
      * @param registration the registration to update
      * @return the updated registration
      */
-    public Registration update(Registration registration) {
+    public Registration update(IRegistration registration) {
         LwM2mPeer transportData = this.clientTransportData != null ? this.clientTransportData
                 : registration.getClientTransportData();
         long lifeTimeInSec = this.lifeTimeInSec != null ? this.lifeTimeInSec : registration.getLifeTimeInSec();

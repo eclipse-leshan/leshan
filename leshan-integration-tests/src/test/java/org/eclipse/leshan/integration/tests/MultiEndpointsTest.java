@@ -47,6 +47,7 @@ import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
 import org.eclipse.leshan.integration.tests.util.ReverseProxy;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.Registration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -131,7 +132,7 @@ public class MultiEndpointsTest {
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // Check for update
         client.triggerRegistrationUpdate();
@@ -164,7 +165,7 @@ public class MultiEndpointsTest {
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // Check for update
         client.triggerRegistrationUpdate();
@@ -218,7 +219,7 @@ public class MultiEndpointsTest {
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // Check for update
         client.triggerRegistrationUpdate();
@@ -230,7 +231,7 @@ public class MultiEndpointsTest {
         proxy.useNextServerAddress();
 
         // Send Data
-        Registration registrationBeforeSend = server.getRegistrationFor(client);
+        IRegistration registrationBeforeSend = server.getRegistrationFor(client);
         LwM2mServer registeredServer = client.getRegisteredServers().values().iterator().next();
         SendResponse response = client.getSendService().sendData(registeredServer, ContentFormat.SENML_JSON,
                 Arrays.asList("/3/0/1", "/3/0/2"), 1000);
@@ -278,7 +279,7 @@ public class MultiEndpointsTest {
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // observe device timezone
         ObserveResponse observeResponse = server.send(registration, new ObserveRequest(3, 0, 15));
@@ -305,7 +306,7 @@ public class MultiEndpointsTest {
         proxy.useNextServerAddress();
 
         // change value to trigger new notification
-        Registration registrationBeforeNotification = server.getRegistrationFor(client);
+        IRegistration registrationBeforeNotification = server.getRegistrationFor(client);
         client.getObjectTree().getObjectEnabler(3).write(LwM2mServer.SYSTEM,
                 new WriteRequest(3, 0, 15, "Europe/Paris"));
         server.ensureNoNotification(observation, 1, TimeUnit.SECONDS);

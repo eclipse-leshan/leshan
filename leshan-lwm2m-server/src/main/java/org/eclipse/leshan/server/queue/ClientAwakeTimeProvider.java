@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue;
 
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.Registration;
 
 public interface ClientAwakeTimeProvider {
@@ -25,6 +26,6 @@ public interface ClientAwakeTimeProvider {
      * @param reg the client's registration object
      * @return the client awake time in milliseconds
      */
-    int getClientAwakeTime(Registration reg);
+    int getClientAwakeTime(IRegistration reg);
 
 }

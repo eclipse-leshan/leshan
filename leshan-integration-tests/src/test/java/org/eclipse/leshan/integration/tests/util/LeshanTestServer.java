@@ -52,6 +52,7 @@ import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationListener;
 import org.eclipse.leshan.server.queue.ClientAwakeTimeProvider;
 import org.eclipse.leshan.server.queue.PresenceListener;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationDataExtractor;
 import org.eclipse.leshan.server.registration.RegistrationIdProvider;
@@ -169,11 +170,11 @@ public class LeshanTestServer extends LeshanServer {
         registrationEventInOrder.verifyNoMoreInteractions();
     }
 
-    public void waitForUpdateOf(Registration expectedRegistration) {
+    public void waitForUpdateOf(IRegistration expectedRegistration) {
         waitForUpdateOf(expectedRegistration, 1, TimeUnit.SECONDS);
     }
 
-    public void waitForUpdateOf(Registration expectedPreviousReg, int timeout, TimeUnit unit) {
+    public void waitForUpdateOf(IRegistration expectedPreviousReg, int timeout, TimeUnit unit) {
         registrationEventInOrder.verify(registrationListener, timeout(unit.toMillis(timeout)).times(1)).updated( //
                 assertArg(
                         regUpdate -> assertThat(regUpdate.getRegistrationId()).isEqualTo(expectedPreviousReg.getId())), //
@@ -182,11 +183,11 @@ public class LeshanTestServer extends LeshanServer {
         registrationEventInOrder.verifyNoMoreInteractions();
     }
 
-    public void waitForDeregistrationOf(Registration expectedRegistration) {
+    public void waitForDeregistrationOf(IRegistration expectedRegistration) {
         waitForDeregistrationOf(expectedRegistration, 1, TimeUnit.SECONDS);
     }
 
-    public void waitForDeregistrationOf(Registration expectedRegistration, int timeout, TimeUnit unit) {
+    public void waitForDeregistrationOf(IRegistration expectedRegistration, int timeout, TimeUnit unit) {
         registrationEventInOrder.verify(registrationListener, timeout(unit.toMillis(timeout)).times(1)).unregistered(
                 assertArg(reg -> assertThat(reg.getId()).isEqualTo(expectedRegistration.getId())), //
                 assertArg(obs -> assertThat(obs).isEmpty()), //
@@ -195,12 +196,12 @@ public class LeshanTestServer extends LeshanServer {
         registrationEventInOrder.verifyNoMoreInteractions();
     }
 
-    public void waitForDeregistrationOf(Registration expectedRegistration,
+    public void waitForDeregistrationOf(IRegistration expectedRegistration,
             Collection<Observation> expectedObservations) {
         waitForDeregistrationOf(expectedRegistration, 1, TimeUnit.SECONDS, expectedObservations);
     }
 
-    public void waitForDeregistrationOf(Registration expectedRegistration, int timeout, TimeUnit unit,
+    public void waitForDeregistrationOf(IRegistration expectedRegistration, int timeout, TimeUnit unit,
             Collection<Observation> expectedObservations) {
         registrationEventInOrder.verify(registrationListener, timeout(unit.toMillis(timeout)).times(1)).unregistered(
                 assertArg(reg -> assertThat(reg.getId()).isEqualTo(expectedRegistration.getId())), //
@@ -210,11 +211,11 @@ public class LeshanTestServer extends LeshanServer {
         registrationEventInOrder.verifyNoMoreInteractions();
     }
 
-    public void waitForReRegistrationOf(Registration expectedRegistration) {
+    public void waitForReRegistrationOf(IRegistration expectedRegistration) {
         waitForReRegistrationOf(expectedRegistration, 1, TimeUnit.SECONDS);
     }
 
-    public void waitForReRegistrationOf(Registration expectedPreviousReg, int timeout, TimeUnit unit) {
+    public void waitForReRegistrationOf(IRegistration expectedPreviousReg, int timeout, TimeUnit unit) {
         registrationEventInOrder.verify(registrationListener, timeout(unit.toMillis(timeout)).times(1)).unregistered(
                 assertArg(reg -> assertThat(reg.getId()).isEqualTo(expectedPreviousReg.getId())), //
                 assertArg(obs -> assertThat(obs).isEmpty()), //

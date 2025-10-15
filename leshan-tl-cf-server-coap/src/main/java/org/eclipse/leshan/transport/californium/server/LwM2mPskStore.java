@@ -25,7 +25,7 @@ import org.eclipse.californium.scandium.dtls.PskSecretResult;
 import org.eclipse.californium.scandium.dtls.pskstore.PskStore;
 import org.eclipse.californium.scandium.util.SecretUtil;
 import org.eclipse.californium.scandium.util.ServerNames;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.servers.security.SecurityInfo;
 import org.eclipse.leshan.servers.security.SecurityStore;
@@ -78,7 +78,7 @@ public class LwM2mPskStore implements PskStore {
         if (registrationStore == null)
             return null;
 
-        Registration registration = registrationStore.getRegistrationByAdress(peerAddress);
+        IRegistration registration = registrationStore.getRegistrationByAdress(peerAddress);
         if (registration != null) {
             SecurityInfo securityInfo = securityStore.getByEndpoint(registration.getEndpoint());
             if (securityInfo != null) {

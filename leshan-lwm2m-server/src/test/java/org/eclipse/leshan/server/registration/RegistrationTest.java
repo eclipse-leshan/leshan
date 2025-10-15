@@ -48,7 +48,7 @@ public class RegistrationTest {
 
     @Test
     public void test_object_links_without_version_nor_rootpath() throws LinkParseException {
-        Registration reg = given_a_registration_with_object_link_like("</1/0>,</3/0>");
+        IRegistration reg = given_a_registration_with_object_link_like("</1/0>,</3/0>");
 
         // check root path
         assertEquals("/", reg.getRootPath());
@@ -67,7 +67,7 @@ public class RegistrationTest {
 
     @Test
     public void test_object_links_with_ct_but_with_rt() throws LinkParseException {
-        Registration reg = given_a_registration_with_object_link_like("</>;ct=\"0 42 11543\",</1/0>,</3/0>");
+        IRegistration reg = given_a_registration_with_object_link_like("</>;ct=\"0 42 11543\",</1/0>,</3/0>");
 
         // check root path
         assertEquals("/", reg.getRootPath());
@@ -92,7 +92,7 @@ public class RegistrationTest {
 
     @Test
     public void test_object_links_with_ct_with_1_content_format_with_quote() throws LinkParseException {
-        Registration reg = given_a_registration_with_object_link_like("</>;ct=\"42\",</1/0>,</3/0>");
+        IRegistration reg = given_a_registration_with_object_link_like("</>;ct=\"42\",</1/0>,</3/0>");
 
         // check root path
         assertEquals("/", reg.getRootPath());
@@ -116,7 +116,7 @@ public class RegistrationTest {
 
     @Test
     public void test_object_links_with_ct_with_1_content_format_without_quote() throws LinkParseException {
-        Registration reg = given_a_registration_with_object_link_like("</>;ct=42,</1/0>,</3/0>");
+        IRegistration reg = given_a_registration_with_object_link_like("</>;ct=42,</1/0>,</3/0>");
 
         // check root path
         assertEquals("/", reg.getRootPath());
@@ -140,7 +140,7 @@ public class RegistrationTest {
 
     @Test
     public void test_object_links_with_default_rootpath() throws LinkParseException {
-        Registration reg = given_a_registration_with_object_link_like(
+        IRegistration reg = given_a_registration_with_object_link_like(
                 "</>;rt=\"oma.lwm2m\";ct=\"0 42 11543\",</1/0>,</3/0>");
 
         // check root path
@@ -166,7 +166,7 @@ public class RegistrationTest {
 
     @Test
     public void test_object_links_with_rootpath() throws LinkParseException {
-        Registration reg = given_a_registration_with_object_link_like("</root>;rt=\"oma.lwm2m\",</root/1/0>,</3/0>");
+        IRegistration reg = given_a_registration_with_object_link_like("</root>;rt=\"oma.lwm2m\",</root/1/0>,</3/0>");
 
         // check root path
         assertEquals("/root/", reg.getRootPath());
@@ -185,7 +185,7 @@ public class RegistrationTest {
 
     @Test
     public void test_object_links_with_unquoted_rootpath() throws LinkParseException {
-        Registration reg = given_a_registration_with_object_link_like("</root>;rt=oma.lwm2m,</root/1/0>,</3/0>");
+        IRegistration reg = given_a_registration_with_object_link_like("</root>;rt=oma.lwm2m,</root/1/0>,</3/0>");
 
         // check root path
         assertEquals("/root/", reg.getRootPath());
@@ -204,7 +204,7 @@ public class RegistrationTest {
 
     @Test
     public void test_object_links_with_version() throws LinkParseException {
-        Registration reg = given_a_registration_with_object_link_like("</1/0>,</3>;ver=1.1,</3/0>");
+        IRegistration reg = given_a_registration_with_object_link_like("</1/0>,</3>;ver=1.1,</3/0>");
 
         // check root path
         assertEquals("/", reg.getRootPath());
@@ -223,7 +223,7 @@ public class RegistrationTest {
 
     @Test
     public void test_object_links_with_text_in_not_lwm2m_path() throws LinkParseException {
-        Registration reg = given_a_registration_with_object_link_like(
+        IRegistration reg = given_a_registration_with_object_link_like(
                 "</root>;rt=\"oma.lwm2m\",</text>,</1/text/0/in/path>,</2/O/test/in/path>,</root/3>;ver=1.1,</root/3/0>,</root/4/0/0/>");
 
         // check root path
@@ -250,7 +250,7 @@ public class RegistrationTest {
 
     @Test
     public void test_object_links_with_version_for_lwm2m_v1_1() throws LinkParseException {
-        Registration reg = given_a_registration_with_object_link_like("</1/0>,</2>,</3>,</3/0>,</4>,</5>,</6>,</7>",
+        IRegistration reg = given_a_registration_with_object_link_like("</1/0>,</2>,</3>,</3/0>,</4>,</5>,</6>,</7>",
                 LwM2mVersion.V1_1);
 
         // check root path
@@ -273,11 +273,11 @@ public class RegistrationTest {
         assertTrue(availableInstances.containsAll(Arrays.asList(new LwM2mPath(1, 0), new LwM2mPath(3, 0))));
     }
 
-    private Registration given_a_registration_with_object_link_like(String objectLinks) throws LinkParseException {
+    private IRegistration given_a_registration_with_object_link_like(String objectLinks) throws LinkParseException {
         return given_a_registration_with_object_link_like(objectLinks, LwM2mVersion.V1_0);
     }
 
-    private Registration given_a_registration_with_object_link_like(String objectLinks, LwM2mVersion version)
+    private IRegistration given_a_registration_with_object_link_like(String objectLinks, LwM2mVersion version)
             throws LinkParseException {
         Builder builder = new Registration.Builder("id", "endpoint",
                 new IpPeer(InetSocketAddress.createUnresolved("localhost", 0)),
