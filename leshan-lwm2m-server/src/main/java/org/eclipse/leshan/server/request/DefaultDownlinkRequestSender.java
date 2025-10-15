@@ -38,6 +38,7 @@ import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.profile.ClientProfile;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.Registration;
 
 /**
@@ -83,7 +84,7 @@ public class DefaultDownlinkRequestSender implements DownlinkRequestSender {
      * @throws UnconnectedPeerException if client is not connected (no dtls connection available).
      */
     @Override
-    public <T extends LwM2mResponse> T send(Registration destination, DownlinkDeviceManagementRequest<T> request,
+    public <T extends LwM2mResponse> T send(IRegistration destination, DownlinkDeviceManagementRequest<T> request,
             LowerLayerConfig lowerLayerConfig, long timeoutInMs) throws InterruptedException {
 
         // find endpoint to use
@@ -126,7 +127,7 @@ public class DefaultDownlinkRequestSender implements DownlinkRequestSender {
      * @throws CodecException if request payload can not be encoded.
      */
     @Override
-    public <T extends LwM2mResponse> void send(final Registration destination,
+    public <T extends LwM2mResponse> void send(final IRegistration destination,
             DownlinkDeviceManagementRequest<T> request, LowerLayerConfig lowerLayerConfig, long timeoutInMs,
             final ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
 
@@ -146,13 +147,13 @@ public class DefaultDownlinkRequestSender implements DownlinkRequestSender {
     }
 
     @Override
-    public void cancelOngoingRequests(Registration registration) {
+    public void cancelOngoingRequests(IRegistration registration) {
         for (LwM2mServerEndpoint endpoint : endpointsProvider.getEndpoints()) {
             endpoint.cancelRequests(registration.getId());
         }
     }
 
-    protected LwM2mServerEndpoint getEndpoint(Registration registration) {
+    protected LwM2mServerEndpoint getEndpoint(IRegistration registration) {
         LwM2mServerEndpoint endpointUsed = endpointsProvider.getEndpoint(registration.getEndpointUri());
 
         if (endpointUsed == null) {

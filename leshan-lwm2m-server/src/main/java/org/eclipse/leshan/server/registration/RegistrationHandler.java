@@ -139,7 +139,7 @@ public class RegistrationHandler {
             EndpointUri endpointUsed) {
 
         // We check if there is a registration to update
-        Registration currentRegistration = registrationService.getById(updateRequest.getRegistrationId());
+        IRegistration currentRegistration = registrationService.getById(updateRequest.getRegistrationId());
         if (currentRegistration == null) {
             return new SendableResponse<>(UpdateResponse.notFound());
         }
@@ -184,7 +184,7 @@ public class RegistrationHandler {
             EndpointUri endpointUsed) {
 
         // We check if there is a registration to remove
-        Registration currentRegistration = registrationService.getById(deregisterRequest.getRegistrationId());
+        IRegistration currentRegistration = registrationService.getById(deregisterRequest.getRegistrationId());
         if (currentRegistration == null) {
             return new SendableResponse<>(DeregisterResponse.notFound());
         }

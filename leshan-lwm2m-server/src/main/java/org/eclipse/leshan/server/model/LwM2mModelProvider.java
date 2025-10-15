@@ -18,7 +18,7 @@ package org.eclipse.leshan.server.model;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 
 /**
  * A <code>LwM2mModelProvider</code> implementation is in charge of returning the description of the LWM2M objects for
@@ -39,6 +39,6 @@ public interface LwM2mModelProvider {
      * @param registration the registered client
      * @return the list of object descriptions
      */
-    LwM2mModel getObjectModel(Registration registration);
+    LwM2mModel getObjectModel(IRegistration registration);
 
 }

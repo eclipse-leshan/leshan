@@ -24,7 +24,7 @@ import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.servers.security.Authorization;
 import org.eclipse.leshan.servers.security.SecurityChecker;
 import org.eclipse.leshan.servers.security.SecurityInfo;
@@ -52,7 +52,7 @@ public class DefaultAuthorizer implements Authorizer {
     }
 
     @Override
-    public Authorization isAuthorized(UplinkRequest<?> request, Registration registration, LwM2mPeer sender,
+    public Authorization isAuthorized(UplinkRequest<?> request, IRegistration registration, LwM2mPeer sender,
             EndpointUri endpointUri) {
 
         if (!checkEndpointUri(request, registration, sender, endpointUri)) {
@@ -62,7 +62,7 @@ public class DefaultAuthorizer implements Authorizer {
         return checkIdentity(request, registration, sender, endpointUri);
     }
 
-    protected boolean checkEndpointUri(UplinkRequest<?> request, Registration registration, LwM2mPeer sender,
+    protected boolean checkEndpointUri(UplinkRequest<?> request, IRegistration registration, LwM2mPeer sender,
             EndpointUri endpointUri) {
         if (!(request instanceof RegisterRequest)) {
             // we do not allow to client to switch to another server endpoint within same registration
@@ -75,7 +75,7 @@ public class DefaultAuthorizer implements Authorizer {
         return true;
     }
 
-    protected Authorization checkIdentity(UplinkRequest<?> request, Registration registration, LwM2mPeer sender,
+    protected Authorization checkIdentity(UplinkRequest<?> request, IRegistration registration, LwM2mPeer sender,
             EndpointUri endpointUri) {
 
         if (request instanceof RegisterRequest //

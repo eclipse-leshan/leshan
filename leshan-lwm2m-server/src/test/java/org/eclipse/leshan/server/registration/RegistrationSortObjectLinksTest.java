@@ -42,7 +42,7 @@ public class RegistrationSortObjectLinksTest {
                 new IpPeer(new InetSocketAddress(Inet4Address.getLocalHost(), 1)),
                 uriHandler.createUri("coap://localhost:5683")).objectLinks(objs);
 
-        Registration r = builder.build();
+        IRegistration r = builder.build();
 
         Link[] res = r.getSortedObjectLinks();
         assertEquals(3, res.length);

@@ -45,6 +45,7 @@ import org.eclipse.leshan.core.link.lwm2m.attributes.MixedLwM2mAttributeSet;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.Registration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -90,7 +91,7 @@ public class RegistrationSerDes {
         this.uriHandler = uriHandler;
     }
 
-    public JsonNode jSerialize(Registration r) {
+    public JsonNode jSerialize(IRegistration r) {
         ObjectNode o = JsonNodeFactory.instance.objectNode();
         o.put("regDate", r.getRegistrationDate().getTime());
         o.set("transportdata", peerSerDes.serialize(r.getClientTransportData()));
@@ -162,11 +163,11 @@ public class RegistrationSerDes {
         return o;
     }
 
-    public String sSerialize(Registration r) {
+    public String sSerialize(IRegistration r) {
         return jSerialize(r).toString();
     }
 
-    public byte[] bSerialize(Registration r) {
+    public byte[] bSerialize(IRegistration r) {
         return jSerialize(r).toString().getBytes();
     }
 

@@ -36,7 +36,7 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
 import org.eclipse.leshan.server.profile.ClientProfile;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
 import org.eclipse.leshan.server.registration.UpdatedRegistration;
@@ -86,7 +86,7 @@ public class ObservationServiceImpl implements ObservationService, LwM2mNotifica
     }
 
     @Override
-    public int cancelObservations(Registration registration) {
+    public int cancelObservations(IRegistration registration) {
         // check registration id
         String registrationId = registration.getId();
         if (registrationId == null)
@@ -104,7 +104,7 @@ public class ObservationServiceImpl implements ObservationService, LwM2mNotifica
     }
 
     @Override
-    public int cancelObservations(Registration registration, String nodePath) {
+    public int cancelObservations(IRegistration registration, String nodePath) {
         if (registration == null || registration.getId() == null || nodePath == null || nodePath.isEmpty())
             return 0;
 
@@ -116,7 +116,7 @@ public class ObservationServiceImpl implements ObservationService, LwM2mNotifica
     }
 
     @Override
-    public int cancelCompositeObservations(Registration registration, String[] nodePaths) {
+    public int cancelCompositeObservations(IRegistration registration, String[] nodePaths) {
         if (registration == null || registration.getId() == null || nodePaths == null || nodePaths.length == 0)
             return 0;
 
@@ -148,7 +148,7 @@ public class ObservationServiceImpl implements ObservationService, LwM2mNotifica
     }
 
     @Override
-    public Set<Observation> getObservations(Registration registration) {
+    public Set<Observation> getObservations(IRegistration registration) {
         return getObservations(registration.getId());
     }
 
@@ -207,7 +207,7 @@ public class ObservationServiceImpl implements ObservationService, LwM2mNotifica
         listeners.remove(listener);
     }
 
-    protected Registration updateRegistrationOnRegistration(Observation observation, LwM2mPeer sender,
+    protected IRegistration updateRegistrationOnRegistration(Observation observation, LwM2mPeer sender,
             ClientProfile profile, LwM2mResponse observeResponse) {
         if (!updateRegistrationOnNotification) {
             // mode is not activate so we don't update registration
@@ -215,7 +215,7 @@ public class ObservationServiceImpl implements ObservationService, LwM2mNotifica
         }
 
         // check if update is allowed
-        Registration registration = profile.getRegistration();
+        IRegistration registration = profile.getRegistration();
         // HACK we create and Update request,
         // it can be identified because we pass the OBSERVE notification as under-layer object.
         UpdateRequest updateRequest = new UpdateRequest(registration.getId(), null, null, null, null, null,
@@ -247,7 +247,7 @@ public class ObservationServiceImpl implements ObservationService, LwM2mNotifica
     public void onNotification(SingleObservation observation, LwM2mPeer sender, ClientProfile profile,
             ObserveResponse response) {
         try {
-            Registration updatedRegistration = updateRegistrationOnRegistration(observation, sender, profile, response);
+            IRegistration updatedRegistration = updateRegistrationOnRegistration(observation, sender, profile, response);
             for (ObservationListener listener : listeners) {
                 listener.onResponse(observation, updatedRegistration, response);
             }
@@ -262,7 +262,7 @@ public class ObservationServiceImpl implements ObservationService, LwM2mNotifica
     public void onNotification(CompositeObservation observation, LwM2mPeer sender, ClientProfile profile,
             ObserveCompositeResponse response) {
         try {
-            Registration updatedRegistration = updateRegistrationOnRegistration(observation, sender, profile, response);
+            IRegistration updatedRegistration = updateRegistrationOnRegistration(observation, sender, profile, response);
             for (ObservationListener listener : listeners) {
                 listener.onResponse(observation, updatedRegistration, response);
             }
@@ -281,7 +281,7 @@ public class ObservationServiceImpl implements ObservationService, LwM2mNotifica
     }
 
     @Override
-    public void newObservation(Observation observation, Registration registration) {
+    public void newObservation(Observation observation, IRegistration registration) {
         for (ObservationListener listener : listeners) {
             listener.newObservation(observation, registration);
         }

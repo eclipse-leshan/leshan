@@ -26,7 +26,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
 import org.eclipse.leshan.server.LeshanServer;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 
 public class LeshanTestClientAssert extends AbstractAssert<LeshanTestClientAssert, LeshanTestClient> {
 
@@ -43,7 +43,7 @@ public class LeshanTestClientAssert extends AbstractAssert<LeshanTestClientAsser
             failWithMessage("server MUST NOT be null");
     }
 
-    private Registration getRegistration(LeshanServer server) {
+    private IRegistration getRegistration(LeshanServer server) {
         return server.getRegistrationService().getByEndpoint(actual.getEndpointName());
     }
 
@@ -51,7 +51,7 @@ public class LeshanTestClientAssert extends AbstractAssert<LeshanTestClientAsser
         isNotNull();
         isNotNull(server);
 
-        Registration r = getRegistration(server);
+        IRegistration r = getRegistration(server);
         if (r == null) {
             failWithMessage("Expected Registration for <%s> client", actual.getEndpointName());
         }
@@ -62,7 +62,7 @@ public class LeshanTestClientAssert extends AbstractAssert<LeshanTestClientAsser
         isNotNull();
         isNotNull(server);
 
-        Registration r = getRegistration(server);
+        IRegistration r = getRegistration(server);
         if (r != null) {
             failWithMessage("Expected No Registration for <%s> client but have <%s>", actual.getEndpointName(), r);
         }
@@ -82,7 +82,7 @@ public class LeshanTestClientAssert extends AbstractAssert<LeshanTestClientAsser
         isNotNull();
         isNotNull(server);
 
-        Registration r = getRegistration(server);
+        IRegistration r = getRegistration(server);
         if (!server.getPresenceService().isClientAwake(r)) {
             failWithMessage("Expected <%s> client was awake", actual.getEndpointName());
         }
@@ -93,7 +93,7 @@ public class LeshanTestClientAssert extends AbstractAssert<LeshanTestClientAsser
         isNotNull();
         isNotNull(server);
 
-        Registration r = getRegistration(server);
+        IRegistration r = getRegistration(server);
         if (r == null) {
             failWithMessage("<%s> client is not registered", actual.getEndpointName());
         }

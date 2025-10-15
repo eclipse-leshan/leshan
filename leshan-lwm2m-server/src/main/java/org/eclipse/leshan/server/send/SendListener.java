@@ -17,7 +17,7 @@ package org.eclipse.leshan.server.send;
 
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.request.SendRequest;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 
 /**
  * Listener used to be aware of new data sent by LWM2M client with "Send" Request.
@@ -33,7 +33,7 @@ public interface SendListener {
      * @param data The data received
      * @param request The request received
      */
-    void dataReceived(Registration registration, TimestampedLwM2mNodes data, SendRequest request);
+    void dataReceived(IRegistration registration, TimestampedLwM2mNodes data, SendRequest request);
 
     /**
      * Called when Send Request can't not be handled by server (because of e.g. unsupported content format or invalid
@@ -43,5 +43,5 @@ public interface SendListener {
      * @param errorMessage the cause of the error.
      * @param error the related exception which caused the error, it could be {@code null}.
      */
-    void onError(Registration registration, String errorMessage, Exception error);
+    void onError(IRegistration registration, String errorMessage, Exception error);
 }

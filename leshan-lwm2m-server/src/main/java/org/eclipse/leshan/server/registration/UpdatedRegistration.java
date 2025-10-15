@@ -21,10 +21,10 @@ package org.eclipse.leshan.server.registration;
  * @see RegistrationStore
  */
 public class UpdatedRegistration {
-    private final Registration previousRegistration;
-    private final Registration updatedRegistration;
+    private final IRegistration previousRegistration;
+    private final IRegistration updatedRegistration;
 
-    public UpdatedRegistration(Registration previousRegistration, Registration updatedRegistration) {
+    public UpdatedRegistration(IRegistration previousRegistration, IRegistration updatedRegistration) {
         this.previousRegistration = previousRegistration;
         this.updatedRegistration = updatedRegistration;
     }
@@ -32,14 +32,14 @@ public class UpdatedRegistration {
     /**
      * The registration before the update registration.
      */
-    public Registration getPreviousRegistration() {
+    public IRegistration getPreviousRegistration() {
         return previousRegistration;
     }
 
     /**
      * The registration after the update registration.
      */
-    public Registration getUpdatedRegistration() {
+    public IRegistration getUpdatedRegistration() {
         return updatedRegistration;
     }
 }

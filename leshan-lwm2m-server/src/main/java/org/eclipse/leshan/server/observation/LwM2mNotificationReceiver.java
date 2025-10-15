@@ -22,7 +22,7 @@ import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.profile.ClientProfile;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 
 public interface LwM2mNotificationReceiver {
 
@@ -32,7 +32,7 @@ public interface LwM2mNotificationReceiver {
      * @param observation the new observation.
      * @param registration the related registration
      */
-    void newObservation(Observation observation, Registration registration);
+    void newObservation(Observation observation, IRegistration registration);
 
     /**
      * Called when an observation is cancelled.

@@ -46,7 +46,7 @@ import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
 import org.eclipse.leshan.integration.tests.util.junit5.extensions.BeforeEachParameterizedResolver;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -78,7 +78,7 @@ public class ObserveServerOnlyTest {
 
     LeshanTestServer server;
     LeshanTestClient client;
-    Registration currentRegistration;
+    IRegistration currentRegistration;
 
     @BeforeEach
     public void start(String givenServerEndpointProvider) {

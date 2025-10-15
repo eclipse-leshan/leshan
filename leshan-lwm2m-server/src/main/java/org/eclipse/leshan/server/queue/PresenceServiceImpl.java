@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +61,7 @@ public final class PresenceServiceImpl implements PresenceService, Destroyable {
     }
 
     @Override
-    public boolean isClientAwake(Registration registration) {
+    public boolean isClientAwake(IRegistration registration) {
         return clientPresences.containsKey(registration.getEndpoint());
     }
 
@@ -71,7 +71,7 @@ public final class PresenceServiceImpl implements PresenceService, Destroyable {
      *
      * @param reg the client's registration object
      */
-    public void setAwake(final Registration reg) {
+    public void setAwake(final IRegistration reg) {
         if (reg.usesQueueMode()) {
             boolean stateChanged;
             final AtomicReference<ScheduledFuture<?>> timerFuture = new AtomicReference<>();
@@ -127,7 +127,7 @@ public final class PresenceServiceImpl implements PresenceService, Destroyable {
      *
      * @param reg the client's registration object
      */
-    public void setSleeping(Registration reg) {
+    public void setSleeping(IRegistration reg) {
         if (reg.usesQueueMode()) {
             AtomicReference<ScheduledFuture<?>> timerFuture = clientPresences.remove(reg.getEndpoint());
             if (timerFuture != null) {
@@ -148,7 +148,7 @@ public final class PresenceServiceImpl implements PresenceService, Destroyable {
      *
      * @param reg the client's registration object.
      */
-    public void stopPresenceTracking(Registration reg) {
+    public void stopPresenceTracking(IRegistration reg) {
         clientPresences.remove(reg.getEndpoint());
     }
 

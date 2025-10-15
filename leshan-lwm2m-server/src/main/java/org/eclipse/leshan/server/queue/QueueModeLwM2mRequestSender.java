@@ -23,7 +23,7 @@ import org.eclipse.leshan.core.response.ErrorCallback;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.core.response.ResponseCallback;
 import org.eclipse.leshan.core.util.Validate;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.request.DownlinkRequestSender;
 import org.eclipse.leshan.server.request.LowerLayerConfig;
 
@@ -52,7 +52,7 @@ public class QueueModeLwM2mRequestSender implements DownlinkRequestSender {
      * {@inheritDoc}
      */
     @Override
-    public <T extends LwM2mResponse> T send(final Registration destination, DownlinkDeviceManagementRequest<T> request,
+    public <T extends LwM2mResponse> T send(final IRegistration destination, DownlinkDeviceManagementRequest<T> request,
             LowerLayerConfig lowerLayerConfig, long timeout) throws InterruptedException {
 
         // If the client does not use Q-Mode, just send
@@ -92,7 +92,7 @@ public class QueueModeLwM2mRequestSender implements DownlinkRequestSender {
      * {@inheritDoc}
      */
     @Override
-    public <T extends LwM2mResponse> void send(final Registration destination,
+    public <T extends LwM2mResponse> void send(final IRegistration destination,
             DownlinkDeviceManagementRequest<T> request, LowerLayerConfig lowerLayerConfig, long timeout,
             final ResponseCallback<T> responseCallback, final ErrorCallback errorCallback) {
 
@@ -137,7 +137,7 @@ public class QueueModeLwM2mRequestSender implements DownlinkRequestSender {
     }
 
     @Override
-    public void cancelOngoingRequests(Registration registration) {
+    public void cancelOngoingRequests(IRegistration registration) {
         delegatedSender.cancelOngoingRequests(registration);
     }
 }

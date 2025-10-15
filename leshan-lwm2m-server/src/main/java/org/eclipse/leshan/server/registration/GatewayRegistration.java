@@ -46,7 +46,7 @@ import org.eclipse.leshan.core.util.Validate;
 /**
  * An immutable structure which represent a LW-M2M client registration on the server
  */
-public class Registration implements IRegistration {
+public class GatewayRegistration implements IRegistration {
 
     private static final long DEFAULT_LIFETIME_IN_SEC = 86400L;
 
@@ -92,7 +92,7 @@ public class Registration implements IRegistration {
     // URI of endpoint used for this registration.
     private final EndpointUri endpointUri;
 
-    protected Registration(Builder builder) {
+    protected GatewayRegistration(Builder builder) {
 
         // mandatory params
         id = builder.registrationId;
@@ -500,9 +500,9 @@ public class Registration implements IRegistration {
     public final boolean equals(Object o) {
         if (this == o)
             return true;
-        if (!(o instanceof Registration))
+        if (!(o instanceof GatewayRegistration))
             return false;
-        Registration that = (Registration) o;
+        GatewayRegistration that = (GatewayRegistration) o;
         return lifeTimeInSec == that.lifeTimeInSec && Objects.equals(registrationDate, that.registrationDate)
                 && Objects.equals(clientTransportData, that.clientTransportData)
                 && Objects.equals(smsNumber, that.smsNumber) && Objects.equals(lwM2mVersion, that.lwM2mVersion)
@@ -548,7 +548,7 @@ public class Registration implements IRegistration {
         private Map<String, String> additionalRegistrationAttributes;
         private Map<String, String> customRegistrationData;
 
-        public Builder(Registration registration) {
+        public Builder(GatewayRegistration registration) {
 
             // mandatory params
             registrationId = registration.id;
@@ -667,7 +667,7 @@ public class Registration implements IRegistration {
             return this;
         }
 
-        public Registration build() {
+        public GatewayRegistration build() {
             // Define Default value
             rootPath = rootPath == null ? "/" : rootPath;
             lifeTimeInSec = lifeTimeInSec == null ? DEFAULT_LIFETIME_IN_SEC : lifeTimeInSec;
@@ -707,7 +707,7 @@ public class Registration implements IRegistration {
             }
 
             // Create Registration
-            return new Registration(this);
+            return new GatewayRegistration(this);
         }
     }
 }

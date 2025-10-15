@@ -26,7 +26,7 @@ import org.eclipse.leshan.core.request.exception.ClientSleepingException;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.queue.PresenceListener;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.RegistrationListener;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
 
@@ -51,11 +51,11 @@ public class QueueHandler {
         // Handle Presence Service Event
         server.getPresenceService().addListener(new PresenceListener() {
             @Override
-            public void onSleeping(Registration registration) {
+            public void onSleeping(IRegistration registration) {
             }
 
             @Override
-            public void onAwake(Registration registration) {
+            public void onAwake(IRegistration registration) {
                 // try to send store request
                 QueueRequestData data = requestsToSend.remove(registration.getId());
                 if (data != null) {
@@ -77,12 +77,12 @@ public class QueueHandler {
         // Handle Registration Service Event
         server.getRegistrationService().addListener(new RegistrationListener() {
             @Override
-            public void updated(RegistrationUpdate update, Registration updatedReg, Registration previousReg) {
+            public void updated(RegistrationUpdate update, IRegistration updatedReg, IRegistration previousReg) {
             }
 
             @Override
-            public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
-                    Registration newReg) {
+            public void unregistered(IRegistration registration, Collection<Observation> observations, boolean expired,
+                    IRegistration newReg) {
                 QueueRequestData data = requestsToSend.remove(registration.getId());
                 if (data != null) {
                     data.responseFuture.cancel(false);
@@ -90,14 +90,14 @@ public class QueueHandler {
             }
 
             @Override
-            public void registered(Registration registration, Registration previousReg,
+            public void registered(IRegistration registration, IRegistration previousReg,
                     Collection<Observation> previousObservations) {
             }
         });
 
     }
 
-    public CompletableFuture<LwM2mResponse> send(Registration destination, DownlinkDeviceManagementRequest<?> request,
+    public CompletableFuture<LwM2mResponse> send(IRegistration destination, DownlinkDeviceManagementRequest<?> request,
             long timeoutInMs) throws InterruptedException {
 
         // is client awake ?

@@ -89,7 +89,7 @@ import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
 import org.eclipse.leshan.integration.tests.util.junit5.extensions.BeforeEachParameterizedResolver;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.transport.californium.server.endpoint.ServerProtocolProvider;
 import org.eclipse.leshan.transport.californium.server.endpoint.coap.CoapServerProtocolProvider;
 import org.eclipse.leshan.transport.javacoap.server.endpoint.JavaCoapServerEndpointsProvider;
@@ -230,7 +230,7 @@ public class LockStepTest {
         server.waitForNewRegistrationOf(client.getEndpointName());
 
         // update with valid binding for 1.1
-        Registration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
+        IRegistration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
         UpdateRequest validUpdateRequest = new UpdateRequest("/rd/" + registration.getId(), 60l, null,
                 EnumSet.of(BindingMode.U), null, null);
         token = client.sendLwM2mRequest(validUpdateRequest);
@@ -264,7 +264,7 @@ public class LockStepTest {
         server.waitForNewRegistrationOf(client.getEndpointName());
 
         // update with valid binding for 1.0
-        Registration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
+        IRegistration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
         UpdateRequest validUpdateRequest = new UpdateRequest("/rd/" + registration.getId(), 60l, null,
                 EnumSet.of(BindingMode.U), null, null);
         token = client.sendLwM2mRequest(validUpdateRequest);
@@ -296,7 +296,7 @@ public class LockStepTest {
         server.waitForNewRegistrationOf(client.getEndpointName());
 
         // Send read
-        final Registration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
+        final IRegistration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
         Future<ReadResponse> future = Executors.newSingleThreadExecutor().submit(new Callable<ReadResponse>() {
             @Override
             public ReadResponse call() throws Exception {
@@ -322,7 +322,7 @@ public class LockStepTest {
         server.waitForNewRegistrationOf(client.getEndpointName());
 
         // Send read
-        final Registration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
+        final IRegistration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
         Future<ReadResponse> future = Executors.newSingleThreadExecutor().submit(new Callable<ReadResponse>() {
             @Override
             public ReadResponse call() throws Exception {
@@ -353,7 +353,7 @@ public class LockStepTest {
         server.waitForNewRegistrationOf(client.getEndpointName());
 
         // send read
-        final Registration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
+        final IRegistration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
         @SuppressWarnings("unchecked")
         ResponseCallback<ReadResponse> responseCallback = mock(ResponseCallback.class);
         ErrorCallback errorCallback = mock(ErrorCallback.class);
@@ -381,7 +381,7 @@ public class LockStepTest {
         server.waitForNewRegistrationOf(client.getEndpointName());
 
         // send read
-        final Registration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
+        final IRegistration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
         @SuppressWarnings("unchecked")
         ResponseCallback<ReadResponse> responseCallback = mock(ResponseCallback.class);
         ErrorCallback errorCallback = mock(ErrorCallback.class);
@@ -411,7 +411,7 @@ public class LockStepTest {
                         null, null, linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().token(token).go();
         server.waitForNewRegistrationOf(client.getEndpointName());
-        Registration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
+        IRegistration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
 
         // deregister client
         token = client.sendLwM2mRequest(new DeregisterRequest("rd/" + registration.getId()));
@@ -458,7 +458,7 @@ public class LockStepTest {
                         null, null, linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().token(token).go();
         server.waitForNewRegistrationOf(client.getEndpointName());
-        Registration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
+        IRegistration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
 
         // create timestamped data
         LwM2mEncoder encoder = new DefaultLwM2mEncoder();
@@ -494,7 +494,7 @@ public class LockStepTest {
                         null, null, linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null));
         client.expectResponse().token(token).go();
         server.waitForNewRegistrationOf(client.getEndpointName());
-        Registration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
+        IRegistration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
 
         // create timestamped data
         LwM2mEncoder encoder = new DefaultLwM2mEncoder();
@@ -546,7 +546,7 @@ public class LockStepTest {
         client.expectResponse().token(token).go();
         server.waitForNewRegistrationOf(client.getEndpointName());
 
-        Registration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
+        IRegistration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
 
         // create timestamped data
         List<LwM2mPath> paths = new ArrayList<>();
@@ -592,7 +592,7 @@ public class LockStepTest {
         client.expectResponse().token(token).go();
         server.waitForNewRegistrationOf(client.getEndpointName());
 
-        Registration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
+        IRegistration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
 
         // create timestamped data
         List<LwM2mPath> paths = new ArrayList<>();

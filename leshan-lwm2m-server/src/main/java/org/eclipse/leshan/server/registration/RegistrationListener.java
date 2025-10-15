@@ -36,7 +36,7 @@ public interface RegistrationListener {
      * @param previousObservations all the observations linked to the previous registration which have been passively
      *        cancelled. <code>null</code> for a brand-new registration.
      */
-    void registered(Registration registration, Registration previousReg, Collection<Observation> previousObservations);
+    void registered(IRegistration registration, IRegistration previousReg, Collection<Observation> previousObservations);
 
     /**
      * Invoked when a client updates its registration.
@@ -45,7 +45,7 @@ public interface RegistrationListener {
      * @param updatedReg the registration after the update
      * @param previousReg the registration before the update
      */
-    void updated(RegistrationUpdate update, Registration updatedReg, Registration previousReg);
+    void updated(RegistrationUpdate update, IRegistration updatedReg, IRegistration previousReg);
 
     /**
      * Invoked when a registration is removed from the server.
@@ -58,6 +58,6 @@ public interface RegistrationListener {
      *        (same endpoint). <code>null</code> if the registration is deleted because of a Deregister request or an
      *        expiration.
      */
-    void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
-            Registration newReg);
+    void unregistered(IRegistration registration, Collection<Observation> observations, boolean expired,
+            IRegistration newReg);
 }

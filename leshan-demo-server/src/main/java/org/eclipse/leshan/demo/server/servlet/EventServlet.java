@@ -50,6 +50,7 @@ import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
 import org.eclipse.leshan.server.observation.ObservationListener;
 import org.eclipse.leshan.server.queue.PresenceListener;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationListener;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
@@ -92,7 +93,7 @@ public class EventServlet extends EventSourceServlet {
     private final transient RegistrationListener registrationListener = new RegistrationListener() {
 
         @Override
-        public void registered(Registration registration, Registration previousReg,
+        public void registered(IRegistration registration, IRegistration previousReg,
                 Collection<Observation> previousObservations) {
             String jReg = null;
             try {
@@ -104,8 +105,8 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void updated(RegistrationUpdate update, Registration updatedRegistration,
-                Registration previousRegistration) {
+        public void updated(RegistrationUpdate update, IRegistration updatedRegistration,
+                IRegistration previousRegistration) {
             RegUpdate regUpdate = new RegUpdate();
             regUpdate.registration = updatedRegistration;
             regUpdate.update = update;
@@ -119,8 +120,8 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
-                Registration newReg) {
+        public void unregistered(IRegistration registration, Collection<Observation> observations, boolean expired,
+                IRegistration newReg) {
             String jReg = null;
             try {
                 jReg = EventServlet.this.mapper.writeValueAsString(registration);
@@ -135,14 +136,14 @@ public class EventServlet extends EventSourceServlet {
     public final transient PresenceListener presenceListener = new PresenceListener() {
 
         @Override
-        public void onSleeping(Registration registration) {
+        public void onSleeping(IRegistration registration) {
             String data = new StringBuilder("{\"ep\":\"").append(registration.getEndpoint()).append("\"}").toString();
 
             sendEvent(EVENT_SLEEPING, data, registration.getEndpoint());
         }
 
         @Override
-        public void onAwake(Registration registration) {
+        public void onAwake(IRegistration registration) {
             String data = new StringBuilder("{\"ep\":\"").append(registration.getEndpoint()).append("\"}").toString();
             sendEvent(EVENT_AWAKE, data, registration.getEndpoint());
         }
@@ -156,7 +157,7 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void onResponse(SingleObservation observation, Registration registration, ObserveResponse response) {
+        public void onResponse(SingleObservation observation, IRegistration registration, ObserveResponse response) {
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Received notification from [{}] containing value [{}]", observation.getPath(),
@@ -184,7 +185,7 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void onResponse(CompositeObservation observation, Registration registration,
+        public void onResponse(CompositeObservation observation, IRegistration registration,
                 ObserveCompositeResponse response) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Received composite notificationfrom [{}] containing value [{}]", registration,
@@ -219,7 +220,7 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void onError(Observation observation, Registration registration, Exception error) {
+        public void onError(Observation observation, IRegistration registration, Exception error) {
             if (LOG.isWarnEnabled()) {
                 LOG.warn(String.format("Unable to handle notification of [%s:%s]", observation.getRegistrationId(),
                         getObservationPaths(observation)), error);
@@ -227,7 +228,7 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void newObservation(Observation observation, Registration registration) {
+        public void newObservation(Observation observation, IRegistration registration) {
             // no event sent on new observation for now
         }
 
@@ -245,7 +246,7 @@ public class EventServlet extends EventSourceServlet {
     private final transient SendListener sendListener = new SendListener() {
 
         @Override
-        public void dataReceived(Registration registration, TimestampedLwM2mNodes data, SendRequest request) {
+        public void dataReceived(IRegistration registration, TimestampedLwM2mNodes data, SendRequest request) {
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Received Send request from [{}] containing value [{}]", registration, data);
@@ -272,7 +273,7 @@ public class EventServlet extends EventSourceServlet {
         }
 
         @Override
-        public void onError(Registration registration, String errorMessage, Exception error) {
+        public void onError(IRegistration registration, String errorMessage, Exception error) {
             if (LOG.isWarnEnabled()) {
                 LOG.warn(String.format("Unable to handle Send Request from [%s] : %s.", registration, errorMessage),
                         error);
@@ -398,7 +399,7 @@ public class EventServlet extends EventSourceServlet {
     @SuppressWarnings("unused")
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     private class RegUpdate {
-        private Registration registration;
+        private IRegistration registration;
         private RegistrationUpdate update;
     }
 }

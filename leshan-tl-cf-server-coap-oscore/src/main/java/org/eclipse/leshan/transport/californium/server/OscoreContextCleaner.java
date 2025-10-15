@@ -22,6 +22,7 @@ import org.eclipse.californium.oscore.OSCoreCtxDB;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.peer.LwM2mIdentity;
 import org.eclipse.leshan.core.peer.OscoreIdentity;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationListener;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
@@ -48,17 +49,17 @@ public class OscoreContextCleaner implements RegistrationListener, SecurityStore
     }
 
     @Override
-    public void registered(Registration registration, Registration previousReg,
+    public void registered(IRegistration registration, IRegistration previousReg,
             Collection<Observation> previousObsersations) {
     }
 
     @Override
-    public void updated(RegistrationUpdate update, Registration updatedReg, Registration previousReg) {
+    public void updated(RegistrationUpdate update, IRegistration updatedReg, IRegistration previousReg) {
     }
 
     @Override
-    public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
-            Registration newReg) {
+    public void unregistered(IRegistration registration, Collection<Observation> observations, boolean expired,
+            IRegistration newReg) {
         LwM2mIdentity unregisteredIdentity = registration.getClientTransportData().getIdentity();
 
         // Not an OSCORE identity : nothing to clear

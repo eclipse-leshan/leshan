@@ -23,7 +23,7 @@ import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.observation.ObservationListener;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.RegistrationListener;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
 
@@ -42,15 +42,15 @@ public class PresenceStateListener implements RegistrationListener, ObservationL
     }
 
     @Override
-    public void registered(Registration reg, Registration previousReg, Collection<Observation> previousObservations) {
+    public void registered(IRegistration reg, IRegistration previousReg, Collection<Observation> previousObservations) {
         if (reg.usesQueueMode()) {
             presenceService.setAwake(reg);
         }
     }
 
     @Override
-    public void updated(RegistrationUpdate update, Registration updatedRegistration,
-            Registration previousRegistration) {
+    public void updated(RegistrationUpdate update, IRegistration updatedRegistration,
+            IRegistration previousRegistration) {
         if (updatedRegistration.usesQueueMode()) {
             presenceService.setAwake(updatedRegistration);
         }
@@ -58,8 +58,8 @@ public class PresenceStateListener implements RegistrationListener, ObservationL
     }
 
     @Override
-    public void unregistered(Registration reg, Collection<Observation> observations, boolean expired,
-            Registration newReg) {
+    public void unregistered(IRegistration reg, Collection<Observation> observations, boolean expired,
+            IRegistration newReg) {
         presenceService.stopPresenceTracking(reg);
     }
 
@@ -69,7 +69,7 @@ public class PresenceStateListener implements RegistrationListener, ObservationL
      * @since 1.1
      */
     @Override
-    public void onResponse(SingleObservation observation, Registration registration, ObserveResponse response) {
+    public void onResponse(SingleObservation observation, IRegistration registration, ObserveResponse response) {
         presenceService.setAwake(registration);
     }
 
@@ -79,7 +79,7 @@ public class PresenceStateListener implements RegistrationListener, ObservationL
      * @since 2.0
      */
     @Override
-    public void onResponse(CompositeObservation observation, Registration registration,
+    public void onResponse(CompositeObservation observation, IRegistration registration,
             ObserveCompositeResponse response) {
         presenceService.setAwake(registration);
     }
@@ -90,7 +90,7 @@ public class PresenceStateListener implements RegistrationListener, ObservationL
      * @since 1.1
      */
     @Override
-    public void newObservation(Observation observation, Registration registration) {
+    public void newObservation(Observation observation, IRegistration registration) {
     }
 
     /**
@@ -108,6 +108,6 @@ public class PresenceStateListener implements RegistrationListener, ObservationL
      * @since 1.1
      */
     @Override
-    public void onError(Observation observation, Registration registration, Exception error) {
+    public void onError(Observation observation, IRegistration registration, Exception error) {
     }
 }

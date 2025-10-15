@@ -24,7 +24,7 @@ import org.eclipse.leshan.core.peer.LwM2mIdentity;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.server.endpoint.EffectiveEndpointUriProvider;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.transport.javacoap.identity.IdentityHandler;
 import org.slf4j.Logger;
@@ -59,7 +59,7 @@ public class LwM2mObservationsStore implements ObservationsStore {
             throw new IllegalStateException(errMessage);
         }
 
-        Registration registration = obsReq.getTransContext(LwM2mKeys.LESHAN_REGISTRATION);
+        IRegistration registration = obsReq.getTransContext(LwM2mKeys.LESHAN_REGISTRATION);
         if (registration == null) {
             String errMessage = "missing LESHAN_REGISTRATION key in coap request transport context";
             LOG.warn(errMessage);
@@ -97,7 +97,7 @@ public class LwM2mObservationsStore implements ObservationsStore {
             LOG.debug("Observation not found");
             return Optional.empty();
         }
-        Registration registration = store.getRegistration(observation.getRegistrationId());
+        IRegistration registration = store.getRegistration(observation.getRegistrationId());
         if (registration == null) {
             LOG.debug("No registration for observation {}, {}", observationIdentifier, observation);
             return Optional.empty();

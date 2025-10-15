@@ -51,6 +51,7 @@ import org.eclipse.leshan.server.endpoint.ServerEndpointToolbox;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.observation.ObservationServiceImpl;
 import org.eclipse.leshan.server.profile.ClientProfile;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
@@ -67,7 +68,7 @@ public class ObservationServiceTest {
 
     ObservationServiceImpl observationService;
     RegistrationStore store;
-    Registration registration;
+    IRegistration registration;
     Random r;
     private final EndpointUri endpointUri = uriHandler.createUri("coap://localhost:5683");
 
@@ -78,7 +79,7 @@ public class ObservationServiceTest {
         r = new Random();
     }
 
-    private Registration givenASimpleRegistration() throws UnknownHostException {
+    private IRegistration givenASimpleRegistration() throws UnknownHostException {
         Registration.Builder builder = new Registration.Builder("4711", "urn:endpoint",
                 new IpPeer(new InetSocketAddress(InetAddress.getLocalHost(), 23452)),
                 uriHandler.createUri("coap://localhost:5683"));

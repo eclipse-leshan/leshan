@@ -54,6 +54,7 @@ import org.eclipse.leshan.server.redis.serialization.ObservationSerDes;
 import org.eclipse.leshan.server.redis.serialization.RegistrationSerDes;
 import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.ExpirationListener;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
@@ -184,7 +185,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
                 addOrUpdateExpiration(j, registration);
 
                 if (old != null) {
-                    Registration oldRegistration = deserializeReg(old);
+                    IRegistration oldRegistration = deserializeReg(old);
                     // remove old secondary index
                     if (!registration.getId().equals(oldRegistration.getId()))
                         j.del(toRegIdKey(oldRegistration.getId()));
@@ -229,9 +230,9 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
                     return null;
                 }
 
-                Registration r = deserializeReg(data);
+                IRegistration r = deserializeReg(data);
 
-                Registration updatedRegistration = update.update(r);
+                IRegistration updatedRegistration = update.update(r);
 
                 // Store the new registration
                 j.set(toEndpointKey(updatedRegistration.getEndpoint()), serializeReg(updatedRegistration));
@@ -283,7 +284,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
     }
 
     @Override
-    public Registration getRegistrationByAdress(InetSocketAddress address) {
+    public IRegistration getRegistrationByAdress(InetSocketAddress address) {
         Validate.notNull(address);
         try (Jedis j = pool.getResource()) {
             byte[] ep = j.get(toRegAddrKey(address));
@@ -299,7 +300,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
     }
 
     @Override
-    public Registration getRegistrationByIdentity(LwM2mIdentity identity) {
+    public IRegistration getRegistrationByIdentity(LwM2mIdentity identity) {
         Validate.notNull(identity);
         try (Jedis j = pool.getResource()) {
             byte[] ep = j.get(toRegIdentityKey(identity));
@@ -406,7 +407,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
             if (data == null) {
                 return null;
             }
-            Registration r = deserializeReg(data);
+            IRegistration r = deserializeReg(data);
 
             if (!removeOnlyIfNotAlive || !r.isAlive(gracePeriod)) {
                 long nbRemoved = j.del(toRegIdKey(r.getId()));
@@ -425,11 +426,11 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
         }
     }
 
-    private void removeAddrIndex(Jedis j, Registration r) {
+    private void removeAddrIndex(Jedis j, IRegistration r) {
         removeSecondaryIndex(j, toRegAddrKey(r.getSocketAddress()), r.getEndpoint());
     }
 
-    private void removeIdentityIndex(Jedis j, Registration r) {
+    private void removeIdentityIndex(Jedis j, IRegistration r) {
         removeSecondaryIndex(j, toRegIdentityKey(r.getClientTransportData().getIdentity()), r.getEndpoint());
     }
 
@@ -452,12 +453,12 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
         }
     }
 
-    private void addOrUpdateExpiration(Jedis j, Registration registration) {
+    private void addOrUpdateExpiration(Jedis j, IRegistration registration) {
         j.zadd(endpointExpirationKey, registration.getExpirationTimeStamp(gracePeriod),
                 registration.getEndpoint().getBytes(UTF_8));
     }
 
-    private void removeExpiration(Jedis j, Registration registration) {
+    private void removeExpiration(Jedis j, IRegistration registration) {
         j.zrem(endpointExpirationKey, registration.getEndpoint().getBytes(UTF_8));
     }
 
@@ -493,7 +494,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
         return toKey(observationId.getEndpointUri().toString().getBytes(), "##".getBytes(), observationId.getBytes());
     }
 
-    private byte[] serializeReg(Registration registration) {
+    private byte[] serializeReg(IRegistration registration) {
         return registrationSerDes.bSerialize(registration);
     }
 
@@ -629,7 +630,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
     public Collection<Observation> removeObservations(String registrationId) {
         try (Jedis j = pool.getResource()) {
             // check registration exists
-            Registration registration = getRegistration(j, registrationId);
+            IRegistration registration = getRegistration(j, registrationId);
             if (registration == null)
                 return Collections.emptyList();
 
@@ -769,7 +770,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
                 for (byte[] endpoint : endpointsExpired) {
                     byte[] regBytes = j.get(toEndpointKey(endpoint));
                     if (regBytes != null) {
-                        Registration r = deserializeReg(regBytes);
+                        IRegistration r = deserializeReg(regBytes);
                         if (!r.isAlive(gracePeriod)) {
                             Deregistration dereg = removeRegistration(j, r.getId(), true);
                             if (dereg != null)

@@ -54,6 +54,7 @@ import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
 import org.eclipse.leshan.integration.tests.util.ReverseProxy;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.servers.security.InMemorySecurityStore;
 import org.eclipse.leshan.servers.security.NonUniqueSecurityInfoException;
@@ -138,7 +139,7 @@ public class DynamicIPObserveTest {
 
         server.waitForNewRegistrationOf(client);
         client.waitForRegistrationTo(server);
-        Registration currentRegistration = server.getRegistrationFor(client);
+        IRegistration currentRegistration = server.getRegistrationFor(client);
 
         // observe device timezone
         ObserveResponse observeResponse = server.send(currentRegistration, new ObserveRequest(3, 0, 15));
@@ -197,7 +198,7 @@ public class DynamicIPObserveTest {
         client.waitForRegistrationTo(server);
 
         // Send Data should works
-        Registration registrationBeforeObserve = server.getRegistrationFor(client);
+        IRegistration registrationBeforeObserve = server.getRegistrationFor(client);
         assertSuccessfulNotificationSendingAfterAddressChanged(registrationBeforeObserve);
 
         // check that client registration is not updated.
@@ -228,11 +229,11 @@ public class DynamicIPObserveTest {
         client.waitForRegistrationTo(server);
 
         // Send Data should works
-        Registration registrationBeforeObserve = server.getRegistrationFor(client);
+        IRegistration registrationBeforeObserve = server.getRegistrationFor(client);
         assertSuccessfulNotificationSendingAfterAddressChanged(registrationBeforeObserve);
 
         // check that client registration is updated.
-        Registration registrationAfterObserve = server.getRegistrationFor(client);
+        IRegistration registrationAfterObserve = server.getRegistrationFor(client);
         assertThat(registrationAfterObserve.getSocketAddress())
                 .isNotEqualTo(registrationBeforeObserve.getSocketAddress());
     }
@@ -261,7 +262,7 @@ public class DynamicIPObserveTest {
         client.waitForRegistrationTo(server);
 
         // Send Data should works
-        Registration registrationBeforeObserve = server.getRegistrationFor(client);
+        IRegistration registrationBeforeObserve = server.getRegistrationFor(client);
         assertSuccessfulNotificationSendingAfterAddressChanged(registrationBeforeObserve);
 
         // check that client registration is not updated.
@@ -295,7 +296,7 @@ public class DynamicIPObserveTest {
         client.waitForRegistrationTo(server);
 
         // Send Data should works
-        Registration registrationBeforeObserve = server.getRegistrationFor(client);
+        IRegistration registrationBeforeObserve = server.getRegistrationFor(client);
         assertSuccessfulNotificationSendingAfterAddressChanged(registrationBeforeObserve);
 
         // check that client registration is not updated.
@@ -303,7 +304,7 @@ public class DynamicIPObserveTest {
         assertThat(registrationAfterObserve).isEqualTo(registrationBeforeObserve);
     }
 
-    private void assertSuccessfulNotificationSendingAfterAddressChanged(Registration currentRegistration)
+    private void assertSuccessfulNotificationSendingAfterAddressChanged(IRegistration currentRegistration)
             throws InterruptedException {
 
         // observe device timezone
