@@ -139,7 +139,7 @@ public class RegistrationHandler {
             EndpointUri endpointUsed) {
 
         // We check if there is a registration to update
-        Registration currentRegistration = registrationService.getById(updateRequest.getRegistrationId());
+        IRegistration currentRegistration = registrationService.getById(updateRequest.getRegistrationId());
         if (currentRegistration == null) {
             return new SendableResponse<>(UpdateResponse.notFound());
         }
@@ -174,8 +174,18 @@ public class RegistrationHandler {
         } else {
             LOG.debug("Updated registration {} by {}", updatedRegistration, update);
             // Create callback to notify registration update
-            Runnable whenSent = () -> registrationService.fireUpdated(update,
-                    updatedRegistration.getUpdatedRegistration(), updatedRegistration.getPreviousRegistration());
+            Runnable whenSent = () -> {
+                registrationService.fireUpdated(update, updatedRegistration.getUpdatedRegistration(),
+                        updatedRegistration.getPreviousRegistration());
+
+                if (updatedRegistration.getUpdatedRegistration().hasChildEndDevices()) {
+                    for (UpdatedRegistration childUpdatedRegistration : updatedRegistration
+                            .getChildrenUpdatedRegistration()) {
+                        registrationService.fireUpdated(update, childUpdatedRegistration.getUpdatedRegistration(),
+                                childUpdatedRegistration.getPreviousRegistration());
+                    }
+                }
+            };
             return new SendableResponse<>(UpdateResponse.success(), whenSent);
         }
     }
@@ -184,7 +194,7 @@ public class RegistrationHandler {
             EndpointUri endpointUsed) {
 
         // We check if there is a registration to remove
-        Registration currentRegistration = registrationService.getById(deregisterRequest.getRegistrationId());
+        IRegistration currentRegistration = registrationService.getById(deregisterRequest.getRegistrationId());
         if (currentRegistration == null) {
             return new SendableResponse<>(DeregisterResponse.notFound());
         }
@@ -202,8 +212,16 @@ public class RegistrationHandler {
         if (deregistration != null) {
             LOG.debug("Deregistered client: {}", deregistration.getRegistration());
             // Create callback to notify new de-registration
-            Runnable whenSent = () -> registrationService.fireUnregistered(deregistration.getRegistration(),
-                    deregistration.getObservations(), null);
+            Runnable whenSent = () -> {
+                registrationService.fireUnregistered(deregistration.getRegistration(), deregistration.getObservations(),
+                        null);
+                if (deregistration.getRegistration().hasChildEndDevices()) {
+                    for (Deregistration childDeregistration : deregistration.getChildrenDeRegistration()) {
+                        registrationService.fireUnregistered(childDeregistration.getRegistration(),
+                                childDeregistration.getObservations(), null);
+                    }
+                }
+            };
 
             return new SendableResponse<>(DeregisterResponse.success(), whenSent);
         } else {

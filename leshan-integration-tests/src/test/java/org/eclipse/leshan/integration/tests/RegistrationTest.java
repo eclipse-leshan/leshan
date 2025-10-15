@@ -53,7 +53,7 @@ import org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
 import org.eclipse.leshan.integration.tests.util.junit5.extensions.BeforeEachParameterizedResolver;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.servers.security.NonUniqueSecurityInfoException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -130,7 +130,7 @@ public class RegistrationTest {
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
         assertThat(registration.getObjectLinks()).isLikeLinks(
                 "</>;rt=\"oma.lwm2m\";ct=\"60 110 112 1542 1543 11542 11543\",</1/0>,</2>,</3/0>,</3442/0>");
 
@@ -165,7 +165,7 @@ public class RegistrationTest {
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // Stop client with out de-registration
         client.stop(false);
@@ -215,7 +215,7 @@ public class RegistrationTest {
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // Check for update
         client.waitForUpdateTo(server, SHORT_LIFETIME, TimeUnit.SECONDS);
@@ -249,7 +249,7 @@ public class RegistrationTest {
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // Check for update
         client.waitForUpdateTo(server, SHORT_LIFETIME, TimeUnit.SECONDS);
@@ -287,7 +287,7 @@ public class RegistrationTest {
 
         // Check we are registered with the expected attributes
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
         assertThat(registration.getAdditionalRegistrationAttributes())
                 .containsExactlyEntriesOf(expectedAdditionalAttributes);
     }

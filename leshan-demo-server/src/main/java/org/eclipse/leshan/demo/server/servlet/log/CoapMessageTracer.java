@@ -23,7 +23,7 @@ import org.eclipse.californium.core.coap.EmptyMessage;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.interceptors.MessageInterceptor;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.RegistrationService;
 
 public class CoapMessageTracer implements MessageInterceptor {
@@ -33,14 +33,14 @@ public class CoapMessageTracer implements MessageInterceptor {
     private final RegistrationService registry;
 
     public void addListener(String endpoint, CoapMessageListener listener) {
-        Registration registration = registry.getByEndpoint(endpoint);
+        IRegistration registration = registry.getByEndpoint(endpoint);
         if (registration != null) {
             listeners.put(toStringAddress(registration.getSocketAddress()), listener);
         }
     }
 
     public void removeListener(String endpoint) {
-        Registration registration = registry.getByEndpoint(endpoint);
+        IRegistration registration = registry.getByEndpoint(endpoint);
         if (registration != null) {
             listeners.remove(toStringAddress(registration.getSocketAddress()));
         }

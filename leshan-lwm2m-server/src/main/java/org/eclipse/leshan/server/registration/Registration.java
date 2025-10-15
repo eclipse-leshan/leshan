@@ -41,12 +41,11 @@ import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.util.StringUtils;
 import org.eclipse.leshan.core.util.Validate;
-import org.eclipse.leshan.server.security.Authorizer;
 
 /**
  * An immutable structure which represent a LW-M2M client registration on the server
  */
-public class Registration {
+public class Registration implements IRegistration {
 
     private static final long DEFAULT_LIFETIME_IN_SEC = 86400L;
 
@@ -92,6 +91,9 @@ public class Registration {
     // URI of endpoint used for this registration.
     private final EndpointUri endpointUri;
 
+    // All child devices (prefix -> endpoint)
+    private final Map<String, String> endDevices;
+
     protected Registration(Builder builder) {
 
         // mandatory params
@@ -118,31 +120,47 @@ public class Registration {
         additionalRegistrationAttributes = builder.additionalRegistrationAttributes;
 
         customRegistrationData = builder.customRegistrationData;
+
+        // gateway params
+        endDevices = builder.endDevices;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#getId()
+     */
+    @Override
     public String getId() {
         return id;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#getRegistrationDate()
+     */
+    @Override
     public Date getRegistrationDate() {
         return registrationDate;
     }
 
-    /**
-     * Gets the clients transport layer data.
+    /*
+     * (non-Javadoc)
      *
-     * @return transport layer data from client's most recent registration or registration update.
+     * @see org.eclipse.leshan.server.registration.IRegistration#getClientTransportData()
      */
+    @Override
     public LwM2mPeer getClientTransportData() {
         return clientTransportData;
     }
 
-    /**
-     * Gets the client's network socket address.
+    /*
+     * (non-Javadoc)
      *
-     * @return the source address from the client's most recent CoAP message. It could return {@code null} if client
-     *         does not communicate over IP.
+     * @see org.eclipse.leshan.server.registration.IRegistration#getSocketAddress()
      */
+    @Override
     public InetSocketAddress getSocketAddress() {
         if (clientTransportData instanceof IpPeer) {
             return ((IpPeer) clientTransportData).getSocketAddress();
@@ -150,12 +168,12 @@ public class Registration {
         return null;
     }
 
-    /**
-     * Gets the client's network address.
+    /*
+     * (non-Javadoc)
      *
-     * @return the source address from the client's most recent CoAP message. It could return {@code null} if client
-     *         does not communicate over IP.
+     * @see org.eclipse.leshan.server.registration.IRegistration#getAddress()
      */
+    @Override
     public InetAddress getAddress() {
         if (clientTransportData instanceof IpPeer) {
             return ((IpPeer) clientTransportData).getSocketAddress().getAddress();
@@ -163,12 +181,12 @@ public class Registration {
         return null;
     }
 
-    /**
-     * Gets the client's network port number.
+    /*
+     * (non-Javadoc)
      *
-     * @return the source port from the client's most recent CoAP message. It could return {@code null} if client does
-     *         not communicate over IP.
+     * @see org.eclipse.leshan.server.registration.IRegistration#getPort()
      */
+    @Override
     public Integer getPort() {
         if (clientTransportData instanceof IpPeer) {
             return ((IpPeer) clientTransportData).getSocketAddress().getPort();
@@ -176,10 +194,22 @@ public class Registration {
         return null;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#getObjectLinks()
+     */
+    @Override
     public Link[] getObjectLinks() {
         return objectLinks;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#getSortedObjectLinks()
+     */
+    @Override
     public Link[] getSortedObjectLinks() {
         // sort the list of objects
         if (objectLinks == null) {
@@ -226,98 +256,179 @@ public class Registration {
         return !StringUtils.isEmpty(s) && StringUtils.isNumeric(s);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#getLifeTimeInSec()
+     */
+    @Override
     public Long getLifeTimeInSec() {
         return lifeTimeInSec;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#getSmsNumber()
+     */
+    @Override
     public String getSmsNumber() {
         return smsNumber;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#getLwM2mVersion()
+     */
+    @Override
     public LwM2mVersion getLwM2mVersion() {
         return lwM2mVersion;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#getBindingMode()
+     */
+    @Override
     public EnumSet<BindingMode> getBindingMode() {
         return bindingMode;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#getQueueMode()
+     */
+    @Override
     public Boolean getQueueMode() {
         return queueMode;
     }
 
-    /**
-     * @return the path where the objects are hosted on the device
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#getRootPath()
      */
+    @Override
+    public String getFullPrefixPath() {
+        return getRootPath();
+    }
+
+    @Override
     public String getRootPath() {
         return rootPath;
     }
 
-    /**
-     * @return all {@link ContentFormat} supported by the client.
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#getSupportedContentFormats()
      */
+    @Override
     public Set<ContentFormat> getSupportedContentFormats() {
         return supportedContentFormats;
     }
 
-    /**
-     * @return all available object instance by the client
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#getAvailableInstances()
      */
+    @Override
     public Set<LwM2mPath> getAvailableInstances() {
         return availableInstances;
     }
 
-    /**
-     * Gets the unique name the client has registered with.
+    /*
+     * (non-Javadoc)
      *
-     * @return the name
+     * @see org.eclipse.leshan.server.registration.IRegistration#getEndpoint()
      */
+    @Override
     public String getEndpoint() {
         return endpoint;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#getLastUpdate()
+     */
+    @Override
     public Date getLastUpdate() {
         return lastUpdate;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#getExpirationTimeStamp()
+     */
+    @Override
     public long getExpirationTimeStamp() {
         return getExpirationTimeStamp(0L);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#getExpirationTimeStamp(long)
+     */
+    @Override
     public long getExpirationTimeStamp(long gracePeriodInSec) {
         return lastUpdate.getTime() + lifeTimeInSec * 1000 + gracePeriodInSec * 1000;
     }
 
-    /**
-     * @return True if DTLS handshake can be initiated by the Server for this registration.
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#canInitiateConnection()
      */
+    @Override
     public boolean canInitiateConnection() {
         // We consider that initiates a connection (acting as DTLS client to initiate a handshake) does not make sense
         // for QueueMode as if we lost connection device is probably absent.
         return !usesQueueMode();
     }
 
-    /**
-     * @return true if the last registration update was done less than lifetime seconds ago.
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#isAlive()
      */
+    @Override
     public boolean isAlive() {
         return isAlive(0);
     }
 
-    /**
-     * This is the same idea than {@link Registration#isAlive()} but with a grace period. <br>
+    /*
+     * (non-Javadoc)
      *
-     * @param gracePeriodInSec an extra time for the registration lifetime.
-     * @return true if the last registration update was done less than lifetime+gracePeriod seconds ago.
+     * @see org.eclipse.leshan.server.registration.IRegistration#isAlive(long)
      */
+    @Override
     public boolean isAlive(long gracePeriodInSec) {
         return getExpirationTimeStamp(gracePeriodInSec) > System.currentTimeMillis();
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#getAdditionalRegistrationAttributes()
+     */
+    @Override
     public Map<String, String> getAdditionalRegistrationAttributes() {
         return additionalRegistrationAttributes;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#usesQueueMode()
+     */
+    @Override
     public boolean usesQueueMode() {
         if (lwM2mVersion.olderThan(LwM2mVersion.V1_1))
             return bindingMode.contains(BindingMode.Q);
@@ -325,36 +436,66 @@ public class Registration {
             return queueMode;
     }
 
-    /**
-     * @param objectid the object id for which we want to know the supported version.
-     * @return the supported version of the object with the id {@code objectid}. If the object is not supported return
-     *         {@code null}
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#getSupportedVersion(java.lang.Integer)
      */
+    @Override
     public Version getSupportedVersion(Integer objectid) {
         return getSupportedObject().get(objectid);
     }
 
-    /**
-     * @return a map from {@code objectId} {@literal =>} {@code supportedVersion} for each supported objects. supported.
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#getSupportedObject()
      */
+    @Override
     public Map<Integer, Version> getSupportedObject() {
         return supportedObjects;
     }
 
-    /**
-     * @return Some custom registration data which could have been added at Registration by the {@link Authorizer}
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#getCustomRegistrationData()
      */
+    @Override
     public Map<String, String> getCustomRegistrationData() {
         return customRegistrationData;
     }
 
-    /**
-     * @return URI of the server endpoint used by client to register.
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#getEndpointUri()
      */
+    @Override
     public EndpointUri getEndpointUri() {
         return endpointUri;
     }
 
+    @Override
+    public boolean isGateway() {
+        return getSupportedVersion(25) != null;
+    }
+
+    @Override
+    public boolean hasChildEndDevices() {
+        return !endDevices.isEmpty();
+    }
+
+    @Override
+    public Map<String, String> getChildEndDevices() {
+        return endDevices;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.leshan.server.registration.IRegistration#toString()
+     */
     @Override
     public String toString() {
         return String.format(
@@ -385,7 +526,8 @@ public class Registration {
                 && Objects.equals(availableInstances, that.availableInstances)
                 && Objects.equals(lastUpdate, that.lastUpdate)
                 && Objects.equals(customRegistrationData, that.customRegistrationData)
-                && Objects.equals(endpointUri, that.endpointUri);
+                && Objects.equals(endpointUri, that.endpointUri) //
+                && Objects.equals(endDevices, that.endDevices);
     }
 
     @Override
@@ -393,7 +535,7 @@ public class Registration {
         return Objects.hash(registrationDate, clientTransportData, lifeTimeInSec, smsNumber, lwM2mVersion, bindingMode,
                 queueMode, endpoint, id, Arrays.hashCode(objectLinks), additionalRegistrationAttributes, rootPath,
                 supportedContentFormats, supportedObjects, availableInstances, lastUpdate, customRegistrationData,
-                endpointUri);
+                endpointUri, endDevices);
     }
 
     public static class Builder {
@@ -416,6 +558,7 @@ public class Registration {
         private Set<LwM2mPath> availableInstances;
         private Map<String, String> additionalRegistrationAttributes;
         private Map<String, String> customRegistrationData;
+        private Map<String, String> endDevices;
 
         public Builder(Registration registration) {
 
@@ -443,6 +586,9 @@ public class Registration {
             additionalRegistrationAttributes = registration.additionalRegistrationAttributes;
 
             customRegistrationData = registration.customRegistrationData;
+
+            // gateway params
+            endDevices = registration.endDevices;
         }
 
         public Builder(String registrationId, String endpoint, LwM2mPeer clientTransportData, EndpointUri endpointUri) {
@@ -536,6 +682,11 @@ public class Registration {
             return this;
         }
 
+        public Builder endDevices(Map<String, String> endDevices) {
+            this.endDevices = endDevices;
+            return this;
+        }
+
         public Registration build() {
             // Define Default value
             rootPath = rootPath == null ? "/" : rootPath;
@@ -573,6 +724,12 @@ public class Registration {
                 customRegistrationData = Collections.emptyMap();
             } else {
                 customRegistrationData = Collections.unmodifiableMap(new HashMap<>(customRegistrationData));
+            }
+
+            if (endDevices == null || endDevices.isEmpty()) {
+                endDevices = Collections.emptyMap();
+            } else {
+                endDevices = Collections.unmodifiableMap(new HashMap<>(endDevices));
             }
 
             // Create Registration

@@ -52,7 +52,7 @@ import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.servers.security.InMemorySecurityStore;
 import org.eclipse.leshan.servers.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.servers.security.SecurityInfo;
@@ -141,7 +141,7 @@ public class SniTest {
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // check we can send request to client.
         ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
@@ -182,7 +182,7 @@ public class SniTest {
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // check we can send request to client.
         ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
@@ -222,7 +222,7 @@ public class SniTest {
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // check we can send request to client.
         ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
@@ -262,7 +262,7 @@ public class SniTest {
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // check we can send request to client.
         ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
@@ -304,7 +304,7 @@ public class SniTest {
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // check we can send request to client.
         ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);

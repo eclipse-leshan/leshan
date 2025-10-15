@@ -20,7 +20,7 @@ import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 
 /**
  * Monitor observation lifetime.
@@ -36,7 +36,7 @@ public interface ObservationListener {
      * @param observation the new observation.
      * @param registration the related registration
      */
-    void newObservation(Observation observation, Registration registration);
+    void newObservation(Observation observation, IRegistration registration);
 
     /**
      * Called when an observation is cancelled.
@@ -53,7 +53,7 @@ public interface ObservationListener {
      * @param response the lwm2m response received (successful or error response)
      *
      */
-    void onResponse(SingleObservation observation, Registration registration, ObserveResponse response);
+    void onResponse(SingleObservation observation, IRegistration registration, ObserveResponse response);
 
     /**
      * Called on new notification.
@@ -63,7 +63,7 @@ public interface ObservationListener {
      * @param response the lwm2m observe-composite response received (successful or error response)
      *
      */
-    void onResponse(CompositeObservation observation, Registration registration, ObserveCompositeResponse response);
+    void onResponse(CompositeObservation observation, IRegistration registration, ObserveCompositeResponse response);
 
     /**
      * Called when an error occurs on new notification.
@@ -76,5 +76,5 @@ public interface ObservationListener {
      *        <li>or any other RuntimeException for unexpected issue.
      *        </ul>
      */
-    void onError(Observation observation, Registration registration, Exception error);
+    void onError(Observation observation, IRegistration registration, Exception error);
 }

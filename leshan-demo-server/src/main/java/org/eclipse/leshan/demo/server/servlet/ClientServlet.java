@@ -79,7 +79,7 @@ import org.eclipse.leshan.demo.server.servlet.json.JacksonResponseSerializer;
 import org.eclipse.leshan.demo.server.servlet.queuemode.QueueHandler;
 import org.eclipse.leshan.demo.servers.json.servlet.LeshanDemoServlet;
 import org.eclipse.leshan.server.LeshanServer;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -138,7 +138,7 @@ public class ClientServlet extends LeshanDemoServlet {
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         SimpleModule module = new SimpleModule();
         module.addSerializer(Link.class, new JacksonLinkSerializer());
-        module.addSerializer(Registration.class, new JacksonRegistrationSerializer(server.getPresenceService()));
+        module.addSerializer(IRegistration.class, new JacksonRegistrationSerializer(server.getPresenceService()));
         module.addSerializer(LwM2mResponse.class, new JacksonResponseSerializer());
         module.addSerializer(LwM2mNode.class, new JacksonLwM2mNodeSerializer());
         module.addDeserializer(LwM2mNode.class, new JacksonLwM2mNodeDeserializer());
@@ -164,7 +164,7 @@ public class ClientServlet extends LeshanDemoServlet {
             return;
         }
         String clientEndpoint = path[0];
-        Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
+        IRegistration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
         if (registration == null) {
             safelySendError(req, resp, HttpServletResponse.SC_BAD_REQUEST,
                     String.format(ERROR_MESSAGE_NO_REGISTERED, clientEndpoint));
@@ -194,7 +194,7 @@ public class ClientServlet extends LeshanDemoServlet {
         sendReadRequest(req, resp, registration, lwm2mpath);
     }
 
-    private void sendReadRequest(HttpServletRequest req, HttpServletResponse resp, Registration registration,
+    private void sendReadRequest(HttpServletRequest req, HttpServletResponse resp, IRegistration registration,
             String lwm2mpath) {
         executeSafely(req, resp, () -> {
             try {
@@ -213,7 +213,7 @@ public class ClientServlet extends LeshanDemoServlet {
         });
     }
 
-    private void sendDiscover(HttpServletRequest req, HttpServletResponse resp, Registration registration,
+    private void sendDiscover(HttpServletRequest req, HttpServletResponse resp, IRegistration registration,
             String lwm2mpath) {
         executeSafely(req, resp, () -> {
             try {
@@ -226,7 +226,7 @@ public class ClientServlet extends LeshanDemoServlet {
         });
     }
 
-    private void sendRegistration(HttpServletRequest req, HttpServletResponse resp, Registration registration) {
+    private void sendRegistration(HttpServletRequest req, HttpServletResponse resp, IRegistration registration) {
         executeSafely(req, resp, () -> {
             resp.setContentType(APPLICATION_JSON);
             resp.getOutputStream().write(this.mapper.writeValueAsString(registration).getBytes(StandardCharsets.UTF_8));
@@ -236,20 +236,21 @@ public class ClientServlet extends LeshanDemoServlet {
 
     private void sendAllRegistration(HttpServletRequest req, HttpServletResponse resp) {
         executeSafely(req, resp, () -> {
-            Collection<Registration> registrations = new ArrayList<>();
-            for (Iterator<Registration> iterator = server.getRegistrationService().getAllRegistrations(); iterator
+            Collection<IRegistration> registrations = new ArrayList<>();
+            for (Iterator<IRegistration> iterator = server.getRegistrationService().getAllRegistrations(); iterator
                     .hasNext();) {
                 registrations.add(iterator.next());
             }
 
-            String json = this.mapper.writeValueAsString(registrations.toArray(new Registration[] {}));
+            String json = this.mapper.writeValueAsString(registrations.toArray(new IRegistration[] {}));
             resp.setContentType(APPLICATION_JSON);
             resp.getOutputStream().write(json.getBytes(StandardCharsets.UTF_8));
             resp.setStatus(HttpServletResponse.SC_OK);
         });
     }
 
-    private void sendReadCompositeRequest(HttpServletRequest req, HttpServletResponse resp, Registration registration) {
+    private void sendReadCompositeRequest(HttpServletRequest req, HttpServletResponse resp,
+            IRegistration registration) {
         executeSafely(req, resp, () -> {
             try {
                 // get paths
@@ -313,7 +314,7 @@ public class ClientServlet extends LeshanDemoServlet {
             return;
         }
         String clientEndpoint = path[0];
-        Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
+        IRegistration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
         if (registration == null) {
             safelySendError(req, resp, HttpServletResponse.SC_BAD_REQUEST,
                     String.format(ERROR_MESSAGE_NO_REGISTERED, clientEndpoint));
@@ -341,7 +342,7 @@ public class ClientServlet extends LeshanDemoServlet {
         }
     }
 
-    private void sendWriteRequest(HttpServletRequest req, HttpServletResponse resp, Registration registration,
+    private void sendWriteRequest(HttpServletRequest req, HttpServletResponse resp, IRegistration registration,
             String lwm2mPath) {
         executeSafely(req, resp, () -> {
             try {
@@ -368,7 +369,7 @@ public class ClientServlet extends LeshanDemoServlet {
         });
     }
 
-    private void sendWriteAttributeRequest(HttpServletRequest req, HttpServletResponse resp, Registration registration,
+    private void sendWriteAttributeRequest(HttpServletRequest req, HttpServletResponse resp, IRegistration registration,
             String lwm2mPath) {
         executeSafely(req, resp, () -> {
             try {
@@ -388,7 +389,7 @@ public class ClientServlet extends LeshanDemoServlet {
     }
 
     private void sendWriteCompositeRequest(HttpServletRequest req, HttpServletResponse resp,
-            Registration registration) {
+            IRegistration registration) {
         executeSafely(req, resp, () -> {
             try {
                 // get content format
@@ -423,7 +424,7 @@ public class ClientServlet extends LeshanDemoServlet {
             return;
         }
         String clientEndpoint = path[0];
-        Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
+        IRegistration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
         if (registration == null) {
             safelySendError(req, resp, HttpServletResponse.SC_BAD_REQUEST,
                     String.format(ERROR_MESSAGE_NO_REGISTERED, clientEndpoint));
@@ -461,7 +462,7 @@ public class ClientServlet extends LeshanDemoServlet {
         safelySendError(req, resp, HttpServletResponse.SC_BAD_REQUEST, ERROR_MESSAGE_INVALID_PATH);
     }
 
-    private void sendCreateRequest(HttpServletRequest req, HttpServletResponse resp, Registration registration,
+    private void sendCreateRequest(HttpServletRequest req, HttpServletResponse resp, IRegistration registration,
             String lwm2mPath) {
         executeSafely(req, resp, () -> {
             try {
@@ -493,7 +494,7 @@ public class ClientServlet extends LeshanDemoServlet {
 
     }
 
-    private void sendExecuteRequest(HttpServletRequest req, HttpServletResponse resp, Registration registration,
+    private void sendExecuteRequest(HttpServletRequest req, HttpServletResponse resp, IRegistration registration,
             String lwm2mPath) {
         executeSafely(req, resp, () -> {
             try {
@@ -509,7 +510,7 @@ public class ClientServlet extends LeshanDemoServlet {
         });
     }
 
-    private void sendObserveRequest(HttpServletRequest req, HttpServletResponse resp, Registration registration,
+    private void sendObserveRequest(HttpServletRequest req, HttpServletResponse resp, IRegistration registration,
             String lwm2mPath) {
         executeSafely(req, resp, () -> {
             try {
@@ -529,7 +530,7 @@ public class ClientServlet extends LeshanDemoServlet {
     }
 
     private void sendObserveCompositeRequest(HttpServletRequest req, HttpServletResponse resp,
-            Registration registration) {
+            IRegistration registration) {
         executeSafely(req, resp, () -> {
             try {
                 // get paths
@@ -565,7 +566,7 @@ public class ClientServlet extends LeshanDemoServlet {
             return;
         }
         String clientEndpoint = path[0];
-        Registration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
+        IRegistration registration = server.getRegistrationService().getByEndpoint(clientEndpoint);
         if (registration == null) {
             safelySendError(req, resp, HttpServletResponse.SC_BAD_REQUEST,
                     String.format(ERROR_MESSAGE_NO_REGISTERED, clientEndpoint));
@@ -590,7 +591,7 @@ public class ClientServlet extends LeshanDemoServlet {
         sendDeleteInstanceRequest(req, resp, registration, lwm2mPath);
     }
 
-    private void sendDeleteInstanceRequest(HttpServletRequest req, HttpServletResponse resp, Registration registration,
+    private void sendDeleteInstanceRequest(HttpServletRequest req, HttpServletResponse resp, IRegistration registration,
             String lwm2mPath) {
         executeSafely(req, resp, () -> {
             try {
@@ -602,7 +603,7 @@ public class ClientServlet extends LeshanDemoServlet {
         });
     }
 
-    private void cancelObservation(HttpServletRequest req, HttpServletResponse resp, Registration registration,
+    private void cancelObservation(HttpServletRequest req, HttpServletResponse resp, IRegistration registration,
             String lwm2mPath) {
         executeSafely(req, resp, () -> {
             try {
@@ -639,7 +640,7 @@ public class ClientServlet extends LeshanDemoServlet {
     }
 
     private void cancelCompositeObservation(HttpServletRequest req, HttpServletResponse resp,
-            Registration registration) {
+            IRegistration registration) {
         executeSafely(req, resp, () -> {
             try {
                 // get paths
@@ -678,7 +679,7 @@ public class ClientServlet extends LeshanDemoServlet {
         });
     }
 
-    private CompletableFuture<LwM2mResponse> sendRequestAndWriteResponse(Registration destination,
+    private CompletableFuture<LwM2mResponse> sendRequestAndWriteResponse(IRegistration destination,
             DownlinkDeviceManagementRequest<?> lwm2mReq, HttpServletRequest httpReq, HttpServletResponse httpResp)
             throws InterruptedException, IOException {
 

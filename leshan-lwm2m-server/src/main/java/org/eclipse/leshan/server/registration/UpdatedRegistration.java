@@ -15,31 +15,50 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * An UpdatedRegistration contains the registration before and after a registration update.
  *
  * @see RegistrationStore
  */
 public class UpdatedRegistration {
-    private final Registration previousRegistration;
-    private final Registration updatedRegistration;
+    private final IRegistration previousRegistration;
+    private final IRegistration updatedRegistration;
 
-    public UpdatedRegistration(Registration previousRegistration, Registration updatedRegistration) {
+    final List<UpdatedRegistration> childrenUpdatedRegistration;
+
+    public UpdatedRegistration(IRegistration previousRegistration, IRegistration updatedRegistration) {
+        this(previousRegistration, updatedRegistration, null);
+    }
+
+    public UpdatedRegistration(IRegistration previousRegistration, IRegistration updatedRegistration,
+            List<UpdatedRegistration> childrenUpdatedRegistration) {
         this.previousRegistration = previousRegistration;
         this.updatedRegistration = updatedRegistration;
+        if (childrenUpdatedRegistration == null || childrenUpdatedRegistration.isEmpty()) {
+            this.childrenUpdatedRegistration = Collections.emptyList();
+        } else {
+            this.childrenUpdatedRegistration = childrenUpdatedRegistration;
+        }
     }
 
     /**
      * The registration before the update registration.
      */
-    public Registration getPreviousRegistration() {
+    public IRegistration getPreviousRegistration() {
         return previousRegistration;
     }
 
     /**
      * The registration after the update registration.
      */
-    public Registration getUpdatedRegistration() {
+    public IRegistration getUpdatedRegistration() {
         return updatedRegistration;
+    }
+
+    public List<UpdatedRegistration> getChildrenUpdatedRegistration() {
+        return childrenUpdatedRegistration;
     }
 }

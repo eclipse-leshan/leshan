@@ -26,7 +26,7 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.demo.server.model.ObjectModelSerDes;
 import org.eclipse.leshan.demo.servers.json.servlet.LeshanDemoServlet;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.RegistrationService;
 
 import jakarta.servlet.ServletException;
@@ -64,7 +64,7 @@ public class ObjectSpecServlet extends LeshanDemoServlet {
             return;
         }
         String clientEndpoint = path[0];
-        Registration registration = registrationService.getByEndpoint(clientEndpoint);
+        IRegistration registration = registrationService.getByEndpoint(clientEndpoint);
         if (registration == null) {
             safelySendError(req, resp, HttpServletResponse.SC_BAD_REQUEST,
                     String.format("no registered client with id '%s'", clientEndpoint));
@@ -74,7 +74,7 @@ public class ObjectSpecServlet extends LeshanDemoServlet {
         sendModel(req, resp, registration);
     }
 
-    private void sendModel(HttpServletRequest req, HttpServletResponse resp, Registration registration) {
+    private void sendModel(HttpServletRequest req, HttpServletResponse resp, IRegistration registration) {
         executeSafely(req, resp, () -> {
             LwM2mModel model = modelProvider.getObjectModel(registration);
             resp.setContentType("application/json");

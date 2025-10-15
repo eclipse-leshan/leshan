@@ -28,14 +28,14 @@ public interface RegistrationService {
      * @param id registration id
      * @return the matching registration or <code>null</code> if not found
      */
-    Registration getById(String id);
+    IRegistration getById(String id);
 
     /**
      * Retrieves a registration by end-point.
      *
      * @return the matching registration or <code>null</code> if not found
      */
-    Registration getByEndpoint(String endpoint);
+    IRegistration getByEndpoint(String endpoint);
 
     /**
      * Returns an iterator over all registrations. There are no guarantees concerning the order in which the elements
@@ -43,7 +43,7 @@ public interface RegistrationService {
      *
      * @return an {@link Iterator} over registrations
      */
-    Iterator<Registration> getAllRegistrations();
+    Iterator<IRegistration> getAllRegistrations();
 
     /**
      * Adds a new listener to be notified with client registration events.

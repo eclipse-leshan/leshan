@@ -39,7 +39,7 @@ import org.eclipse.leshan.server.endpoint.EffectiveEndpointUriProvider;
 import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.profile.ClientProfile;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.transport.javacoap.request.ResponseCodeUtil;
 
@@ -97,7 +97,7 @@ public class CoapNotificationReceiver implements NotificationsReceiver {
         // Handle CoAP Notification
         payload.whenComplete((p, e) -> {
             // Check we have a corresponding registration
-            Registration registration = registrationStore.getRegistration(observation.getRegistrationId());
+            IRegistration registration = registrationStore.getRegistration(observation.getRegistrationId());
             if (registration == null) {
                 throw new IllegalStateException(
                         String.format("No registration with Id %s", observation.getRegistrationId()));

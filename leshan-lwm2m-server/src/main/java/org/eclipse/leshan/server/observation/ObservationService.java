@@ -18,7 +18,7 @@ package org.eclipse.leshan.server.observation;
 import java.util.Set;
 
 import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 
 /**
  * A service keeping track observation. Can be used for finding observations and cancel them.
@@ -34,7 +34,7 @@ public interface ObservationService {
      * @param registration the LWM2M Client to cancel observations for
      * @return the number of canceled observations
      */
-    int cancelObservations(Registration registration);
+    int cancelObservations(IRegistration registration);
 
     /**
      * Cancels all active observations for the given resource of a given registration.
@@ -46,7 +46,7 @@ public interface ObservationService {
      * @param nodePath LWM2M node path to cancel observation for
      * @return the number of canceled observations
      */
-    int cancelObservations(Registration registration, String nodePath);
+    int cancelObservations(IRegistration registration, String nodePath);
 
     /**
      * Cancels all active Composite-Observations for the given resources of a given registration.
@@ -58,7 +58,7 @@ public interface ObservationService {
      * @param nodePaths LWM2M node paths to cancel composite-observation for
      * @return the number of canceled observations
      */
-    int cancelCompositeObservations(Registration registration, String[] nodePaths);
+    int cancelCompositeObservations(IRegistration registration, String[] nodePaths);
 
     /**
      * Cancels an observation.
@@ -75,7 +75,7 @@ public interface ObservationService {
      *
      * @return an unmodifiable set of observation
      */
-    Set<Observation> getObservations(Registration registration);
+    Set<Observation> getObservations(IRegistration registration);
 
     void addListener(ObservationListener listener);
 

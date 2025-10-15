@@ -18,6 +18,7 @@ package org.eclipse.leshan.server.registration;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -41,6 +42,7 @@ import org.eclipse.leshan.core.observation.ObservationIdentifier;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.peer.LwM2mIdentity;
 import org.eclipse.leshan.core.util.NamedThreadFactory;
+import org.eclipse.leshan.server.registration.Registration.Builder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,10 +53,10 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
     private static final Logger LOG = LoggerFactory.getLogger(InMemoryRegistrationStore.class);
 
     // Data structure
-    private final Map<String /* end-point */, Registration> regsByEp = new HashMap<>();
-    private final Map<InetSocketAddress, Registration> regsByAddr = new HashMap<>();
-    private final Map<String /* reg-id */, Registration> regsByRegId = new HashMap<>();
-    private final Map<LwM2mIdentity, Registration> regsByIdentity = new HashMap<>();
+    private final Map<String /* end-point */, IRegistration> regsByEp = new HashMap<>();
+    private final Map<InetSocketAddress, IRegistration> regsByAddr = new HashMap<>();
+    private final Map<String /* reg-id */, IRegistration> regsByRegId = new HashMap<>();
+    private final Map<LwM2mIdentity, IRegistration> regsByIdentity = new HashMap<>();
     private final Map<ObservationIdentifier, Observation> obsByToken = new HashMap<>();
     private final Map<String, Set<ObservationIdentifier>> tokensByRegId = new HashMap<>();
 
@@ -90,7 +92,7 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
         try {
             lock.writeLock().lock();
 
-            Registration registrationRemoved = regsByEp.put(registration.getEndpoint(), registration);
+            IRegistration registrationRemoved = regsByEp.put(registration.getEndpoint(), registration);
             regsByRegId.put(registration.getId(), registration);
             regsByIdentity.put(registration.getClientTransportData().getIdentity(), registration);
             // If a registration is already associated to this address we don't care as we only want to keep the most
@@ -109,7 +111,12 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
                     removeFromMap(regsByIdentity, registrationRemoved.getClientTransportData().getIdentity(),
                             registrationRemoved);
                 }
-                return new Deregistration(registrationRemoved, observationsRemoved);
+                if (registration.hasChildEndDevices()) {
+                    List<Deregistration> childrenDeregistration = removeAllEndDeviceRegistration(registration);
+                    return new Deregistration(registrationRemoved, observationsRemoved, null, childrenDeregistration);
+                } else {
+                    return new Deregistration(registrationRemoved, observationsRemoved);
+                }
             }
         } finally {
             lock.writeLock().unlock();
@@ -122,35 +129,47 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
         try {
             lock.writeLock().lock();
 
-            Registration registration = getRegistration(update.getRegistrationId());
+            IRegistration registration = getRegistration(update.getRegistrationId());
             if (registration == null) {
                 return null;
             } else {
                 Registration updatedRegistration = update.update(registration);
-                regsByEp.put(updatedRegistration.getEndpoint(), updatedRegistration);
-                // If registration is already associated to this address we don't care as we only want to keep the most
-                // recent binding.
-                regsByAddr.put(updatedRegistration.getSocketAddress(), updatedRegistration);
-                if (!registration.getSocketAddress().equals(updatedRegistration.getSocketAddress())) {
-                    removeFromMap(regsByAddr, registration.getSocketAddress(), registration);
-                }
-                regsByIdentity.put(updatedRegistration.getClientTransportData().getIdentity(), updatedRegistration);
-                if (!registration.getClientTransportData().getIdentity()
-                        .equals(updatedRegistration.getClientTransportData().getIdentity())) {
-                    removeFromMap(regsByIdentity, registration.getClientTransportData().getIdentity(), registration);
-                }
+                updateIndexes(updatedRegistration, updatedRegistration);
 
-                regsByRegId.put(updatedRegistration.getId(), updatedRegistration);
+                if (updatedRegistration.hasChildEndDevices()) {
+                    List<UpdatedRegistration> updateAllEndDeviceRegistration = updateAllEndDeviceRegistration(
+                            updatedRegistration);
+                    return new UpdatedRegistration(registration, updatedRegistration, updateAllEndDeviceRegistration);
 
-                return new UpdatedRegistration(registration, updatedRegistration);
+                } else {
+                    return new UpdatedRegistration(registration, updatedRegistration);
+
+                }
             }
         } finally {
             lock.writeLock().unlock();
         }
     }
 
+    private void updateIndexes(IRegistration registration, IRegistration updatedRegistration) {
+        regsByEp.put(updatedRegistration.getEndpoint(), updatedRegistration);
+        // If registration is already associated to this address we don't care as we only want to keep the most
+        // recent binding.
+        regsByAddr.put(updatedRegistration.getSocketAddress(), updatedRegistration);
+        if (!registration.getSocketAddress().equals(updatedRegistration.getSocketAddress())) {
+            removeFromMap(regsByAddr, registration.getSocketAddress(), registration);
+        }
+        regsByIdentity.put(updatedRegistration.getClientTransportData().getIdentity(), updatedRegistration);
+        if (!registration.getClientTransportData().getIdentity()
+                .equals(updatedRegistration.getClientTransportData().getIdentity())) {
+            removeFromMap(regsByIdentity, registration.getClientTransportData().getIdentity(), registration);
+        }
+
+        regsByRegId.put(updatedRegistration.getId(), updatedRegistration);
+    }
+
     @Override
-    public Registration getRegistration(String registrationId) {
+    public IRegistration getRegistration(String registrationId) {
         try {
             lock.readLock().lock();
             return regsByRegId.get(registrationId);
@@ -160,7 +179,7 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
     }
 
     @Override
-    public Registration getRegistrationByEndpoint(String endpoint) {
+    public IRegistration getRegistrationByEndpoint(String endpoint) {
         try {
             lock.readLock().lock();
             return regsByEp.get(endpoint);
@@ -170,7 +189,7 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
     }
 
     @Override
-    public Registration getRegistrationByAdress(InetSocketAddress address) {
+    public IRegistration getRegistrationByAdress(InetSocketAddress address) {
         try {
             lock.readLock().lock();
             return regsByAddr.get(address);
@@ -180,7 +199,7 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
     }
 
     @Override
-    public Registration getRegistrationByIdentity(LwM2mIdentity identity) {
+    public IRegistration getRegistrationByIdentity(LwM2mIdentity identity) {
         try {
             lock.readLock().lock();
             return regsByIdentity.get(identity);
@@ -190,7 +209,7 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
     }
 
     @Override
-    public Iterator<Registration> getAllRegistrations() {
+    public Iterator<IRegistration> getAllRegistrations() {
         try {
             lock.readLock().lock();
             return new ArrayList<>(regsByEp.values()).iterator();
@@ -204,14 +223,20 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
         try {
             lock.writeLock().lock();
 
-            Registration registration = getRegistration(registrationId);
+            IRegistration registration = getRegistration(registrationId);
             if (registration != null) {
                 Collection<Observation> observationsRemoved = unsafeRemoveAllObservations(registration.getId());
                 regsByEp.remove(registration.getEndpoint());
                 removeFromMap(regsByAddr, registration.getSocketAddress(), registration);
                 removeFromMap(regsByRegId, registration.getId(), registration);
                 removeFromMap(regsByIdentity, registration.getClientTransportData().getIdentity(), registration);
-                return new Deregistration(registration, observationsRemoved);
+
+                if (registration.isGateway()) {
+                    List<Deregistration> childrenDeregistration = removeAllEndDeviceRegistration(registration);
+                    return new Deregistration(registration, observationsRemoved, null, childrenDeregistration);
+                } else {
+                    return new Deregistration(registration, observationsRemoved);
+                }
             }
             return null;
         } finally {
@@ -220,7 +245,6 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
     }
 
     /* *************** Leshan Observation API **************** */
-
     @Override
     public Collection<Observation> addObservation(String registrationId, Observation observation, boolean addIfAbsent) {
         List<Observation> removed = new ArrayList<>();
@@ -441,7 +465,7 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
         @Override
         public void run() {
             try {
-                Collection<Registration> allRegs = new ArrayList<>();
+                Collection<IRegistration> allRegs = new ArrayList<>();
                 try {
                     lock.readLock().lock();
                     allRegs.addAll(regsByEp.values());
@@ -449,8 +473,8 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
                     lock.readLock().unlock();
                 }
 
-                for (Registration reg : allRegs) {
-                    if (!reg.isAlive()) {
+                for (IRegistration reg : allRegs) {
+                    if (!(reg instanceof EndDeviceRegistration) && !reg.isAlive()) {
                         // force de-registration
                         Deregistration removedRegistration = removeRegistration(reg.getId());
                         expirationListener.registrationExpired(removedRegistration.getRegistration(),
@@ -471,5 +495,92 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
             return true;
         } else
             return false;
+    }
+
+    @Override
+    public List<Deregistration> addEndDeviceRegistrations(IRegistration gateway,
+            List<EndDeviceRegistration> endDevices) {
+        try {
+            lock.writeLock().lock();
+
+            // check there is a gateway available in the registry with that id
+            IRegistration registration = getRegistration(gateway.getId());
+            if (registration == null) {
+                return Collections.emptyList();
+            }
+            if (!registration.isGateway()) {
+                return Collections.emptyList();
+            }
+
+            // Get previous child devices
+            List<Deregistration> modifications = new ArrayList<>();
+            Collection<String> previousChildrenEndpointsToRemove = new ArrayList<>(
+                    gateway.getChildEndDevices().values());
+            Map<String, String> childMap = new HashMap<>();
+
+            for (EndDeviceRegistration newEndDevice : endDevices) {
+                // add registration
+                IRegistration previous = regsByEp.put(newEndDevice.getEndpoint(), newEndDevice);
+                regsByRegId.put(newEndDevice.getId(), newEndDevice);
+                if (previous != null) {
+                    Collection<Observation> observationsRemoved = unsafeRemoveAllObservations(previous.getId());
+                    if (!previous.getId().equals(newEndDevice.getId())) {
+                        removeFromMap(regsByRegId, previous.getId(), previous);
+                    }
+                    modifications.add(new Deregistration(previous, observationsRemoved, newEndDevice));
+                } else {
+                    modifications.add(new Deregistration(null, null, newEndDevice));
+                }
+
+                // we only keep registration to remove in that collection
+                previousChildrenEndpointsToRemove.remove(newEndDevice.getEndpoint());
+
+                // store all current child device
+                childMap.put(newEndDevice.getPrefix(), newEndDevice.getEndpoint());
+            }
+
+            // remove not replaced previous registration
+            for (String endpoint : previousChildrenEndpointsToRemove) {
+                IRegistration registrationToRemove = regsByEp.get(endpoint);
+                if (registrationToRemove != null) {
+                    Collection<Observation> observationsRemoved = unsafeRemoveAllObservations(
+                            registrationToRemove.getId());
+                    removeFromMap(regsByRegId, registrationToRemove.getId(), registrationToRemove);
+                    modifications.add(new Deregistration(registrationToRemove, observationsRemoved));
+                }
+            }
+
+            // update GatewayRegistration.
+            if (!childMap.isEmpty()) {
+                Builder builder = new Registration.Builder((Registration) registration);
+                builder.endDevices(childMap);
+                Registration gatewayUpdated = builder.build();
+                updateIndexes(gateway, gatewayUpdated);
+            }
+
+            return modifications;
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    private List<UpdatedRegistration> updateAllEndDeviceRegistration(Registration registration) {
+        List<UpdatedRegistration> updatedRegistrations = new ArrayList<>();
+        for (String endpoint : registration.getChildEndDevices().values()) {
+            EndDeviceRegistration endDevice = (EndDeviceRegistration) getRegistrationByEndpoint(endpoint);
+            EndDeviceRegistration updatedEndDevice = new EndDeviceRegistration.Builder(registration, endDevice).build();
+            updateIndexes(endDevice, updatedEndDevice);
+            updatedRegistrations.add(new UpdatedRegistration(endDevice, updatedEndDevice));
+        }
+        return updatedRegistrations;
+    }
+
+    private List<Deregistration> removeAllEndDeviceRegistration(IRegistration registration) {
+        List<Deregistration> deregistrations = new ArrayList<>();
+        for (String endpoint : registration.getChildEndDevices().values()) {
+            IRegistration endDevice = getRegistrationByEndpoint(endpoint);
+            deregistrations.add(removeRegistration(endDevice.getId()));
+        }
+        return deregistrations;
     }
 }

@@ -34,7 +34,7 @@ import org.eclipse.leshan.core.request.CreateRequest;
 import org.eclipse.leshan.integration.tests.util.LeshanTestClient;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
 import org.eclipse.leshan.integration.tests.util.junit5.extensions.BeforeEachParameterizedResolver;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.transport.californium.CoapSyncRequestObserver;
 import org.eclipse.leshan.transport.californium.DefaultExceptionTranslator;
 import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServerEndpoint;
@@ -69,7 +69,7 @@ public class DeleteClientOnlyTest {
 
     LeshanTestServer server;
     LeshanTestClient client;
-    Registration currentRegistration;
+    IRegistration currentRegistration;
 
     @BeforeEach
     public void start(Protocol givenProtocol, String givenClientEndpointProvider) {

@@ -100,7 +100,7 @@ public class RegistrationUpdate {
      * @param registration the registration to update
      * @return the updated registration
      */
-    public Registration update(Registration registration) {
+    public Registration update(IRegistration registration) {
         LwM2mPeer transportData = this.clientTransportData != null ? this.clientTransportData
                 : registration.getClientTransportData();
         long lifeTimeInSec = this.lifeTimeInSec != null ? this.lifeTimeInSec : registration.getLifeTimeInSec();
@@ -108,7 +108,7 @@ public class RegistrationUpdate {
         String smsNumber = this.smsNumber != null ? this.smsNumber : registration.getSmsNumber();
 
         Link[] linkObject = this.objectLinks != null ? this.objectLinks : registration.getObjectLinks();
-        String alternatePath = this.alternatePath != null ? this.alternatePath : registration.getRootPath();
+        String alternatePath = this.alternatePath != null ? this.alternatePath : registration.getFullPrefixPath();
         Set<ContentFormat> supportedContentFormats = this.supportedContentFormats != null ? this.supportedContentFormats
                 : registration.getSupportedContentFormats();
         Map<Integer, Version> supportedObjects = this.supportedObjects != null ? this.supportedObjects
@@ -148,7 +148,9 @@ public class RegistrationUpdate {
                 .availableInstances(availableInstances) //
                 // out of spec data
                 .additionalRegistrationAttributes(additionalAttributes) //
-                .customRegistrationData(customRegistrationData);
+                .customRegistrationData(customRegistrationData)
+                // gate way data
+                .endDevices(registration.getChildEndDevices());
 
         return builder.build();
     }

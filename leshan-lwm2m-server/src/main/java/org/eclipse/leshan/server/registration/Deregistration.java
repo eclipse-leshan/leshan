@@ -17,6 +17,7 @@ package org.eclipse.leshan.server.registration;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import org.eclipse.leshan.core.observation.Observation;
 
@@ -26,22 +27,53 @@ import org.eclipse.leshan.core.observation.Observation;
  * @see RegistrationStore
  */
 public class Deregistration {
-    final Registration registration;
+    final IRegistration registration;
     final Collection<Observation> observations;
+    final IRegistration newRegistration; // the new if replaced or null
 
-    public Deregistration(Registration registration, Collection<Observation> observations) {
-        this.registration = registration;
-        if (observations == null)
-            this.observations = Collections.emptyList();
-        else
-            this.observations = observations;
+    final List<Deregistration> childrenDeregistration;
+
+    public Deregistration(IRegistration registration, Collection<Observation> observations) {
+        this(registration, observations, null);
     }
 
-    public Registration getRegistration() {
+    public Deregistration(IRegistration registration, Collection<Observation> observations,
+            IRegistration newRegistration) {
+        this(registration, observations, newRegistration, null);
+    }
+
+    public Deregistration(IRegistration registration, Collection<Observation> observations,
+            IRegistration newRegistration, List<Deregistration> childrenDeregistration) {
+        this.registration = registration;
+        this.newRegistration = newRegistration;
+        if (observations == null) {
+            this.observations = Collections.emptyList();
+        } else {
+            this.observations = observations;
+        }
+        if (childrenDeregistration == null) {
+            this.childrenDeregistration = Collections.emptyList();
+        } else {
+            this.childrenDeregistration = childrenDeregistration;
+        }
+    }
+
+    public IRegistration getRegistration() {
         return registration;
     }
 
     public Collection<Observation> getObservations() {
         return observations;
+    }
+
+    public IRegistration getNewRegistration() {
+        return newRegistration;
+    }
+
+    /**
+     * @return list of {@link Deregistration} about EndDevice for gateway registration
+     */
+    public List<Deregistration> getChildrenDeRegistration() {
+        return childrenDeregistration;
     }
 }

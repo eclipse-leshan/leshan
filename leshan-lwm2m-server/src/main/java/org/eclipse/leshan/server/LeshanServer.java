@@ -58,6 +58,8 @@ import org.eclipse.leshan.server.queue.PresenceService;
 import org.eclipse.leshan.server.queue.PresenceServiceImpl;
 import org.eclipse.leshan.server.queue.PresenceStateListener;
 import org.eclipse.leshan.server.queue.QueueModeLwM2mRequestSender;
+import org.eclipse.leshan.server.registration.EndDeviceRegistrationHandler;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationDataExtractor;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
@@ -177,6 +179,7 @@ public class LeshanServer {
         requestSender = createRequestSender(endpointsProvider, registrationService, this.modelProvider,
                 presenceService);
 
+        new EndDeviceRegistrationHandler(registrationService, registrationIdProvider, registrationDataExtractor, this);
     }
 
     protected RegistrationServiceImpl createRegistrationService(RegistrationStore registrationStore) {
@@ -229,7 +232,8 @@ public class LeshanServer {
         registrationService.addListener(new RegistrationListener() {
 
             @Override
-            public void updated(RegistrationUpdate update, Registration updatedRegistration, Registration previousReg) {
+            public void updated(RegistrationUpdate update, IRegistration updatedRegistration,
+                    IRegistration previousReg) {
                 if ((previousReg.getAddress() != null && !previousReg.getAddress().equals(update.getAddress()))
                         || (previousReg.getPort() != null && !previousReg.getPort().equals(update.getPort()))) {
                     requestSender.cancelOngoingRequests(previousReg);
@@ -237,13 +241,13 @@ public class LeshanServer {
             }
 
             @Override
-            public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
-                    Registration newReg) {
+            public void unregistered(IRegistration registration, Collection<Observation> observations, boolean expired,
+                    IRegistration newReg) {
                 requestSender.cancelOngoingRequests(registration);
             }
 
             @Override
-            public void registered(Registration registration, Registration previousReg,
+            public void registered(IRegistration registration, IRegistration previousReg,
                     Collection<Observation> previousObsersations) {
             }
         });
@@ -431,7 +435,7 @@ public class LeshanServer {
      * @throws InvalidResponseException if the response received is malformed.
      * @throws ClientSleepingException if client is currently sleeping.
      */
-    public <T extends LwM2mResponse> T send(Registration destination, DownlinkDeviceManagementRequest<T> request)
+    public <T extends LwM2mResponse> T send(IRegistration destination, DownlinkDeviceManagementRequest<T> request)
             throws InterruptedException {
         return send(destination, request, DEFAULT_TIMEOUT);
     }
@@ -457,7 +461,7 @@ public class LeshanServer {
      * @throws InvalidResponseException if the response received is malformed.
      * @throws ClientSleepingException if client is currently sleeping.
      */
-    public <T extends LwM2mResponse> T send(Registration destination, DownlinkDeviceManagementRequest<T> request,
+    public <T extends LwM2mResponse> T send(IRegistration destination, DownlinkDeviceManagementRequest<T> request,
             long timeoutInMs) throws InterruptedException {
         return send(destination, request, null, timeoutInMs);
     }
@@ -484,7 +488,7 @@ public class LeshanServer {
      * @throws InvalidResponseException if the response received is malformed.
      * @throws ClientSleepingException if client is currently sleeping.
      */
-    public <T extends LwM2mResponse> T send(Registration destination, DownlinkDeviceManagementRequest<T> request,
+    public <T extends LwM2mResponse> T send(IRegistration destination, DownlinkDeviceManagementRequest<T> request,
             LowerLayerConfig lowerLayerConfig, long timeoutInMs) throws InterruptedException {
         return requestSender.send(destination, request, lowerLayerConfig, timeoutInMs);
     }
@@ -517,7 +521,7 @@ public class LeshanServer {
      *        This callback MUST NOT be null.
      * @throws CodecException if request payload can not be encoded.
      */
-    public <T extends LwM2mResponse> void send(Registration destination, DownlinkDeviceManagementRequest<T> request,
+    public <T extends LwM2mResponse> void send(IRegistration destination, DownlinkDeviceManagementRequest<T> request,
             ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         send(destination, request, DEFAULT_TIMEOUT, responseCallback, errorCallback);
     }
@@ -549,7 +553,7 @@ public class LeshanServer {
      *        This callback MUST NOT be null.
      * @throws CodecException if request payload can not be encoded.
      */
-    public <T extends LwM2mResponse> void send(Registration destination, DownlinkDeviceManagementRequest<T> request,
+    public <T extends LwM2mResponse> void send(IRegistration destination, DownlinkDeviceManagementRequest<T> request,
             long timeoutInMs, ResponseCallback<T> responseCallback, ErrorCallback errorCallback) {
         send(destination, request, null, timeoutInMs, responseCallback, errorCallback);
     }
@@ -584,7 +588,7 @@ public class LeshanServer {
      *
      * @since 1.2
      */
-    public <T extends LwM2mResponse> void send(Registration destination, DownlinkDeviceManagementRequest<T> request,
+    public <T extends LwM2mResponse> void send(IRegistration destination, DownlinkDeviceManagementRequest<T> request,
             LowerLayerConfig lowerLayerConfig, long timeoutInMs, ResponseCallback<T> responseCallback,
             ErrorCallback errorCallback) {
         requestSender.send(destination, request, lowerLayerConfig, timeoutInMs, responseCallback, errorCallback);

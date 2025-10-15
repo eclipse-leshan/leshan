@@ -48,7 +48,7 @@ class RegistrationUpdateTest {
         additionalAttributes.put("z", "100");
         builder.additionalRegistrationAttributes(additionalAttributes);
 
-        Registration r = builder.build();
+        IRegistration r = builder.build();
 
         Map<String, String> updateAdditionalAttributes = new HashMap<String, String>();
         updateAdditionalAttributes.put("x", "2");
@@ -81,7 +81,7 @@ class RegistrationUpdateTest {
         customData.put("y", "10");
         customData.put("z", "100");
         builder.customRegistrationData(customData);
-        Registration r = builder.build();
+        IRegistration r = builder.build();
 
         RegistrationUpdate updateReg = new RegistrationUpdate(r.getId(), r.getClientTransportData(), null, null, null,
                 null, null, null, null, null, null, null);

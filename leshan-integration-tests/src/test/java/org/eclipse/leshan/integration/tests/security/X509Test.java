@@ -54,7 +54,7 @@ import org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
 import org.eclipse.leshan.integration.tests.util.junit5.extensions.BeforeEachParameterizedResolver;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.servers.security.InMemorySecurityStore;
 import org.eclipse.leshan.servers.security.NonUniqueSecurityInfoException;
 import org.eclipse.leshan.servers.security.SecurityInfo;
@@ -189,7 +189,7 @@ public class X509Test {
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // check we can send request to client.
         ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
@@ -226,7 +226,7 @@ public class X509Test {
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // check we can send request to client.
         ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
@@ -261,7 +261,7 @@ public class X509Test {
 
         // Check client is well registered
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         // check we can send request to client.
         ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
@@ -479,7 +479,7 @@ public class X509Test {
         client.start();
         server.waitForNewRegistrationOf(client);
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
         assertThat(response.isSuccess()).isTrue();
@@ -558,7 +558,7 @@ public class X509Test {
         client.start();
         server.waitForNewRegistrationOf(client);
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
         assertThat(response.isSuccess()).isTrue();
@@ -668,7 +668,7 @@ public class X509Test {
         client.start();
         server.waitForNewRegistrationOf(client);
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
         assertThat(response.isSuccess()).isTrue();
@@ -915,7 +915,7 @@ public class X509Test {
         client.start();
         server.waitForNewRegistrationOf(client);
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
         assertThat(response.isSuccess()).isTrue();
@@ -954,7 +954,7 @@ public class X509Test {
         client.start();
         server.waitForNewRegistrationOf(client);
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
         assertThat(response.isSuccess()).isTrue();
@@ -1131,7 +1131,7 @@ public class X509Test {
         client.start();
         server.waitForNewRegistrationOf(client);
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
         assertThat(response.isSuccess()).isTrue();
@@ -1272,7 +1272,7 @@ public class X509Test {
         client.start();
         server.waitForNewRegistrationOf(client);
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
         assertThat(response.isSuccess()).isTrue();
@@ -1311,7 +1311,7 @@ public class X509Test {
         client.start();
         server.waitForNewRegistrationOf(client);
         assertThat(client).isRegisteredAt(server);
-        Registration registration = server.getRegistrationFor(client);
+        IRegistration registration = server.getRegistrationFor(client);
 
         ReadResponse response = server.send(registration, new ReadRequest(3, 0, 1), 500);
         assertThat(response.isSuccess()).isTrue();

@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue;
 
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 
 public class StaticClientAwakeTimeProvider implements ClientAwakeTimeProvider {
 
@@ -34,7 +34,7 @@ public class StaticClientAwakeTimeProvider implements ClientAwakeTimeProvider {
     }
 
     @Override
-    public int getClientAwakeTime(Registration reg) {
+    public int getClientAwakeTime(IRegistration reg) {
         return clientAwakeTime;
     }
 
