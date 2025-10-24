@@ -104,7 +104,7 @@ public class SecurityInfoSerDes {
             oscore.put(KEY_AEAD_ALGORITHM, oscoreObject.getAeadAlgorithm().getValue());
             oscore.put(KEY_HMAC_ALGORITHM, oscoreObject.getHkdfAlgorithm().getValue());
             byte[] masterSalt = oscoreObject.getMasterSalt();
-            if (masterSalt != null && masterSalt.length > 0) {
+            if (masterSalt.length > 0) {
                 oscore.put(KEY_MASTER_SALT, Hex.encodeHexString(masterSalt));
             }
 

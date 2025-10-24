@@ -109,8 +109,6 @@ public class SecurityInfoSerDesTest {
 
         assertNotNull(datarestored);
         assertNotNull(datarestored.getOscoreSetting());
-        assertNotNull(datarestored.getOscoreSetting().getMasterSalt(),
-                "Expected masterSalt not to be null after serialization/deserialization");
         assertEquals(0, datarestored.getOscoreSetting().getMasterSalt().length,
                 "Expected masterSalt to be an empty array after serialization/deserialization");
     }
