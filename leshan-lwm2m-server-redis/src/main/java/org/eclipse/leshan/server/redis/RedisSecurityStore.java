@@ -16,11 +16,13 @@
 package org.eclipse.leshan.server.redis;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.eclipse.leshan.core.oscore.OscoreSetting;
 import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.redis.serialization.SecurityInfoSerDes;
@@ -38,8 +40,8 @@ import redis.clients.jedis.util.Pool;
 /**
  * A {@link SecurityStore} implementation based on Redis.
  * <p>
- * Security info are stored using the endpoint as primary key and a secondary index is created for endpoint lookup by
- * PSK identity.
+ * Security info are stored using the endpoint as primary key and secondary indexes are created for endpoint lookup by
+ * PSK identity and OSCORE RID.
  */
 public class RedisSecurityStore implements EditableSecurityStore {
 
@@ -138,19 +140,19 @@ public class RedisSecurityStore implements EditableSecurityStore {
 
         try (Jedis j = pool.getResource()) {
 
-            updatePskIndex(j, info);
-            updateOscoreIndex(j, info);
+            updateSecondaryIndexByPskIdentity(j, info);
+            updateSecondaryIndexByOscoreIdentity(j, info);
 
             byte[] previousData = j.getSet((securityInfoByEndpointPrefix + info.getEndpoint()).getBytes(), data);
             SecurityInfo previous = previousData == null ? null : deserialize(previousData);
 
-            cleanupPreviousIndexes(j, previous);
+            cleanupPreviousSecondaryIndexes(j, previous, info);
 
             return previous;
         }
     }
 
-    private void updatePskIndex(Jedis j, SecurityInfo info) throws NonUniqueSecurityInfoException {
+    private void updateSecondaryIndexByPskIdentity(Jedis j, SecurityInfo info) throws NonUniqueSecurityInfoException {
         if (info.getPskIdentity() != null) {
             String oldEndpoint = j.hget(endpointByPskIdKey, info.getPskIdentity());
             if (oldEndpoint != null && !oldEndpoint.equals(info.getEndpoint())) {
@@ -160,7 +162,8 @@ public class RedisSecurityStore implements EditableSecurityStore {
         }
     }
 
-    private void updateOscoreIndex(Jedis j, SecurityInfo info) throws NonUniqueSecurityInfoException {
+    private void updateSecondaryIndexByOscoreIdentity(Jedis j, SecurityInfo info)
+            throws NonUniqueSecurityInfoException {
         if (info.getOscoreSetting() != null && info.getOscoreSetting().getRecipientId() != null) {
             byte[] recipientId = info.getOscoreSetting().getRecipientId();
             byte[] endpointKey = endpointByOscoreRecipientIdKey.getBytes(StandardCharsets.UTF_8);
@@ -176,14 +179,23 @@ public class RedisSecurityStore implements EditableSecurityStore {
         }
     }
 
-    private void cleanupPreviousIndexes(Jedis j, SecurityInfo previous) {
+    private void cleanupPreviousSecondaryIndexes(Jedis j, SecurityInfo previous, SecurityInfo info) {
         if (previous != null) {
-            if (previous.getPskIdentity() != null) {
+            String previousIdentity = previous.getPskIdentity();
+            if (previousIdentity != null && !previousIdentity.equals(info.getPskIdentity())) {
                 j.hdel(endpointByPskIdKey, previous.getPskIdentity());
             }
-            if (previous.getOscoreSetting() != null) {
-                byte[] recipientId = previous.getOscoreSetting().getRecipientId();
-                j.hdel(endpointByOscoreRecipientIdKey.getBytes(), recipientId);
+
+            OscoreSetting previousOscoreSettings = previous.getOscoreSetting();
+            OscoreSetting currentOscoreSettings = info.getOscoreSetting();
+
+            if (previousOscoreSettings != null && currentOscoreSettings != null) {
+                byte[] previousRecipientId = previousOscoreSettings.getRecipientId();
+                byte[] currentRecipientId = currentOscoreSettings.getRecipientId();
+
+                if (previousRecipientId != null && !Arrays.equals(previousRecipientId, currentRecipientId)) {
+                    j.hdel(endpointByOscoreRecipientIdKey.getBytes(), previousRecipientId);
+                }
             }
         }
     }
