@@ -28,19 +28,19 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.server.queue.PresenceService;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
-public class JacksonRegistrationSerializer extends StdSerializer<Registration> {
+public class JacksonRegistrationSerializer extends StdSerializer<IRegistration> {
 
     private static final long serialVersionUID = -2828961931685566265L;
 
     private final PresenceService presenceService;
 
-    protected JacksonRegistrationSerializer(Class<Registration> t, PresenceService presenceService) {
+    protected JacksonRegistrationSerializer(Class<IRegistration> t, PresenceService presenceService) {
         super(t);
         this.presenceService = presenceService;
     }
@@ -50,7 +50,7 @@ public class JacksonRegistrationSerializer extends StdSerializer<Registration> {
     }
 
     @Override
-    public void serialize(Registration src, JsonGenerator gen, SerializerProvider provider) throws IOException {
+    public void serialize(IRegistration src, JsonGenerator gen, SerializerProvider provider) throws IOException {
         Map<String, Object> map = new LinkedHashMap<>();
 
         map.put("endpoint", src.getEndpoint());

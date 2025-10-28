@@ -46,7 +46,7 @@ import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.WriteAttributesRequest;
 import org.eclipse.leshan.core.request.WriteCompositeRequest;
 import org.eclipse.leshan.core.request.WriteRequest;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.transport.javacoap.identity.IdentityHandler;
 import org.eclipse.leshan.transport.javacoap.request.RandomTokenGenerator;
 import org.eclipse.leshan.transport.javacoap.server.observation.LwM2mKeys;
@@ -68,7 +68,7 @@ public class CoapRequestBuilder implements DownlinkDeviceManagementRequestVisito
 
     // client information
     private final LwM2mPeer destination;
-    private final Registration registration;
+    private final IRegistration registration;
     private final String rootPath;
     private final LwM2mEncoder encoder;
     private final LwM2mModel model;
@@ -76,7 +76,7 @@ public class CoapRequestBuilder implements DownlinkDeviceManagementRequestVisito
     // TODO we should better manage this and especially better handle token conflict
     private final RandomTokenGenerator tokenGenerator = new RandomTokenGenerator(8);
 
-    public CoapRequestBuilder(Registration registration, LwM2mPeer destination, String rootPath, LwM2mModel model,
+    public CoapRequestBuilder(IRegistration registration, LwM2mPeer destination, String rootPath, LwM2mModel model,
             LwM2mEncoder encoder, IdentityHandler identityHandler) {
         this.registration = registration;
         this.destination = destination;

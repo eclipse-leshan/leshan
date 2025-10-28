@@ -18,6 +18,7 @@ package org.eclipse.leshan.server.registration;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.ObservationIdentifier;
@@ -53,7 +54,7 @@ public interface RegistrationStore {
      * @param registrationId of the registration.
      * @return the registration or null if there is no registration with this id.
      */
-    Registration getRegistration(String registrationId);
+    IRegistration getRegistration(String registrationId);
 
     /**
      * Get the registration by endpoint.
@@ -61,7 +62,7 @@ public interface RegistrationStore {
      * @param endpoint of the registration.
      * @return the registration or null if there is no registration with this endpoint.
      */
-    Registration getRegistrationByEndpoint(String endpoint);
+    IRegistration getRegistrationByEndpoint(String endpoint);
 
     /**
      * Get the registration by socket address. If there are 2 Registrations linked to the same address, the most recent
@@ -86,7 +87,7 @@ public interface RegistrationStore {
      *
      * @return an {@link Iterator} over the registration in this store
      */
-    Iterator<Registration> getAllRegistrations();
+    Iterator<IRegistration> getAllRegistrations();
 
     /**
      * Remove the registration with the given registration Id
@@ -137,5 +138,9 @@ public interface RegistrationStore {
      * set a listener for registration expiration.
      */
     void setExpirationListener(ExpirationListener listener);
+
+    // Code specific to Gateway support
+    // TODO Maybe we should create a dedicated interface ?
+    List<Deregistration> addEndDeviceRegistrations(IRegistration gateway, List<EndDeviceRegistration> endDevices);
 
 }

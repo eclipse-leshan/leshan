@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -372,13 +371,8 @@ public class EndDeviceRegistration implements IRegistration {
     }
 
     @Override
-    public List<IRegistration> getChildEndDevices() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public IRegistration getChildEndDevices(String prefix) {
-        return null;
+    public Map<String, String> getChildEndDevices() {
+        return Collections.emptyMap();
     }
 
     @Override

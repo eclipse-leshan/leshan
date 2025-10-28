@@ -237,20 +237,21 @@ public class ClientServlet extends LeshanDemoServlet {
 
     private void sendAllRegistration(HttpServletRequest req, HttpServletResponse resp) {
         executeSafely(req, resp, () -> {
-            Collection<Registration> registrations = new ArrayList<>();
-            for (Iterator<Registration> iterator = server.getRegistrationService().getAllRegistrations(); iterator
+            Collection<IRegistration> registrations = new ArrayList<>();
+            for (Iterator<IRegistration> iterator = server.getRegistrationService().getAllRegistrations(); iterator
                     .hasNext();) {
                 registrations.add(iterator.next());
             }
 
-            String json = this.mapper.writeValueAsString(registrations.toArray(new Registration[] {}));
+            String json = this.mapper.writeValueAsString(registrations.toArray(new IRegistration[] {}));
             resp.setContentType(APPLICATION_JSON);
             resp.getOutputStream().write(json.getBytes(StandardCharsets.UTF_8));
             resp.setStatus(HttpServletResponse.SC_OK);
         });
     }
 
-    private void sendReadCompositeRequest(HttpServletRequest req, HttpServletResponse resp, IRegistration registration) {
+    private void sendReadCompositeRequest(HttpServletRequest req, HttpServletResponse resp,
+            IRegistration registration) {
         executeSafely(req, resp, () -> {
             try {
                 // get paths

@@ -53,7 +53,6 @@ import org.eclipse.leshan.server.observation.ObservationListener;
 import org.eclipse.leshan.server.queue.ClientAwakeTimeProvider;
 import org.eclipse.leshan.server.queue.PresenceListener;
 import org.eclipse.leshan.server.registration.IRegistration;
-import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationDataExtractor;
 import org.eclipse.leshan.server.registration.RegistrationIdProvider;
 import org.eclipse.leshan.server.registration.RegistrationListener;
@@ -146,7 +145,7 @@ public class LeshanTestServer extends LeshanServer {
         }
     }
 
-    public Registration getRegistrationFor(LeshanTestClient client) {
+    public IRegistration getRegistrationFor(LeshanTestClient client) {
         return getRegistrationService().getByEndpoint(client.getEndpointName());
     }
 

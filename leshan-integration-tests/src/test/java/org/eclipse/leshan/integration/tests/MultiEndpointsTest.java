@@ -48,7 +48,6 @@ import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
 import org.eclipse.leshan.integration.tests.util.ReverseProxy;
 import org.eclipse.leshan.server.registration.IRegistration;
-import org.eclipse.leshan.server.registration.Registration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -236,7 +235,7 @@ public class MultiEndpointsTest {
         SendResponse response = client.getSendService().sendData(registeredServer, ContentFormat.SENML_JSON,
                 Arrays.asList("/3/0/1", "/3/0/2"), 1000);
         assertThat(response).hasCode(ResponseCode.BAD_REQUEST);
-        Registration registrationAfterSend = server.getRegistrationFor(client);
+        IRegistration registrationAfterSend = server.getRegistrationFor(client);
         assertThat(registrationAfterSend).isEqualTo(registrationBeforeSend);
     }
 
@@ -310,7 +309,7 @@ public class MultiEndpointsTest {
         client.getObjectTree().getObjectEnabler(3).write(LwM2mServer.SYSTEM,
                 new WriteRequest(3, 0, 15, "Europe/Paris"));
         server.ensureNoNotification(observation, 1, TimeUnit.SECONDS);
-        Registration registrationAfterNotification = server.getRegistrationFor(client);
+        IRegistration registrationAfterNotification = server.getRegistrationFor(client);
         assertThat(registrationAfterNotification).isEqualTo(registrationBeforeNotification);
     }
 }

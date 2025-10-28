@@ -16,7 +16,7 @@
 package org.eclipse.leshan.transport.javacoap.server.observation;
 
 import org.eclipse.leshan.core.observation.Observation;
-import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.IRegistration;
 
 import com.mbed.coap.transport.TransportContext.Key;
 
@@ -24,5 +24,5 @@ public class LwM2mKeys {
 
     // Keys for Observe Request
     public static final Key<Observation> LESHAN_OBSERVATION = new Key<>(null);
-    public static final Key<Registration> LESHAN_REGISTRATION = new Key<>(null);
+    public static final Key<IRegistration> LESHAN_REGISTRATION = new Key<>(null);
 }

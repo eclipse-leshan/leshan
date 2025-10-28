@@ -53,6 +53,7 @@ import org.eclipse.leshan.server.redis.serialization.LwM2mPeerSerDes;
 import org.eclipse.leshan.server.redis.serialization.ObservationSerDes;
 import org.eclipse.leshan.server.redis.serialization.RegistrationSerDes;
 import org.eclipse.leshan.server.registration.Deregistration;
+import org.eclipse.leshan.server.registration.EndDeviceRegistration;
 import org.eclipse.leshan.server.registration.ExpirationListener;
 import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.Registration;
@@ -316,17 +317,17 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
     }
 
     @Override
-    public Iterator<Registration> getAllRegistrations() {
+    public Iterator<IRegistration> getAllRegistrations() {
         return new RedisIterator(pool, new ScanParams().match(registrationByEndpointPrefix + "*").count(100));
     }
 
-    protected class RedisIterator implements Iterator<Registration> {
+    protected class RedisIterator implements Iterator<IRegistration> {
 
         private final Pool<Jedis> pool;
         private final ScanParams scanParams;
 
         private String cursor;
-        private List<Registration> scanResult;
+        private List<IRegistration> scanResult;
 
         public RedisIterator(Pool<Jedis> p, ScanParams scanParams) {
             pool = p;
@@ -370,7 +371,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
         }
 
         @Override
-        public Registration next() {
+        public IRegistration next() {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
@@ -1110,5 +1111,12 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
 
             return new RedisRegistrationStore(this);
         }
+    }
+
+    @Override
+    public List<Deregistration> addEndDeviceRegistrations(IRegistration gateway,
+            List<EndDeviceRegistration> endDevices) {
+        // TODO implement that
+        return null;
     }
 }

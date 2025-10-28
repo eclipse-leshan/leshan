@@ -36,7 +36,8 @@ public interface RegistrationListener {
      * @param previousObservations all the observations linked to the previous registration which have been passively
      *        cancelled. <code>null</code> for a brand-new registration.
      */
-    void registered(IRegistration registration, IRegistration previousReg, Collection<Observation> previousObservations);
+    void registered(IRegistration registration, IRegistration previousReg,
+            Collection<Observation> previousObservations);
 
     /**
      * Invoked when a client updates its registration.

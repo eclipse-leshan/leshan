@@ -19,7 +19,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Date;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -158,7 +157,5 @@ public interface IRegistration {
 
     boolean isGateway();
 
-    List<IRegistration> getChildEndDevices();
-
-    IRegistration getChildEndDevices(String prefix);
+    Map<String /* prefix */, String /* endpoint */> getChildEndDevices();
 }

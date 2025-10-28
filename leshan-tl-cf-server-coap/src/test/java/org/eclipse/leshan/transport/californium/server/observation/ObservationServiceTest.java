@@ -175,10 +175,10 @@ public class ObservationServiceTest {
     }
 
     private Observation givenAnObservation(String registrationId, LwM2mPath target) {
-        Registration registration = store.getRegistration(registrationId);
+        IRegistration registration = store.getRegistration(registrationId);
         if (registration == null) {
             registration = givenASimpleClient(registrationId);
-            store.addRegistration(registration);
+            store.addRegistration((Registration) registration);
         }
 
         byte[] token = new byte[8];

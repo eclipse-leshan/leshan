@@ -247,7 +247,8 @@ public class ObservationServiceImpl implements ObservationService, LwM2mNotifica
     public void onNotification(SingleObservation observation, LwM2mPeer sender, ClientProfile profile,
             ObserveResponse response) {
         try {
-            IRegistration updatedRegistration = updateRegistrationOnRegistration(observation, sender, profile, response);
+            IRegistration updatedRegistration = updateRegistrationOnRegistration(observation, sender, profile,
+                    response);
             for (ObservationListener listener : listeners) {
                 listener.onResponse(observation, updatedRegistration, response);
             }
@@ -262,7 +263,8 @@ public class ObservationServiceImpl implements ObservationService, LwM2mNotifica
     public void onNotification(CompositeObservation observation, LwM2mPeer sender, ClientProfile profile,
             ObserveCompositeResponse response) {
         try {
-            IRegistration updatedRegistration = updateRegistrationOnRegistration(observation, sender, profile, response);
+            IRegistration updatedRegistration = updateRegistrationOnRegistration(observation, sender, profile,
+                    response);
             for (ObservationListener listener : listeners) {
                 listener.onResponse(observation, updatedRegistration, response);
             }

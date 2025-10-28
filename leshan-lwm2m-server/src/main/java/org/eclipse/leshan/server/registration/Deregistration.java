@@ -28,9 +28,16 @@ import org.eclipse.leshan.core.observation.Observation;
 public class Deregistration {
     final IRegistration registration;
     final Collection<Observation> observations;
+    final IRegistration newRegistration; // the new if replaced or null
 
     public Deregistration(IRegistration registration, Collection<Observation> observations) {
+        this(registration, observations, null);
+    }
+
+    public Deregistration(IRegistration registration, Collection<Observation> observations,
+            IRegistration newRegistration) {
         this.registration = registration;
+        this.newRegistration = newRegistration;
         if (observations == null)
             this.observations = Collections.emptyList();
         else
@@ -43,5 +50,9 @@ public class Deregistration {
 
     public Collection<Observation> getObservations() {
         return observations;
+    }
+
+    public IRegistration getNewRegistration() {
+        return newRegistration;
     }
 }

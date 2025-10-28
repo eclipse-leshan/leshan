@@ -29,7 +29,7 @@ public class RegistrationServiceImpl implements RegistrationService, ExpirationL
 
     private final List<RegistrationListener> listeners = new CopyOnWriteArrayList<>();
 
-    private RegistrationStore store;
+    private final RegistrationStore store;
 
     public RegistrationServiceImpl(RegistrationStore store) {
         this.store = store;
@@ -47,12 +47,12 @@ public class RegistrationServiceImpl implements RegistrationService, ExpirationL
     }
 
     @Override
-    public Iterator<Registration> getAllRegistrations() {
+    public Iterator<IRegistration> getAllRegistrations() {
         return store.getAllRegistrations();
     }
 
     @Override
-    public Registration getByEndpoint(String endpoint) {
+    public IRegistration getByEndpoint(String endpoint) {
         return store.getRegistrationByEndpoint(endpoint);
     }
 
@@ -75,7 +75,8 @@ public class RegistrationServiceImpl implements RegistrationService, ExpirationL
         }
     }
 
-    public void fireUnregistered(IRegistration registration, Collection<Observation> observations, IRegistration newReg) {
+    public void fireUnregistered(IRegistration registration, Collection<Observation> observations,
+            IRegistration newReg) {
         for (RegistrationListener l : listeners) {
             l.unregistered(registration, observations, false, newReg);
         }

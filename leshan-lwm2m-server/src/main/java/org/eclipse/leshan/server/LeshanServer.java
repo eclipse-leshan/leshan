@@ -58,6 +58,7 @@ import org.eclipse.leshan.server.queue.PresenceService;
 import org.eclipse.leshan.server.queue.PresenceServiceImpl;
 import org.eclipse.leshan.server.queue.PresenceStateListener;
 import org.eclipse.leshan.server.queue.QueueModeLwM2mRequestSender;
+import org.eclipse.leshan.server.registration.EndDeviceRegistrationHandler;
 import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationDataExtractor;
@@ -178,6 +179,8 @@ public class LeshanServer {
         requestSender = createRequestSender(endpointsProvider, registrationService, this.modelProvider,
                 presenceService);
 
+        EndDeviceRegistrationHandler endDeviceRegistrationHandler = new EndDeviceRegistrationHandler(
+                registrationService, registrationIdProvider, registrationDataExtractor, this);
     }
 
     protected RegistrationServiceImpl createRegistrationService(RegistrationStore registrationStore) {
@@ -230,7 +233,8 @@ public class LeshanServer {
         registrationService.addListener(new RegistrationListener() {
 
             @Override
-            public void updated(RegistrationUpdate update, IRegistration updatedRegistration, IRegistration previousReg) {
+            public void updated(RegistrationUpdate update, IRegistration updatedRegistration,
+                    IRegistration previousReg) {
                 if ((previousReg.getAddress() != null && !previousReg.getAddress().equals(update.getAddress()))
                         || (previousReg.getPort() != null && !previousReg.getPort().equals(update.getPort()))) {
                     requestSender.cancelOngoingRequests(previousReg);

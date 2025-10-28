@@ -94,11 +94,12 @@ public class VersionedModelProvider implements LwM2mModelProvider {
 
         @Override
         public LwM2mModel getChildModel(String prefix) {
-            IRegistration childRegistration = registration.getChildEndDevices(prefix);
-            if (childRegistration == null) {
-                return null;
-            }
-            return new DynamicModel(childRegistration);
+            return null;
+//            IRegistration childRegistration = registration.getChildEndDevices(prefix);
+//            if (childRegistration == null) {
+//                return null;
+//            }
+//            return new DynamicModel(childRegistration);
         }
     }
 }

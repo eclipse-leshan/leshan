@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -92,6 +91,9 @@ public class Registration implements IRegistration {
     // URI of endpoint used for this registration.
     private final EndpointUri endpointUri;
 
+    // All child devices (prefix -> endpoint)
+    private final Map<String, String> endDevices;
+
     protected Registration(Builder builder) {
 
         // mandatory params
@@ -118,6 +120,9 @@ public class Registration implements IRegistration {
         additionalRegistrationAttributes = builder.additionalRegistrationAttributes;
 
         customRegistrationData = builder.customRegistrationData;
+
+        // gateway params
+        endDevices = builder.endDevices;
     }
 
     /*
@@ -468,17 +473,12 @@ public class Registration implements IRegistration {
 
     @Override
     public boolean isGateway() {
-        return false;
+        return getSupportedVersion(25) != null;
     }
 
     @Override
-    public List<IRegistration> getChildEndDevices() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public IRegistration getChildEndDevices(String prefix) {
-        return null;
+    public Map<String, String> getChildEndDevices() {
+        return endDevices;
     }
 
     /*
@@ -547,6 +547,7 @@ public class Registration implements IRegistration {
         private Set<LwM2mPath> availableInstances;
         private Map<String, String> additionalRegistrationAttributes;
         private Map<String, String> customRegistrationData;
+        private Map<String, String> endDevices;
 
         public Builder(Registration registration) {
 
@@ -574,6 +575,9 @@ public class Registration implements IRegistration {
             additionalRegistrationAttributes = registration.additionalRegistrationAttributes;
 
             customRegistrationData = registration.customRegistrationData;
+
+            // gateway params
+            endDevices = registration.endDevices;
         }
 
         public Builder(String registrationId, String endpoint, LwM2mPeer clientTransportData, EndpointUri endpointUri) {
@@ -667,6 +671,11 @@ public class Registration implements IRegistration {
             return this;
         }
 
+        public Builder endDevices(Map<String, String> endDevices) {
+            this.endDevices = endDevices;
+            return this;
+        }
+
         public Registration build() {
             // Define Default value
             rootPath = rootPath == null ? "/" : rootPath;
@@ -704,6 +713,12 @@ public class Registration implements IRegistration {
                 customRegistrationData = Collections.emptyMap();
             } else {
                 customRegistrationData = Collections.unmodifiableMap(new HashMap<>(customRegistrationData));
+            }
+
+            if (endDevices == null || endDevices.isEmpty()) {
+                endDevices = Collections.emptyMap();
+            } else {
+                endDevices = Collections.unmodifiableMap(new HashMap<>(endDevices));
             }
 
             // Create Registration
