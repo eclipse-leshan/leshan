@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.redis;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -59,7 +58,7 @@ public class RedisSecurityStore implements EditableSecurityStore {
         this.pool = builder.pool;
         this.securityInfoByEndpointPrefix = builder.securityInfoByEndpointPrefix;
         this.endpointByPskIdKey = builder.endpointByPskIdKey;
-        this.endpointByOscoreRecipientIdKey = builder.endpointByOscoreRecipientIdKey.getBytes(StandardCharsets.UTF_8);
+        this.endpointByOscoreRecipientIdKey = builder.endpointByOscoreRecipientIdKey.getBytes();
     }
 
     @Override
@@ -95,7 +94,7 @@ public class RedisSecurityStore implements EditableSecurityStore {
     public SecurityInfo getByOscoreIdentity(OscoreIdentity identity) {
         try (Jedis j = pool.getResource()) {
             byte[] epBytes = j.hget(endpointByOscoreRecipientIdKey, identity.getRecipientId());
-            String ep = (epBytes != null) ? new String(epBytes, StandardCharsets.UTF_8) : null;
+            String ep = (epBytes != null) ? new String(epBytes) : null;
             if (ep == null) {
                 return null;
             } else {
@@ -160,7 +159,7 @@ public class RedisSecurityStore implements EditableSecurityStore {
         if (info.getOscoreSetting() != null) {
             byte[] oldEndpointBytes = j.hget(endpointByOscoreRecipientIdKey, info.getOscoreSetting().getRecipientId());
             if (oldEndpointBytes != null) {
-                String oldEndpoint = new String(oldEndpointBytes, StandardCharsets.UTF_8);
+                String oldEndpoint = new String(oldEndpointBytes);
                 if (!oldEndpoint.equals(info.getEndpoint())) {
                     throw new NonUniqueSecurityInfoException(
                             "RecipientId " + Hex.encodeHexString(info.getOscoreSetting().getRecipientId())
@@ -168,7 +167,7 @@ public class RedisSecurityStore implements EditableSecurityStore {
                 }
             }
             j.hset(endpointByOscoreRecipientIdKey, info.getOscoreSetting().getRecipientId(),
-                    info.getEndpoint().getBytes(StandardCharsets.UTF_8));
+                    info.getEndpoint().getBytes());
         }
     }
 
