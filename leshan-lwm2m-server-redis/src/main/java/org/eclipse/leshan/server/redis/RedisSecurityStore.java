@@ -131,10 +131,6 @@ public class RedisSecurityStore implements EditableSecurityStore {
 
     @Override
     public SecurityInfo add(SecurityInfo info) throws NonUniqueSecurityInfoException {
-
-        if (info.getEndpoint() == null) {
-            throw new IllegalArgumentException("Endpoint must not be null");
-        }
         byte[] data = serialize(info);
 
         try (Jedis j = pool.getResource()) {
