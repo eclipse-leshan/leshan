@@ -19,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.security.AlgorithmParameters;
 import java.security.KeyFactory;
 import java.security.spec.ECGenParameterSpec;
@@ -37,10 +36,10 @@ import org.junit.jupiter.api.Test;
 
 class SecurityInfoSerDesTest {
 
-    private static final String OSCORE_MASTER_SECRET = "1234567890";
-    private static final String OSCORE_MASTER_SALT = "0987654321";
-    private static final String OSCORE_SENDER_ID = "ABCDEF";
-    private static final String OSCORE_RECIPIENT_ID = "FEDCBA";
+    private static final byte[] OSCORE_MASTER_SECRET = Hex.decodeHex("1234567890".toCharArray());
+    private static final byte[] OSCORE_MASTER_SALT = Hex.decodeHex("0987654321".toCharArray());
+    private static final byte[] OSCORE_SENDER_ID = Hex.decodeHex("ABCDEF".toCharArray());
+    private static final byte[] OSCORE_RECIPIENT_ID = Hex.decodeHex("FEDCBA".toCharArray());
 
     @Test
     void security_info_psk_ser_des_then_equal() {
@@ -82,10 +81,8 @@ class SecurityInfoSerDesTest {
     @Test
     void security_info_oscore_ser_des_then_equal() {
 
-        OscoreSetting oscoreSetting = new OscoreSetting(OSCORE_SENDER_ID.getBytes(StandardCharsets.UTF_8),
-                OSCORE_RECIPIENT_ID.getBytes(StandardCharsets.UTF_8),
-                OSCORE_MASTER_SECRET.getBytes(StandardCharsets.UTF_8), AeadAlgorithm.AES_CCM_16_64_128,
-                HkdfAlgorithm.HKDF_HMAC_SHA_256, OSCORE_MASTER_SALT.getBytes(StandardCharsets.UTF_8));
+        OscoreSetting oscoreSetting = new OscoreSetting(OSCORE_SENDER_ID, OSCORE_RECIPIENT_ID, OSCORE_MASTER_SECRET,
+                AeadAlgorithm.AES_CCM_16_64_128, HkdfAlgorithm.HKDF_HMAC_SHA_256, OSCORE_MASTER_SALT);
 
         SecurityInfo si = SecurityInfo.newOscoreInfo("myendPoint", oscoreSetting);
         byte[] data = SecurityInfoSerDes.serialize(si);
@@ -96,10 +93,8 @@ class SecurityInfoSerDesTest {
     @Test
     void testOscoreMasterSalt_NullValue() {
 
-        OscoreSetting oscoreSetting = new OscoreSetting(OSCORE_SENDER_ID.getBytes(StandardCharsets.UTF_8),
-                OSCORE_RECIPIENT_ID.getBytes(StandardCharsets.UTF_8),
-                OSCORE_MASTER_SECRET.getBytes(StandardCharsets.UTF_8), AeadAlgorithm.AES_CCM_16_64_128,
-                HkdfAlgorithm.HKDF_HMAC_SHA_256, null);
+        OscoreSetting oscoreSetting = new OscoreSetting(OSCORE_SENDER_ID, OSCORE_RECIPIENT_ID, OSCORE_MASTER_SECRET,
+                AeadAlgorithm.AES_CCM_16_64_128, HkdfAlgorithm.HKDF_HMAC_SHA_256, null);
 
         SecurityInfo si = SecurityInfo.newOscoreInfo("myendPoint", oscoreSetting);
         byte[] dataserialized = SecurityInfoSerDes.serialize(si);
@@ -115,10 +110,8 @@ class SecurityInfoSerDesTest {
     @Test
     void testOscoreMasterSalt_EmptyArray() {
 
-        OscoreSetting oscoreSetting = new OscoreSetting(OSCORE_SENDER_ID.getBytes(StandardCharsets.UTF_8),
-                OSCORE_RECIPIENT_ID.getBytes(StandardCharsets.UTF_8),
-                OSCORE_MASTER_SECRET.getBytes(StandardCharsets.UTF_8), AeadAlgorithm.AES_CCM_16_64_128,
-                HkdfAlgorithm.HKDF_HMAC_SHA_256, new byte[0]);
+        OscoreSetting oscoreSetting = new OscoreSetting(OSCORE_SENDER_ID, OSCORE_RECIPIENT_ID, OSCORE_MASTER_SECRET,
+                AeadAlgorithm.AES_CCM_16_64_128, HkdfAlgorithm.HKDF_HMAC_SHA_256, new byte[0]);
 
         SecurityInfo si = SecurityInfo.newOscoreInfo("myendPoint", oscoreSetting);
         byte[] serialized = SecurityInfoSerDes.serialize(si);
