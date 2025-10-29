@@ -46,22 +46,31 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public class SecurityInfoSerDes {
 
+    private static final String KEY_ID = "id";
+    private static final String KEY_EP = "ep";
+    // PSK
     private static final String KEY_PSK = "psk";
+    // RPK
     private static final String KEY_RPK = "rpk";
+    private static final String KEY_RPK_X = "x";
+    private static final String KEY_RPK_Y = "y";
+    private static final String KEY_RPK_PARAMS = "params";
+    // X509
     private static final String KEY_X509 = "x509";
+    // OSCORE
     private static final String KEY_OSCORE = "oscore";
-    private static final String KEY_SENDER_ID = "senderId";
-    private static final String KEY_RECIPIENT_ID = "recipientId";
-    private static final String KEY_MASTER_SECRET = "masterSecret";
-    private static final String KEY_MASTER_SALT = "masterSalt";
-    private static final String KEY_AEAD_ALGORITHM = "aeadAlgorithm";
-    private static final String KEY_HMAC_ALGORITHM = "hmacAlgorithm";
+    private static final String KEY_OSCORE_SENDER_ID = "senderId";
+    private static final String KEY_OSCORE_RECIPIENT_ID = "recipientId";
+    private static final String KEY_OSCORE_MASTER_SECRET = "masterSecret";
+    private static final String KEY_OSCORE_MASTER_SALT = "masterSalt";
+    private static final String KEY_OSCORE_AEAD_ALGORITHM = "aeadAlgorithm";
+    private static final String KEY_OSCORE_HMAC_ALGORITHM = "hmacAlgorithm";
 
     public static byte[] serialize(SecurityInfo s) {
         ObjectNode o = JsonNodeFactory.instance.objectNode();
-        o.put("ep", s.getEndpoint());
+        o.put(KEY_EP, s.getEndpoint());
         if (s.getPskIdentity() != null) {
-            o.put("id", s.getPskIdentity());
+            o.put(KEY_ID, s.getPskIdentity());
         }
         if (s.getPreSharedKey() != null) {
             o.put(KEY_PSK, Hex.encodeHexString(s.getPreSharedKey()));
@@ -73,19 +82,19 @@ public class SecurityInfoSerDes {
             byte[] x = ecPublicKey.getW().getAffineX().toByteArray();
             if (x[0] == 0)
                 x = Arrays.copyOfRange(x, 1, x.length);
-            rpk.put("x", Hex.encodeHexString(x));
+            rpk.put(KEY_RPK_X, Hex.encodeHexString(x));
 
             // Get Y coordinate
             byte[] y = ecPublicKey.getW().getAffineY().toByteArray();
             if (y[0] == 0)
                 y = Arrays.copyOfRange(y, 1, y.length);
-            rpk.put("y", Hex.encodeHexString(y));
+            rpk.put(KEY_RPK_Y, Hex.encodeHexString(y));
 
             // Get Curves params
             ecPublicKey.getParams();
 
             // use only the first part as the curve name
-            rpk.put("params", ecPublicKey.getParams().toString().split(" ")[0]);
+            rpk.put(KEY_RPK_PARAMS, ecPublicKey.getParams().toString().split(" ")[0]);
             o.set(KEY_RPK, rpk);
         }
 
@@ -98,14 +107,14 @@ public class SecurityInfoSerDes {
             ObjectNode oscore = JsonNodeFactory.instance.objectNode();
             OscoreSetting oscoreObject = s.getOscoreSetting();
 
-            oscore.put(KEY_SENDER_ID, Hex.encodeHexString(oscoreObject.getSenderId()));
-            oscore.put(KEY_RECIPIENT_ID, Hex.encodeHexString(oscoreObject.getRecipientId()));
-            oscore.put(KEY_MASTER_SECRET, Hex.encodeHexString(oscoreObject.getMasterSecret()));
-            oscore.put(KEY_AEAD_ALGORITHM, oscoreObject.getAeadAlgorithm().getValue());
-            oscore.put(KEY_HMAC_ALGORITHM, oscoreObject.getHkdfAlgorithm().getValue());
+            oscore.put(KEY_OSCORE_SENDER_ID, Hex.encodeHexString(oscoreObject.getSenderId()));
+            oscore.put(KEY_OSCORE_RECIPIENT_ID, Hex.encodeHexString(oscoreObject.getRecipientId()));
+            oscore.put(KEY_OSCORE_MASTER_SECRET, Hex.encodeHexString(oscoreObject.getMasterSecret()));
+            oscore.put(KEY_OSCORE_AEAD_ALGORITHM, oscoreObject.getAeadAlgorithm().getValue());
+            oscore.put(KEY_OSCORE_HMAC_ALGORITHM, oscoreObject.getHkdfAlgorithm().getValue());
             byte[] masterSalt = oscoreObject.getMasterSalt();
             if (masterSalt.length > 0) {
-                oscore.put(KEY_MASTER_SALT, Hex.encodeHexString(masterSalt));
+                oscore.put(KEY_OSCORE_MASTER_SALT, Hex.encodeHexString(masterSalt));
             }
 
             o.set(KEY_OSCORE, oscore);
@@ -118,25 +127,25 @@ public class SecurityInfoSerDes {
         try {
             JsonNode o = new ObjectMapper().readTree(new String(data));
 
-            String ep = o.get("ep").asText();
+            String ep = o.get(KEY_EP).asText();
             if (o.get(KEY_PSK) != null) {
-                i = SecurityInfo.newPreSharedKeyInfo(ep, o.get("id").asText(),
+                i = SecurityInfo.newPreSharedKeyInfo(ep, o.get(KEY_ID).asText(),
                         Hex.decodeHex(o.get(KEY_PSK).asText().toCharArray()));
             } else if (o.get(KEY_X509) != null) {
                 i = SecurityInfo.newX509CertInfo(ep);
             } else if (o.get(KEY_OSCORE) != null) {
                 JsonNode oscore = o.get(KEY_OSCORE);
 
-                byte[] senderId = Hex.decodeHex(oscore.get(KEY_SENDER_ID).asText().toCharArray());
-                byte[] recipientId = Hex.decodeHex(oscore.get(KEY_RECIPIENT_ID).asText().toCharArray());
-                byte[] masterSecret = Hex.decodeHex(oscore.get(KEY_MASTER_SECRET).asText().toCharArray());
+                byte[] senderId = Hex.decodeHex(oscore.get(KEY_OSCORE_SENDER_ID).asText().toCharArray());
+                byte[] recipientId = Hex.decodeHex(oscore.get(KEY_OSCORE_RECIPIENT_ID).asText().toCharArray());
+                byte[] masterSecret = Hex.decodeHex(oscore.get(KEY_OSCORE_MASTER_SECRET).asText().toCharArray());
                 byte[] masterSalt = null;
-                if (oscore.has(KEY_MASTER_SALT)) {
-                    masterSalt = Hex.decodeHex(oscore.get(KEY_MASTER_SALT).asText().toCharArray());
+                if (oscore.has(KEY_OSCORE_MASTER_SALT)) {
+                    masterSalt = Hex.decodeHex(oscore.get(KEY_OSCORE_MASTER_SALT).asText().toCharArray());
                 }
 
-                int aeadAlgId = oscore.get(KEY_AEAD_ALGORITHM).asInt();
-                int hmacAlgId = oscore.get(KEY_HMAC_ALGORITHM).asInt();
+                int aeadAlgId = oscore.get(KEY_OSCORE_AEAD_ALGORITHM).asInt();
+                int hmacAlgId = oscore.get(KEY_OSCORE_HMAC_ALGORITHM).asInt();
 
                 OscoreSetting oscoreSetting = new OscoreSetting(senderId, recipientId, masterSecret, aeadAlgId,
                         hmacAlgId, masterSalt);
@@ -146,9 +155,9 @@ public class SecurityInfoSerDes {
                 JsonNode rpk = o.get(KEY_RPK);
                 PublicKey key;
 
-                byte[] x = Hex.decodeHex(rpk.get("x").asText().toCharArray());
-                byte[] y = Hex.decodeHex(rpk.get("y").asText().toCharArray());
-                String params = rpk.get("params").asText();
+                byte[] x = Hex.decodeHex(rpk.get(KEY_RPK_X).asText().toCharArray());
+                byte[] y = Hex.decodeHex(rpk.get(KEY_RPK_Y).asText().toCharArray());
+                String params = rpk.get(KEY_RPK_PARAMS).asText();
                 AlgorithmParameters algoParameters = AlgorithmParameters.getInstance("EC");
                 algoParameters.init(new ECGenParameterSpec(params));
                 ECParameterSpec parameterSpec = algoParameters.getParameterSpec(ECParameterSpec.class);
