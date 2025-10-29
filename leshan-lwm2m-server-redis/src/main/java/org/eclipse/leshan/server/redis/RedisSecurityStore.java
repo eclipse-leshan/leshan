@@ -46,7 +46,7 @@ public class RedisSecurityStore implements EditableSecurityStore {
 
     private final String securityInfoByEndpointPrefix;
     private final String endpointByPskIdKey;
-    private final String endpointByOscoreRecipientIdKey;
+    private final byte[] endpointByOscoreRecipientIdKey;
     private final Pool<Jedis> pool;
 
     private final List<SecurityStoreListener> listeners = new CopyOnWriteArrayList<>();
@@ -59,7 +59,7 @@ public class RedisSecurityStore implements EditableSecurityStore {
         this.pool = builder.pool;
         this.securityInfoByEndpointPrefix = builder.securityInfoByEndpointPrefix;
         this.endpointByPskIdKey = builder.endpointByPskIdKey;
-        this.endpointByOscoreRecipientIdKey = builder.endpointByOscoreRecipientIdKey;
+        this.endpointByOscoreRecipientIdKey = builder.endpointByOscoreRecipientIdKey.getBytes(StandardCharsets.UTF_8);
     }
 
     @Override
@@ -94,9 +94,7 @@ public class RedisSecurityStore implements EditableSecurityStore {
     @Override
     public SecurityInfo getByOscoreIdentity(OscoreIdentity identity) {
         try (Jedis j = pool.getResource()) {
-            byte[] recipient = identity.getRecipientId();
-            byte[] endpointKey = endpointByOscoreRecipientIdKey.getBytes(StandardCharsets.UTF_8);
-            byte[] epBytes = j.hget(endpointKey, recipient);
+            byte[] epBytes = j.hget(endpointByOscoreRecipientIdKey, identity.getRecipientId());
             String ep = (epBytes != null) ? new String(epBytes, StandardCharsets.UTF_8) : null;
             if (ep == null) {
                 return null;
@@ -160,17 +158,17 @@ public class RedisSecurityStore implements EditableSecurityStore {
     private void updateSecondaryIndexByOscoreIdentity(Jedis j, SecurityInfo info)
             throws NonUniqueSecurityInfoException {
         if (info.getOscoreSetting() != null) {
-            byte[] recipientId = info.getOscoreSetting().getRecipientId();
-            byte[] endpointKey = endpointByOscoreRecipientIdKey.getBytes(StandardCharsets.UTF_8);
-            byte[] oldEndpointBytes = j.hget(endpointKey, recipientId);
+            byte[] oldEndpointBytes = j.hget(endpointByOscoreRecipientIdKey, info.getOscoreSetting().getRecipientId());
             if (oldEndpointBytes != null) {
                 String oldEndpoint = new String(oldEndpointBytes, StandardCharsets.UTF_8);
                 if (!oldEndpoint.equals(info.getEndpoint())) {
-                    throw new NonUniqueSecurityInfoException("RecipientId " + Hex.encodeHexString(recipientId)
-                            + " is already used by endpoint " + oldEndpoint);
+                    throw new NonUniqueSecurityInfoException(
+                            "RecipientId " + Hex.encodeHexString(info.getOscoreSetting().getRecipientId())
+                                    + " is already used by endpoint " + oldEndpoint);
                 }
             }
-            j.hset(endpointKey, recipientId, info.getEndpoint().getBytes(StandardCharsets.UTF_8));
+            j.hset(endpointByOscoreRecipientIdKey, info.getOscoreSetting().getRecipientId(),
+                    info.getEndpoint().getBytes(StandardCharsets.UTF_8));
         }
     }
 
@@ -190,8 +188,7 @@ public class RedisSecurityStore implements EditableSecurityStore {
                             || !Arrays.equals(previousSecurityInfo.getOscoreSetting().getRecipientId(),
                                     newSecurityInfo.getOscoreSetting().getRecipientId()))) {
 
-                j.hdel(endpointByOscoreRecipientIdKey.getBytes(),
-                        previousSecurityInfo.getOscoreSetting().getRecipientId());
+                j.hdel(endpointByOscoreRecipientIdKey, previousSecurityInfo.getOscoreSetting().getRecipientId());
             }
         }
     }
@@ -208,7 +205,7 @@ public class RedisSecurityStore implements EditableSecurityStore {
                 }
                 if (info.getOscoreSetting() != null && info.getOscoreSetting().getRecipientId() != null) {
                     byte[] recipientId = info.getOscoreSetting().getRecipientId();
-                    j.hdel(endpointByOscoreRecipientIdKey.getBytes(), recipientId);
+                    j.hdel(endpointByOscoreRecipientIdKey, recipientId);
                 }
                 j.del((securityInfoByEndpointPrefix + endpoint).getBytes());
                 for (SecurityStoreListener listener : listeners) {
