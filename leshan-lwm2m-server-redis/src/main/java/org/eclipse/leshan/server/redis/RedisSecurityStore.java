@@ -40,7 +40,7 @@ import redis.clients.jedis.util.Pool;
  * A {@link SecurityStore} implementation based on Redis.
  * <p>
  * Security info are stored using the endpoint as primary key and secondary indexes are created for endpoint lookup by
- * PSK identity and OSCORE RID.
+ * PSK identity and OSCORE Recipient ID (RID).
  */
 public class RedisSecurityStore implements EditableSecurityStore {
 
