@@ -35,7 +35,7 @@ import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.servers.security.SecurityInfo;
 import org.junit.jupiter.api.Test;
 
-public class SecurityInfoSerDesTest {
+class SecurityInfoSerDesTest {
 
     private static final String OSCORE_MASTER_SECRET = "1234567890";
     private static final String OSCORE_MASTER_SALT = "0987654321";
@@ -43,7 +43,7 @@ public class SecurityInfoSerDesTest {
     private static final String OSCORE_RECIPIENT_ID = "FEDCBA";
 
     @Test
-    public void security_info_psk_ser_des_then_equal() {
+    void security_info_psk_ser_des_then_equal() {
 
         SecurityInfo si = SecurityInfo.newPreSharedKeyInfo("myendPoint", "pskIdentity",
                 Hex.decodeHex("deadbeef".toCharArray()));
@@ -54,7 +54,7 @@ public class SecurityInfoSerDesTest {
     }
 
     @Test
-    public void security_info_rpk_ser_des_then_equal() throws Exception {
+    void security_info_rpk_ser_des_then_equal() throws Exception {
         byte[] publicX = Hex
                 .decodeHex("89c048261979208666f2bfb188be1968fc9021c416ce12828c06f4e314c167b5".toCharArray());
         byte[] publicY = Hex
@@ -80,7 +80,6 @@ public class SecurityInfoSerDesTest {
     }
 
     @Test
-
     void security_info_oscore_ser_des_then_equal() {
 
         OscoreSetting oscoreSetting = new OscoreSetting(OSCORE_SENDER_ID.getBytes(StandardCharsets.UTF_8),
@@ -95,7 +94,7 @@ public class SecurityInfoSerDesTest {
     }
 
     @Test
-    public void testOscoreMasterSalt_NullValue() {
+    void testOscoreMasterSalt_NullValue() {
 
         OscoreSetting oscoreSetting = new OscoreSetting(OSCORE_SENDER_ID.getBytes(StandardCharsets.UTF_8),
                 OSCORE_RECIPIENT_ID.getBytes(StandardCharsets.UTF_8),
@@ -114,7 +113,7 @@ public class SecurityInfoSerDesTest {
     }
 
     @Test
-    public void testOscoreMasterSalt_EmptyArray() {
+    void testOscoreMasterSalt_EmptyArray() {
 
         OscoreSetting oscoreSetting = new OscoreSetting(OSCORE_SENDER_ID.getBytes(StandardCharsets.UTF_8),
                 OSCORE_RECIPIENT_ID.getBytes(StandardCharsets.UTF_8),
