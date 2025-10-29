@@ -159,7 +159,7 @@ public class RedisSecurityStore implements EditableSecurityStore {
 
     private void updateSecondaryIndexByOscoreIdentity(Jedis j, SecurityInfo info)
             throws NonUniqueSecurityInfoException {
-        if (info.getOscoreSetting() != null && info.getOscoreSetting().getRecipientId() != null) {
+        if (info.getOscoreSetting() != null) {
             byte[] recipientId = info.getOscoreSetting().getRecipientId();
             byte[] endpointKey = endpointByOscoreRecipientIdKey.getBytes(StandardCharsets.UTF_8);
             byte[] oldEndpointBytes = j.hget(endpointKey, recipientId);
