@@ -123,8 +123,13 @@ public class LwM2mIdentitySerDes {
         }
 
         if (jObj.get(KEY_LWM2MIDENTITY_TYPE).asText().equals(LWM2MIDENTITY_TYPE_OSCORE)) {
-            byte[] recipientId = Hex.decodeHex(jObj.get(KEY_RID).asText().toCharArray());
-            return new OscoreIdentity(recipientId);
+            JsonNode jrid = jObj.get(KEY_RID);
+            if (jrid != null) {
+                byte[] recipientId = Hex.decodeHex(jrid.asText().toCharArray());
+                return new OscoreIdentity(recipientId);
+            } else {
+                throw new IllegalStateException(String.format("Can not deserialize %s", jObj.toPrettyString()));
+            }
         }
         throw new IllegalStateException(String.format("Can not deserialize %s", jObj.toPrettyString()));
 
