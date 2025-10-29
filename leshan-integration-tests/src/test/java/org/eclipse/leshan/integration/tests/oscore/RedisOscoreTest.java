@@ -13,10 +13,9 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.integration.tests.security;
+package org.eclipse.leshan.integration.tests.oscore;
 
 import org.eclipse.leshan.core.endpoint.Protocol;
-import org.eclipse.leshan.integration.tests.oscore.OscoreTest;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
 
 public class RedisOscoreTest extends OscoreTest {
