@@ -22,7 +22,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.eclipse.leshan.core.oscore.OscoreSetting;
 import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.redis.serialization.SecurityInfoSerDes;
@@ -179,23 +178,24 @@ public class RedisSecurityStore implements EditableSecurityStore {
         }
     }
 
-    private void cleanupPreviousSecondaryIndexes(Jedis j, SecurityInfo previous, SecurityInfo info) {
-        if (previous != null) {
-            String previousIdentity = previous.getPskIdentity();
-            if (previousIdentity != null && !previousIdentity.equals(info.getPskIdentity())) {
-                j.hdel(endpointByPskIdKey, previous.getPskIdentity());
+    private void cleanupPreviousSecondaryIndexes(Jedis j, SecurityInfo previousSecurityInfo,
+            SecurityInfo newSecurityInfo) {
+        if (previousSecurityInfo != null) {
+            // we remove previous secondary index (PSK or OSCORE) only if it is not used by the new security info
+
+            if (previousSecurityInfo.usePSK()
+                    && !previousSecurityInfo.getPskIdentity().equals(newSecurityInfo.getPskIdentity())) {
+                j.hdel(endpointByPskIdKey, previousSecurityInfo.getPskIdentity());
             }
 
-            OscoreSetting previousOscoreSettings = previous.getOscoreSetting();
-            OscoreSetting currentOscoreSettings = info.getOscoreSetting();
+            if (previousSecurityInfo.useOSCORE()
+                    // new info doesn't use OSCORE at all OR new info doesn't use same Recipient ID than previous one
+                    && (!newSecurityInfo.useOSCORE()
+                            || !Arrays.equals(previousSecurityInfo.getOscoreSetting().getRecipientId(),
+                                    newSecurityInfo.getOscoreSetting().getRecipientId()))) {
 
-            if (previousOscoreSettings != null && currentOscoreSettings != null) {
-                byte[] previousRecipientId = previousOscoreSettings.getRecipientId();
-                byte[] currentRecipientId = currentOscoreSettings.getRecipientId();
-
-                if (previousRecipientId != null && !Arrays.equals(previousRecipientId, currentRecipientId)) {
-                    j.hdel(endpointByOscoreRecipientIdKey.getBytes(), previousRecipientId);
-                }
+                j.hdel(endpointByOscoreRecipientIdKey.getBytes(),
+                        previousSecurityInfo.getOscoreSetting().getRecipientId());
             }
         }
     }
