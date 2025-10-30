@@ -20,9 +20,20 @@ import static org.eclipse.leshan.integration.tests.util.Credentials.BAD_PSK_ID;
 import static org.eclipse.leshan.integration.tests.util.Credentials.GOOD_ENDPOINT;
 import static org.eclipse.leshan.integration.tests.util.Credentials.GOOD_PSK_ID;
 import static org.eclipse.leshan.integration.tests.util.Credentials.GOOD_PSK_KEY;
+import static org.eclipse.leshan.integration.tests.util.Credentials.OSCORE_AEAD_ALGORITHM;
+import static org.eclipse.leshan.integration.tests.util.Credentials.OSCORE_HKDF_ALGORITHM;
+import static org.eclipse.leshan.integration.tests.util.Credentials.OSCORE_MASTER_SALT;
+import static org.eclipse.leshan.integration.tests.util.Credentials.OSCORE_MASTER_SECRET;
+import static org.eclipse.leshan.integration.tests.util.Credentials.OSCORE_OTHER_MASTER_SALT;
+import static org.eclipse.leshan.integration.tests.util.Credentials.OSCORE_OTHER_RECIPIENT_ID;
+import static org.eclipse.leshan.integration.tests.util.Credentials.OSCORE_OTHER_SENDER_ID;
+import static org.eclipse.leshan.integration.tests.util.Credentials.OSCORE_RECIPIENT_ID;
+import static org.eclipse.leshan.integration.tests.util.Credentials.OSCORE_SENDER_ID;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import org.eclipse.leshan.core.endpoint.Protocol;
+import org.eclipse.leshan.core.oscore.OscoreSetting;
 import org.eclipse.leshan.integration.tests.util.Credentials;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServer;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
@@ -34,17 +45,17 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class SecurityStoreTest {
+class SecurityStoreTest {
 
     LeshanTestServer server;
 
     @BeforeEach
-    public void start() {
+    void start() {
         server = givenServerUsing(Protocol.COAPS).with("Californium").build();
     }
 
     @AfterEach
-    public void stop() throws InterruptedException {
+    void stop() {
         if (server != null)
             server.destroy();
     }
@@ -54,19 +65,18 @@ public class SecurityStoreTest {
     }
 
     @Test
-    public void nonunique_psk_identity() throws NonUniqueSecurityInfoException {
+    void nonunique_psk_identity() throws NonUniqueSecurityInfoException {
         EditableSecurityStore ess = server.getSecurityStore();
 
         ess.add(SecurityInfo.newPreSharedKeyInfo(GOOD_ENDPOINT, GOOD_PSK_ID, GOOD_PSK_KEY));
-        try {
+        // "Non-unique PSK identity should throw exception on add"
+        assertThrows(NonUniqueSecurityInfoException.class, () -> {
             ess.add(SecurityInfo.newPreSharedKeyInfo(BAD_ENDPOINT, GOOD_PSK_ID, GOOD_PSK_KEY));
-            fail("Non-unique PSK identity should throw exception on add");
-        } catch (NonUniqueSecurityInfoException e) {
-        }
+        });
     }
 
     @Test
-    public void change_psk_identity_cleanup() throws NonUniqueSecurityInfoException {
+    void change_psk_identity_cleanup() throws NonUniqueSecurityInfoException {
 
         EditableSecurityStore ess = server.getSecurityStore();
 
@@ -76,6 +86,49 @@ public class SecurityStoreTest {
         // Original/old PSK id should not be reserved any more
         try {
             ess.add(SecurityInfo.newPreSharedKeyInfo(BAD_ENDPOINT, BAD_PSK_ID, Credentials.BAD_PSK_KEY));
+        } catch (NonUniqueSecurityInfoException e) {
+            fail("PSK identity change for existing endpoint should have cleaned up old PSK identity");
+        }
+    }
+
+    @Test
+    void nonunique_oscore_rid() throws NonUniqueSecurityInfoException {
+        EditableSecurityStore ess = server.getSecurityStore();
+
+        OscoreSetting firstOscoreSetting = new OscoreSetting(OSCORE_SENDER_ID, //
+                OSCORE_RECIPIENT_ID, // we use same RID
+                OSCORE_MASTER_SECRET, OSCORE_AEAD_ALGORITHM, OSCORE_HKDF_ALGORITHM, OSCORE_MASTER_SALT);
+
+        OscoreSetting secondOscoreSetting = new OscoreSetting(OSCORE_OTHER_SENDER_ID, //
+                OSCORE_RECIPIENT_ID, // we use same RID
+                OSCORE_MASTER_SECRET, OSCORE_AEAD_ALGORITHM, OSCORE_HKDF_ALGORITHM, OSCORE_OTHER_MASTER_SALT);
+
+        ess.add(SecurityInfo.newOscoreInfo(GOOD_ENDPOINT, firstOscoreSetting));
+        // "Non-unique RID should throw exception on add"
+        assertThrows(NonUniqueSecurityInfoException.class, () -> {
+            ess.add(SecurityInfo.newOscoreInfo(BAD_ENDPOINT, secondOscoreSetting));
+        });
+    }
+
+    @Test
+    void change_oscore_rid_cleanup() throws NonUniqueSecurityInfoException {
+
+        EditableSecurityStore ess = server.getSecurityStore();
+
+        OscoreSetting firstOscoreSetting = new OscoreSetting(OSCORE_SENDER_ID, //
+                OSCORE_RECIPIENT_ID, // we use different RID
+                OSCORE_MASTER_SECRET, OSCORE_AEAD_ALGORITHM, OSCORE_HKDF_ALGORITHM, OSCORE_MASTER_SALT);
+
+        OscoreSetting secondOscoreSetting = new OscoreSetting(OSCORE_OTHER_SENDER_ID, //
+                OSCORE_OTHER_RECIPIENT_ID, // we use different RID
+                OSCORE_MASTER_SECRET, OSCORE_AEAD_ALGORITHM, OSCORE_HKDF_ALGORITHM, OSCORE_OTHER_MASTER_SALT);
+
+        ess.add(SecurityInfo.newOscoreInfo(GOOD_ENDPOINT, firstOscoreSetting));
+        // Change PSK id for endpoint
+        ess.add(SecurityInfo.newOscoreInfo(GOOD_ENDPOINT, secondOscoreSetting));
+        // Original/old PSK id should not be reserved any more
+        try {
+            ess.add(SecurityInfo.newOscoreInfo(BAD_ENDPOINT, firstOscoreSetting));
         } catch (NonUniqueSecurityInfoException e) {
             fail("PSK identity change for existing endpoint should have cleaned up old PSK identity");
         }
