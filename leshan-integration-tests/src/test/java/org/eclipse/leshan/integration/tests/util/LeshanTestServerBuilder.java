@@ -225,6 +225,11 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
         return this;
     }
 
+    public LeshanTestServerBuilder withRedisSecurityStore() {
+        setSecurityStore(RedisTestUtil.createRedisSecurityStore());
+        return this;
+    }
+
     protected ServerProtocolProvider getCaliforniumProtocolProvider(Protocol protocol) {
         if (protocol.equals(Protocol.COAP)) {
             return new CoapServerProtocolProvider();
@@ -278,4 +283,5 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
         }
         throw new IllegalStateException(String.format("No Californium Protocol Provider for protocol %s", protocol));
     }
+
 }

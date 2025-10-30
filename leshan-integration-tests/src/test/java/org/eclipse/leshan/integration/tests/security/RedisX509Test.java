@@ -22,6 +22,6 @@ public class RedisX509Test extends X509Test {
 
     @Override
     protected LeshanTestServerBuilder givenServerUsing(Protocol givenProtocol) {
-        return super.givenServerUsing(givenProtocol).withRedisRegistrationStore();
+        return super.givenServerUsing(givenProtocol).withRedisRegistrationStore().withRedisSecurityStore();
     }
 }

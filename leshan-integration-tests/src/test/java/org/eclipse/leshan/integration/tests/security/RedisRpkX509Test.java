@@ -22,6 +22,6 @@ public class RedisRpkX509Test extends RpkX509Test {
 
     @Override
     protected LeshanTestServerBuilder givenServerUsing(Protocol givenProtocol) {
-        return super.givenServerUsing(givenProtocol).withRedisRegistrationStore();
+        return super.givenServerUsing(givenProtocol).withRedisRegistrationStore().withRedisSecurityStore();
     }
 }
