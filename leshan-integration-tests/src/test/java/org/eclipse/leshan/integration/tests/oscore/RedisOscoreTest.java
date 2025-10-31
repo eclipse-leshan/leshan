@@ -22,6 +22,6 @@ public class RedisOscoreTest extends OscoreTest {
 
     @Override
     protected LeshanTestServerBuilder givenServerUsing(Protocol givenProtocol) {
-        return super.givenServerUsing(givenProtocol).withRedisRegistrationStore();
+        return super.givenServerUsing(givenProtocol).withRedisRegistrationStore().withRedisSecurityStore();
     }
 }
