@@ -16,6 +16,7 @@
 package org.eclipse.leshan.server.redis.serialization;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.math.BigInteger;
 import java.security.AlgorithmParameters;
@@ -26,14 +27,22 @@ import java.security.spec.ECPoint;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.KeySpec;
 
+import org.eclipse.leshan.core.oscore.AeadAlgorithm;
+import org.eclipse.leshan.core.oscore.HkdfAlgorithm;
+import org.eclipse.leshan.core.oscore.OscoreSetting;
 import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.servers.security.SecurityInfo;
 import org.junit.jupiter.api.Test;
 
-public class SecurityInfoSerDesTest {
+class SecurityInfoSerDesTest {
+
+    private static final byte[] OSCORE_MASTER_SECRET = Hex.decodeHex("1234567890".toCharArray());
+    private static final byte[] OSCORE_MASTER_SALT = Hex.decodeHex("0987654321".toCharArray());
+    private static final byte[] OSCORE_SENDER_ID = Hex.decodeHex("ABCDEF".toCharArray());
+    private static final byte[] OSCORE_RECIPIENT_ID = Hex.decodeHex("FEDCBA".toCharArray());
 
     @Test
-    public void security_info_psk_ser_des_then_equal() {
+    void security_info_psk_ser_des_then_equal() {
 
         SecurityInfo si = SecurityInfo.newPreSharedKeyInfo("myendPoint", "pskIdentity",
                 Hex.decodeHex("deadbeef".toCharArray()));
@@ -44,7 +53,7 @@ public class SecurityInfoSerDesTest {
     }
 
     @Test
-    public void security_info_rpk_ser_des_then_equal() throws Exception {
+    void security_info_rpk_ser_des_then_equal() throws Exception {
         byte[] publicX = Hex
                 .decodeHex("89c048261979208666f2bfb188be1968fc9021c416ce12828c06f4e314c167b5".toCharArray());
         byte[] publicY = Hex
@@ -67,5 +76,51 @@ public class SecurityInfoSerDesTest {
                 "{\"ep\":\"myendpoint\",\"rpk\":{\"x\":\"89c048261979208666f2bfb188be1968fc9021c416ce12828c06f4e314c167b5\",\"y\":\"cbf1eb7587f08e01688d9ada4be859137ca49f79394bad9179326b3090967b68\",\"params\":\"secp256r1\"}}",
                 new String(data));
         assertEquals(si, SecurityInfoSerDes.deserialize(data));
+    }
+
+    @Test
+    void security_info_oscore_ser_des_then_equal() {
+
+        OscoreSetting oscoreSetting = new OscoreSetting(OSCORE_SENDER_ID, OSCORE_RECIPIENT_ID, OSCORE_MASTER_SECRET,
+                AeadAlgorithm.AES_CCM_16_64_128, HkdfAlgorithm.HKDF_HMAC_SHA_256, OSCORE_MASTER_SALT);
+
+        SecurityInfo si = SecurityInfo.newOscoreInfo("myendPoint", oscoreSetting);
+        byte[] data = SecurityInfoSerDes.serialize(si);
+
+        assertEquals(si, SecurityInfoSerDes.deserialize(data));
+    }
+
+    @Test
+    void testOscoreMasterSalt_NullValue() {
+
+        OscoreSetting oscoreSetting = new OscoreSetting(OSCORE_SENDER_ID, OSCORE_RECIPIENT_ID, OSCORE_MASTER_SECRET,
+                AeadAlgorithm.AES_CCM_16_64_128, HkdfAlgorithm.HKDF_HMAC_SHA_256, null);
+
+        SecurityInfo si = SecurityInfo.newOscoreInfo("myendPoint", oscoreSetting);
+        byte[] dataserialized = SecurityInfoSerDes.serialize(si);
+
+        SecurityInfo datarestored = SecurityInfoSerDes.deserialize(dataserialized);
+
+        assertNotNull(datarestored);
+        assertNotNull(datarestored.getOscoreSetting());
+        assertEquals(0, datarestored.getOscoreSetting().getMasterSalt().length,
+                "Expected masterSalt to be an empty array after serialization/deserialization");
+    }
+
+    @Test
+    void testOscoreMasterSalt_EmptyArray() {
+
+        OscoreSetting oscoreSetting = new OscoreSetting(OSCORE_SENDER_ID, OSCORE_RECIPIENT_ID, OSCORE_MASTER_SECRET,
+                AeadAlgorithm.AES_CCM_16_64_128, HkdfAlgorithm.HKDF_HMAC_SHA_256, new byte[0]);
+
+        SecurityInfo si = SecurityInfo.newOscoreInfo("myendPoint", oscoreSetting);
+        byte[] serialized = SecurityInfoSerDes.serialize(si);
+
+        SecurityInfo datarestored = SecurityInfoSerDes.deserialize(serialized);
+
+        assertNotNull(datarestored);
+        assertNotNull(datarestored.getOscoreSetting());
+        assertEquals(0, datarestored.getOscoreSetting().getMasterSalt().length,
+                "Expected masterSalt to be an empty byte array");
     }
 }

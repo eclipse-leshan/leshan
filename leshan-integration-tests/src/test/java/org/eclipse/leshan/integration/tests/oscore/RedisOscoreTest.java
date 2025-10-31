@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 Sierra Wireless and others.
+ * Copyright (c) 2016 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -13,12 +13,12 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.integration.tests.security;
+package org.eclipse.leshan.integration.tests.oscore;
 
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
 
-public class RedisSecurityStoreTest extends SecurityStoreTest {
+public class RedisOscoreTest extends OscoreTest {
 
     @Override
     protected LeshanTestServerBuilder givenServerUsing(Protocol givenProtocol) {
