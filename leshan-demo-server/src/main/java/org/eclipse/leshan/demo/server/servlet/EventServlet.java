@@ -51,7 +51,6 @@ import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
 import org.eclipse.leshan.server.observation.ObservationListener;
 import org.eclipse.leshan.server.queue.PresenceListener;
 import org.eclipse.leshan.server.registration.IRegistration;
-import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationListener;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
 import org.eclipse.leshan.server.send.SendListener;
@@ -298,7 +297,7 @@ public class EventServlet extends EventSourceServlet {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         SimpleModule module = new SimpleModule();
         module.addSerializer(Link.class, new JacksonLinkSerializer());
-        module.addSerializer(Registration.class, new JacksonRegistrationSerializer(server.getPresenceService()));
+        module.addSerializer(IRegistration.class, new JacksonRegistrationSerializer(server.getPresenceService()));
         module.addSerializer(RegistrationUpdate.class, new JacksonRegistrationUpdateSerializer());
         module.addSerializer(LwM2mNode.class, new JacksonLwM2mNodeSerializer());
         module.addSerializer(Version.class, new JacksonVersionSerializer());

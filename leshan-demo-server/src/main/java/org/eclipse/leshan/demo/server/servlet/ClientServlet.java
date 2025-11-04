@@ -80,7 +80,6 @@ import org.eclipse.leshan.demo.server.servlet.queuemode.QueueHandler;
 import org.eclipse.leshan.demo.servers.json.servlet.LeshanDemoServlet;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.registration.IRegistration;
-import org.eclipse.leshan.server.registration.Registration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -139,7 +138,7 @@ public class ClientServlet extends LeshanDemoServlet {
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         SimpleModule module = new SimpleModule();
         module.addSerializer(Link.class, new JacksonLinkSerializer());
-        module.addSerializer(Registration.class, new JacksonRegistrationSerializer(server.getPresenceService()));
+        module.addSerializer(IRegistration.class, new JacksonRegistrationSerializer(server.getPresenceService()));
         module.addSerializer(LwM2mResponse.class, new JacksonResponseSerializer());
         module.addSerializer(LwM2mNode.class, new JacksonLwM2mNodeSerializer());
         module.addDeserializer(LwM2mNode.class, new JacksonLwM2mNodeDeserializer());
