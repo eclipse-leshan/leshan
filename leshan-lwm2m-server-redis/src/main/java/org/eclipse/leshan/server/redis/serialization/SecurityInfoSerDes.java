@@ -46,6 +46,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public class SecurityInfoSerDes {
 
+    private static final String ALGORITHM_NAME_EC = "EC";
+
     private static final String KEY_ID = "id";
     private static final String KEY_EP = "ep";
     // PSK
@@ -158,14 +160,14 @@ public class SecurityInfoSerDes {
                 byte[] x = Hex.decodeHex(rpk.get(KEY_RPK_X).asText().toCharArray());
                 byte[] y = Hex.decodeHex(rpk.get(KEY_RPK_Y).asText().toCharArray());
                 String params = rpk.get(KEY_RPK_PARAMS).asText();
-                AlgorithmParameters algoParameters = AlgorithmParameters.getInstance("EC");
+                AlgorithmParameters algoParameters = AlgorithmParameters.getInstance(ALGORITHM_NAME_EC);
                 algoParameters.init(new ECGenParameterSpec(params));
                 ECParameterSpec parameterSpec = algoParameters.getParameterSpec(ECParameterSpec.class);
 
                 KeySpec keySpec = new ECPublicKeySpec(new ECPoint(new BigInteger(1, x), new BigInteger(1, y)),
                         parameterSpec);
 
-                key = KeyFactory.getInstance("EC").generatePublic(keySpec);
+                key = KeyFactory.getInstance(ALGORITHM_NAME_EC).generatePublic(keySpec);
 
                 i = SecurityInfo.newRawPublicKeyInfo(ep, key);
             }
