@@ -68,6 +68,9 @@ public class SecurityInfoSerDes {
     private static final String KEY_OSCORE_AEAD_ALGORITHM = "aeadAlgorithm";
     private static final String KEY_OSCORE_HMAC_ALGORITHM = "hmacAlgorithm";
 
+    private SecurityInfoSerDes() {
+    }
+
     public static byte[] serialize(SecurityInfo s) {
         ObjectNode o = JsonNodeFactory.instance.objectNode();
         o.put(KEY_EP, s.getEndpoint());
