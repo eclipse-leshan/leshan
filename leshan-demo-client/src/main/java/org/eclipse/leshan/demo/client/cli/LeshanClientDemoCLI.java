@@ -171,8 +171,8 @@ public class LeshanClientDemoCLI implements Runnable {
                         "E.g. to change Short Server ID :", //
                         " -fb /0/0/10=1234,/1/0/0=1234", //
                 },
-                split = ",",
-                converter = ResourcePathConverter.class)
+                split = "(?<!\\\\),", // ',' is a separator but escaped one ' \,' should be ignored
+                converter = { ResourcePathConverter.class, CommaEscapedStringValueConverter.class })
 
         public Map<LwM2mPath, String> factoryBootstrap;
 
