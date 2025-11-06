@@ -69,7 +69,7 @@ public class EndDeviceRegistrationHandler implements RegistrationListener {
             String endpoint = endpointResource == null ? null : (String) endpointResource.getValue();
             LwM2mResource prefixResource = instance.getResource(1);
             String prefix = prefixResource == null ? null : (String) prefixResource.getValue();
-            LwM2mResource objectLinksResource = instance.getResource(2);
+            LwM2mResource objectLinksResource = instance.getResource(3);
             Link[] objectLinks = objectLinksResource == null ? null : (Link[]) objectLinksResource.getValue();
 
             // TODO Should generate ID or create manual one
