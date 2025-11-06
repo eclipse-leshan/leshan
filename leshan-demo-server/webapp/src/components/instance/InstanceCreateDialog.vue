@@ -39,12 +39,12 @@
           </v-row>
 
           <!-- resources fields -->
-          <resource-input
+          <labelled-resource-input
             v-for="resourcedef in writableResourceDef"
             :key="resourcedef.id"
             v-model="instance.resources[resourcedef.id]"
             :resourcedef="resourcedef"
-          ></resource-input>
+          ></labelled-resource-input>
         </v-form>
       </v-card-text>
       <v-card-actions>
@@ -58,12 +58,12 @@
 </template>
 
 <script>
-import ResourceInput from "../resources/input/LabelledResourceInput.vue";
+import LabelledResourceInput from "../resources/input/LabelledResourceInput.vue";
 /**
  * A Dialog to Create a Object Instance.
  */
 export default {
-  components: { ResourceInput },
+  components: { LabelledResourceInput },
   props: {
     modelValue: Boolean, // control if the dialog is displayed (v-model)
     objectdef: Object, // the model of the object

@@ -29,12 +29,12 @@
         <v-form ref="form" @submit.prevent="update">
           <v-container fluid>
             <!-- resources fields -->
-            <resource-input
+            <labelled-resource-input
               v-for="resourcedef in writableResourceDef"
               :key="resourcedef.id"
               v-model="instanceValue[resourcedef.id]"
               :resourcedef="resourcedef"
-            ></resource-input>
+            ></labelled-resource-input>
           </v-container>
         </v-form>
       </v-card-text>
@@ -50,12 +50,12 @@
 </template>
 
 <script>
-import ResourceInput from "../resources/input/LabelledResourceInput.vue";
+import LabelledResourceInput from "../resources/input/LabelledResourceInput.vue";
 /**
  * A Dialog to Write a Object Instance.
  */
 export default {
-  components: { ResourceInput },
+  components: { LabelledResourceInput },
   props: {
     modelValue: Boolean, // control if the dialog is displayed (v-model)
     objectdef: Object, // the model of the object
