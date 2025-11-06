@@ -15,7 +15,7 @@ import { useLocalStorage } from "@vueuse/core";
 
 const _preferences = reactive({
     timeout: useLocalStorage("timeout", 5),
-    singleFormat: useLocalStorage("singleFormat", "TLV"),
+    singleFormat: useLocalStorage("singleFormat", "TEXT"),
     multiFormat: useLocalStorage("multiFormat", "TLV"),
     compositePathFormat: useLocalStorage("compositePathFormat", "SENML_CBOR"),
     compositeNodeFormat: useLocalStorage("CompositeNodeFormat", "SENML_CBOR"),
