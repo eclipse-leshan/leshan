@@ -31,7 +31,7 @@ Contributors:
   <description>Shared Maven configuration for all Leshan demos</description>
 
   <properties>
-    <node-version>v18.19.0</node-version>
+    <node-version>v20.19.5</node-version>
   </properties>
 
   <build>
