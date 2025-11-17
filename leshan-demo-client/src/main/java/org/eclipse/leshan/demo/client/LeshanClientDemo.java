@@ -107,7 +107,8 @@ public class LeshanClientDemo {
 
         // Parse command line
         LeshanClientDemoCLI cli = new LeshanClientDemoCLI();
-        CommandLine command = new CommandLine(cli).setParameterExceptionHandler(new ShortErrorMessageHandler());
+        CommandLine command = new CommandLine(cli).setTrimQuotes(true)
+                .setParameterExceptionHandler(new ShortErrorMessageHandler());
         // Handle exit code error
         int exitCode = command.execute(args);
         if (exitCode != 0)

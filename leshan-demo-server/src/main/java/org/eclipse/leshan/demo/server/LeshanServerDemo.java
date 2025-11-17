@@ -90,7 +90,8 @@ public class LeshanServerDemo {
 
         // Parse command line
         LeshanServerDemoCLI cli = new LeshanServerDemoCLI();
-        CommandLine command = new CommandLine(cli).setParameterExceptionHandler(new ShortErrorMessageHandler());
+        CommandLine command = new CommandLine(cli).setTrimQuotes(true)
+                .setParameterExceptionHandler(new ShortErrorMessageHandler());
         // Handle exit code error
         int exitCode = command.execute(args);
         if (exitCode != 0)

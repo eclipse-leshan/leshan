@@ -80,7 +80,8 @@ public class LeshanBootstrapServerDemo {
 
         // Parse command line
         LeshanBsServerDemoCLI cli = new LeshanBsServerDemoCLI();
-        CommandLine command = new CommandLine(cli).setParameterExceptionHandler(new ShortErrorMessageHandler());
+        CommandLine command = new CommandLine(cli).setTrimQuotes(true)
+                .setParameterExceptionHandler(new ShortErrorMessageHandler());
         // Handle exit code error
         int exitCode = command.execute(args);
         if (exitCode != 0)
