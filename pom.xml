@@ -489,9 +489,9 @@ Contributors:
           <version>2.12.0</version>
         </plugin>
         <plugin>
-          <groupId>org.sonatype.plugins</groupId>
-          <artifactId>nexus-staging-maven-plugin</artifactId>
-          <version>1.6.13</version>
+          <groupId>org.sonatype.central</groupId>
+          <artifactId>central-publishing-maven-plugin</artifactId>
+          <version>0.9.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
