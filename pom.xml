@@ -683,6 +683,7 @@ Contributors:
       <id>allPom</id>
       <modules>
         <module>build-config</module>
+        <module>build-config/build-and-release-config</module>
         <module>build-config/lib-build-config</module>
         <module>build-config/demo-build-config</module>
       </modules>

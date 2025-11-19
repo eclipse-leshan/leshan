@@ -132,25 +132,6 @@ Contributors:
         </configuration>
       </plugin>
       <plugin>
-        <artifactId>maven-gpg-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.sonatype.plugins</groupId>
-        <artifactId>nexus-staging-maven-plugin</artifactId>
-        <configuration>
-          <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-      <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <excludes>
