@@ -96,12 +96,6 @@ Contributors:
       <activation>
         <activeByDefault>false</activeByDefault>
       </activation>
-      <distributionManagement>
-        <repository>
-          <id>ossrh</id>
-          <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-      </distributionManagement>
       <build>
         <plugins>
           <plugin>
@@ -145,14 +139,16 @@ Contributors:
             </executions>
           </plugin>
           <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
             <extensions>true</extensions>
             <configuration>
-              <serverId>ossrh</serverId>
-              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-              <autoReleaseAfterClose>false</autoReleaseAfterClose>
-              <skipStagingRepositoryClose>true</skipStagingRepositoryClose>
+              <publishingServerId>central</publishingServerId>
+              <!-- Maybe we should activate it once we are confident in release process to central
+                   See: https://central.sonatype.org/publish/publish-portal-maven/#wait-for-publishing -->
+              <autoPublish>false</autoPublish>
+              <waitUntil>published</waitUntil>
+              <centralSnapshotsUrl>https://central.sonatype.com/repository/maven-snapshots/</centralSnapshotsUrl>
             </configuration>
           </plugin>
         </plugins>
