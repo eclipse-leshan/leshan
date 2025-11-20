@@ -27,22 +27,6 @@ let config = {
   responseType: "json",
 };
 
-// HACK waiting we get a solution for : https://github.com/yariksav/vuetify-dialog/issues/110#issuecomment-1145981361
-// and unfortenately there is not standard way to do that ... : https://stackoverflow.com/questions/40263803/native-javascript-or-es6-way-to-encode-and-decode-html-entities
-const escapeHTML = (str) =>
-  str;
-// str.replace(
-//   /[&<>'"]/g,
-//   (tag) =>
-//   ({
-//     "&": "&amp;",
-//     "<": "&lt;",
-//     ">": "&gt;",
-//     "'": "&#39;",
-//     '"': "&quot;",
-//   }[tag])
-//);
-
 const _axios = axios.create(config);
 
 _axios.interceptors.request.use(
@@ -63,7 +47,7 @@ _axios.interceptors.response.use(
     if (response.data && response.data.failure) {
       let msg = `Device response : ${response.data.status}`;
       if (response.data.errormessage) msg += ` - ${response.data.errormessage}`;
-      _axios.$notify.warning(escapeHTML(msg), {
+      _axios.$notify.warning(msg, {
         location: "bottom right",
         timeout: 5000,
       });
