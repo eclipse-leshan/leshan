@@ -26,7 +26,7 @@
   >
     <v-badge
       dot
-      color="success"
+      :color="state"
       floating
       :title="details"
       :model-value="state ? true : false"
