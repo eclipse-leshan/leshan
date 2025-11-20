@@ -63,7 +63,7 @@ _axios.interceptors.response.use(
     if (response.data && response.data.failure) {
       let msg = `Device response : ${response.data.status}`;
       if (response.data.errormessage) msg += ` - ${response.data.errormessage}`;
-      _axios.$notify.warn(escapeHTML(msg), {
+      _axios.$notify.warning(escapeHTML(msg), {
         location: "bottom right",
         timeout: 5000,
       });
