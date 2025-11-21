@@ -226,8 +226,9 @@ export default {
     execWithParams(requestButton) {
       this.$dialog
         .prompt({
-          text: "Parameters for the execute request",
           title: "Execute " + this.path,
+          text: "Parameters for the execute request",
+          placeholderText: "1='argValue',2='anotherArgValue'",
         })
         .then((params) => {
           if (params) {

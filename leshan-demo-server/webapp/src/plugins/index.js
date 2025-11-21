@@ -21,6 +21,7 @@ import datePlugin from "@leshan-demo-servers-shared/plugins/dayjs";
 import VueSSE from "@leshan-demo-servers-shared/plugins/sse";
 import vuetify from "@leshan-demo-servers-shared/plugins/vuetify";
 import dialog from "@leshan-demo-servers-shared/plugins/dialog";
+import dialogPrompt from "@/plugins/dialog-prompt";
 import router from "@/router";
 
 export function registerPlugins(app) {
@@ -32,6 +33,7 @@ export function registerPlugins(app) {
         .use(datePlugin)
         .use(vuetify)
         .use(dialog)
+        .use(dialogPrompt) // Must be after dialog to extend it
         .use(axiosPlugin)
         .use(router)
 }
