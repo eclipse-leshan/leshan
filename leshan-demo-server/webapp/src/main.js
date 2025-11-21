@@ -69,4 +69,22 @@ app.directive('visible', (el, binding) => {
     el.style.visibility = binding.value ? "visible" : "hidden";
 })
 
+/** Add Leshan Server Demo specific axios interceptor */
+app.config.globalProperties.axios.interceptors.response.use(function (response) {
+  console.log(response)
+  if (response.data.delayed) {
+    // show request will be delayed
+    let msg = `<strong>Device is not awake</strong>
+         </br>Request will be delayed until device is awake again.
+         </br><strong>Leshan Server Demo</strong> is only able to delayed the last request.`;
+
+    app.config.globalProperties.$notify.create({
+      htmlContent: msg,
+      location: "bottom right",
+      timeout: 5000,
+    });
+  }
+  return response;
+});
+
 app.mount('#app')
