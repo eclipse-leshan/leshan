@@ -75,12 +75,12 @@ pipeline {
         
         // Commit new version change
         sshagent(['github-bot-ssh']) {
-          sh '''git config user.email "leshan-bot@eclipse.orgg"
+          sh '''git config user.email "leshan-bot@eclipse.org"
                 git config user.name "Leshan Bot"
                 shopt -s globstar
                 git add **/pom.xml
                 shopt -u globstar
-                git config user.email "leshan-bot@eclipse.orgg"
+                git config user.email "leshan-bot@eclipse.org"
                 git config user.name "Leshan Bot"
                 git commit -m "Bump version to ${RELEASE_VERSION}"
                 git tag leshan-${RELEASE_VERSION} 
