@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+Copyright (c) 2023 Sierra Wireless and others.
+
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the Eclipse Public License v2.0
+and Eclipse Distribution License v1.0 which accompany this distribution.
+
+The Eclipse Public License is available at
+   http://www.eclipse.org/legal/epl-v20.html
+and the Eclipse Distribution License is available at
+   http://www.eclipse.org/org/documents/edl-v10.html.
+
+Contributors:
+    Sierra Wireless - initial API and implementation
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.eclipse.leshan</groupId>
+    <artifactId>lib-build-config</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
+    <relativePath>../build-config/lib-build-config/pom.xml</relativePath>
+  </parent>
+  <artifactId>leshan-tl-jc-client-coaps</artifactId>
+  <packaging>bundle</packaging>
+  <name>Leshan transport javacoap client coaps</name>
+  <description>A transport implementation for leshan client based on java-coap and Bouncy Castle for CoAP over DTLS protocol</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.eclipse.leshan</groupId>
+      <artifactId>leshan-lwm2m-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.leshan</groupId>
+      <artifactId>leshan-tl-jc-client-coap</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bctls-debug-jdk18on</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>nl.jqno.equalsverifier</groupId>
+      <artifactId>equalsverifier</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+</project>
