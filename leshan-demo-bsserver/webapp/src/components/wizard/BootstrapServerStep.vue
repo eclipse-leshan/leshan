@@ -33,8 +33,8 @@
       ></v-switch>
       <bs-server-input
         v-show="addServer"
-        :value="internalServer"
-        @input="$emit('input', $event)"
+        :model="internalServer"
+        @update:model-value="$emit('update:model-value', $event)"
         :defaultNoSecValue="defaultNoSecValue"
         :defaultSecureValue="defaultSecureValue"
         :defaultx509="defaultx509"
@@ -48,7 +48,7 @@ import BsServerInput from "../bsconfig/BsServerInput.vue";
 export default {
   components: { BsServerInput },
   props: {
-    value: Object, // Bootstrap Server config
+    modelValue: Object, // Bootstrap Server config
     valid: Boolean, // validation state of the form
     defaultNoSecValue: String, // default url for nosec endpoint
     defaultSecureValue: String, // default url for secured endpoint
@@ -62,7 +62,7 @@ export default {
     };
   },
   watch: {
-    value(v) {
+    modelValue(v) {
       if (!v) {
         this.addServer = false;
         this.internalServer = { security: { mode: "no_sec" } };
@@ -75,11 +75,11 @@ export default {
   methods: {
     updateAddServer(addServer) {
       if (addServer) {
-        this.$emit("input", this.internalServer);
+        this.$emit("update:model-value", this.internalServer);
         this.resetValidation();
         this.$emit("update:valid", true);
       } else {
-        this.$emit("input", null);
+        this.$emit("update:model-value", null);
         this.$emit("update:valid", true);
       }
     },
