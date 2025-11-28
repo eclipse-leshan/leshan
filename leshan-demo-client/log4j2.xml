@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+Copyright (c) 2013-2015 Sierra Wireless and others.
+
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the Eclipse Public License v2.0
+and Eclipse Distribution License v1.0 which accompany this distribution.
+
+The Eclipse Public License is available at
+   http://www.eclipse.org/legal/epl-v20.html
+and the Eclipse Distribution License is available at
+   http://www.eclipse.org/org/documents/edl-v10.html.
+
+Contributors:
+    Sierra Wireless - initial API and implementation
+ -->
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout>
+                <Pattern>
+                    %style{%d{HH:mm:ss.SSS}}{gray}
+                    %style{%-25c}{blue}
+                    [%highlight{%p}]
+                    %m %X%n
+                </Pattern>
+            </PatternLayout>
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <Root level="warn">
+            <AppenderRef ref="Console"/>
+        </Root>
+
+        <Logger name="org.eclipse.leshan" level="info" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="org.eclipse.leshan.transport.californium.LwM2mCoapResource" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="org.eclipse.leshan.server.security.securitycheck" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="org.eclipse.leshan.server.bootstrap.DefaultBootstrapHandler" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="org.eclipse.leshan.core.model.LwM2mModelRepository" level="trace" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+    </Loggers>
+</Configuration>

@@ -128,13 +128,13 @@ Contributors:
     <project.reporting.outputEncoding>${leshan.encoding}</project.reporting.outputEncoding>
 
     <!-- configure line separator -->
-    <leshan.lineEnding>LF</leshan.lineEnding>
+    <leshan.lineEnding>CRLF</leshan.lineEnding>
     <leshan.lineseparator>\n</leshan.lineseparator>
 
     <!-- we use properties for version when there are used more than once -->
     <!-- dependencies version -->
     <californium.version>4.0.0-M6</californium.version>
-    <logback.version>1.3.16</logback.version>
+    <log4j2.version>2.23.1</log4j2.version>
     <javacoap.version>6.21.0</javacoap.version>
     <netty.version>4.1.125.Final</netty.version>
     <slf4j.api.version>2.0.17</slf4j.api.version>
@@ -328,17 +328,24 @@ Contributors:
 
       <!-- Demos, examples and tests dependencies -->
       <dependency>
-        <groupId>ch.qos.logback</groupId>
-        <artifactId>logback-classic</artifactId>
-        <version>${logback.version}</version>
-        <exclusions>
-          <exclusion>
-            <!-- we exclude servlet-api dependencies because of dependency convergence issue with jetty
-            See: https://github.com/eclipse/leshan/issues/1339#issuecomment-1293221705 -->
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-          </exclusion>
-        </exclusions>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-api</artifactId>
+        <version>${log4j2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-core</artifactId>
+        <version>${log4j2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-slf4j2-impl</artifactId>
+        <version>${log4j2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-api</artifactId>
+        <version>${log4j2.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>

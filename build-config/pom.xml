@@ -53,7 +53,7 @@ Contributors:
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
             <systemPropertyVariables>
-              <logback.configurationFile>logback-leshan-test.xml</logback.configurationFile>
+              <log4j2.configurationFile>log4j2.xml</log4j2.configurationFile>
             </systemPropertyVariables>
             <parallel>classes</parallel>
             <!-- TODO OSCORE threadcount should be set to 4 again as soon as 

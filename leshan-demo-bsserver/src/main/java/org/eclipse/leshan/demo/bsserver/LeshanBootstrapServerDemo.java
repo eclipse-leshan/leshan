@@ -62,10 +62,10 @@ import picocli.CommandLine;
 public class LeshanBootstrapServerDemo {
 
     static {
-        // Define a default logback.configurationFile
-        String property = System.getProperty("logback.configurationFile");
+        // Define a default log4j.configurationFile
+        String property = System.getProperty("log4j2.configurationFile");
         if (property == null) {
-            System.setProperty("logback.configurationFile", "logback-config.xml");
+            System.setProperty("log4j2.configurationFile", "log4j2.xml");
         }
     }
 
