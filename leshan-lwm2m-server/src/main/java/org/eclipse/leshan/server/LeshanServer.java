@@ -179,8 +179,7 @@ public class LeshanServer {
         requestSender = createRequestSender(endpointsProvider, registrationService, this.modelProvider,
                 presenceService);
 
-        EndDeviceRegistrationHandler endDeviceRegistrationHandler = new EndDeviceRegistrationHandler(
-                registrationService, registrationIdProvider, registrationDataExtractor, this);
+        new EndDeviceRegistrationHandler(registrationService, registrationIdProvider, registrationDataExtractor, this);
     }
 
     protected RegistrationServiceImpl createRegistrationService(RegistrationStore registrationStore) {

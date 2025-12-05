@@ -209,8 +209,13 @@ public class EndDeviceRegistration implements IRegistration {
      * @see org.eclipse.leshan.server.registration.IRegistration#getRootPath()
      */
     @Override
+    public String getFullPrefixPath() {
+        return parentGateway.getRootPath() + getPrefix();
+    }
+
+    @Override
     public String getRootPath() {
-        return parentGateway.getRootPath();
+        return null;
     }
 
     /*

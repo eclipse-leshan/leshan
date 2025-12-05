@@ -51,7 +51,7 @@ public class RegistrationTest {
         IRegistration reg = given_a_registration_with_object_link_like("</1/0>,</3/0>");
 
         // check root path
-        assertEquals("/", reg.getRootPath());
+        assertEquals("/", reg.getFullPrefixPath());
 
         // Ensure supported objects are correct
         Map<Integer, Version> supportedObject = reg.getSupportedObject();
@@ -70,7 +70,7 @@ public class RegistrationTest {
         IRegistration reg = given_a_registration_with_object_link_like("</>;ct=\"0 42 11543\",</1/0>,</3/0>");
 
         // check root path
-        assertEquals("/", reg.getRootPath());
+        assertEquals("/", reg.getFullPrefixPath());
 
         // Ensure supported objects are correct
         Map<Integer, Version> supportedObject = reg.getSupportedObject();
@@ -95,7 +95,7 @@ public class RegistrationTest {
         IRegistration reg = given_a_registration_with_object_link_like("</>;ct=\"42\",</1/0>,</3/0>");
 
         // check root path
-        assertEquals("/", reg.getRootPath());
+        assertEquals("/", reg.getFullPrefixPath());
 
         // Ensure supported objects are correct
         Map<Integer, Version> supportedObject = reg.getSupportedObject();
@@ -119,7 +119,7 @@ public class RegistrationTest {
         IRegistration reg = given_a_registration_with_object_link_like("</>;ct=42,</1/0>,</3/0>");
 
         // check root path
-        assertEquals("/", reg.getRootPath());
+        assertEquals("/", reg.getFullPrefixPath());
 
         // Ensure supported objects are correct
         Map<Integer, Version> supportedObject = reg.getSupportedObject();
@@ -144,7 +144,7 @@ public class RegistrationTest {
                 "</>;rt=\"oma.lwm2m\";ct=\"0 42 11543\",</1/0>,</3/0>");
 
         // check root path
-        assertEquals("/", reg.getRootPath());
+        assertEquals("/", reg.getFullPrefixPath());
 
         // Ensure supported objects are correct
         Map<Integer, Version> supportedObject = reg.getSupportedObject();
@@ -169,7 +169,7 @@ public class RegistrationTest {
         IRegistration reg = given_a_registration_with_object_link_like("</root>;rt=\"oma.lwm2m\",</root/1/0>,</3/0>");
 
         // check root path
-        assertEquals("/root/", reg.getRootPath());
+        assertEquals("/root/", reg.getFullPrefixPath());
 
         // Ensure supported objects are correct
         Map<Integer, Version> supportedObject = reg.getSupportedObject();
@@ -188,7 +188,7 @@ public class RegistrationTest {
         IRegistration reg = given_a_registration_with_object_link_like("</root>;rt=oma.lwm2m,</root/1/0>,</3/0>");
 
         // check root path
-        assertEquals("/root/", reg.getRootPath());
+        assertEquals("/root/", reg.getFullPrefixPath());
 
         // Ensure supported objects are correct
         Map<Integer, Version> supportedObject = reg.getSupportedObject();
@@ -207,7 +207,7 @@ public class RegistrationTest {
         IRegistration reg = given_a_registration_with_object_link_like("</1/0>,</3>;ver=1.1,</3/0>");
 
         // check root path
-        assertEquals("/", reg.getRootPath());
+        assertEquals("/", reg.getFullPrefixPath());
 
         // Ensure supported objects are correct
         Map<Integer, Version> supportedObject = reg.getSupportedObject();
@@ -227,7 +227,7 @@ public class RegistrationTest {
                 "</root>;rt=\"oma.lwm2m\",</text>,</1/text/0/in/path>,</2/O/test/in/path>,</root/3>;ver=1.1,</root/3/0>,</root/4/0/0/>");
 
         // check root path
-        assertEquals("/root/", reg.getRootPath());
+        assertEquals("/root/", reg.getFullPrefixPath());
 
         // Ensure supported objects are correct
         Map<Integer, Version> supportedObject = reg.getSupportedObject();
@@ -254,7 +254,7 @@ public class RegistrationTest {
                 LwM2mVersion.V1_1);
 
         // check root path
-        assertEquals("/", reg.getRootPath());
+        assertEquals("/", reg.getFullPrefixPath());
 
         // Ensure supported objects are correct
         Map<Integer, Version> supportedObject = reg.getSupportedObject();

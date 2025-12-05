@@ -312,6 +312,11 @@ public class Registration implements IRegistration {
      * @see org.eclipse.leshan.server.registration.IRegistration#getRootPath()
      */
     @Override
+    public String getFullPrefixPath() {
+        return getRootPath();
+    }
+
+    @Override
     public String getRootPath() {
         return rootPath;
     }

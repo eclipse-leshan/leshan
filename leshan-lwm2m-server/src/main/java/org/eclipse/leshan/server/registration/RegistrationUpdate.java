@@ -108,7 +108,7 @@ public class RegistrationUpdate {
         String smsNumber = this.smsNumber != null ? this.smsNumber : registration.getSmsNumber();
 
         Link[] linkObject = this.objectLinks != null ? this.objectLinks : registration.getObjectLinks();
-        String alternatePath = this.alternatePath != null ? this.alternatePath : registration.getRootPath();
+        String alternatePath = this.alternatePath != null ? this.alternatePath : registration.getFullPrefixPath();
         Set<ContentFormat> supportedContentFormats = this.supportedContentFormats != null ? this.supportedContentFormats
                 : registration.getSupportedContentFormats();
         Map<Integer, Version> supportedObjects = this.supportedObjects != null ? this.supportedObjects

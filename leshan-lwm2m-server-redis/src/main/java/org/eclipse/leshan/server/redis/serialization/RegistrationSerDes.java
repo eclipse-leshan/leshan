@@ -129,7 +129,7 @@ public class RegistrationSerDes {
             addAttr.put(e.getKey(), e.getValue());
         }
         o.set("addAttr", addAttr);
-        o.put("root", r.getRootPath());
+        o.put("root", r.getFullPrefixPath());
         o.put("lastUp", r.getLastUpdate().getTime());
 
         // add supported content format

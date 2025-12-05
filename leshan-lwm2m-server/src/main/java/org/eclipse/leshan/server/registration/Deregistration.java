@@ -17,6 +17,7 @@ package org.eclipse.leshan.server.registration;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import org.eclipse.leshan.core.observation.Observation;
 
@@ -30,18 +31,31 @@ public class Deregistration {
     final Collection<Observation> observations;
     final IRegistration newRegistration; // the new if replaced or null
 
+    final List<Deregistration> childrenDeregistration;
+
     public Deregistration(IRegistration registration, Collection<Observation> observations) {
         this(registration, observations, null);
     }
 
     public Deregistration(IRegistration registration, Collection<Observation> observations,
             IRegistration newRegistration) {
+        this(registration, observations, newRegistration, null);
+    }
+
+    public Deregistration(IRegistration registration, Collection<Observation> observations,
+            IRegistration newRegistration, List<Deregistration> childrenDeregistration) {
         this.registration = registration;
         this.newRegistration = newRegistration;
-        if (observations == null)
+        if (observations == null) {
             this.observations = Collections.emptyList();
-        else
+        } else {
             this.observations = observations;
+        }
+        if (childrenDeregistration == null) {
+            this.childrenDeregistration = Collections.emptyList();
+        } else {
+            this.childrenDeregistration = childrenDeregistration;
+        }
     }
 
     public IRegistration getRegistration() {
@@ -54,5 +68,12 @@ public class Deregistration {
 
     public IRegistration getNewRegistration() {
         return newRegistration;
+    }
+
+    /**
+     * @return list of {@link Deregistration} about EndDevice for gateway registration
+     */
+    public List<Deregistration> getChildrenDeRegistration() {
+        return childrenDeregistration;
     }
 }

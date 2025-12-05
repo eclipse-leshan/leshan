@@ -88,6 +88,8 @@ public interface IRegistration {
      */
     String getRootPath();
 
+    String getFullPrefixPath();
+
     /**
      * @return all {@link ContentFormat} supported by the client.
      */

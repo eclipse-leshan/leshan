@@ -66,7 +66,7 @@ public class JacksonRegistrationSerializer extends StdSerializer<IRegistration> 
         map.put("lifetime", src.getLifeTimeInSec());
         map.put("bindingMode", BindingMode.toString(src.getBindingMode()));
 
-        map.put("rootPath", src.getRootPath());
+        map.put("rootPath", src.getFullPrefixPath());
         map.put("objectLinks", src.getObjectLinks());
         // TODO secure means over TLS (not OSCORE) but this is not clear so maybe we need to change this.
         map.put("secure", src.getClientTransportData().getIdentity().isSecure()

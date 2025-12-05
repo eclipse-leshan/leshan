@@ -46,7 +46,7 @@ public class ClientProfile {
     }
 
     public String getRootPath() {
-        return registration.getRootPath();
+        return registration.getFullPrefixPath();
     }
 
     public boolean canInitiateConnection() {

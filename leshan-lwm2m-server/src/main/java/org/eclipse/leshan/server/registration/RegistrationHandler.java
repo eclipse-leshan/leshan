@@ -202,8 +202,16 @@ public class RegistrationHandler {
         if (deregistration != null) {
             LOG.debug("Deregistered client: {}", deregistration.getRegistration());
             // Create callback to notify new de-registration
-            Runnable whenSent = () -> registrationService.fireUnregistered(deregistration.getRegistration(),
-                    deregistration.getObservations(), null);
+            Runnable whenSent = () -> {
+                registrationService.fireUnregistered(deregistration.getRegistration(), deregistration.getObservations(),
+                        null);
+                if (deregistration.getRegistration().isGateway()) {
+                    for (Deregistration childDeregistration : deregistration.getChildrenDeRegistration()) {
+                        registrationService.fireUnregistered(childDeregistration.getRegistration(),
+                                childDeregistration.getObservations(), null);
+                    }
+                }
+            };
 
             return new SendableResponse<>(DeregisterResponse.success(), whenSent);
         } else {
