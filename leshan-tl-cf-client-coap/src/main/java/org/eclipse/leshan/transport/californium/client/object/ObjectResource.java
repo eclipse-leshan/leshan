@@ -110,7 +110,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
             public void removedObserveRelation(ObserveRelation relation) {
                 // Get object URI
                 Request request = relation.getExchange().getRequest();
-                String URI = request.getOptions().getUriPathString();
+                String URI = extractNodeURI(request);
                 // we don't manage observation on root path
                 if (URI == null)
                     return;
@@ -141,7 +141,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
         if (server == null)
             return;
 
-        String URI = exchange.getRequestOptions().getUriPathString();
+        String URI = extractNodeURI(coapRequest);
 
         if (exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_LINK_FORMAT) {
             if (server.isLwm2mBootstrapServer()) {
@@ -316,7 +316,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
         if (identity == null)
             return;
 
-        String URI = coapExchange.getRequestOptions().getUriPathString();
+        String URI = extractNodeURI(coapRequest);
 
         // get Observe Spec
         LwM2mAttributeSet attributes = null;
@@ -396,7 +396,7 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
         if (identity == null)
             return;
 
-        String URI = exchange.getRequestOptions().getUriPathString();
+        String URI = extractNodeURI(coapRequest);
         LwM2mPath path = getPath(URI);
 
         // Manage Execute Request
@@ -511,8 +511,8 @@ public class ObjectResource extends LwM2mClientCoapResource implements ObjectLis
     @Override
     public void handleDELETE(CoapExchange coapExchange) {
         // Manage Delete Request
-        String URI = coapExchange.getRequestOptions().getUriPathString();
         Request coapRequest = coapExchange.advanced().getRequest();
+        String URI = extractNodeURI(coapRequest);
         LwM2mServer identity = getServerOrRejectRequest(coapExchange, coapRequest);
         if (identity == null)
             return;

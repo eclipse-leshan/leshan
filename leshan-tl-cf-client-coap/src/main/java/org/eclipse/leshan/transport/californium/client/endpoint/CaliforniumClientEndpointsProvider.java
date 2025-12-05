@@ -24,11 +24,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
@@ -153,9 +155,21 @@ public class CaliforniumClientEndpointsProvider implements LwM2mClientEndpointsP
         };
 
         // create resources
-        List<Resource> resources = messagetranslator.createResources(coapServer, identityHandlerProvider,
-                identityExtrator, requestReceiver, notificationManager, toolbox, objectTree);
-        coapServer.add(resources.toArray(new Resource[resources.size()]));
+        {
+            List<Resource> resources = messagetranslator.createResources(coapServer, identityHandlerProvider,
+                    identityExtrator, requestReceiver, notificationManager, toolbox, objectTree);
+            coapServer.add(resources.toArray(new Resource[resources.size()]));
+        }
+
+        // HACK add subtree resource
+        for (Entry<String, LwM2mObjectTree> entry : objectTree.getSubTree().entrySet()) {
+            // should we create root resource ?
+            CoapResource gatewayresource = new CoapResource(entry.getKey());
+            List<Resource> resources = messagetranslator.createResources(coapServer, identityHandlerProvider,
+                    identityExtrator, requestReceiver, notificationManager, toolbox, objectTree);
+            gatewayresource.add(resources.toArray(new CoapResource[resources.size()]));
+            coapServer.add(gatewayresource);
+        }
     }
 
     @Override

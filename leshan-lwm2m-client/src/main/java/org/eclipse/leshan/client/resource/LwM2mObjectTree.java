@@ -44,6 +44,7 @@ public class LwM2mObjectTree implements Startable, Stoppable, Destroyable {
     protected final ObjectListener dispatcher = new ObjectListenerDispatcher();
     protected final CopyOnWriteArrayList<ObjectsListener> listeners = new CopyOnWriteArrayList<>();
     protected final ConcurrentHashMap<Integer, LwM2mObjectEnabler> objectEnablers = new ConcurrentHashMap<>();
+    protected final ConcurrentHashMap<String, LwM2mObjectTree> subtree = new ConcurrentHashMap<>();
     protected final LwM2mModel model;
     protected final Consumer<LwM2mObjectEnabler> objectEnablerInitializer;
 
@@ -99,6 +100,14 @@ public class LwM2mObjectTree implements Startable, Stoppable, Destroyable {
                 return null;
             }
         };
+
+    }
+
+    public void addSubTree() {
+        // create subtree to simulate gateway.
+        ObjectsInitializer objectsInitializer = new ObjectsInitializer();
+        objectsInitializer.setDummyInstancesForObject(3);
+        subtree.put("d01", new LwM2mObjectTree(objectEnablerInitializer, objectsInitializer.createAll()));
     }
 
     public void addListener(ObjectsListener listener) {
@@ -206,5 +215,9 @@ public class LwM2mObjectTree implements Startable, Stoppable, Destroyable {
         for (LwM2mObjectEnabler enabler : enablers.values()) {
             enabler.endTransaction(LwM2mPath.ROOT_DEPTH);
         }
+    }
+
+    public Map<String, LwM2mObjectTree> getSubTree() {
+        return subtree;
     }
 }

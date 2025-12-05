@@ -105,6 +105,7 @@ public class LeshanClient implements LwM2mClient {
         Validate.notNull(checker);
 
         objectTree = createObjectTree(objectEnablers, linkFormatHelper);
+        objectTree.addSubTree();
         List<String> errors = checker.checkconfig(objectTree.getObjectEnablers());
         if (errors != null) {
             throw new IllegalArgumentException(

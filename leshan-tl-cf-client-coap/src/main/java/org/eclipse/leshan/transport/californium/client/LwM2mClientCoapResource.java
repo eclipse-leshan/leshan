@@ -19,6 +19,7 @@ import org.eclipse.californium.core.CoapExchange;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.Message;
+import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.peer.IpPeer;
@@ -65,5 +66,11 @@ public class LwM2mClientCoapResource extends LwM2mCoapResource {
         if (foreignPeer == null)
             return null;
         return serverIdentityExtractor.extractIdentity(exchange, foreignPeer);
+    }
+
+    protected String extractNodeURI(Request request) {
+        String rootPath = getPath();
+        String fullUri = "/" + request.getOptions().getUriPathString();
+        return rootPath != null && fullUri.startsWith(rootPath) ? fullUri.substring(rootPath.length()) : fullUri;
     }
 }
