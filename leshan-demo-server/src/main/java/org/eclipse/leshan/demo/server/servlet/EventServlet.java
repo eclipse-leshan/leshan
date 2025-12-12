@@ -252,6 +252,8 @@ public class EventServlet extends EventSourceServlet {
             }
 
             if (registration != null) {
+                LOG.info("Received LwM2M Send from [{}]: {}", registration.getEndpoint(), data);
+
                 try {
                     String jsonContent = EventServlet.this.mapper.writeValueAsString(data.getMostRecentNodes());
 
