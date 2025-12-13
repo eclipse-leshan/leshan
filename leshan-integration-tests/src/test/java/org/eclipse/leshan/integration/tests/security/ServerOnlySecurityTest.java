@@ -100,7 +100,8 @@ public class ServerOnlySecurityTest {
     static Stream<org.junit.jupiter.params.provider.Arguments> transports() {
         return Stream.of(//
                 // Server Endpoint Provider
-                arguments("Californium"));
+                arguments("Californium"), //
+                arguments("java-coap"));
     }
 
     /*---------------------------------/
@@ -221,7 +222,10 @@ public class ServerOnlySecurityTest {
         Exception e = assertThrowsExactly(SendFailedException.class, () -> {
             server.send(registration, new ReadRequest(3, 0, 1), 1000);
         });
-        assertThat(e).cause().isExactlyInstanceOf(EndpointMismatchException.class);
+
+        if (givenServerEndpointProvider.equalsIgnoreCase("Californium")) {
+            assertThat(e).cause().isExactlyInstanceOf(EndpointMismatchException.class);
+        }
 
         connector.stop();
         client.destroy(false);

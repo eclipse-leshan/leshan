@@ -21,7 +21,7 @@ import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 
-import org.eclipse.leshan.transport.javacoap.identity.TlsTransportContextKeys;
+import org.eclipse.leshan.transport.javacoap.transport.context.keys.TlsTransportContextKeys;
 
 import com.mbed.coap.packet.Opaque;
 import com.mbed.coap.transport.TransportContext;

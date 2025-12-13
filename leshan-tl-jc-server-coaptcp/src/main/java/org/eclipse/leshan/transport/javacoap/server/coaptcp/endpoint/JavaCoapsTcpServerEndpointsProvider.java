@@ -37,11 +37,12 @@ import org.eclipse.leshan.servers.security.SecurityStoreListener;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.eclipse.leshan.transport.javacoap.SingleX509KeyManager;
 import org.eclipse.leshan.transport.javacoap.identity.DefaultTlsIdentityHandler;
-import org.eclipse.leshan.transport.javacoap.identity.TlsTransportContextKeys;
 import org.eclipse.leshan.transport.javacoap.server.coaptcp.transport.CoapsTcpTransportResolver;
 import org.eclipse.leshan.transport.javacoap.server.coaptcp.transport.NettyCoapTcpTransport;
 import org.eclipse.leshan.transport.javacoap.server.coaptcp.transport.TransportContextHandler;
 import org.eclipse.leshan.transport.javacoap.server.endpoint.AbstractJavaCoapServerEndpointsProvider;
+import org.eclipse.leshan.transport.javacoap.server.endpoint.ConnectionsManager;
+import org.eclipse.leshan.transport.javacoap.transport.context.keys.TlsTransportContextKeys;
 
 import com.mbed.coap.packet.BlockSize;
 import com.mbed.coap.packet.CoapRequest;
@@ -52,6 +53,8 @@ import com.mbed.coap.server.TcpCoapServer;
 import com.mbed.coap.server.filter.TokenGeneratorFilter;
 import com.mbed.coap.server.observe.NotificationsReceiver;
 import com.mbed.coap.server.observe.ObservationsStore;
+import com.mbed.coap.transport.CoapTcpTransport;
+import com.mbed.coap.transport.CoapTransport;
 import com.mbed.coap.transport.TransportContext;
 import com.mbed.coap.utils.Service;
 
@@ -68,10 +71,8 @@ public class JavaCoapsTcpServerEndpointsProvider extends AbstractJavaCoapServerE
     }
 
     @Override
-    protected CoapServer createCoapServer(InetSocketAddress localAddress, ServerSecurityInfo serverSecurityInfo,
-            SecurityStore securityStore, Service<CoapRequest, CoapResponse> resources,
-            NotificationsReceiver notificationReceiver, ObservationsStore observationsStore) {
-
+    protected CoapTcpTransport createCoapTransport(InetSocketAddress localAddress,
+            ServerSecurityInfo serverSecurityInfo, SecurityStore securityStore) {
         // Create SSL Handler with right Credentials
         SslContext sslContext;
         try {
@@ -108,8 +109,14 @@ public class JavaCoapsTcpServerEndpointsProvider extends AbstractJavaCoapServerE
 
         createAndAttachConnectionCleaner(transport, securityStore);
 
-        return createCoapServer() //
-                .transport(transport) //
+        return transport;
+    }
+
+    @Override
+    protected CoapServer createCoapServer(CoapTransport transport, Service<CoapRequest, CoapResponse> resources,
+            NotificationsReceiver notificationReceiver, ObservationsStore observationsStore) {
+        return createCoapTcpBuidlerServer() //
+                .transport((CoapTcpTransport) transport) //
                 .blockSize(BlockSize.S_1024_BERT) //
                 .maxIncomingBlockTransferSize(4000) //
                 .maxMessageSize(2100) //
@@ -119,7 +126,7 @@ public class JavaCoapsTcpServerEndpointsProvider extends AbstractJavaCoapServerE
                 .build();
     }
 
-    protected CoapServerBuilderForTcp createCoapServer() {
+    protected CoapServerBuilderForTcp createCoapTcpBuidlerServer() {
         return TcpCoapServer.builder().outboundFilter(TokenGeneratorFilter.RANDOM);
     }
 
@@ -155,5 +162,12 @@ public class JavaCoapsTcpServerEndpointsProvider extends AbstractJavaCoapServerE
                 }
             });
         }
+    }
+
+    @Override
+    protected ConnectionsManager createConnectionManager(CoapTransport transport) {
+        return () -> {
+            // TODO should we implement that ?
+        };
     }
 }
