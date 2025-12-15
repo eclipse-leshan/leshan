@@ -92,13 +92,6 @@ Contributors:
                     <skip>true</skip>
                 </configuration>
             </plugin>
-             <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <configuration>
-                    <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
-                </configuration>
-            </plugin>
             <plugin>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <configuration>
@@ -123,6 +116,16 @@ Contributors:
                 <configuration>
                     <skip>true</skip>
                 </configuration>
+            </plugin>
+            <plugin>
+              <groupId>org.sonatype.central</groupId>
+              <artifactId>central-publishing-maven-plugin</artifactId>
+              <executions>
+                <execution>
+                  <id>injected-central-publishing</id>
+                  <phase>none</phase>
+                </execution>
+              </executions>
             </plugin>
         </plugins>
     </build>
