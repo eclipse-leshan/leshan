@@ -333,8 +333,6 @@ Contributors:
                         <encoding>UTF-8</encoding>
                         <release>7</release>
                         <debug>true</debug>
-                        <optimize>true</optimize>
-                        <showDeprecations>true</showDeprecations>
                     </configuration>
                 </plugin>
                 <plugin>
