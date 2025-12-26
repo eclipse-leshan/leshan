@@ -1,0 +1,6 @@
+{
+    "java.format.settings.url": "https://raw.githubusercontent.com/eclipse/leshan/master/eclipse/eclipse-code-style.xml",
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.sources.organizeImports.starThreshold": 99,
+    "java.sources.organizeImports.staticStarThreshold": 99
+}
