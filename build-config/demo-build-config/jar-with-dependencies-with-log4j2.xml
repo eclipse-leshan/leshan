@@ -9,12 +9,15 @@
     </formats>
 
     <includeBaseDirectory>false</includeBaseDirectory>
-	<files>
-	    <file>
-	        <source>log4j2.xml</source>
-	        <destName>log4j2.xml</destName>
-	    </file>
-	</files>
+    <fileSets>
+        <fileSet>
+            <directory>${project.build.outputDirectory}</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>log4j2.xml</include>
+            </includes>
+        </fileSet>
+    </fileSets>
     <dependencySets>
         <dependencySet>
             <outputDirectory>/</outputDirectory>
