@@ -43,8 +43,14 @@ public abstract class AbstractSenMLTest {
      * @return JSON payload
      */
     protected String givenSenMLJsonExample() {
+        return givenPrefixedSenMLJsonExample("/");
+    }
+
+    protected String givenPrefixedSenMLJsonExample(String prefix) {
         StringBuilder b = new StringBuilder();
-        b.append("[{\"bn\":\"/3/0/\",\"n\":\"0\",\"vs\":\"Open Mobile Alliance\"},");
+        b.append("[{\"bn\":\"");
+        b.append(prefix);
+        b.append("3/0/\",\"n\":\"0\",\"vs\":\"Open Mobile Alliance\"},");
         b.append("{\"n\":\"1\",\"vs\":\"Lightweight M2M Client\"},");
         b.append("{\"n\":\"2\",\"vs\":\"345000123\"},");
         b.append("{\"n\":\"3\",\"vs\":\"1.0\"},");
@@ -73,9 +79,13 @@ public abstract class AbstractSenMLTest {
     }
 
     protected SenMLPack givenDeviceObjectInstance() {
+        return givenPrefixedDeviceObjectInstance("/");
+    }
+
+    protected SenMLPack givenPrefixedDeviceObjectInstance(String prefix) {
         SenMLPack pack = new SenMLPack();
 
-        givenResourceWithStringValue(pack, "/3/0/", "0", "Open Mobile Alliance");
+        givenResourceWithStringValue(pack, prefix + "3/0/", "0", "Open Mobile Alliance");
         givenResourceWithStringValue(pack, "1", "Lightweight M2M Client");
         givenResourceWithStringValue(pack, "2", "345000123");
         givenResourceWithStringValue(pack, "3", "1.0");

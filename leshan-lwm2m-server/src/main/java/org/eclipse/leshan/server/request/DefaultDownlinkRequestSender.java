@@ -91,7 +91,7 @@ public class DefaultDownlinkRequestSender implements DownlinkRequestSender {
         LwM2mServerEndpoint endpoint = getEndpoint(destination);
 
         // Retrieve the objects definition
-        final LwM2mModel model = modelProvider.getObjectModel(destination);
+        final LwM2mModel model = modelProvider.getObjectModel(destination, null);
 
         // Send requests synchronously
         T response = endpoint.send(new ClientProfile(destination, model), request, lowerLayerConfig, timeoutInMs);
@@ -135,7 +135,7 @@ public class DefaultDownlinkRequestSender implements DownlinkRequestSender {
         LwM2mServerEndpoint endpoint = getEndpoint(destination);
 
         // Retrieve the objects definition
-        final LwM2mModel model = modelProvider.getObjectModel(destination);
+        final LwM2mModel model = modelProvider.getObjectModel(destination, null);
 
         // Send requests asynchronously
         endpoint.send(new ClientProfile(destination, model), request, new ResponseCallback<T>() {

@@ -108,6 +108,24 @@ public class LockStepLwM2mClient extends LockstepEndpoint {
         return coapReq.getToken();
     }
 
+    public Token sendCoapResponse(Request coapReq) {
+        // serialize request
+        UdpDataSerializer serializer = new UdpDataSerializer();
+        if (coapReq.getMID() == Message.NONE) {
+            coapReq.setMID(r.nextInt(Message.MAX_MID));
+        }
+        if (coapReq.getToken() == null) {
+            byte[] token = new byte[8];
+            r.nextBytes(token);
+            coapReq.setToken(token);
+        }
+        RawData raw = serializer.serializeRequest(coapReq);
+
+        // send it
+        super.send(raw);
+        return coapReq.getToken();
+    }
+
     public String getEndpointName() {
         return endpointName;
     }

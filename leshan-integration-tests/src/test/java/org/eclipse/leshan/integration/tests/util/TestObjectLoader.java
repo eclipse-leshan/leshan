@@ -47,4 +47,14 @@ public class TestObjectLoader {
 
         return objectModels;
     }
+
+    public static List<ObjectModel> loadDefaultObjectWithGateway() {
+        List<ObjectModel> model = loadDefaultObject();
+
+        // load default object from the spec (with fixed version)
+        LwM2mModelRepository repository = new LwM2mModelRepository(
+                org.eclipse.leshan.core.util.TestObjectLoader.loadAllDefault());
+        model.add(repository.getObjectModel(25, "2.0"));
+        return model;
+    }
 }

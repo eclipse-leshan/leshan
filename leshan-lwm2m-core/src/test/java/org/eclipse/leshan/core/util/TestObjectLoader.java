@@ -23,7 +23,7 @@ import org.eclipse.leshan.core.model.ObjectModel;
 
 public class TestObjectLoader {
 
-    public static final String[] ddfpaths = new String[] { "3441.xml", "3442.xml" };
+    public static final String[] ddfpaths = new String[] { "3441.xml", "3442.xml", "25.xml" };
 
     public static List<ObjectModel> loadAllDefault() {
         List<ObjectModel> result = new ArrayList<>();

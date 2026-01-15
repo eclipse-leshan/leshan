@@ -81,7 +81,8 @@ public class SendRequest extends AbstractLwM2mRequest<SendResponse>
     }
 
     private void validateNodes(TimestampedLwM2mNodes timestampedNodes) {
-        if (timestampedNodes == null || timestampedNodes.isEmpty() || timestampedNodes.getFlattenNodes().isEmpty()) {
+        if (timestampedNodes == null || timestampedNodes.isEmpty()
+                || timestampedNodes.getPrefixedFlattenNodes().isEmpty()) {
             throw new InvalidRequestException(
                     "SendRequest MUST NOT have empty payload (at least 1 node should be present)");
         }

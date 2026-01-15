@@ -21,6 +21,7 @@ import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.server.registration.IRegistration;
+import org.eclipse.leshan.server.registration.RegistrationStore;
 
 /**
  * A LwM2mModelProvider which uses only one model for all registered clients without taking into account object version
@@ -38,7 +39,7 @@ public class StaticModelProvider implements LwM2mModelProvider {
     }
 
     @Override
-    public LwM2mModel getObjectModel(IRegistration registration) {
+    public LwM2mModel getObjectModel(IRegistration registration, RegistrationStore store) {
         // same model for all clients
         return model;
     }

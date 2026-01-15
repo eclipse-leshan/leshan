@@ -579,7 +579,8 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
         List<Deregistration> deregistrations = new ArrayList<>();
         for (String endpoint : registration.getChildEndDevices().values()) {
             IRegistration endDevice = getRegistrationByEndpoint(endpoint);
-            deregistrations.add(removeRegistration(endDevice.getId()));
+            if (endDevice != null)
+                deregistrations.add(removeRegistration(endDevice.getId()));
         }
         return deregistrations;
     }

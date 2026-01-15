@@ -42,6 +42,8 @@ import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mRoot;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPathParser;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.CodecException;
@@ -70,6 +72,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
     private final boolean permissiveNumberConversion;
     // parser used for core link data type
     private final LinkParser linkParser;
+    private final PrefixedLwM2mPathParser prefixedPathParser = new PrefixedLwM2mPathParser();
 
     public LwM2mNodeSenMLDecoder(SenMLDecoder decoder, boolean permissiveNumberConversion) {
         this(decoder, new DefaultLwM2mLinkParser(), permissiveNumberConversion);
@@ -267,11 +270,29 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                 LwM2mSenMLResolver resolver = new LwM2mSenMLResolver();
                 for (SenMLRecord senMLRecord : pack.getRecords()) {
                     LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(senMLRecord);
-                    validateRootPath(resolvedRecord, rootPath);
-                    LwM2mPath path = resolvedRecord.getPath();
-                    LwM2mNode node = parseRecords(Arrays.asList(resolvedRecord), path, model,
-                            DefaultLwM2mDecoder.nodeClassFromPath(path));
-                    nodes.put(TimestampUtil.fromSeconds(resolvedRecord.getTimeStamp()), path, node);
+                    List<String> rootpathPrefix = rootPath == null ? Collections.emptyList()
+                            : prefixedPathParser.parsePrefix(rootPath);
+                    PrefixedLwM2mPath prefixedPath = resolvedRecord.getPrefixedPath().removePrefix(rootpathPrefix);
+                    LwM2mModel modelToDecode;
+                    if (!prefixedPath.hasPrefix()) {
+                        modelToDecode = model;
+                    } else {
+                        if (!model.hasChildrenModels()) {
+                            throw new CodecException(
+                                    "Unable to decode nodes : Record %s uses prefixed but model has no child (not a gateway)",
+                                    senMLRecord);
+
+                        }
+                        modelToDecode = model.getChildModel(prefixedPath.getPrefixWithoutSlashAsString());
+                        if (modelToDecode == null) {
+                            throw new CodecException(
+                                    "Unable to decode nodes : Record %s uses prefixed %s  but no model for that prefix",
+                                    senMLRecord, prefixedPath.getPrefixAsString());
+                        }
+                    }
+                    LwM2mNode node = parseRecords(Arrays.asList(resolvedRecord), prefixedPath.getPath(), modelToDecode,
+                            DefaultLwM2mDecoder.nodeClassFromPath(prefixedPath.getPath()));
+                    nodes.put(TimestampUtil.fromSeconds(resolvedRecord.getTimeStamp()), prefixedPath, node);
                 }
             }
 

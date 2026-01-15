@@ -1636,11 +1636,17 @@ public class LockstepEndpoint {
         }
 
         public RequestProperty payload(final String payload) {
+            return payload(payload, null);
+        }
+
+        public RequestProperty payload(final String payload, final Integer format) {
             properties.add(new Property<Request>() {
 
                 @Override
                 public void set(Request request) {
                     request.setPayload(payload);
+                    if (format != null)
+                        request.getOptions().setContentFormat(format);
                 }
             });
             return this;

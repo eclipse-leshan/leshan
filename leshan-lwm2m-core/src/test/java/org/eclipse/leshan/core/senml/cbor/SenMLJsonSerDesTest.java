@@ -58,6 +58,28 @@ public class SenMLJsonSerDesTest extends AbstractSenMLTest {
     }
 
     @Test
+    public void serialize_then_deserialize_prefixed_device_object() throws SenMLException {
+        byte[] json = encoder.toSenML(givenPrefixedDeviceObjectInstance("/d01/"));
+        SenMLPack pack = decoder.fromSenML(json);
+        SenMLTestUtil.assertSenMLPackEquals(givenPrefixedDeviceObjectInstance("/d01/"), pack);
+    }
+
+    @Test
+    public void deserialize_prefixed_device_object() throws SenMLException {
+        String dataString = givenPrefixedSenMLJsonExample("/d01/");
+        SenMLPack pack = decoder.fromSenML(dataString.getBytes());
+
+        SenMLTestUtil.assertSenMLPackEquals(givenPrefixedDeviceObjectInstance("/d01/"), pack);
+    }
+
+    @Test
+    public void serialize_prefixed_device_object() throws SenMLException {
+        SenMLPack pack = givenPrefixedDeviceObjectInstance("/d01/");
+        byte[] json = encoder.toSenML(pack);
+        assertEquals(givenPrefixedSenMLJsonExample("/d01/"), new String(json));
+    }
+
+    @Test
     public void deserialize_opaque_object_() throws Exception {
         byte[] json = "[{\"bn\":\"/0/0/3\",\"vd\":\"q83v\"}]".getBytes(); // q83v is base64 of ABCDE
         SenMLPack pack = decoder.fromSenML(json);

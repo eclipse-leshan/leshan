@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.node;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -50,12 +51,41 @@ public class PrefixedLwM2mPath implements Comparable<PrefixedLwM2mPath> {
         return prefix;
     }
 
+    public PrefixedLwM2mPath removePrefix(List<String> prefix) {
+        if (prefix == null || prefix.isEmpty()) {
+            return this;
+        }
+        if (this.prefix.isEmpty()) {
+            throw new IllegalArgumentException(
+                    String.format("%s path doesn't start by %s", this, String.join("/", prefix)));
+        }
+
+        List<String> newPrefix = new ArrayList<>(this.prefix);
+        for (String prefixpart : prefix) {
+            if (newPrefix.isEmpty() || !prefixpart.equals(newPrefix.get(0))) {
+                throw new IllegalArgumentException(
+                        String.format("%s path doesn't start by %s", this, String.join("/", prefix)));
+            }
+            newPrefix.remove(0);
+        }
+        return new PrefixedLwM2mPath(newPrefix, this.getPath());
+    }
+
     /**
      * @return prefix as string if there is no prefix then it returns an empty string
      */
     public String getPrefixAsString() {
         StringBuilder b = new StringBuilder();
-        appendPrefixTo(b);
+        appendPrefixTo(b, true);
+        return b.toString();
+    }
+
+    /**
+     * @return prefix as string without starting slash if there is no prefix then it returns an empty string
+     */
+    public String getPrefixWithoutSlashAsString() {
+        StringBuilder b = new StringBuilder();
+        appendPrefixTo(b, false);
         return b.toString();
     }
 
@@ -66,13 +96,13 @@ public class PrefixedLwM2mPath implements Comparable<PrefixedLwM2mPath> {
      */
     public boolean useRootPath(String rootPath) {
         if (rootPath == null) {
-            return !hasPrefix();
+            return true;
         }
         if (rootPath.length() == 0 || rootPath.charAt(0) != '/') {
             throw new IllegalArgumentException("rootPath should start by '/'");
         }
         if (rootPath.length() == 1) {
-            return !hasPrefix();
+            return true;
         }
         return rootPath.equals(getPrefixAsString());
     }
@@ -99,11 +129,16 @@ public class PrefixedLwM2mPath implements Comparable<PrefixedLwM2mPath> {
     /**
      * Append prefix to given {@link StringBuilder}
      */
-    public void appendPrefixTo(StringBuilder b) {
+    public void appendPrefixTo(StringBuilder b, boolean startWithSlash) {
         if (hasPrefix()) {
-            for (String prefixSegment : getPrefix()) {
+            List<String> pfx = getPrefix();
+            if (startWithSlash) {
                 b.append('/');
-                b.append(prefixSegment);
+            }
+            b.append(pfx.get(0));
+            for (int i = 1; i < pfx.size(); i++) {
+                b.append('/');
+                b.append(pfx.get(i));
             }
         }
     }
@@ -111,7 +146,7 @@ public class PrefixedLwM2mPath implements Comparable<PrefixedLwM2mPath> {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
-        appendPrefixTo(b);
+        appendPrefixTo(b, true);
         getPath().appendTo(b);
         return b.toString();
     }
@@ -148,5 +183,9 @@ public class PrefixedLwM2mPath implements Comparable<PrefixedLwM2mPath> {
                 }
             }
         }
+    }
+
+    public static PrefixedLwM2mPath fromString(String prefix) {
+        return new PrefixedLwM2mPathParser().parsePrefixedPath(prefix);
     }
 }

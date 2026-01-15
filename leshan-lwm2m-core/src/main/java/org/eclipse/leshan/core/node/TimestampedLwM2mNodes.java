@@ -77,8 +77,8 @@ public class TimestampedLwM2mNodes {
     }
 
     /**
-     * Get all collected nodes as {@link LwM2mPath}-{@link LwM2mNode} map ignoring timestamp information. In case of the
-     * same path conflict the most recent one is taken. Null timestamp is considered as most recent one.
+     * Get all collected nodes as {@link PrefixedLwM2mPath}-{@link LwM2mNode} map ignoring timestamp information. In
+     * case of the same path conflict the most recent one is taken. Null timestamp is considered as most recent one.
      *
      */
     public Map<PrefixedLwM2mPath, LwM2mNode> getPrefixedFlattenNodes() {

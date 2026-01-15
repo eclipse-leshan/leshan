@@ -76,7 +76,7 @@ public class ObjectSpecServlet extends LeshanDemoServlet {
 
     private void sendModel(HttpServletRequest req, HttpServletResponse resp, IRegistration registration) {
         executeSafely(req, resp, () -> {
-            LwM2mModel model = modelProvider.getObjectModel(registration);
+            LwM2mModel model = modelProvider.getObjectModel(registration, null);
             resp.setContentType("application/json");
             List<ObjectModel> objectModels = new ArrayList<>(model.getObjectModels());
             Collections.sort(objectModels, (o1, o2) -> {

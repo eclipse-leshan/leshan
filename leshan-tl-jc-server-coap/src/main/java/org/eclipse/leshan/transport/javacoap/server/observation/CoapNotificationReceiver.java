@@ -104,7 +104,8 @@ public class CoapNotificationReceiver implements NotificationsReceiver {
             }
 
             // Create Client Profile
-            ClientProfile clientProfile = new ClientProfile(registration, modelProvider.getObjectModel(registration));
+            ClientProfile clientProfile = new ClientProfile(registration,
+                    modelProvider.getObjectModel(registration, registrationStore));
             try {
                 // Send events
                 if (e != null) {

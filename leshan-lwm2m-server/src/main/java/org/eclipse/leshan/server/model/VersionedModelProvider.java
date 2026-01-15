@@ -26,6 +26,7 @@ import org.eclipse.leshan.core.model.LwM2mModelRepository;
 import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.server.registration.IRegistration;
+import org.eclipse.leshan.server.registration.RegistrationStore;
 
 /**
  * A LwM2mModelProvider which supports object versioning. It returns a LwM2mModel taking into account object version
@@ -44,16 +45,18 @@ public class VersionedModelProvider implements LwM2mModelProvider {
     }
 
     @Override
-    public LwM2mModel getObjectModel(IRegistration registration) {
-        return new DynamicModel(registration);
+    public LwM2mModel getObjectModel(IRegistration registration, RegistrationStore store) {
+        return new DynamicModel(registration, store);
     }
 
     private class DynamicModel implements LwM2mModel {
 
         private final IRegistration registration;
+        private final RegistrationStore store;
 
-        public DynamicModel(IRegistration registration) {
+        public DynamicModel(IRegistration registration, RegistrationStore store) {
             this.registration = registration;
+            this.store = store;
         }
 
         @Override
@@ -94,12 +97,18 @@ public class VersionedModelProvider implements LwM2mModelProvider {
 
         @Override
         public LwM2mModel getChildModel(String prefix) {
-            return null;
-//            IRegistration childRegistration = registration.getChildEndDevices(prefix);
-//            if (childRegistration == null) {
-//                return null;
-//            }
-//            return new DynamicModel(childRegistration);
+            String childEndpoint = registration.getChildEndDevices().get(prefix);
+            if (childEndpoint == null) {
+                return null;
+            }
+            if (store == null) {
+                return null;
+            }
+            IRegistration childRegistration = store.getRegistrationByEndpoint(childEndpoint);
+            if (childRegistration == null) {
+                return null;
+            }
+            return new DynamicModel(childRegistration, store);
         }
     }
 }
