@@ -128,7 +128,7 @@ Contributors:
     <project.reporting.outputEncoding>${leshan.encoding}</project.reporting.outputEncoding>
 
     <!-- configure line separator -->
-    <leshan.lineEnding>CRLF</leshan.lineEnding>
+    <leshan.lineEnding>LF</leshan.lineEnding>
     <leshan.lineseparator>\n</leshan.lineseparator>
 
     <!-- we use properties for version when there are used more than once -->
