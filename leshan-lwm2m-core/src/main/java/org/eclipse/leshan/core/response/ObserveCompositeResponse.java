@@ -19,7 +19,9 @@ import java.util.Map;
 
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mNodeUtil;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.observation.CompositeObservation;
@@ -58,7 +60,7 @@ public class ObserveCompositeResponse extends ReadCompositeResponse {
      * @param coapResponse The underlying protocol response object generally when you receive the response not when you
      *        send it.
      */
-    public ObserveCompositeResponse(ResponseCode responseCode, Map<LwM2mPath, LwM2mNode> content,
+    public ObserveCompositeResponse(ResponseCode responseCode, Map<PrefixedLwM2mPath, LwM2mNode> content,
             TimestampedLwM2mNodes timestampedContent, TimestampedLwM2mNodes historicalValues,
             CompositeObservation observation, String errorMessage, Object coapResponse) {
         super(responseCode, content, //
@@ -86,7 +88,7 @@ public class ObserveCompositeResponse extends ReadCompositeResponse {
      * If you want the full historical timestamped values, you should use use {@link #getTimestampedLwM2mNodes()}.
      */
     @Override
-    public Map<LwM2mPath, LwM2mNode> getContent() {
+    public Map<PrefixedLwM2mPath, LwM2mNode> getContent() {
         return super.getContent();
     }
 
@@ -152,7 +154,12 @@ public class ObserveCompositeResponse extends ReadCompositeResponse {
     // Syntactic sugar static constructors:
 
     public static ObserveCompositeResponse success(Map<LwM2mPath, LwM2mNode> content) {
-        return new ObserveCompositeResponse(ResponseCode.CONTENT, content, null, null, null, null, null);
+        return new ObserveCompositeResponse(ResponseCode.CONTENT, LwM2mNodeUtil.toPrefixedLwM2mMap(content), null, null,
+                null, null, null);
+    }
+
+    public static ReadCompositeResponse successWithPrefixedNode(Map<PrefixedLwM2mPath, LwM2mNode> content) {
+        return new ReadCompositeResponse(ResponseCode.CONTENT, content, null, null, null);
     }
 
     public static ObserveCompositeResponse successWithTimestampedContent(TimestampedLwM2mNodes timestampedValues) {

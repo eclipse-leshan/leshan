@@ -37,6 +37,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.core.request.ObserveRequest;
@@ -156,9 +157,9 @@ public class WriteCompositeTest {
                 .newStringInstance(resourceInstancePath.getResourceInstanceId(), "test_string_instance");
 
         // add it to the map
-        Map<LwM2mPath, LwM2mNode> nodes = new HashMap<>();
-        nodes.put(new LwM2mPath("/3/0/14"), utcOffset);
-        nodes.put(resourceInstancePath, testStringResourceInstance);
+        Map<PrefixedLwM2mPath, LwM2mNode> nodes = new HashMap<>();
+        nodes.put(PrefixedLwM2mPath.fromString("/3/0/14"), utcOffset);
+        nodes.put(new PrefixedLwM2mPath(resourceInstancePath), testStringResourceInstance);
 
         WriteCompositeResponse response = server.send(currentRegistration,
                 new WriteCompositeRequest(contentFormat, nodes, null));
@@ -184,8 +185,8 @@ public class WriteCompositeTest {
                 1);
         LwM2mResourceInstance testStringResourceInstance = LwM2mResourceInstance
                 .newStringInstance(resourceInstancePath.getResourceInstanceId(), "test_string_instance");
-        Map<LwM2mPath, LwM2mNode> nodes = new HashMap<>();
-        nodes.put(resourceInstancePath, testStringResourceInstance);
+        Map<PrefixedLwM2mPath, LwM2mNode> nodes = new HashMap<>();
+        nodes.put(new PrefixedLwM2mPath(resourceInstancePath), testStringResourceInstance);
 
         // Write it
         WriteCompositeResponse response = server.send(currentRegistration,

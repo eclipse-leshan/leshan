@@ -17,7 +17,7 @@ package org.eclipse.leshan.core.request;
 
 import java.util.List;
 
-import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.response.CancelCompositeObservationResponse;
@@ -63,8 +63,8 @@ public class CancelCompositeObservationRequest extends AbstractLwM2mRequest<Canc
     }
 
     @Override
-    public List<LwM2mPath> getPaths() {
-        return observation.getPaths();
+    public List<PrefixedLwM2mPath> getPaths() {
+        return PrefixedLwM2mPath.fromPathList(observation.getPaths());
     }
 
     public ContentFormat getRequestContentFormat() {

@@ -36,6 +36,7 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mRoot;
 import org.eclipse.leshan.core.node.ObjectLink;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.CodecException;
@@ -78,7 +79,7 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
         internalEncoder.objectId = path.getObjectId();
         internalEncoder.model = model;
         internalEncoder.rootPath = rootPath;
-        internalEncoder.requestPath = path;
+        internalEncoder.requestPath = new PrefixedLwM2mPath(path);
         internalEncoder.converter = converter;
         node.accept(internalEncoder);
 
@@ -92,20 +93,20 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
     }
 
     @Override
-    public byte[] encodeNodes(String rootPath, Map<LwM2mPath, LwM2mNode> nodes, LwM2mModel model,
+    public byte[] encodeNodes(String rootPath, Map<PrefixedLwM2mPath, LwM2mNode> nodes, LwM2mModel model,
             LwM2mValueConverter converter) throws CodecException {
         // validate arguments
         Validate.notEmpty(nodes);
 
         // Encodes nodes to SenML pack
         SenMLPack pack = new SenMLPack();
-        for (Entry<LwM2mPath, LwM2mNode> entry : nodes.entrySet()) {
-            LwM2mPath path = entry.getKey();
+        for (Entry<PrefixedLwM2mPath, LwM2mNode> entry : nodes.entrySet()) {
+            PrefixedLwM2mPath prefixedPath = entry.getKey();
             InternalEncoder internalEncoder = new InternalEncoder();
-            internalEncoder.objectId = path.getObjectId();
+            internalEncoder.objectId = prefixedPath.getPath().getObjectId();
             internalEncoder.model = model;
             internalEncoder.rootPath = rootPath;
-            internalEncoder.requestPath = path;
+            internalEncoder.requestPath = prefixedPath;
             internalEncoder.converter = converter;
             internalEncoder.records = new ArrayList<>();
             LwM2mNode node = entry.getValue();
@@ -151,7 +152,7 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
             internalEncoder.objectId = path.getObjectId();
             internalEncoder.model = model;
             internalEncoder.rootPath = rootPath;
-            internalEncoder.requestPath = path;
+            internalEncoder.requestPath = new PrefixedLwM2mPath(path);
             internalEncoder.converter = converter;
             internalEncoder.records = new ArrayList<>();
             timestampedLwM2mNode.getNode().accept(internalEncoder);
@@ -179,14 +180,14 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
 
         SenMLPack pack = new SenMLPack();
         for (Instant timestamp : timestampedNodes.getTimestamps()) {
-            Map<LwM2mPath, LwM2mNode> nodesAtTimestamp = timestampedNodes.getNodesAt(timestamp);
-            for (Entry<LwM2mPath, LwM2mNode> entry : nodesAtTimestamp.entrySet()) {
-                LwM2mPath path = entry.getKey();
+            Map<PrefixedLwM2mPath, LwM2mNode> nodesAtTimestamp = timestampedNodes.getPrefixedNodesAt(timestamp);
+            for (Entry<PrefixedLwM2mPath, LwM2mNode> entry : nodesAtTimestamp.entrySet()) {
+                PrefixedLwM2mPath prefixedPath = entry.getKey();
                 InternalEncoder internalEncoder = new InternalEncoder();
-                internalEncoder.objectId = path.getObjectId();
+                internalEncoder.objectId = prefixedPath.getPath().getObjectId();
                 internalEncoder.model = model;
                 internalEncoder.rootPath = rootPath;
-                internalEncoder.requestPath = path;
+                internalEncoder.requestPath = prefixedPath;
                 internalEncoder.converter = converter;
                 internalEncoder.records = new ArrayList<>();
                 LwM2mNode node = entry.getValue();
@@ -219,7 +220,7 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
         // visitor inputs
         private Integer objectId;
         private LwM2mModel model;
-        private LwM2mPath requestPath;
+        private PrefixedLwM2mPath requestPath;
         private LwM2mValueConverter converter;
         private String rootPath;
 
@@ -230,7 +231,7 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
         public void visit(LwM2mRoot root) {
             LOG.trace("Encoding Root into SenML");
             // Validate request path
-            if (!requestPath.isRoot()) {
+            if (!requestPath.getPath().isRoot()) {
                 throw new CodecException("Invalid request path %s for root encoding", requestPath);
             }
 
@@ -250,9 +251,9 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
         public void visit(LwM2mObject object) {
             LOG.trace("Encoding Object {} into SenML", object);
             // Validate request path
-            if (requestPath.isRoot()) {
+            if (requestPath.getPath().isRoot()) {
                 throw new CodecException("Invalid request path %s for root encoding", requestPath);
-            } else if (!requestPath.isObject()) {
+            } else if (!requestPath.getPath().isObject()) {
                 throw new CodecException("Invalid request path %s for object encoding", requestPath);
             }
 
@@ -271,9 +272,9 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
             for (LwM2mResource resource : instance.getResources().values()) {
                 // Validate request path & compute resource path
                 String prefixPath;
-                if (requestPath.isObject()) {
+                if (requestPath.getPath().isObject()) {
                     prefixPath = instance.getId() + "/" + resource.getId();
-                } else if (requestPath.isObjectInstance()) {
+                } else if (requestPath.getPath().isObjectInstance()) {
                     prefixPath = Integer.toString(resource.getId());
                 } else {
                     throw new CodecException("Invalid request path %s for instance encoding", requestPath);
@@ -286,7 +287,7 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
         @Override
         public void visit(LwM2mResource resource) {
             LOG.trace("Encoding resource {} into SenML JSON", resource);
-            if (!requestPath.isResource()) {
+            if (!requestPath.getPath().isResource()) {
                 throw new CodecException("Invalid request path %s for resource encoding", requestPath);
             }
 
@@ -297,12 +298,12 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
         @Override
         public void visit(LwM2mResourceInstance resourceInstance) {
             LOG.trace("Encoding resource instance {} into SenML", resourceInstance);
-            if (!requestPath.isResourceInstance()) {
+            if (!requestPath.getPath().isResourceInstance()) {
                 throw new CodecException("Invalid request path %s for resource  instance encoding", requestPath);
             }
 
             // get type for this resource
-            ResourceModel rSpec = model.getResourceModel(objectId, requestPath.getResourceId());
+            ResourceModel rSpec = model.getResourceModel(objectId, requestPath.getPath().getResourceId());
             Type expectedType = rSpec != null ? rSpec.type : resourceInstance.getType();
 
             // Using request path as base name, and record doesn't have name
@@ -354,10 +355,10 @@ public class LwM2mNodeSenMLEncoder implements TimestampedNodeEncoder, MultiNodeE
             recordname = n;
 
             // Convert value using expected type
-            LwM2mPath lwM2mResourcePath = new LwM2mPath(bn + n);
-            Object convertedValue = converter.convertValue(value, valueType, expectedType, lwM2mResourcePath);
-            SenMLRecord record = setResourceValue(convertedValue, expectedType, lwM2mResourcePath, recordbasename,
-                    recordname);
+            PrefixedLwM2mPath lwM2mResourcePath = PrefixedLwM2mPath.fromString(bn + n);
+            Object convertedValue = converter.convertValue(value, valueType, expectedType, lwM2mResourcePath.getPath());
+            SenMLRecord record = setResourceValue(convertedValue, expectedType, lwM2mResourcePath.getPath(),
+                    recordbasename, recordname);
 
             // Add record to the List
             records.add(record);

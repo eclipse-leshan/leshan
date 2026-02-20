@@ -24,6 +24,7 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -117,7 +118,7 @@ public interface LwM2mDecoder {
      * @throws CodecException if content is malformed.
      */
     TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, ContentFormat format, String rootPath,
-            List<LwM2mPath> paths, LwM2mModel model) throws CodecException;
+            List<PrefixedLwM2mPath> paths, LwM2mModel model) throws CodecException;
 
     /**
      * Deserializes a binary content into a list of {@link LwM2mPath}.

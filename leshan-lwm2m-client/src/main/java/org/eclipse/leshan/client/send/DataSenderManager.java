@@ -25,6 +25,7 @@ import org.eclipse.leshan.core.Destroyable;
 import org.eclipse.leshan.core.Startable;
 import org.eclipse.leshan.core.Stoppable;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mNodeUtil;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -61,9 +62,9 @@ public class DataSenderManager implements Startable, Stoppable, Destroyable {
     public Map<LwM2mPath, LwM2mNode> getCurrentValues(LwM2mServer server, List<LwM2mPath> paths)
             throws NoDataException {
         ReadCompositeResponse response = rootEnabler.read(server,
-                new ReadCompositeRequest(paths, ContentFormat.SENML_CBOR, ContentFormat.SENML_CBOR, null));
+                ReadCompositeRequest.fromPath(paths, ContentFormat.SENML_CBOR, ContentFormat.SENML_CBOR, null));
         if (response.isSuccess()) {
-            return response.getContent();
+            return LwM2mNodeUtil.toLwM2mMap(response.getContent());
         } else {
             throw new NoDataException("Unable to collect data for %s : %s / %s", paths, response.getCode(),
                     response.getErrorMessage());

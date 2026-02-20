@@ -30,6 +30,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.WriteCompositeResponse;
 import org.eclipse.leshan.core.util.Validate;
@@ -47,7 +48,7 @@ public class WriteCompositeRequest extends AbstractLwM2mRequest<WriteCompositeRe
         CompositeDownlinkRequest<WriteCompositeResponse>, DownlinkDeviceManagementRequest<WriteCompositeResponse> {
 
     private final ContentFormat contentFormat;
-    private final Map<LwM2mPath, LwM2mNode> nodes;
+    private final Map<PrefixedLwM2mPath, LwM2mNode> nodes;
 
     /**
      * Create WriteComposite Request.
@@ -60,13 +61,15 @@ public class WriteCompositeRequest extends AbstractLwM2mRequest<WriteCompositeRe
      */
     public WriteCompositeRequest(ContentFormat contentFormat, Map<String, Object> values) {
         super(null);
-        HashMap<LwM2mPath, LwM2mNode> internalNodes = new HashMap<>();
+        HashMap<PrefixedLwM2mPath, LwM2mNode> internalNodes = new HashMap<>();
         for (Entry<String, Object> entry : values.entrySet()) {
-            LwM2mPath path = newPath(entry.getKey());
-            if (path.isResource()) {
-                internalNodes.put(path, LwM2mSingleResource.newResource(path.getResourceId(), entry.getValue()));
-            } else if (path.isResourceInstance()) {
-                internalNodes.put(path, LwM2mResourceInstance.newInstance(path.getResourceId(), entry.getValue()));
+            PrefixedLwM2mPath path = newPath(entry.getKey());
+            if (path.getPath().isResource()) {
+                internalNodes.put(path,
+                        LwM2mSingleResource.newResource(path.getPath().getResourceId(), entry.getValue()));
+            } else if (path.getPath().isResourceInstance()) {
+                internalNodes.put(path,
+                        LwM2mResourceInstance.newInstance(path.getPath().getResourceId(), entry.getValue()));
             } else {
                 throw new InvalidRequestException(
                         "Invalid value : path (%s) should target a resource or resource instance");
@@ -87,7 +90,8 @@ public class WriteCompositeRequest extends AbstractLwM2mRequest<WriteCompositeRe
      * @param coapRequest the underlying request.
      *
      */
-    public WriteCompositeRequest(ContentFormat contentFormat, Map<LwM2mPath, LwM2mNode> nodes, Object coapRequest) {
+    public WriteCompositeRequest(ContentFormat contentFormat, Map<PrefixedLwM2mPath, LwM2mNode> nodes,
+            Object coapRequest) {
         super(coapRequest);
 
         validateNodes(nodes);
@@ -95,11 +99,11 @@ public class WriteCompositeRequest extends AbstractLwM2mRequest<WriteCompositeRe
         this.nodes = nodes;
     }
 
-    private void validateNodes(Map<LwM2mPath, LwM2mNode> nodes) {
+    private void validateNodes(Map<PrefixedLwM2mPath, LwM2mNode> nodes) {
         Validate.notEmpty(nodes);
-        for (Entry<LwM2mPath, LwM2mNode> entry : nodes.entrySet()) {
+        for (Entry<PrefixedLwM2mPath, LwM2mNode> entry : nodes.entrySet()) {
             // check key pair not null
-            LwM2mPath path = entry.getKey();
+            LwM2mPath path = entry.getKey().getPath();
             LwM2mNode node = entry.getValue();
             if (path == null) {
                 throw new InvalidRequestException("Invalid key for entry (null, %s) : path MUST NOT be null", node);
@@ -123,12 +127,12 @@ public class WriteCompositeRequest extends AbstractLwM2mRequest<WriteCompositeRe
         }
     }
 
-    public Map<LwM2mPath, LwM2mNode> getNodes() {
+    public Map<PrefixedLwM2mPath, LwM2mNode> getNodes() {
         return nodes;
     }
 
     @Override
-    public List<LwM2mPath> getPaths() {
+    public List<PrefixedLwM2mPath> getPaths() {
         return new ArrayList<>(nodes.keySet());
     }
 
@@ -146,9 +150,9 @@ public class WriteCompositeRequest extends AbstractLwM2mRequest<WriteCompositeRe
         return contentFormat;
     }
 
-    protected LwM2mPath newPath(String path) {
+    protected PrefixedLwM2mPath newPath(String path) {
         try {
-            return new LwM2mPath(path);
+            return PrefixedLwM2mPath.fromString(path);
         } catch (InvalidLwM2mPathException e) {
             throw new InvalidRequestException();
         }

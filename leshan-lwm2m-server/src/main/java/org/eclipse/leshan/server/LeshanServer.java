@@ -223,10 +223,10 @@ public class LeshanServer {
         // if no queue mode, create a "simple" sender
         final DownlinkRequestSender requestSender;
         if (presenceService == null)
-            requestSender = new DefaultDownlinkRequestSender(endpointsProvider, modelProvider);
+            requestSender = new DefaultDownlinkRequestSender(endpointsProvider, modelProvider, registrationStore);
         else
             requestSender = new QueueModeLwM2mRequestSender(presenceService,
-                    new DefaultDownlinkRequestSender(endpointsProvider, modelProvider));
+                    new DefaultDownlinkRequestSender(endpointsProvider, modelProvider, registrationStore));
 
         // Cancel observations on client unregistering
         registrationService.addListener(new RegistrationListener() {

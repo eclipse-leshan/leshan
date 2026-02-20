@@ -16,6 +16,8 @@
 package org.eclipse.leshan.core.node.codec.senml;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
 
 import org.eclipse.leshan.core.node.InvalidLwM2mPathException;
 import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
@@ -30,13 +32,30 @@ import org.eclipse.leshan.senml.SenMLResolver;
 public class LwM2mSenMLResolver extends SenMLResolver<LwM2mResolvedSenMLRecord> {
 
     private final PrefixedLwM2mPathParser pathParser;
+    private final List<String> rootpath;
+    private final boolean removeRootPath;
 
     public LwM2mSenMLResolver() {
         this(new PrefixedLwM2mPathParser());
     }
 
     public LwM2mSenMLResolver(PrefixedLwM2mPathParser pathParser) {
+        this(pathParser, null, false);
+    }
+
+    public LwM2mSenMLResolver(String rootpath, boolean removeRootPath) {
+        this(new PrefixedLwM2mPathParser(), null, false);
+    }
+
+    /**
+     * @param pathParser parser for prefixed LWM2M Path
+     * @param rootpath each resolved record should start by given path (can be null) else a SenMLException is raised
+     * @param removeRootPath if true rootpath to {@link LwM2mResolvedSenMLRecord} path.
+     */
+    public LwM2mSenMLResolver(PrefixedLwM2mPathParser pathParser, String rootpath, boolean removeRootPath) {
         this.pathParser = pathParser;
+        this.rootpath = rootpath == null ? Collections.emptyList() : pathParser.parsePrefix(rootpath);
+        this.removeRootPath = removeRootPath;
     }
 
     @Override
@@ -44,6 +63,11 @@ public class LwM2mSenMLResolver extends SenMLResolver<LwM2mResolvedSenMLRecord> 
             BigDecimal resolvedTimestamp) throws SenMLException {
         try {
             PrefixedLwM2mPath path = pathParser.parsePrefixedPath(resolvedName);
+            if (removeRootPath) {
+                path = path.removePrefix(rootpath);
+            } else {
+                path.validateStartWith(rootpath);
+            }
             return new LwM2mResolvedSenMLRecord(unresolvedRecord, resolvedName, path, resolvedTimestamp);
         } catch (InvalidLwM2mPathException e) {
             throw new SenMLException(e, "Unable to resolve record, invalid path", resolvedName);

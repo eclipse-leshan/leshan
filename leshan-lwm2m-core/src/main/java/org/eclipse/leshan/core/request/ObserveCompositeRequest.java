@@ -24,6 +24,7 @@ import java.util.Objects;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mNodeException;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.util.Validate;
@@ -118,8 +119,8 @@ public class ObserveCompositeRequest extends AbstractLwM2mRequest<ObserveComposi
      * @return List of {@link LwM2mPath} corresponding to {@link LwM2mNode} to read.
      */
     @Override
-    public List<LwM2mPath> getPaths() {
-        return paths;
+    public List<PrefixedLwM2mPath> getPaths() {
+        return PrefixedLwM2mPath.fromPathList(paths);
     }
 
     /**

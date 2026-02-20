@@ -20,6 +20,7 @@ import java.util.Map;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
 
 /**
@@ -40,6 +41,6 @@ public interface MultiNodeEncoder {
      * @return the encoded nodes as a byte array
      * @throws CodecException if there payload is malformed.
      */
-    byte[] encodeNodes(String rootPath, Map<LwM2mPath, LwM2mNode> nodes, LwM2mModel model,
+    byte[] encodeNodes(String rootPath, Map<PrefixedLwM2mPath, LwM2mNode> nodes, LwM2mModel model,
             LwM2mValueConverter converter) throws CodecException;
 }

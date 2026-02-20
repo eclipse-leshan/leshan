@@ -40,12 +40,14 @@ import org.eclipse.leshan.core.model.ObjectLoader;
 import org.eclipse.leshan.core.model.StaticModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mNodeUtil;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.senml.LwM2mNodeSenMLEncoder;
@@ -468,7 +470,8 @@ public class LwM2mNodeEncoderTest {
         nodes.put(new LwM2mPath("1/0/1"), LwM2mSingleResource.newIntegerResource(1, 86400));
 
         // Encode
-        byte[] encoded = encoder.encodeNodes(nodes, ContentFormat.SENML_JSON, rootPath, model);
+        byte[] encoded = encoder.encodeNodes(LwM2mNodeUtil.toPrefixedLwM2mMap(nodes), ContentFormat.SENML_JSON,
+                rootPath, model);
 
         // Expected value
         StringBuilder b = new StringBuilder();
@@ -492,7 +495,8 @@ public class LwM2mNodeEncoderTest {
                 LwM2mSingleResource.newFloatResource(1, 2.351149)));
 
         // Encode
-        byte[] encoded = encoder.encodeNodes(nodes, ContentFormat.SENML_JSON, rootPath, model);
+        byte[] encoded = encoder.encodeNodes(LwM2mNodeUtil.toPrefixedLwM2mMap(nodes), ContentFormat.SENML_JSON,
+                rootPath, model);
 
         // Expected value
         StringBuilder b = new StringBuilder();
@@ -516,7 +520,7 @@ public class LwM2mNodeEncoderTest {
                 new LwM2mPath("4/0/2"));
 
         // Decode
-        byte[] res = encoder.encodePaths(paths, ContentFormat.SENML_JSON, rootPath);
+        byte[] res = encoder.encodePaths(PrefixedLwM2mPath.fromPathList(paths), ContentFormat.SENML_JSON, rootPath);
 
         // Expected result
         StringBuilder b = new StringBuilder();

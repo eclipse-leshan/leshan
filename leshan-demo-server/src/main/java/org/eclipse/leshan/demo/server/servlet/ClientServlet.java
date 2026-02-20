@@ -41,6 +41,7 @@ import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeParser;
 import org.eclipse.leshan.core.link.lwm2m.attributes.LwM2mAttributeSet;
 import org.eclipse.leshan.core.node.LwM2mChildNode;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mNodeUtil;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
@@ -404,7 +405,8 @@ public class ClientServlet extends LeshanDemoServlet {
                         new TypeReference<HashMap<LwM2mPath, LwM2mNode>>() {
                         });
                 // create & process request
-                sendRequestAndWriteResponse(registration, new WriteCompositeRequest(nodeContentFormat, values, null),
+                sendRequestAndWriteResponse(registration,
+                        new WriteCompositeRequest(nodeContentFormat, LwM2mNodeUtil.toPrefixedLwM2mMap(values), null),
                         req, resp);
             } catch (RuntimeException e) {
                 handleException(e, resp);

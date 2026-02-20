@@ -22,6 +22,7 @@ import java.util.Objects;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mNodeException;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.request.exception.InvalidRequestException;
 import org.eclipse.leshan.core.response.ReadCompositeResponse;
 import org.eclipse.leshan.core.util.Validate;
@@ -33,7 +34,7 @@ import org.eclipse.leshan.core.util.Validate;
 public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResponse> implements
         CompositeDownlinkRequest<ReadCompositeResponse>, DownlinkDeviceManagementRequest<ReadCompositeResponse> {
 
-    private final List<LwM2mPath> paths;
+    private final List<PrefixedLwM2mPath> paths;
     private final ContentFormat requestContentFormat;
     private final ContentFormat responseContentFormat;
 
@@ -48,7 +49,7 @@ public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResp
      */
     public ReadCompositeRequest(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
             String... paths) {
-        this(getLwM2mPathList(Arrays.asList(paths)), requestContentFormat, responseContentFormat, null);
+        this(getPrefixedLwM2mPathList(Arrays.asList(paths)), requestContentFormat, responseContentFormat, null);
     }
 
     /**
@@ -62,12 +63,20 @@ public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResp
      */
     public ReadCompositeRequest(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
             List<String> paths) {
-        this(getLwM2mPathList(paths), requestContentFormat, responseContentFormat, null);
+        this(getPrefixedLwM2mPathList(paths), requestContentFormat, responseContentFormat, null);
     }
 
-    private static List<LwM2mPath> getLwM2mPathList(List<String> paths) {
+    private static List<PrefixedLwM2mPath> getPrefixedLwM2mPathList(List<String> paths) {
         try {
-            return LwM2mPath.getLwM2mPathList(paths);
+            return PrefixedLwM2mPath.fromStringList(paths);
+        } catch (LwM2mNodeException | IllegalArgumentException e) {
+            throw new InvalidRequestException("invalid path format");
+        }
+    }
+
+    private static List<PrefixedLwM2mPath> getPrefixedLwM2mPathFromPaths(List<LwM2mPath> paths) {
+        try {
+            return PrefixedLwM2mPath.fromPathList(paths);
         } catch (LwM2mNodeException | IllegalArgumentException e) {
             throw new InvalidRequestException("invalid path format");
         }
@@ -85,13 +94,13 @@ public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResp
      * @exception InvalidRequestException if paths list is invalid.
      *
      */
-    public ReadCompositeRequest(List<LwM2mPath> paths, ContentFormat requestContentFormat,
+    public ReadCompositeRequest(List<PrefixedLwM2mPath> paths, ContentFormat requestContentFormat,
             ContentFormat responseContentFormat, Object coapRequest) {
         super(coapRequest);
 
         try {
             Validate.notEmpty(paths, "paths are mandatory");
-            LwM2mPath.validateNotOverlapping(paths);
+            PrefixedLwM2mPath.validateNotOverlapping(paths);
         } catch (IllegalArgumentException exception) {
             throw new InvalidRequestException(exception.getMessage());
         }
@@ -99,6 +108,12 @@ public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResp
         this.paths = paths;
         this.requestContentFormat = requestContentFormat;
         this.responseContentFormat = responseContentFormat;
+    }
+
+    public static ReadCompositeRequest fromPath(List<LwM2mPath> paths, ContentFormat requestContentFormat,
+            ContentFormat responseContentFormat, Object coapRequest) {
+        return new ReadCompositeRequest(getPrefixedLwM2mPathFromPaths(paths), requestContentFormat,
+                responseContentFormat, coapRequest);
     }
 
     @Override
@@ -120,7 +135,11 @@ public class ReadCompositeRequest extends AbstractLwM2mRequest<ReadCompositeResp
     }
 
     @Override
-    public List<LwM2mPath> getPaths() {
+    public List<PrefixedLwM2mPath> getPaths() {
+        return getPrefixedPaths();
+    }
+
+    public List<PrefixedLwM2mPath> getPrefixedPaths() {
         return paths;
     }
 

@@ -24,6 +24,7 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.ObservationIdentifier;
@@ -197,8 +198,8 @@ public class CoapRequestBuilder implements DownlinkDeviceManagementRequestVisito
     public void visit(ReadCompositeRequest request) {
         coapRequestBuilder = CoapRequest.fetch(getURI(LwM2mPath.ROOTPATH)) //
                 .contentFormat((short) request.getRequestContentFormat().getCode()) //
-                .payload(Opaque
-                        .of(encoder.encodePaths(request.getPaths(), request.getRequestContentFormat(), rootPath)));
+                .payload(Opaque.of(
+                        encoder.encodePaths(request.getPrefixedPaths(), request.getRequestContentFormat(), rootPath)));
         addDefaultContext(coapRequestBuilder);
 
         if (request.getResponseContentFormat() != null) {
@@ -223,8 +224,8 @@ public class CoapRequestBuilder implements DownlinkDeviceManagementRequestVisito
         Opaque token = tokenGenerator.createToken();
         CompositeObservation observation = new CompositeObservation(
                 new ObservationIdentifier(registration.getEndpointUri(), token.getBytes()), registration.getId(),
-                request.getPaths(), request.getRequestContentFormat(), request.getResponseContentFormat(),
-                request.getContext(), Collections.emptyMap());
+                PrefixedLwM2mPath.toPathList(request.getPaths()), request.getRequestContentFormat(),
+                request.getResponseContentFormat(), request.getContext(), Collections.emptyMap());
 
         // Add Observation to request context
         coapRequestBuilder //

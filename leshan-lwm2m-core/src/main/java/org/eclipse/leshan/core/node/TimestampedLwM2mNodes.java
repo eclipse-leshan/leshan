@@ -139,7 +139,12 @@ public class TimestampedLwM2mNodes {
     }
 
     public static Builder builder(List<LwM2mPath> paths) {
-        return new Builder(paths);
+        List<PrefixedLwM2mPath> prefixedPaths = paths.stream().map(PrefixedLwM2mPath::new).collect(Collectors.toList());
+        return new Builder(prefixedPaths);
+    }
+
+    public static Builder builderFromPrefixedPath(List<PrefixedLwM2mPath> prefixedPaths) {
+        return new Builder(prefixedPaths);
     }
 
     @Override
@@ -214,8 +219,8 @@ public class TimestampedLwM2mNodes {
          *
          * @param paths list of allowed {@link LwM2mPath}
          */
-        public Builder(List<LwM2mPath> paths) {
-            this.paths = paths.stream().map(PrefixedLwM2mPath::new).collect(Collectors.toList());
+        public Builder(List<PrefixedLwM2mPath> paths) {
+            this.paths = paths;
         }
 
         // TODO we need to add to specify list of PrefixedPath

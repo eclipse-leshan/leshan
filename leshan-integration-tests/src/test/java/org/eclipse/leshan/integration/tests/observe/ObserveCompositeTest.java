@@ -39,6 +39,7 @@ import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mRoot;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.CancelCompositeObservationRequest;
@@ -146,8 +147,8 @@ public class ObserveCompositeTest {
         // Assert that response contains expected paths
         ObserveCompositeResponse response = server.waitForNotificationOf(observation);
         assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
-        assertThat(response.getContent()).containsOnly(
-                entry(new LwM2mPath("/3/0/15"), LwM2mSingleResource.newStringResource(15, "Europe/Paris")));
+        assertThat(response.getContent()).containsOnly(entry(PrefixedLwM2mPath.fromString("/3/0/15"),
+                LwM2mSingleResource.newStringResource(15, "Europe/Paris")));
     }
 
     @TestAllTransportLayer
@@ -214,8 +215,9 @@ public class ObserveCompositeTest {
         ObserveCompositeResponse response = server.waitForNotificationOf(observation);
         assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
         assertThat(response.getContent()).containsOnly(
-                entry(new LwM2mPath("/3/0/15"), LwM2mSingleResource.newStringResource(15, "Europe/Paris")),
-                entry(new LwM2mPath("/3/0/14"), previousOffset));
+                entry(PrefixedLwM2mPath.fromString("/3/0/15"),
+                        LwM2mSingleResource.newStringResource(15, "Europe/Paris")),
+                entry(PrefixedLwM2mPath.fromString("/3/0/14"), previousOffset));
     }
 
     @TestAllTransportLayer
@@ -253,8 +255,9 @@ public class ObserveCompositeTest {
         ObserveCompositeResponse response = server.waitForNotificationOf(observation);
         assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
         assertThat(response.getContent()).containsOnly(
-                entry(new LwM2mPath("/3/0/15"), LwM2mSingleResource.newStringResource(15, "Europe/Paris")),
-                entry(new LwM2mPath("/3/0/14"), LwM2mSingleResource.newStringResource(14, "+11")));
+                entry(PrefixedLwM2mPath.fromString("/3/0/15"),
+                        LwM2mSingleResource.newStringResource(15, "Europe/Paris")),
+                entry(PrefixedLwM2mPath.fromString("/3/0/14"), LwM2mSingleResource.newStringResource(14, "+11")));
     }
 
     @TestAllTransportLayer
@@ -356,7 +359,8 @@ public class ObserveCompositeTest {
         assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
         ReadResponse readResp = server.send(currentRegistration, new ReadRequest(ContentFormat.SENML_JSON, "/3/0"));
-        assertThat(response.getContent()).containsOnly(entry(new LwM2mPath("/3/0"), readResp.getContent()));
+        assertThat(response.getContent())
+                .containsOnly(entry(PrefixedLwM2mPath.fromString("/3/0"), readResp.getContent()));
     }
 
     @TestAllTransportLayer
@@ -391,7 +395,8 @@ public class ObserveCompositeTest {
         assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
         ReadResponse readResp = server.send(currentRegistration, new ReadRequest(ContentFormat.SENML_JSON, "/3"));
-        assertThat(response.getContent()).containsOnly(entry(new LwM2mPath("/3"), readResp.getContent()));
+        assertThat(response.getContent())
+                .containsOnly(entry(PrefixedLwM2mPath.fromString("/3"), readResp.getContent()));
     }
 
     @TestAllTransportLayer
@@ -437,8 +442,8 @@ public class ObserveCompositeTest {
         // Assert that response contains exactly the same paths
         ObserveCompositeResponse response = server.waitForNotificationOf(observation);
         assertThat(response).hasValidUnderlyingResponseFor(givenServerEndpointProvider);
-        assertThat(response.getContent()).containsOnly(
-                entry(new LwM2mPath("/3/0/15"), LwM2mSingleResource.newStringResource(15, "Europe/Paris")));
+        assertThat(response.getContent()).containsOnly(entry(PrefixedLwM2mPath.fromString("/3/0/15"),
+                LwM2mSingleResource.newStringResource(15, "Europe/Paris")));
 
         // cancel observation : active way
         CancelCompositeObservationResponse cancelResponse = server.send(currentRegistration,

@@ -22,7 +22,6 @@ package org.eclipse.leshan.transport.californium.server.request;
 import static org.eclipse.leshan.transport.californium.ResponseCodeUtil.toLwM2mResponseCode;
 
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
@@ -33,8 +32,8 @@ import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLink;
 import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.model.LwM2mModel;
-import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.CodecException;
@@ -305,7 +304,7 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkDe
                     coapResponse.getPayloadString(), coapResponse);
         } else if (isResponseCodeContent()) {
             // handle success response:
-            TimestampedLwM2mNodes timestampedNodes = decodeTimestampedCompositeCoapResponse(request.getPaths(),
+            TimestampedLwM2mNodes timestampedNodes = decodeTimestampedCompositeCoapResponse(request.getPrefixedPaths(),
                     coapResponse, request, clientEndpoint);
             lwM2mresponse = new ReadCompositeResponse(ResponseCode.CONTENT, null, timestampedNodes, null, coapResponse);
         } else {
@@ -347,10 +346,10 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkDe
                     null, null, coapResponse.getPayloadString(), coapResponse);
         } else if (isResponseCodeContent() || isResponseCodeChanged()) {
             // handle success response:
-            Map<LwM2mPath, LwM2mNode> content = decodeCompositeCoapResponse(request.getPaths(), coapResponse, request,
-                    clientEndpoint);
-            lwM2mresponse = new CancelCompositeObservationResponse(toLwM2mResponseCode(coapResponse.getCode()), content,
-                    null, null, null, coapResponse);
+            TimestampedLwM2mNodes content = decodeTimestampedCompositeCoapResponse(request.getPaths(), coapResponse,
+                    request, clientEndpoint);
+            lwM2mresponse = new CancelCompositeObservationResponse(toLwM2mResponseCode(coapResponse.getCode()), null,
+                    content, null, null, coapResponse);
         } else {
             // handle unexpected response:
             handleUnexpectedResponseCode(clientEndpoint, request, coapResponse);
@@ -380,19 +379,8 @@ public class LwM2mResponseBuilder<T extends LwM2mResponse> implements DownlinkDe
         return coapResponse.getCode() == org.eclipse.californium.core.coap.CoAP.ResponseCode.CHANGED;
     }
 
-    private Map<LwM2mPath, LwM2mNode> decodeCompositeCoapResponse(List<LwM2mPath> paths, Response coapResponse,
-            LwM2mRequest<?> request, String endpoint) {
-        try {
-            return decoder.decodeNodes(coapResponse.getPayload(), getContentFormat(coapResponse), rootPath, paths,
-                    model);
-        } catch (CodecException e) {
-            handleCodecException(e, request, coapResponse, endpoint);
-            return null; // should not happen as handleCodecException raise exception
-        }
-    }
-
-    private TimestampedLwM2mNodes decodeTimestampedCompositeCoapResponse(List<LwM2mPath> paths, Response coapResponse,
-            LwM2mRequest<?> request, String endpoint) {
+    private TimestampedLwM2mNodes decodeTimestampedCompositeCoapResponse(List<PrefixedLwM2mPath> paths,
+            Response coapResponse, LwM2mRequest<?> request, String endpoint) {
         try {
             return decoder.decodeTimestampedNodes(coapResponse.getPayload(), getContentFormat(coapResponse), rootPath,
                     paths, model);

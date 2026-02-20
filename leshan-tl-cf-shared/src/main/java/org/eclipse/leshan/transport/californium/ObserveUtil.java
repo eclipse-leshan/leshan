@@ -29,6 +29,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.observe.Observation;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.ObservationIdentifier;
 import org.eclipse.leshan.core.observation.SingleObservation;
@@ -185,7 +186,7 @@ public class ObserveUtil {
         context.put(CTX_ENDPOINT, endpoint);
         context.put(CTX_REGID, registrationId);
 
-        addPathsIntoContext(context, request.getPaths());
+        addPathsIntoContext(context, PrefixedLwM2mPath.toPathList(request.getPaths()));
 
         context.putAll(request.getContext());
         return context;

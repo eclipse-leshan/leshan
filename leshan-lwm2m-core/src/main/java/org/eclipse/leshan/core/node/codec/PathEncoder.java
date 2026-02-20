@@ -18,6 +18,7 @@ package org.eclipse.leshan.core.node.codec;
 import java.util.List;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 
 /**
  * A {@link LwM2mPath} encoder.
@@ -31,5 +32,5 @@ public interface PathEncoder {
      * @param paths The list of {@link LwM2mPath} to encode
      * @return the encoded path as a byte array.
      */
-    byte[] encode(String rootPath, List<LwM2mPath> paths);
+    byte[] encode(String rootPath, List<PrefixedLwM2mPath> paths);
 }

@@ -26,6 +26,7 @@ import org.eclipse.leshan.client.request.DownlinkRequestReceiver;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mNodeUtil;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
@@ -125,9 +126,8 @@ public class RootResource extends LwM2mClientCoapResource {
             }
         } else {
             // Manage Read Composite request
-            ReadCompositeResponse response = requestReceiver
-                    .requestReceived(identity,
-                            new ReadCompositeRequest(paths, requestContentFormat, responseContentFormat, coapRequest))
+            ReadCompositeResponse response = requestReceiver.requestReceived(identity,
+                    ReadCompositeRequest.fromPath(paths, requestContentFormat, responseContentFormat, coapRequest))
                     .getResponse();
             if (response.getCode() == ResponseCode.CONTENT) {
                 return responseWithPayload( //
@@ -159,7 +159,9 @@ public class RootResource extends LwM2mClientCoapResource {
         Map<LwM2mPath, LwM2mNode> nodes = toolbox.getDecoder().decodeNodes(coapRequest.getPayload().getBytes(),
                 contentFormat, null, null, toolbox.getModel());
         WriteCompositeResponse response = requestReceiver
-                .requestReceived(identity, new WriteCompositeRequest(contentFormat, nodes, coapRequest)).getResponse();
+                .requestReceived(identity,
+                        new WriteCompositeRequest(contentFormat, LwM2mNodeUtil.toPrefixedLwM2mMap(nodes), coapRequest))
+                .getResponse();
         if (response.getCode().isError()) {
             return errorMessage(response.getCode(), response.getErrorMessage());
         } else {

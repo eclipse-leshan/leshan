@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.response;
 
-import static org.eclipse.leshan.core.ResponseCode.CONTENT;
 import static org.eclipse.leshan.core.node.LwM2mSingleResource.newResource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -38,8 +37,7 @@ public class ObserveCompositeResponseTest {
         exampleContent.put(new LwM2mPath("/2/3/4"), newResource(16, "example 2"));
 
         // when
-        ObserveCompositeResponse response = new ObserveCompositeResponse(CONTENT, exampleContent, null, null, null,
-                null, null);
+        ObserveCompositeResponse response = ObserveCompositeResponse.success(exampleContent);
 
         // then
         assertEquals(exampleContent, response.getContent());

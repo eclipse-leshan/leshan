@@ -30,6 +30,7 @@ import org.eclipse.leshan.core.model.ObjectModel;
 import org.eclipse.leshan.core.model.ResourceModel;
 import org.eclipse.leshan.core.node.LwM2mMultipleResource;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mNodeUtil;
 import org.eclipse.leshan.core.node.LwM2mObject;
 import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
@@ -37,6 +38,7 @@ import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mRoot;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.request.ObserveCompositeRequest;
 import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
@@ -78,7 +80,7 @@ public class RootEnabler implements LwM2mRootEnabler {
 
     @Override
     public ReadCompositeResponse read(LwM2mServer server, ReadCompositeRequest readCompositeRequest) {
-        List<LwM2mPath> paths = readCompositeRequest.getPaths();
+        List<LwM2mPath> paths = PrefixedLwM2mPath.toPathList(readCompositeRequest.getPaths());
         if (paths.size() == 1 && paths.get(0).isRoot()) {
             // Handle special case of Read Composite on root path
             LwM2mPath rootPath = paths.get(0);
@@ -153,7 +155,7 @@ public class RootEnabler implements LwM2mRootEnabler {
     public WriteCompositeResponse write(LwM2mServer server, WriteCompositeRequest request) {
         // We first need to check if targeted object and instance exist and if there are writable.
         Map<Integer, LwM2mObjectEnabler> enablers = new HashMap<>();
-        for (Entry<LwM2mPath, LwM2mNode> entry : request.getNodes().entrySet()) {
+        for (Entry<LwM2mPath, LwM2mNode> entry : LwM2mNodeUtil.toLwM2mMap(request.getNodes()).entrySet()) {
             LwM2mPath path = entry.getKey();
             LwM2mObjectEnabler objectEnabler = tree.getObjectEnabler(path.getObjectId());
 
@@ -205,7 +207,7 @@ public class RootEnabler implements LwM2mRootEnabler {
         // Write Nodes
         try {
             tree.beginTransaction(enablers);
-            for (Entry<LwM2mPath, LwM2mNode> entry : request.getNodes().entrySet()) {
+            for (Entry<LwM2mPath, LwM2mNode> entry : LwM2mNodeUtil.toLwM2mMap(request.getNodes()).entrySet()) {
                 // Get corresponding object enabler
                 LwM2mPath path = entry.getKey();
                 LwM2mNode node = entry.getValue();
@@ -243,7 +245,7 @@ public class RootEnabler implements LwM2mRootEnabler {
 
     @Override
     public synchronized ObserveCompositeResponse observe(LwM2mServer server, ObserveCompositeRequest request) {
-        List<LwM2mPath> paths = request.getPaths();
+        List<LwM2mPath> paths = PrefixedLwM2mPath.toPathList(request.getPaths());
         if (paths.size() == 1 && paths.get(0).isRoot()) {
             Map<Integer, LwM2mObjectEnabler> objectEnablers = tree.getObjectEnablers();
             List<LwM2mObject> lwM2mObjects = new ArrayList<>();

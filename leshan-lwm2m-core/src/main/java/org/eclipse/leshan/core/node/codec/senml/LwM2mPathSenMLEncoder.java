@@ -17,7 +17,7 @@ package org.eclipse.leshan.core.node.codec.senml;
 
 import java.util.List;
 
-import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.PathEncoder;
 import org.eclipse.leshan.senml.SenMLEncoder;
@@ -37,10 +37,10 @@ public class LwM2mPathSenMLEncoder implements PathEncoder {
     }
 
     @Override
-    public byte[] encode(String rootPath, List<LwM2mPath> paths) {
+    public byte[] encode(String rootPath, List<PrefixedLwM2mPath> paths) {
         // Create SenML Pack
         SenMLPack pack = new SenMLPack();
-        for (LwM2mPath path : paths) {
+        for (PrefixedLwM2mPath path : paths) {
             String Name = (rootPath != null ? rootPath + path.toString() : path.toString());
             SenMLRecord record = new SenMLRecord(null, null, Name, null, null, null, null, null, null);
             pack.addRecord(record);

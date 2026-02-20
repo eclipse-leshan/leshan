@@ -19,13 +19,13 @@ import java.util.Map;
 
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 
 public class CancelCompositeObservationResponse extends ObserveCompositeResponse {
 
-    public CancelCompositeObservationResponse(ResponseCode code, Map<LwM2mPath, LwM2mNode> content,
+    public CancelCompositeObservationResponse(ResponseCode code, Map<PrefixedLwM2mPath, LwM2mNode> content,
             TimestampedLwM2mNodes timestampedValues, CompositeObservation observation, String errorMessage,
             Object coapResponse) {
         super(code, content, timestampedValues, null, observation, errorMessage, coapResponse);

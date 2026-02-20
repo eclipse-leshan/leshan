@@ -16,8 +16,11 @@
 package org.eclipse.leshan.core.node;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.eclipse.leshan.core.model.ResourceModel.Type;
@@ -393,5 +396,26 @@ public class LwM2mNodeUtil {
         String err = getInvalidPathForNodeCause(node, path);
         if (err != null)
             throw new InvalidLwM2mPathException(err);
+    }
+
+    public static Map<PrefixedLwM2mPath, LwM2mNode> toPrefixedLwM2mMap(Map<LwM2mPath, LwM2mNode> map) {
+        Map<PrefixedLwM2mPath, LwM2mNode> res = new HashMap<>();
+        for (Entry<LwM2mPath, LwM2mNode> entry : map.entrySet()) {
+            res.put(new PrefixedLwM2mPath(entry.getKey()), entry.getValue());
+        }
+        return res;
+    }
+
+    public static Map<LwM2mPath, LwM2mNode> toLwM2mMap(Map<PrefixedLwM2mPath, LwM2mNode> map) {
+        Map<LwM2mPath, LwM2mNode> res = new HashMap<>();
+        for (Entry<PrefixedLwM2mPath, LwM2mNode> entry : map.entrySet()) {
+            if (entry.getKey().hasPrefix()) {
+                throw new IllegalArgumentException(
+                        String.format("Map should not contain path with prefix : % has a prefix", entry.getKey()));
+            } else {
+                res.put(entry.getKey().getPath(), entry.getValue());
+            }
+        }
+        return res;
     }
 }

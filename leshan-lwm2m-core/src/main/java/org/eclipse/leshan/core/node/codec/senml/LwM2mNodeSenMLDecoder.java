@@ -43,7 +43,6 @@ import org.eclipse.leshan.core.node.LwM2mRoot;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
 import org.eclipse.leshan.core.node.ObjectLink;
 import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
-import org.eclipse.leshan.core.node.PrefixedLwM2mPathParser;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.CodecException;
@@ -72,7 +71,6 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
     private final boolean permissiveNumberConversion;
     // parser used for core link data type
     private final LinkParser linkParser;
-    private final PrefixedLwM2mPathParser prefixedPathParser = new PrefixedLwM2mPathParser();
 
     public LwM2mNodeSenMLDecoder(SenMLDecoder decoder, boolean permissiveNumberConversion) {
         this(decoder, new DefaultLwM2mLinkParser(), permissiveNumberConversion);
@@ -226,7 +224,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
     }
 
     @Override
-    public TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, String rootPath, List<LwM2mPath> paths,
+    public TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, String rootPath, List<PrefixedLwM2mPath> paths,
             LwM2mModel model) throws CodecException {
         try {
             // Decode SenML pack
@@ -235,7 +233,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
             TimestampedLwM2mNodes.Builder nodes;
 
             if (paths != null && !paths.isEmpty()) {
-                nodes = TimestampedLwM2mNodes.builder(paths);
+                nodes = TimestampedLwM2mNodes.builderFromPrefixedPath(paths);
 
                 // Group by time-stamp
                 SortedMap<BigDecimal, Collection<LwM2mResolvedSenMLRecord>> recordsByTimestamp = groupRecordByTimestamp(
@@ -244,11 +242,12 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                 // For each time-stamp
                 for (Entry<BigDecimal, Collection<LwM2mResolvedSenMLRecord>> entryByTimestamp : recordsByTimestamp
                         .entrySet()) {
+
                     // Group records by path
-                    Map<LwM2mPath, Collection<LwM2mResolvedSenMLRecord>> recordsByPath = groupResolvedRecordByPath(
+                    Map<PrefixedLwM2mPath, Collection<LwM2mResolvedSenMLRecord>> recordsByPath = groupResolvedRecordByPath(
                             entryByTimestamp.getValue(), paths);
 
-                    for (LwM2mPath path : paths) {
+                    for (PrefixedLwM2mPath path : paths) {
                         Collection<LwM2mResolvedSenMLRecord> records = recordsByPath.get(path);
                         if (records.isEmpty()) {
                             // Node can be null as the LWM2M specification says that "Read-Composite operation is
@@ -259,49 +258,57 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
                             // Meaning that a given path could have no corresponding value.
                             nodes.put(TimestampUtil.fromSeconds(entryByTimestamp.getKey()), path, null);
                         } else {
-                            LwM2mNode node = parseRecords(records, path, model,
-                                    DefaultLwM2mDecoder.nodeClassFromPath(path));
+                            LwM2mNode node = parseRecords(records, path, model);
                             nodes.put(TimestampUtil.fromSeconds(entryByTimestamp.getKey()), path, node);
                         }
                     }
                 }
             } else {
                 nodes = TimestampedLwM2mNodes.builder();
-                LwM2mSenMLResolver resolver = new LwM2mSenMLResolver();
+                LwM2mSenMLResolver resolver = new LwM2mSenMLResolver(rootPath, true);
                 for (SenMLRecord senMLRecord : pack.getRecords()) {
                     LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(senMLRecord);
-                    List<String> rootpathPrefix = rootPath == null ? Collections.emptyList()
-                            : prefixedPathParser.parsePrefix(rootPath);
-                    PrefixedLwM2mPath prefixedPath = resolvedRecord.getPrefixedPath().removePrefix(rootpathPrefix);
-                    LwM2mModel modelToDecode;
-                    if (!prefixedPath.hasPrefix()) {
-                        modelToDecode = model;
-                    } else {
-                        if (!model.hasChildrenModels()) {
-                            throw new CodecException(
-                                    "Unable to decode nodes : Record %s uses prefixed but model has no child (not a gateway)",
-                                    senMLRecord);
-
-                        }
-                        modelToDecode = model.getChildModel(prefixedPath.getPrefixWithoutSlashAsString());
-                        if (modelToDecode == null) {
-                            throw new CodecException(
-                                    "Unable to decode nodes : Record %s uses prefixed %s  but no model for that prefix",
-                                    senMLRecord, prefixedPath.getPrefixAsString());
-                        }
-                    }
-                    LwM2mNode node = parseRecords(Arrays.asList(resolvedRecord), prefixedPath.getPath(), modelToDecode,
-                            DefaultLwM2mDecoder.nodeClassFromPath(prefixedPath.getPath()));
-                    nodes.put(TimestampUtil.fromSeconds(resolvedRecord.getTimeStamp()), prefixedPath, node);
+                    LwM2mNode node = parseRecords(Arrays.asList(resolvedRecord), resolvedRecord.getPrefixedPath(),
+                            model);
+                    nodes.put(TimestampUtil.fromSeconds(resolvedRecord.getTimeStamp()),
+                            resolvedRecord.getPrefixedPath(), node);
                 }
             }
-
-            return nodes.build();
+            // return nodes.build();
+            TimestampedLwM2mNodes timestampedLwM2mNodes = nodes.build();
+            return timestampedLwM2mNodes;
 
         } catch (SenMLException | IllegalArgumentException e) {
             String hexValue = content != null ? Hex.encodeHexString(content) : "";
             throw new CodecException(e, "Unable to decode nodes : %s", hexValue, e);
         }
+    }
+
+    /**
+     * Parse records for a given Prefixed LWM2M path.
+     */
+    private LwM2mNode parseRecords(Collection<LwM2mResolvedSenMLRecord> records, PrefixedLwM2mPath prefixedPath,
+            LwM2mModel parentModel) throws CodecException {
+
+        LwM2mModel modelToDecode;
+        if (!prefixedPath.hasPrefix()) {
+            modelToDecode = parentModel;
+        } else {
+            if (!parentModel.hasChildrenModels()) {
+                throw new CodecException(
+                        "Unable to decode nodes : Record %s uses prefixed but model has no child (not a gateway)",
+                        records);
+
+            }
+            modelToDecode = parentModel.getChildModel(prefixedPath.getPrefixWithoutSlashAsString());
+            if (modelToDecode == null) {
+                throw new CodecException(
+                        "Unable to decode nodes : Record %s uses prefixed %s  but no model for that prefix", records,
+                        prefixedPath.getPrefixAsString());
+            }
+        }
+        return parseRecords(records, prefixedPath.getPath(), modelToDecode,
+                DefaultLwM2mDecoder.nodeClassFromPath(prefixedPath.getPath()));
     }
 
     /**
@@ -459,12 +466,12 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
     /**
      * Group Resolved Record by LwM2mPath
      */
-    private Map<LwM2mPath, Collection<LwM2mResolvedSenMLRecord>> groupResolvedRecordByPath(
-            Collection<LwM2mResolvedSenMLRecord> records, List<LwM2mPath> paths) {
+    private Map<PrefixedLwM2mPath, Collection<LwM2mResolvedSenMLRecord>> groupResolvedRecordByPath(
+            Collection<LwM2mResolvedSenMLRecord> records, List<PrefixedLwM2mPath> paths) {
 
         // Prepare map result
-        Map<LwM2mPath, Collection<LwM2mResolvedSenMLRecord>> result = new HashMap<>(paths.size());
-        for (LwM2mPath path : paths) {
+        Map<PrefixedLwM2mPath, Collection<LwM2mResolvedSenMLRecord>> result = new HashMap<>(paths.size());
+        for (PrefixedLwM2mPath path : paths) {
             result.put(path, new ArrayList<>());
         }
 
@@ -472,7 +479,7 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
         for (LwM2mResolvedSenMLRecord resolvedRecord : records) {
 
             // Find the corresponding path for this record.
-            LwM2mPath selectedPath = selectPath(resolvedRecord.getPath(), paths);
+            PrefixedLwM2mPath selectedPath = selectPrefixedPath(resolvedRecord.getPrefixedPath(), paths);
             if (selectedPath == null) {
                 throw new CodecException("Invalid path [%s] for resource, it should start by one of %s",
                         resolvedRecord.getPath(), paths);
@@ -491,6 +498,20 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
     private LwM2mPath selectPath(LwM2mPath recordPath, List<LwM2mPath> paths) {
         for (LwM2mPath path : paths) {
             if (recordPath.startWith(path)) {
+                return path;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Search in the list <code>paths<code> which one is a "start" for the given path.
+     * <p>
+     * E.g. for recordPath="/3/0/1" and paths=["/1/0","/2/0/","/3"] result will be "/3"
+     */
+    private PrefixedLwM2mPath selectPrefixedPath(PrefixedLwM2mPath recordPath, List<PrefixedLwM2mPath> paths) {
+        for (PrefixedLwM2mPath path : paths) {
+            if (recordPath.hasSamePrefix(path) && recordPath.getPath().startWith(path.getPath())) {
                 return path;
             }
         }
@@ -518,12 +539,9 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
             }
         });
 
-        LwM2mSenMLResolver resolver = new LwM2mSenMLResolver();
+        LwM2mSenMLResolver resolver = new LwM2mSenMLResolver(rootPath, true);
         for (SenMLRecord senMLRecord : records) {
             LwM2mResolvedSenMLRecord resolvedRecord = resolver.resolve(senMLRecord);
-
-            // Validate SenML resolved name
-            validateRootPath(resolvedRecord, rootPath);
 
             if (!resolvedRecord.getPath().isResourceInstance() && !resolvedRecord.getPath().isResource()) {
                 throw new CodecException(INVALID_PATH_IT_SHOULD_BE_A_RESOURCE_OR_A_RESOURCE_INSTANCE_PATH,

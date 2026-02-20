@@ -24,6 +24,7 @@ import java.util.Set;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.cbor.LwM2mNodeCborEncoder;
@@ -153,11 +154,11 @@ public class DefaultLwM2mEncoder implements LwM2mEncoder {
     }
 
     @Override
-    public byte[] encodeNodes(Map<LwM2mPath, LwM2mNode> nodes, ContentFormat format, String rootPath, LwM2mModel model)
-            throws CodecException {
+    public byte[] encodeNodes(Map<PrefixedLwM2mPath, LwM2mNode> nodes, ContentFormat format, String rootPath,
+            LwM2mModel model) throws CodecException {
         // Validate arguments
         Validate.notEmpty(nodes);
-        Set<LwM2mPath> paths = nodes.keySet();
+        Set<PrefixedLwM2mPath> paths = nodes.keySet();
 
         // Search encoder
         if (format == null) {
@@ -221,7 +222,7 @@ public class DefaultLwM2mEncoder implements LwM2mEncoder {
                     timestampedNodes, model, converter);
         } else if (encoder instanceof MultiNodeEncoder) {
             return ((MultiNodeEncoder) encoder).encodeNodes(normalizedRootPath(rootPath),
-                    timestampedNodes.getMostRecentNodes(), model, converter);
+                    timestampedNodes.getPrefixedMostRecentNodes(), model, converter);
         } else {
             throw new CodecException("Encoder does not support multiple nodes encoding for this content format: %s",
                     format);
@@ -229,7 +230,8 @@ public class DefaultLwM2mEncoder implements LwM2mEncoder {
     }
 
     @Override
-    public byte[] encodePaths(List<LwM2mPath> paths, ContentFormat format, String rootPath) throws CodecException {
+    public byte[] encodePaths(List<PrefixedLwM2mPath> paths, ContentFormat format, String rootPath)
+            throws CodecException {
         Validate.notEmpty(paths);
 
         if (format == null) {

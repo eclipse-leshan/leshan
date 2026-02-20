@@ -17,7 +17,7 @@ package org.eclipse.leshan.core.request;
 
 import java.util.List;
 
-import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 
 /**
@@ -28,5 +28,5 @@ public interface CompositeDownlinkRequest<T extends LwM2mResponse> extends Downl
     /**
      * @return the list of node paths targeted by the request.
      */
-    List<LwM2mPath> getPaths();
+    List<PrefixedLwM2mPath> getPaths();
 }

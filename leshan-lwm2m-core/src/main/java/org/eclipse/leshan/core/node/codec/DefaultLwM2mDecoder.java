@@ -31,6 +31,7 @@ import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mRoot;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.cbor.LwM2mNodeCborDecoder;
@@ -209,7 +210,7 @@ public class DefaultLwM2mDecoder implements LwM2mDecoder {
 
     @Override
     public TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, ContentFormat format, String rootPath,
-            List<LwM2mPath> paths, LwM2mModel model) throws CodecException {
+            List<PrefixedLwM2mPath> paths, LwM2mModel model) throws CodecException {
         LOG.trace("Decoding value for format {}: {}", format, content);
 
         if (format == null) {
@@ -225,9 +226,8 @@ public class DefaultLwM2mDecoder implements LwM2mDecoder {
             return ((TimestampedMultiNodeDecoder) decoder).decodeTimestampedNodes(content, normalizedRootPath(rootPath),
                     paths, model);
         } else if (decoder instanceof MultiNodeDecoder) {
-            return new TimestampedLwM2mNodes.Builder(paths).addNodes(
-                    ((MultiNodeDecoder) decoder).decodeNodes(content, normalizedRootPath(rootPath), paths, model))
-                    .build();
+            return new TimestampedLwM2mNodes.Builder(paths).addNodes(((MultiNodeDecoder) decoder).decodeNodes(content,
+                    normalizedRootPath(rootPath), PrefixedLwM2mPath.toPathList(paths), model)).build();
         } else {
             throw new CodecException(
                     "Decoder does not support multiple nodes decoding for this content format %s [%s] ", format);

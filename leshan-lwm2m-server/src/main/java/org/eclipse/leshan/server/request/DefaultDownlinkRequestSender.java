@@ -40,6 +40,7 @@ import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.profile.ClientProfile;
 import org.eclipse.leshan.server.registration.IRegistration;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationStore;
 
 /**
  * The default implementation of {@link DownlinkRequestSender}.
@@ -48,6 +49,7 @@ public class DefaultDownlinkRequestSender implements DownlinkRequestSender {
 
     private final LwM2mModelProvider modelProvider;
     private final LwM2mServerEndpointsProvider endpointsProvider;
+    private final RegistrationStore registrationStore;
 
     /**
      * @param endpointsProvider which provides available {@link LwM2mServerEndpoint}
@@ -55,10 +57,11 @@ public class DefaultDownlinkRequestSender implements DownlinkRequestSender {
      *        {@link LwM2mNode}.
      */
     public DefaultDownlinkRequestSender(LwM2mServerEndpointsProvider endpointsProvider,
-            LwM2mModelProvider modelProvider) {
+            LwM2mModelProvider modelProvider, RegistrationStore registrationStore) {
         Validate.notNull(modelProvider);
         this.modelProvider = modelProvider;
         this.endpointsProvider = endpointsProvider;
+        this.registrationStore = registrationStore;
     }
 
     /**
@@ -91,7 +94,7 @@ public class DefaultDownlinkRequestSender implements DownlinkRequestSender {
         LwM2mServerEndpoint endpoint = getEndpoint(destination);
 
         // Retrieve the objects definition
-        final LwM2mModel model = modelProvider.getObjectModel(destination, null);
+        final LwM2mModel model = modelProvider.getObjectModel(destination, registrationStore);
 
         // Send requests synchronously
         T response = endpoint.send(new ClientProfile(destination, model), request, lowerLayerConfig, timeoutInMs);
@@ -135,7 +138,7 @@ public class DefaultDownlinkRequestSender implements DownlinkRequestSender {
         LwM2mServerEndpoint endpoint = getEndpoint(destination);
 
         // Retrieve the objects definition
-        final LwM2mModel model = modelProvider.getObjectModel(destination, null);
+        final LwM2mModel model = modelProvider.getObjectModel(destination, registrationStore);
 
         // Send requests asynchronously
         endpoint.send(new ClientProfile(destination, model), request, new ResponseCallback<T>() {

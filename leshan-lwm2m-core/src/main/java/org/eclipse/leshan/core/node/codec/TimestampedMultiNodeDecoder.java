@@ -19,9 +19,9 @@ import java.util.List;
 
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResourceInstance;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 
 /**
@@ -42,7 +42,7 @@ public interface TimestampedMultiNodeDecoder {
      * @return the decoded timestamped nodes represented by {@link TimestampedLwM2mNodes}
      * @throws CodecException if content is malformed.
      */
-    TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, String rootPath, List<LwM2mPath> paths,
+    TimestampedLwM2mNodes decodeTimestampedNodes(byte[] content, String rootPath, List<PrefixedLwM2mPath> paths,
             LwM2mModel model) throws CodecException;
 
 }

@@ -22,6 +22,7 @@ import java.util.Set;
 import org.eclipse.leshan.core.model.LwM2mModel;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -62,7 +63,7 @@ public interface LwM2mEncoder {
      * @return the encoded nodes as a byte array
      * @throws CodecException if encoding failed.
      */
-    byte[] encodeNodes(Map<LwM2mPath, LwM2mNode> nodes, ContentFormat format, String rootPath, LwM2mModel model)
+    byte[] encodeNodes(Map<PrefixedLwM2mPath, LwM2mNode> nodes, ContentFormat format, String rootPath, LwM2mModel model)
             throws CodecException;
 
     /**
@@ -103,7 +104,7 @@ public interface LwM2mEncoder {
      *
      * @throws CodecException if encoding failed.
      */
-    byte[] encodePaths(List<LwM2mPath> paths, ContentFormat format, String rootPath) throws CodecException;
+    byte[] encodePaths(List<PrefixedLwM2mPath> paths, ContentFormat format, String rootPath) throws CodecException;
 
     /**
      * return true is the given {@link ContentFormat} is supported

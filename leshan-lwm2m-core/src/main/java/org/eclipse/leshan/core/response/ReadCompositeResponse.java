@@ -20,12 +20,14 @@ import java.util.Map;
 
 import org.eclipse.leshan.core.ResponseCode;
 import org.eclipse.leshan.core.node.LwM2mNode;
+import org.eclipse.leshan.core.node.LwM2mNodeUtil;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 
 public class ReadCompositeResponse extends AbstractLwM2mResponse {
 
-    protected final Map<LwM2mPath, LwM2mNode> content;
+    protected final Map<PrefixedLwM2mPath, LwM2mNode> content;
     protected final TimestampedLwM2mNodes timestampedValues;
 
     /**
@@ -46,7 +48,7 @@ public class ReadCompositeResponse extends AbstractLwM2mResponse {
      * @param coapResponse The underlying protocol response object generally when you receive the response not when you
      *        send it.
      */
-    public ReadCompositeResponse(ResponseCode responseCode, Map<LwM2mPath, LwM2mNode> content,
+    public ReadCompositeResponse(ResponseCode responseCode, Map<PrefixedLwM2mPath, LwM2mNode> content,
             TimestampedLwM2mNodes timestampedContent, String errorMessage, Object coapResponse) {
         super(responseCode, errorMessage, coapResponse);
 
@@ -67,11 +69,11 @@ public class ReadCompositeResponse extends AbstractLwM2mResponse {
                 Instant timestamp = timestampedContent.getTimestamps().iterator().next();
                 if (timestamp != null) {
                     this.timestampedValues = timestampedContent;
-                    this.content = timestampedContent.getNodesAt(timestamp);
+                    this.content = timestampedContent.getPrefixedNodesAt(timestamp);
 
                 } else {
                     this.timestampedValues = null;
-                    this.content = timestampedContent.getMostRecentNodes();
+                    this.content = timestampedContent.getPrefixedMostRecentNodes();
                 }
             }
         } else {
@@ -93,7 +95,7 @@ public class ReadCompositeResponse extends AbstractLwM2mResponse {
      *
      * @return the value or <code>null</code> if the client returned an error response.
      */
-    public Map<LwM2mPath, LwM2mNode> getContent() {
+    public Map<PrefixedLwM2mPath, LwM2mNode> getContent() {
         return content;
     }
 
@@ -105,7 +107,7 @@ public class ReadCompositeResponse extends AbstractLwM2mResponse {
     public LwM2mNode getContent(String path) {
         if (content == null)
             return null;
-        return content.get(new LwM2mPath(path));
+        return content.get(PrefixedLwM2mPath.fromString(path));
     }
 
     /**
@@ -150,6 +152,11 @@ public class ReadCompositeResponse extends AbstractLwM2mResponse {
 
     // Syntactic sugar static constructors :
     public static ReadCompositeResponse success(Map<LwM2mPath, LwM2mNode> content) {
+        return new ReadCompositeResponse(ResponseCode.CONTENT, LwM2mNodeUtil.toPrefixedLwM2mMap(content), null, null,
+                null);
+    }
+
+    public static ReadCompositeResponse successWithPrefixedNode(Map<PrefixedLwM2mPath, LwM2mNode> content) {
         return new ReadCompositeResponse(ResponseCode.CONTENT, content, null, null, null);
     }
 

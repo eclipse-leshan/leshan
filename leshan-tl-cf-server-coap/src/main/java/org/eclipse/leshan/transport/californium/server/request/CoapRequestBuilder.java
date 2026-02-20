@@ -199,7 +199,8 @@ public class CoapRequestBuilder implements DownlinkDeviceManagementRequestVisito
     public void visit(ReadCompositeRequest request) {
         coapRequest = Request.newFetch();
         coapRequest.getOptions().setContentFormat(request.getRequestContentFormat().getCode());
-        coapRequest.setPayload(encoder.encodePaths(request.getPaths(), request.getRequestContentFormat(), rootPath));
+        coapRequest.setPayload(
+                encoder.encodePaths(request.getPrefixedPaths(), request.getRequestContentFormat(), rootPath));
         if (request.getResponseContentFormat() != null)
             coapRequest.getOptions().setAccept(request.getResponseContentFormat().getCode());
         setURI(coapRequest, LwM2mPath.ROOTPATH);
