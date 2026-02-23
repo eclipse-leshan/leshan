@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -377,7 +378,7 @@ public class LockstepEndpoint {
         }
     }
 
-    public abstract class MessageExpectation implements Action {
+    public abstract class MessageExpectation<T extends Message> implements Action<T> {
 
         /**
          * List of MID expectation. Used for smart deduplication.
@@ -385,7 +386,7 @@ public class LockstepEndpoint {
         private final List<MidExpectation> midExpectations = new LinkedList<MidExpectation>();
         private final List<Expectation<Message>> expectations = new LinkedList<Expectation<Message>>();
 
-        public MessageExpectation mid(final int mid) {
+        public MessageExpectation<T> mid(final int mid) {
             expectations.add(new Expectation<Message>() {
 
                 @Override
@@ -419,7 +420,7 @@ public class LockstepEndpoint {
          * @param var variable name with the stored MID
          * @return this for fluent API
          */
-        public MessageExpectation sameMID(final String var) {
+        public MessageExpectation<T> sameMID(final String var) {
             expectations.add(new Expectation<Message>() {
 
                 @Override
@@ -456,7 +457,7 @@ public class LockstepEndpoint {
          * @param var name of MID set
          * @return this MessageExpectation
          */
-        public MessageExpectation newMID(final String var) {
+        public MessageExpectation<T> newMID(final String var) {
             expectations.add(new Expectation<Message>() {
 
                 @Override
@@ -483,7 +484,7 @@ public class LockstepEndpoint {
             return this;
         }
 
-        public MessageExpectation type(final Type... types) {
+        public MessageExpectation<T> type(final Type... types) {
             expectations.add(new Expectation<Message>() {
 
                 @Override
@@ -505,7 +506,7 @@ public class LockstepEndpoint {
             return this;
         }
 
-        public MessageExpectation token(final Token token) {
+        public MessageExpectation<T> token(final Token token) {
             expectations.add(new Expectation<Message>() {
 
                 @Override
@@ -531,7 +532,7 @@ public class LockstepEndpoint {
          * @param var variable name with the stored token
          * @return this for fluent API
          */
-        public MessageExpectation sameToken(final String var) {
+        public MessageExpectation<T> sameToken(final String var) {
             expectations.add(new Expectation<Message>() {
 
                 @Override
@@ -550,7 +551,7 @@ public class LockstepEndpoint {
             return this;
         }
 
-        public MessageExpectation size1(final int expectedSize) {
+        public MessageExpectation<T> size1(final int expectedSize) {
             expectations.add(new Expectation<Message>() {
 
                 @Override
@@ -566,7 +567,7 @@ public class LockstepEndpoint {
             return this;
         }
 
-        public MessageExpectation payload(final String payload) {
+        public MessageExpectation<T> payload(final String payload) {
             expectations.add(new Expectation<Message>() {
 
                 @Override
@@ -596,12 +597,12 @@ public class LockstepEndpoint {
             return this;
         }
 
-        public MessageExpectation payload(String payload, int from, int to) {
+        public MessageExpectation<T> payload(String payload, int from, int to) {
             payload(payload.substring(from, to));
             return this;
         }
 
-        public MessageExpectation block1(final int num, final boolean m, final int size) {
+        public MessageExpectation<T> block1(final int num, final boolean m, final int size) {
             expectations.add(new Expectation<Message>() {
 
                 @Override
@@ -623,7 +624,7 @@ public class LockstepEndpoint {
             return this;
         }
 
-        public MessageExpectation block2(final int num, final boolean m, final int size) {
+        public MessageExpectation<T> block2(final int num, final boolean m, final int size) {
             expectations.add(new Expectation<Message>() {
 
                 @Override
@@ -645,7 +646,7 @@ public class LockstepEndpoint {
             return this;
         }
 
-        public MessageExpectation observe(final int observe) {
+        public MessageExpectation<T> observe(final int observe) {
             expectations.add(new Expectation<Message>() {
 
                 @Override
@@ -664,7 +665,7 @@ public class LockstepEndpoint {
             return this;
         }
 
-        public MessageExpectation hasObserve() {
+        public MessageExpectation<T> hasObserve() {
             expectations.add(new Expectation<Message>() {
 
                 @Override
@@ -681,7 +682,7 @@ public class LockstepEndpoint {
             return this;
         }
 
-        public MessageExpectation hasEtag(final byte[] etag) {
+        public MessageExpectation<T> hasEtag(final byte[] etag) {
 
             final OpaqueOption etagOption = StandardOptionRegistry.ETAG.create(etag);
 
@@ -700,7 +701,7 @@ public class LockstepEndpoint {
             return this;
         }
 
-        public MessageExpectation noOption(final int... numbers) {
+        public MessageExpectation<T> noOption(final int... numbers) {
             expectations.add(new Expectation<Message>() {
 
                 @Override
@@ -743,7 +744,7 @@ public class LockstepEndpoint {
             return this;
         }
 
-        public MessageExpectation storeMID(final String var) {
+        public MessageExpectation<T> storeMID(final String var) {
             expectations.add(new Expectation<Message>() {
 
                 @Override
@@ -760,7 +761,7 @@ public class LockstepEndpoint {
             return this;
         }
 
-        public MessageExpectation storeToken(final String var) {
+        public MessageExpectation<T> storeToken(final String var) {
             expectations.add(new Expectation<Message>() {
 
                 @Override
@@ -777,7 +778,7 @@ public class LockstepEndpoint {
             return this;
         }
 
-        public MessageExpectation storeBoth(final String var) {
+        public MessageExpectation<T> storeBoth(final String var) {
             expectations.add(new Expectation<Message>() {
 
                 @Override
@@ -792,7 +793,7 @@ public class LockstepEndpoint {
             return this;
         }
 
-        public MessageExpectation sameBoth(final String var) {
+        public MessageExpectation<T> sameBoth(final String var) {
             expectations.add(new Expectation<Message>() {
 
                 @Override
@@ -844,10 +845,10 @@ public class LockstepEndpoint {
         }
 
         @Override
-        public void go() throws Exception {
+        public T go() throws Exception {
             if (null != multi) {
                 add(multi);
-                return;
+                return null;
             }
 
             Message msg = receiveNextExpectedMessage(new MidExpectation() {
@@ -858,7 +859,7 @@ public class LockstepEndpoint {
                 }
             });
 
-            go(msg);
+            return go(msg);
         }
 
         @Override
@@ -878,12 +879,12 @@ public class LockstepEndpoint {
             return result.toString();
         }
 
-        public abstract void go(Message msg) throws Exception;
+        public abstract T go(Message msg) throws Exception;
 
         public abstract void add(MultiMessageExpectation multi);
     }
 
-    public class RequestExpectation extends MessageExpectation {
+    public class RequestExpectation extends MessageExpectation<Request> {
 
         private final List<Expectation<Request>> expectations = new LinkedList<LockstepEndpoint.Expectation<Request>>();
 
@@ -978,7 +979,7 @@ public class LockstepEndpoint {
         }
 
         @Override
-        public RequestExpectation sameBoth(final String var) {
+        public MessageExpectation<Request> sameBoth(final String var) {
             super.sameBoth(var);
             return this;
         }
@@ -1021,12 +1022,13 @@ public class LockstepEndpoint {
         }
 
         @Override
-        public void go(Message msg) throws Exception {
+        public Request go(Message msg) throws Exception {
             if (CoAP.isRequest(msg.getRawCode())) {
                 check((Request) msg);
             } else {
                 fail("Expected request for " + this + ", but received " + msg);
             }
+            return (Request) msg;
         }
 
         @Override
@@ -1035,7 +1037,7 @@ public class LockstepEndpoint {
         }
     }
 
-    public class ResponseExpectation extends MessageExpectation {
+    public class ResponseExpectation extends MessageExpectation<Response> {
 
         private final List<Expectation<Response>> expectations = new LinkedList<LockstepEndpoint.Expectation<Response>>();
 
@@ -1100,7 +1102,7 @@ public class LockstepEndpoint {
         }
 
         @Override
-        public MessageExpectation size1(final int expectedSize) {
+        public MessageExpectation<Response> size1(final int expectedSize) {
             super.size1(expectedSize);
             return this;
         }
@@ -1272,12 +1274,13 @@ public class LockstepEndpoint {
         }
 
         @Override
-        public void go(Message msg) throws Exception {
+        public Response go(Message msg) throws Exception {
             if (CoAP.isResponse(msg.getRawCode())) {
                 check((Response) msg);
             } else {
                 fail("Expected response for " + this + ", but received " + msg);
             }
+            return (Response) msg;
         }
 
         @Override
@@ -1287,7 +1290,7 @@ public class LockstepEndpoint {
 
     }
 
-    public class EmptyMessageExpectation extends MessageExpectation {
+    public class EmptyMessageExpectation extends MessageExpectation<Message> {
 
         public EmptyMessageExpectation(Type type, int mid) {
             super();
@@ -1300,12 +1303,13 @@ public class LockstepEndpoint {
         }
 
         @Override
-        public void go(Message msg) throws Exception {
+        public Message go(Message msg) throws Exception {
             if (CoAP.isEmptyMessage(msg.getRawCode())) {
                 check(msg);
             } else {
                 fail("Expected empty message for " + this + ", but received " + msg);
             }
+            return msg;
         }
 
         @Override
@@ -1314,7 +1318,7 @@ public class LockstepEndpoint {
         }
     }
 
-    public class MultiMessageExpectation implements Action {
+    public class MultiMessageExpectation implements Action<List<Message>> {
 
         private int counter;
         private EmptyMessageExpectation emptyExpectation;
@@ -1376,8 +1380,9 @@ public class LockstepEndpoint {
         }
 
         @Override
-        public void go() throws Exception {
+        public List<Message> go() throws Exception {
             assertTrue(0 < counter, "No expectations added!)");
+            List<Message> msgs = new ArrayList<Message>(counter);
             while (0 < counter) {
                 Message msg = receiveNextExpectedMessage(new MidExpectation() {
 
@@ -1391,6 +1396,7 @@ public class LockstepEndpoint {
                     if (null != emptyExpectation) {
                         emptyExpectation.go(msg);
                         emptyExpectation = null;
+                        msgs.add(msg);
                         --counter;
                     } else {
                         fail("No empty message expected " + msg);
@@ -1399,6 +1405,7 @@ public class LockstepEndpoint {
                     if (null != requestExpectation) {
                         requestExpectation.go(msg);
                         requestExpectation = null;
+                        msgs.add(msg);
                         --counter;
                     } else {
                         fail("No request expected " + msg);
@@ -1407,12 +1414,14 @@ public class LockstepEndpoint {
                     if (null != responseExpectation) {
                         responseExpectation.go(msg);
                         responseExpectation = null;
+                        msgs.add(msg);
                         --counter;
                     } else {
                         fail("No response expected " + msg);
                     }
                 }
             }
+            return msgs;
         }
     }
 
@@ -1426,7 +1435,7 @@ public class LockstepEndpoint {
         public void set(T t);
     }
 
-    public abstract class MessageProperty implements Action {
+    public abstract class MessageProperty implements Action<Void> {
 
         private final List<Property<Message>> properties = new LinkedList<LockstepEndpoint.Property<Message>>();
 
@@ -1577,13 +1586,14 @@ public class LockstepEndpoint {
         }
 
         @Override
-        public void go() {
+        public Void go() {
             EmptyMessage message = new EmptyMessage(null);
             setProperties(message);
             EndpointContext context = new AddressEndpointContext(destination);
             message.setDestinationContext(context);
             RawData raw = serializer.serializeEmptyMessage(message, null);
             send(raw);
+            return null;
         }
 
     }
@@ -1691,13 +1701,14 @@ public class LockstepEndpoint {
         }
 
         @Override
-        public void go() {
+        public Void go() {
             Request request = new Request(code);
             setProperties(request);
             EndpointContext context = new AddressEndpointContext(destination);
             request.setDestinationContext(context);
             RawData raw = serializer.serializeRequest(request);
             send(raw);
+            return null;
         }
     }
 
@@ -1860,25 +1871,26 @@ public class LockstepEndpoint {
         }
 
         @Override
-        public void go() {
+        public Void go() {
             Response response = new Response(code);
             setProperties(response);
             EndpointContext context = new AddressEndpointContext(destination);
             response.setDestinationContext(context);
             RawData raw = serializer.serializeResponse(response, null);
             send(raw);
+            return null;
         }
 
     }
 
-    public static interface Action {
+    public static interface Action<T> {
 
         /**
          * The method go() must be called when an action is ready. If you think there is a smarter way than such a
          * method at the end of each action, first make sure the smarter way also works for sending messages before
          * changing this.
          */
-        public void go() throws Exception;
+        public T go() throws Exception;
     }
 
     public static interface MidExpectation {
