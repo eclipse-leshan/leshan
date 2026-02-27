@@ -30,7 +30,7 @@ import org.eclipse.jetty.ee10.servlets.EventSourceServlet;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mNode;
-import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
@@ -195,7 +195,7 @@ public class EventServlet extends EventSourceServlet {
             try {
                 jsonContent = mapper.writeValueAsString(response.getContent());
                 List<String> paths = new ArrayList<>();
-                for (LwM2mPath path : response.getObservation().getPaths()) {
+                for (PrefixedLwM2mPath path : response.getObservation().getPaths()) {
                     paths.add(path.toString());
                 }
                 jsonListOfPath = mapper.writeValueAsString(paths);

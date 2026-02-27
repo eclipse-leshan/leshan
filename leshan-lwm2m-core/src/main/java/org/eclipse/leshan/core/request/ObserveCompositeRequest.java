@@ -39,7 +39,7 @@ public class ObserveCompositeRequest extends AbstractLwM2mRequest<ObserveComposi
     private final ContentFormat requestContentFormat;
     private final ContentFormat responseContentFormat;
 
-    private final List<LwM2mPath> paths;
+    private final List<PrefixedLwM2mPath> paths;
 
     private final Map<String, String> context;
 
@@ -54,15 +54,7 @@ public class ObserveCompositeRequest extends AbstractLwM2mRequest<ObserveComposi
      */
     public ObserveCompositeRequest(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
             String... paths) {
-        this(requestContentFormat, responseContentFormat, getLwM2mPathList(Arrays.asList(paths)));
-    }
-
-    private static List<LwM2mPath> getLwM2mPathList(List<String> paths) {
-        try {
-            return LwM2mPath.getLwM2mPathList(paths);
-        } catch (LwM2mNodeException | IllegalArgumentException e) {
-            throw new InvalidRequestException("invalid path format");
-        }
+        this(requestContentFormat, responseContentFormat, getPrefixedLwM2mPathList(Arrays.asList(paths)));
     }
 
     /**
@@ -74,7 +66,7 @@ public class ObserveCompositeRequest extends AbstractLwM2mRequest<ObserveComposi
      *
      */
     public ObserveCompositeRequest(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
-            List<LwM2mPath> paths) {
+            List<PrefixedLwM2mPath> paths) {
         this(requestContentFormat, responseContentFormat, paths, null);
     }
 
@@ -88,12 +80,12 @@ public class ObserveCompositeRequest extends AbstractLwM2mRequest<ObserveComposi
      *
      */
     public ObserveCompositeRequest(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
-            List<LwM2mPath> paths, Object coapRequest) {
+            List<PrefixedLwM2mPath> paths, Object coapRequest) {
         super(coapRequest);
 
         try {
             Validate.notEmpty(paths, "paths are mandatory");
-            LwM2mPath.validateNotOverlapping(paths);
+            PrefixedLwM2mPath.validateNotOverlapping(paths);
         } catch (IllegalArgumentException exception) {
             throw new InvalidRequestException(exception.getMessage());
         }
@@ -103,6 +95,34 @@ public class ObserveCompositeRequest extends AbstractLwM2mRequest<ObserveComposi
         this.paths = paths;
 
         this.context = Collections.emptyMap();
+    }
+
+    public static ObserveCompositeRequest fromPath(ContentFormat requestContentFormat,
+            ContentFormat responseContentFormat, List<LwM2mPath> paths, Object coapRequest) {
+        return new ObserveCompositeRequest(requestContentFormat, responseContentFormat,
+                getPrefixedLwM2mPathFromPaths(paths), coapRequest);
+    }
+
+    public static ObserveCompositeRequest fromPath(ContentFormat requestContentFormat,
+            ContentFormat responseContentFormat, List<LwM2mPath> paths) {
+        return new ObserveCompositeRequest(requestContentFormat, responseContentFormat,
+                getPrefixedLwM2mPathFromPaths(paths), null);
+    }
+
+    private static List<PrefixedLwM2mPath> getPrefixedLwM2mPathList(List<String> paths) {
+        try {
+            return PrefixedLwM2mPath.fromStringList(paths);
+        } catch (LwM2mNodeException | IllegalArgumentException e) {
+            throw new InvalidRequestException("invalid path format");
+        }
+    }
+
+    private static List<PrefixedLwM2mPath> getPrefixedLwM2mPathFromPaths(List<LwM2mPath> paths) {
+        try {
+            return PrefixedLwM2mPath.fromPathList(paths);
+        } catch (LwM2mNodeException | IllegalArgumentException e) {
+            throw new InvalidRequestException("invalid path format");
+        }
     }
 
     @Override
@@ -120,7 +140,7 @@ public class ObserveCompositeRequest extends AbstractLwM2mRequest<ObserveComposi
      */
     @Override
     public List<PrefixedLwM2mPath> getPaths() {
-        return PrefixedLwM2mPath.fromPathList(paths);
+        return paths;
     }
 
     /**

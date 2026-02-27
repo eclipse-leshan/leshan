@@ -208,7 +208,7 @@ public class LwM2mObservationStoreTest {
     }
 
     private org.eclipse.californium.core.observe.Observation prepareCoapCompositeObservation() {
-        ObserveCompositeRequest observeRequest = new ObserveCompositeRequest(null, null, examplePaths);
+        ObserveCompositeRequest observeRequest = ObserveCompositeRequest.fromPath(null, null, examplePaths);
 
         Map<String, String> userContext = ObserveUtil.createCoapObserveCompositeRequestContext(ep, registrationId,
                 observeRequest);

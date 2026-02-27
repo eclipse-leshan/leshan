@@ -132,7 +132,7 @@ public class ObserveCompositeTest {
         // Assert that CompositeObservation contains expected paths
         CompositeObservation observation = observeResponse.getObservation();
         assertThat(observation).isNotNull();
-        assertThat(observation.getPaths()).containsOnly(new LwM2mPath("/3/0/15"));
+        assertThat(observation.getPaths()).containsOnly(PrefixedLwM2mPath.fromString("/3/0/15"));
 
         // Assert that there is one valid observation
         server.waitForNewObservation(observation);
@@ -166,7 +166,7 @@ public class ObserveCompositeTest {
         // Assert that CompositeObservation contains expected paths
         CompositeObservation observation = observeResponse.getObservation();
         assertThat(observation).isNotNull();
-        assertThat(observation.getPaths()).containsOnly(new LwM2mPath("/3/0/14"));
+        assertThat(observation.getPaths()).containsOnly(PrefixedLwM2mPath.fromString("/3/0/14"));
 
         // Assert that there is one valid observation
         server.waitForNewObservation(observation);
@@ -199,7 +199,8 @@ public class ObserveCompositeTest {
         // Assert that CompositeObservation contains expected paths
         CompositeObservation observation = observeResponse.getObservation();
         assertThat(observation).isNotNull();
-        assertThat(observation.getPaths()).containsOnly(new LwM2mPath("/3/0/15"), new LwM2mPath("/3/0/14"));
+        assertThat(observation.getPaths()).containsOnly(PrefixedLwM2mPath.fromString("/3/0/15"),
+                PrefixedLwM2mPath.fromString("/3/0/14"));
 
         // Assert that there is one valid observation
         server.waitForNewObservation(observation);
@@ -235,7 +236,8 @@ public class ObserveCompositeTest {
         // Assert that CompositeObservation contains expected paths
         CompositeObservation observation = observeResponse.getObservation();
         assertThat(observation).isNotNull();
-        assertThat(observation.getPaths()).containsOnly(new LwM2mPath("/3/0/15"), new LwM2mPath("/3/0/14"));
+        assertThat(observation.getPaths()).containsOnly(PrefixedLwM2mPath.fromString("/3/0/15"),
+                PrefixedLwM2mPath.fromString("/3/0/14"));
 
         // Assert that there is one valid observation
         server.waitForNewObservation(observation);
@@ -342,7 +344,7 @@ public class ObserveCompositeTest {
         // Assert that CompositeObservation contains expected paths
         CompositeObservation observation = observeResponse.getObservation();
         assertThat(observation).isNotNull();
-        assertThat(observation.getPaths()).containsOnly(new LwM2mPath("/3/0"));
+        assertThat(observation.getPaths()).containsOnly(PrefixedLwM2mPath.fromString("/3/0"));
 
         // Assert that there is one valid observation
         server.waitForNewObservation(observation);
@@ -378,7 +380,7 @@ public class ObserveCompositeTest {
         // Assert that CompositeObservation contains expected paths
         CompositeObservation observation = observeResponse.getObservation();
         assertThat(observation).isNotNull();
-        assertThat(observation.getPaths()).containsOnly(new LwM2mPath("/3"));
+        assertThat(observation.getPaths()).containsOnly(PrefixedLwM2mPath.fromString("/3"));
 
         // Assert that there is one valid observation
         server.waitForNewObservation(observation);

@@ -23,6 +23,7 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.observe.ObserveRelation;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.transport.californium.ObserveUtil;
 
 /**
@@ -79,6 +80,6 @@ public class ObserveCompositeRelationFilter implements Predicate<ObserveRelation
     }
 
     private List<LwM2mPath> getObserveRequestPaths(Request request) {
-        return ObserveUtil.getPathsFromContext(request.getUserContext());
+        return PrefixedLwM2mPath.toPathList(ObserveUtil.getPathsFromContext(request.getUserContext()));
     }
 }

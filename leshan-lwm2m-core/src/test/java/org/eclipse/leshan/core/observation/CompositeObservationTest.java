@@ -18,7 +18,7 @@ package org.eclipse.leshan.core.observation;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.junit.jupiter.api.Test;
 
@@ -28,9 +28,9 @@ class CompositeObservationTest {
 
     public class ExtendedCompositeObservation extends CompositeObservation {
 
-        public ExtendedCompositeObservation(ObservationIdentifier id, String registrationId, List<LwM2mPath> paths,
-                ContentFormat requestContentFormat, ContentFormat responseContentFormat, Map<String, String> context,
-                Map<String, String> protocolData) {
+        public ExtendedCompositeObservation(ObservationIdentifier id, String registrationId,
+                List<PrefixedLwM2mPath> paths, ContentFormat requestContentFormat, ContentFormat responseContentFormat,
+                Map<String, String> context, Map<String, String> protocolData) {
             super(id, registrationId, paths, requestContentFormat, responseContentFormat, context, protocolData);
         }
 

@@ -80,7 +80,7 @@ public class ObserveUtilTest {
         String exampleRegistrationId = "registrationId";
         Token exampleToken = Token.EMPTY;
 
-        ObserveCompositeRequest observeRequest = new ObserveCompositeRequest(null, null, examplePaths);
+        ObserveCompositeRequest observeRequest = ObserveCompositeRequest.fromPath(null, null, examplePaths);
 
         // when
         Map<String, String> userContext = ObserveUtil.createCoapObserveCompositeRequestContext(null,

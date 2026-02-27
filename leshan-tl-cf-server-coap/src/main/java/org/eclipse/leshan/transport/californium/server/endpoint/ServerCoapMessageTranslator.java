@@ -24,7 +24,6 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.leshan.core.ResponseCode;
-import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNode;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.CodecException;
@@ -129,7 +128,7 @@ public class ServerCoapMessageTranslator {
                 } else {
                     TimestampedLwM2mNodes timestampedNodes = toolbox.getDecoder().decodeTimestampedNodes(
                             coapResponse.getPayload(), contentFormat, profile.getRootPath(),
-                            PrefixedLwM2mPath.fromPathList(compositeObservation.getPaths()), profile.getModel());
+                            compositeObservation.getPaths(), profile.getModel());
 
                     if (timestampedNodes.getTimestamps().size() == 1
                             && timestampedNodes.getTimestamps().iterator().next() == null) {

@@ -39,6 +39,7 @@ import org.eclipse.leshan.core.node.LwM2mObjectInstance;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.node.LwM2mResource;
 import org.eclipse.leshan.core.node.LwM2mSingleResource;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.node.TimestampedLwM2mNodes;
 import org.eclipse.leshan.core.node.codec.DefaultLwM2mEncoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
@@ -247,14 +248,14 @@ public class ObserveCompositeTimeStampTest {
 
         // Send Observe Request
         ObserveCompositeResponse observeResponse = server.send(currentRegistration,
-                new ObserveCompositeRequest(contentFormat, contentFormat, paths));
+                ObserveCompositeRequest.fromPath(contentFormat, contentFormat, paths));
         assertThat(observeResponse) //
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
         // Check Observation
         CompositeObservation observation = observeResponse.getObservation();
-        assertThat(observation.getPaths()).containsExactlyElementsOf(paths);
+        assertThat(observation.getPaths()).containsExactlyElementsOf(PrefixedLwM2mPath.fromPathList(paths));
         assertThat(observation.getRegistrationId()).isEqualTo(currentRegistration.getId());
         Set<Observation> observations = server.getObservationService().getObservations(currentRegistration);
         assertThat(observations).containsExactly(observation);
@@ -349,14 +350,14 @@ public class ObserveCompositeTimeStampTest {
 
         // Send Observe Request
         ObserveCompositeResponse observeResponse = server.send(currentRegistration,
-                new ObserveCompositeRequest(contentFormat, contentFormat, paths));
+                new ObserveCompositeRequest(contentFormat, contentFormat, PrefixedLwM2mPath.fromPathList(paths)));
         assertThat(observeResponse) //
                 .hasCode(CONTENT) //
                 .hasValidUnderlyingResponseFor(givenServerEndpointProvider);
 
         // Check Observation
         CompositeObservation observation = observeResponse.getObservation();
-        assertThat(observation.getPaths()).containsExactlyElementsOf(paths);
+        assertThat(observation.getPaths()).containsExactlyElementsOf(PrefixedLwM2mPath.fromPathList(paths));
         assertThat(observation.getRegistrationId()).isEqualTo(currentRegistration.getId());
         Set<Observation> observations = server.getObservationService().getObservations(currentRegistration);
         assertThat(observations).containsExactly(observation);

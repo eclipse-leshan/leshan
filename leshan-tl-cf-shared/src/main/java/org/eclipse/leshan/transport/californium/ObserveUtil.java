@@ -80,7 +80,7 @@ public class ObserveUtil {
         }
 
         return new SingleObservation(new ObservationIdentifier(endpointUri, request.getToken().getBytes()),
-                observeCommon.regId, observeCommon.lwm2mPaths.get(0), observeCommon.responseContentFormat,
+                observeCommon.regId, observeCommon.lwm2mPaths.get(0).getPath(), observeCommon.responseContentFormat,
                 observeCommon.context, observeCommon.protocolData);
     }
 
@@ -101,7 +101,7 @@ public class ObserveUtil {
         String regId;
         Map<String, String> context;
         Map<String, String> protocolData;
-        List<LwM2mPath> lwm2mPaths;
+        List<PrefixedLwM2mPath> lwm2mPaths;
         ContentFormat requestContentFormat;
         ContentFormat responseContentFormat;
 
@@ -152,13 +152,13 @@ public class ObserveUtil {
      * @param userContext user context
      * @return the list of {@link LwM2mPath}
      */
-    public static List<LwM2mPath> getPathsFromContext(Map<String, String> userContext) {
+    public static List<PrefixedLwM2mPath> getPathsFromContext(Map<String, String> userContext) {
         if (userContext.containsKey(CTX_LWM2M_PATH)) {
-            List<LwM2mPath> lwm2mPaths = new ArrayList<>();
+            List<PrefixedLwM2mPath> lwm2mPaths = new ArrayList<>();
             String pathsEncoded = userContext.get(CTX_LWM2M_PATH);
 
             for (String path : pathsEncoded.split("\n")) {
-                lwm2mPaths.add(new LwM2mPath(path));
+                lwm2mPaths.add(PrefixedLwM2mPath.fromString(path));
             }
             return lwm2mPaths;
         }
@@ -174,7 +174,7 @@ public class ObserveUtil {
         context.put(CTX_ENDPOINT, endpoint);
         context.put(CTX_REGID, registrationId);
 
-        addPathsIntoContext(context, Collections.singletonList(request.getPath()));
+        addPathsIntoContext(context, Collections.singletonList(new PrefixedLwM2mPath(request.getPath())));
 
         context.putAll(request.getContext());
         return context;
@@ -186,7 +186,7 @@ public class ObserveUtil {
         context.put(CTX_ENDPOINT, endpoint);
         context.put(CTX_REGID, registrationId);
 
-        addPathsIntoContext(context, PrefixedLwM2mPath.toPathList(request.getPaths()));
+        addPathsIntoContext(context, request.getPaths());
 
         context.putAll(request.getContext());
         return context;
@@ -198,9 +198,9 @@ public class ObserveUtil {
      * @param context user context
      * @param paths the list of {@link LwM2mPath}
      */
-    public static void addPathsIntoContext(Map<String, String> context, List<LwM2mPath> paths) {
+    public static void addPathsIntoContext(Map<String, String> context, List<PrefixedLwM2mPath> paths) {
         StringBuilder sb = new StringBuilder();
-        for (LwM2mPath path : paths) {
+        for (PrefixedLwM2mPath path : paths) {
             sb.append(path.toString());
             sb.append("\n");
         }

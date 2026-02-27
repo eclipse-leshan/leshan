@@ -39,6 +39,7 @@ import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.link.Link;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.ObservationIdentifier;
@@ -203,7 +204,8 @@ public class RedisRegistrationStoreTest {
     }
 
     private org.eclipse.californium.core.observe.Observation prepareCoapObservationOnComposite(List<LwM2mPath> paths) {
-        ObserveCompositeRequest observeRequest = new ObserveCompositeRequest(null, null, paths);
+        ObserveCompositeRequest observeRequest = new ObserveCompositeRequest(null, null,
+                PrefixedLwM2mPath.fromPathList(paths));
 
         Map<String, String> userContext = ObserveUtil.createCoapObserveCompositeRequestContext(ep, registrationId,
                 observeRequest);

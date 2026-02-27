@@ -18,6 +18,7 @@ package org.eclipse.leshan.core.request;
 import java.util.List;
 
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
@@ -27,7 +28,7 @@ class ObserveCompositeRequestTest {
     private class ExtendedObserveCompositeRequest extends ObserveCompositeRequest {
         ExtendedObserveCompositeRequest(ContentFormat requestContentFormat, ContentFormat responseContentFormat,
                 List<LwM2mPath> paths) {
-            super(requestContentFormat, responseContentFormat, paths, null);
+            super(requestContentFormat, responseContentFormat, PrefixedLwM2mPath.fromPathList(paths), null);
         }
 
         @Override

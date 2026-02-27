@@ -221,14 +221,18 @@ public class PrefixedLwM2mPath implements Comparable<PrefixedLwM2mPath> {
     }
 
     public static List<PrefixedLwM2mPath> fromPathList(Collection<LwM2mPath> paths) {
-        List<PrefixedLwM2mPath> prefixedPaths = new ArrayList<PrefixedLwM2mPath>();
+        List<PrefixedLwM2mPath> prefixedPaths = new ArrayList<>();
         for (LwM2mPath path : paths) {
             prefixedPaths.add(new PrefixedLwM2mPath(path));
         }
         return prefixedPaths;
     }
 
-    public static List<PrefixedLwM2mPath> fromStringArray(String... paths) {
+    public static List<PrefixedLwM2mPath> fromStringArray(LwM2mPath... paths) {
+        return fromPathList(Arrays.asList(paths));
+    }
+
+    public static List<PrefixedLwM2mPath> fromPathArray(String... paths) {
         return fromStringList(Arrays.asList(paths));
     }
 

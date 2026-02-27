@@ -28,6 +28,7 @@ import org.eclipse.leshan.core.endpoint.DefaultEndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.EndPointUriHandler;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.ObservationIdentifier;
@@ -110,7 +111,7 @@ public class ObservationSerDes {
             }
 
             ArrayNode paths = JsonNodeFactory.instance.arrayNode();
-            for (LwM2mPath path : cobs.getPaths()) {
+            for (PrefixedLwM2mPath path : cobs.getPaths()) {
                 paths.add(path.toString());
             }
             n.set(COBS_PATHS, paths);
@@ -169,12 +170,12 @@ public class ObservationSerDes {
                     respcontentFormat = ContentFormat.fromCode(n.get(COBS_RESP_CONTENT_FORMAT).asInt());
                 }
 
-                List<LwM2mPath> paths = null;
+                List<PrefixedLwM2mPath> paths = null;
                 ArrayNode jPaths = (ArrayNode) n.get(COBS_PATHS);
                 if (jPaths != null) {
                     paths = new ArrayList<>();
                     for (JsonNode jPath : jPaths) {
-                        paths.add(new LwM2mPath(jPath.asText()));
+                        paths.add(PrefixedLwM2mPath.fromString(jPath.asText()));
                     }
                 }
                 return new CompositeObservation(obsId, regid, paths, reqContentFormat, respcontentFormat, context,

@@ -64,7 +64,7 @@ public class CancelCompositeObservationRequest extends AbstractLwM2mRequest<Canc
 
     @Override
     public List<PrefixedLwM2mPath> getPaths() {
-        return PrefixedLwM2mPath.fromPathList(observation.getPaths());
+        return observation.getPaths();
     }
 
     public ContentFormat getRequestContentFormat() {

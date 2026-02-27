@@ -22,6 +22,7 @@ import java.util.Objects;
 
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.request.ContentFormat;
 
 /**
@@ -29,7 +30,7 @@ import org.eclipse.leshan.core.request.ContentFormat;
  */
 public class CompositeObservation extends Observation {
 
-    private final List<LwM2mPath> paths;
+    private final List<PrefixedLwM2mPath> paths;
     private final ContentFormat requestContentFormat;
     private final ContentFormat responseContentFormat;
 
@@ -43,7 +44,7 @@ public class CompositeObservation extends Observation {
      * @param responseContentFormat The {@link ContentFormat} requested to encode the {@link LwM2mNode} of the response.
      * @param context additional information relative to this observation.
      */
-    public CompositeObservation(ObservationIdentifier id, String registrationId, List<LwM2mPath> paths,
+    public CompositeObservation(ObservationIdentifier id, String registrationId, List<PrefixedLwM2mPath> paths,
             ContentFormat requestContentFormat, ContentFormat responseContentFormat, Map<String, String> context,
             Map<String, String> protocolData) {
         super(id, registrationId, context, protocolData);
@@ -71,7 +72,7 @@ public class CompositeObservation extends Observation {
      *
      * @return the resources paths
      */
-    public List<LwM2mPath> getPaths() {
+    public List<PrefixedLwM2mPath> getPaths() {
         return paths;
     }
 
@@ -96,6 +97,7 @@ public class CompositeObservation extends Observation {
                 && Objects.equals(responseContentFormat, that.responseContentFormat);
     }
 
+    @Override
     public boolean canEqual(Object o) {
         return (o instanceof CompositeObservation);
     }

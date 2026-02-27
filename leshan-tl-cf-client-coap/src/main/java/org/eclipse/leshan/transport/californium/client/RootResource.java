@@ -36,6 +36,7 @@ import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.node.LwM2mNode;
 import org.eclipse.leshan.core.node.LwM2mNodeUtil;
 import org.eclipse.leshan.core.node.LwM2mPath;
+import org.eclipse.leshan.core.node.PrefixedLwM2mPath;
 import org.eclipse.leshan.core.request.BootstrapDeleteRequest;
 import org.eclipse.leshan.core.request.BootstrapDiscoverRequest;
 import org.eclipse.leshan.core.request.ContentFormat;
@@ -120,7 +121,7 @@ public class RootResource extends LwM2mClientCoapResource {
 
         if (exchange.getRequestOptions().hasObserve()) {
             // Manage Observe Composite request
-            ObserveCompositeRequest observeRequest = new ObserveCompositeRequest(requestContentFormat,
+            ObserveCompositeRequest observeRequest = ObserveCompositeRequest.fromPath(requestContentFormat,
                     responseContentFormat, paths, coapRequest);
             ObserveCompositeResponse response = requestReceiver.requestReceived(server, observeRequest).getResponse();
 
@@ -158,7 +159,7 @@ public class RootResource extends LwM2mClientCoapResource {
         if (coapRequest.getUserContext() != null) {
             userContext.putAll(coapRequest.getUserContext());
         }
-        ObserveUtil.addPathsIntoContext(userContext, paths);
+        ObserveUtil.addPathsIntoContext(userContext, PrefixedLwM2mPath.fromPathList(paths));
         coapRequest.setUserContext(userContext);
     }
 

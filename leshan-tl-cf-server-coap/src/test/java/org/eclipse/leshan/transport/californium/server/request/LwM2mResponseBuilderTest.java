@@ -83,7 +83,7 @@ public class LwM2mResponseBuilderTest {
         // given
         List<LwM2mPath> examplePaths = Arrays.asList(new LwM2mPath("/1/2/3"), new LwM2mPath("/4/5/6"));
 
-        ObserveCompositeRequest observeRequest = new ObserveCompositeRequest(null, null, examplePaths);
+        ObserveCompositeRequest observeRequest = ObserveCompositeRequest.fromPath(null, null, examplePaths);
 
         Map<String, String> userContext = ObserveUtil.createCoapObserveCompositeRequestContext(null, null,
                 observeRequest);

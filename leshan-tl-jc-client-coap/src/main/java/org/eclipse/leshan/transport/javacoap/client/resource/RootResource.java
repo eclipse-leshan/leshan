@@ -111,7 +111,7 @@ public class RootResource extends LwM2mClientCoapResource {
             // TODO ideally we would like to to attach paths to the coapRequest to avoid to decode it twice :/
 
             // Manage Observe Composite request
-            ObserveCompositeRequest observeRequest = new ObserveCompositeRequest(requestContentFormat,
+            ObserveCompositeRequest observeRequest = ObserveCompositeRequest.fromPath(requestContentFormat,
                     responseContentFormat, paths, coapRequest);
             ObserveCompositeResponse response = requestReceiver.requestReceived(identity, observeRequest).getResponse();
 
