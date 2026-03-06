@@ -4,8 +4,6 @@
 # CVE not fixed in branch 1.3 which is the last one supporting java8 
 # See : https://github.com/eclipse-leshan/leshan/issues/1728 
 CVE-2026-1225
-# CVE not fixed yet : https://github.com/eslint/eslint/issues/20518
-CVE-2026-26996
 
 # =========================
 # About Leshan Libraries
