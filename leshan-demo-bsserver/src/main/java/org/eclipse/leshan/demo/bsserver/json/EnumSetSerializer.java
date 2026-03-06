@@ -62,7 +62,7 @@ public class EnumSetSerializer extends StdSerializer<EnumSet<?>> {
     private boolean isBindingMode(JsonGenerator gen, SerializerProvider serializers) {
         SerializationConfig config = serializers.getConfig();
 
-        JavaType currValue = config.constructType(gen.getCurrentValue().getClass());
+        JavaType currValue = config.constructType(gen.currentValue().getClass());
         BeanDescription beanDesc = config.introspect(currValue);
 
         String currentName = gen.getOutputContext().getCurrentName();

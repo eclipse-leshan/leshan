@@ -28,6 +28,8 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.std.EnumDeserializer;
+import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
+import com.fasterxml.jackson.databind.introspect.AnnotatedClassResolver;
 import com.fasterxml.jackson.databind.util.EnumResolver;
 
 public class EnumSetDeserializer extends JsonDeserializer<EnumSet<?>> implements ContextualDeserializer {
@@ -52,16 +54,21 @@ public class EnumSetDeserializer extends JsonDeserializer<EnumSet<?>> implements
         JavaType contentType = contextualType.getContentType();
         DeserializationConfig config = ctxt.getConfig();
 
-        return new com.fasterxml.jackson.databind.deser.std.EnumSetDeserializer(contentType, new EnumDeserializer(
-                buildDefaultEnumResolver(ctxt), config.isEnabled(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)));
+        // Use 3-arg constructor: (JavaType, JsonDeserializer<?>, TypeDeserializer)
+        // Pass null for valueTypeDeser since enums don't need polymorphic type handling
+        return new com.fasterxml.jackson.databind.deser.std.EnumSetDeserializer(contentType,
+                new EnumDeserializer(buildDefaultEnumResolver(ctxt),
+                        config.isEnabled(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS), null, // byEnumNamingResolver
+                        null), // toStringResolver
+                null); // valueTypeDeser
     }
 
     protected EnumResolver buildDefaultEnumResolver(DeserializationContext ctxt) {
-        JavaType contextualType = ctxt.getContextualType();
-        JavaType contentType = contextualType.getContentType();
+        JavaType contentType = ctxt.getContextualType().getContentType();
         Class<?> rawClass = contentType.getRawClass();
         DeserializationConfig config = ctxt.getConfig();
+        AnnotatedClass annotatedClass = AnnotatedClassResolver.resolve(config, config.constructType(rawClass), config);
 
-        return EnumResolver.constructFor(config, rawClass);
+        return EnumResolver.constructFor(config, annotatedClass);
     }
 }
