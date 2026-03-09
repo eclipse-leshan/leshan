@@ -382,8 +382,8 @@ public class LwM2mTestObject extends SimpleInstanceEnabler {
         @Override
         public Link[] generate() {
             // define if root path is used or not
-            String rootpath = random.nextInt(4) == 0 ? "/" + RandomStringUtils.randomAlphanumeric(random.nextInt(4) + 1)
-                    : null;
+            String rootpath = random.nextInt(4) == 0 ? "/" + RandomStringUtils.randomAlphabetic(1)
+                    + RandomStringUtils.randomAlphanumeric(random.nextInt(4)) : null;
 
             // define number of link
             int nbLink = random.nextInt(10);
