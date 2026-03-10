@@ -4,7 +4,7 @@ import Components from 'unplugin-vue-components/vite'
 import Vue from '@vitejs/plugin-vue'
 import Vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 import webfontDownload from 'vite-plugin-webfont-dl';
-import VueRouter from 'unplugin-vue-router/vite'
+import VueRouter from 'vue-router/vite'
 
 // Utilities
 import { defineConfig } from 'vite'
