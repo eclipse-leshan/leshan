@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.security.cert.Certificate;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.leshan.client.endpoint.ClientEndpointToolbox;
@@ -57,6 +58,7 @@ import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.packet.Method;
 import com.mbed.coap.server.CoapServer;
+import com.mbed.coap.transport.CoapTransport;
 import com.mbed.coap.transport.TransportContext;
 import com.mbed.coap.utils.Service;
 
@@ -74,14 +76,14 @@ public abstract class AbstractJavaCoapClientEndpointsProvider implements LwM2mCl
 
     private JavaCoapClientEndpoint lwm2mEndpoint;
     private CoapServer coapServer;
-    private volatile ServerInfo currentServerInfo;
-    private volatile List<Certificate> currentTrustStore;
-    private volatile LwM2mServer currentServer;
+    private ServerInfo currentServerInfo;
+    private List<Certificate> currentTrustStore;
+    private LwM2mServer currentServer;
 
     protected State state = State.INITIAL;
     private ObserversManager observersManager;
 
-    public AbstractJavaCoapClientEndpointsProvider(Protocol protocol, String endpointDescription,
+    protected AbstractJavaCoapClientEndpointsProvider(Protocol protocol, String endpointDescription,
             IdentityHandler identityHandler) {
         this.supportedProtocol = protocol;
         this.endpointDescription = endpointDescription;
@@ -95,17 +97,14 @@ public abstract class AbstractJavaCoapClientEndpointsProvider implements LwM2mCl
         this.objectTree = objectTree;
         this.toolbox = toolbox;
 
-        ServerIdentityExtractor identityExtractor = new ServerIdentityExtractor() {
-            @Override
-            public LwM2mServer extractIdentity(IpPeer foreignPeer) {
-                if (currentServer == null) {
-                    return null;
-                }
-                if (supportedProtocol != Protocol.COAP || currentServer.getTransportData().equals(foreignPeer)) {
-                    return currentServer;
-                }
+        ServerIdentityExtractor identityExtractor = foreignPeer -> {
+            if (currentServer == null) {
                 return null;
             }
+            if (supportedProtocol != Protocol.COAP || currentServer.getTransportData().equals(foreignPeer)) {
+                return currentServer;
+            }
+            return null;
         };
 
         // Create Observers Manager
@@ -188,20 +187,25 @@ public abstract class AbstractJavaCoapClientEndpointsProvider implements LwM2mCl
 
     public void createLwM2mEndpoint(ServerInfo lwm2mServer, List<Certificate> trustStore) {
         // Create a new endpoints
-        coapServer = createCoapServer(lwm2mServer, router, trustStore);
+        CoapTransport coapTransport = createCoapTransport(lwm2mServer, trustStore);
+        JavaCoapConnectionController connectionController = createConnectionController(coapTransport);
+        coapServer = createCoapServer(coapTransport, router);
         observersManager.init(coapServer);
         lwm2mEndpoint = new JavaCoapClientEndpoint(supportedProtocol, endpointDescription, coapServer,
-                messagetranslator, toolbox, objectTree.getModel());
+                messagetranslator, toolbox, connectionController, objectTree.getModel());
     }
 
-    protected abstract CoapServer createCoapServer(ServerInfo serverInfo, Service<CoapRequest, CoapResponse> router,
-            List<Certificate> trustStore);
+    protected abstract CoapTransport createCoapTransport(ServerInfo serverInfo, List<Certificate> trustStore);
+
+    protected abstract JavaCoapConnectionController createConnectionController(CoapTransport transport);
+
+    protected abstract CoapServer createCoapServer(CoapTransport transport, Service<CoapRequest, CoapResponse> router);
 
     @Override
     public synchronized Collection<LwM2mServer> createEndpoints(Collection<? extends ServerInfo> serverInfo,
             boolean clientInitiatedOnly, List<Certificate> trustStore, ClientEndpointToolbox toolbox) {
         // TODO TL : need to be implemented or removed ?
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
@@ -219,7 +223,7 @@ public abstract class AbstractJavaCoapClientEndpointsProvider implements LwM2mCl
     }
 
     @Override
-    public LwM2mClientEndpoint getEndpoint(LwM2mServer server) {
+    public synchronized LwM2mClientEndpoint getEndpoint(LwM2mServer server) {
         if (server.equals(currentServer)) {
             return lwm2mEndpoint;
         } else {
@@ -283,7 +287,7 @@ public abstract class AbstractJavaCoapClientEndpointsProvider implements LwM2mCl
                 // See : https://github.com/eclipse/leshan/issues/992
                 transportData = new IpPeer(serverInfo.getAddress(), new X509Identity("*"));
             } else {
-                throw new RuntimeException("Unable to create connector : unsupported security mode");
+                throw new IllegalStateException("Unable to create connector : unsupported security mode");
             }
         } else if (serverInfo.useOscore) {
             // Build server identity for OSCORE

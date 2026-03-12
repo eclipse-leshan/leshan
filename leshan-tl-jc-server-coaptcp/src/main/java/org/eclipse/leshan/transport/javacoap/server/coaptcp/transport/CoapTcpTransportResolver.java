@@ -19,20 +19,19 @@ import java.net.InetSocketAddress;
 import java.time.Instant;
 import java.util.function.Function;
 
+import org.eclipse.leshan.transport.javacoap.transport.context.keys.IpTransportContextKeys;
+import org.eclipse.leshan.transport.javacoap.transport.context.keys.TcpTransportContextKeys;
+
 import com.mbed.coap.transport.TransportContext;
 
 import io.netty.channel.Channel;
 
 public class CoapTcpTransportResolver implements Function<Channel, TransportContext> {
 
-    public static final TransportContext.Key<InetSocketAddress> REMOTE_ADDRESS = new TransportContext.Key<>(null);
-    public static final TransportContext.Key<String> CONNECTION_ID = new TransportContext.Key<>(null);
-    public static final TransportContext.Key<Instant> CONNECTION_START_TIMESTAMP = new TransportContext.Key<>(null);
-
     @Override
     public TransportContext apply(Channel channel) {
-        return TransportContext.of(REMOTE_ADDRESS, (InetSocketAddress) channel.remoteAddress()) //
-                .with(CONNECTION_ID, channel.id().asShortText()) //
-                .with(CONNECTION_START_TIMESTAMP, Instant.now());
+        return TransportContext.of(IpTransportContextKeys.REMOTE_ADDRESS, (InetSocketAddress) channel.remoteAddress()) //
+                .with(TcpTransportContextKeys.CONNECTION_ID, channel.id().asShortText()) //
+                .with(TcpTransportContextKeys.CONNECTION_START_TIMESTAMP, Instant.now());
     }
 }

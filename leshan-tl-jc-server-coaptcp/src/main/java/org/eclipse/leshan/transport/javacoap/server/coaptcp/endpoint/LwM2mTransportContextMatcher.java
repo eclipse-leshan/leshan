@@ -20,8 +20,8 @@ import java.util.regex.Pattern;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.eclipse.leshan.transport.javacoap.identity.TlsTransportContextKeys;
-import org.eclipse.leshan.transport.javacoap.server.coaptcp.transport.DefaultTransportContextMatcher;
+import org.eclipse.leshan.transport.javacoap.transport.context.DefaultTransportContextMatcher;
+import org.eclipse.leshan.transport.javacoap.transport.context.keys.TlsTransportContextKeys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
