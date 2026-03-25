@@ -55,6 +55,7 @@ import org.eclipse.leshan.integration.tests.util.RedisTestUtil;
 import org.eclipse.leshan.server.endpoint.EffectiveEndpointUriProvider;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.profile.ClientProfile;
+import org.eclipse.leshan.server.registration.DeviceRegistration;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.eclipse.leshan.transport.californium.ObserveUtil;
@@ -185,7 +186,7 @@ public class RedisRegistrationStoreTest {
     }
 
     private void givenASimpleRegistration(Long lifetime) {
-        Registration.Builder builder = new Registration.Builder(registrationId, ep,
+        DeviceRegistration.Builder builder = new DeviceRegistration.Builder(registrationId, ep,
                 new IpPeer(new InetSocketAddress(address, port)), uriHandler.createUri("coap://localhost:5683"));
 
         registration = builder.lifeTimeInSec(lifetime).smsNumber(sms).bindingMode(binding).objectLinks(objectLinks)

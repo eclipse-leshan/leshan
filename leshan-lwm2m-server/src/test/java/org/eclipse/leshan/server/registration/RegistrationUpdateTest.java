@@ -38,7 +38,7 @@ class RegistrationUpdateTest {
 
     @Test
     void testAdditionalAttributesUpdate() throws Exception {
-        Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
+        DeviceRegistration.Builder builder = new DeviceRegistration.Builder("registrationId", "endpoint",
                 new IpPeer(new InetSocketAddress(Inet4Address.getLocalHost(), 1)),
                 uriHandler.createUri("coap://localhost:5683"));
 
@@ -73,7 +73,7 @@ class RegistrationUpdateTest {
     @Test
     void testApplicationDataUpdate() throws Exception {
 
-        Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
+        DeviceRegistration.Builder builder = new DeviceRegistration.Builder("registrationId", "endpoint",
                 new IpPeer(new InetSocketAddress(Inet4Address.getLocalHost(), 1)),
                 uriHandler.createUri("coap://localhost:5683"));
         Map<String, String> customData = new HashMap<String, String>();

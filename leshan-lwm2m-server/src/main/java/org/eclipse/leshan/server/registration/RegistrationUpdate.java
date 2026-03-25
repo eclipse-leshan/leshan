@@ -128,8 +128,8 @@ public class RegistrationUpdate {
         // to extend the client registration time-to-live period ...
         Date lastUpdate = new Date();
 
-        Registration.Builder builder = new Registration.Builder(registration.getId(), registration.getEndpoint(),
-                transportData, registration.getEndpointUri());
+        DeviceRegistration.Builder builder = new DeviceRegistration.Builder(registration.getId(),
+                registration.getEndpoint(), transportData, registration.getEndpointUri());
 
         builder.registrationDate(lastUpdate)
                 // unmodifiable data
