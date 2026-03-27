@@ -34,16 +34,19 @@ import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
 import org.eclipse.leshan.core.LwM2m.Version;
 import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.link.Link;
+import org.eclipse.leshan.core.link.LinkUtil;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
-import org.eclipse.leshan.core.util.StringUtils;
 import org.eclipse.leshan.core.util.Validate;
 
 /**
- * An immutable structure which represent a LW-M2M client registration on the server
+ * An immutable structure which represent a LW-M2M client registration on the server.
+ *
+ * This is default implementation of {@link Registration} and concern device/client connecting directly the server as
+ * opposed to child {@link EndDeviceRegistration} behind a gateway.
  */
 public class DeviceRegistration implements Registration {
 
@@ -91,6 +94,9 @@ public class DeviceRegistration implements Registration {
     // URI of endpoint used for this registration.
     private final EndpointUri endpointUri;
 
+    // All child devices (prefix -> regid)
+    private final Map<String, String> endDevices;
+
     protected DeviceRegistration(Builder builder) {
 
         // mandatory params
@@ -117,6 +123,9 @@ public class DeviceRegistration implements Registration {
         additionalRegistrationAttributes = builder.additionalRegistrationAttributes;
 
         customRegistrationData = builder.customRegistrationData;
+
+        // gateway params
+        endDevices = builder.endDevices;
     }
 
     @Override
@@ -163,52 +172,9 @@ public class DeviceRegistration implements Registration {
         return objectLinks;
     }
 
-    @SuppressWarnings({ "java:S3776", "java:S1168" })
     @Override
     public Link[] getSortedObjectLinks() {
-        // sort the list of objects
-        if (objectLinks == null) {
-            return null;
-        }
-
-        Link[] res = Arrays.copyOf(objectLinks, objectLinks.length);
-
-        Arrays.sort(res, (o1, o2) -> {
-            if (o1 == null && o2 == null)
-                return 0;
-            if (o1 == null)
-                return -1;
-            if (o2 == null)
-                return 1;
-            // by URL
-            String[] url1 = o1.getUriReference().split("/");
-            String[] url2 = o2.getUriReference().split("/");
-
-            for (int i = 0; i < url1.length && i < url2.length; i++) {
-                // is it two numbers?
-                if (isNumber(url1[i]) && isNumber(url2[i])) {
-                    int cmp = Integer.parseInt(url1[i]) - Integer.parseInt(url2[i]);
-                    if (cmp != 0) {
-                        return cmp;
-                    }
-                } else {
-
-                    int v = url1[i].compareTo(url2[i]);
-
-                    if (v != 0) {
-                        return v;
-                    }
-                }
-            }
-
-            return url1.length - url2.length;
-        });
-
-        return res;
-    }
-
-    private static boolean isNumber(String s) {
-        return !StringUtils.isEmpty(s) && StringUtils.isNumeric(s);
+        return LinkUtil.sort(objectLinks);
     }
 
     @Override
@@ -322,13 +288,28 @@ public class DeviceRegistration implements Registration {
     }
 
     @Override
+    public boolean isGateway() {
+        return getSupportedVersion(25) != null;
+    }
+
+    @Override
+    public boolean hasChildEndDevices() {
+        return !endDevices.isEmpty();
+    }
+
+    @Override
+    public Map<String, String> getChildEndDevices() {
+        return endDevices;
+    }
+
+    @Override
     public String toString() {
         return String.format(
-                "Registration [registrationDate=%s, clientTransportData=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, queueMode=%s, endpoint=%s, id=%s, objectLinks=%s, additionalRegistrationAttributes=%s, rootPath=%s, supportedContentFormats=%s, supportedObjects=%s, availableInstances=%s, lastUpdate=%s, customRegistrationData=%s, endpointUri=%s]",
+                "Registration [registrationDate=%s, clientTransportData=%s, lifeTimeInSec=%s, smsNumber=%s, lwM2mVersion=%s, bindingMode=%s, queueMode=%s, endpoint=%s, id=%s, objectLinks=%s, additionalRegistrationAttributes=%s, rootPath=%s, supportedContentFormats=%s, supportedObjects=%s, availableInstances=%s, lastUpdate=%s, customRegistrationData=%s, endpointUri=%s, endDevices=%s]",
                 registrationDate, clientTransportData, lifeTimeInSec, smsNumber, lwM2mVersion, bindingMode, queueMode,
                 endpoint, id, Arrays.toString(objectLinks), additionalRegistrationAttributes, rootPath,
                 supportedContentFormats, supportedObjects, availableInstances, lastUpdate, customRegistrationData,
-                endpointUri);
+                endpointUri, endDevices);
     }
 
     @Override
@@ -351,7 +332,8 @@ public class DeviceRegistration implements Registration {
                 && Objects.equals(availableInstances, that.availableInstances)
                 && Objects.equals(lastUpdate, that.lastUpdate)
                 && Objects.equals(customRegistrationData, that.customRegistrationData)
-                && Objects.equals(endpointUri, that.endpointUri);
+                && Objects.equals(endpointUri, that.endpointUri) //
+                && Objects.equals(endDevices, that.endDevices);
     }
 
     @Override
@@ -359,7 +341,7 @@ public class DeviceRegistration implements Registration {
         return Objects.hash(registrationDate, clientTransportData, lifeTimeInSec, smsNumber, lwM2mVersion, bindingMode,
                 queueMode, endpoint, id, Arrays.hashCode(objectLinks), additionalRegistrationAttributes, rootPath,
                 supportedContentFormats, supportedObjects, availableInstances, lastUpdate, customRegistrationData,
-                endpointUri);
+                endpointUri, endDevices);
     }
 
     public static class Builder {
@@ -382,6 +364,7 @@ public class DeviceRegistration implements Registration {
         private Set<LwM2mPath> availableInstances;
         private Map<String, String> additionalRegistrationAttributes;
         private Map<String, String> customRegistrationData;
+        private Map<String, String> endDevices;
 
         public Builder(DeviceRegistration registration) {
 
@@ -409,6 +392,9 @@ public class DeviceRegistration implements Registration {
             additionalRegistrationAttributes = registration.additionalRegistrationAttributes;
 
             customRegistrationData = registration.customRegistrationData;
+
+            // gateway params
+            endDevices = registration.endDevices;
         }
 
         public Builder(String registrationId, String endpoint, LwM2mPeer clientTransportData, EndpointUri endpointUri) {
@@ -503,6 +489,11 @@ public class DeviceRegistration implements Registration {
             return this;
         }
 
+        public Builder endDevices(Map<String, String> endDevices) {
+            this.endDevices = endDevices;
+            return this;
+        }
+
         @SuppressWarnings("java:S3776")
         public DeviceRegistration build() {
             // Define Default value
@@ -541,6 +532,12 @@ public class DeviceRegistration implements Registration {
                 customRegistrationData = Collections.emptyMap();
             } else {
                 customRegistrationData = Collections.unmodifiableMap(new HashMap<>(customRegistrationData));
+            }
+
+            if (endDevices == null || endDevices.isEmpty()) {
+                endDevices = Collections.emptyMap();
+            } else {
+                endDevices = Collections.unmodifiableMap(new HashMap<>(endDevices));
             }
 
             // Create Registration

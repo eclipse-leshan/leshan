@@ -202,4 +202,22 @@ public interface Registration {
      * @return URI of the server endpoint used by client to register.
      */
     EndpointUri getEndpointUri();
+
+    /**
+     * @return <code>true</code> if this registration acts as a Gateway and so is able to handle
+     *         {@link EndDeviceRegistration}.
+     */
+    boolean isGateway();
+
+    /**
+     * @return <code>true</code> if this registration acts as a Gateway and some child {@link EndDeviceRegistration} are
+     *         currently handled by it.
+     */
+    boolean hasChildEndDevices();
+
+    /**
+     * @return a {@link Map} where each entry is about a currently handled child {@link EndDeviceRegistration} with
+     *         {@link EndDeviceRegistration#getPrefix()} as Key and {@link EndDeviceRegistration#getId()} as value.
+     */
+    Map<String /* prefix */, String /* registrationId */> getChildEndDevices();
 }
