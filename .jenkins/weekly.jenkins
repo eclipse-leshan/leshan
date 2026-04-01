@@ -4,6 +4,19 @@
   Checks for vulnerability
   
 *************************************************************************************/
+
+// =================================================================================
+// Trivy Configuration
+// =================================================================================
+// HOW TO UPDATE:
+//   1. Go to https://github.com/aquasecurity/trivy/releases
+//   2. Download the checksums file (trivy_<ver>_checksums.txt)
+//   3. Find the SHA256 for trivy_<ver>_Linux-64bit.tar.gz
+//   4. Update TRIVY_VERSION and TRIVY_SHA256 below
+// =================================================================================
+def TRIVY_VERSION   = "0.69.3"
+def TRIVY_SHA256    = "1816b632dfe529869c740c0913e36bd1629cb7688bd5634f4a858c1d57c88b75"
+
 pipeline {
   agent any
   tools {
@@ -27,7 +40,16 @@ pipeline {
     stage('Build') {
       steps {
         // install trivy
-        sh ''' curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b ~/bin latest '''
+        sh """
+          set -euo pipefail
+          TARBALL="trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          curl -sfL -o /tmp/\${TARBALL} https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/\${TARBALL}
+          echo "${TRIVY_SHA256}  /tmp/\${TARBALL}" | sha256sum -c -
+          mkdir -p ~/bin
+          tar -xzf /tmp/\${TARBALL} -C ~/bin trivy
+          rm -f /tmp/\${TARBALL}
+          ~/bin/trivy --version
+        """
       
         // Build (optional)
         sh ''' mvn -B com.github.ekryd.sortpom:sortpom-maven-plugin:verify -PallPom ''' 
@@ -43,7 +65,7 @@ pipeline {
         // check for vulnerabilities
         // "find" to search file
         // xargs to get correct exit code (find always return 0) 
-          // HACK because of : https://gitlab.eclipse.org/eclipsefdn/helpdesk/-/issues/5198
+        // HACK because of : https://gitlab.eclipse.org/eclipsefdn/helpdesk/-/issues/5198
         sh ''' find . -type f -path '*/target/bom*.json' -print0 | xargs -0 -I {} sh -c 'echo "Scanning "{}""; trivy -q --exit-code 1 sbom "{}" --db-repository "ghcr.io/aquasecurity/trivy-db:2","public.ecr.aws/aquasecurity/trivy-db","aquasec/trivy-db:2" --java-db-repository "ghcr.io/aquasecurity/trivy-java-db:1","public.ecr.aws/aquasecurity/trivy-java-db:1","aquasec/trivy-java-db:1"' '''
         // sh ''' find . -type f -path '*/target/bom*.json' -print0 | xargs -0 -I {} sh -c 'echo "Scanning "{}""; trivy -q --exit-code 1 sbom "{}"' '''  
 
