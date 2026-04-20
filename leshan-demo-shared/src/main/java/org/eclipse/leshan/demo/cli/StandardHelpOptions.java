@@ -15,11 +15,12 @@
  *******************************************************************************/
 package org.eclipse.leshan.demo.cli;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.slf4j.LoggerFactory;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.LoggerContext;
 import picocli.CommandLine.Option;
 
 /**
@@ -39,7 +40,7 @@ public class StandardHelpOptions {
             description = { "Specify multiple -v options to increase verbosity.", //
                     "For example, `-v -v -v` or `-vvv`", //
                     "", //
-                    "You can adjust more precisely log output using logback configuration file," + //
+                    "You can adjust more precisely log output using log4j2 configuration file," + //
                             " see 'How to activate more log ?' in FAQ:", //
                     "  https://github.com/eclipse/leshan/wiki/F.A.Q./" })
     public void setVerbose(boolean[] verbose) {
@@ -69,16 +70,25 @@ public class StandardHelpOptions {
             case 4:
                 setLogLevel(loggerContext, "org.eclipse.leshan", Level.TRACE);
                 setLogLevel(loggerContext, "org.eclipse.californium", Level.TRACE);
-                setLogLevel(loggerContext, Logger.ROOT_LOGGER_NAME, Level.TRACE);
+                setLogLevel(loggerContext, LogManager.ROOT_LOGGER_NAME, Level.TRACE);
                 break;
             }
         }
     }
 
-    private void setLogLevel(LoggerContext loggerContext, String loggerName, Level level) {
-        Logger logger = loggerContext.getLogger(loggerName);
-        if (logger != null)
-            logger.setLevel(level);
+    private void setLogLevel(LoggerContext ctx, String loggerName, Level level) {
+        org.apache.logging.log4j.core.config.Configuration config = ctx.getConfiguration();
+        LoggerConfig loggerConfig = config.getLoggerConfig(loggerName);
+
+        // Jeśli logger nie istnieje, tworzymy własny
+        if (!loggerConfig.getName().equals(loggerName)) {
+            loggerConfig = new LoggerConfig(loggerName, level, true);
+            config.addLogger(loggerName, loggerConfig);
+        } else {
+            loggerConfig.setLevel(level);
+        }
+
+        ctx.updateLoggers();
     }
 
     public int getVerboseLevel() {
