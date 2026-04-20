@@ -26,6 +26,7 @@ import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.server.CoapServer;
 import com.mbed.coap.server.filter.TokenGeneratorFilter;
+import com.mbed.coap.transport.CoapTransport;
 import com.mbed.coap.transport.udp.DatagramSocketTransport;
 import com.mbed.coap.utils.Service;
 
@@ -36,9 +37,20 @@ public class JavaCoapClientEndpointsProvider extends AbstractJavaCoapClientEndpo
     }
 
     @Override
-    protected CoapServer createCoapServer(ServerInfo serverInfo, Service<CoapRequest, CoapResponse> router,
-            List<Certificate> trustStore) {
-        return CoapServer.builder().outboundFilter(TokenGeneratorFilter.RANDOM)
-                .transport(new DatagramSocketTransport(0)).route(router).build();
+    protected CoapTransport createCoapTransport(ServerInfo serverInfo, List<Certificate> trustStore) {
+        return new DatagramSocketTransport(0);
+    }
+
+    @Override
+    protected JavaCoapConnectionController createConnectionController(CoapTransport transport) {
+        return (server, resume) -> {
+            // nothing to do in coap
+        };
+    }
+
+    @Override
+    protected CoapServer createCoapServer(CoapTransport transport, Service<CoapRequest, CoapResponse> router) {
+        return CoapServer.builder().outboundFilter(TokenGeneratorFilter.RANDOM).transport(transport).route(router)
+                .build();
     }
 }

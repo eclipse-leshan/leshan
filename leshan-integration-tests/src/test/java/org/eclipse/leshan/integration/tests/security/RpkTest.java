@@ -52,7 +52,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 @ExtendWith(BeforeEachParameterizedResolver.class)
-public class RpkTest {
+class RpkTest {
 
     /*---------------------------------/
     *  Parameterized Tests
@@ -66,7 +66,10 @@ public class RpkTest {
     static Stream<org.junit.jupiter.params.provider.Arguments> transports() {
         return Stream.of(//
                 // ProtocolUsed - Client Endpoint Provider - Server Endpoint Provider
-                arguments(Protocol.COAPS, "Californium", "Californium"));
+                arguments(Protocol.COAPS, "Californium", "Californium"), //
+                arguments(Protocol.COAPS, "java-coap", "Californium"), //
+                arguments(Protocol.COAPS, "Californium", "java-coap"), //
+                arguments(Protocol.COAPS, "java-coap", "java-coap"));
     }
 
     /*---------------------------------/
@@ -78,13 +81,13 @@ public class RpkTest {
     LeshanTestClient client;
 
     @BeforeEach
-    public void start(Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider) {
+    void start(Protocol givenProtocol, String givenClientEndpointProvider, String givenServerEndpointProvider) {
         givenServer = givenServerUsing(givenProtocol).with(givenServerEndpointProvider);
         givenClient = givenClientUsing(givenProtocol).with(givenClientEndpointProvider);
     }
 
     @AfterEach
-    public void stop() throws InterruptedException {
+    void stop() {
         if (client != null)
             client.destroy(false);
         if (server != null)
@@ -133,7 +136,7 @@ public class RpkTest {
     @TestAllTransportLayer
     public void registered_device_with_rpk_to_server_with_rpk_without_endpointname(Protocol givenProtocol,
             String givenClientEndpointProvider, String givenServerEndpointProvider)
-            throws NonUniqueSecurityInfoException, InterruptedException {
+            throws NonUniqueSecurityInfoException {
         // Create RPK server & start it
         server = givenServer.using(serverPublicKey, serverPrivateKey).build();
         server.start();
@@ -174,9 +177,8 @@ public class RpkTest {
                 .trusting(serverPublicKey).build();
 
         // We use the server public key as bad client public key
-        PublicKey bad_client_public_key = serverPublicKey;
-        server.getSecurityStore()
-                .add(SecurityInfo.newRawPublicKeyInfo(client.getEndpointName(), bad_client_public_key));
+        PublicKey badClientPublicKey = serverPublicKey;
+        server.getSecurityStore().add(SecurityInfo.newRawPublicKeyInfo(client.getEndpointName(), badClientPublicKey));
 
         // Check client is not registered
         assertThat(client).isNotRegisteredAt(server);

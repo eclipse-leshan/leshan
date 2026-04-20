@@ -23,7 +23,7 @@ import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -65,11 +65,11 @@ public class NettyCoapTcpTransport implements CoapTcpTransport {
     private CompletableFuture<CoapPacket> receivePromise = new CompletableFuture<>();
     private final SslContext sslContext;
     private final Function<Channel, TransportContext> contextResolver;
-    private final BiFunction<TransportContext, TransportContext, Boolean> contextMatcher;
+    private final BiPredicate<TransportContext, TransportContext> contextMatcher;
 
     public NettyCoapTcpTransport(InetSocketAddress localadddress, //
             Function<Channel, TransportContext> contextResolver, //
-            BiFunction<TransportContext, TransportContext, Boolean> contextMatcher, //
+            BiPredicate<TransportContext, TransportContext> contextMatcher, //
             SslContext sslContext) {
         this.localAddress = localadddress;
         this.sslContext = sslContext;
@@ -246,7 +246,7 @@ public class NettyCoapTcpTransport implements CoapTcpTransport {
         ChannelPromise channelPromise = channel.newPromise();
         channel.writeAndFlush(packet, channelPromise);
 
-        return toCompletableFuture(channelPromise).thenApply(__ -> true);
+        return toCompletableFuture(channelPromise).thenApply(__v -> true);
     }
 
     public void closeConnections(Predicate<Channel> filter) {
