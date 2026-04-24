@@ -125,8 +125,8 @@ public class RegistrationHandler {
             if (deregistration != null) {
                 registrationService.fireUnregistered(deregistration.getRegistration(), deregistration.getObservations(),
                         approvedRegistration);
-                registrationService.fireRegistered(approvedRegistration, deregistration.registration,
-                        deregistration.observations);
+                registrationService.fireRegistered(approvedRegistration, deregistration.getRegistration(),
+                        deregistration.getObservations());
             } else {
                 registrationService.fireRegistered(approvedRegistration, null, null);
             }

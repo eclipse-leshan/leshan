@@ -86,6 +86,10 @@ public class EndDeviceRegistration implements Registration {
         return prefix;
     }
 
+    public Registration getParentGateway() {
+        return parentGateway;
+    }
+
     @Override
     public Date getRegistrationDate() {
         return parentGateway.getRegistrationDate();

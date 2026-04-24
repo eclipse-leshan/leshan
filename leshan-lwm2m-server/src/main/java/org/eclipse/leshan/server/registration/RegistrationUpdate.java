@@ -148,7 +148,9 @@ public class RegistrationUpdate {
                 .availableInstances(availableInstances) //
                 // out of spec data
                 .additionalRegistrationAttributes(additionalAttributes) //
-                .customRegistrationData(customRegistrationData);
+                .customRegistrationData(customRegistrationData)
+                // gate way data
+                .endDevices(registration.getChildEndDevices());
 
         return builder.build();
     }
