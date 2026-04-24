@@ -47,7 +47,8 @@ import org.slf4j.LoggerFactory;
 /**
  * An in memory store for registration and observation.
  */
-public class InMemoryRegistrationStore implements RegistrationStore, Startable, Stoppable, Destroyable {
+public class InMemoryRegistrationStore
+        implements RegistrationStore, GatewayRegistrationStore, Startable, Stoppable, Destroyable {
     private static final Logger LOG = LoggerFactory.getLogger(InMemoryRegistrationStore.class);
 
     // Data structure
@@ -90,7 +91,23 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
         try {
             lock.writeLock().lock();
 
+            if (registration instanceof EndDeviceRegistration) {
+                throw new IllegalStateException(
+                        "EndDeviceRegistration can not be added directly, use replaceEndDeviceRegistrations instead");
+            }
+            // check registration id are not already used : this is job of RegistrationIdProvider to avoid that.
+            if (regsByRegId.containsKey(registration.getId())) {
+                throw new IllegalStateException(
+                        String.format("can not add registration [%s] with given id [%s] because it is already used",
+                                registration, registration.getId()));
+            }
+
             Registration registrationRemoved = regsByEp.put(registration.getEndpoint(), registration);
+            if (registrationRemoved instanceof EndDeviceRegistration) {
+                LOG.warn("The 'classic' device [{}] will replace the end device [{}] which is pretty unexpected",
+                        registration, registrationRemoved);
+            }
+
             regsByRegId.put(registration.getId(), registration);
             regsByIdentity.put(registration.getClientTransportData().getIdentity(), registration);
             // If a registration is already associated to this address we don't care as we only want to keep the most
@@ -109,7 +126,12 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
                     removeFromMap(regsByIdentity, registrationRemoved.getClientTransportData().getIdentity(),
                             registrationRemoved);
                 }
-                return new Deregistration(registrationRemoved, observationsRemoved);
+                if (registrationRemoved.hasChildEndDevices()) {
+                    List<Deregistration> childrenDeregistration = removeAllEndDeviceRegistration(registrationRemoved);
+                    return new Deregistration(registrationRemoved, observationsRemoved, childrenDeregistration);
+                } else {
+                    return new Deregistration(registrationRemoved, observationsRemoved);
+                }
             }
         } finally {
             lock.writeLock().unlock();
@@ -126,27 +148,48 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
             if (registration == null) {
                 return null;
             } else {
+                if (registration instanceof EndDeviceRegistration) {
+                    throw new IllegalStateException(
+                            "EndDeviceRegistration can not be updated directly, use replaceEndDeviceRegistrations instead");
+                }
+
                 Registration updatedRegistration = update.update(registration);
-                regsByEp.put(updatedRegistration.getEndpoint(), updatedRegistration);
-                // If registration is already associated to this address we don't care as we only want to keep the most
-                // recent binding.
-                regsByAddr.put(updatedRegistration.getSocketAddress(), updatedRegistration);
-                if (!registration.getSocketAddress().equals(updatedRegistration.getSocketAddress())) {
-                    removeFromMap(regsByAddr, registration.getSocketAddress(), registration);
-                }
-                regsByIdentity.put(updatedRegistration.getClientTransportData().getIdentity(), updatedRegistration);
-                if (!registration.getClientTransportData().getIdentity()
-                        .equals(updatedRegistration.getClientTransportData().getIdentity())) {
-                    removeFromMap(regsByIdentity, registration.getClientTransportData().getIdentity(), registration);
-                }
+                updateIndexes(updatedRegistration, updatedRegistration);
 
-                regsByRegId.put(updatedRegistration.getId(), updatedRegistration);
+                if (updatedRegistration.hasChildEndDevices()) {
+                    List<UpdatedRegistration> updateAllEndDeviceRegistration = updateAllEndDeviceRegistration(
+                            updatedRegistration);
+                    return new UpdatedRegistration(registration, updatedRegistration, updateAllEndDeviceRegistration);
 
-                return new UpdatedRegistration(registration, updatedRegistration);
+                } else {
+                    return new UpdatedRegistration(registration, updatedRegistration);
+
+                }
             }
         } finally {
             lock.writeLock().unlock();
         }
+    }
+
+    private void updateIndexes(Registration registration, Registration updatedRegistration) {
+        regsByEp.put(updatedRegistration.getEndpoint(), updatedRegistration);
+
+        // End device registration is not indexed by identity or socketAddr
+        if (!(registration instanceof EndDeviceRegistration)) {
+            // If registration is already associated to this address we don't care as we only want to keep the most
+            // recent binding.
+            regsByAddr.put(updatedRegistration.getSocketAddress(), updatedRegistration);
+            if (!registration.getSocketAddress().equals(updatedRegistration.getSocketAddress())) {
+                removeFromMap(regsByAddr, registration.getSocketAddress(), registration);
+            }
+            regsByIdentity.put(updatedRegistration.getClientTransportData().getIdentity(), updatedRegistration);
+            if (!registration.getClientTransportData().getIdentity()
+                    .equals(updatedRegistration.getClientTransportData().getIdentity())) {
+                removeFromMap(regsByIdentity, registration.getClientTransportData().getIdentity(), registration);
+            }
+        }
+
+        regsByRegId.put(updatedRegistration.getId(), updatedRegistration);
     }
 
     @Override
@@ -203,15 +246,13 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
     public Deregistration removeRegistration(String registrationId) {
         try {
             lock.writeLock().lock();
-
             Registration registration = getRegistration(registrationId);
             if (registration != null) {
-                Collection<Observation> observationsRemoved = unsafeRemoveAllObservations(registration.getId());
-                regsByEp.remove(registration.getEndpoint());
-                removeFromMap(regsByAddr, registration.getSocketAddress(), registration);
-                removeFromMap(regsByRegId, registration.getId(), registration);
-                removeFromMap(regsByIdentity, registration.getClientTransportData().getIdentity(), registration);
-                return new Deregistration(registration, observationsRemoved);
+                if (registration instanceof EndDeviceRegistration) {
+                    throw new IllegalStateException(
+                            "EndDeviceRegistration can not be removed directly, use replaceEndDeviceRegistrations instead");
+                }
+                return unsafeRemoveRegistration(registration);
             }
             return null;
         } finally {
@@ -219,8 +260,22 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
         }
     }
 
-    /* *************** Leshan Observation API **************** */
+    private Deregistration unsafeRemoveRegistration(Registration registration) {
+        Collection<Observation> observationsRemoved = unsafeRemoveAllObservations(registration.getId());
+        removeFromMap(regsByEp, registration.getEndpoint(), registration);
+        removeFromMap(regsByAddr, registration.getSocketAddress(), registration);
+        removeFromMap(regsByRegId, registration.getId(), registration);
+        removeFromMap(regsByIdentity, registration.getClientTransportData().getIdentity(), registration);
 
+        if (registration.isGateway()) {
+            List<Deregistration> childrenDeregistration = removeAllEndDeviceRegistration(registration);
+            return new Deregistration(registration, observationsRemoved, childrenDeregistration);
+        } else {
+            return new Deregistration(registration, observationsRemoved);
+        }
+    }
+
+    /* *************** Leshan Observation API **************** */
     @Override
     public Collection<Observation> addObservation(String registrationId, Observation observation, boolean addIfAbsent) {
         List<Observation> removed = new ArrayList<>();
@@ -450,11 +505,13 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
                 }
 
                 for (Registration reg : allRegs) {
-                    if (!reg.isAlive()) {
+                    if (!(reg instanceof EndDeviceRegistration) && !reg.isAlive()) {
                         // force de-registration
                         Deregistration removedRegistration = removeRegistration(reg.getId());
-                        expirationListener.registrationExpired(removedRegistration.getRegistration(),
-                                removedRegistration.getObservations());
+                        if (removedRegistration != null) {
+                            expirationListener.registrationExpired(removedRegistration.getRegistration(),
+                                    removedRegistration.getObservations());
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -471,5 +528,156 @@ public class InMemoryRegistrationStore implements RegistrationStore, Startable, 
             return true;
         } else
             return false;
+    }
+
+    @Override
+    public List<RegistrationModification> replaceEndDeviceRegistrations(DeviceRegistration gateway,
+            List<EndDeviceRegistration> childRegistrations) {
+        try {
+            lock.writeLock().lock();
+
+            // check there is a gateway available in the registry with that id
+            Registration registration = getRegistration(gateway.getId());
+            if (registration == null) {
+                throw new IllegalStateException(String.format(
+                        "can not replace children of registration with id %s because there is no registration with that id",
+                        gateway.getId()));
+            }
+            if (!registration.isGateway()) {
+                throw new IllegalStateException(String.format(
+                        "can not replace children of registration with id %s because this registration is not a gateway ",
+                        gateway.getId()));
+            }
+
+            // check prefix are unique
+            Set<String> seenPrefixes = new HashSet<>();
+            for (EndDeviceRegistration c : childRegistrations) {
+                if (!seenPrefixes.add(c.getPrefix())) {
+                    throw new IllegalStateException(String.format(
+                            "can not replace children of registration with id %s, because children use duplicate prefix %s",
+                            gateway.getId(), c.getPrefix()));
+                }
+            }
+
+            // check registration id are not already used : this is job of RegistrationIdProvider to avoid that.
+            for (EndDeviceRegistration childRegistration : childRegistrations) {
+                Registration existingRegistration = regsByRegId.get(childRegistration.getId());
+                if (existingRegistration != null
+                        // if same registration id, same endpoint and same gateway this is an update, so this is OK
+                        && !(existingRegistration instanceof EndDeviceRegistration
+                                && existingRegistration.getEndpoint().equals(childRegistration.getEndpoint())
+                                && ((EndDeviceRegistration) existingRegistration).getParentGateway().getId()
+                                        .equals(gateway.getId()))) {
+                    throw new IllegalStateException(String.format(
+                            "can not replace children of registration with id %s because the child with endpoint name %s has a regitration id %s already used by %s",
+                            gateway.getId(), childRegistration.getEndpoint(), childRegistration.getId(),
+                            existingRegistration));
+                }
+            }
+
+            // list of all modification done during this operation.
+            List<RegistrationModification> modifications = new ArrayList<>();
+            // list of registration endpoint to remove : so we initialize with all current child device
+            Collection<String> previousChildrenRegistrationEndpointToRemove = new ArrayList<>(
+                    gateway.getChildEndDevices().values());
+            // to update the gateway registration
+            Map<String, String> childMap = new HashMap<>();
+
+            // for all new children
+            for (EndDeviceRegistration childRegistration : childRegistrations) {
+                // Add registration
+                Registration previous = regsByEp.put(childRegistration.getEndpoint(), childRegistration);
+                if (previous == null) {
+                    // No previous one so this is an addition without deregistration
+                    regsByRegId.put(childRegistration.getId(), childRegistration);
+                    modifications.add(new RegistrationAddition(childRegistration));
+                } else {
+                    if (!(previous instanceof EndDeviceRegistration)) {
+                        LOG.info(
+                                "The end device [{}] under gateway [{}] replace a classic device {} which is pretty unexpected",
+                                childRegistration, gateway, previous);
+                    }
+                    if (!previous.getId().equals(childRegistration.getId())) {
+                        // registration id differ, so it's addition with deregistration
+                        Deregistration deregistration = unsafeRemoveRegistration(previous);
+                        modifications.add(new RegistrationAddition(childRegistration, deregistration));
+                    } else {
+                        // same registration id, so this is an update
+                        if (!(previous instanceof EndDeviceRegistration)) {
+                            // same registration id but previous registration was not end device, this should not
+                            // happens but lets consider it as a deregistration/ new registration
+                            Deregistration deregistration = unsafeRemoveRegistration(previous);
+                            modifications.add(new RegistrationAddition(childRegistration, deregistration));
+                        } else {
+                            // same registration id, let's consider it as an update.
+                            regsByRegId.put(childRegistration.getId(), childRegistration);
+                            modifications.add(new UpdatedRegistration(previous, childRegistration));
+                        }
+                    }
+                }
+
+                // we only keep registration to remove in that collection
+                previousChildrenRegistrationEndpointToRemove.remove(childRegistration.getEndpoint());
+
+                // store all current child device
+                childMap.put(childRegistration.getPrefix(), childRegistration.getEndpoint());
+            }
+
+            // remove not replaced previous registration
+            for (String endpoint : previousChildrenRegistrationEndpointToRemove) {
+                Registration registrationToRemove = regsByEp.get(endpoint);
+                if (registrationToRemove != null) {
+                    if (!(registrationToRemove instanceof EndDeviceRegistration)) {
+                        LOG.info(
+                                "When replacing gateway children, the gateway [{}] refers a classic device [{}] in its children which sounds unexpected. "
+                                        + "It will be removed from gateway children but corresponding registration is kept. ",
+                                gateway, registrationToRemove);
+                    } else {
+                        // here we have an end device so we remove it
+                        Deregistration deregistration = unsafeRemoveRegistration(registrationToRemove);
+                        modifications.add(deregistration);
+                    }
+                }
+            }
+
+            // update GatewayRegistration.
+            DeviceRegistration.Builder builder = new DeviceRegistration.Builder((DeviceRegistration) registration);
+            builder.endDevices(childMap);
+            Registration gatewayUpdated = builder.build();
+            updateIndexes(registration, gatewayUpdated);
+
+            return modifications;
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    private List<UpdatedRegistration> updateAllEndDeviceRegistration(Registration registration) {
+        List<UpdatedRegistration> updatedRegistrations = new ArrayList<>();
+        for (String endpoint : registration.getChildEndDevices().values()) {
+            EndDeviceRegistration endDevice = (EndDeviceRegistration) getRegistrationByEndpoint(endpoint);
+            EndDeviceRegistration updatedEndDevice = new EndDeviceRegistration.Builder(registration, endDevice).build();
+            updateIndexes(endDevice, updatedEndDevice);
+            updatedRegistrations.add(new UpdatedRegistration(endDevice, updatedEndDevice));
+        }
+        return updatedRegistrations;
+    }
+
+    private List<Deregistration> removeAllEndDeviceRegistration(Registration gateway) {
+        List<Deregistration> deregistrations = new ArrayList<>();
+        for (String endpoint : gateway.getChildEndDevices().values()) {
+            Registration childRegistration = getRegistrationByEndpoint(endpoint);
+            if (childRegistration != null) {
+                if (childRegistration instanceof EndDeviceRegistration) {
+                    deregistrations.add(unsafeRemoveRegistration(childRegistration));
+                } else {
+                    LOG.info(
+                            "When removing all gateway children, the gateway [{}] refers a classic device [{}] in its children which sounds unexpected. "
+                                    + "It will be removed from gateway children but corresponding registration is kept. ",
+                            gateway, childRegistration);
+                }
+            }
+        }
+        return deregistrations;
     }
 }
