@@ -53,6 +53,7 @@ import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.endpoint.EffectiveEndpointUriProvider;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.profile.ClientProfile;
+import org.eclipse.leshan.server.registration.DeviceRegistration;
 import org.eclipse.leshan.server.registration.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
@@ -225,7 +226,7 @@ public class LwM2mObservationStoreTest {
 
     private void givenASimpleRegistration(Long lifetime) {
 
-        Registration.Builder builder = new Registration.Builder(registrationId, ep,
+        DeviceRegistration.Builder builder = new DeviceRegistration.Builder(registrationId, ep,
                 new IpPeer(new InetSocketAddress(address, port)), endpointUri);
 
         registration = builder.lifeTimeInSec(lifetime).smsNumber(sms).bindingMode(binding).objectLinks(objectLinks)

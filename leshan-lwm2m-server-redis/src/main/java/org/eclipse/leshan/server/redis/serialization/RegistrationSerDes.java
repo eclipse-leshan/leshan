@@ -45,6 +45,7 @@ import org.eclipse.leshan.core.link.lwm2m.attributes.MixedLwM2mAttributeSet;
 import org.eclipse.leshan.core.node.LwM2mPath;
 import org.eclipse.leshan.core.request.BindingMode;
 import org.eclipse.leshan.core.request.ContentFormat;
+import org.eclipse.leshan.server.registration.DeviceRegistration;
 import org.eclipse.leshan.server.registration.Registration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -180,8 +181,8 @@ public class RegistrationSerDes {
                             jObj.get("epUri").asText(), jObj.get("regId").asText(), jObj.get("ep").asText()));
         }
 
-        Registration.Builder b = new Registration.Builder(jObj.get("regId").asText(), jObj.get("ep").asText(),
-                peerSerDes.deserialize(jObj.get("transportdata")), endpointUri);
+        DeviceRegistration.Builder b = new DeviceRegistration.Builder(jObj.get("regId").asText(),
+                jObj.get("ep").asText(), peerSerDes.deserialize(jObj.get("transportdata")), endpointUri);
 
         b.bindingMode(BindingMode.parse(jObj.get("bnd").asText()));
         if (jObj.get("qm") != null)
