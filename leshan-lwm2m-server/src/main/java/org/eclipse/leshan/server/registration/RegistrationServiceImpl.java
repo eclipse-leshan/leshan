@@ -72,8 +72,12 @@ public class RegistrationServiceImpl implements RegistrationService, ExpirationL
     }
 
     public void fireUnregistered(Deregistration deregistration, Registration newReg) {
+        fireUnregistered(deregistration, false, newReg);
+    }
+
+    public void fireUnregistered(Deregistration deregistration, boolean expiration, Registration newReg) {
         for (RegistrationListener l : listeners) {
-            l.unregistered(deregistration, false, newReg);
+            l.unregistered(deregistration, expiration, newReg);
         }
     }
 
