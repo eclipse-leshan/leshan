@@ -1,4 +1,4 @@
-[Build Status](https://ci.eclipse.org/leshan/job/leshan-ci/job/1.x/)
+[Build Status](https://ci.eclipse.org/leshan/job/leshan-ci/job/1.x/) (need eclipse account)
 
 ![Leshan](https://eclipse.org/leshan/img/multicolor-leshan.png)
 
@@ -42,17 +42,17 @@ Test Leshan Demos locally
 -----------------------
 Get and run the last binary of our demo **server** :
 ```
-wget https://ci.eclipse.org/leshan/job/leshan-ci/job/1.x/lastSuccessfulBuild/artifact/leshan-server-demo.jar
+wget -O leshan-server-demo.jar https://www.eclipse.org/downloads/download.php?file=/leshan/1.x/lastSuccessfulBuild/artifact/leshan-server-demo.jar&r=1 
 java -jar ./leshan-server-demo.jar
 ```
 Get and run the last binary of our demo **client** :
 ```
-wget https://ci.eclipse.org/leshan/job/leshan-ci/job/1.x/lastSuccessfulBuild/artifact/leshan-client-demo.jar
+wget -O leshan-client-demo.jar https://www.eclipse.org/downloads/download.php?file=/leshan/1.x/lastSuccessfulBuild/artifact/leshan-client-demo.jar&r=1 
 java -jar ./leshan-client-demo.jar
 ```
 Get and run the last binary of our **bootstrap** demo server :
 ```
-wget https://ci.eclipse.org/leshan/job/leshan-ci/job/1.x/lastSuccessfulBuild/artifact/leshan-bsserver-demo.jar
+wget -O leshan-bsserver-demo.jar https://www.eclipse.org/downloads/download.php?file=/leshan/1.x/lastSuccessfulBuild/artifact/leshan-bsserver-demo.jar&r=1 
 java -jar ./leshan-bsserver-demo.jar
 ```
 :information_source: : _All the demos have a `--help` option._
