@@ -29,6 +29,17 @@ pipeline {
         '''
       }
     }
+    stage('Deploy') {
+      steps {
+        sshagent ( ['projects-storage.eclipse.org-bot-ssh']) {
+          sh '''
+            ssh -o BatchMode=yes genie.leshan@projects-storage.eclipse.org rm -rf /home/data/httpd/download.eclipse.org/leshan/1.x/lastSuccessfulBuild/artifact
+            ssh -o BatchMode=yes genie.leshan@projects-storage.eclipse.org mkdir -p /home/data/httpd/download.eclipse.org/leshan/1.x/lastSuccessfulBuild/artifact
+            scp -o BatchMode=yes -r ./leshan-*-demo.jar genie.leshan@projects-storage.eclipse.org:/home/data/httpd/download.eclipse.org/leshan/1.x/lastSuccessfulBuild/artifact
+          '''
+        }
+      }
+    }
   }
   post {
     unsuccessful {
