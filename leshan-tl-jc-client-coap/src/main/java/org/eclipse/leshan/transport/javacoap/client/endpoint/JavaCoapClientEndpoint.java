@@ -56,15 +56,18 @@ public class JavaCoapClientEndpoint implements LwM2mClientEndpoint {
     private final LwM2mModel model;
     private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1,
             new NamedThreadFactory("Leshan Async Request timeout"));
+    private final JavaCoapConnectionController connectionController;
 
     public JavaCoapClientEndpoint(Protocol protocol, String endpointDescription, CoapServer coapServer,
-            ClientCoapMessageTranslator translator, ClientEndpointToolbox toolbox, LwM2mModel model) {
+            ClientCoapMessageTranslator translator, ClientEndpointToolbox toolbox,
+            JavaCoapConnectionController connectionController, LwM2mModel model) {
         this.supportedProtocol = protocol;
         this.endpointDescription = endpointDescription;
 
         this.coapServer = coapServer;
         this.translator = translator;
         this.toolbox = toolbox;
+        this.connectionController = connectionController;
         this.model = model;
     }
 
@@ -85,7 +88,7 @@ public class JavaCoapClientEndpoint implements LwM2mClientEndpoint {
 
     @Override
     public void forceReconnection(LwM2mServer server, boolean resume) {
-
+        connectionController.forceReconnection(server, resume);
     }
 
     @Override
@@ -113,11 +116,11 @@ public class JavaCoapClientEndpoint implements LwM2mClientEndpoint {
     }
 
     @Override
-    public <T extends LwM2mResponse> T send(LwM2mServer server, UplinkRequest<T> request, long timeoutInMs)
+    public <T extends LwM2mResponse> T send(LwM2mServer server, UplinkRequest<T> lwm2mRequest, long timeoutInMs)
             throws InterruptedException {
 
         // Send LWM2M Request
-        CompletableFuture<T> lwm2mResponseFuture = sendLwM2mRequest(server, request);
+        CompletableFuture<T> lwm2mResponseFuture = sendLwM2mRequest(server, lwm2mRequest);
 
         // Wait synchronously for LWM2M response
         try {
@@ -179,11 +182,18 @@ public class JavaCoapClientEndpoint implements LwM2mClientEndpoint {
         CoapRequest coapRequest = translator.createCoapRequest(server, lwm2mRequest, toolbox, model);
 
         // Send CoAP Request
-        CompletableFuture<CoapResponse> coapResponseFuture = coapServer.clientService().apply(coapRequest);
+        final CompletableFuture<CoapResponse> coapResponseFuture = coapServer.clientService().apply(coapRequest);
 
         // On response, create LWM2M Response from CoAP response
         CompletableFuture<T> lwm2mResponseFuture = coapResponseFuture.thenApply(coapResponse -> translator
                 .createLwM2mResponse(server, lwm2mRequest, coapRequest, coapResponse, toolbox));
+
+        // Cancel CoapFuture is Lwm2M one is cancelled.
+        lwm2mResponseFuture.exceptionally(e -> {
+            coapResponseFuture.cancel(true);
+            return null;
+        });
+
         return lwm2mResponseFuture;
     }
 

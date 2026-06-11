@@ -62,6 +62,7 @@ import org.eclipse.leshan.transport.californium.server.endpoint.ServerProtocolPr
 import org.eclipse.leshan.transport.californium.server.endpoint.coap.CoapOscoreServerEndpointFactory;
 import org.eclipse.leshan.transport.californium.server.endpoint.coap.CoapServerProtocolProvider;
 import org.eclipse.leshan.transport.californium.server.endpoint.coaps.CoapsServerProtocolProvider;
+import org.eclipse.leshan.transport.javacoap.server.coaps.bc.endpoint.JavaCoapsServerEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.server.coaptcp.endpoint.JavaCoapTcpServerEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.server.coaptcp.endpoint.JavaCoapsTcpServerEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.server.endpoint.JavaCoapServerEndpointsProvider;
@@ -276,6 +277,8 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
     protected LwM2mServerEndpointsProvider getJavaCoapProtocolProvider(Protocol protocol) {
         if (protocol.equals(Protocol.COAP)) {
             return new JavaCoapServerEndpointsProvider(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+        } else if (protocol.equals(Protocol.COAPS)) {
+            return new JavaCoapsServerEndpointsProvider(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         } else if (protocol.equals(Protocol.COAP_TCP)) {
             return new JavaCoapTcpServerEndpointsProvider(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         } else if (protocol.equals(Protocol.COAPS_TCP)) {

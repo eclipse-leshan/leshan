@@ -13,14 +13,19 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.transport.javacoap.identity;
+package org.eclipse.leshan.transport.javacoap.transport.context.keys;
 
 import java.security.Principal;
 
 import com.mbed.coap.transport.TransportContext;
 
 public class TlsTransportContextKeys {
+
+    private TlsTransportContextKeys() {
+    }
+
     public static final TransportContext.Key<String> TLS_SESSION_ID = new TransportContext.Key<>(null);
     public static final TransportContext.Key<String> CIPHER_SUITE = new TransportContext.Key<>(null);
+    public static final TransportContext.Key<Integer> CIPHER_SUITE_ID = new TransportContext.Key<>(null);
     public static final TransportContext.Key<Principal> PRINCIPAL = new TransportContext.Key<>(null);
 }

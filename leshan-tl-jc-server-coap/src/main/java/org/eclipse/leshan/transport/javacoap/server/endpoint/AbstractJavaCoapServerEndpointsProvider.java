@@ -44,6 +44,7 @@ import com.mbed.coap.server.CoapServer;
 import com.mbed.coap.server.RouterService;
 import com.mbed.coap.server.observe.NotificationsReceiver;
 import com.mbed.coap.server.observe.ObservationsStore;
+import com.mbed.coap.transport.CoapTransport;
 import com.mbed.coap.utils.Service;
 
 public abstract class AbstractJavaCoapServerEndpointsProvider implements LwM2mServerEndpointsProvider {
@@ -55,7 +56,7 @@ public abstract class AbstractJavaCoapServerEndpointsProvider implements LwM2mSe
     private JavaCoapServerEndpoint lwm2mEndpoint;
     private final IdentityHandler identityHandler;
 
-    public AbstractJavaCoapServerEndpointsProvider(Protocol protocol, String endpointDescription,
+    protected AbstractJavaCoapServerEndpointsProvider(Protocol protocol, String endpointDescription,
             InetSocketAddress localAddress, IdentityHandler identityHandler) {
         this.supportedProtocol = protocol;
         this.endpointDescription = endpointDescription;
@@ -82,10 +83,8 @@ public abstract class AbstractJavaCoapServerEndpointsProvider implements LwM2mSe
                 .build();
 
         // Create CoAP Server
-        coapServer = createCoapServer(localAddress, //
-                serverSecurityInfo, //
-                server.getSecurityStore(), //
-                resources, //
+        CoapTransport coapTransport = createCoapTransport(localAddress, serverSecurityInfo, server.getSecurityStore());
+        coapServer = createCoapServer(coapTransport, resources, //
                 new CoapNotificationReceiver(coapServer, notificationReceiver, server.getRegistrationStore(),
                         server.getModelProvider(), toolbox.getDecoder(), endpointUriProvider), //
                 new LwM2mObservationsStore(server.getRegistrationStore(), notificationReceiver, identityHandler,
@@ -93,15 +92,19 @@ public abstract class AbstractJavaCoapServerEndpointsProvider implements LwM2mSe
         );
 
         lwm2mEndpoint = new JavaCoapServerEndpoint(supportedProtocol, endpointDescription, coapServer,
-                new ServerCoapMessageTranslator(identityHandler), toolbox);
+                new ServerCoapMessageTranslator(identityHandler), createConnectionManager(coapTransport), toolbox);
 
         endpointUriProvider.setEndpoint(lwm2mEndpoint);
     }
 
-    protected abstract CoapServer createCoapServer(InetSocketAddress localAddress,
-            ServerSecurityInfo serverSecurityInfo, SecurityStore SecurityStore,
+    protected abstract CoapTransport createCoapTransport(InetSocketAddress localAddress,
+            ServerSecurityInfo serverSecurityInfo, SecurityStore securityStore);
+
+    protected abstract CoapServer createCoapServer(CoapTransport transport,
             Service<CoapRequest, CoapResponse> resources, NotificationsReceiver notificationReceiver,
             ObservationsStore observationsStore);
+
+    protected abstract ConnectionsManager createConnectionManager(CoapTransport transport);
 
     @Override
     public List<LwM2mServerEndpoint> getEndpoints() {

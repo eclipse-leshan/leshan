@@ -64,6 +64,7 @@ import org.eclipse.leshan.servers.security.EditableSecurityStore;
 import org.eclipse.leshan.servers.security.SecurityStore;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServerEndpoint;
+import org.eclipse.leshan.transport.javacoap.server.endpoint.JavaCoapServerEndpoint;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 
@@ -136,6 +137,9 @@ public class LeshanTestServer extends LeshanServer {
                             String.format("clearSecurityContext not implemented for connector %s",
                                     connector.getClass().getSimpleName()));
                 }
+            } else if (endpoint instanceof JavaCoapServerEndpoint) {
+                ((JavaCoapServerEndpoint) endpoint).getConnectionManager().clearAllConnection();
+                return;
             }
             throw new IllegalStateException(String.format("clearSecurityContext not implemented for endpoint %s",
                     endpoint.getClass().getSimpleName()));
