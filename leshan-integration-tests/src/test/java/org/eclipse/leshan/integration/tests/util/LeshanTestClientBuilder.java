@@ -86,6 +86,7 @@ import org.eclipse.leshan.transport.californium.client.endpoint.ClientProtocolPr
 import org.eclipse.leshan.transport.californium.client.endpoint.coap.CoapClientProtocolProvider;
 import org.eclipse.leshan.transport.californium.client.endpoint.coap.CoapOscoreProtocolProvider;
 import org.eclipse.leshan.transport.californium.client.endpoint.coaps.CoapsClientProtocolProvider;
+import org.eclipse.leshan.transport.javacoap.client.coaps.bc.endpoint.JavaCoapsClientEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.client.coaptcp.endpoint.JavaCoapTcpClientEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.client.coaptcp.endpoint.JavaCoapsTcpClientEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.client.endpoint.JavaCoapClientEndpointsProvider;
@@ -311,6 +312,8 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
     protected LwM2mClientEndpointsProvider getJavaCoapProtocolProvider(Protocol protocol) {
         if (protocolToUse.equals(Protocol.COAP)) {
             return new JavaCoapClientEndpointsProvider();
+        } else if (protocolToUse.equals(Protocol.COAPS)) {
+            return new JavaCoapsClientEndpointsProvider();
         } else if (protocolToUse.equals(Protocol.COAP_TCP)) {
             return new JavaCoapTcpClientEndpointsProvider();
         } else if (protocolToUse.equals(Protocol.COAPS_TCP)) {

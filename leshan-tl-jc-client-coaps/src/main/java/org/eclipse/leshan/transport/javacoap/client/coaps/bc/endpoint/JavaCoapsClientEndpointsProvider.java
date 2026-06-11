@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 Sierra Wireless and others.
+ * Copyright (c) 2024 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -13,54 +13,54 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.transport.javacoap.client.coaptcp.endpoint;
+package org.eclipse.leshan.transport.javacoap.client.coaps.bc.endpoint;
 
 import java.security.cert.Certificate;
 import java.util.List;
 
-import javax.net.SocketFactory;
-
+import org.bouncycastle.tls.crypto.TlsCrypto;
+import org.bouncycastle.tls.crypto.impl.bc.BcTlsCrypto;
 import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.transport.javacoap.client.endpoint.AbstractJavaCoapClientEndpointsProvider;
 import org.eclipse.leshan.transport.javacoap.client.endpoint.JavaCoapConnectionController;
-import org.eclipse.leshan.transport.javacoap.identity.DefaultCoapIdentityHandler;
+import org.eclipse.leshan.transport.javacoap.identity.DefaultTlsIdentityHandler;
 
-import com.mbed.coap.packet.BlockSize;
 import com.mbed.coap.packet.CoapRequest;
 import com.mbed.coap.packet.CoapResponse;
 import com.mbed.coap.server.CoapServer;
-import com.mbed.coap.server.TcpCoapServer;
 import com.mbed.coap.server.filter.TokenGeneratorFilter;
-import com.mbed.coap.transport.CoapTcpTransport;
 import com.mbed.coap.transport.CoapTransport;
-import com.mbed.coap.transport.javassl.SocketClientTransport;
 import com.mbed.coap.utils.Service;
 
-public class JavaCoapTcpClientEndpointsProvider extends AbstractJavaCoapClientEndpointsProvider {
+public class JavaCoapsClientEndpointsProvider extends AbstractJavaCoapClientEndpointsProvider {
 
-    public JavaCoapTcpClientEndpointsProvider() {
-        super(Protocol.COAP_TCP, "CoAP over TCP experimental endpoint based on java-coap library",
-                new DefaultCoapIdentityHandler());
+    private final TlsCrypto crypto = new BcTlsCrypto();
+
+    public JavaCoapsClientEndpointsProvider() {
+        super(Protocol.COAPS, "CoAP over DTLS experimental endpoint based on java-coap and Bouncy Castle librar",
+                new DefaultTlsIdentityHandler());
     }
 
     @Override
     protected CoapTransport createCoapTransport(ServerInfo serverInfo, List<Certificate> trustStore) {
-        return new SocketClientTransport(serverInfo.getAddress(), SocketFactory.getDefault(), true);
+        // TODO implement getTransportContext() ?
+        // See JavaCoapsTcpClientEndpointsProvider
+        return new BouncyCastleDtlsTransport(new LwM2mTlsClient(crypto, serverInfo, trustStore),
+                serverInfo.getAddress(), null, null);
+
     }
 
     @Override
     protected JavaCoapConnectionController createConnectionController(CoapTransport transport) {
-        return (server, resume) -> {
-            // nothing to do in coap over tcp
-        };
+        return (server, resume) -> ((BouncyCastleDtlsTransport) transport).forceReconnection();
     }
 
     @Override
     protected CoapServer createCoapServer(CoapTransport transport, Service<CoapRequest, CoapResponse> router) {
-        return TcpCoapServer.builder().transport((CoapTcpTransport) transport) //
-                .blockSize(BlockSize.S_1024_BERT) //
-                .outboundFilter(TokenGeneratorFilter.RANDOM)//
+        return CoapServer.builder() //
+                .outboundFilter(TokenGeneratorFilter.RANDOM) //
+                .transport(transport)//
                 .route(router) //
                 .build();
     }

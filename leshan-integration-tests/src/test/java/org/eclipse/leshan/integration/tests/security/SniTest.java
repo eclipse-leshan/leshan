@@ -39,7 +39,6 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.security.cert.CertificateEncodingException;
 import java.util.stream.Stream;
 
 import org.eclipse.leshan.core.CertificateUsage;
@@ -60,7 +59,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class SniTest {
+class SniTest {
 
     /*---------------------------------/
      *  Parameterized Tests
@@ -74,7 +73,8 @@ public class SniTest {
     static Stream<org.junit.jupiter.params.provider.Arguments> transports() {
         return Stream.of(//
                 // ProtocolUsed - Client Endpoint Provider
-                arguments(Protocol.COAPS, "Californium"));
+                arguments(Protocol.COAPS, "Californium"), //
+                arguments(Protocol.COAPS, "java-coap"));
     }
 
     /*---------------------------------/
@@ -85,7 +85,7 @@ public class SniTest {
     LeshanTestClient client;
 
     @AfterEach
-    public void stop() throws InterruptedException {
+    void stop() {
         if (client != null)
             client.destroy(false);
         if (server != null)
@@ -111,7 +111,7 @@ public class SniTest {
      * -------------------------------*/
     @TestAllTransportLayer
     public void registered_device_with_rpk(Protocol givenProtocol, String givenClientEndpointProvider)
-            throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
+            throws NonUniqueSecurityInfoException, InterruptedException {
 
         // Create server & start it
         server = givenServerUsing(givenProtocol).with("Californium") //
@@ -150,8 +150,7 @@ public class SniTest {
 
     @TestAllTransportLayer
     public void registered_device_with_x509_using_domain_issuer_certificate_usage(Protocol givenProtocol,
-            String givenClientEndpointProvider)
-            throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
+            String givenClientEndpointProvider) throws NonUniqueSecurityInfoException, InterruptedException {
 
         // Create server & start it
         server = givenServerUsing(givenProtocol).with("Californium") //
@@ -191,8 +190,7 @@ public class SniTest {
 
     @TestAllTransportLayer
     public void registered_device_with_x509_using_trust_anchor_assertion_certificate_usage(Protocol givenProtocol,
-            String givenClientEndpointProvider)
-            throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
+            String givenClientEndpointProvider) throws NonUniqueSecurityInfoException, InterruptedException {
 
         // Create server & start it
         server = givenServerUsing(givenProtocol).with("Californium") //
@@ -232,7 +230,7 @@ public class SniTest {
     @TestAllTransportLayer
     public void registered_device_with_x509_using_service_certificate_constraint_certificate_usage(
             Protocol givenProtocol, String givenClientEndpointProvider)
-            throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
+            throws NonUniqueSecurityInfoException, InterruptedException {
 
         // Create server & start it
         server = givenServerUsing(givenProtocol).with("Californium") //
@@ -271,8 +269,7 @@ public class SniTest {
 
     @TestAllTransportLayer
     public void registered_device_with_x509_using_ca_constraint_certificate_usage(Protocol givenProtocol,
-            String givenClientEndpointProvider)
-            throws NonUniqueSecurityInfoException, CertificateEncodingException, InterruptedException {
+            String givenClientEndpointProvider) throws NonUniqueSecurityInfoException, InterruptedException {
 
         // Create server & start it
         server = givenServerUsing(givenProtocol).with("Californium") //

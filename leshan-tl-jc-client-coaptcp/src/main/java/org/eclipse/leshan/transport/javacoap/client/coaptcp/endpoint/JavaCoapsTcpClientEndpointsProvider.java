@@ -37,6 +37,7 @@ import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.security.jsse.LwM2mX509TrustManager;
 import org.eclipse.leshan.transport.javacoap.SingleX509KeyManager;
 import org.eclipse.leshan.transport.javacoap.client.endpoint.AbstractJavaCoapClientEndpointsProvider;
+import org.eclipse.leshan.transport.javacoap.client.endpoint.JavaCoapConnectionController;
 import org.eclipse.leshan.transport.javacoap.identity.DefaultTlsIdentityHandler;
 import org.eclipse.leshan.transport.javacoap.identity.TlsTransportContextKeys;
 
@@ -48,6 +49,8 @@ import com.mbed.coap.packet.Opaque;
 import com.mbed.coap.server.CoapServer;
 import com.mbed.coap.server.TcpCoapServer;
 import com.mbed.coap.server.filter.TokenGeneratorFilter;
+import com.mbed.coap.transport.CoapTcpTransport;
+import com.mbed.coap.transport.CoapTransport;
 import com.mbed.coap.transport.TransportContext;
 import com.mbed.coap.utils.Service;
 
@@ -61,9 +64,7 @@ public class JavaCoapsTcpClientEndpointsProvider extends AbstractJavaCoapClientE
     }
 
     @Override
-    protected CoapServer createCoapServer(ServerInfo serverInfo, Service<CoapRequest, CoapResponse> router,
-            List<Certificate> trustStore) {
-
+    protected CoapTransport createCoapTransport(ServerInfo serverInfo, List<Certificate> trustStore) {
         // Create SSL Socket Factory using right credentials.
         SSLContext tlsContext;
         try {
@@ -83,18 +84,28 @@ public class JavaCoapsTcpClientEndpointsProvider extends AbstractJavaCoapClientE
             throw new IllegalArgumentException("Unable to create tls endpoint point", e);
         }
 
-        return TcpCoapServer.builder()
-                .transport(new SSLSocketClientTransport(serverInfo.getAddress(), tlsContext.getSocketFactory(), true) {
+        return new SSLSocketClientTransport(serverInfo.getAddress(), tlsContext.getSocketFactory(), true) {
+            @Override
+            public CompletableFuture<CoapPacket> receive() {
+                // HACK to define transport context
+                return super.receive().thenApply(packet -> {
+                    packet.setTransportContext(getTransportContext(getSslSocket()));
+                    return packet;
+                });
+            }
+        };
+    }
 
-                    @Override
-                    public CompletableFuture<CoapPacket> receive() {
-                        // HACK to define transport context
-                        return super.receive().thenApply(packet -> {
-                            packet.setTransportContext(getTransportContext(getSslSocket()));
-                            return packet;
-                        });
-                    }
-                })//
+    @Override
+    protected JavaCoapConnectionController createConnectionController(CoapTransport transport) {
+        return (server, resume) -> {
+            // TODO how to force a reconnection with JSSE API ?
+        };
+    }
+
+    @Override
+    protected CoapServer createCoapServer(CoapTransport transport, Service<CoapRequest, CoapResponse> router) {
+        return TcpCoapServer.builder().transport((CoapTcpTransport) transport) //
                 .blockSize(BlockSize.S_1024_BERT) //
                 .outboundFilter(TokenGeneratorFilter.RANDOM)//
                 .route(router) //
