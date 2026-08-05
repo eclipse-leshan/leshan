@@ -5,6 +5,7 @@
 # See : https://github.com/eclipse-leshan/leshan/issues/1728 
 CVE-2026-1225
 CVE-2026-9828
+CVE-2026-10532
 
 # =========================
 # About Leshan Libraries
