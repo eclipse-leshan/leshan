@@ -60,6 +60,9 @@ public class TlvDecoder {
                 int length = consumeLength(input, lengthType, typeByte);
                 LOG.trace("length: {} (length type: {})", length, lengthType);
 
+                // validate length
+                validateLength(input, length);
+
                 // decode value
                 if (type == TlvType.RESOURCE_VALUE || type == TlvType.RESOURCE_INSTANCE) {
                     byte[] payload = consumeValue(input, length);
@@ -85,6 +88,13 @@ public class TlvDecoder {
                 LOG.trace("Unexpected TLV parse error: {}", getBufferHex(input), ex);
             }
             throw new TlvException("Unexpected TLV parse error: " + getBufferState(input), ex);
+        }
+    }
+
+    private static void validateLength(ByteBuffer buffer, int length) throws TlvException {
+        if (length > buffer.remaining()) {
+            throw new TlvException(String.format("Invalid length: %d bytes declared but %d bytes remaining in buffer",
+                    length, buffer.remaining()));
         }
     }
 
@@ -167,6 +177,7 @@ public class TlvDecoder {
             input.get(payload);
             return payload;
         } catch (BufferUnderflowException e) {
+            // should not happened anymore because length is check before to avoid amplification attack
             throw new TlvException("Invalid 'value' length", e);
         }
     }

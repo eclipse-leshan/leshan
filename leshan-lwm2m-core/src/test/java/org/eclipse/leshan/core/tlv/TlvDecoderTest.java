@@ -20,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -108,7 +107,7 @@ class TlvDecoderTest {
         ByteBuffer b = ByteBuffer.wrap(Hex.decodeHex(dataStr.toCharArray()));
 
         TlvException exception = assertThrows(TlvException.class, () -> TlvDecoder.decode(b));
-        assertEquals("Invalid 'value' length", exception.getCause().getMessage());
-        assertTrue(exception.getCause().getCause() instanceof BufferUnderflowException);
+        assertTrue(exception.getCause().getMessage().startsWith("Invalid length"));
+        assertTrue(exception.getCause() instanceof TlvException);
     }
 }
