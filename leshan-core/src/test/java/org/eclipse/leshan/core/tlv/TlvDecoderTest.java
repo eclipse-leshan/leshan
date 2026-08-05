@@ -21,10 +21,6 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import org.eclipse.leshan.core.node.ObjectLink;
-import org.eclipse.leshan.core.tlv.Tlv;
-import org.eclipse.leshan.core.tlv.TlvDecoder;
-import org.eclipse.leshan.core.tlv.TlvEncoder;
-import org.eclipse.leshan.core.tlv.TlvException;
 import org.eclipse.leshan.core.util.Hex;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -51,19 +47,43 @@ public class TlvDecoderTest {
     }
 
     @Test
-    public void decode_broken_tlv() throws TlvException {
+    public void decode_broken_tlv() {
         String dataStr = "0011223344556677889900";
         byte[] bytes = Hex.decodeHex(dataStr.toCharArray());
-        ByteBuffer b = ByteBuffer.wrap(bytes);
+        final ByteBuffer b = ByteBuffer.wrap(bytes);
 
+        TlvException exception = null;
         try {
             TlvDecoder.decode(b);
-            fail();
-        } catch (TlvException ex) {
-            // this is very weak assertion since the format of the exception's message could
-            // be changed any time
-            assertEquals("Impossible to parse TLV: \n0011223344556677889900", ex.getMessage());
+            fail("Expected TlvException to be thrown");
+        } catch (TlvException e) {
+            exception = e;
         }
+
+        // this is very weak assertion since the format of the exception's message could
+        // be changed any time
+        assertEquals("Impossible to parse TLV: buffer state position=5, remaining=6, limit=11", exception.getMessage());
+        assertFalse(exception.getMessage().contains(dataStr));
+    }
+
+    @Test
+    public void decode_broken_tlv_from_direct_byte_buffer() {
+        String dataStr = "0011223344556677889900";
+        byte[] bytes = Hex.decodeHex(dataStr.toCharArray());
+        final ByteBuffer b = ByteBuffer.allocateDirect(bytes.length);
+        b.put(bytes);
+        b.flip();
+
+        TlvException exception = null;
+        try {
+            TlvDecoder.decode(b);
+            fail("Expected TlvException to be thrown");
+        } catch (TlvException e) {
+            exception = e;
+        }
+
+        assertEquals("Impossible to parse TLV: buffer state position=5, remaining=6, limit=11", exception.getMessage());
+        assertFalse(exception.getMessage().contains(dataStr));
     }
 
     @Test
@@ -79,5 +99,39 @@ public class TlvDecoderTest {
         objlnk = TlvDecoder.decodeObjlnk(bytes);
         assertEquals(0xffff, objlnk.getObjectId());
         assertEquals(0xffff, objlnk.getObjectInstanceId());
+    }
+
+    @Test
+    public void decode_object_link_reject_invalid_length() {
+        TlvException exception = null;
+        try {
+            TlvDecoder.decodeObjlnk(new byte[] { 1, 2, 3 });
+            fail("Expected TlvException to be thrown");
+        } catch (TlvException e) {
+            exception = e;
+        }
+
+        assertEquals("Invalid length for an object link value, 4 bytes array expected but get 3 bytes",
+                exception.getMessage());
+    }
+
+    @Test
+    public void decode_tlv_with_truncated_value_throws_tlv_exception() {
+        // Type=0xC8: resource with value,
+        // ID=0x00,
+        // declared length=0xC8 (200), but no value bytes follow
+        String dataStr = "C800C8";
+        final ByteBuffer b = ByteBuffer.wrap(Hex.decodeHex(dataStr.toCharArray()));
+
+        TlvException exception = null;
+        try {
+            TlvDecoder.decode(b);
+            fail("Expected TlvException to be thrown");
+        } catch (TlvException e) {
+            exception = e;
+        }
+
+        assertTrue(exception.getCause().getMessage().startsWith("Invalid length"));
+        assertTrue(exception.getCause() instanceof TlvException);
     }
 }
