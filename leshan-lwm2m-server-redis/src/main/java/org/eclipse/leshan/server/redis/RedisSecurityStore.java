@@ -26,6 +26,7 @@ import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.redis.serialization.SecurityInfoSerDes;
 import org.eclipse.leshan.servers.security.EditableSecurityStore;
 import org.eclipse.leshan.servers.security.NonUniqueSecurityInfoException;
+import org.eclipse.leshan.servers.security.ObservableSecurityStore;
 import org.eclipse.leshan.servers.security.SecurityInfo;
 import org.eclipse.leshan.servers.security.SecurityStore;
 import org.eclipse.leshan.servers.security.SecurityStoreListener;
@@ -41,7 +42,7 @@ import redis.clients.jedis.util.Pool;
  * Security info are stored using the endpoint as primary key and secondary indexes are created for endpoint lookup by
  * PSK identity and OSCORE Recipient ID (RID).
  */
-public class RedisSecurityStore implements EditableSecurityStore {
+public class RedisSecurityStore implements EditableSecurityStore, ObservableSecurityStore {
 
     private final String securityInfoByEndpointPrefix;
     private final String endpointByPskIdKey;
