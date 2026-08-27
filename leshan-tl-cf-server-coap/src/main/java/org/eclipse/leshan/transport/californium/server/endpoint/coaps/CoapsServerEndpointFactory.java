@@ -49,7 +49,7 @@ import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.endpoint.EffectiveEndpointUriProvider;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
-import org.eclipse.leshan.servers.security.EditableSecurityStore;
+import org.eclipse.leshan.servers.security.ObservableSecurityStore;
 import org.eclipse.leshan.servers.security.SecurityStore;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.eclipse.leshan.transport.californium.DefaultCoapsExceptionTranslator;
@@ -311,12 +311,12 @@ public class CoapsServerEndpointFactory implements CaliforniumServerEndpointFact
 
     protected void createConnectionCleaner(SecurityStore securityStore, CoapEndpoint securedEndpoint) {
         if (securedEndpoint != null && securedEndpoint.getConnector() instanceof DTLSConnector
-                && securityStore instanceof EditableSecurityStore) {
+                && securityStore instanceof ObservableSecurityStore) {
 
             final ConnectionCleaner connectionCleaner = new ConnectionCleaner(
                     (DTLSConnector) securedEndpoint.getConnector());
 
-            ((EditableSecurityStore) securityStore).addListener((infosAreCompromised, infos) -> {
+            ((ObservableSecurityStore) securityStore).addListener((infosAreCompromised, infos) -> {
                 if (infosAreCompromised) {
                     connectionCleaner.cleanConnectionFor(infos);
                 }

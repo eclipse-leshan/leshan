@@ -25,7 +25,7 @@ import org.eclipse.leshan.core.peer.OscoreIdentity;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationListener;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
-import org.eclipse.leshan.servers.security.EditableSecurityStore;
+import org.eclipse.leshan.servers.security.ObservableSecurityStore;
 import org.eclipse.leshan.servers.security.SecurityInfo;
 import org.eclipse.leshan.servers.security.SecurityStoreListener;
 
@@ -35,7 +35,7 @@ import org.eclipse.leshan.servers.security.SecurityStoreListener;
  * {@link OSCoreCtx} is removed when :
  * <ul>
  * <li>a {@link Registration} using OSCORE is removed.
- * <li>an OSCORE {@link SecurityInfo} is removed from {@link EditableSecurityStore}.
+ * <li>an OSCORE {@link SecurityInfo} is removed from {@link ObservableSecurityStore}.
  * </ul>
  *
  */

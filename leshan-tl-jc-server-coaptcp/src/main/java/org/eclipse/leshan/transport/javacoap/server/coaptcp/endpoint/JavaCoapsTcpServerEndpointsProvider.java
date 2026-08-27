@@ -30,7 +30,7 @@ import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 import org.eclipse.leshan.core.security.certificate.verifier.DefaultCertificateVerifier;
 import org.eclipse.leshan.core.security.jsse.LwM2mX509TrustManager;
-import org.eclipse.leshan.servers.security.EditableSecurityStore;
+import org.eclipse.leshan.servers.security.ObservableSecurityStore;
 import org.eclipse.leshan.servers.security.SecurityInfo;
 import org.eclipse.leshan.servers.security.SecurityStore;
 import org.eclipse.leshan.servers.security.SecurityStoreListener;
@@ -124,8 +124,8 @@ public class JavaCoapsTcpServerEndpointsProvider extends AbstractJavaCoapServerE
     }
 
     protected void createAndAttachConnectionCleaner(NettyCoapTcpTransport transport, SecurityStore securityStore) {
-        if (securityStore instanceof EditableSecurityStore) {
-            ((EditableSecurityStore) securityStore).addListener(new SecurityStoreListener() {
+        if (securityStore instanceof ObservableSecurityStore) {
+            ((ObservableSecurityStore) securityStore).addListener(new SecurityStoreListener() {
 
                 @Override
                 public void securityInfoRemoved(boolean infosAreCompromised, SecurityInfo... infos) {
