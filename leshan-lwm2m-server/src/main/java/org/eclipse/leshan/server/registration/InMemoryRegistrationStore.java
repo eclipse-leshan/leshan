@@ -510,8 +510,7 @@ public class InMemoryRegistrationStore
                         // force de-registration
                         Deregistration removedRegistration = removeRegistration(reg.getId());
                         if (removedRegistration != null) {
-                            expirationListener.registrationExpired(removedRegistration.getRegistration(),
-                                    removedRegistration.getObservations());
+                            expirationListener.registrationExpired(removedRegistration);
                         }
                     }
                 }

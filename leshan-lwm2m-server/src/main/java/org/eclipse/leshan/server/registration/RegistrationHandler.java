@@ -123,12 +123,10 @@ public class RegistrationHandler {
         LOG.debug("New registration: {}", approvedRegistration);
         Runnable whenSent = () -> {
             if (deregistration != null) {
-                registrationService.fireUnregistered(deregistration.getRegistration(), deregistration.getObservations(),
-                        approvedRegistration);
-                registrationService.fireRegistered(approvedRegistration, deregistration.getRegistration(),
-                        deregistration.getObservations());
+                registrationService.fireUnregistered(deregistration, approvedRegistration);
+                registrationService.fireRegistered(new RegistrationAddition(approvedRegistration, deregistration));
             } else {
-                registrationService.fireRegistered(approvedRegistration, null, null);
+                registrationService.fireRegistered(new RegistrationAddition(approvedRegistration));
             }
         };
 
@@ -174,8 +172,7 @@ public class RegistrationHandler {
         } else {
             LOG.debug("Updated registration {} by {}", updatedRegistration, update);
             // Create callback to notify registration update
-            Runnable whenSent = () -> registrationService.fireUpdated(update,
-                    updatedRegistration.getUpdatedRegistration(), updatedRegistration.getPreviousRegistration());
+            Runnable whenSent = () -> registrationService.fireUpdated(updatedRegistration);
             return new SendableResponse<>(UpdateResponse.success(), whenSent);
         }
     }
@@ -202,8 +199,7 @@ public class RegistrationHandler {
         if (deregistration != null) {
             LOG.debug("Deregistered client: {}", deregistration.getRegistration());
             // Create callback to notify new de-registration
-            Runnable whenSent = () -> registrationService.fireUnregistered(deregistration.getRegistration(),
-                    deregistration.getObservations(), null);
+            Runnable whenSent = () -> registrationService.fireUnregistered(deregistration, null);
 
             return new SendableResponse<>(DeregisterResponse.success(), whenSent);
         } else {

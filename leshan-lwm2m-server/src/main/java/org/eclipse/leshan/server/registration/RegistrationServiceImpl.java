@@ -15,12 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.eclipse.leshan.core.observation.Observation;
 
 /**
  * An implementation of {@link RegistrationService}
@@ -29,7 +26,7 @@ public class RegistrationServiceImpl implements RegistrationService, ExpirationL
 
     private final List<RegistrationListener> listeners = new CopyOnWriteArrayList<>();
 
-    private RegistrationStore store;
+    private final RegistrationStore store;
 
     public RegistrationServiceImpl(RegistrationStore store) {
         this.store = store;
@@ -62,29 +59,27 @@ public class RegistrationServiceImpl implements RegistrationService, ExpirationL
     }
 
     @Override
-    public void registrationExpired(Registration registration, Collection<Observation> observations) {
+    public void registrationExpired(Deregistration deregistration) {
         for (RegistrationListener l : listeners) {
-            l.unregistered(registration, observations, true, null);
+            l.unregistered(deregistration, true, null);
         }
     }
 
-    public void fireRegistered(Registration registration, Registration previousReg,
-            Collection<Observation> previousObservations) {
+    public void fireRegistered(RegistrationAddition registrationAddition) {
         for (RegistrationListener l : listeners) {
-            l.registered(registration, previousReg, previousObservations);
+            l.registered(registrationAddition);
         }
     }
 
-    public void fireUnregistered(Registration registration, Collection<Observation> observations, Registration newReg) {
+    public void fireUnregistered(Deregistration deregistration, Registration newReg) {
         for (RegistrationListener l : listeners) {
-            l.unregistered(registration, observations, false, newReg);
+            l.unregistered(deregistration, false, newReg);
         }
     }
 
-    public void fireUpdated(RegistrationUpdate update, Registration updatedRegistration,
-            Registration previousRegistration) {
+    public void fireUpdated(UpdatedRegistration updatedRegistration) {
         for (RegistrationListener l : listeners) {
-            l.updated(update, updatedRegistration, previousRegistration);
+            l.updated(updatedRegistration);
         }
     }
 
