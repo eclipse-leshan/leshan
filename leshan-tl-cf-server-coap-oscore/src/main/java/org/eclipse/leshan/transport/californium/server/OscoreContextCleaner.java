@@ -15,17 +15,16 @@
  *******************************************************************************/
 package org.eclipse.leshan.transport.californium.server;
 
-import java.util.Collection;
-
 import org.eclipse.californium.oscore.OSCoreCtx;
 import org.eclipse.californium.oscore.OSCoreCtxDB;
-import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.peer.LwM2mIdentity;
 import org.eclipse.leshan.core.peer.OscoreIdentity;
+import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationAddition;
 import org.eclipse.leshan.server.registration.RegistrationListener;
-import org.eclipse.leshan.server.registration.RegistrationUpdate;
-import org.eclipse.leshan.servers.security.EditableSecurityStore;
+import org.eclipse.leshan.server.registration.UpdatedRegistration;
+import org.eclipse.leshan.servers.security.ObservableSecurityStore;
 import org.eclipse.leshan.servers.security.SecurityInfo;
 import org.eclipse.leshan.servers.security.SecurityStoreListener;
 
@@ -35,7 +34,7 @@ import org.eclipse.leshan.servers.security.SecurityStoreListener;
  * {@link OSCoreCtx} is removed when :
  * <ul>
  * <li>a {@link Registration} using OSCORE is removed.
- * <li>an OSCORE {@link SecurityInfo} is removed from {@link EditableSecurityStore}.
+ * <li>an OSCORE {@link SecurityInfo} is removed from {@link ObservableSecurityStore}.
  * </ul>
  *
  */
@@ -48,18 +47,17 @@ public class OscoreContextCleaner implements RegistrationListener, SecurityStore
     }
 
     @Override
-    public void registered(Registration registration, Registration previousReg,
-            Collection<Observation> previousObsersations) {
+    public void registered(RegistrationAddition registrationAddition) {
+
     }
 
     @Override
-    public void updated(RegistrationUpdate update, Registration updatedReg, Registration previousReg) {
+    public void updated(UpdatedRegistration udaptedRegistration) {
     }
 
     @Override
-    public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
-            Registration newReg) {
-        LwM2mIdentity unregisteredIdentity = registration.getClientTransportData().getIdentity();
+    public void unregistered(Deregistration deregistration, boolean expired, Registration newReg) {
+        LwM2mIdentity unregisteredIdentity = deregistration.getRegistration().getClientTransportData().getIdentity();
 
         // Not an OSCORE identity : nothing to clear
         if (!(unregisteredIdentity instanceof OscoreIdentity))

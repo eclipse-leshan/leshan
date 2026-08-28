@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Sierra Wireless and others.
+ * Copyright (c) 2026 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -16,11 +16,8 @@
 package org.eclipse.leshan.server.registration;
 
 /**
- * A listener to be aware of registration expiration.
- *
- * @see RegistrationStore
+ * A common interface for all modification which could be done in a {@link RegistrationStore}
  */
-public interface ExpirationListener {
+public interface RegistrationModification {
 
-    void registrationExpired(Deregistration deregistration);
 }

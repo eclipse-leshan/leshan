@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Sierra Wireless and others.
+ * Copyright (c) 2026 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -15,12 +15,19 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.registration;
 
-/**
- * A listener to be aware of registration expiration.
- *
- * @see RegistrationStore
- */
-public interface ExpirationListener {
+import java.util.List;
 
-    void registrationExpired(Deregistration deregistration);
+/**
+ * A {@link RegistrationStore} which can handle LWM2M Gateway and so {@link EndDeviceRegistration}
+ */
+public interface GatewayRegistrationStore extends RegistrationStore {
+
+    /**
+     * Replace all current children of given gateway by the new list of {@link EndDeviceRegistration}.
+     * <p>
+     * Then return a list of modification (added, removed or updated registration) or <code>null</code> if gateway was
+     * removed.
+     */
+    List<RegistrationModification> replaceEndDeviceRegistrations(DeviceRegistration gateway,
+            List<EndDeviceRegistration> endDevices);
 }

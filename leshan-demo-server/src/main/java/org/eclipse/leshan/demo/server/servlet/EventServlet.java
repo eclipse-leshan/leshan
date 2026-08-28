@@ -19,7 +19,6 @@ package org.eclipse.leshan.demo.server.servlet;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -50,9 +49,12 @@ import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.endpoint.LwM2mServerEndpoint;
 import org.eclipse.leshan.server.observation.ObservationListener;
 import org.eclipse.leshan.server.queue.PresenceListener;
+import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationAddition;
 import org.eclipse.leshan.server.registration.RegistrationListener;
 import org.eclipse.leshan.server.registration.RegistrationUpdate;
+import org.eclipse.leshan.server.registration.UpdatedRegistration;
 import org.eclipse.leshan.server.send.SendListener;
 import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServerEndpoint;
 import org.slf4j.Logger;
@@ -92,8 +94,8 @@ public class EventServlet extends EventSourceServlet {
     private final transient RegistrationListener registrationListener = new RegistrationListener() {
 
         @Override
-        public void registered(Registration registration, Registration previousReg,
-                Collection<Observation> previousObservations) {
+        public void registered(RegistrationAddition registrationAddition) {
+            Registration registration = registrationAddition.getNewRegistration();
             String jReg = null;
             try {
                 jReg = EventServlet.this.mapper.writeValueAsString(registration);
@@ -101,14 +103,15 @@ public class EventServlet extends EventSourceServlet {
                 throw new IllegalStateException(e);
             }
             sendEvent(EVENT_REGISTRATION, jReg, registration.getEndpoint());
+
         }
 
         @Override
-        public void updated(RegistrationUpdate update, Registration updatedRegistration,
-                Registration previousRegistration) {
+        public void updated(UpdatedRegistration modification) {
+            Registration updatedRegistration = modification.getUpdatedRegistration();
             RegUpdate regUpdate = new RegUpdate();
             regUpdate.registration = updatedRegistration;
-            regUpdate.update = update;
+            regUpdate.update = modification.getUpdate();
             String jReg = null;
             try {
                 jReg = EventServlet.this.mapper.writeValueAsString(regUpdate);
@@ -116,11 +119,12 @@ public class EventServlet extends EventSourceServlet {
                 throw new IllegalStateException(e);
             }
             sendEvent(EVENT_UPDATED, jReg, updatedRegistration.getEndpoint());
+
         }
 
         @Override
-        public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
-                Registration newReg) {
+        public void unregistered(Deregistration deregistration, boolean expired, Registration newReg) {
+            Registration registration = deregistration.getRegistration();
             String jReg = null;
             try {
                 jReg = EventServlet.this.mapper.writeValueAsString(registration);
@@ -129,7 +133,6 @@ public class EventServlet extends EventSourceServlet {
             }
             sendEvent(EVENT_DEREGISTRATION, jReg, registration.getEndpoint());
         }
-
     };
 
     public final transient PresenceListener presenceListener = new PresenceListener() {

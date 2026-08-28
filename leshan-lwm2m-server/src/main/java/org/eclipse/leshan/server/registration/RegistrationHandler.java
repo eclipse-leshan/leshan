@@ -82,7 +82,7 @@ public class RegistrationHandler {
         }
 
         // Create Registration from RegisterRequest
-        Registration.Builder builder = new Registration.Builder(
+        DeviceRegistration.Builder builder = new DeviceRegistration.Builder(
                 registrationIdProvider.getRegistrationId(registerRequest), endpointName, sender, endpointUsed);
 
         builder.lwM2mVersion(lwM2mVersion) //
@@ -98,7 +98,7 @@ public class RegistrationHandler {
                 .supportedObjects(objLinksData.getSupportedObjects()) //
                 .availableInstances(objLinksData.getAvailableInstances());
 
-        Registration registrationToApproved = builder.build();
+        DeviceRegistration registrationToApproved = builder.build();
 
         // We check if the client get authorization.
         Authorization authorization = authorizer.isAuthorized(registerRequest, registrationToApproved, sender,
@@ -110,7 +110,7 @@ public class RegistrationHandler {
         // Add Authorization Custom Data to Registration if needed
         final Registration approvedRegistration;
         if (authorization.hasCustomData()) {
-            approvedRegistration = new Registration.Builder(registrationToApproved)
+            approvedRegistration = new DeviceRegistration.Builder(registrationToApproved)
                     .customRegistrationData(authorization.getCustomData()).build();
         } else {
             approvedRegistration = registrationToApproved;
@@ -123,12 +123,10 @@ public class RegistrationHandler {
         LOG.debug("New registration: {}", approvedRegistration);
         Runnable whenSent = () -> {
             if (deregistration != null) {
-                registrationService.fireUnregistered(deregistration.getRegistration(), deregistration.getObservations(),
-                        approvedRegistration);
-                registrationService.fireRegistered(approvedRegistration, deregistration.registration,
-                        deregistration.observations);
+                registrationService.fireUnregistered(deregistration, approvedRegistration);
+                registrationService.fireRegistered(new RegistrationAddition(approvedRegistration, deregistration));
             } else {
-                registrationService.fireRegistered(approvedRegistration, null, null);
+                registrationService.fireRegistered(new RegistrationAddition(approvedRegistration));
             }
         };
 
@@ -174,8 +172,7 @@ public class RegistrationHandler {
         } else {
             LOG.debug("Updated registration {} by {}", updatedRegistration, update);
             // Create callback to notify registration update
-            Runnable whenSent = () -> registrationService.fireUpdated(update,
-                    updatedRegistration.getUpdatedRegistration(), updatedRegistration.getPreviousRegistration());
+            Runnable whenSent = () -> registrationService.fireUpdated(updatedRegistration);
             return new SendableResponse<>(UpdateResponse.success(), whenSent);
         }
     }
@@ -202,8 +199,7 @@ public class RegistrationHandler {
         if (deregistration != null) {
             LOG.debug("Deregistered client: {}", deregistration.getRegistration());
             // Create callback to notify new de-registration
-            Runnable whenSent = () -> registrationService.fireUnregistered(deregistration.getRegistration(),
-                    deregistration.getObservations(), null);
+            Runnable whenSent = () -> registrationService.fireUnregistered(deregistration, null);
 
             return new SendableResponse<>(DeregisterResponse.success(), whenSent);
         } else {

@@ -35,7 +35,7 @@ import org.eclipse.leshan.core.util.Hex;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.endpoint.EffectiveEndpointUriProvider;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
-import org.eclipse.leshan.servers.security.EditableSecurityStore;
+import org.eclipse.leshan.servers.security.ObservableSecurityStore;
 import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
 import org.eclipse.leshan.transport.californium.oscore.cf.InMemoryOscoreContextDB;
 import org.eclipse.leshan.transport.californium.server.LwM2mOscoreStore;
@@ -84,8 +84,8 @@ public class CoapOscoreServerEndpointFactory extends CoapServerEndpointFactory {
             OscoreContextCleaner oscoreCtxCleaner = new OscoreContextCleaner(oscoreCtxDB);
             server.getRegistrationService().addListener(oscoreCtxCleaner);
 
-            if (server.getSecurityStore() instanceof EditableSecurityStore) {
-                ((EditableSecurityStore) server.getSecurityStore()).addListener(oscoreCtxCleaner);
+            if (server.getSecurityStore() instanceof ObservableSecurityStore) {
+                ((ObservableSecurityStore) server.getSecurityStore()).addListener(oscoreCtxCleaner);
             }
         }
 

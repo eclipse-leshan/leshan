@@ -31,7 +31,7 @@ import org.eclipse.leshan.core.peer.OscoreIdentity;
 /**
  * A {@link SecurityStore} which store {@link SecurityInfo} in memory.
  */
-public class InMemorySecurityStore implements EditableSecurityStore {
+public class InMemorySecurityStore implements EditableSecurityStore, ObservableSecurityStore {
 
     // lock for the two maps
     protected final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();

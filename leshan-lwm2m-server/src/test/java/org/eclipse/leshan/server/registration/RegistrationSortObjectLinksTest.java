@@ -38,7 +38,7 @@ public class RegistrationSortObjectLinksTest {
         objs[1] = new Link("/0/2");
         objs[2] = null;
 
-        Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
+        DeviceRegistration.Builder builder = new DeviceRegistration.Builder("registrationId", "endpoint",
                 new IpPeer(new InetSocketAddress(Inet4Address.getLocalHost(), 1)),
                 uriHandler.createUri("coap://localhost:5683")).objectLinks(objs);
 

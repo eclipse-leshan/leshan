@@ -30,7 +30,6 @@ import org.eclipse.leshan.core.link.lwm2m.LwM2mLinkParser;
 import org.eclipse.leshan.core.node.codec.CodecException;
 import org.eclipse.leshan.core.node.codec.LwM2mDecoder;
 import org.eclipse.leshan.core.node.codec.LwM2mEncoder;
-import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.DownlinkDeviceManagementRequest;
 import org.eclipse.leshan.core.request.DownlinkRequest;
 import org.eclipse.leshan.core.request.SendRequest;
@@ -58,7 +57,11 @@ import org.eclipse.leshan.server.queue.PresenceService;
 import org.eclipse.leshan.server.queue.PresenceServiceImpl;
 import org.eclipse.leshan.server.queue.PresenceStateListener;
 import org.eclipse.leshan.server.queue.QueueModeLwM2mRequestSender;
+import org.eclipse.leshan.server.registration.Deregistration;
+import org.eclipse.leshan.server.registration.EndDeviceRegistrationHandler;
+import org.eclipse.leshan.server.registration.EndDeviceRegistrationIdProvider;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationAddition;
 import org.eclipse.leshan.server.registration.RegistrationDataExtractor;
 import org.eclipse.leshan.server.registration.RegistrationHandler;
 import org.eclipse.leshan.server.registration.RegistrationIdProvider;
@@ -66,7 +69,7 @@ import org.eclipse.leshan.server.registration.RegistrationListener;
 import org.eclipse.leshan.server.registration.RegistrationService;
 import org.eclipse.leshan.server.registration.RegistrationServiceImpl;
 import org.eclipse.leshan.server.registration.RegistrationStore;
-import org.eclipse.leshan.server.registration.RegistrationUpdate;
+import org.eclipse.leshan.server.registration.UpdatedRegistration;
 import org.eclipse.leshan.server.request.DefaultDownlinkRequestSender;
 import org.eclipse.leshan.server.request.DefaultUplinkRequestReceiver;
 import org.eclipse.leshan.server.request.DownlinkRequestSender;
@@ -131,6 +134,8 @@ public class LeshanServer {
      * @param linkParser a parser {@link LwM2mLinkParser} used to parse a CoRE Link.
      * @param serverSecurityInfo credentials of the Server.
      * @param endpointNameProvider try to find endpoint name from client identity.
+     * @param endDeviceRegistrationIdProvider generate id for end device hosted by gateway. If not null a
+     *        {@link EndDeviceRegistrationHandler} will be create to handle Gateway.
      * @since 1.1
      */
     public LeshanServer(LwM2mServerEndpointsProvider endpointsProvider, RegistrationStore registrationStore,
@@ -139,7 +144,8 @@ public class LeshanServer {
             RegistrationIdProvider registrationIdProvider, RegistrationDataExtractor registrationDataExtractor,
             boolean updateRegistrationOnNotification, boolean updateRegistrationOnSend, LwM2mLinkParser linkParser,
             EndPointUriHandler uriHandler, ServerSecurityInfo serverSecurityInfo,
-            ServerEndpointNameProvider endpointNameProvider) {
+            ServerEndpointNameProvider endpointNameProvider,
+            EndDeviceRegistrationIdProvider endDeviceRegistrationIdProvider) {
 
         Validate.notNull(endpointsProvider, "endpointsProvider cannot be null");
         Validate.notNull(registrationStore, "registration store cannot be null");
@@ -177,6 +183,18 @@ public class LeshanServer {
         requestSender = createRequestSender(endpointsProvider, registrationService, this.modelProvider,
                 presenceService);
 
+        createEndDeviceRegistrationHandler(registrationService, registrationDataExtractor,
+                endDeviceRegistrationIdProvider, this);
+
+    }
+
+    protected EndDeviceRegistrationHandler createEndDeviceRegistrationHandler(
+            RegistrationServiceImpl registrationService, RegistrationDataExtractor dataExtractor,
+            EndDeviceRegistrationIdProvider idProvider, LeshanServer server) {
+        if (idProvider != null) {
+            return new EndDeviceRegistrationHandler(registrationService, dataExtractor, idProvider, server);
+        }
+        return null;
     }
 
     protected RegistrationServiceImpl createRegistrationService(RegistrationStore registrationStore) {
@@ -229,22 +247,25 @@ public class LeshanServer {
         registrationService.addListener(new RegistrationListener() {
 
             @Override
-            public void updated(RegistrationUpdate update, Registration updatedRegistration, Registration previousReg) {
+            public void registered(RegistrationAddition registrationAddition) {
+
+            }
+
+            @Override
+            public void updated(UpdatedRegistration udaptedRegistration) {
+                Registration previousReg = udaptedRegistration.getPreviousRegistration();
+                Registration update = udaptedRegistration.getUpdatedRegistration();
                 if ((previousReg.getAddress() != null && !previousReg.getAddress().equals(update.getAddress()))
                         || (previousReg.getPort() != null && !previousReg.getPort().equals(update.getPort()))) {
                     requestSender.cancelOngoingRequests(previousReg);
                 }
+
             }
 
             @Override
-            public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
-                    Registration newReg) {
-                requestSender.cancelOngoingRequests(registration);
-            }
+            public void unregistered(Deregistration deregistration, boolean expired, Registration newReg) {
+                requestSender.cancelOngoingRequests(deregistration.getRegistration());
 
-            @Override
-            public void registered(Registration registration, Registration previousReg,
-                    Collection<Observation> previousObsersations) {
             }
         });
 

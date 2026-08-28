@@ -52,11 +52,13 @@ import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.observation.ObservationListener;
 import org.eclipse.leshan.server.queue.ClientAwakeTimeProvider;
 import org.eclipse.leshan.server.queue.PresenceListener;
+import org.eclipse.leshan.server.registration.EndDeviceRegistrationIdProvider;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationDataExtractor;
 import org.eclipse.leshan.server.registration.RegistrationIdProvider;
 import org.eclipse.leshan.server.registration.RegistrationListener;
 import org.eclipse.leshan.server.registration.RegistrationStore;
+import org.eclipse.leshan.server.registration.RegistrationUpdate;
 import org.eclipse.leshan.server.security.Authorizer;
 import org.eclipse.leshan.server.send.SendListener;
 import org.eclipse.leshan.servers.ServerEndpointNameProvider;
@@ -83,12 +85,13 @@ public class LeshanTestServer extends LeshanServer {
             LwM2mDecoder decoder, boolean noQueueMode, ClientAwakeTimeProvider awakeTimeProvider,
             RegistrationIdProvider registrationIdProvider, RegistrationDataExtractor registrationDataExtractor,
             LwM2mLinkParser linkParser, EndPointUriHandler uriHandler, ServerSecurityInfo serverSecurityInfo,
-            ServerEndpointNameProvider endponNameProvider, boolean updateRegistrationOnNotification,
+            ServerEndpointNameProvider endponNameProvider,
+            EndDeviceRegistrationIdProvider endDeviceRegistrationIdProvider, boolean updateRegistrationOnNotification,
             boolean updateRegistrationOnSend) {
         super(endpointsProvider, registrationStore, securityStore, authorizer, modelProvider, encoder, decoder,
                 noQueueMode, awakeTimeProvider, registrationIdProvider, registrationDataExtractor,
                 updateRegistrationOnNotification, updateRegistrationOnSend, linkParser, uriHandler, serverSecurityInfo,
-                endponNameProvider);
+                endponNameProvider, endDeviceRegistrationIdProvider);
 
         if (securityStore != null && !(securityStore instanceof EditableSecurityStore)) {
             throw new IllegalStateException(
@@ -163,9 +166,10 @@ public class LeshanTestServer extends LeshanServer {
 
     public void waitForNewRegistrationOf(String clientEndpoint, int timeout, TimeUnit unit) {
         registrationEventInOrder.verify(registrationListener, timeout(unit.toMillis(timeout)).times(1)).registered(//
-                assertArg(reg -> assertThat(reg.getEndpoint()).isEqualTo(clientEndpoint)), //
-                isNull(), //
-                isNull());
+                assertArg(add -> {
+                    assertThat(add.getNewRegistration().getEndpoint()).isEqualTo(clientEndpoint);
+                    assertThat(add.getPreviousRegistration()).isNull();
+                }));
         registrationEventInOrder.verifyNoMoreInteractions();
     }
 
@@ -175,10 +179,14 @@ public class LeshanTestServer extends LeshanServer {
 
     public void waitForUpdateOf(Registration expectedPreviousReg, int timeout, TimeUnit unit) {
         registrationEventInOrder.verify(registrationListener, timeout(unit.toMillis(timeout)).times(1)).updated( //
-                assertArg(
-                        regUpdate -> assertThat(regUpdate.getRegistrationId()).isEqualTo(expectedPreviousReg.getId())), //
-                assertArg(updatedReg -> assertThat(updatedReg.getId()).isEqualTo(expectedPreviousReg.getId())), //
-                assertArg(previousReg -> assertThat(previousReg).isEqualTo(expectedPreviousReg)));
+                assertArg(modif -> {
+                    RegistrationUpdate regUpdate = modif.getUpdate();
+                    assertThat(regUpdate.getRegistrationId()).isEqualTo(expectedPreviousReg.getId()); //
+                    Registration updatedReg = modif.getUpdatedRegistration();
+                    assertThat(updatedReg.getId()).isEqualTo(expectedPreviousReg.getId()); //
+                    Registration previousReg = modif.getPreviousRegistration();
+                    assertThat(previousReg).isEqualTo(expectedPreviousReg);
+                }));
         registrationEventInOrder.verifyNoMoreInteractions();
     }
 
@@ -187,9 +195,13 @@ public class LeshanTestServer extends LeshanServer {
     }
 
     public void waitForDeregistrationOf(Registration expectedRegistration, int timeout, TimeUnit unit) {
-        registrationEventInOrder.verify(registrationListener, timeout(unit.toMillis(timeout)).times(1)).unregistered(
-                assertArg(reg -> assertThat(reg.getId()).isEqualTo(expectedRegistration.getId())), //
-                assertArg(obs -> assertThat(obs).isEmpty()), //
+        registrationEventInOrder.verify(registrationListener, timeout(unit.toMillis(timeout)).times(1)).unregistered( //
+                assertArg(dereg -> {
+                    Registration reg = dereg.getRegistration();
+                    assertThat(reg.getId()).isEqualTo(expectedRegistration.getId());
+                    Collection<Observation> obs = dereg.getObservations();
+                    assertThat(obs).isEmpty(); //
+                }), //
                 booleanThat(expired -> expired == false), //
                 isNull());
         registrationEventInOrder.verifyNoMoreInteractions();
@@ -202,9 +214,13 @@ public class LeshanTestServer extends LeshanServer {
 
     public void waitForDeregistrationOf(Registration expectedRegistration, int timeout, TimeUnit unit,
             Collection<Observation> expectedObservations) {
-        registrationEventInOrder.verify(registrationListener, timeout(unit.toMillis(timeout)).times(1)).unregistered(
-                assertArg(reg -> assertThat(reg.getId()).isEqualTo(expectedRegistration.getId())), //
-                assertArg(obs -> assertThat(obs).containsExactlyElementsOf(expectedObservations)), //
+        registrationEventInOrder.verify(registrationListener, timeout(unit.toMillis(timeout)).times(1)).unregistered( //
+                assertArg(dereg -> {
+                    Registration reg = dereg.getRegistration();
+                    assertThat(reg.getId()).isEqualTo(expectedRegistration.getId());
+                    Collection<Observation> obs = dereg.getObservations();
+                    assertThat(obs).containsExactlyElementsOf(expectedObservations);
+                }), //
                 booleanThat(expired -> expired == false), //
                 isNull());
         registrationEventInOrder.verifyNoMoreInteractions();
@@ -215,16 +231,25 @@ public class LeshanTestServer extends LeshanServer {
     }
 
     public void waitForReRegistrationOf(Registration expectedPreviousReg, int timeout, TimeUnit unit) {
-        registrationEventInOrder.verify(registrationListener, timeout(unit.toMillis(timeout)).times(1)).unregistered(
-                assertArg(reg -> assertThat(reg.getId()).isEqualTo(expectedPreviousReg.getId())), //
-                assertArg(obs -> assertThat(obs).isEmpty()), //
+        registrationEventInOrder.verify(registrationListener, timeout(unit.toMillis(timeout)).times(1)).unregistered( //
+                assertArg(dereg -> {
+                    Registration reg = dereg.getRegistration();
+                    assertThat(reg.getId()).isEqualTo(expectedPreviousReg.getId());
+                    Collection<Observation> obs = dereg.getObservations();
+                    assertThat(obs).isEmpty(); //
+                }), //
                 booleanThat(expired -> expired == false), //
                 assertArg(newReg -> assertThat(newReg.getEndpoint()).isEqualTo(expectedPreviousReg.getEndpoint())));
 
         registrationEventInOrder.verify(registrationListener, timeout(unit.toMillis(timeout)).times(1)).registered(//
-                assertArg(newReg -> assertThat(newReg.getEndpoint()).isEqualTo(expectedPreviousReg.getEndpoint())), //
-                assertArg(previousReg -> assertThat(previousReg.getId()).isEqualTo(expectedPreviousReg.getId())), //
-                assertArg(obs -> assertThat(obs).isEmpty()));
+                assertArg(add -> {
+                    Registration newReg = add.getNewRegistration();
+                    assertThat(newReg.getEndpoint()).isEqualTo(expectedPreviousReg.getEndpoint());
+                    Registration previousReg = add.getPreviousRegistration().getRegistration();
+                    assertThat(previousReg.getId()).isEqualTo(expectedPreviousReg.getId());
+                    Collection<Observation> obs = add.getPreviousRegistration().getObservations();
+                    assertThat(obs).isEmpty();
+                }));
 
         registrationEventInOrder.verifyNoMoreInteractions();
 
@@ -240,7 +265,6 @@ public class LeshanTestServer extends LeshanServer {
         } catch (InterruptedException e) {
         }
         registrationEventInOrder.verify(registrationListener, never()).unregistered(any(), //
-                any(), //
                 anyBoolean(), //
                 any());
         registrationEventInOrder.verifyNoMoreInteractions();

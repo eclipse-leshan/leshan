@@ -100,7 +100,7 @@ public class InMemoryRegistrationStoreTest {
 
     private void givenASimpleRegistration(Long lifetime) {
 
-        Registration.Builder builder = new Registration.Builder(registrationId, ep,
+        DeviceRegistration.Builder builder = new DeviceRegistration.Builder(registrationId, ep,
                 new IpPeer(new InetSocketAddress(address, port)), uriHandler.createUri("coap://localhost:5683"));
 
         registration = builder.lifeTimeInSec(lifetime).smsNumber(sms).bindingMode(binding).objectLinks(objectLinks)

@@ -17,6 +17,9 @@ package org.eclipse.leshan.servers.security;
 
 import java.util.Collection;
 
+/**
+ * A {@link SecurityStore} which can be edited. This is not used by Leshan library but mainly for test and Leshan Demo.
+ */
 public interface EditableSecurityStore extends SecurityStore {
 
     /**
@@ -46,14 +49,4 @@ public interface EditableSecurityStore extends SecurityStore {
      * @return the removed {@link SecurityInfo} or <code>null</code> if no info for the end-point.
      */
     SecurityInfo remove(String endpoint, boolean infosAreCompromised);
-
-    /**
-     * Adds a new {@link SecurityStoreListener} to this store.
-     */
-    void addListener(SecurityStoreListener listener);
-
-    /**
-     * Removes the given {@link SecurityStoreListener} from the listeners of this store .
-     */
-    void removeListener(SecurityStoreListener listener);
 }
