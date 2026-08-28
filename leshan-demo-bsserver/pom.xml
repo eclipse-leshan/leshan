@@ -45,13 +45,6 @@ Contributors:
       <groupId>org.eclipse.leshan</groupId>
       <artifactId>leshan-demo-servers-shared</artifactId>
     </dependency>
-
-    <!-- runtime dependencies -->
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <scope>runtime</scope>
-    </dependency>
   </dependencies>
 
   <build>
@@ -77,7 +70,7 @@ Contributors:
             </manifest>
           </archive>
           <descriptors>
-            <descriptor>../build-config/demo-build-config/jar-with-dependencies-with-logback.xml</descriptor>
+            <descriptor>../build-config/demo-build-config/jar-with-dependencies-with-log4j2.xml</descriptor>
           </descriptors>
         </configuration>
         <executions>

@@ -17,10 +17,6 @@ package org.eclipse.leshan.demo.cli.interactive;
 
 import java.io.IOException;
 
-import org.slf4j.LoggerFactory;
-
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.core.Appender;
 import jline.TerminalFactory;
 import jline.TerminalFactory.Type;
 import jline.console.ConsoleReader;
@@ -58,12 +54,7 @@ public class InteractiveCLI {
 
         console.addCompleter(new PicocliJLineCompleter(commandLine.getCommandSpec()));
 
-        // Configure Terminal appender if it is present.
-        Appender<?> appender = ((Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME))
-                .getAppender("TERMINAL");
-        if (appender instanceof TerminalAppender<?>) {
-            ((TerminalAppender<?>) appender).setConsole(console);
-        }
+        // LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
     }
 
     public void showHelp() {

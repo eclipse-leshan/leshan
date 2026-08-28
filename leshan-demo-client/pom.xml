@@ -62,7 +62,7 @@ Contributors:
             </manifest>
           </archive>
           <descriptors>
-            <descriptor>../build-config/demo-build-config/jar-with-dependencies-with-logback.xml</descriptor>
+            <descriptor>../build-config/demo-build-config/jar-with-dependencies-with-log4j2.xml</descriptor>
           </descriptors>
         </configuration>
         <executions>
