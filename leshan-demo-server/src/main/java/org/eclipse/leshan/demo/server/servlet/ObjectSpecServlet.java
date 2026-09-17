@@ -68,6 +68,7 @@ public class ObjectSpecServlet extends LeshanDemoServlet {
         if (registration == null) {
             safelySendError(req, resp, HttpServletResponse.SC_BAD_REQUEST,
                     String.format("no registered client with id '%s'", clientEndpoint));
+            return;
         }
 
         // Get Model for this registration
