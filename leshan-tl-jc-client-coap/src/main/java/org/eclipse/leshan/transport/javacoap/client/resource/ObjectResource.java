@@ -287,8 +287,9 @@ public class ObjectResource extends LwM2mClientCoapResource {
 
         // get Observe Spec
         LwM2mAttributeSet attributes = null;
-        if (coapRequest.options().getUriQuery() != null && !coapRequest.options().getUriQuery().isEmpty()) {
-            String uriQueries = coapRequest.options().getUriQuery();
+        if (coapRequest.options().getUriQueryEncoded() != null
+                && !coapRequest.options().getUriQueryEncoded().isEmpty()) {
+            String uriQueries = coapRequest.options().getUriQueryEncoded();
             try {
                 attributes = new LwM2mAttributeSet(toolbox.getAttributeParser().parseUriQuery(uriQueries));
             } catch (InvalidAttributeException e) {
