@@ -244,7 +244,7 @@ public class LockStepTest {
         client.expectResponse().token(token).code(ResponseCode.BAD_REQUEST).go();
 
         // update with invalid binding for 1.1
-        Request invalidUpdateRequest = client.createCoapRequest(validRegisterRequest);
+        Request invalidUpdateRequest = client.createCoapRequest(validUpdateRequest);
         invalidUpdateRequest.getOptions().removeUriQuery("b=U");
         invalidUpdateRequest.getOptions().addUriQuery("b=UQ");
         token = client.sendCoapRequest(invalidUpdateRequest);
@@ -278,7 +278,7 @@ public class LockStepTest {
         client.expectResponse().token(token).code(ResponseCode.BAD_REQUEST).go();
 
         // update with invalid binding for 1.0
-        Request invalidUpdateRequest = client.createCoapRequest(validRegisterRequest);
+        Request invalidUpdateRequest = client.createCoapRequest(validUpdateRequest);
         invalidUpdateRequest.getOptions().removeUriQuery("b=U");
         invalidUpdateRequest.getOptions().addUriQuery("b=UT");
         token = client.sendCoapRequest(invalidUpdateRequest);
