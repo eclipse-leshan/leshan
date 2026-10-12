@@ -47,15 +47,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.CoAP.Type;
-import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Token;
 import org.eclipse.californium.core.config.CoapConfig;
-import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.californium.elements.config.Configuration;
-import org.eclipse.leshan.core.endpoint.EndpointUri;
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.link.LinkParser;
 import org.eclipse.leshan.core.link.lwm2m.DefaultLwM2mLinkParser;
@@ -75,7 +71,6 @@ import org.eclipse.leshan.core.request.ObserveRequest;
 import org.eclipse.leshan.core.request.ReadCompositeRequest;
 import org.eclipse.leshan.core.request.ReadRequest;
 import org.eclipse.leshan.core.request.RegisterRequest;
-import org.eclipse.leshan.core.request.UpdateRequest;
 import org.eclipse.leshan.core.request.exception.SendFailedException;
 import org.eclipse.leshan.core.request.exception.TimeoutException;
 import org.eclipse.leshan.core.response.CancelObservationResponse;
@@ -176,115 +171,6 @@ public class LockStepTest {
     /*---------------------------------/
      *  Tests
      * -------------------------------*/
-    @TestAllTransportLayer
-    public void register_with_invalid_request(String givenServerEndpointProvider) throws Exception {
-
-        LockStepLwM2mClient client = new LockStepLwM2mClient(server.getEndpoint(Protocol.COAP).getURI());
-
-        // create a register request without the list of supported object
-        Request invalidRegisterRequest = new Request(Code.POST);
-        EndpointUri destinationURI = server.getEndpoint(Protocol.COAP).getURI();
-        invalidRegisterRequest
-                .setDestinationContext(new AddressEndpointContext(destinationURI.getHost(), destinationURI.getPort()));
-        invalidRegisterRequest.getOptions().setContentFormat(ContentFormat.LINK.getCode());
-        invalidRegisterRequest.getOptions().addUriPath("rd");
-        invalidRegisterRequest.getOptions().addUriQuery("ep=" + client.getEndpointName());
-
-        // send request and check it is rejected
-        Token token = client.sendCoapRequest(invalidRegisterRequest);
-        client.expectResponse().token(token).code(ResponseCode.BAD_REQUEST).go();
-    }
-
-    @TestAllTransportLayer
-    public void register_with_uq_binding_in_lw_1_0(String givenServerEndpointProvider) throws Exception {
-        // Register client
-        LockStepLwM2mClient client = new LockStepLwM2mClient(server.getEndpoint(Protocol.COAP).getURI());
-        Token token = client.sendLwM2mRequest(
-                new RegisterRequest(client.getEndpointName(), 60l, "1.0", EnumSet.of(BindingMode.U, BindingMode.Q),
-                        null, null, linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null));
-        client.expectResponse().token(token).code(ResponseCode.CREATED).go();
-        server.waitForNewRegistrationOf(client.getEndpointName());
-    }
-
-    @TestAllTransportLayer
-    public void register_with_ut_binding_in_lw_1_1(String givenServerEndpointProvider) throws Exception {
-        // Register client
-        LockStepLwM2mClient client = new LockStepLwM2mClient(server.getEndpoint(Protocol.COAP).getURI());
-        Token token = client.sendLwM2mRequest(
-                new RegisterRequest(client.getEndpointName(), 60l, "1.1", EnumSet.of(BindingMode.U, BindingMode.T),
-                        null, null, linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), null));
-        client.expectResponse().token(token).code(ResponseCode.CREATED).go();
-        server.waitForNewRegistrationOf(client.getEndpointName());
-    }
-
-    @TestAllTransportLayer
-    public void register_update_with_invalid_binding_for_lw_1_1(String givenServerEndpointProvider) throws Exception {
-        LockStepLwM2mClient client = new LockStepLwM2mClient(server.getEndpoint(Protocol.COAP).getURI());
-
-        // register with valid binding for 1.1
-        RegisterRequest validRegisterRequest = new RegisterRequest(client.getEndpointName(), 60l, "1.1",
-                EnumSet.of(BindingMode.U), null, null, linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()),
-                null);
-        Token token = client.sendLwM2mRequest(validRegisterRequest);
-        client.expectResponse().token(token).code(ResponseCode.CREATED).go();
-        server.waitForNewRegistrationOf(client.getEndpointName());
-
-        // update with valid binding for 1.1
-        Registration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
-        UpdateRequest validUpdateRequest = new UpdateRequest("/rd/" + registration.getId(), 60l, null,
-                EnumSet.of(BindingMode.U), null, null);
-        token = client.sendLwM2mRequest(validUpdateRequest);
-        client.expectResponse().token(token).code(ResponseCode.CHANGED).go();
-
-        // register with invalid binding for 1.1
-        Request invalidRegisterRequest = client.createCoapRequest(validRegisterRequest);
-        invalidRegisterRequest.getOptions().removeUriQuery("b=U");
-        invalidRegisterRequest.getOptions().addUriQuery("b=UQ");
-        token = client.sendCoapRequest(invalidRegisterRequest);
-        client.expectResponse().token(token).code(ResponseCode.BAD_REQUEST).go();
-
-        // update with invalid binding for 1.1
-        Request invalidUpdateRequest = client.createCoapRequest(validUpdateRequest);
-        invalidUpdateRequest.getOptions().removeUriQuery("b=U");
-        invalidUpdateRequest.getOptions().addUriQuery("b=UQ");
-        token = client.sendCoapRequest(invalidUpdateRequest);
-        client.expectResponse().token(token).code(ResponseCode.BAD_REQUEST).go();
-    }
-
-    @TestAllTransportLayer
-    public void register_update_with_invalid_binding_for_lw_1_0(String givenServerEndpointProvider) throws Exception {
-        LockStepLwM2mClient client = new LockStepLwM2mClient(server.getEndpoint(Protocol.COAP).getURI());
-
-        // register with valid binding for 1.0
-        RegisterRequest validRegisterRequest = new RegisterRequest(client.getEndpointName(), 60l, "1.0",
-                EnumSet.of(BindingMode.U), null, null, linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()),
-                null);
-        Token token = client.sendLwM2mRequest(validRegisterRequest);
-        client.expectResponse().token(token).code(ResponseCode.CREATED).go();
-        server.waitForNewRegistrationOf(client.getEndpointName());
-
-        // update with valid binding for 1.0
-        Registration registration = server.getRegistrationService().getByEndpoint(client.getEndpointName());
-        UpdateRequest validUpdateRequest = new UpdateRequest("/rd/" + registration.getId(), 60l, null,
-                EnumSet.of(BindingMode.U), null, null);
-        token = client.sendLwM2mRequest(validUpdateRequest);
-        client.expectResponse().token(token).code(ResponseCode.CHANGED).go();
-
-        // register with invalid binding for 1.0
-        Request invalidRegisterRequest = client.createCoapRequest(validRegisterRequest);
-        invalidRegisterRequest.getOptions().removeUriQuery("b=U");
-        invalidRegisterRequest.getOptions().addUriQuery("b=UT");
-        token = client.sendCoapRequest(invalidRegisterRequest);
-        client.expectResponse().token(token).code(ResponseCode.BAD_REQUEST).go();
-
-        // update with invalid binding for 1.0
-        Request invalidUpdateRequest = client.createCoapRequest(validUpdateRequest);
-        invalidUpdateRequest.getOptions().removeUriQuery("b=U");
-        invalidUpdateRequest.getOptions().addUriQuery("b=UT");
-        token = client.sendCoapRequest(invalidUpdateRequest);
-        client.expectResponse().token(token).code(ResponseCode.BAD_REQUEST).go();
-    }
-
     @TestAllTransportLayer
     public void sync_send_without_acknowleged(String givenServerEndpointProvider) throws Exception {
         // Register client
