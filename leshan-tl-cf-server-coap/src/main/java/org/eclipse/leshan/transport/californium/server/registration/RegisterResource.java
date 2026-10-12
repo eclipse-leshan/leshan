@@ -169,9 +169,15 @@ public class RegisterResource extends LwM2mCoapResource {
                 }
             } else if (paramName.equals(QUERY_PARAM_LIFETIME)) {
                 if (p.length == 2) {
-                    lifetime = Long.valueOf(p[1]);
+                    try {
+                        lifetime = Long.valueOf(p[1]);
+                    } catch (NumberFormatException e) {
+                        handleInvalidRequest(exchange.advanced(), "lifetime (lt) param must be a number", e);
+                        return;
+                    }
                 } else {
                     handleInvalidRequest(exchange.advanced(), "lifetime (lt) param can not be empty", null);
+                    return;
                 }
             } else if (paramName.equals(QUERY_PARAM_SMS)) {
                 if (p.length == 2) {
@@ -179,7 +185,6 @@ public class RegisterResource extends LwM2mCoapResource {
                 } else {
                     smsNumber = "";
                 }
-                smsNumber = param.substring(4);
             } else if (paramName.equals(QUERY_PARAM_LWM2M_VERSION)) {
                 if (p.length == 2) {
                     lwVersion = p[1];
@@ -188,22 +193,34 @@ public class RegisterResource extends LwM2mCoapResource {
                 }
             } else if (paramName.equals(QUERY_PARAM_BINDING_MODE)) {
                 if (p.length == 2) {
-                    binding = BindingMode.parse(p[1]);
+                    try {
+                        binding = BindingMode.parse(p[1]);
+                    } catch (IllegalArgumentException e) {
+                        handleInvalidRequest(exchange.advanced(), "binding (b) param is invalid", e);
+                        return;
+                    }
                 } else {
                     binding = EnumSet.noneOf(BindingMode.class);
                 }
             } else if (paramName.equals(QUERY_PARAM_QUEUEMMODE)) {
                 if (p.length == 2) {
                     handleInvalidRequest(exchange.advanced(), "queue param (Q) most not have value", null);
+                    return;
                 } else {
                     queueMode = true;
                 }
 
-            } else {
-                String[] tokens = param.split("=", 2);
-                if (tokens != null && tokens.length == 2) {
-                    additionalParams.put(tokens[0], tokens[1]);
+            } else if (paramName.isEmpty()) {
+                // A param with a value but no name can not be stored, reject it.
+                // A param with neither name nor value (e.g. an empty Uri-Query option, valid for CoAP) carries no
+                // information, so it is ignored.
+                if (p.length == 2 && !p[1].isEmpty()) {
+                    handleInvalidRequest(exchange.advanced(), "param name can not be empty", null);
+                    return;
                 }
+            } else {
+                // a param with no value is kept with an empty value, like ep/sms/lwm2m above
+                additionalParams.put(paramName, p.length == 2 ? p[1] : "");
             }
         }
         // Create request
@@ -244,9 +261,15 @@ public class RegisterResource extends LwM2mCoapResource {
             String paramName = p[0];
             if (paramName.equals(QUERY_PARAM_LIFETIME)) {
                 if (p.length == 2) {
-                    lifetime = Long.valueOf(p[1]);
+                    try {
+                        lifetime = Long.valueOf(p[1]);
+                    } catch (NumberFormatException e) {
+                        handleInvalidRequest(exchange.advanced(), "lifetime (lt) param must be a number", e);
+                        return;
+                    }
                 } else {
                     handleInvalidRequest(exchange.advanced(), "lifetime (lt) param can not be empty", null);
+                    return;
                 }
             } else if (paramName.equals(QUERY_PARAM_SMS)) {
                 if (p.length == 2) {
@@ -254,18 +277,28 @@ public class RegisterResource extends LwM2mCoapResource {
                 } else {
                     smsNumber = "";
                 }
-                smsNumber = param.substring(4);
             } else if (paramName.equals(QUERY_PARAM_BINDING_MODE)) {
                 if (p.length == 2) {
-                    binding = BindingMode.parse(p[1]);
+                    try {
+                        binding = BindingMode.parse(p[1]);
+                    } catch (IllegalArgumentException e) {
+                        handleInvalidRequest(exchange.advanced(), "binding (b) param is invalid", e);
+                        return;
+                    }
                 } else {
                     binding = EnumSet.noneOf(BindingMode.class);
                 }
-            } else {
-                String[] tokens = param.split("\\=");
-                if (tokens != null && tokens.length == 2) {
-                    additionalParams.put(tokens[0], tokens[1]);
+            } else if (paramName.isEmpty()) {
+                // A param with a value but no name can not be stored, reject it.
+                // A param with neither name nor value (e.g. an empty Uri-Query option, valid for CoAP) carries no
+                // information, so it is ignored.
+                if (p.length == 2 && !p[1].isEmpty()) {
+                    handleInvalidRequest(exchange.advanced(), "param name can not be empty", null);
+                    return;
                 }
+            } else {
+                // a param with no value is kept with an empty value, like sms above
+                additionalParams.put(paramName, p.length == 2 ? p[1] : "");
             }
         }
         if (request.getPayload() != null && request.getPayload().length > 0) {

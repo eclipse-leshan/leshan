@@ -17,6 +17,7 @@ package org.eclipse.leshan.transport.javacoap.server.resource;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -133,26 +134,46 @@ public class RegistrationResource extends LwM2mCoapResource {
         Map<String, String> additionalParams = new HashMap<>();
 
         // Get parameters
-        try {
-            for (Entry<String, String> entry : coapRequest.options().getUriQueryMap().entrySet()) {
-                if (entry.getKey().equals(QUERY_PARAM_ENDPOINT)) {
-                    endpoint = entry.getValue() == null ? "" : entry.getValue();
-                } else if (entry.getKey().equals(QUERY_PARAM_LIFETIME)) {
-                    lifetime = Long.valueOf(entry.getValue());
-                } else if (entry.getKey().equals(QUERY_PARAM_SMS)) {
-                    smsNumber = entry.getValue() == null ? "" : entry.getValue();
-                } else if (entry.getKey().equals(QUERY_PARAM_LWM2M_VERSION)) {
-                    lwVersion = entry.getValue() == null ? "" : entry.getValue();
-                } else if (entry.getKey().equals(QUERY_PARAM_BINDING_MODE)) {
-                    binding = BindingMode.parse(entry.getValue());
-                } else if (entry.getKey().equals(QUERY_PARAM_QUEUEMMODE)) {
-                    queueMode = true;
-                } else {
-                    additionalParams.put(entry.getKey(), entry.getValue());
+        // Note : getUriQueryMap() returns null if the Uri-Query option is present but empty (valid for CoAP), there is
+        // nothing to parse in that case.
+        Map<String, String> uriQueryMap = coapRequest.options().getUriQueryMap();
+        if (uriQueryMap == null) {
+            uriQueryMap = Collections.emptyMap();
+        }
+        for (Entry<String, String> entry : uriQueryMap.entrySet()) {
+            if (entry.getKey().equals(QUERY_PARAM_ENDPOINT)) {
+                endpoint = entry.getValue() == null ? "" : entry.getValue();
+            } else if (entry.getKey().equals(QUERY_PARAM_LIFETIME)) {
+                String lifetimeValue = entry.getValue();
+                if (lifetimeValue == null || lifetimeValue.isEmpty()) {
+                    return handleInvalidRequest(coapRequest, "lifetime (lt) param can not be empty");
                 }
+                try {
+                    lifetime = Long.valueOf(lifetimeValue);
+                } catch (NumberFormatException e) {
+                    return handleInvalidRequest(coapRequest, "lifetime (lt) param must be a number", e);
+                }
+            } else if (entry.getKey().equals(QUERY_PARAM_SMS)) {
+                smsNumber = entry.getValue() == null ? "" : entry.getValue();
+            } else if (entry.getKey().equals(QUERY_PARAM_LWM2M_VERSION)) {
+                lwVersion = entry.getValue() == null ? "" : entry.getValue();
+            } else if (entry.getKey().equals(QUERY_PARAM_BINDING_MODE)) {
+                try {
+                    binding = BindingMode.parse(entry.getValue() == null ? "" : entry.getValue());
+                } catch (IllegalArgumentException e) {
+                    return handleInvalidRequest(coapRequest, "binding (b) param is invalid", e);
+                }
+            } else if (entry.getKey().equals(QUERY_PARAM_QUEUEMMODE)) {
+                queueMode = true;
+            } else if (entry.getKey().isEmpty()) {
+                // A param with a value but no name can not be stored, reject it.
+                // A param with neither name nor value (e.g. empty segment) carries no information, so it is ignored.
+                if (entry.getValue() != null && !entry.getValue().isEmpty()) {
+                    return handleInvalidRequest(coapRequest, "param name can not be empty");
+                }
+            } else {
+                additionalParams.put(entry.getKey(), entry.getValue());
             }
-        } catch (/* NumberFormatException | */ IllegalArgumentException e) {
-            return handleInvalidRequest(coapRequest, e.getMessage() != null ? e.getMessage() : "Uri Query", e);
         }
 
         // Create request
@@ -190,20 +211,40 @@ public class RegistrationResource extends LwM2mCoapResource {
         Link[] objectLinks = null;
         Map<String, String> additionalParams = new HashMap<>();
 
-        try {
-            for (Entry<String, String> entry : coapRequest.options().getUriQueryMap().entrySet()) {
-                if (entry.getKey().equals(QUERY_PARAM_LIFETIME)) {
-                    lifetime = Long.valueOf(entry.getValue());
-                } else if (entry.getKey().equals(QUERY_PARAM_SMS)) {
-                    smsNumber = entry.getValue() == null ? "" : entry.getValue();
-                } else if (entry.getKey().equals(QUERY_PARAM_BINDING_MODE)) {
-                    binding = BindingMode.parse(entry.getValue());
-                } else {
-                    additionalParams.put(entry.getKey(), entry.getValue());
+        // Note : getUriQueryMap() returns null if the Uri-Query option is present but empty (valid for CoAP), there is
+        // nothing to parse in that case.
+        Map<String, String> uriQueryMap = coapRequest.options().getUriQueryMap();
+        if (uriQueryMap == null) {
+            uriQueryMap = Collections.emptyMap();
+        }
+        for (Entry<String, String> entry : uriQueryMap.entrySet()) {
+            if (entry.getKey().equals(QUERY_PARAM_LIFETIME)) {
+                String lifetimeValue = entry.getValue();
+                if (lifetimeValue == null || lifetimeValue.isEmpty()) {
+                    return handleInvalidRequest(coapRequest, "lifetime (lt) param can not be empty");
                 }
+                try {
+                    lifetime = Long.valueOf(lifetimeValue);
+                } catch (NumberFormatException e) {
+                    return handleInvalidRequest(coapRequest, "lifetime (lt) param must be a number", e);
+                }
+            } else if (entry.getKey().equals(QUERY_PARAM_SMS)) {
+                smsNumber = entry.getValue() == null ? "" : entry.getValue();
+            } else if (entry.getKey().equals(QUERY_PARAM_BINDING_MODE)) {
+                try {
+                    binding = BindingMode.parse(entry.getValue() == null ? "" : entry.getValue());
+                } catch (IllegalArgumentException e) {
+                    return handleInvalidRequest(coapRequest, "binding (b) param is invalid", e);
+                }
+            } else if (entry.getKey().isEmpty()) {
+                // A param with a value but no name can not be stored, reject it.
+                // A param with neither name nor value (e.g. empty segment) carries no information, so it is ignored.
+                if (entry.getValue() != null && !entry.getValue().isEmpty()) {
+                    return handleInvalidRequest(coapRequest, "param name can not be empty");
+                }
+            } else {
+                additionalParams.put(entry.getKey(), entry.getValue());
             }
-        } catch (/* NumberFormatException | */ IllegalArgumentException e) {
-            return handleInvalidRequest(coapRequest, e.getMessage() != null ? e.getMessage() : "Uri Query", e);
         }
         if (coapRequest.getPayload() != null && coapRequest.getPayload().size() > 0) {
             try {
