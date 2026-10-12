@@ -17,7 +17,7 @@
  *     Achim Kraus (Bosch Software Innovations GmbH) - replace close() with destroy()
  *******************************************************************************/
 
-package org.eclipse.leshan.integration.tests;
+package org.eclipse.leshan.integration.tests.delete;
 
 import static org.eclipse.leshan.core.ResponseCode.DELETED;
 import static org.eclipse.leshan.core.ResponseCode.METHOD_NOT_ALLOWED;
