@@ -169,6 +169,21 @@ public class LeshanTestServer extends LeshanServer {
         registrationEventInOrder.verifyNoMoreInteractions();
     }
 
+    public void ensureNoRegistration() {
+        ensureNoRegistration(1, TimeUnit.SECONDS);
+    }
+
+    public void ensureNoRegistration(int timeout, TimeUnit unit) {
+        try {
+            Thread.sleep(unit.toMillis(timeout));
+        } catch (InterruptedException e) {
+        }
+        registrationEventInOrder.verify(registrationListener, never()).registered(any(), //
+                any(), //
+                any());
+        registrationEventInOrder.verifyNoMoreInteractions();
+    }
+
     public void waitForUpdateOf(Registration expectedRegistration) {
         waitForUpdateOf(expectedRegistration, 1, TimeUnit.SECONDS);
     }
