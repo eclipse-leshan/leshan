@@ -12,10 +12,11 @@
  *
  * Contributors:
  *     Sierra Wireless - initial API and implementation
- *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 package org.eclipse.leshan.integration.tests.register;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.lang.annotation.Retention;
@@ -23,7 +24,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -232,6 +235,23 @@ public class RegistrationLockStepTest {
         return server.getRegistrationService().getByEndpoint(client.getEndpointName());
     }
 
+    /**
+     * Put an empty Uri-Query option at the beginning, in the middle and at the end of the given request. An empty
+     * Uri-Query option carries no information, it must just be ignored (wherever it is).
+     */
+    private Request surroundWithEmptyUriQueries(Request request) {
+        List<String> args = new ArrayList<>(request.getOptions().getUriQueryStrings());
+        request.getOptions().clearUriQuery();
+        request.getOptions().addUriQuery("");
+        request.getOptions().addUriQuery(args.get(0));
+        request.getOptions().addUriQuery("");
+        for (int i = 1; i < args.size(); i++) {
+            request.getOptions().addUriQuery(args.get(i));
+        }
+        request.getOptions().addUriQuery("");
+        return request;
+    }
+
     /*---------------------------------/
      *  Tests
      * -------------------------------*/
@@ -324,6 +344,159 @@ public class RegistrationLockStepTest {
             invalidUpdateRequest.getOptions().removeUriQuery("b=U");
             invalidUpdateRequest.getOptions().addUriQuery("b=UT");
             return invalidUpdateRequest;
+        }, ResponseCode.BAD_REQUEST);
+    }
+
+    /*---------------------------------/
+     *  Tests about Uri-Query parameters
+     * -------------------------------*/
+    @TestAllTransportLayer
+    public void register_with_additional_param_without_value(String givenServerEndpointProvider) throws Exception {
+        Registration registration = registerClientSuccessfullyWith(createValidRegisterRequestForV11(), request -> {
+            request.getOptions().addUriQuery("foo");
+            return request;
+        });
+
+        // param is kept, with an empty value
+        assertThat(registration.getAdditionalRegistrationAttributes()).containsEntry("foo", "");
+    }
+
+    @TestAllTransportLayer
+    public void register_with_additional_param_containing_equal_sign(String givenServerEndpointProvider)
+            throws Exception {
+        Registration registration = registerClientSuccessfullyWith(createValidRegisterRequestForV11(), request -> {
+            request.getOptions().addUriQuery("foo=a=b");
+            return request;
+        });
+
+        // only the first '=' is a separator
+        assertThat(registration.getAdditionalRegistrationAttributes()).containsEntry("foo", "a=b");
+    }
+
+    @TestAllTransportLayer
+    public void register_with_empty_uri_query_options(String givenServerEndpointProvider) throws Exception {
+        Registration registration = registerClientSuccessfullyWith(createValidRegisterRequestForV11(),
+                this::surroundWithEmptyUriQueries);
+
+        // empty options are ignored, they must not be kept as an additional param (e.g. one with an empty name)
+        assertThat(registration.getAdditionalRegistrationAttributes()).isEmpty();
+    }
+
+    @TestAllTransportLayer
+    public void register_with_param_without_name(String givenServerEndpointProvider) throws Exception {
+        sendInvalidRequestExpectingGivenResponseCode(createValidRegisterRequestForV11(), invalidRequest -> {
+            invalidRequest.getOptions().addUriQuery("=bar");
+            return invalidRequest;
+        }, ResponseCode.BAD_REQUEST);
+        server.ensureNoRegistration();
+    }
+
+    @TestAllTransportLayer
+    public void register_with_invalid_lifetime(String givenServerEndpointProvider) throws Exception {
+        sendInvalidRequestExpectingGivenResponseCode(createValidRegisterRequestForV11(), invalidRequest -> {
+            invalidRequest.getOptions().removeUriQuery("lt=60");
+            invalidRequest.getOptions().addUriQuery("lt=abc");
+            return invalidRequest;
+        }, ResponseCode.BAD_REQUEST);
+        server.ensureNoRegistration();
+    }
+
+    @TestAllTransportLayer
+    public void register_with_lifetime_without_value(String givenServerEndpointProvider) throws Exception {
+        sendInvalidRequestExpectingGivenResponseCode(createValidRegisterRequestForV11(), invalidRequest -> {
+            invalidRequest.getOptions().removeUriQuery("lt=60");
+            invalidRequest.getOptions().addUriQuery("lt");
+            return invalidRequest;
+        }, ResponseCode.BAD_REQUEST);
+        server.ensureNoRegistration();
+    }
+
+    @TestAllTransportLayer
+    public void register_with_unparsable_binding(String givenServerEndpointProvider) throws Exception {
+        sendInvalidRequestExpectingGivenResponseCode(createValidRegisterRequestForV11(), invalidRequest -> {
+            invalidRequest.getOptions().removeUriQuery("b=U");
+            invalidRequest.getOptions().addUriQuery("b=ZZ");
+            return invalidRequest;
+        }, ResponseCode.BAD_REQUEST);
+        server.ensureNoRegistration();
+    }
+
+    @TestAllTransportLayer
+    public void register_with_ampersand_in_endpoint_name(String givenServerEndpointProvider) throws Exception {
+        // A Uri-Query option is a single argument which can contain any character, '&' included (RFC 7252 5.10.1).
+        // java-coap can not handle that for now : it flattens all Uri-Query options in a single '&' separated string
+        // and so splits the endpoint name in several params.
+        assumeFalse("java-coap".equals(givenServerEndpointProvider),
+                "java-coap can not keep a '&' inside a Uri-Query option value");
+
+        String endpointName = client.getEndpointName() + "&with_ampersand";
+        Token token = client.sendLwM2mRequest(new RegisterRequest( //
+                endpointName, //
+                60l, // lifetime
+                "1.1", // lwm2m version
+                EnumSet.of(BindingMode.U), // binding
+                null, // queue mode (since v1.1)
+                null, // SMS number
+                linkParser.parseCoreLinkFormat("</1>,</2>,</3>".getBytes()), // linked object
+                null)); // additional attributes
+        client.expectResponse().token(token).code(ResponseCode.CREATED).go();
+        server.waitForNewRegistrationOf(endpointName);
+    }
+
+    @TestAllTransportLayer
+    public void update_with_additional_param_without_value(String givenServerEndpointProvider) throws Exception {
+        Registration registration = registerClientv11Successfully();
+
+        Registration updated = updateClientSuccessfullyWith(registration, createValidUpdateRequest(registration),
+                request -> {
+                    request.getOptions().addUriQuery("foo");
+                    return request;
+                });
+
+        // param is kept, with an empty value
+        assertThat(updated.getAdditionalRegistrationAttributes()).containsEntry("foo", "");
+    }
+
+    @TestAllTransportLayer
+    public void update_with_empty_uri_query_options(String givenServerEndpointProvider) throws Exception {
+        Registration registration = registerClientv11Successfully();
+
+        Registration updated = updateClientSuccessfullyWith(registration, createValidUpdateRequest(registration),
+                this::surroundWithEmptyUriQueries);
+
+        // empty options are ignored, they must not be kept as an additional param (e.g. one with an empty name)
+        assertThat(updated.getAdditionalRegistrationAttributes()).isEmpty();
+    }
+
+    @TestAllTransportLayer
+    public void update_with_param_without_name(String givenServerEndpointProvider) throws Exception {
+        Registration registration = registerClientv11Successfully();
+
+        sendInvalidRequestExpectingGivenResponseCode(createValidUpdateRequest(registration), invalidRequest -> {
+            invalidRequest.getOptions().addUriQuery("=bar");
+            return invalidRequest;
+        }, ResponseCode.BAD_REQUEST);
+    }
+
+    @TestAllTransportLayer
+    public void update_with_invalid_lifetime(String givenServerEndpointProvider) throws Exception {
+        Registration registration = registerClientv11Successfully();
+
+        sendInvalidRequestExpectingGivenResponseCode(createValidUpdateRequest(registration), invalidRequest -> {
+            invalidRequest.getOptions().removeUriQuery("lt=60");
+            invalidRequest.getOptions().addUriQuery("lt=abc");
+            return invalidRequest;
+        }, ResponseCode.BAD_REQUEST);
+    }
+
+    @TestAllTransportLayer
+    public void update_with_unparsable_binding(String givenServerEndpointProvider) throws Exception {
+        Registration registration = registerClientv11Successfully();
+
+        sendInvalidRequestExpectingGivenResponseCode(createValidUpdateRequest(registration), invalidRequest -> {
+            invalidRequest.getOptions().removeUriQuery("b=U");
+            invalidRequest.getOptions().addUriQuery("b=ZZ");
+            return invalidRequest;
         }, ResponseCode.BAD_REQUEST);
     }
 }
