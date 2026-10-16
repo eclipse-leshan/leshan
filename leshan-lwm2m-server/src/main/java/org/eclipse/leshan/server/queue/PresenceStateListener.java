@@ -15,17 +15,17 @@
  *******************************************************************************/
 package org.eclipse.leshan.server.queue;
 
-import java.util.Collection;
-
 import org.eclipse.leshan.core.observation.CompositeObservation;
 import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.observation.SingleObservation;
 import org.eclipse.leshan.core.response.ObserveCompositeResponse;
 import org.eclipse.leshan.core.response.ObserveResponse;
 import org.eclipse.leshan.server.observation.ObservationListener;
+import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationAddition;
 import org.eclipse.leshan.server.registration.RegistrationListener;
-import org.eclipse.leshan.server.registration.RegistrationUpdate;
+import org.eclipse.leshan.server.registration.UpdatedRegistration;
 
 /**
  * Listener that controls the state of the client (awake/sleeping) It is in charge of sending all the queued messages
@@ -42,15 +42,17 @@ public class PresenceStateListener implements RegistrationListener, ObservationL
     }
 
     @Override
-    public void registered(Registration reg, Registration previousReg, Collection<Observation> previousObservations) {
+    public void registered(RegistrationAddition registrationAddition) {
+        Registration reg = registrationAddition.getNewRegistration();
         if (reg.usesQueueMode()) {
             presenceService.setAwake(reg);
         }
+
     }
 
     @Override
-    public void updated(RegistrationUpdate update, Registration updatedRegistration,
-            Registration previousRegistration) {
+    public void updated(UpdatedRegistration modification) {
+        Registration updatedRegistration = modification.getUpdatedRegistration();
         if (updatedRegistration.usesQueueMode()) {
             presenceService.setAwake(updatedRegistration);
         }
@@ -58,9 +60,9 @@ public class PresenceStateListener implements RegistrationListener, ObservationL
     }
 
     @Override
-    public void unregistered(Registration reg, Collection<Observation> observations, boolean expired,
-            Registration newReg) {
-        presenceService.stopPresenceTracking(reg);
+    public void unregistered(Deregistration deregistration, boolean expired, Registration newReg) {
+        presenceService.stopPresenceTracking(deregistration.getRegistration());
+
     }
 
     /**

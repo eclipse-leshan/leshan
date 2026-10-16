@@ -36,6 +36,7 @@ import org.eclipse.leshan.core.link.attributes.ValuelessAttribute;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.request.ContentFormat;
 import org.eclipse.leshan.server.registration.DefaultRegistrationDataExtractor;
+import org.eclipse.leshan.server.registration.DeviceRegistration;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationDataExtractor.RegistrationData;
 import org.junit.jupiter.api.Test;
@@ -56,7 +57,7 @@ class RegistrationSerDesTest {
         objs[0] = new Link("/0/1024/2", attrs);
         objs[1] = new Link("/0/2");
 
-        Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
+        DeviceRegistration.Builder builder = new DeviceRegistration.Builder("registrationId", "endpoint",
                 new IpPeer(new InetSocketAddress(Inet4Address.getLoopbackAddress(), 1)),
                 uriHandler.createUri("coap://localhost:5683")).objectLinks(objs).rootPath("/")
                         .supportedContentFormats(ContentFormat.TLV, ContentFormat.TEXT);
@@ -94,7 +95,7 @@ class RegistrationSerDesTest {
         appData.put("string", "string test");
         appData.put("null", null);
 
-        Registration.Builder builder = new Registration.Builder("registrationId", "endpoint",
+        DeviceRegistration.Builder builder = new DeviceRegistration.Builder("registrationId", "endpoint",
                 new IpPeer(new InetSocketAddress(Inet4Address.getLoopbackAddress(), 1)),
                 uriHandler.createUri("coap://localhost:5683")).objectLinks(objs).rootPath("/")
                         .supportedContentFormats(ContentFormat.TLV, ContentFormat.TEXT).customRegistrationData(appData);

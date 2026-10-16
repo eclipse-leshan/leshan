@@ -51,6 +51,7 @@ import org.eclipse.leshan.server.endpoint.ServerEndpointToolbox;
 import org.eclipse.leshan.server.observation.LwM2mNotificationReceiver;
 import org.eclipse.leshan.server.observation.ObservationServiceImpl;
 import org.eclipse.leshan.server.profile.ClientProfile;
+import org.eclipse.leshan.server.registration.DeviceRegistration;
 import org.eclipse.leshan.server.registration.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.registration.Registration;
 import org.eclipse.leshan.server.registration.RegistrationStore;
@@ -79,7 +80,7 @@ public class ObservationServiceTest {
     }
 
     private Registration givenASimpleRegistration() throws UnknownHostException {
-        Registration.Builder builder = new Registration.Builder("4711", "urn:endpoint",
+        DeviceRegistration.Builder builder = new DeviceRegistration.Builder("4711", "urn:endpoint",
                 new IpPeer(new InetSocketAddress(InetAddress.getLocalHost(), 23452)),
                 uriHandler.createUri("coap://localhost:5683"));
         return builder.lifeTimeInSec(10000L).bindingMode(EnumSet.of(BindingMode.U))
@@ -189,9 +190,9 @@ public class ObservationServiceTest {
     }
 
     private Registration givenASimpleClient(String registrationId) {
-        Registration.Builder builder;
+        DeviceRegistration.Builder builder;
         try {
-            builder = new Registration.Builder(registrationId, registrationId + "_ep",
+            builder = new DeviceRegistration.Builder(registrationId, registrationId + "_ep",
                     new IpPeer(new InetSocketAddress(InetAddress.getLocalHost(), 10000)), endpointUri);
             return builder.build();
         } catch (UnknownHostException e) {

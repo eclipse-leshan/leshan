@@ -256,7 +256,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
                     removeIdentityIndex(j, r);
                 }
 
-                return new UpdatedRegistration(r, updatedRegistration);
+                return new UpdatedRegistration(r, updatedRegistration, update);
 
             } finally {
                 lock.release(j, lockKey, lockValue);
@@ -774,8 +774,7 @@ public class RedisRegistrationStore implements RegistrationStore, Startable, Sto
                         if (!r.isAlive(gracePeriod)) {
                             Deregistration dereg = removeRegistration(j, r.getId(), true);
                             if (dereg != null)
-                                expirationListener.registrationExpired(dereg.getRegistration(),
-                                        dereg.getObservations());
+                                expirationListener.registrationExpired(dereg);
                         }
                     }
                 }

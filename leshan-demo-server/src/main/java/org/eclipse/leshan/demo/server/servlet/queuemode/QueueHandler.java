@@ -15,20 +15,20 @@
  *******************************************************************************/
 package org.eclipse.leshan.demo.server.servlet.queuemode;
 
-import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.eclipse.leshan.core.observation.Observation;
 import org.eclipse.leshan.core.request.DownlinkDeviceManagementRequest;
 import org.eclipse.leshan.core.request.exception.ClientSleepingException;
 import org.eclipse.leshan.core.response.LwM2mResponse;
 import org.eclipse.leshan.server.LeshanServer;
 import org.eclipse.leshan.server.queue.PresenceListener;
+import org.eclipse.leshan.server.registration.Deregistration;
 import org.eclipse.leshan.server.registration.Registration;
+import org.eclipse.leshan.server.registration.RegistrationAddition;
 import org.eclipse.leshan.server.registration.RegistrationListener;
-import org.eclipse.leshan.server.registration.RegistrationUpdate;
+import org.eclipse.leshan.server.registration.UpdatedRegistration;
 
 /**
  * This is a very simple in memory way to store request when device is sleeping.
@@ -77,21 +77,24 @@ public class QueueHandler {
         // Handle Registration Service Event
         server.getRegistrationService().addListener(new RegistrationListener() {
             @Override
-            public void updated(RegistrationUpdate update, Registration updatedReg, Registration previousReg) {
+            public void registered(RegistrationAddition registrationAddition) {
+                // TODO Auto-generated method stub
+
             }
 
             @Override
-            public void unregistered(Registration registration, Collection<Observation> observations, boolean expired,
-                    Registration newReg) {
-                QueueRequestData data = requestsToSend.remove(registration.getId());
+            public void updated(UpdatedRegistration udaptedRegistration) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void unregistered(Deregistration deregistration, boolean expired, Registration newReg) {
+                QueueRequestData data = requestsToSend.remove(deregistration.getRegistration().getId());
                 if (data != null) {
                     data.responseFuture.cancel(false);
                 }
-            }
 
-            @Override
-            public void registered(Registration registration, Registration previousReg,
-                    Collection<Observation> previousObservations) {
             }
         });
 
