@@ -16,7 +16,7 @@
  *     Michał Wadowski (Orange) - Improved compliance with rfc6690
  *******************************************************************************/
 
-package org.eclipse.leshan.integration.tests;
+package org.eclipse.leshan.integration.tests.register;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.leshan.integration.tests.util.LeshanTestClientBuilder.givenClientUsing;

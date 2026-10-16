@@ -169,6 +169,18 @@ public class LeshanTestServer extends LeshanServer {
         registrationEventInOrder.verifyNoMoreInteractions();
     }
 
+    public void ensureNoRegistration() {
+        ensureNoRegistration(1, TimeUnit.SECONDS);
+    }
+
+    public void ensureNoRegistration(int timeout, TimeUnit unit) {
+        TestUtils.sleep(unit.toMillis(timeout));
+        registrationEventInOrder.verify(registrationListener, never()).registered(any(), //
+                any(), //
+                any());
+        registrationEventInOrder.verifyNoMoreInteractions();
+    }
+
     public void waitForUpdateOf(Registration expectedRegistration) {
         waitForUpdateOf(expectedRegistration, 1, TimeUnit.SECONDS);
     }
@@ -235,10 +247,7 @@ public class LeshanTestServer extends LeshanServer {
     }
 
     public void ensureNoDeregistration(int timeout, TimeUnit unit) {
-        try {
-            Thread.sleep(unit.toMillis(timeout));
-        } catch (InterruptedException e) {
-        }
+        TestUtils.sleep(unit.toMillis(timeout));
         registrationEventInOrder.verify(registrationListener, never()).unregistered(any(), //
                 any(), //
                 anyBoolean(), //
@@ -374,19 +383,13 @@ public class LeshanTestServer extends LeshanServer {
     }
 
     public void ensureNoNotification(CompositeObservation obs, int timeout, TimeUnit unit) {
-        try {
-            Thread.sleep(unit.toMillis(timeout));
-        } catch (InterruptedException e) {
-        }
+        TestUtils.sleep(unit.toMillis(timeout));
         notificationEventInOrder.verify(notificationListener, never()).onResponse(argThat(is(obs)), any(), any());
         notificationEventInOrder.verifyNoMoreInteractions();
     }
 
     public void ensureNoNotification(SingleObservation obs, int timeout, TimeUnit unit) {
-        try {
-            Thread.sleep(unit.toMillis(timeout));
-        } catch (InterruptedException e) {
-        }
+        TestUtils.sleep(unit.toMillis(timeout));
         notificationEventInOrder.verify(notificationListener, never()).onResponse(argThat(is(obs)), any(), any());
         notificationEventInOrder.verifyNoMoreInteractions();
     }
@@ -396,10 +399,7 @@ public class LeshanTestServer extends LeshanServer {
     }
 
     public void ensureNoMoreAwakeSleepingEvent(int timeout, TimeUnit unit) {
-        try {
-            Thread.sleep(unit.toMillis(timeout));
-        } catch (InterruptedException e) {
-        }
+        TestUtils.sleep(unit.toMillis(timeout));
         awakeEventInOrder.verifyNoMoreInteractions();
     }
 

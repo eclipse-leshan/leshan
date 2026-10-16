@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Sierra Wireless and others.
+ * Copyright (c) 2026 Sierra Wireless and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
@@ -13,15 +13,20 @@
  * Contributors:
  *     Sierra Wireless - initial API and implementation
  *******************************************************************************/
-package org.eclipse.leshan.integration.tests;
+package org.eclipse.leshan.integration.tests.util;
 
-import org.eclipse.leshan.core.endpoint.Protocol;
-import org.eclipse.leshan.integration.tests.util.LeshanTestServerBuilder;
+public final class TestUtils {
 
-public class RedisRegistrationTest extends RegistrationTest {
+    private TestUtils() {
+    }
 
-    @Override
-    protected LeshanTestServerBuilder givenServerUsing(Protocol givenProtocol) {
-        return super.givenServerUsing(givenProtocol).withRedisRegistrationStore();
+    @SuppressWarnings("java:S2925")
+    static void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Unexpected Interruption while sleeping", e);
+        }
     }
 }
