@@ -40,44 +40,8 @@ public class TlvDecoder {
     }
 
     public static Tlv[] decode(ByteBuffer input) throws TlvException {
-
         try {
-            List<Tlv> tlvs = new ArrayList<>();
-
-            while (input.remaining() > 0) {
-                input.order(ByteOrder.BIG_ENDIAN);
-
-                // decode type
-                int typeByte = input.get() & 0xFF;
-                TlvType type = consumeType(typeByte);
-
-                // decode identifier
-                int identifier = consumeIdentifier(input, typeByte);
-                LOG.trace("decoding {} {}", type, identifier);
-
-                // decode length
-                int lengthType = typeByte & 0b0001_1000;
-                int length = consumeLength(input, lengthType, typeByte);
-                LOG.trace("length: {} (length type: {})", length, lengthType);
-
-                // validate length
-                validateLength(input, length);
-
-                // decode value
-                if (type == TlvType.RESOURCE_VALUE || type == TlvType.RESOURCE_INSTANCE) {
-                    byte[] payload = consumeValue(input, length);
-                    tlvs.add(new Tlv(type, null, payload, identifier));
-                    if (LOG.isTraceEnabled()) {
-                        LOG.trace("payload value: {}", Hex.encodeHexString(payload));
-                    }
-                } else {
-                    Tlv[] children = consumeChildren(input, length);
-                    Tlv tlv = new Tlv(type, children, null, identifier);
-                    tlvs.add(tlv);
-                }
-            }
-
-            return tlvs.toArray(new Tlv[] {});
+            return decodeTlvs(input, null);
         } catch (TlvException ex) {
             if (LOG.isTraceEnabled()) {
                 LOG.trace("Impossible to parse TLV: {}", getBufferHex(input), ex);
@@ -88,6 +52,93 @@ public class TlvDecoder {
                 LOG.trace("Unexpected TLV parse error: {}", getBufferHex(input), ex);
             }
             throw new TlvException("Unexpected TLV parse error: " + getBufferState(input), ex);
+        }
+    }
+
+    /**
+     * Decodes all the TLVs contained in the given buffer.
+     * <p>
+     * This method is called recursively for nested TLVs and so must not wrap the raised {@link TlvException} : doing it
+     * at each level would create a chain of causes as deep as the payload is nested. Exceptions are wrapped once for
+     * all by {@link #decode(ByteBuffer)}.
+     *
+     * @param input the buffer to decode
+     * @param parentType the type of the enclosing TLV or <code>null</code> if this is the top level
+     */
+    private static Tlv[] decodeTlvs(ByteBuffer input, TlvType parentType) throws TlvException {
+        List<Tlv> tlvs = new ArrayList<>();
+
+        while (input.remaining() > 0) {
+            input.order(ByteOrder.BIG_ENDIAN);
+
+            // decode type
+            int typeByte = input.get() & 0xFF;
+            TlvType type = consumeType(typeByte);
+
+            // validate that this type is allowed at this place of the hierarchy
+            validateType(type, parentType);
+
+            // decode identifier
+            int identifier = consumeIdentifier(input, typeByte);
+            LOG.trace("decoding {} {}", type, identifier);
+
+            // decode length
+            int lengthType = typeByte & 0b0001_1000;
+            int length = consumeLength(input, lengthType, typeByte);
+            LOG.trace("length: {} (length type: {})", length, lengthType);
+
+            // validate length
+            validateLength(input, length);
+
+            // decode value
+            if (type == TlvType.RESOURCE_VALUE || type == TlvType.RESOURCE_INSTANCE) {
+                byte[] payload = consumeValue(input, length);
+                tlvs.add(new Tlv(type, null, payload, identifier));
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("payload value: {}", Hex.encodeHexString(payload));
+                }
+            } else {
+                Tlv[] children = consumeChildren(input, length, type);
+                Tlv tlv = new Tlv(type, children, null, identifier);
+                tlvs.add(tlv);
+            }
+        }
+
+        return tlvs.toArray(new Tlv[] {});
+    }
+
+    /**
+     * Validates that a TLV of the given type is allowed inside a TLV of the given parent type.
+     * <p>
+     * The LWM2M TLV hierarchy is fixed : an OBJECT_INSTANCE contains only resources (RESOURCE_VALUE or
+     * MULTIPLE_RESOURCE), a MULTIPLE_RESOURCE contains only RESOURCE_INSTANCE and both RESOURCE_VALUE and
+     * RESOURCE_INSTANCE are leaves. Enforcing it here makes the nesting depth of a valid payload constant and so bounds
+     * the recursion depth of the decoder, whatever the payload size is.
+     *
+     * @param type the type of the TLV being decoded
+     * @param parentType the type of the enclosing TLV or <code>null</code> if this is the top level
+     */
+    protected static void validateType(TlvType type, TlvType parentType) throws TlvException {
+        if (parentType == null) {
+            // at top level, the expected type depends on the path of the request, so we can not check it here.
+            return;
+        }
+        switch (parentType) {
+        case OBJECT_INSTANCE:
+            if (type != TlvType.RESOURCE_VALUE && type != TlvType.MULTIPLE_RESOURCE) {
+                throw new TlvException(String.format("Invalid TLV: %s is not allowed inside a %s, expected %s or %s",
+                        type, parentType, TlvType.RESOURCE_VALUE, TlvType.MULTIPLE_RESOURCE));
+            }
+            break;
+        case MULTIPLE_RESOURCE:
+            if (type != TlvType.RESOURCE_INSTANCE) {
+                throw new TlvException(String.format("Invalid TLV: %s is not allowed inside a %s, expected %s", type,
+                        parentType, TlvType.RESOURCE_INSTANCE));
+            }
+            break;
+        default:
+            // should not happen as we only decode children of OBJECT_INSTANCE and MULTIPLE_RESOURCE
+            throw new TlvException(String.format("Invalid TLV: a %s can not contain other TLV", parentType));
         }
     }
 
@@ -183,14 +234,14 @@ public class TlvDecoder {
     }
 
     @SuppressWarnings("java:S1905")
-    private static Tlv[] consumeChildren(ByteBuffer input, int length) throws TlvException {
+    private static Tlv[] consumeChildren(ByteBuffer input, int length, TlvType parentType) throws TlvException {
         // create a view of the contained TLVs
         ByteBuffer slice = input.slice();
         // HACK the cast is necessary for binary backward compatibility bug introduce in Java 9
         // https://github.com/apache/felix/pull/114
         ((Buffer) slice).limit(length);
 
-        Tlv[] children = decode(slice);
+        Tlv[] children = decodeTlvs(slice, parentType);
 
         // skip the children, it will be decoded by the view
         // HACK the cast is necessary for binary backward compatibility bug introduce in Java 9

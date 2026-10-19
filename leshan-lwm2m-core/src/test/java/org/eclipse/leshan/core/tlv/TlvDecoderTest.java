@@ -15,6 +15,10 @@
  *******************************************************************************/
 package org.eclipse.leshan.core.tlv;
 
+import static org.eclipse.leshan.core.tlv.Tlv.TlvType.MULTIPLE_RESOURCE;
+import static org.eclipse.leshan.core.tlv.Tlv.TlvType.OBJECT_INSTANCE;
+import static org.eclipse.leshan.core.tlv.Tlv.TlvType.RESOURCE_INSTANCE;
+import static org.eclipse.leshan.core.tlv.Tlv.TlvType.RESOURCE_VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -24,6 +28,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import org.eclipse.leshan.core.node.ObjectLink;
+import org.eclipse.leshan.core.tlv.Tlv.TlvType;
 import org.eclipse.leshan.core.util.Hex;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -109,5 +114,173 @@ class TlvDecoderTest {
         TlvException exception = assertThrows(TlvException.class, () -> TlvDecoder.decode(b));
         assertTrue(exception.getCause().getMessage().startsWith("Invalid length"));
         assertTrue(exception.getCause() instanceof TlvException);
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // valid hierarchies : must still be decoded
+    // ---------------------------------------------------------------------------------------------------------------
+
+    @Test
+    void decode_object_instance_containing_multiple_resource() throws TlvException {
+        byte[] payload = encode( //
+                node(OBJECT_INSTANCE, 0, //
+                        node(MULTIPLE_RESOURCE, 1, //
+                                leaf(RESOURCE_INSTANCE, 0, 0x42))));
+
+        Tlv[] tlvs = TlvDecoder.decode(ByteBuffer.wrap(payload));
+
+        assertEquals(1, tlvs.length);
+        assertEquals(OBJECT_INSTANCE, tlvs[0].getType());
+        assertEquals(MULTIPLE_RESOURCE, tlvs[0].getChildren()[0].getType());
+        assertEquals(RESOURCE_INSTANCE, tlvs[0].getChildren()[0].getChildren()[0].getType());
+    }
+
+    @Test
+    void decode_object_instance_containing_single_value_resources() throws TlvException {
+        byte[] payload = encode( //
+                node(OBJECT_INSTANCE, 0, //
+                        leaf(RESOURCE_VALUE, 0, 0x01), //
+                        leaf(RESOURCE_VALUE, 1, 0x02)));
+
+        Tlv[] tlvs = TlvDecoder.decode(ByteBuffer.wrap(payload));
+
+        assertEquals(2, tlvs[0].getChildren().length);
+    }
+
+    @Test
+    void decode_accepts_any_type_at_top_level() throws TlvException {
+        // What is expected at top level depends on the path of the request (/3/0/6 gives RESOURCE_INSTANCEs for
+        // instance), so the decoder can not restrict it.
+        for (TlvType type : new TlvType[] { RESOURCE_INSTANCE, RESOURCE_VALUE }) {
+            byte[] payload = encode(leaf(type, 0, 0x42));
+            assertEquals(type, TlvDecoder.decode(ByteBuffer.wrap(payload))[0].getType());
+        }
+        byte[] payload = encode(node(MULTIPLE_RESOURCE, 0, leaf(RESOURCE_INSTANCE, 0, 0x42)));
+        assertEquals(MULTIPLE_RESOURCE, TlvDecoder.decode(ByteBuffer.wrap(payload))[0].getType());
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // invalid hierarchies : must be rejected by the TLV decoder itself
+    // ---------------------------------------------------------------------------------------------------------------
+
+    @Test
+    void decode_fails_on_resource_instance_directly_in_object_instance() {
+        // a MULTIPLE_RESOURCE should be between them
+        byte[] payload = encode( //
+                node(OBJECT_INSTANCE, 0, //
+                        leaf(RESOURCE_INSTANCE, 0, 0x42)));
+
+        assertDecodeFails(payload);
+    }
+
+    @Test
+    void decode_fails_on_object_instance_in_object_instance() {
+        byte[] payload = encode( //
+                node(OBJECT_INSTANCE, 0, //
+                        node(OBJECT_INSTANCE, 0, //
+                                leaf(RESOURCE_VALUE, 0, 0x42))));
+
+        assertDecodeFails(payload);
+    }
+
+    @Test
+    void decode_fails_on_object_instance_in_multiple_resource() {
+        byte[] payload = encode( //
+                node(MULTIPLE_RESOURCE, 0, //
+                        node(OBJECT_INSTANCE, 0, //
+                                leaf(RESOURCE_VALUE, 0, 0x42))));
+
+        assertDecodeFails(payload);
+    }
+
+    @Test
+    void decode_fails_on_multiple_resource_in_multiple_resource() {
+        // this is the shape which allows to build an arbitrarily deep tree
+        byte[] payload = encode( //
+                node(MULTIPLE_RESOURCE, 0, //
+                        node(MULTIPLE_RESOURCE, 0, //
+                                leaf(RESOURCE_INSTANCE, 0, 0x42))));
+
+        assertDecodeFails(payload);
+    }
+
+    @Test
+    void decode_fails_on_resource_value_in_multiple_resource() {
+        // only RESOURCE_INSTANCE are allowed inside a MULTIPLE_RESOURCE
+        byte[] payload = encode( //
+                node(MULTIPLE_RESOURCE, 0, //
+                        leaf(RESOURCE_VALUE, 0, 0x42)));
+
+        assertDecodeFails(payload);
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // payloads which can not be produced by the encoder : raw bytes
+    // ---------------------------------------------------------------------------------------------------------------
+
+    @Test
+    void decode_fails_fast_on_deeply_nested_payload() {
+        // 8192 bytes of nested MULTIPLE_RESOURCE, each frame is 4 bytes of header (type byte 0x90 = 8-bit identifier +
+        // 16-bit length) and declares everything which remains below it : 2048 levels.
+        // Without the hierarchy check this built the whole tree and raised a StackOverflowError on a small stack.
+        byte[] payload = new byte[8192];
+        for (int offset = 0; offset + 4 <= payload.length; offset += 4) {
+            int length = payload.length - offset - 4;
+            payload[offset] = (byte) 0x90;
+            payload[offset + 2] = (byte) (length >> 8);
+            payload[offset + 3] = (byte) length;
+        }
+
+        assertDecodeFails(payload);
+    }
+
+    @Test
+    void decode_wraps_error_only_once_whatever_the_nesting_level() {
+        // OBJECT_INSTANCE > MULTIPLE_RESOURCE > RESOURCE_INSTANCE whose declared length (7) is bigger than what remains
+        byte[] payload = hex("05 00  83 01  47 00 42");
+
+        TlvException ex = assertDecodeFails(payload);
+
+        // the error is raised at depth 3 but must be wrapped once, by the public decode() : ex + 1 cause
+        assertEquals(2, causeChainLength(ex));
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // helpers
+    // ---------------------------------------------------------------------------------------------------------------
+
+    /** A TLV containing other TLVs (OBJECT_INSTANCE or MULTIPLE_RESOURCE) */
+    private static Tlv node(TlvType type, int identifier, Tlv... children) {
+        return new Tlv(type, children, null, identifier);
+    }
+
+    /** A TLV containing a value (RESOURCE_VALUE or RESOURCE_INSTANCE) */
+    private static Tlv leaf(TlvType type, int identifier, int... value) {
+        byte[] bytes = new byte[value.length];
+        for (int i = 0; i < value.length; i++) {
+            bytes[i] = (byte) value[i];
+        }
+        return new Tlv(type, null, bytes, identifier);
+    }
+
+    private static byte[] encode(Tlv... tlvs) {
+        return TlvEncoder.encode(tlvs).array();
+    }
+
+    /** Hex string with optional spaces so each TLV frame can be separated visually. */
+    private static byte[] hex(String hex) {
+        return Hex.decodeHex(hex.replace(" ", "").toCharArray());
+    }
+
+    private static TlvException assertDecodeFails(byte[] payload) {
+        return assertThrows(TlvException.class, () -> TlvDecoder.decode(ByteBuffer.wrap(payload)));
+    }
+
+    private static int causeChainLength(Throwable throwable) {
+        int length = 0;
+        for (Throwable cause = throwable; cause != null; cause = cause.getCause()) {
+            length++;
+        }
+        return length;
     }
 }
