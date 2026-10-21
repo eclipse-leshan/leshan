@@ -34,8 +34,8 @@ public class LwM2mTransportContextMatcher extends DefaultTransportContextMatcher
         if (key.equals(TlsTransportContextKeys.PRINCIPAL)) {
             if (packetValue instanceof X500Principal && channelValue instanceof X500Principal) {
                 try {
-                    String requestedCommonName = X509CertUtil.extractCN(((X500Principal) packetValue).getName());
-                    String availableCommonName = X509CertUtil.extractCN(((X500Principal) channelValue).getName());
+                    String requestedCommonName = X509CertUtil.extractCN(((X500Principal) packetValue));
+                    String availableCommonName = X509CertUtil.extractCN(((X500Principal) channelValue));
                     return requestedCommonName.equals(availableCommonName);
                 } catch (IllegalStateException e) {
                     LOG.debug("Unable to extract CN from certificate {} or {}", packetValue, channelValue);
@@ -49,6 +49,5 @@ public class LwM2mTransportContextMatcher extends DefaultTransportContextMatcher
         } else {
             return super.matches(key, packetValue, channelValue);
         }
-
     }
 }

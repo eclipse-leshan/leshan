@@ -36,9 +36,6 @@ import org.eclipse.leshan.transport.californium.identity.CaliforniumPrincipalUti
  */
 public class Lwm2mEndpointContextMatcher extends PrincipalEndpointContextMatcher {
 
-    public Lwm2mEndpointContextMatcher() {
-    }
-
     @Override
     public String getName() {
         return "lwm2m correlation";
@@ -55,9 +52,9 @@ public class Lwm2mEndpointContextMatcher extends PrincipalEndpointContextMatcher
                 && CaliforniumPrincipalUtil.canBeConvertedToX500Principal(availablePrincipal)) {
             try {
                 String requestedCommonName = X509CertUtil
-                        .extractCN(CaliforniumPrincipalUtil.convertToX500Principal(requestedPrincipal).getName());
+                        .extractCN(CaliforniumPrincipalUtil.convertToX500Principal(requestedPrincipal));
                 String availableCommonName = X509CertUtil
-                        .extractCN(CaliforniumPrincipalUtil.convertToX500Principal(availablePrincipal).getName());
+                        .extractCN(CaliforniumPrincipalUtil.convertToX500Principal(availablePrincipal));
                 return requestedCommonName.equals(availableCommonName);
             } catch (IllegalStateException e) {
                 return false;
