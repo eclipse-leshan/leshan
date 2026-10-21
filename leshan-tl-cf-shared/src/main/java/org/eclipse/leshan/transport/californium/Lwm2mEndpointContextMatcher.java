@@ -17,10 +17,9 @@ package org.eclipse.leshan.transport.californium;
 
 import java.security.Principal;
 
-import javax.security.auth.x500.X500Principal;
-
 import org.eclipse.californium.elements.PrincipalEndpointContextMatcher;
 import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
+import org.eclipse.leshan.transport.californium.identity.CaliforniumPrincipalUtil;
 
 // TODO TL: to be move in californium.identity package
 
@@ -52,10 +51,13 @@ public class Lwm2mEndpointContextMatcher extends PrincipalEndpointContextMatcher
      */
     @Override
     protected boolean matchPrincipals(Principal requestedPrincipal, Principal availablePrincipal) {
-        if (requestedPrincipal instanceof X500Principal || availablePrincipal instanceof X500Principal) {
+        if (CaliforniumPrincipalUtil.canBeConvertedToX500Principal(requestedPrincipal)
+                && CaliforniumPrincipalUtil.canBeConvertedToX500Principal(availablePrincipal)) {
             try {
-                String requestedCommonName = X509CertUtil.extractCN(requestedPrincipal.getName());
-                String availableCommonName = X509CertUtil.extractCN(availablePrincipal.getName());
+                String requestedCommonName = X509CertUtil
+                        .extractCN(CaliforniumPrincipalUtil.convertToX500Principal(requestedPrincipal).getName());
+                String availableCommonName = X509CertUtil
+                        .extractCN(CaliforniumPrincipalUtil.convertToX500Principal(availablePrincipal).getName());
                 return requestedCommonName.equals(availableCommonName);
             } catch (IllegalStateException e) {
                 return false;
