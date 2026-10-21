@@ -42,6 +42,8 @@ import org.eclipse.leshan.transport.javacoap.server.coaptcp.transport.CoapsTcpTr
 import org.eclipse.leshan.transport.javacoap.server.coaptcp.transport.NettyCoapTcpTransport;
 import org.eclipse.leshan.transport.javacoap.server.coaptcp.transport.TransportContextHandler;
 import org.eclipse.leshan.transport.javacoap.server.endpoint.AbstractJavaCoapServerEndpointsProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.mbed.coap.packet.BlockSize;
 import com.mbed.coap.packet.CoapRequest;
@@ -61,6 +63,8 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.util.Attribute;
 
 public class JavaCoapsTcpServerEndpointsProvider extends AbstractJavaCoapServerEndpointsProvider {
+
+    private static final Logger LOG = LoggerFactory.getLogger(JavaCoapsTcpServerEndpointsProvider.class);
 
     public JavaCoapsTcpServerEndpointsProvider(InetSocketAddress localAddress) {
         super(Protocol.COAPS_TCP, "CoAP over TLS experimental endpoint based on java-coap and netty libraries",
@@ -138,12 +142,8 @@ public class JavaCoapsTcpServerEndpointsProvider extends AbstractJavaCoapServerE
                                 for (SecurityInfo info : infos) {
                                     if (info != null) {
                                         // x509
-                                        if (info.useX509Cert() && principal instanceof X500Principal) {
-                                            // Extract common name
-                                            String x509CommonName = X509CertUtil.extractCN(principal.getName());
-                                            if (x509CommonName.equals(info.getEndpoint())) {
-                                                return true;
-                                            }
+                                        if (info.useX509Cert() && matchesX509(principal, info)) {
+                                            return true;
                                         }
                                     }
                                 }
@@ -154,6 +154,23 @@ public class JavaCoapsTcpServerEndpointsProvider extends AbstractJavaCoapServerE
                     });
                 }
             });
+        }
+    }
+
+    private static boolean matchesX509(Principal principal, SecurityInfo info) {
+        if (!(principal instanceof X500Principal)) {
+            return false;
+        }
+        try {
+            // Extract common name
+            String x509CommonName = X509CertUtil.extractCN((X500Principal) principal);
+            return x509CommonName.equals(info.getEndpoint());
+        } catch (IllegalStateException e) {
+            // The identity of this connection can not be read (no CN, several CN, ...) so this is not the connection we
+            // are looking for. The exception must not escape from the predicate given to closeConnections.
+            LOG.debug("Ignore connection with unreadable X.509 identity while cleaning connections for '{}': {}",
+                    info.getEndpoint(), e.getMessage());
+            return false;
         }
     }
 }

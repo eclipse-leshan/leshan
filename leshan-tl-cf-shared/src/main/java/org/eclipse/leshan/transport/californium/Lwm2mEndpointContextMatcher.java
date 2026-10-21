@@ -20,6 +20,8 @@ import java.security.Principal;
 import org.eclipse.californium.elements.PrincipalEndpointContextMatcher;
 import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 import org.eclipse.leshan.transport.californium.identity.CaliforniumPrincipalUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // TODO TL: to be move in californium.identity package
 
@@ -36,8 +38,7 @@ import org.eclipse.leshan.transport.californium.identity.CaliforniumPrincipalUti
  */
 public class Lwm2mEndpointContextMatcher extends PrincipalEndpointContextMatcher {
 
-    public Lwm2mEndpointContextMatcher() {
-    }
+    private static final Logger LOG = LoggerFactory.getLogger(Lwm2mEndpointContextMatcher.class);
 
     @Override
     public String getName() {
@@ -55,11 +56,12 @@ public class Lwm2mEndpointContextMatcher extends PrincipalEndpointContextMatcher
                 && CaliforniumPrincipalUtil.canBeConvertedToX500Principal(availablePrincipal)) {
             try {
                 String requestedCommonName = X509CertUtil
-                        .extractCN(CaliforniumPrincipalUtil.convertToX500Principal(requestedPrincipal).getName());
+                        .extractCN(CaliforniumPrincipalUtil.convertToX500Principal(requestedPrincipal));
                 String availableCommonName = X509CertUtil
-                        .extractCN(CaliforniumPrincipalUtil.convertToX500Principal(availablePrincipal).getName());
+                        .extractCN(CaliforniumPrincipalUtil.convertToX500Principal(availablePrincipal));
                 return requestedCommonName.equals(availableCommonName);
             } catch (IllegalStateException e) {
+                LOG.debug("Unable to match principals: {}", e.getMessage());
                 return false;
             }
         } else {

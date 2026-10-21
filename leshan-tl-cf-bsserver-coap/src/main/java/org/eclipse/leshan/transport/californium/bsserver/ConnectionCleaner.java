@@ -19,19 +19,21 @@ import java.security.Principal;
 import java.security.PublicKey;
 import java.util.function.Predicate;
 
-import javax.security.auth.x500.X500Principal;
-
 import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
-import org.eclipse.californium.elements.auth.X509CertPath;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 import org.eclipse.leshan.servers.security.SecurityInfo;
+import org.eclipse.leshan.transport.californium.identity.CaliforniumPrincipalUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is responsible to remove DTLS connection for a given SecurityInfo.
  */
 public class ConnectionCleaner {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ConnectionCleaner.class);
 
     private final DTLSConnector connector;
 
@@ -61,13 +63,8 @@ public class ConnectionCleaner {
                                 }
                             }
                             // x509
-                            else if (info.useX509Cert() && principal instanceof X500Principal
-                                    || principal instanceof X509CertPath) {
-                                // Extract common name
-                                String x509CommonName = X509CertUtil.extractCN(principal.getName());
-                                if (x509CommonName.equals(info.getEndpoint())) {
-                                    return true;
-                                }
+                            else if (info.useX509Cert() && matchesX509(principal, info)) {
+                                return true;
                             }
                         }
                     }
@@ -75,5 +72,23 @@ public class ConnectionCleaner {
                 return false;
             }
         });
+    }
+
+    private static boolean matchesX509(Principal principal, SecurityInfo info) {
+        if (!CaliforniumPrincipalUtil.canBeConvertedToX500Principal(principal)) {
+            return false;
+        }
+        try {
+            // Extract common name
+            String x509CommonName = X509CertUtil.extractCN(CaliforniumPrincipalUtil.convertToX500Principal(principal));
+            return x509CommonName.equals(info.getEndpoint());
+        } catch (IllegalStateException e) {
+            // The identity of this connection can not be read (no CN, several CN, ...) so this is not the connection we
+            // are looking for. The exception must not escape from the predicate: it would stop Scandium from visiting
+            // the remaining connections, which would then not be cleaned.
+            LOG.debug("Ignore connection with unreadable X.509 identity while cleaning connections for '{}': {}",
+                    info.getEndpoint(), e.getMessage());
+            return false;
+        }
     }
 }

@@ -35,7 +35,7 @@ public class DefaultTlsIdentityHandler extends DefaultCoapIdentityHandler {
         if (principal != null) {
             if (principal instanceof X500Principal) {
                 // Extract common name
-                String x509CommonName = X509CertUtil.extractCN(principal.getName());
+                String x509CommonName = X509CertUtil.extractCN((X500Principal) principal);
                 return new IpPeer(address, new X509Identity(x509CommonName));
             }
             throw new IllegalStateException(
