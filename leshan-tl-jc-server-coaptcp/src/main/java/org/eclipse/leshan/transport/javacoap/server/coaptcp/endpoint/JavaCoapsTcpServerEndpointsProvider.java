@@ -140,7 +140,7 @@ public class JavaCoapsTcpServerEndpointsProvider extends AbstractJavaCoapServerE
                                         // x509
                                         if (info.useX509Cert() && principal instanceof X500Principal) {
                                             // Extract common name
-                                            String x509CommonName = X509CertUtil.extractCN(principal.getName());
+                                            String x509CommonName = X509CertUtil.extractCN((X500Principal) principal);
                                             if (x509CommonName.equals(info.getEndpoint())) {
                                                 return true;
                                             }

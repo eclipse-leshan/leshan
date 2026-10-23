@@ -23,10 +23,10 @@ import javax.security.auth.x500.X500Principal;
 
 import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
-import org.eclipse.californium.elements.auth.X509CertPath;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 import org.eclipse.leshan.servers.security.SecurityInfo;
+import org.eclipse.leshan.transport.californium.identity.CaliforniumPrincipalUtil;
 
 /**
  * This class is responsible to remove DTLS connection for a given SecurityInfo.
@@ -61,12 +61,16 @@ public class ConnectionCleaner {
                                 }
                             }
                             // x509
-                            else if (info.useX509Cert() && principal instanceof X500Principal
-                                    || principal instanceof X509CertPath) {
-                                // Extract common name
-                                String x509CommonName = X509CertUtil.extractCN(principal.getName());
-                                if (x509CommonName.equals(info.getEndpoint())) {
-                                    return true;
+                            else if (info.useX509Cert()) {
+                                X500Principal subjectPrincipal;
+                                if (CaliforniumPrincipalUtil.canBeConvertedToX500Principal(principal)) {
+                                    subjectPrincipal = CaliforniumPrincipalUtil.convertToX500Principal(principal);
+                                    // Extract common name
+                                    String x509CommonName = X509CertUtil.extractCN(subjectPrincipal);
+                                    if (x509CommonName.equals(info.getEndpoint())) {
+                                        return true;
+                                    }
+
                                 }
                             }
                         }

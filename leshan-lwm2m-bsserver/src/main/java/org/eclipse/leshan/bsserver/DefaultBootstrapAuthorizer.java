@@ -44,7 +44,7 @@ public class DefaultBootstrapAuthorizer implements BootstrapAuthorizer {
 
         if (bsSecurityStore != null && securityChecker != null) {
             Iterator<SecurityInfo> securityInfos = bsSecurityStore.getAllByEndpoint(endpointName);
-            if (securityChecker.checkSecurityInfos(request.getEndpointName(), client, securityInfos)) {
+            if (securityChecker.checkSecurityInfos(endpointName, client, securityInfos)) {
                 return Authorization.approved();
             } else {
                 return Authorization.declined();

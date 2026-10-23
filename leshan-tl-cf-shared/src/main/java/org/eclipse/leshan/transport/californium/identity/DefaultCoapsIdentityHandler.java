@@ -29,7 +29,6 @@ import org.eclipse.californium.elements.MapBasedEndpointContext;
 import org.eclipse.californium.elements.MapBasedEndpointContext.Attributes;
 import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
-import org.eclipse.californium.elements.auth.X509CertPath;
 import org.eclipse.leshan.core.peer.IpPeer;
 import org.eclipse.leshan.core.peer.LwM2mPeer;
 import org.eclipse.leshan.core.peer.PskIdentity;
@@ -60,9 +59,10 @@ public class DefaultCoapsIdentityHandler implements IdentityHandler {
             } else if (senderIdentity instanceof RawPublicKeyIdentity) {
                 PublicKey publicKey = ((RawPublicKeyIdentity) senderIdentity).getKey();
                 return new IpPeer(peerAddress, new RpkIdentity(publicKey));
-            } else if (senderIdentity instanceof X500Principal || senderIdentity instanceof X509CertPath) {
+            } else if (CaliforniumPrincipalUtil.canBeConvertedToX500Principal(senderIdentity)) {
                 // Extract common name
-                String x509CommonName = X509CertUtil.extractCN(senderIdentity.getName());
+                String x509CommonName = X509CertUtil
+                        .extractCN(CaliforniumPrincipalUtil.convertToX500Principal(senderIdentity));
                 return new IpPeer(peerAddress, new X509Identity(x509CommonName));
             }
             throw new IllegalStateException(

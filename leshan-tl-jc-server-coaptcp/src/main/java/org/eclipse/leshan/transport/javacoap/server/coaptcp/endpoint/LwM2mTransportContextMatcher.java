@@ -15,11 +15,9 @@
  *******************************************************************************/
 package org.eclipse.leshan.transport.javacoap.server.coaptcp.endpoint;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import javax.security.auth.x500.X500Principal;
 
+import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 import org.eclipse.leshan.transport.javacoap.identity.TlsTransportContextKeys;
 import org.eclipse.leshan.transport.javacoap.server.coaptcp.transport.DefaultTransportContextMatcher;
 import org.slf4j.Logger;
@@ -34,10 +32,10 @@ public class LwM2mTransportContextMatcher extends DefaultTransportContextMatcher
     @Override
     protected boolean matches(Key<?> key, Object packetValue, Object channelValue) {
         if (key.equals(TlsTransportContextKeys.PRINCIPAL)) {
-            if (packetValue instanceof X500Principal || channelValue instanceof X500Principal) {
+            if (packetValue instanceof X500Principal && channelValue instanceof X500Principal) {
                 try {
-                    String requestedCommonName = extractCN(((X500Principal) packetValue).getName());
-                    String availableCommonName = extractCN(((X500Principal) channelValue).getName());
+                    String requestedCommonName = X509CertUtil.extractCN(((X500Principal) packetValue));
+                    String availableCommonName = X509CertUtil.extractCN(((X500Principal) channelValue));
                     return requestedCommonName.equals(availableCommonName);
                 } catch (IllegalStateException e) {
                     LOG.debug("Unable to extract CN from certificate {} or {}", packetValue, channelValue);
@@ -50,25 +48,6 @@ public class LwM2mTransportContextMatcher extends DefaultTransportContextMatcher
             }
         } else {
             return super.matches(key, packetValue, channelValue);
-        }
-
-    }
-
-    /**
-     * Extract "common name" from "distinguished name".
-     *
-     * @param dn The distinguished name.
-     * @return The extracted common name.
-     * @throws IllegalStateException if no CN is contained in DN.
-     */
-    public static String extractCN(String dn) {
-        // Extract common name
-        Matcher endpointMatcher = Pattern.compile("CN=(.*?)(,|$)").matcher(dn);
-        if (endpointMatcher.find()) {
-            return endpointMatcher.group(1);
-        } else {
-            throw new IllegalStateException(
-                    "Unable to extract sender identity : can not get common name in certificate");
         }
     }
 }
