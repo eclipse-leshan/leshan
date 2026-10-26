@@ -11,6 +11,13 @@
             <property name="ignoreComments" value="true"/>
             <property name="message" value="No `sysout` or `syserr` allowed."/>
         </module>
+        <!-- forbid usage of getSubjectDN or getIssuerDN -->
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="no_dn_getters"/>
+            <property name="format" value="\.get(Subject|Issuer)DN\(\)"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="Use getSubjectX500Principal()/getIssuerX500Principal(). getSubjectDN()/getIssuerDN() are deprecated and the format of the name they return depends on the JVM, use X509CertUtil.extractCN() instead."/>
+        </module>
         <module name="AvoidStarImport" />
         <module name="UnusedLocalVariable"/>
     </module>
@@ -31,4 +38,6 @@
         <property name="id" value="no_sys"/>
         <property name="files" value="FileLister.java"/>
     </module>
+
+   
 </module>
