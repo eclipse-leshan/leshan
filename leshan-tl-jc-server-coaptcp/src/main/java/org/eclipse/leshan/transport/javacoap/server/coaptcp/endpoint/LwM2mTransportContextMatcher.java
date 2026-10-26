@@ -27,7 +27,7 @@ import com.mbed.coap.transport.TransportContext.Key;
 
 public class LwM2mTransportContextMatcher extends DefaultTransportContextMatcher {
 
-    private final Logger LOG = LoggerFactory.getLogger(LwM2mTransportContextMatcher.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LwM2mTransportContextMatcher.class);
 
     @Override
     protected boolean matches(Key<?> key, Object packetValue, Object channelValue) {
@@ -43,7 +43,7 @@ public class LwM2mTransportContextMatcher extends DefaultTransportContextMatcher
                 }
             } else {
                 LOG.debug("Unsupported kind of principal {} or {}", packetValue.getClass().getSimpleName(),
-                        channelValue.getClass().getSimpleName());
+                        channelValue == null ? null : channelValue.getClass().getSimpleName());
                 return false;
             }
         } else {
