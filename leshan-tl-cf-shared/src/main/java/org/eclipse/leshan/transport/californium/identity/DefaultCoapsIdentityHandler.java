@@ -19,8 +19,6 @@ import java.net.InetSocketAddress;
 import java.security.Principal;
 import java.security.PublicKey;
 
-import javax.security.auth.x500.X500Principal;
-
 import org.eclipse.californium.core.coap.Message;
 import org.eclipse.californium.elements.AddressEndpointContext;
 import org.eclipse.californium.elements.DtlsEndpointContext;
@@ -81,7 +79,7 @@ public class DefaultCoapsIdentityHandler implements IdentityHandler {
             peerIdentity = new RawPublicKeyIdentity(((RpkIdentity) client.getIdentity()).getPublicKey());
         } else if (client.getIdentity() instanceof X509Identity) {
             /* simplify distinguished name to CN= part */
-            peerIdentity = new X500Principal("CN=" + ((X509Identity) client.getIdentity()).getX509CommonName());
+            peerIdentity = X509CertUtil.createX500Principal(((X509Identity) client.getIdentity()).getX509CommonName());
         } else {
             throw new IllegalStateException(String.format("Unsupported Identity : %s", client.getIdentity()));
         }

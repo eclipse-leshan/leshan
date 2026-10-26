@@ -30,6 +30,7 @@ import java.util.Map;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.eclipse.leshan.core.util.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -295,6 +296,22 @@ public class X509CertUtil {
      */
     public static String extractCN(X500Principal principal) {
         return DerCommonName.extractCN(principal);
+    }
+
+    /**
+     * Create an {@link X500Principal} which only contains the given "common name".
+     * <p>
+     * The value is DER encoded, so it is kept as is (nothing to escape, nothing trimmed) and
+     * {@link #extractCN(X500Principal)} gives it back. Do not build it with <code>new X500Principal("CN=" + cn)</code>:
+     * that parses <code>cn</code> as a distinguished name.
+     *
+     * @param commonName The common name.
+     * @return The principal.
+     * @throws IllegalArgumentException if the common name can not be encoded.
+     */
+    public static X500Principal createX500Principal(String commonName) {
+        Validate.notNull(commonName, "commonName must not be null");
+        return new X500Principal(DerCommonName.encodeName(commonName));
     }
 
     /**

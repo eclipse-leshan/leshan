@@ -16,6 +16,7 @@
 package org.eclipse.leshan.core.security.certificate.util;
 
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CodingErrorAction;
@@ -345,6 +346,77 @@ final class DerCommonName {
         byte[] valueBytes() {
             return Arrays.copyOfRange(data, valueStart, valueEnd);
         }
+    }
+
+    /**
+     * Builds the DER encoding of a Name that only contains the given CN (as an UTF8String). This is the inverse of
+     * {@link #extractCN(byte[])}.
+     * <p>
+     * The CN is not checked against the rules of {@link #extractCN(byte[])} (not empty, no control character, ...): the
+     * reader stays the only one to decide if a CN is usable.
+     *
+     * @throws IllegalArgumentException if the CN can not be encoded
+     */
+    static byte[] encodeName(String commonName) {
+        byte[] attributeType = encodeElement(TAG_OID, OID_CN);
+        byte[] attributeValue = encodeElement(TAG_UTF8_STRING, encodeUtf8(commonName));
+        byte[] attribute = encodeElement(TAG_SEQUENCE, concatenate(attributeType, attributeValue));
+        return encodeElement(TAG_SEQUENCE, encodeElement(TAG_SET, attribute));
+    }
+
+    /**
+     * Strict, a malformed string (e.g. an unpaired surrogate) must not be silently replaced by another value.
+     */
+    private static byte[] encodeUtf8(String value) {
+        try {
+            ByteBuffer buffer = StandardCharsets.UTF_8.newEncoder().onMalformedInput(CodingErrorAction.REPORT)
+                    .onUnmappableCharacter(CodingErrorAction.REPORT).encode(CharBuffer.wrap(value));
+            byte[] bytes = new byte[buffer.remaining()];
+            buffer.get(bytes);
+            return bytes;
+        } catch (CharacterCodingException e) {
+            throw new IllegalArgumentException("common name is not a valid string", e);
+        }
+    }
+
+    private static byte[] encodeElement(int tag, byte[] value) {
+        byte[] length = encodeLength(value.length);
+        return concatenate(new byte[] { (byte) tag }, length, value);
+    }
+
+    /**
+     * Definite length in its minimal form, as DER requires. Not private so it can be tested: going through
+     * {@link javax.security.auth.x500.X500Principal} hides it, as the JDK re-encodes what it parses.
+     */
+    static byte[] encodeLength(int length) {
+        if (length < 0x80) {
+            return new byte[] { (byte) length };
+        }
+        // number of significant octets of the length
+        int octets = (Integer.SIZE - Integer.numberOfLeadingZeros(length) + 7) / 8;
+        if (octets > MAX_LENGTH_OCTETS) {
+            throw new IllegalArgumentException("common name is too long");
+        }
+        byte[] encoded = new byte[1 + octets];
+        encoded[0] = (byte) (0x80 | octets);
+        for (int i = 0; i < octets; i++) {
+            encoded[1 + i] = (byte) (length >>> (8 * (octets - 1 - i)));
+        }
+        return encoded;
+    }
+
+    private static byte[] concatenate(byte[]... parts) {
+        int total = 0;
+        for (byte[] part : parts) {
+            total += part.length;
+        }
+        byte[] result = new byte[total];
+        int position = 0;
+        for (byte[] part : parts) {
+            System.arraycopy(part, 0, result, position, part.length);
+            position += part.length;
+        }
+        return result;
     }
 
     private static IllegalStateException fail(String reason) {

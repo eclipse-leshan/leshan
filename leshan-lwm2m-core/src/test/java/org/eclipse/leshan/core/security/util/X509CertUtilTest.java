@@ -17,7 +17,9 @@ package org.eclipse.leshan.core.security.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -30,11 +32,18 @@ import java.security.KeyStoreException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.security.auth.x500.X500Principal;
 
 import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class X509CertUtilTest {
 
@@ -222,5 +231,82 @@ class X509CertUtilTest {
         assertFalse(X509CertUtil.dnsNameMatch("server.*.org", "server.eclipse.org", false));
         assertFalse(X509CertUtil.dnsNameMatch("*.org", "eclipse.org", false));
         assertFalse(X509CertUtil.dnsNameMatch("*.*.eclipse.org", "sub.server.eclipse.org", false));
+    }
+
+    static Stream<Arguments> commonNamesToKeepAsIs() {
+        return Stream.of(//
+                arguments("simple", "device-1"), //
+                arguments("urn", "urn:imei:123456789012345"), //
+                // characters which are special in a distinguished name
+                arguments("comma", "dev,ice"), //
+                arguments("plus", "a+b"), //
+                arguments("equals", "a=b"), //
+                arguments("semicolon", "a;b"), //
+                arguments("angle brackets", "<a>"), //
+                arguments("quotes", "say \"hi\""), //
+                arguments("backslash", "back\\slash"), //
+                arguments("leading #", "#hash"), //
+                arguments("leading space", " lead"), //
+                arguments("trailing space", "trail "), //
+                // a CN which looks like several attributes
+                arguments("looks like 2 attributes", "x,CN=victim"), //
+                // non ASCII, including a character outside the BMP
+                arguments("non ASCII", "\u010dlovek-\u4e2d"), //
+                arguments("outside BMP", "smile-\uD83D\uDE00"), //
+                // DER length encodings: 1 octet, 2 octets, 3 octets
+                arguments("200 characters", repeat('a', 200)), //
+                arguments("300 characters", repeat('a', 300)), //
+                arguments("70000 characters", repeat('a', 70_000)));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("commonNamesToKeepAsIs")
+    void create_x500principal_keeps_the_common_name_as_is(String label, String commonName) {
+        X500Principal principal = X509CertUtil.createX500Principal(commonName);
+
+        assertEquals(commonName, X509CertUtil.extractCN(principal));
+    }
+
+    @Test
+    void create_x500principal_around_the_boundaries_of_the_der_length_encoding() {
+        // The length of a DER element switches from 1 octet to 2 octets at 128, and to 3 octets at 65536. The length
+        // of the elements around the common name also grow with its length, so check a range around each switch.
+        for (int length : intRanges(100, 140, 250, 260, 65_530, 65_540)) {
+            String commonName = repeat('a', length);
+
+            assertEquals(commonName, X509CertUtil.extractCN(X509CertUtil.createX500Principal(commonName)),
+                    "common name of " + length + " characters");
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "a\uD800b", "\uDC00", "x\uD83D" })
+    void create_x500principal_rejects_unpaired_surrogate(String commonName) {
+        // a malformed string must not be silently replaced by another value
+        assertThrows(IllegalArgumentException.class, () -> X509CertUtil.createX500Principal(commonName));
+    }
+
+    @Test
+    void create_x500principal_rejects_null() {
+        assertThrows(IllegalArgumentException.class, () -> X509CertUtil.createX500Principal(null));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "", "a\u0000b", "a\nb" })
+    void create_x500principal_leaves_to_extractCN_the_decision_to_use_the_common_name(String commonName) {
+        X500Principal principal = X509CertUtil.createX500Principal(commonName);
+
+        assertThrows(IllegalStateException.class, () -> X509CertUtil.extractCN(principal));
+    }
+
+    private static String repeat(char c, int count) {
+        char[] chars = new char[count];
+        Arrays.fill(chars, c);
+        return new String(chars);
+    }
+
+    private static int[] intRanges(int... fromTo) {
+        return IntStream.range(0, fromTo.length / 2)
+                .flatMap(i -> IntStream.rangeClosed(fromTo[2 * i], fromTo[2 * i + 1])).toArray();
     }
 }

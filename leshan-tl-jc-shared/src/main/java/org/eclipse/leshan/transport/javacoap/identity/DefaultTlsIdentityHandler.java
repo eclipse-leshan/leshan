@@ -51,7 +51,7 @@ public class DefaultTlsIdentityHandler extends DefaultCoapIdentityHandler {
         Principal peerIdentity = null;
         if (client.getIdentity() instanceof X509Identity) {
             /* simplify distinguished name to CN= part */
-            peerIdentity = new X500Principal("CN=" + ((X509Identity) client.getIdentity()).getX509CommonName());
+            peerIdentity = X509CertUtil.createX500Principal(((X509Identity) client.getIdentity()).getX509CommonName());
             return TransportContext.of(TlsTransportContextKeys.PRINCIPAL, peerIdentity);
         } else {
             throw new IllegalStateException(String.format("Unsupported Identity : %s", client.getIdentity()));
