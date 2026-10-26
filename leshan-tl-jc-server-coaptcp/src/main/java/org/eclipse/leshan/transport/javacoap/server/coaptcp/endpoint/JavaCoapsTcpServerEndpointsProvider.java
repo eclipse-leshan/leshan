@@ -33,7 +33,6 @@ import org.eclipse.leshan.core.security.jsse.LwM2mX509TrustManager;
 import org.eclipse.leshan.servers.security.ObservableSecurityStore;
 import org.eclipse.leshan.servers.security.SecurityInfo;
 import org.eclipse.leshan.servers.security.SecurityStore;
-import org.eclipse.leshan.servers.security.SecurityStoreListener;
 import org.eclipse.leshan.servers.security.ServerSecurityInfo;
 import org.eclipse.leshan.transport.javacoap.SingleX509KeyManager;
 import org.eclipse.leshan.transport.javacoap.identity.DefaultTlsIdentityHandler;
@@ -57,10 +56,10 @@ import com.mbed.coap.server.observe.ObservationsStore;
 import com.mbed.coap.transport.TransportContext;
 import com.mbed.coap.utils.Service;
 
+import io.netty.channel.Channel;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.util.Attribute;
 
 public class JavaCoapsTcpServerEndpointsProvider extends AbstractJavaCoapServerEndpointsProvider {
 
@@ -129,32 +128,28 @@ public class JavaCoapsTcpServerEndpointsProvider extends AbstractJavaCoapServerE
 
     protected void createAndAttachConnectionCleaner(NettyCoapTcpTransport transport, SecurityStore securityStore) {
         if (securityStore instanceof ObservableSecurityStore) {
-            ((ObservableSecurityStore) securityStore).addListener(new SecurityStoreListener() {
-
-                @Override
-                public void securityInfoRemoved(boolean infosAreCompromised, SecurityInfo... infos) {
-
-                    transport.closeConnections(channel -> {
-                        Attribute<TransportContext> attr = channel.attr(TransportContextHandler.TRANSPORT_CONTEXT_ATTR);
-                        if (attr != null) {
-                            Principal principal = attr.get().get(TlsTransportContextKeys.PRINCIPAL);
-                            if (principal != null) {
-                                for (SecurityInfo info : infos) {
-                                    if (info != null) {
-                                        // x509
-                                        if (info.useX509Cert() && matchesX509(principal, info)) {
-                                            return true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        return false;
-                    });
-                }
-            });
+            ((ObservableSecurityStore) securityStore).addListener((infosAreCompromised, infos) -> transport
+                    .closeConnections(channel -> isConnectionOfAny(channel, infos)));
         }
+    }
+
+    private static boolean isConnectionOfAny(Channel channel, SecurityInfo... infos) {
+        Principal principal = getPrincipal(channel);
+        return principal != null && matchesAnyX509(principal, infos);
+    }
+
+    private static Principal getPrincipal(Channel channel) {
+        TransportContext transportContext = channel.attr(TransportContextHandler.TRANSPORT_CONTEXT_ATTR).get();
+        return transportContext == null ? null : transportContext.get(TlsTransportContextKeys.PRINCIPAL);
+    }
+
+    private static boolean matchesAnyX509(Principal principal, SecurityInfo... infos) {
+        for (SecurityInfo info : infos) {
+            if (info != null && info.useX509Cert() && matchesX509(principal, info)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean matchesX509(Principal principal, SecurityInfo info) {
