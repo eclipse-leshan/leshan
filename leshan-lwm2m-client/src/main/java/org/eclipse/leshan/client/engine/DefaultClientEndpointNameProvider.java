@@ -25,6 +25,8 @@ import org.eclipse.leshan.client.servers.ServerInfo;
 import org.eclipse.leshan.core.request.UplinkRequest;
 import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
 import org.eclipse.leshan.core.util.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is default implementation of {@link ClientEndpointNameProvider}.
@@ -34,6 +36,8 @@ import org.eclipse.leshan.core.util.Validate;
  * @see <a href="https://github.com/eclipse-leshan/leshan/issues/1457"></a>
  */
 public class DefaultClientEndpointNameProvider implements ClientEndpointNameProvider {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultClientEndpointNameProvider.class);
 
     public enum Mode {
         /**
@@ -94,6 +98,10 @@ public class DefaultClientEndpointNameProvider implements ClientEndpointNameProv
         }
     }
 
+    /**
+     * @return the identifier which identifies this client for the security protocol used with the given server (PSK
+     *         identity, CN of the certificate ...), or null if there is none or if it can not be found.
+     */
     protected String getClientSecurityProtocolIdentifier(ServerInfo serverInfo) {
         if (serverInfo.useOscore) {
             byte[] senderId = serverInfo.oscoreSetting.getSenderId();
@@ -110,11 +118,23 @@ public class DefaultClientEndpointNameProvider implements ClientEndpointNameProv
             case PSK:
                 return serverInfo.pskId;
             case X509:
-                // the first certificate in a chain is a device certificate
-                return X509CertUtil.extractCN(((X509Certificate) serverInfo.clientCertificates[0]));
+                return getClientCertificateCommonName(serverInfo);
             default:
                 return null;
             }
+        }
+    }
+
+    private String getClientCertificateCommonName(ServerInfo serverInfo) {
+        try {
+            // the first certificate in a chain is a device certificate
+            return X509CertUtil.extractCN((X509Certificate) serverInfo.clientCertificates[0]);
+        } catch (IllegalStateException e) {
+            // This identifier is only used to avoid sending the endpoint name, so not finding it must not make the
+            // request fail: the endpoint name is sent.
+            LOG.debug("Unable to get the common name of the client certificate, endpoint name will be sent: {}",
+                    e.getMessage());
+            return null;
         }
     }
 }
