@@ -16,17 +16,14 @@
 package org.eclipse.leshan.core.security.certificate.util;
 
 import java.net.InetAddress;
-import java.security.Principal;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import javax.security.auth.x500.X500Principal;
 
@@ -265,16 +262,6 @@ public class X509CertUtil {
     }
 
     /**
-     * Helper for checking if given character is HEX character.
-     *
-     * @param ch Char to test
-     * @return true if HEX char, false otherwise.
-     */
-    private static boolean isHex(char ch) {
-        return (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'F' || ch >= 'a' && ch <= 'f');
-    }
-
-    /**
      * Extract "common name" from "distinguished name" from {@link X509Certificate}
      *
      * @param certificate The certificate.
@@ -312,99 +299,6 @@ public class X509CertUtil {
     public static X500Principal createX500Principal(String commonName) {
         Validate.notNull(commonName, "commonName must not be null");
         return new X500Principal(DerCommonName.encodeName(commonName));
-    }
-
-    /**
-     * Parses <a href="https://tools.ietf.org/html/rfc2253#section-3">RFC 2253 name string</a>.
-     * <p>
-     * Extracts field keys and their values in form as they are given in name string.
-     *
-     * @param name RFC 2253 name string
-     * @return Map with field keys and their values
-     */
-    public static Map<String, String> parseRfc2253Name(String name) {
-        Map<String, String> map = new HashMap<>();
-
-        // Parse RFC 2253 string
-        boolean inValue = false;
-
-        StringBuilder key = new StringBuilder();
-        StringBuilder value = new StringBuilder();
-
-        for (int i = 0; i < name.length(); i++) {
-            char ch = name.charAt(i);
-
-            if (!inValue) {
-                if (ch == '=') {
-                    inValue = true;
-                    if (key.length() == 0)
-                        throw new IllegalArgumentException("Key in RFC 2253 name cannot be empty");
-                } else {
-                    key.append(ch);
-                }
-            } else {
-                if (ch == '\\') {
-                    char nextCh = name.charAt(i + 1);
-                    // Check for HEX encoding
-                    if (isHex(nextCh) && isHex(name.charAt(i + 2))) {
-                        int val = Integer.parseInt(name.substring(i + 1, i + 2), 16);
-                        value.append((char) val);
-                        i += 2;
-                    } else {
-                        value.append(nextCh);
-                        i++;
-                    }
-                } else if (ch == ',' || ch == '+') {
-                    inValue = false;
-
-                    map.put(key.toString(), value.toString());
-
-                    key = new StringBuilder();
-                    value = new StringBuilder();
-                } else {
-                    value.append(ch);
-                }
-            }
-        }
-
-        if (key.length() > 0) {
-            map.put(key.toString(), value.toString());
-        }
-
-        return map;
-    }
-
-    /**
-     * Extracts field from given principal's name.
-     * <p>
-     * Notes: Can parse most name strings but HEX encoded DER values are returned back in DER HEX form. Notes: Only
-     * understands X500Principal.
-     *
-     * @param principal Source principal.
-     * @param field Field key as defined in RFC 2253.
-     * @return null or value as string.
-     */
-    public static String getPrincipalField(Principal principal, String field) {
-        if (principal instanceof X500Principal) {
-            X500Principal x500Principal = (X500Principal) principal;
-
-            // Extra practical OID that Java implementation hides for "not being standard" even thou
-            // list in RFC is only example OIDs list (see JDK class AVAKeyword). These extra OID's are
-            // actually defined in Sun packages but we should not access them as they are not standard
-            // Java classes.
-            HashMap<String, String> extraOids = new HashMap<>();
-            extraOids.put("2.5.4.5", "SERIALNUMBER");
-
-            String dn = x500Principal.getName(X500Principal.RFC2253, extraOids);
-
-            Map<String, String> fields = parseRfc2253Name(dn);
-
-            if (fields.containsKey(field)) {
-                return fields.get(field);
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -448,6 +342,9 @@ public class X509CertUtil {
 
     /**
      * Match DNS name against X.509 Certificate's Subjects
+     * <p>
+     * If the certificate has no Subject Alternative Name, the common name of its subject is used instead. Nothing
+     * matches if this common name is missing or ambiguous (see {@link #extractCN(X509Certificate)}).
      *
      * @param certificate Target X.509 certificate
      * @param dnsName DNS name to match
@@ -475,9 +372,9 @@ public class X509CertUtil {
             }
 
             // If subject alternative names are not present fallback to old ways at looking in Subject DN
-            String cn = getPrincipalField(certificate.getSubjectX500Principal(), "CN");
+            String cn = getCommonNameOrNull(certificate);
 
-            if (dnsNameMatch(cn, dnsName, true/* no wildcard matching */)) {
+            if (cn != null && dnsNameMatch(cn, dnsName, true/* no wildcard matching */)) {
                 // no wildcard matching, see : https://www.rfc-editor.org/info/rfc7252/#section-9.1.3.3
                 return true;
             }
@@ -489,6 +386,9 @@ public class X509CertUtil {
 
     /**
      * Match IP address against X.509 Certificate's Subjects
+     * <p>
+     * If the certificate has no Subject Alternative Name, the common name of its subject is used instead. Nothing
+     * matches if this common name is missing or ambiguous (see {@link #extractCN(X509Certificate)}).
      *
      * @param certificate Target X.509 certificate
      * @param address IP address to match
@@ -518,7 +418,7 @@ public class X509CertUtil {
             }
 
             // If subject alternative names are not present fallback to old ways at looking in Subject DN
-            String cn = getPrincipalField(certificate.getSubjectX500Principal(), "CN");
+            String cn = getCommonNameOrNull(certificate);
 
             if (hostAddress.equals(cn)) {
                 return true;
@@ -527,5 +427,16 @@ public class X509CertUtil {
             // Ignore exception and just return no match
         }
         return false;
+    }
+
+    /**
+     * @return the common name of the subject of the certificate, or null if it has none or if it is ambiguous.
+     */
+    private static String getCommonNameOrNull(X509Certificate certificate) {
+        try {
+            return extractCN(certificate);
+        } catch (IllegalStateException e) {
+            return null;
+        }
     }
 }

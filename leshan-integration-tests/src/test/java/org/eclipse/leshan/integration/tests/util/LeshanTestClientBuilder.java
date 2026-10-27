@@ -245,8 +245,8 @@ public class LeshanTestClientBuilder extends LeshanClientBuilder {
             testEndpointNameProvider = new DefaultClientEndpointNameProvider(this.endpointName, this.endpointNameMode);
         } else if (clientCertificate != null) {
             X500Principal subjectDN = clientCertificate.getSubjectX500Principal();
-            testEndpointNameProvider = new DefaultClientEndpointNameProvider(
-                    X509CertUtil.getPrincipalField(subjectDN, "CN"), this.endpointNameMode);
+            testEndpointNameProvider = new DefaultClientEndpointNameProvider(X509CertUtil.extractCN(subjectDN),
+                    this.endpointNameMode);
         } else {
             testEndpointNameProvider = new DefaultClientEndpointNameProvider(endpointNameProvider.getEndpointName(),
                     this.endpointNameMode);
