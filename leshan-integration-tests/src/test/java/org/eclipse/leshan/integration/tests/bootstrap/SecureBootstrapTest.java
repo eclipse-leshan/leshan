@@ -30,10 +30,13 @@ import static org.eclipse.leshan.integration.tests.util.Credentials.serverX509Ce
 import static org.eclipse.leshan.integration.tests.util.Credentials.trustedCertificatesByServer;
 import static org.eclipse.leshan.integration.tests.util.Credentials.virtualHostX509CertSignedByRoot;
 import static org.eclipse.leshan.integration.tests.util.assertion.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.security.cert.CertificateEncodingException;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.leshan.bsserver.BootstrapSession;
 import org.eclipse.leshan.bsserver.InvalidConfigurationException;
 import org.eclipse.leshan.core.CertificateUsage;
 import org.eclipse.leshan.core.ResponseCode;
@@ -333,10 +336,16 @@ public class SecureBootstrapTest {
 
         // Start it and wait for registration
         client.start();
-        server.waitForNewRegistrationOf(client);
+
+        // check the client did not send its endpoint name: the bootstrap server found it from the certificate
+        BootstrapSession session = bootstrapServer.waitForSuccessfullBootstrap(1, TimeUnit.SECONDS);
+        assertNull(session.getBootstrapRequest().getEndpointName());
+        assertEquals(client.getEndpointName(), session.getEndpoint());
 
         // check the client is registered
+        server.waitForNewRegistrationOf(client);
         assertThat(client).isRegisteredAt(server);
+
     }
 
     @Test
