@@ -468,6 +468,7 @@ public class DefaultEndPointUriParser implements EndPointUriParser {
         if (port == null) {
             if (parser != null) {
                 parser.raiseException("port must not be null");
+                return;
             } else {
                 throw new InvalidEndpointUriException("port must not be null");
             }

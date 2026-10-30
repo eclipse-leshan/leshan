@@ -17,7 +17,6 @@ package org.eclipse.leshan.demo.server.servlet;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -80,9 +79,7 @@ public class ObjectSpecServlet extends LeshanDemoServlet {
             LwM2mModel model = modelProvider.getObjectModel(registration);
             resp.setContentType("application/json");
             List<ObjectModel> objectModels = new ArrayList<>(model.getObjectModels());
-            Collections.sort(objectModels, (o1, o2) -> {
-                return Integer.compare(o1.id, o2.id);
-            });
+            objectModels.sort((o1, o2) -> Integer.compare(o1.id, o2.id));
 
             resp.getOutputStream().write(serializer.bSerialize(objectModels));
             resp.setStatus(HttpServletResponse.SC_OK);

@@ -29,6 +29,7 @@ import static org.eclipse.leshan.integration.tests.util.Credentials.OSCORE_OTHER
 import static org.eclipse.leshan.integration.tests.util.Credentials.OSCORE_OTHER_SENDER_ID;
 import static org.eclipse.leshan.integration.tests.util.Credentials.OSCORE_RECIPIENT_ID;
 import static org.eclipse.leshan.integration.tests.util.Credentials.OSCORE_SENDER_ID;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -127,10 +128,7 @@ class SecurityStoreTest {
         // Change PSK id for endpoint
         ess.add(SecurityInfo.newOscoreInfo(GOOD_ENDPOINT, secondOscoreSetting));
         // Original/old PSK id should not be reserved any more
-        try {
-            ess.add(SecurityInfo.newOscoreInfo(BAD_ENDPOINT, firstOscoreSetting));
-        } catch (NonUniqueSecurityInfoException e) {
-            fail("PSK identity change for existing endpoint should have cleaned up old PSK identity");
-        }
+        assertDoesNotThrow(() -> ess.add(SecurityInfo.newOscoreInfo(BAD_ENDPOINT, firstOscoreSetting)),
+                "PSK identity change for existing endpoint should have cleaned up old PSK identity");
     }
 }

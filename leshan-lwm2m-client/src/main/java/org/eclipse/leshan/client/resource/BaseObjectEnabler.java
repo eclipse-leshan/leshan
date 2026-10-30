@@ -101,24 +101,7 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                     // attributes.
                     for (LwM2mPath p : paths) {
                         if (p.isResource()) {
-                            ResourceModel resourceModel = objectModel.resources.get(p.getResourceId());
-                            if (resourceModel.multiple) {
-                                // TODO ideally we should have a better event like 'resource instance removed'
-                                // Maybe we should change the current event model for a more advanced one...
-                                // Plus, ideally all next code should be done atomically...
-                                Set<LwM2mPath> resourceInstancePaths = assignedAttributes.getChildren(p);
-                                if (!resourceInstancePaths.isEmpty()) {
-                                    List<Integer> instanceResourceIds = getAvailableInstanceResourceIds(
-                                            p.getObjectInstanceId(), p.getResourceId());
-                                    // We verify that attribute in tree are attached to an existent resource instance
-                                    for (LwM2mPath resourceInstancePath : resourceInstancePaths) {
-                                        if (!instanceResourceIds
-                                                .contains(resourceInstancePath.getResourceInstanceId())) {
-                                            assignedAttributes.remove(resourceInstancePath);
-                                        }
-                                    }
-                                }
-                            }
+                            removeAttributesOfRemovedResourceInstances(p);
                         }
                     }
                 }
@@ -135,6 +118,30 @@ public abstract class BaseObjectEnabler implements LwM2mObjectEnabler {
                 }
             }
         });
+    }
+
+    private void removeAttributesOfRemovedResourceInstances(LwM2mPath resourcePath) {
+        ResourceModel resourceModel = objectModel.resources.get(resourcePath.getResourceId());
+        if (!resourceModel.multiple) {
+            return;
+        }
+
+        // TODO ideally we should have a better event like 'resource instance removed'
+        // Maybe we should change the current event model for a more advanced one...
+        // Plus, ideally all next code should be done atomically...
+        Set<LwM2mPath> resourceInstancePaths = assignedAttributes.getChildren(resourcePath);
+        if (resourceInstancePaths.isEmpty()) {
+            return;
+        }
+
+        List<Integer> instanceResourceIds = getAvailableInstanceResourceIds(resourcePath.getObjectInstanceId(),
+                resourcePath.getResourceId());
+        // We verify that attribute in tree are attached to an existent resource instance
+        for (LwM2mPath resourceInstancePath : resourceInstancePaths) {
+            if (!instanceResourceIds.contains(resourceInstancePath.getResourceInstanceId())) {
+                assignedAttributes.remove(resourceInstancePath);
+            }
+        }
     }
 
     protected TransactionalObjectListener createTransactionListener() {

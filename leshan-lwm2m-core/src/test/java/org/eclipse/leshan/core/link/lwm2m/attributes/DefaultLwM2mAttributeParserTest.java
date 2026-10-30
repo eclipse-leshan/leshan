@@ -20,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.stream.Stream;
 
-import org.eclipse.leshan.core.link.LinkParseException;
 import org.eclipse.leshan.core.link.attributes.InvalidAttributeException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -130,7 +129,7 @@ class DefaultLwM2mAttributeParserTest {
     }
 
     @Test
-    void check_multiple_valid_attributes() throws LinkParseException, InvalidAttributeException {
+    void check_multiple_valid_attributes() throws InvalidAttributeException {
 
         LwM2mAttributeSet parsed = new LwM2mAttributeSet(parser.parseUriQuery("pmin&pmax=60&gt=2"));
         LwM2mAttributeSet attResult = new LwM2mAttributeSet( //

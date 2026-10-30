@@ -89,41 +89,52 @@ public class DefaultServersInfoExtractor implements ServersInfoExtractor {
 
         for (LwM2mObjectInstance security : securities.getInstances().values()) {
             if ((boolean) security.getResource(SEC_BOOTSTRAP).getValue()) {
-                if (infos.bootstrap != null) {
-                    String message = "There is more than one bootstrap configuration in security object.";
-                    LOG.debug(message);
-                    if (raiseException) {
-                        throw new IllegalStateException(message);
-                    }
-                } else {
-                    // create server info for bootstrap server
-                    ServerInfo serverInfo = new ServerInfo();
-                    serverInfo.bootstrap = true;
-                    try {
-                        // fill info from current client state.
-                        populateServerInfo(serverInfo, security, oscores);
-
-                        // add server info to result to return
-                        infos.bootstrap = serverInfo;
-                    } catch (RuntimeException e) {
-                        LOG.debug("Unable to get info for bootstrap server /O/{}", security.getId(), e);
-                        if (raiseException)
-                            throw e;
-                    }
-                }
+                addBootstrapServerInfo(infos, security, oscores, raiseException);
             } else {
-                try {
-                    // create device management info
-                    DmServerInfo info = createDMServerInfo(security, servers, oscores);
-                    infos.deviceManagements.put(info.serverId, info);
-                } catch (RuntimeException e) {
-                    LOG.debug("Unable to get info for DM server /O/{}", security.getId(), e);
-                    if (raiseException)
-                        throw e;
-                }
+                addDMServerInfo(infos, security, servers, oscores, raiseException);
             }
         }
         return infos;
+    }
+
+    private void addBootstrapServerInfo(ServersInfo infos, LwM2mObjectInstance security, LwM2mObject oscores,
+            boolean raiseException) {
+        if (infos.bootstrap != null) {
+            String message = "There is more than one bootstrap configuration in security object.";
+            LOG.debug(message);
+            if (raiseException) {
+                throw new IllegalStateException(message);
+            }
+            return;
+        }
+
+        // create server info for bootstrap server
+        ServerInfo serverInfo = new ServerInfo();
+        serverInfo.bootstrap = true;
+        try {
+            // fill info from current client state.
+            populateServerInfo(serverInfo, security, oscores);
+
+            // add server info to result to return
+            infos.bootstrap = serverInfo;
+        } catch (RuntimeException e) {
+            LOG.debug("Unable to get info for bootstrap server /O/{}", security.getId(), e);
+            if (raiseException)
+                throw e;
+        }
+    }
+
+    private void addDMServerInfo(ServersInfo infos, LwM2mObjectInstance security, LwM2mObject servers,
+            LwM2mObject oscores, boolean raiseException) {
+        try {
+            // create device management info
+            DmServerInfo info = createDMServerInfo(security, servers, oscores);
+            infos.deviceManagements.put(info.serverId, info);
+        } catch (RuntimeException e) {
+            LOG.debug("Unable to get info for DM server /O/{}", security.getId(), e);
+            if (raiseException)
+                throw e;
+        }
     }
 
     private void populateServerInfo(ServerInfo info, LwM2mObjectInstance security, LwM2mObject oscoreObject) {
@@ -137,26 +148,7 @@ public class DefaultServersInfoExtractor implements ServersInfoExtractor {
             info.secureMode = ObjectTreeReader.getSecurityMode(security);
 
             // find associated oscore instance (if any)
-            LwM2mObjectInstance oscoreInstance = null;
-            ObjectLink oscoreObjLink = (ObjectLink) security.getResource(SEC_OSCORE_SECURITY_MODE).getValue();
-            if (oscoreObjLink != null && !oscoreObjLink.isNullLink()) {
-                if (oscoreObjLink.getObjectId() != OSCORE) {
-                    LOG.warn(
-                            "Invalid Security info for LWM2M server {} : 'OSCORE Security Mode' does not link to OSCORE Object but to {} object.",
-                            info.serverUri, oscoreObjLink.getObjectId());
-                } else {
-                    if (oscoreObject == null) {
-                        LOG.warn("Invalid Security info for LWM2M server {}: OSCORE object enabler is not available.",
-                                info.serverUri);
-                    } else {
-                        oscoreInstance = oscoreObject.getInstance(oscoreObjLink.getObjectInstanceId());
-                        if (oscoreInstance == null) {
-                            LOG.warn("Invalid Security info for LWM2M server {} : OSCORE instance {} does not exist.",
-                                    info.serverUri, oscoreObjLink.getObjectInstanceId());
-                        }
-                    }
-                }
-            }
+            LwM2mObjectInstance oscoreInstance = findOscoreInstance(info, security, oscoreObject);
 
             if (oscoreInstance != null) {
                 info.useOscore = true;
@@ -190,6 +182,39 @@ public class DefaultServersInfoExtractor implements ServersInfoExtractor {
         } catch (RuntimeException | URISyntaxException e) {
             throw new IllegalStateException("Invalid Security Instance /0/" + security.getId(), e);
         }
+    }
+
+    /**
+     * Find the OSCORE instance linked by the given Security instance.
+     *
+     * @return the OSCORE instance or <code>null</code> if there is none (or if the link is invalid).
+     */
+    private LwM2mObjectInstance findOscoreInstance(ServerInfo info, LwM2mObjectInstance security,
+            LwM2mObject oscoreObject) {
+        ObjectLink oscoreObjLink = (ObjectLink) security.getResource(SEC_OSCORE_SECURITY_MODE).getValue();
+        if (oscoreObjLink == null || oscoreObjLink.isNullLink()) {
+            return null;
+        }
+
+        if (oscoreObjLink.getObjectId() != OSCORE) {
+            LOG.warn(
+                    "Invalid Security info for LWM2M server {} : 'OSCORE Security Mode' does not link to OSCORE Object but to {} object.",
+                    info.serverUri, oscoreObjLink.getObjectId());
+            return null;
+        }
+
+        if (oscoreObject == null) {
+            LOG.warn("Invalid Security info for LWM2M server {}: OSCORE object enabler is not available.",
+                    info.serverUri);
+            return null;
+        }
+
+        LwM2mObjectInstance oscoreInstance = oscoreObject.getInstance(oscoreObjLink.getObjectInstanceId());
+        if (oscoreInstance == null) {
+            LOG.warn("Invalid Security info for LWM2M server {} : OSCORE instance {} does not exist.", info.serverUri,
+                    oscoreObjLink.getObjectInstanceId());
+        }
+        return oscoreInstance;
     }
 
     private DmServerInfo createDMServerInfo(LwM2mObjectInstance security, LwM2mObject servers,

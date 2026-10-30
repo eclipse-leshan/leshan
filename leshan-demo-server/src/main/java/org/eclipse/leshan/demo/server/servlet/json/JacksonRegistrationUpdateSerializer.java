@@ -16,6 +16,7 @@
 package org.eclipse.leshan.demo.server.servlet.json;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -44,7 +45,8 @@ public class JacksonRegistrationUpdateSerializer extends StdSerializer<Registrat
 
         map.put("registrationId", src.getRegistrationId());
 
-        map.put("address", src.getAddress().getHostAddress() + ":" + src.getPort());
+        InetAddress address = src.getAddress();
+        map.put("address", address != null ? address.getHostAddress() + ":" + src.getPort() : null);
         map.put("smsNumber", src.getSmsNumber());
         map.put("lifetime", src.getLifeTimeInSec());
 

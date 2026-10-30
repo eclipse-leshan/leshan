@@ -81,7 +81,7 @@ public class LinkFormatHelper {
 
         // sort object
         List<LwM2mObjectEnabler> objEnablerList = new ArrayList<>(objectEnablers);
-        Collections.sort(objEnablerList, (o1, o2) -> o1.getId() - o2.getId());
+        Collections.sort(objEnablerList, (o1, o2) -> Integer.compare(o1.getId(), o2.getId()));
         for (LwM2mObjectEnabler objectEnabler : objEnablerList) {
             // skip the security and oscore Object
             if (objectEnabler.getId() == LwM2mId.SECURITY || objectEnabler.getId() == LwM2mId.OSCORE)
