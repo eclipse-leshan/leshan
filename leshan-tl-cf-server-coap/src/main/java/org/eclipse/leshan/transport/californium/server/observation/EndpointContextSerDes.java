@@ -35,10 +35,10 @@ import org.eclipse.californium.elements.MapBasedEndpointContext;
 import org.eclipse.californium.elements.MapBasedEndpointContext.Attributes;
 import org.eclipse.californium.elements.auth.PreSharedKeyIdentity;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
-import org.eclipse.californium.elements.auth.X509CertPath;
 import org.eclipse.californium.elements.util.Bytes;
 import org.eclipse.californium.elements.util.StringUtil;
 import org.eclipse.leshan.core.util.Hex;
+import org.eclipse.leshan.transport.californium.identity.CaliforniumPrincipalUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +56,10 @@ public class EndpointContextSerDes {
     private static final String KEY_ADDRESS = "address";
     private static final String KEY_PORT = "port";
     private static final String KEY_ID = "id";
+    /** The subject as a RFC 2253 string. It is only read, for observations stored by previous versions. */
     private static final String KEY_DN = "dn";
+    /** The subject as the hexadecimal DER encoding of its X.500 name. */
+    private static final String KEY_SUBJECT = "subject";
     private static final String KEY_RPK = "rpk";
     private static final String KEY_ATTRIBUTES = "attributes";
 
@@ -70,8 +73,10 @@ public class EndpointContextSerDes {
             } else if (principal instanceof RawPublicKeyIdentity) {
                 PublicKey publicKey = ((RawPublicKeyIdentity) principal).getKey();
                 peer.put(KEY_RPK, Hex.encodeHexString(publicKey.getEncoded()));
-            } else if (principal instanceof X500Principal || principal instanceof X509CertPath) {
-                peer.put(KEY_DN, principal.getName());
+            } else if (CaliforniumPrincipalUtil.canBeConvertedToX500Principal(principal)) {
+                // Not the RFC 2253 string: the JDK is not always able to parse it back.
+                X500Principal subject = CaliforniumPrincipalUtil.convertToX500Principal(principal);
+                peer.put(KEY_SUBJECT, Hex.encodeHexString(subject.getEncoded()));
             }
         }
         /** copy the attributes **/
@@ -115,7 +120,10 @@ public class EndpointContextSerDes {
             } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
                 throw new IllegalStateException("Invalid security info content", e);
             }
+        } else if ((value = peer.get(KEY_SUBJECT)) != null) {
+            principal = new X500Principal(Hex.decodeHex(value.asText().toCharArray()));
         } else if ((value = peer.get(KEY_DN)) != null) {
+            // observation stored by a previous version
             principal = new X500Principal(value.asText());
         }
 
