@@ -120,7 +120,7 @@ public class RegistrationUpdate {
                 ? registration.getAdditionalRegistrationAttributes()
                 : updateAdditionalAttributes(registration.getAdditionalRegistrationAttributes());
 
-        Map<String, String> customRegistrationData = this.customRegistrationData.isEmpty()
+        Map<String, String> updatedCustomRegistrationData = this.customRegistrationData.isEmpty()
                 ? registration.getCustomRegistrationData()
                 : this.customRegistrationData;
 
@@ -148,7 +148,7 @@ public class RegistrationUpdate {
                 .availableInstances(availableInstances) //
                 // out of spec data
                 .additionalRegistrationAttributes(additionalAttributes) //
-                .customRegistrationData(customRegistrationData);
+                .customRegistrationData(updatedCustomRegistrationData);
 
         return builder.build();
     }

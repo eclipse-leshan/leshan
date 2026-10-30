@@ -84,6 +84,7 @@ public class ObjectTreeReader {
         }
     }
 
+    @SuppressWarnings("java:S1319") // EnumSet is expected by RegisterRequest, RegistrationUpdate, DmServerInfo
     public static EnumSet<BindingMode> getServerBindingMode(LwM2mObjectEnabler serverEnabler, int instanceId) {
         ReadResponse response = serverEnabler.read(LwM2mServer.SYSTEM,
                 new ReadRequest(SERVER, instanceId, SRV_BINDING));
@@ -94,6 +95,7 @@ public class ObjectTreeReader {
         }
     }
 
+    @SuppressWarnings("java:S1319") // EnumSet is expected by RegisterRequest, RegistrationUpdate, DmServerInfo
     public static EnumSet<BindingMode> getDeviceSupportedBindingMode(LwM2mObjectEnabler deviceEnabler, int instanceId) {
         ReadResponse response = deviceEnabler.read(LwM2mServer.SYSTEM,
                 new ReadRequest(DEVICE, instanceId, DVC_SUPPORTED_BINDING));

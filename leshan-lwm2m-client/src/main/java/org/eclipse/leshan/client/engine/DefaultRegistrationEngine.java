@@ -43,6 +43,7 @@ import org.eclipse.leshan.client.resource.ObjectTreeReader;
 import org.eclipse.leshan.client.servers.DmServerInfo;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.client.servers.ServerInfo;
+import org.eclipse.leshan.client.servers.ServersInfo;
 import org.eclipse.leshan.client.servers.ServersInfoExtractor;
 import org.eclipse.leshan.client.util.LinkFormatHelper;
 import org.eclipse.leshan.core.LwM2m.LwM2mVersion;
@@ -197,7 +198,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
     }
 
     private LwM2mServer factoryBootstrap() {
-        ServerInfo serverInfo = selectServer(serversInfoExtractor.getInfo(objectEnablers).deviceManagements);
+        ServerInfo serverInfo = selectServerFromObjects();
         if (serverInfo != null) {
             return endpointsManager.createEndpoint(serverInfo, isClientInitiatedOnly());
         }
@@ -448,8 +449,7 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
                                 return null;
                             } else {
                                 LOG.info("Bootstrap finished {}.", bootstrapServer.getUri());
-                                ServerInfo serverInfo = selectServer(
-                                        serversInfoExtractor.getInfo(objectEnablers).deviceManagements);
+                                ServerInfo serverInfo = selectServerFromObjects();
                                 LwM2mServer dmServer = null;
                                 if (serverInfo != null) {
                                     dmServer = endpointsManager.createEndpoint(serverInfo, isClientInitiatedOnly());
@@ -894,6 +894,17 @@ public class DefaultRegistrationEngine implements RegistrationEngine {
      * This class support to be connected to only one LWM2M server. This methods select the server to be used. Default
      * implementation select the first one.
      */
+    /**
+     * Select the LWM2M server to use from Security and Server objects.
+     *
+     * @return the selected server or <code>null</code> if Security/Server objects are missing or no server is
+     *         configured.
+     */
+    private DmServerInfo selectServerFromObjects() {
+        ServersInfo info = serversInfoExtractor.getInfo(objectEnablers);
+        return info != null ? selectServer(info.deviceManagements) : null;
+    }
+
     protected DmServerInfo selectServer(Map<Long, DmServerInfo> servers) {
         if (servers != null && !servers.isEmpty()) {
             if (servers.size() > 1) {

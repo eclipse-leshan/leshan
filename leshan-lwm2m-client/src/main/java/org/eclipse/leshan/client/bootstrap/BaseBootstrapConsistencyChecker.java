@@ -117,6 +117,10 @@ public abstract class BaseBootstrapConsistencyChecker implements BootstrapConsis
     protected void checkBootstrapConfig(Map<Integer, LwM2mObjectEnabler> objectEnablers, List<String> errors) {
         try {
             ServersInfo info = serversInfoExtractor.getInfo(objectEnablers, true);
+            if (info == null) {
+                errors.add("Security and Server objects must be present to bootstrap");
+                return;
+            }
 
             if (info.bootstrap != null) {
                 checkBootstrapServerInfo(info.bootstrap, errors);

@@ -296,7 +296,8 @@ public class RegistrationSerDes {
         // parse app data
         Map<String, String> appData = new HashMap<>();
         ObjectNode oap = (ObjectNode) jObj.get("customData");
-        // TODO backward compatibility should be removed
+        // TODO Backward compatibility : registrations stored by older versions used the "appdata" key instead of
+        // "customData". This fallback can only be dropped in a release which accepts to break reading of such data.
         if (oap == null) {
             oap = (ObjectNode) jObj.get("appdata");
         }

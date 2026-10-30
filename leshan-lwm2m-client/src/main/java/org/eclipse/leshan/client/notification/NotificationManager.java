@@ -136,7 +136,7 @@ public class NotificationManager {
         if (notificationData.usePmax()) {
             Long pmin = strategy.getAttributeValue(attributes, request.getPath(), LwM2mAttributes.MINIMUM_PERIOD);
             Long pmax = strategy.getAttributeValue(attributes, request.getPath(), LwM2mAttributes.MAXIMUM_PERIOD);
-            if (pmax.equals(pmin)) {
+            if (pmax != null && pmax.equals(pmin)) {
                 // we only send notification when pmax timer is reached.
                 return;
             }
@@ -170,7 +170,7 @@ public class NotificationManager {
             Long timeSinceLastNotification = TimeUnit.SECONDS
                     .convert(System.nanoTime() - notificationData.getLastSendingTime(), TimeUnit.NANOSECONDS);
             Long pmin = strategy.getAttributeValue(attributes, request.getPath(), LwM2mAttributes.MINIMUM_PERIOD);
-            if (timeSinceLastNotification < pmin) {
+            if (pmin != null && timeSinceLastNotification < pmin) {
                 ScheduledFuture<Void> pminTask = executor.schedule(new Callable<Void>() {
                     @Override
                     public Void call() throws Exception {

@@ -715,6 +715,9 @@ public class LwM2mNodeSenMLDecoder implements TimestampedNodeDecoder, MultiNodeD
 
     private Type guessTypeFromRecord(SenMLRecord senMLRecord) {
         SenMLRecord.Type type = senMLRecord.getType();
+        if (type == null) {
+            return null;
+        }
 
         switch (type) {
         case STRING:
