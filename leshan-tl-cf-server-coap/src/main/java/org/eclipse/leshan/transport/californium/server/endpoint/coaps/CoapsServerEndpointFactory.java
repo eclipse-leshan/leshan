@@ -40,6 +40,7 @@ import org.eclipse.californium.scandium.config.DtlsConfig.DtlsRole;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.dtls.CertificateType;
 import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
+import org.eclipse.californium.scandium.dtls.x509.CertificateVerifier;
 import org.eclipse.californium.scandium.dtls.x509.SingleCertificateProvider;
 import org.eclipse.californium.scandium.dtls.x509.StaticCertificateVerifier;
 import org.eclipse.leshan.core.endpoint.DefaultEndPointUriHandler;
@@ -57,6 +58,7 @@ import org.eclipse.leshan.transport.californium.ExceptionTranslator;
 import org.eclipse.leshan.transport.californium.Lwm2mEndpointContextMatcher;
 import org.eclipse.leshan.transport.californium.identity.DefaultCoapsIdentityHandler;
 import org.eclipse.leshan.transport.californium.identity.IdentityHandler;
+import org.eclipse.leshan.transport.californium.security.ClientCommonNameCertificateVerifier;
 import org.eclipse.leshan.transport.californium.server.ConnectionCleaner;
 import org.eclipse.leshan.transport.californium.server.LwM2mPskStore;
 import org.eclipse.leshan.transport.californium.server.endpoint.CaliforniumServerEndpointFactory;
@@ -254,7 +256,7 @@ public class CoapsServerEndpointFactory implements CaliforniumServerEndpointFact
             if (serverSecurityInfo.getTrustedCertificates() != null) {
                 verifierBuilder.setTrustedCertificates(serverSecurityInfo.getTrustedCertificates());
             }
-            dtlsConfigBuilder.setCertificateVerifier(verifierBuilder.build());
+            dtlsConfigBuilder.setCertificateVerifier(createClientCertificateVerifier(verifierBuilder.build()));
         }
     }
 
@@ -295,6 +297,18 @@ public class CoapsServerEndpointFactory implements CaliforniumServerEndpointFact
     @Override
     public IdentityHandler createIdentityHandler() {
         return new DefaultCoapsIdentityHandler();
+    }
+
+    /**
+     * Create the verifier of the certificates which the clients present, from the verifier which validates their
+     * chain.
+     * <p>
+     * A client is identified by the common name of its certificate (see {@link #createIdentityHandler()}), so a
+     * certificate without exactly one is refused. Override this method together with
+     * {@link #createIdentityHandler()} if the clients are identified in another way.
+     */
+    protected CertificateVerifier createClientCertificateVerifier(CertificateVerifier chainVerifier) {
+        return new ClientCommonNameCertificateVerifier(chainVerifier);
     }
 
     /**
