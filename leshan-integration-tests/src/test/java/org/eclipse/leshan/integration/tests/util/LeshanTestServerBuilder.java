@@ -48,6 +48,7 @@ import org.eclipse.leshan.server.model.LwM2mModelProvider;
 import org.eclipse.leshan.server.model.VersionedModelProvider;
 import org.eclipse.leshan.server.queue.ClientAwakeTimeProvider;
 import org.eclipse.leshan.server.queue.StaticClientAwakeTimeProvider;
+import org.eclipse.leshan.server.registration.EndDeviceRegistrationIdProvider;
 import org.eclipse.leshan.server.registration.RegistrationDataExtractor;
 import org.eclipse.leshan.server.registration.RegistrationIdProvider;
 import org.eclipse.leshan.server.registration.RegistrationStore;
@@ -98,7 +99,8 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
             ClientAwakeTimeProvider awakeTimeProvider, RegistrationIdProvider registrationIdProvider,
             RegistrationDataExtractor registrationDataExtractor, LwM2mLinkParser linkParser,
             EndPointUriHandler uriHandler, ServerSecurityInfo serverSecurityInfo,
-            ServerEndpointNameProvider endpointNameProvider, boolean updateRegistrationOnNotification,
+            ServerEndpointNameProvider endpointNameProvider,
+            EndDeviceRegistrationIdProvider endDeviceRegistrationIdProvider, boolean updateRegistrationOnNotification,
             boolean updateRegistrationOnSend) {
 
         // create endpoint provider.
@@ -133,8 +135,8 @@ public class LeshanTestServerBuilder extends LeshanServerBuilder {
         }
         return new LeshanTestServer(endpointsProvider, registrationStore, securityStore, authorizer, modelProvider,
                 encoder, decoder, noQueueMode, awakeTimeProvider, registrationIdProvider, registrationDataExtractor,
-                linkParser, uriHandler, serverSecurityInfo, endpointNameProvider, updateRegistrationOnNotification,
-                updateRegistrationOnSend);
+                linkParser, uriHandler, serverSecurityInfo, endpointNameProvider, endDeviceRegistrationIdProvider,
+                updateRegistrationOnNotification, updateRegistrationOnSend);
     }
 
     public static LeshanTestServerBuilder givenServerUsing(Protocol protocolToUse) {

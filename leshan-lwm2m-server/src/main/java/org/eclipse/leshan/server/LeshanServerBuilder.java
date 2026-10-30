@@ -46,6 +46,8 @@ import org.eclipse.leshan.server.model.StandardModelProvider;
 import org.eclipse.leshan.server.queue.ClientAwakeTimeProvider;
 import org.eclipse.leshan.server.queue.StaticClientAwakeTimeProvider;
 import org.eclipse.leshan.server.registration.DefaultRegistrationDataExtractor;
+import org.eclipse.leshan.server.registration.EndDeviceRegistrationIdProvider;
+import org.eclipse.leshan.server.registration.GatewayRegistrationStore;
 import org.eclipse.leshan.server.registration.InMemoryRegistrationStore;
 import org.eclipse.leshan.server.registration.RandomStringRegistrationIdProvider;
 import org.eclipse.leshan.server.registration.Registration;
@@ -76,6 +78,8 @@ public class LeshanServerBuilder {
     private RegistrationIdProvider registrationIdProvider;
     private RegistrationDataExtractor registrationDataExtractor;
     private ServerEndpointNameProvider endpointNameProvider;
+
+    private EndDeviceRegistrationIdProvider endDeviceRegistrationIdProvider;
 
     private LwM2mEncoder encoder;
     private LwM2mDecoder decoder;
@@ -355,6 +359,14 @@ public class LeshanServerBuilder {
     }
 
     /**
+     * setup {@link EndDeviceRegistrationIdProvider} and so enable support of Gateway in {@link RegistrationStore} used
+     * implements {@link GatewayRegistrationStore}
+     */
+    public void setEndDeviceRegistrationIdProvider(EndDeviceRegistrationIdProvider endDeviceRegistrationIdProvider) {
+        this.endDeviceRegistrationIdProvider = endDeviceRegistrationIdProvider;
+    }
+
+    /**
      * Create the {@link LeshanServer}.
      * <p>
      * Next step will be to start it : {@link LeshanServer#start()}.
@@ -396,8 +408,8 @@ public class LeshanServerBuilder {
 
         return createServer(endpointsProvider, registrationStore, securityStore, authorizer, modelProvider, encoder,
                 decoder, noQueueMode, awakeTimeProvider, registrationIdProvider, registrationDataExtractor, linkParser,
-                uriHandler, serverSecurityInfo, endpointNameProvider, updateRegistrationOnNotification,
-                updateRegistrationOnSend);
+                uriHandler, serverSecurityInfo, endpointNameProvider, endDeviceRegistrationIdProvider,
+                updateRegistrationOnNotification, updateRegistrationOnSend);
     }
 
     /**
@@ -409,7 +421,7 @@ public class LeshanServerBuilder {
      * @see LeshanServer#LeshanServer(LwM2mServerEndpointsProvider, RegistrationStore, SecurityStore, Authorizer,
      *      LwM2mModelProvider, LwM2mEncoder, LwM2mDecoder, boolean, ClientAwakeTimeProvider, RegistrationIdProvider,
      *      RegistrationDataExtractor, boolean, boolean, LwM2mLinkParser, EndPointUriHandler, ServerSecurityInfo,
-     *      ServerEndpointNameProvider)
+     *      ServerEndpointNameProvider, EndDeviceRegistrationIdProvider)
      */
     protected LeshanServer createServer(LwM2mServerEndpointsProvider endpointsProvider,
             RegistrationStore registrationStore, SecurityStore securityStore, Authorizer authorizer,
@@ -417,11 +429,12 @@ public class LeshanServerBuilder {
             ClientAwakeTimeProvider awakeTimeProvider, RegistrationIdProvider registrationIdProvider,
             RegistrationDataExtractor registrationDataExtractor, LwM2mLinkParser linkParser,
             EndPointUriHandler uriHandler, ServerSecurityInfo serverSecurityInfo,
-            ServerEndpointNameProvider endpointNameProvider, boolean updateRegistrationOnNotification,
+            ServerEndpointNameProvider endpointNameProvider,
+            EndDeviceRegistrationIdProvider endDeviceRegistrationIdProvider, boolean updateRegistrationOnNotification,
             boolean updateRegistrationOnSend) {
         return new LeshanServer(endpointsProvider, registrationStore, securityStore, authorizer, modelProvider, encoder,
                 decoder, noQueueMode, awakeTimeProvider, registrationIdProvider, registrationDataExtractor,
                 updateRegistrationOnNotification, updateRegistrationOnSend, linkParser, uriHandler, serverSecurityInfo,
-                endpointNameProvider);
+                endpointNameProvider, endDeviceRegistrationIdProvider);
     }
 }
