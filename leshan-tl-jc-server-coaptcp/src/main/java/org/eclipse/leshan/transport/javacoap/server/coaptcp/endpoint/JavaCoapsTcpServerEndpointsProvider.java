@@ -18,7 +18,6 @@ package org.eclipse.leshan.transport.javacoap.server.coaptcp.endpoint;
 import java.net.InetSocketAddress;
 import java.security.Principal;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
 import javax.net.ssl.SSLException;
@@ -28,7 +27,6 @@ import javax.security.auth.x500.X500Principal;
 
 import org.eclipse.leshan.core.endpoint.Protocol;
 import org.eclipse.leshan.core.security.certificate.util.X509CertUtil;
-import org.eclipse.leshan.core.security.certificate.verifier.DefaultCertificateVerifier;
 import org.eclipse.leshan.core.security.jsse.LwM2mX509TrustManager;
 import org.eclipse.leshan.servers.security.ObservableSecurityStore;
 import org.eclipse.leshan.servers.security.SecurityInfo;
@@ -81,14 +79,8 @@ public class JavaCoapsTcpServerEndpointsProvider extends AbstractJavaCoapServerE
             // Create context
             X509KeyManager keys = new SingleX509KeyManager(serverSecurityInfo.getPrivateKey(),
                     serverSecurityInfo.getCertificateChain());
-            X509TrustManager trustManger = new LwM2mX509TrustManager(new DefaultCertificateVerifier(
-                    Arrays.asList(X509CertUtil.asX509Certificates(serverSecurityInfo.getTrustedCertificates()))) {
-                @Override
-                protected void validateSubject(InetSocketAddress peerSocket, X509Certificate receivedServerCertificate)
-                        throws CertificateException {
-                    // Do not validate subject at server side.
-                }
-            });
+            X509TrustManager trustManger = new LwM2mX509TrustManager(new ClientCertificateVerifier(
+                    Arrays.asList(X509CertUtil.asX509Certificates(serverSecurityInfo.getTrustedCertificates()))));
 
             sslContext = SslContextBuilder //
                     .forServer(keys) //
