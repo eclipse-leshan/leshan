@@ -7,6 +7,12 @@ CVE-2026-1225
 CVE-2026-9828
 CVE-2026-10532
 
+# glob/minimatch DoS: dev-only (cyclonedx-npm, eslint), not shipped.
+# No upstream release yet; waiting on cacache / node-gyp / eslint.
+# https://github.com/npm/cacache/issues/349
+CVE-2026-118773 exp:2027-01-31
+CVE-2026-118764 exp:2027-01-31
+
 # =========================
 # About Leshan Libraries
 # =========================
