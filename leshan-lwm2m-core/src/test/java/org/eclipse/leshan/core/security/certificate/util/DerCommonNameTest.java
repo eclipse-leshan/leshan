@@ -374,17 +374,28 @@ class DerCommonNameTest {
         }
     }
 
-    /** The JDK is an independent second opinion on how each string type is decoded. */
+    /**
+     * What was encoded must be read back. The JDK is an independent second opinion on how each string type is decoded,
+     * so it is compared too. Except for BMPString with Java 8 and 11: they read the UCS-2 bytes as if they were UTF-8
+     * (so with a NUL character before each character), so for this type the JDK is not used there.
+     */
     @Test
     void string_types_are_decoded_like_the_jdk() throws Exception {
         Random random = new Random(SEED);
         int[] stringTypes = { UTF8_STRING, PRINTABLE_STRING, BMP_STRING };
+        boolean jdkDecodesBmpString = jdkDecodesBmpStringCorrectly();
 
         for (int i = 0; i < 10_000; i++) {
             int stringType = stringTypes[random.nextInt(stringTypes.length)];
-            byte[] der = name(rdn(ava(CN, stringType, encode(randomValue(random, stringType), stringType))));
+            String value = randomValue(random, stringType);
+            byte[] der = name(rdn(ava(CN, stringType, encode(value, stringType))));
 
-            assertEquals(jdkCommonName(der), DerCommonName.extractCN(der), () -> "input " + toHex(der));
+            String commonName = DerCommonName.extractCN(der);
+
+            assertEquals(value, commonName, () -> "input " + toHex(der));
+            if (stringType != BMP_STRING || jdkDecodesBmpString) {
+                assertEquals(jdkCommonName(der), commonName, () -> "input " + toHex(der));
+            }
         }
     }
 
@@ -406,6 +417,20 @@ class DerCommonNameTest {
             }
         }
         throw new AssertionError("no CN in " + toHex(der));
+    }
+
+    /**
+     * Java 8 and 11 do not decode a BMPString correctly. Rather than a list of versions, check what this JDK does.
+     */
+    private static boolean jdkDecodesBmpStringCorrectly() {
+        // CN = BMPString "0<c", written by hand so that the check does not depend on the encoder of this test
+        byte[] der = { 0x30, 0x11, 0x31, 0x0f, 0x30, 0x0d, 0x06, 0x03, 0x55, 0x04, 0x03, 0x1e, 0x06, 0x00, 0x30, 0x00,
+                0x3c, 0x00, 0x63 };
+        try {
+            return "0<c".equals(jdkCommonName(der));
+        } catch (NamingException | RuntimeException e) {
+            return false;
+        }
     }
 
     /** A name with exactly one CN, surrounded by attributes whose values are chosen by an "attacker". */
