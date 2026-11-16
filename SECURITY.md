@@ -1,17 +1,34 @@
 # Security Policy
 
-## Reporting a Vulnerability
 
-To report a Security issue, you can :
+This Eclipse Foundation Project adheres to the [Eclipse Foundation Vulnerability Reporting Policy](https://www.eclipse.org/security/policy/).
 
-- (**Preferred way ⭐**) create a new [Github Security Advisories](https://docs.github.com/en/code-security/security-advisories/repository-security-advisories/about-repository-security-advisories), using [this form](https://github.com/eclipse-leshan/leshan/security/advisories/new),
-- open a [gitlab issue](https://gitlab.eclipse.org/security/vulnerability-reports/-/issues/new?issuable_template=new_vulnerability),
-- send an email to security@eclipse-foundation.org.
+## How To Report a Vulnerability
 
-For more details, please look at :
+If you think you have found a vulnerability in this repository, please report it to us through coordinated disclosure.
 
-- https://www.eclipse.org/security/
-- https://www.eclipse.org/projects/handbook/#vulnerability
+**Please do not report security vulnerabilities through public issues, discussions, or change requests.**
+
+Instead, report it using one of the following ways:
+
+* (**Preferred way ⭐**) Report a [vulnerability](https://github.com/eclipse-leshan/leshan/security/advisories/new) directly via private vulnerability reporting on GitHub
+* Create a [confidential issue](https://gitlab.eclipse.org/security/vulnerability-reports/-/work_items/new?issue[confidential]=true) in the Eclipse Foundation Vulnerability Reporting Tracker
+
+You can find more information about reporting and disclosure at the [Eclipse Foundation Security page](https://www.eclipse.org/security/).
+
+Please include as much of the information listed below as you can to help us better understand and resolve the issue:
+
+* The type of issue (e.g., buffer overflow, SQL injection, or cross-site scripting)
+* Affected version(s)
+* Impact of the issue, including how an attacker might exploit the issue
+* Step-by-step instructions to reproduce the issue
+* The location of the affected source code (tag/branch/commit or direct URL)
+* Full paths of source file(s) related to the manifestation of the issue
+* Configuration required to reproduce the issue
+* Log files that are related to this issue (if possible)
+* Proof-of-concept or exploit code (if possible)
+
+This information will help us triage your report more quickly.
 
 ## Supported Versions
 
