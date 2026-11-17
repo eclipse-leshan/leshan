@@ -20,8 +20,8 @@ pipeline {
   parameters {
     string(
         name: 'BRANCH',
-        defaultValue: 'master',
-        description: 'The branch to build and release from. Examples: master, 1.x')
+        defaultValue: 'main',
+        description: 'The branch to build and release from. Examples: main, 1.x')
     string(
         name: 'RELEASE_VERSION',
         defaultValue: '2.0.0-M10',

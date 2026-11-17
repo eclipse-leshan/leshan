@@ -16,7 +16,7 @@ permissions: {} # Remove all permissions as this workflow which run untrusted co
 
 on:
   pull_request:
-    branches: [ "master" ]
+    branches: [ "main" ]
     types: [synchronize, opened, reopened, ready_for_review]
 
 env:

@@ -21,7 +21,7 @@ The project also provides a client, a server and a bootstrap server demonstratio
 | LWM2M Version <br> Targeted | Leshan  <br> Version | Minimal <br> Java Version | Development <br> State |  Build Status   |  Standalone <br> Demos |
 | - | - | - | - | - | - |
 | [v1.0.x](https://github.com/eclipse/leshan/wiki/Lightweight-M2M-Specification#lightweight-m2m-v10x) | [v1.x](https://github.com/eclipse/leshan/tree/1.x) <br/> [Supported features](https://github.com/eclipse/leshan/wiki/LWM2M-Supported-features) | Java 7 ([more details](https://github.com/eclipse-leshan/leshan/tree/1.x/documentation/Requirement.md)) | stable released | [jenkins-1.x](https://ci.eclipse.org/leshan/job/leshan-ci/job/1.x/) </br> (need eclipse account) | [server-demo](https://download.eclipse.org/leshan/1.x/lastSuccessfulBuild/artifact/leshan-server-demo.jar)<br/> [client-demo](https://download.eclipse.org/leshan/1.x/lastSuccessfulBuild/artifact/leshan-client-demo.jar) <br/> [bsserver-demo](https://download.eclipse.org/leshan/1.x/lastSuccessfulBuild/artifact/leshan-bsserver-demo.jar) |
-| [**v1.1.x**](https://github.com/eclipse/leshan/wiki/Lightweight-M2M-Specification#lightweight-m2m-v11x)| [**v2.x** (master)](https://github.com/eclipse/leshan/tree/master) <br/> [Supported features](https://github.com/eclipse/leshan/wiki/LWM2M-1.1-supported-features) | Java 8 ([more details](./documentation/Requirement.md)) | **in development**  |[jenkins-master](https://ci.eclipse.org/leshan/job/leshan-ci/job/master/) </br> (need eclipse account) | [server-demo](https://download.eclipse.org/leshan/2.x/lastSuccessfulBuild/artifact/leshan-demo-server.jar)<br/> [client-demo](https://download.eclipse.org/leshan/2.x/lastSuccessfulBuild/artifact/leshan-demo-client.jar) <br/> [bsserver-demo](https://download.eclipse.org/leshan/2.x/lastSuccessfulBuild/artifact/leshan-demo-bsserver.jar)  |
+| [**v1.1.x**](https://github.com/eclipse/leshan/wiki/Lightweight-M2M-Specification#lightweight-m2m-v11x)| [**v2.x** (main)](https://github.com/eclipse/leshan/tree/main) <br/> [Supported features](https://github.com/eclipse/leshan/wiki/LWM2M-1.1-supported-features) | Java 8 ([more details](./documentation/Requirement.md)) | **in development**  |[jenkins-main](https://ci.eclipse.org/leshan/job/leshan-ci/job/main/) </br> (need eclipse account) | [server-demo](https://download.eclipse.org/leshan/2.x/lastSuccessfulBuild/artifact/leshan-demo-server.jar)<br/> [client-demo](https://download.eclipse.org/leshan/2.x/lastSuccessfulBuild/artifact/leshan-demo-client.jar) <br/> [bsserver-demo](https://download.eclipse.org/leshan/2.x/lastSuccessfulBuild/artifact/leshan-demo-bsserver.jar)  |
 
 Release (stable and milestones) are available on [maven central](https://search.maven.org/search?q=org.eclipse.leshan).  
 Nightly build (snapshot) are available on [eclipse repo](https://repo.eclipse.org/#view-repositories;leshan-snapshots~browsestorage). ([more details](https://github.com/eclipse/leshan/pull/885))
@@ -32,7 +32,7 @@ Contact
 -------
 If you have any **questions**, **feedback** or **bugs** to report, please use [github issue](https://github.com/eclipse-leshan/leshan/issues).  
 For **vulnerabilities**, have a look at our [Security Policy](https://github.com/eclipse-leshan/leshan/security/policy).  
-If you want to **contribute**, take a look at our [Contribution Guide](https://github.com/eclipse-leshan/leshan/blob/master/CONTRIBUTING.md).
+If you want to **contribute**, take a look at our [Contribution Guide](https://github.com/eclipse-leshan/leshan/blob/main/CONTRIBUTING.md).
 
 
 We also have a mail list but it is not so much used :
@@ -57,7 +57,7 @@ You can try live our servers demos instances:
 * The **bootstrap server** at https://leshan.eclipseprojects.io/bs/  
    _(coap://leshan.eclipseprojects.io:5783  and coaps://leshan.eclipseprojects.io:5784)_  
 
-(Automatic deployment of master branch)
+(Automatic deployment of main branch)
 
 ![Leshan](https://www.eclipse.org/leshan/img/capture_for_github-v2.png)
 

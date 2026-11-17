@@ -3,7 +3,7 @@ on:
   push:
     branches:
     # update to the default branch if it differs
-    - master
+    - main
   schedule:
     # Weekly on Saturdays.
     - cron:  '30 1 * * 6'

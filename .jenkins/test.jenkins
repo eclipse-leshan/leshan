@@ -11,8 +11,8 @@ pipeline {
   parameters {
     string(
         name: 'BRANCH',
-        defaultValue: 'master',
-        description: 'The branch to build. Examples: master, 1.x')
+        defaultValue: 'main',
+        description: 'The branch to build. Examples: main, 1.x')
     booleanParam(
         name: 'TEST_WITH_TOOLCHAIN',
         defaultValue: false,
